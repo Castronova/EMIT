@@ -6,10 +6,12 @@ import datetime
 import cPickle as pickle
 import stdlib as stlib
 from shapely import wkt
+from shapely.geometry import mapping, shape
 from osgeo import ogr, osr
 import imp
 from stdlib import Variable, Unit
 from odm2.api.ODMconnection import dbconnection, SessionFactory
+#import shapefile
 
 class multidict(dict):
     _unique = 0
@@ -203,6 +205,24 @@ def parse_config(ini):
     else:
         return None
 
+def shapefile_to_shapely(filepath):
+    """
+    reads esri shapefiles into shapely geometry objects
+    :param filepath:
+    :return:
+    """
+    # read the shapefile
+    reader = shapefile.Reader(filepath)
+    fields = reader.fields[1:]
+    field_names = [field[0] for field in fields]
+    buffer = []
+    for sr in reader.shapeRecords():
+        atr = dict(zip(field_names, sr.record))
+        geom = sr.shape.__geo_interface__
+        buffer.append(dict(type="Feature", geometry=geom, properties=atr))
+
+    return shape(buffer[0]['geometry'])
+
 def read_shapefile(shp):
     """
     returns (shapely geometry, spatial reference system)
@@ -228,6 +248,8 @@ def read_shapefile(shp):
         geoms.append(shapely_geom)
 
     return geoms, spatialRef
+
+
 
 def get_srs_from_epsg(code):
     """

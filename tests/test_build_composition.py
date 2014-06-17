@@ -4,6 +4,7 @@ import unittest
 
 from stdlib import *
 from coordinator import main
+import utilities
 
 class test_build_composition(unittest.TestCase):
 
@@ -153,21 +154,49 @@ class test_build_composition(unittest.TestCase):
         # test that links are returned
         self.assertTrue(len(links) == 1)
 
+    def test_get_data(self):
+        # add models
+        mdl1 = '/Users/tonycastronova/Documents/projects/iUtah/EMIT/tests/data/multiplier.mdl'
+        id1 = self.sim.add_model(mdl1)
+        mdl2 = '/Users/tonycastronova/Documents/projects/iUtah/EMIT/tests/data/random.mdl'
+        id2 = self.sim.add_model(mdl2)
 
-    # def test_run(self):
-    #     # add models
-    #     mdl1 = '/Users/tonycastronova/Documents/projects/iUtah/EMIT/tests/data/multiplier.mdl'
-    #     id1 = self.sim.add_model(mdl1)
-    #     mdl2 = '/Users/tonycastronova/Documents/projects/iUtah/EMIT/tests/data/random.mdl'
-    #     id2 = self.sim.add_model(mdl2)
-    #
-    #     # create link
-    #     linkid = self.sim.add_link(id2,'OUTPUT1',id1,'INPUT1')
-    #
-    #     # get data required for simulation
-    #
-    #
-    #     links = self.sim.get_links_by_model(id1)
-    #     # test that links are returned
-    #     self.assertTrue(len(links) == 1)
+
+        # create link
+        linkid = self.sim.add_link(id2,'OUTPUT1',id1,'INPUT1')
+
+
+        # load databases from file
+        db = self.sim.connect_to_db(['/Users/tonycastronova/Documents/projects/iUtah/EMIT/data/connections'])
+
+        # set default database
+        self.sim.set_default_database('ODM2 Simulation database')
+
+        # get timeseries
+        utilities.get_ts_from_link(self.sim.get_default_db(), self.sim.get_links_by_model(id1),self.sim.get_model_by_id(id1))
+
+
+    def test_run(self):
+        # load databases from file
+        db = self.sim.connect_to_db(['/Users/tonycastronova/Documents/projects/iUtah/EMIT/data/connections'])
+
+        # set default database
+        self.sim.set_default_database('ODM2 Simulation database')
+
+        # add models
+        mdl1 = '/Users/tonycastronova/Documents/projects/iUtah/EMIT/tests/data/multiplier.mdl'
+        id1 = self.sim.add_model(mdl1)
+        mdl2 = '/Users/tonycastronova/Documents/projects/iUtah/EMIT/tests/data/random.mdl'
+        id2 = self.sim.add_model(mdl2)
+
+        # create link
+        linkid = self.sim.add_link(id2,'OUTPUT1',id1,'INPUT1')
+
+        # get data required for simulation
+        finished = self.sim.run_simulation()
+
+
+        #links = self.sim.get_links_by_model(id1)
+        # test that links are returned
+        #self.assertTrue(len(links) == 1)
 

@@ -5,6 +5,8 @@ from coordinator import help as h
 from utilities import *
 import math
 import networkx as net
+from odm2.api.ODM2.Simulation.services import read as simulation_read
+from odm2.api.ODM2.Simulation.services import write as simulation_write
 
 """
 Purpose: This file contains the logic used to run coupled model simulations
@@ -85,6 +87,9 @@ class Model(object):
     def get_id(self):
         return self.__id
 
+    def get_instance(self):
+        return self.__inst
+
 class Coordinator(object):
     def __init__(self):
         """
@@ -94,10 +99,14 @@ class Coordinator(object):
         self.__links = {}
         self.__incr = 0
         self._db = {}
+        self.__default_db = None
 
     def get_new_id(self):
         self.__incr += 1
         return self.__incr
+
+    def get_default_db(self):
+        return self.__default_db
 
     def add_model(self, ini_path):
         """
@@ -310,21 +319,37 @@ class Coordinator(object):
         coordinates the simulation effort
         """
 
-        # determine unresolved exchange items (utilities)
+        # get the read and write database connections
+        reader = simulation_read.read(self.get_default_db())
+        writer = simulation_write.write(self.get_default_db())
+
+
+        # todo: determine unresolved exchange items (utilities)
 
         # determine execution order
         exec_order = self.determine_execution_order()
 
+        # loop through models and execute run
         for modelid in exec_order:
+
             # get the current model instance
             model = self.get_model_by_id(modelid)
 
-
             #  retrieve inputs from database
+            input_data =  get_ts_from_link(self.__default_db,self.__links,model)
+
+            # pass these inputs ts to the models' run function
+            model.get_instance().run(input_data)
+
+            # save these results
+            save_these_series = model.get_instance().save()
 
             #  set these input data as exchange items in stdlib or wrapper class
+            writer.insertSimulation()
 
-            #  call model.run
+            # save exchange items in database
+            writer.insertData(save_these_series)
+
 
         #   save output (model.save)
 
@@ -416,7 +441,7 @@ class Coordinator(object):
 
         # print database info
         if arg.strip() == 'db' or arg.strip() == 'summary':
-            
+
             for name,db_dict in self._db.iteritems():
 
                 # string to store db output
@@ -434,6 +459,7 @@ class Coordinator(object):
 
 
                 db_output.append('DATABASE : ' + name)
+                db_output.append('description: '+desc)
                 db_output.append('engine: '+engine)
                 db_output.append('address: '+address)
                 db_output.append('database: '+db)
@@ -450,7 +476,21 @@ class Coordinator(object):
                 for l in db_output[1:]: print '  |'+self.format_text(l,w,'left')+'|'
                 print '  |'+(w)*'-'+'|'
 
+    def discover_timeseries(self,db_connection_name):
 
+        # if db_connection_name not in self._db:
+        #     print '> [error] could not find database named %s'%db_connection_name
+        #     return 0
+        # else:
+        #     # get the database session
+        #     session = self._db[db_connection_name]['sesssion']
+        #
+        #     # get all timeseries using db api
+        #     from odm2.api.ODM2.Results.services import read
+        #     result_query = read.read(self._db[db_connection_name]['args']['connection_string'])
+        #     ts = result_query.getAllTimeSeriesResults()
+
+            print 'test'
 
     def get_db_connections(self):
         return self._db
@@ -509,6 +549,11 @@ class Coordinator(object):
             # center the text
             return padding*' ' + text
 
+    def set_default_database(self,db_name):
+        try:
+            self.__default_db = self._db[db_name]['session']
+        except:
+            print '> [error] could not find database: %s'%db_name
 
 
 def main(argv):
@@ -552,6 +597,10 @@ def main(argv):
             elif arg[0] == 'connect_db':
                 if len(arg) == 1: print h.help_function('connect_db')
                 else: coordinator.connect_to_db(arg[1:])
+
+            elif arg[0] == 'default_db':
+                if len(arg) == 1: print h.help_function('default_db')
+                else: coordinator.set_default_db(arg[1:])
 
             #todo: show database time series that are available
 

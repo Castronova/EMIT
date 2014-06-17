@@ -1,9 +1,63 @@
 __author__ = 'tonycastronova'
 
-#import random
+import random
+import utilities
+from wrappers import feed_forward
+import stdlib
 
-class randomizer(object):
-    def __init__(self):
-        #self.__rand = random.random()
-        pass
+class randomizer(feed_forward.feed_forward_wrapper):
 
+    def __init__(self,config_params):
+        super(randomizer, self).__init__(config_params)
+
+        #   .__ts = [(date,val),(date,val),]
+        self.__ts = []
+
+
+    def run(self,input_timeseries):
+        """
+        This is an abstract method that must be implemented.
+        :param exchangeitems: list of input exchange items
+        :return: true
+        """
+
+        # Note: this calculation requires no input timeseries
+
+        # get spatial objects (assuming that all variable exist at the same locations)
+        outputs = self.outputs()
+        geoms = outputs[0].geometries()
+
+        # loop over each output geometry instance and generate a random number
+        for g in geoms:
+            # get the geometry
+            geom = g.geom()
+            ts = []
+
+            # calculate a random number timeseries
+            current_time = self.current_time()
+            end = self.simulation_end()
+            while(current_time < end):
+                ts.append(((current_time),(random.random())))
+
+                # increment time
+                self.increment_time()
+                current_time = self.current_time()
+
+            # save results as datavalues
+            datavalues = stdlib.DataValues(timeseries=ts)
+
+            # save the calculated results to the current geometry
+            g.datavalues(datavalues)
+
+
+        return 1
+
+
+    def save(self):
+        """
+        This function is used to build output exchange items
+        :return: list of output exchange items
+        """
+
+        # save all timeseries
+        return self.outputs()

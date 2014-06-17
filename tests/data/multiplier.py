@@ -3,7 +3,7 @@ __author__ = 'tonycastronova'
 class multiplier(object):
 
 
-    def __init__(self):
+    def __init__(self,config_params):
         """
         initialization that will occur when loaded into a configuration
         """

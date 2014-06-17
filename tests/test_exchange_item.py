@@ -151,6 +151,7 @@ class testExchangeItem(unittest.TestCase):
 
         config = os.path.realpath('./configuration.ini')
 
-        eitems = utils.build_exchange_items(config)
+        params = utils.parse_config(config)
+        eitems = utils.build_exchange_items(params)
 
         print 'done'

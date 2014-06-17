@@ -1,0 +1,26 @@
+[connection]
+name = ODM2 Simulation database
+desc = PostgreSQL database with hydrology simulations
+engine = postgresql
+address = localhost
+db = odm2CamelCase
+user = tonycastronova
+pwd = water
+
+[connection]
+name = ODM1 Observation database
+desc = MySQL database with lots of observed timeseries
+engine = mysql
+address = jws.uwrl.usu.edu
+db = ODM
+user = ODM
+pwd = ODM123!!
+
+[connection]
+name = ODM2 MySQL Observation database
+desc = MySQL database with lots of observed timeseries
+engine = mysql
+address = 127.0.0.1:3306
+db = ODM2
+user = root
+pwd = water

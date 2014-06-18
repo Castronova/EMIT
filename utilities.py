@@ -165,6 +165,41 @@ def create_unit(unit_name):
         print '>  [WARNING] Unit not found in controlled vocabulary : '+unit_name
         return U
 
+def parse_config_without_validation(ini):
+    """
+    parses metadata stored in *.ini file
+    """
+
+    config_params = {}
+    cparser = ConfigParser.ConfigParser(None, multidict)
+    cparser.read(ini)
+    sections = cparser.sections()
+
+    for s in sections:
+        # get the section key (minus the random number)
+        section = s.split('^')[0]
+
+        # get the section options
+        options = cparser.options(s)
+
+        # save ini options as dictionary
+        d = {}
+        for option in options:
+            d[option] = cparser.get(s,option)
+        d['type'] = section
+
+
+        if section not in config_params:
+            config_params[section] = [d]
+        else:
+            config_params[section].append(d)
+
+    # save the base path of the model
+    config_params['basedir'] = basedir = os.path.realpath(os.path.dirname(ini))
+
+    return config_params
+
+
 def parse_config(ini):
     """
     parses metadata stored in *.ini file

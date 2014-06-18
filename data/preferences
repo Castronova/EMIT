@@ -1,0 +1,21 @@
+[person]
+firstname = Tony
+lastname = Castronova
+organizationcode = uwrl
+phone = 435-797-0853
+email = tony.castronova@usu.edu
+address = 8200 old main, logan ut, 84322
+start_date = 03-10-2014
+
+[organization]
+type = university
+code = usu
+name = Utah State University
+
+[organization]
+type = university
+code = uwrl
+name = Utah Water Research Laboratory
+description = research laboratory Affiliated with utah state university
+parentcode = usu
+

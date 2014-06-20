@@ -1,17 +1,11 @@
 __author__ = 'tonycastronova'
 
-import os, sys
-this_file = os.path.realpath(__file__)
-directory = os.path.dirname(os.path.dirname(os.path.dirname(this_file)))
-sys.path.insert(0, directory)
-print directory
-
+import os
 import unittest
-#from odm2.api.ODM2.Simulation.services import read
 from db.api import postgresdb
-#from odm2.api.ODMconnection import dbconnection,SessionFactory
-#from odm2.api.ODM2.base import serviceBase
 import odm2.api
+import datetime as dt
+import utilities as utils
 
 class test_simulation_services(unittest.TestCase):
 
@@ -22,19 +16,8 @@ class test_simulation_services(unittest.TestCase):
         db = 'odm2CamelCase'
         user = 'tonycastronova'
         pwd = 'water'
-
-
-
         dbconn = odm2.api.dbconnection()
         self.connection_string = dbconn.createConnection(engine,address,db,user,pwd)
-        #self.session_base = serviceBase(connection_string)
-        #self.session = SessionFactory(connection_string,None).get_session()
-        #self.session = self.session_base._session
-
-        #self.conn = read.read(self.session)
-
-
-
         self.prefs = '/Users/tonycastronova/Documents/projects/iUtah/EMIT/data/preferences'
 
 
@@ -55,6 +38,62 @@ class test_simulation_services(unittest.TestCase):
 
         print person
 
+    def test_insert_ts_results(self):
+        papi = postgresdb(self.connection_string)
+
+        papi.insert_result_ts()
+
+        pass
+
+    def test_create_simulation(self):
+        papi = postgresdb(self.connection_string)
+
+        model_code = 'swat'
+        sim_name = 'TonySwatSimulation'
+        sim_description = 'My SWAT Simulation'
+        #sim_start = dt.datetime(2014,01,01,0,0,0)
+        #sim_end = dt.datetime(2014,02,01,0,0,0)
+        timestepvalue = 1
+        timestepunitid = None # query this
+        inputdatasetid = None # query this
+        #startoffset=-6
+        #endoffset=-6
+
+        # build exchange items from file
+        config = os.path.realpath('../../tests/configuration.ini')
+        params = utils.parse_config(config)
+        eitems = utils.build_exchange_items(params)
+
+        # add some data to simulate 'output' exchange items
+        vals= [(dt.datetime(2014,1,1,0,0,0) + dt.timedelta(days=i), i) for i in range(0,100)]
+        output_item1 = eitems[1]
+        output_item1.geometries()[0].datavalues().set_timeseries(vals)
+
+        vals= [(dt.datetime(2014,1,1,0,0,0) + dt.timedelta(days=i), 2**i) for i in range(0,100)]
+        output_item2 = eitems[2]
+        output_item2.geometries()[0].datavalues().set_timeseries(vals)
+
+        outputs = [output_item1,output_item2]
+
+        papi.create_simulation(preferences_path='/Users/tonycastronova/Documents/projects/iUtah/EMIT/data/preferences',
+                               modelcode=model_code,
+                               output_exchange_items= outputs,
+                               input_exchange_items= [],
+                               name = sim_name,
+                               description=sim_description,
+                               timestepvalue=params['time_step'][0]['value'],
+                               timestepunittype=params['time_step'][0]['unit_type_cv'])
+
+        print eitems
+
+
+
+
+    def test_create_dataset(self):
+
+        papi = postgresdb(self.connection_string)
+
+        #resultids = []
 
     def test_get_simulation(self):
 

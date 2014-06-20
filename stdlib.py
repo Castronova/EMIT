@@ -221,7 +221,6 @@ class Geometry(object):
         else:
             self.__datavalues = value
 
-
 class ExchangeItem(object):
     def __init__ (self,id,name=None,desc=None, geometry=[],unit=None,variable=None,type=ExchangeItemType.Input):
         self.__name = name
@@ -273,17 +272,6 @@ class ExchangeItem(object):
 
     def geometries(self):
         return self.__geoms
-
-    def get_geoms(self):
-        # """
-        # returns the input geometries
-        # """
-        # geoms = []
-        # dict = self.get_dataset_dict()
-        # for element in dict.keys():
-        #     geoms.append(element.geom())
-        # return geoms
-        pass
 
     def add_geometry(self, geom):
 

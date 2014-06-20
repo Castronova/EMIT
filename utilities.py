@@ -52,8 +52,11 @@ def validate_config_ini(ini_path):
         if len(parsed_sections) == 0: raise Exception('Invalid model configuration file')
 
         # load lookup tables
-        var = pickle.load(open('../data/var_cv.dat','rb'))
-        unit = pickle.load(open('../data/units_cv.dat','rb'))
+        dir = os.path.dirname(__file__)
+
+
+        var = pickle.load(open(os.path.join(dir,'data/var_cv.dat'),'rb'))
+        unit = pickle.load(open(os.path.join(dir,'data/units_cv.dat'),'rb'))
 
         # check to see if 'ignorecv' option has been provided
         ignorecv = False
@@ -131,7 +134,9 @@ def create_variable(variable_name_cv):
     """
     creates a variable object using the lookup table
     """
-    var = pickle.load(open('../data/var_cv.dat','rb'))
+
+    dir = os.path.dirname(__file__)
+    var = pickle.load(open(os.path.join(dir,'data/var_cv.dat'),'rb'))
 
     if variable_name_cv in var:
         V = Variable()
@@ -149,7 +154,8 @@ def create_unit(unit_name):
     """
     creates a unit object using the lookup table
     """
-    var = pickle.load(open('../data/units_cv.dat','rb'))
+    dir = os.path.dirname(__file__)
+    var = pickle.load(open(os.path.join(dir,'data/units_cv.dat'),'rb'))
 
     if unit_name in var:
         U = Unit()
@@ -292,7 +298,9 @@ def get_srs_from_epsg(code):
     """
 
     # validate the EPSG code
-    codes = pickle.load(open('../data/epsg_codes.dat','rb'))
+    dir = os.path.dirname(__file__)
+    #os.path.join(dir, '/relative/path/to/file/you/want')
+    codes = pickle.load(open(os.path.join(dir,'data/epsg_codes.dat'),'rb'))
     if not str(code) in codes:
         raise Exception('Invalid EPSG code: %d'%code)
 
@@ -308,7 +316,9 @@ def build_exchange_items(params):
     iei = []
 
     # get all inputs and outputs
-    eitems = params['input'] if 'input' in params else [] + params['output'] if 'output' in params else []
+    iitems = params['input'] if 'input' in params else []
+    oitems = params['output'] if 'output' in params else []
+    eitems = iitems + oitems
 
     itemid = 0
 

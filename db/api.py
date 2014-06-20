@@ -10,7 +10,11 @@ from odm2.api.ODM2.Core.services import *
 import datetime
 # database libraries
 #from odm2.api.ODM2.Core.services import *
+import pytz
+from odm2.api.ODM2.SamplingFeatures.services import *
+from odm2.api.ODM2.Results.services import *
 
+import uuid
 
 class postgresdb():
 
@@ -19,34 +23,28 @@ class postgresdb():
 
         self._coreread = readCore(self.sconn)
         self._corewrite = createCore(self.sconn)
+        self._sfread = readSamplingFeatures(self.sconn)
+        self._sfwrite = createSamplingFeatures(self.sconn)
+        self._reswrite = createResults(self.sconn)
+
 
     def set_user_preferences(self, preferences):
 
+        # parse user preferences file
         prefs = utilities.parse_config_without_validation(preferences)
 
-        #read = readCore()
-
         # create people
-        people = []
         for person in prefs['person']:
 
             # check if the person exists
-            i = None
             p = self._coreread.getPersonByName(person['firstname'],person['lastname'])
             if not p:
                 # insert person
                 p = self._corewrite.createPerson(person['firstname'],person['lastname'])
-            # save this object
-            people.append(p)
-
 
 
         # create organization
-        orgs = []
-
         organizations = prefs['organization']
-        o = 0
-        # todo: remove assumption that parent org is defined before child org
         while len(organizations) > 0:
 
             organization = organizations.pop(0)
@@ -74,8 +72,6 @@ class postgresdb():
                                                              organization['code'],
                                                              organization['name'],
                                                              desc,link,parent)
-                    orgs.append(org)
-        o+=1
 
 
         # create affiliations
@@ -83,53 +79,228 @@ class postgresdb():
 
             # get the person id
             personid = None
-
-            # for p in people:
-            #     if p.PersonFirstName.upper() == person['firstname'].upper() and \
-            #         p.PersonLastName.upper() == person['lastname'].upper():
-            #         personid = p.PersonID
-            #         break
-
-            # filter_person = filter(lambda p:
-            #                        p.PersonFirstName.upper() == person['firstname'].upper() and
-            #                        p.PersonLastName.upper() == person['lastname'].upper(), people)
-
-            # get the person id
             p = self._coreread.getPersonByName(person['firstname'],person['lastname'])
             if not p: raise Exception('Person Not found: %s %s' % (person['firstname'], person['lastname']))
-            else: personid = p.PersonID
 
+            # get the organization id
             orgid = None
-            # for o in orgs:
-            #     if org.OrganizationCode.upper() == p['organizationcode'].upper():
-            #         orgid = org.OrganizationID
-
-            # filter_orgs = filter(lambda o: o.OrganizationCode.upper() == person['organizationcode'].upper(), orgs)
-
             o = self._coreread.getOrganizationByCode(person['organizationcode'])
             if not o: raise Exception('Organization Not found: %s' % person['organizationcode'])
-            else: orgid = o.OrganizationCode
 
-            astart = person['start_date'] if person.has_key('start_date') else datetime.datetime.now()
             phone = person['phone'] if person.has_key('phone') else None
             email = person['email'] if person.has_key('email') else None
             addr = person['address'] if person.has_key('address') else None
 
+            affiliations = self._coreread.getAffiliationByPersonAndOrg(p.PersonFirstName, p.PersonLastName,o.OrganizationCode)
 
-            if personid is not None and email is not None:
-                self._corewrite.CreateAffiliation(personid,
-                                                  orgid,
-                                                  True,
-                                                  astart,
-                                                  phone,
-                                                  email,
-                                                  addr)
-
+            if not affiliations:
+                affiliations = self._corewrite.createAffiliation(personid=p.PersonID,
+                                                  organizationid=o.OrganizationID,
+                                                  email=email,
+                                                  phone=phone,
+                                                  address=addr)
 
 
-    #def connection(self):
-    #    return self.__cnx
+        return affiliations
 
+
+    def create_input_dataset(self,resultids,type,code="",title="",abstract=""):
+
+        # always create a new dataset for each model
+        dataset = self._corewrite.createDataSet(type,code,title,abstract)
+
+        # link each input result ID to the simulation dataset
+        for resultid in resultids:
+            self._corewrite.createDataSetResults(dataset.DataSetID,resultid)
+
+        return dataset
+
+    def create_simulation(self,preferences_path, modelcode, output_exchange_items, input_exchange_items, name, description, timestepvalue, timestepunittype):
+
+        # create person / organization / affiliation
+        affiliation = self.set_user_preferences(preferences_path)
+
+        # get the timestep unit id
+        timestepunit = self._coreread.getUnitByName(timestepunittype)
+
+        # create method
+        method = self._coreread.getMethodByCode('simulation')
+        if not method: method = self._corewrite.createMethod(code= 'simulation',
+                                                             name='simulation',
+                                                             vType='calculated',
+                                                             orgId=affiliation.OrganizationID,
+                                                             description='Model Simulation Results')
+
+
+        # create action
+        action = self._corewrite.createAction(type='Simulation',
+                                              methodid=method.MethodID,
+                                              begindatetime=datetime.datetime.now(),
+                                              begindatetimeoffset=int((datetime.datetime.now() - datetime.datetime.utcnow() ).total_seconds()/3600))
+        # create actionby
+        actionby = self._corewrite.createActionBy(actionid=action.ActionID,
+                                                  affiliationid=affiliation.AffiliationID)
+
+        # create processing level
+        processinglevel = self._coreread.getProcessingLevelByCode(processingCode=2)
+        if not processinglevel: self._corewrite.createProcessingLevel(code=2,
+                                                                      definition='Derived Product',
+                                                                      explanation='Derived products require scientific and technical interpretation and include multiple-sensor data. An example might be basin average precipitation derived from rain gages using an interpolation procedure.')
+
+        # create dataset
+        dataset = self._corewrite.createDataSet(dstype='Simulation Input',
+                                                dscode='Input_%s'%name,
+                                                dstitle='Input for Simulation: %s'%name,
+                                                dsabstract=description)
+
+        # loop over output exchange items
+        for exchangeitem in output_exchange_items:
+
+            # loop over geometries
+            for geometry in exchangeitem.geometries():
+
+                geom = geometry.geom()
+
+                dates,values = geometry.datavalues().get_dates_values()
+
+
+
+
+                # create sampling feature
+                samplingfeature = self._coreread.getSamplingFeatureByGeometry(geom.wkt)
+                if not samplingfeature: samplingfeature = self._corewrite.createSamplingFeature(code=uuid.uuid4().hex,
+                                                                                                vType="site",
+                                                                                                name=None,
+                                                                                                description=None,
+                                                                                                geoType=geom.geom_type,
+                                                                                                elevation=None,
+                                                                                                elevationDatum=None,
+                                                                                                featureGeo=geom.wkt)
+
+                # create feature action
+                featureaction = self._corewrite.createFeatureAction(samplingfeatureid=samplingfeature.SamplingFeatureID,
+                                                                    actionid=action.ActionID)
+
+                # create variable
+                # TODO: This is not correct!
+                # todo: implement variable vType
+                variable = self._coreread.getVariableByCode(exchangeitem.variable().VariableNameCV())
+                if not variable: variable = self._corewrite.createVariable(code=exchangeitem.variable().VariableNameCV(),
+                                                                           name=exchangeitem.variable().VariableDefinition(),
+                                                                           vType='unknown',
+                                                                           nodv=-999)
+
+                # create unit
+                unit = self._coreread.getUnitByName(exchangeitem.unit().UnitName())
+                if not unit: unit = self._corewrite.createUnit(type=exchangeitem.unit().UnitTypeCV(),
+                                                               abbrev=exchangeitem.unit().UnitAbbreviation(),
+                                                               name=exchangeitem.unit().UnitName())
+
+
+
+                # create spatial reference
+                refcode = "%s:%s" %(exchangeitem.geometries()[0].srs().GetAttrValue("AUTHORITY", 0),exchangeitem.geometries()[0].srs().GetAttrValue("AUTHORITY", 1))
+                spatialref = self._sfread.getSpatialReferenceByCode(refcode)
+                if not spatialref: spatialref = self._sfwrite.createSpatialReference(srsCode=refcode,
+                                                                                     srsName=exchangeitem.geometries()[0].srs().GetAttrValue("GEOGCS", 0),
+                                                                                     srsDescription="%s|%s|%s"%(exchangeitem.geometries()[0].srs().GetAttrValue("PROJCS", 0),exchangeitem.geometries()[0].srs().GetAttrValue("GEOGCS", 0),exchangeitem.geometries()[0].srs().GetAttrValue("DATUM", 0)))
+
+
+                # create result
+                # result = self._corewrite.createResult(featureactionid=featureaction.FeatureActionID,
+                #                                       variableid=variable.VariableID,
+                #                                       unitid=unit.UnitsID,
+                #                                       processinglevelid=processinglevel.ProcessingLevelID,
+                #                                       valuecount=len(dates),
+                #                                       sampledmedium='unknown',
+                #                                       resulttypecv='Time Series Coverage')
+
+                from odm2.api.ODM2.Core.model import *
+                result = Result()
+                result.ResultUUID = uuid.uuid4().hex
+                result.FeatureActionID = featureaction.FeatureActionID
+                result.ResultTypeCV = 'Time Series Coverage'
+                result.VariableID = variable.VariableID
+                result.UnitsID = unit.UnitsID
+                result.ProcessingLevelID = processinglevel.ProcessingLevelID
+                result.ValueCount = len(dates)
+                result.SampledMediumCV = 'unknown'
+
+
+                # create time series result
+                timeseriesresult = self._reswrite.createTimeSeriesResult(result=result, aggregationstatistic='unknown',
+                                                                         timespacing=timestepvalue,
+                                                                         timespacing_unitid=timestepunit.UnitsID)
+
+
+                # create time series result values
+                # todo: consider utc offset for each result value.
+                # todo: get timezone based on geometry, use this to determine utc offset
+                # todo: implement censorcodecv
+                # todo: implement qualitycodecv
+                timeseriesresultvalues = self._reswrite.createTimeSeriesResultValues(resultid=timeseriesresult.ResultID,
+                                                                                     datavalues=values,
+                                                                                     datetimes=dates,
+                                                                                     datetimeoffsets=[-6 for i in range(len(dates))],
+                                                                                     censorcodecv='unknown',
+                                                                                     qualitycodecv='unknown',
+                                                                                     timeaggregationinterval=timestepvalue,
+                                                                                     timeaggregationunit=timestepunit.UnitsID)
+
+        # loop over input exchange items
+            # get result instance
+            # if result exists
+                # create datasetresults
+
+            # else
+                # loop over geometries
+                # create feature action
+                # create variable
+                # create unit
+                # create result
+                # create time series result
+                # create time series result values
+
+        # create model
+
+        # create simulation
+
+        pass
+
+
+    def insert_result_ts(self):
+
+        # result uuid => calc
+        # featureactionid => calc
+        # result type
+        # variable id
+        # units id
+        # processing level id
+        # sample medium cv
+        # value count
+        # --
+        # taxonomic classifier id (null)
+        # result date time (null)
+        # result date time offset (null)
+        # valid date time (null)
+        # valid date time offset (null)
+        # status cv (null)
+
+        # create action
+
+        # select or insert sampling feature
+
+        # create feature action associations
+
+        # select or insert variable
+
+        # select or insert unit
+
+        # select or insert processing level
+
+        # select or insert sample medium cv
+
+        pass
 
     def get_all_variables(self):
         #self.get_simulations()

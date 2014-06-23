@@ -13,6 +13,7 @@ import datetime
 import pytz
 from odm2.api.ODM2.SamplingFeatures.services import *
 from odm2.api.ODM2.Results.services import *
+from odm2.api.ODM2.Simulation.services import *
 
 import uuid
 
@@ -26,6 +27,9 @@ class postgresdb():
         self._sfread = readSamplingFeatures(self.sconn)
         self._sfwrite = createSamplingFeatures(self.sconn)
         self._reswrite = createResults(self.sconn)
+        self._simread = readSimulation(self.sconn)
+        self._simwrite= createSimulation(self.sconn)
+
 
 
     def set_user_preferences(self, preferences):
@@ -115,7 +119,7 @@ class postgresdb():
 
         return dataset
 
-    def create_simulation(self,preferences_path, modelcode, output_exchange_items, input_exchange_items, name, description, timestepvalue, timestepunittype):
+    def create_simulation(self,preferences_path, config_params, output_exchange_items, input_exchange_items, name, description, timestepvalue, timestepunittype):
 
         # create person / organization / affiliation
         affiliation = self.set_user_preferences(preferences_path)
@@ -247,6 +251,18 @@ class postgresdb():
                                                                                      timeaggregationinterval=timestepvalue,
                                                                                      timeaggregationunit=timestepunit.UnitsID)
 
+
+
+        # # loop over input exchange items
+        # for exchangeitem in input_exchange_items:
+        #
+        #     # loop over geometries
+        #     for geometry in exchangeitem.geometries():
+        #
+        #         geom = geometry.geom()
+        #
+        #         dates,values = geometry.datavalues().get_dates_values()
+
         # loop over input exchange items
             # get result instance
             # if result exists
@@ -261,9 +277,31 @@ class postgresdb():
                 # create time series result
                 # create time series result values
 
+
         # create model
+        model = self._simread.getModelByCode(modelcode=config_params['model'][0]['code'])
+        if not model: model = self._simwrite.createModel(code=config_params['model'][0]['code'],
+                                                           name=config_params['model'][0]['name'],
+                                                           description=config_params['model'][0]['description'])
+
 
         # create simulation
+
+        start = min([i.getStartTime() for i in output_exchange_items])
+        end = max([i.getEndTime() for i in output_exchange_items])
+
+        # TODO: remove hardcoded time offsets!
+        sim = self._simwrite.createSimulation(actionid=action.ActionID,
+                                              modelID=model.ModelID,
+                                              simulationName=name,
+                                              simulationDescription=description,
+                                              simulationStartDateTime=start,
+                                              simulationStartOffset=-6,
+                                              simulationEndDateTime=end,
+                                              simulationEndOffset=-6,
+                                              timeStepValue =timestepvalue,
+                                              timeStepUnitID=timestepunit.UnitsID,
+                                              inputDatasetID=dataset.DataSetID)
 
         pass
 

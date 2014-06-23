@@ -35,6 +35,8 @@ class ini_types():
     filepath = 'str'
     classname = 'str'
     ignorecv = 'str'
+    code = 'str'
+    description = 'str'
 
 def validate_config_ini(ini_path):
 

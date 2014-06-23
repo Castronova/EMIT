@@ -147,14 +147,14 @@ class DataValues(object):
         # element = shapely geometry
         #self.__element = element
 
+        self.__start = None
+        self.__end = None
+
         # start and end are the defined by the date range of the dataset
         if timeseries is not None:
-            dates,values = zip(*self.__timeseries)
-            self.__start = min(dates)
-            self.__end = max(dates)
-        else:
-            self.__start = None
-            self.__end = None
+            self.update_start_end_times(timeseries)
+
+
 
 
 
@@ -163,6 +163,7 @@ class DataValues(object):
 
     def set_timeseries(self,value):
         self.__timeseries = value
+        self.update_start_end_times(value)
 
     #def element(self):
     #    return self.__element
@@ -174,6 +175,16 @@ class DataValues(object):
         return self.__start
 
     def latest_date(self):
+        return self.__end
+
+    def update_start_end_times(self,timeseries):
+        dates,values = zip(*self.__timeseries)
+        self.__start = min(dates)
+        self.__end = max(dates)
+
+    def start(self):
+        return self.__start
+    def end(self):
         return self.__end
 
 class Geometry(object):
@@ -236,8 +247,8 @@ class ExchangeItem(object):
         # [[element1,[ts,]],[element2,[ts,,]],   ]
         #self.__dataset =  ds
 
-        self.StartTime = datetime.datetime(2999,1,1,1,0,0)
-        self.EndTime = datetime.datetime(1900,1,1,1,0,0)
+        #self.StartTime = datetime.datetime(2999,1,1,1,0,0)
+        #self.EndTime = datetime.datetime(1900,1,1,1,0,0)
 
         self.__id = id
 
@@ -251,6 +262,12 @@ class ExchangeItem(object):
         # determine start and end times
         for geom in self.__geoms:
             self.__calculate_start_and_end_times(geom.datavalues())
+
+    def getStartTime(self):
+        return min(g.datavalues().start() for g in self.__geoms)
+
+    def getEndTime(self):
+        return max(g.datavalues().end() for g in self.__geoms)
 
     def get_id(self):
         return self.__id

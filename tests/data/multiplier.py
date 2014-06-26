@@ -1,125 +1,71 @@
 __author__ = 'tonycastronova'
 
-class multiplier(object):
+
+from wrappers import feed_forward
+import stdlib
+
+class multiply(feed_forward.feed_forward_wrapper):
 
 
     def __init__(self,config_params):
         """
         initialization that will occur when loaded into a configuration
-        """
-
-        self.results = None
-
-        # build variables based on geometry
-        # todo: create geom object type where a geom has a value that can change with time. POINT, times, values
-
-    def save(self):
-        raise NotImplementedError('This is an abstract method that must be implemented!')
-
-    def get_data(self, links):
-        """
-        This is an abstract method that must be implemented
-        links - all input links objects.  This is used to query the database
-
-        usuwater
-
-        usuwater
-        usuwater
-
-
 
         """
 
-    def run(self,exchangeitems):
+        super(multiply,self).__init__(config_params)
+
+
+    def run(self,inputs):
         """
         This is an abstract method that must be implemented.
         :param exchangeitems: list of input exchange items
         :return: true
         """
 
-        # build exchange item dict
-        edict = {}
-        for item in exchangeitems:
-            # get unit and variable
-            unit = item.unit().UnitName()
-            var = item.variable.VariableNameCV()
+        # loop through each geometry
+        for geom, dataset in inputs.iteritems():
 
-            if var not in edict: edict[var] = {unit:item}
-            else: edict[var][unit] = item
+            time = self.current_time()
+
+            ts = []
+            while time <= self.simulation_end():
 
 
-        # get the geometries of the first exchange item
-        geoms = exchangeitems[0].get_geoms()
+                # data for desired variable (e.g. 'some_value')
+                datavalues = dataset['some_value']
+                dates, values = datavalues.get_dates_values()
 
-        # loop through geometry and perform calculation
-        # todo: some sort of automatic geometry mapping (utilites.py)
-        for geometry in geoms:
-            ts = exchangeitems[0].get_timeseries_by_element()
+                # get value at required time
+                # todo: have these values already temporally mapped, so that this isn't necessary here
+                closest_date = min(dates,key=lambda date : abs(time-date))
+                idx = dates.index(closest_date)
 
-
-
-
-
-
+                # get value at this location / time
+                value = values[idx]
 
 
+                # perform computation
+                new_value = value**2
 
-    def data_directory(self):
-        raise NotImplementedError('This is an abstract method that must be implemented!')
+                # save this new value in a timeseries
+                ts.append((time,new_value))
+
+                # increment time
+                time = self.increment_time(time)
 
 
-    """
-    Remove "initialize" because its essentially a duplicate of __init__
-    """
-
-    def initialize(self):
-        # TODO: This can be remove b/c it performs the same task as def __init__
-        raise NotImplementedError('This is an abstract method that must be implemented!')
+            # save results to this geometry as an output variable
+            self.set_geom_values('multipliedValue',geom,ts)
 
 
 
 
+        # # todo: some sort of automatic geometry mapping (utilites.py)
 
 
-    """
-    These are all loaded via INI config.  This info can be access via utilites.py or stdlib, so \
-    they should be removed
-    """
 
-    def time_step(self):
-        """
-            ini configuration file
-        """
-        raise NotImplementedError('This is an abstract method that must be implemented!')
-
-    def outputs(self):
-        """
-            ini configuration file
-        """
-        raise NotImplementedError('This is an abstract method that must be implemented!')
-
-    def inputs(self):
-        """
-            ini configuration file
-        """
-        raise NotImplementedError('This is an abstract method that must be implemented!')
-
-    def simulation_start(self):
-        """
-            ini configuration file
-        """
-        raise NotImplementedError('This is an abstract method that must be implemented!')
-
-    def simulation_end(self):
-        """
-            ini configuration file
-        """
-        raise NotImplementedError('This is an abstract method that must be implemented!')
-
-    def name(self):
-        """
-            ini configuration file
-        """
-        raise NotImplementedError('This is an abstract method that must be implemented!')
+    def save(self):
+        return self.outputs()
 
 

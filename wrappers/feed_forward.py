@@ -83,14 +83,59 @@ class feed_forward_wrapper(object):
     def current_time(self):
         return self.__current_time
 
-    def increment_time(self):
+    def increment_time(self, time):
 
         value,unit = self.time_step()
 
-        if unit == 'millisecond': self.__current_time += dt.timedelta(milliseconds=value)
-        elif unit == 'second': self.__current_time +=  dt.timedelta(seconds =value)
-        elif unit == 'minute': self.__current_time +=  dt.timedelta(minutes=value)
-        elif unit == 'hour': self.__current_time +=  dt.timedelta(hours=value)
-        elif unit == 'day': self.__current_time +=  dt.timedelta(days=value)
+        # if unit == 'millisecond': self.__current_time += dt.timedelta(milliseconds=value)
+        # elif unit == 'second': self.__current_time +=  dt.timedelta(seconds =value)
+        # elif unit == 'minute': self.__current_time +=  dt.timedelta(minutes=value)
+        # elif unit == 'hour': self.__current_time +=  dt.timedelta(hours=value)
+        # elif unit == 'day': self.__current_time +=  dt.timedelta(days=value)
+        # else:
+        #     raise Exception('Unknown unit: %s'%unit)
+
+        if unit == 'millisecond': time += dt.timedelta(milliseconds=value)
+        elif unit == 'second': time +=  dt.timedelta(seconds =value)
+        elif unit == 'minute': time +=  dt.timedelta(minutes=value)
+        elif unit == 'hour': time +=  dt.timedelta(hours=value)
+        elif unit == 'day': time +=  dt.timedelta(days=value)
         else:
             raise Exception('Unknown unit: %s'%unit)
+
+        return time
+
+
+    def get_output_by_name(self,outputname):
+
+        outputs = self.outputs()
+
+        for output in outputs:
+            if output.name() == outputname:
+                return output
+
+        raise Exception('Could not find output: %s' + outputname)
+
+
+    def set_geom_values(self,variablename,geometry,datavalues):
+
+        item = self.get_output_by_name(variablename)
+
+        geometries = item.geometries()
+        for geom in geometries:
+            if geom.geom().equals(geometry):
+                geom.datavalues().set_timeseries(datavalues)
+                return
+        raise Exception ('Error setting data for variable: %s' % variablename)
+
+
+
+    def get_input_by_name(self,inputname):
+
+        inputs = self.inputs()
+
+        for input in inputs:
+            if input.name() == inputname:
+                return input
+
+        raise Exception('Could not find input: %s' + inputname)

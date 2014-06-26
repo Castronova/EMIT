@@ -1,7 +1,12 @@
 
 [software]
-filepath  = ./random.py
+filepath  = ./randomizer.py
 classname = randomizer
+
+[model]
+code = tonys_random_number_generator
+name = Tony's random number generator module
+description = This is a module that generates random numbers
 
 [general]
 name = Random Number Generator

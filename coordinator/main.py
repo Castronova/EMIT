@@ -5,8 +5,11 @@ from coordinator import help as h
 from utilities import *
 import math
 import networkx as net
-from odm2.api.ODM2.Simulation.services import read as simulation_read
-from odm2.api.ODM2.Simulation.services import write as simulation_write
+
+from odm2.api.ODM2.Simulation.services import readSimulation
+from odm2.api.ODM2.Simulation.services import createSimulation
+from db.api import postgresdb
+
 
 """
 Purpose: This file contains the logic used to run coupled model simulations
@@ -36,12 +39,13 @@ class Model(object):
     """
     defines a model that has been loaded into a configuration
     """
-    def __init__(self, id, name, instance, desc=None, input_exchange_items={}, output_exchange_items={}):
+    def __init__(self, id, name, instance, desc=None, input_exchange_items={}, output_exchange_items={}, params=None):
         self.__name = name
         self.__description = desc
         self.__iei = {}
         self.__oei = {}
         self.__id = id
+        self.__params = params
 
         for iei in input_exchange_items:
             self.__iei[iei.name()] = iei
@@ -90,6 +94,10 @@ class Model(object):
     def get_instance(self):
         return self.__inst
 
+    def get_config_params(self):
+        return self.__params
+
+
 class Coordinator(object):
     def __init__(self):
         """
@@ -100,6 +108,8 @@ class Coordinator(object):
         self.__incr = 0
         self._db = {}
         self.__default_db = None
+
+        self._dbactions = {}
 
     def get_new_id(self):
         self.__incr += 1
@@ -136,11 +146,13 @@ class Coordinator(object):
             id = 'M'+str(self.get_new_id())
 
             # create a model instance
-            thisModel = Model(id,name,
-                              model_inst,
-                              params['general'][0]['description'],
-                              iei,
-                              oei)
+            thisModel = Model(id= id,
+                              name=name,
+                              instance=model_inst,
+                              desc=params['general'][0]['description'],
+                              input_exchange_items= iei,
+                              output_exchange_items= oei,
+                              params=params)
 
             # save the model
             self.__models[name] = thisModel
@@ -260,6 +272,31 @@ class Coordinator(object):
         #         return 1
         # return 0
 
+    def update_links(self,model, exchangeitems):
+        """
+        Updates the model associated with the link.  This is necessary after the run phase to update the data
+        values stored on the link object
+        :param model:
+        :return:
+        """
+
+        name = model.get_name()
+        for id,link_inst in self.__links.iteritems():
+            f,t = link_inst.get_link()
+
+            if t[0].get_name() == name:
+                for item in exchangeitems:
+                    if t[1].get_id() == item.get_id():
+                        self.__links[id] = Link(id, f[0], t[0], f[1], item)
+                        #t[1] = item
+
+            elif f[0].get_name() == name:
+                for item in exchangeitems:
+                    if f[1].get_id() == item.get_id():
+                        self.__links[id] = Link(id, f[0], t[0], item, t[1])
+                        #f[1] = item
+
+
     def determine_execution_order(self):
         """
         determines the order in which models will be executed.
@@ -320,8 +357,15 @@ class Coordinator(object):
         """
 
         # get the read and write database connections
-        reader = simulation_read.read(self.get_default_db())
-        writer = simulation_write.write(self.get_default_db())
+
+        #reader = readSimulation(self.get_default_db()['connection_string'])
+        #writer = createSimulation(self.get_default_db()['connection_string'])
+
+        simulation_dbapi = postgresdb(self.get_default_db()['connection_string'])
+
+        # TODO: Get this from gui dialog
+        preferences = os.path.abspath('../data/preferences')
+
 
 
         # todo: determine unresolved exchange items (utilities)
@@ -336,19 +380,32 @@ class Coordinator(object):
             model = self.get_model_by_id(modelid)
 
             #  retrieve inputs from database
-            input_data =  get_ts_from_link(self.__default_db,self.__links,model)
+            input_data =  get_ts_from_link(self.__default_db['connection_string'],self._dbactions, self.__links, model)
 
+            #sys.stdout.write()
             # pass these inputs ts to the models' run function
             model.get_instance().run(input_data)
 
             # save these results
-            save_these_series = model.get_instance().save()
+            exchangeitems = model.get_instance().save()
 
             #  set these input data as exchange items in stdlib or wrapper class
-            writer.insertSimulation()
+            #
+            simulation = simulation_dbapi.create_simulation(preferences_path=preferences,
+                                           config_params=model.get_config_params(),
+                                           output_exchange_items=exchangeitems,
+                                           )
+
+            # store the database action associated with this simulation
+            self._dbactions[model.get_name()] = simulation.ActionID
+
+            # update links
+            self.update_links(model,exchangeitems)
+
+            #writer.insertSimulation()
 
             # save exchange items in database
-            writer.insertData(save_these_series)
+            #writer.insertData(save_these_series)
 
 
         #   save output (model.save)
@@ -502,9 +559,7 @@ class Coordinator(object):
 
         # parse from file
         if len(args) == 1:
-            basedir = args[0]
-            abspath = os.path.abspath(os.path.join(basedir,args[0]))
-            filename = os.path.basename(abspath)
+            abspath = os.path.abspath(os.path.join(os.getcwd(),args[0]))
             if os.path.isfile(abspath):
                 try:
                     connections = create_database_connections_from_file(args[0])
@@ -551,9 +606,78 @@ class Coordinator(object):
 
     def set_default_database(self,db_name):
         try:
-            self.__default_db = self._db[db_name]['session']
+            self.__default_db = self._db[db_name]
+            print '> Default database : %s'%self._db[db_name]['connection_string']
         except:
             print '> [error] could not find database: %s'%db_name
+
+    def load_simulation(self, simulation_file):
+
+        abspath = os.path.abspath(os.path.join(os.getcwd(),simulation_file[0]))
+
+        if os.path.isfile(abspath):
+            with open(abspath,'r') as f:
+                lines = f.readlines()
+                for line in lines:
+                    command = line.strip()
+                    if len(command) > 0:
+                        if command[0] != '#':
+                            print '> %s'%command
+                            self.parse_args(command.split(' '))
+
+
+
+    def parse_args(self, arg):
+
+        if ''.join(arg).strip() != '':
+            if arg[0] == 'help':
+                if len(arg) == 1: print h.help()
+                else: print h.help_function(arg[1])
+
+            elif arg[0] == 'add' :
+                if len(arg) == 1: print h.help_function('add')
+                else: self.add_model(arg[1])
+
+            elif arg[0] == 'remove':
+                if len(arg) == 1: print h.help_function('remove')
+                else: self.remove_model_by_id(arg[1])
+
+            elif arg[0] == 'link':
+                if len(arg) != 5: print h.help_function('link')
+                else: self.add_link(arg[1],arg[2],arg[3],arg[4])
+
+            elif arg[0] == 'showme':
+                if len(arg) == 1: print h.help_function('showme')
+                else: self.get_configuration_details(arg[1])
+
+            elif arg[0] == 'connect_db':
+                if len(arg) == 1: print h.help_function('connect_db')
+                else: self.connect_to_db(arg[1:])
+
+            elif arg[0] == 'default_db':
+                if len(arg) == 1: print h.help_function('default_db')
+                else: self.set_default_db(arg[1:])
+
+            elif arg[0] == 'run':
+                print '> Running Simulation in Feed Forward Mode'
+                self.run_simulation()
+                print 'done'
+
+            elif arg[0] == 'load':
+                if len(arg) == 1: print h.help_function('load')
+                else: self.load_simulation(arg[1:])
+
+
+
+            #todo: show database time series that are available
+
+            elif arg[0] == 'info': print h.info()
+
+            else:
+                print '> [error] command not recognized.  Type "help" for a complete list of commands.'
+
+
+
 
 
 def main(argv):
@@ -568,63 +692,18 @@ def main(argv):
     # create instance of coordinator
     coordinator = Coordinator()
 
-    while arg != 'exit':
 
+    # TODO: This should be handled by gui
+    # connect to databases
+    coordinator.connect_to_db(['../data/connections'])
+    coordinator.set_default_database('ODM2 Simulation database')
+
+    while arg != 'exit':
         # get the users command
         arg = raw_input("> ").split(' ')
-
-        if ''.join(arg).strip() != '':
-            if arg[0] == 'help':
-                if len(arg) == 1: print h.help()
-                else: print h.help_function(arg[1])
-
-            elif arg[0] == 'add' :
-                if len(arg) == 1: print h.help_function('add')
-                else: coordinator.add_model(arg[1])
-
-            elif arg[0] == 'remove':
-                if len(arg) == 1: print h.help_function('remove')
-                else: coordinator.remove_model_by_id(arg[1])
-
-            elif arg[0] == 'link':
-                if len(arg) != 5: print h.help_function('link')
-                else: coordinator.add_link(arg[1],arg[2],arg[3],arg[4])
-
-            elif arg[0] == 'showme':
-                if len(arg) == 1: print h.help_function('showme')
-                else: coordinator.get_configuration_details(arg[1])
-
-            elif arg[0] == 'connect_db':
-                if len(arg) == 1: print h.help_function('connect_db')
-                else: coordinator.connect_to_db(arg[1:])
-
-            elif arg[0] == 'default_db':
-                if len(arg) == 1: print h.help_function('default_db')
-                else: coordinator.set_default_db(arg[1:])
-
-            #todo: show database time series that are available
-
-            elif arg[0] == 'info': print h.info()
-
-            else:
-                print '> [error] command not recognized.  Type "help" for a complete list of commands.'
+        coordinator.parse_args(arg)
 
 
-    # try:
-    #   opts, args = getopt.getopt(argv,"hi:o:",["ifile=","ofile="])
-    # except getopt.GetoptError:
-    #   print 'test.py -i <inputfile> -o <outputfile>'
-    #   sys.exit(2)
-    # for opt, arg in opts:
-    #   if opt == '-h':
-    #      print 'test.py -i <inputfile> -o <outputfile>'
-    #      sys.exit()
-    #   elif opt in ("-i", "--ifile"):
-    #      inputfile = arg
-    #   elif opt in ("-o", "--ofile"):
-    #      outputfile = arg
-    # print 'Input file is "', inputfile
-    # print 'Output file is "', outputfile
 
 if __name__ == '__main__':
     main(sys.argv[1:])

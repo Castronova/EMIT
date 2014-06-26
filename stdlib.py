@@ -152,7 +152,7 @@ class DataValues(object):
 
         # start and end are the defined by the date range of the dataset
         if timeseries is not None:
-            self.update_start_end_times(timeseries)
+            self.update_start_end_times()
 
 
 
@@ -163,13 +163,16 @@ class DataValues(object):
 
     def set_timeseries(self,value):
         self.__timeseries = value
-        self.update_start_end_times(value)
+        self.update_start_end_times()
 
     #def element(self):
     #    return self.__element
 
     def get_dates_values(self):
-        return zip(*self.__timeseries)
+        if self.__timeseries:
+            return zip(*self.__timeseries)
+        else:
+            return None
 
     def earliest_date(self):
         return self.__start
@@ -177,14 +180,18 @@ class DataValues(object):
     def latest_date(self):
         return self.__end
 
-    def update_start_end_times(self,timeseries):
+    def update_start_end_times(self):
         dates,values = zip(*self.__timeseries)
         self.__start = min(dates)
         self.__end = max(dates)
 
     def start(self):
+        if self.__start is None:
+            self.update_start_end_times()
         return self.__start
     def end(self):
+        if self.__end is None:
+            self.update_start_end_times()
         return self.__end
 
 class Geometry(object):

@@ -6,6 +6,7 @@ from db.api import postgresdb
 import odm2.api
 import datetime as dt
 import utilities as utils
+from odm2.api.ODM2.Core.services import *
 
 class test_simulation_services(unittest.TestCase):
 
@@ -30,7 +31,7 @@ class test_simulation_services(unittest.TestCase):
         papi.set_user_preferences(self.prefs)
 
     def test_get_person(self):
-        from odm2.api.ODM2.Core.services import *
+
 
         read = readCore(self.connection_string)
 
@@ -77,16 +78,12 @@ class test_simulation_services(unittest.TestCase):
 
         outputs = [output_item1,output_item2]
 
-        papi.create_simulation(preferences_path='/Users/tonycastronova/Documents/projects/iUtah/EMIT/data/preferences',
+        sim = papi.create_simulation(preferences_path='/Users/tonycastronova/Documents/projects/iUtah/EMIT/data/preferences',
                                config_params=params,
-                               output_exchange_items= outputs,
-                               input_exchange_items= [],
-                               name = sim_name,
-                               description=sim_description,
-                               timestepvalue=params['time_step'][0]['value'],
-                               timestepunittype=params['time_step'][0]['unit_type_cv'])
+                               output_exchange_items= outputs)
 
-        print eitems
+
+        print 'Successfully inserted Simulation: %d'%sim.SimulationID
 
 
 

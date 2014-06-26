@@ -1,21 +1,16 @@
 __author__ = 'tonycastronova'
 
-#import psycopg2
-#import sqlalchemy
-#from sqlalchemy import create_engine
-#from sqlalchemy.orm import sessionmaker
-#from db.models import simulation, core
-import utilities
-from odm2.api.ODM2.Core.services import *
+import uuid
 import datetime
-# database libraries
-#from odm2.api.ODM2.Core.services import *
-import pytz
+import utilities
+import stdlib
+from shapely.wkt import loads
+from odm2.api.ODM2.Core.services import *
 from odm2.api.ODM2.SamplingFeatures.services import *
 from odm2.api.ODM2.Results.services import *
 from odm2.api.ODM2.Simulation.services import *
+from odm2.api.ODM2.Core.model import *
 
-import uuid
 
 class postgresdb():
 
@@ -27,9 +22,9 @@ class postgresdb():
         self._sfread = readSamplingFeatures(self.sconn)
         self._sfwrite = createSamplingFeatures(self.sconn)
         self._reswrite = createResults(self.sconn)
+        self._resread = readResults(self.sconn)
         self._simread = readSimulation(self.sconn)
         self._simwrite= createSimulation(self.sconn)
-
 
 
     def set_user_preferences(self, preferences):
@@ -107,7 +102,6 @@ class postgresdb():
 
         return affiliations
 
-
     def create_input_dataset(self,resultids,type,code="",title="",abstract=""):
 
         # always create a new dataset for each model
@@ -119,7 +113,18 @@ class postgresdb():
 
         return dataset
 
-    def create_simulation(self,preferences_path, config_params, output_exchange_items, input_exchange_items, name, description, timestepvalue, timestepunittype):
+    def create_simulation(self,preferences_path, config_params, output_exchange_items):
+
+        name = config_params['general'][0]['name']
+        description = config_params['general'][0]['description']
+        simstart = config_params['general'][0]['simulation_start']
+        simend = config_params['general'][0]['simulation_end']
+        modelcode = config_params['model'][0]['code']
+        modelname = config_params['model'][0]['name']
+        modeldesc = config_params['model'][0]['description']
+        timestepvalue = config_params['time_step'][0]['value']
+        timestepunittype = config_params['time_step'][0]['unit_type_cv']
+
 
         # create person / organization / affiliation
         affiliation = self.set_user_preferences(preferences_path)
@@ -210,16 +215,7 @@ class postgresdb():
                                                                                      srsDescription="%s|%s|%s"%(exchangeitem.geometries()[0].srs().GetAttrValue("PROJCS", 0),exchangeitem.geometries()[0].srs().GetAttrValue("GEOGCS", 0),exchangeitem.geometries()[0].srs().GetAttrValue("DATUM", 0)))
 
 
-                # create result
-                # result = self._corewrite.createResult(featureactionid=featureaction.FeatureActionID,
-                #                                       variableid=variable.VariableID,
-                #                                       unitid=unit.UnitsID,
-                #                                       processinglevelid=processinglevel.ProcessingLevelID,
-                #                                       valuecount=len(dates),
-                #                                       sampledmedium='unknown',
-                #                                       resulttypecv='Time Series Coverage')
 
-                from odm2.api.ODM2.Core.model import *
                 result = Result()
                 result.ResultUUID = uuid.uuid4().hex
                 result.FeatureActionID = featureaction.FeatureActionID
@@ -279,31 +275,63 @@ class postgresdb():
 
 
         # create model
-        model = self._simread.getModelByCode(modelcode=config_params['model'][0]['code'])
-        if not model: model = self._simwrite.createModel(code=config_params['model'][0]['code'],
-                                                           name=config_params['model'][0]['name'],
-                                                           description=config_params['model'][0]['description'])
+        model = self._simread.getModelByCode(modelcode=modelcode)
+        if not model: model = self._simwrite.createModel(code=modelcode,
+                                                           name=modelname,
+                                                           description=modeldesc)
 
 
         # create simulation
 
-        start = min([i.getStartTime() for i in output_exchange_items])
-        end = max([i.getEndTime() for i in output_exchange_items])
+        #start = min([i.getStartTime() for i in output_exchange_items])
+        #end = max([i.getEndTime() for i in output_exchange_items])
 
         # TODO: remove hardcoded time offsets!
         sim = self._simwrite.createSimulation(actionid=action.ActionID,
                                               modelID=model.ModelID,
                                               simulationName=name,
                                               simulationDescription=description,
-                                              simulationStartDateTime=start,
+                                              simulationStartDateTime=simstart ,
                                               simulationStartOffset=-6,
-                                              simulationEndDateTime=end,
+                                              simulationEndDateTime=simend,
                                               simulationEndOffset=-6,
                                               timeStepValue =timestepvalue,
                                               timeStepUnitID=timestepunit.UnitsID,
                                               inputDatasetID=dataset.DataSetID)
 
-        pass
+        return sim
+
+    def get_simulation_results(self,simulationName, actionid, from_variableName, from_unitName, to_variableName, startTime, endTime):
+
+        # get the simulation object from simulationName
+        #simulation = self._simread.getSimulationByActionID(actionID=actionid)
+
+        # get the simulation results
+        results = self._coreread.getResultByActionID(actionID=actionid)
+
+        exchangeitems = {}
+        timeseries = []
+
+        # select the result corresponding to the unit and variable
+        resultid = None
+        for result, geom in results:
+            if result.VariableObj.VariableCode == from_variableName and result.UnitObj.UnitsName == from_unitName:
+                resultid = result.ResultID
+
+
+                # get the timeseries values
+                values = self._resread.getTimeSeriesValuesByTime(resultid=resultid,starttime=startTime,endtime=endTime)
+
+                # save each timeseries to a geometry
+                dv = stdlib.DataValues(timeseries=[(value.ValueDateTime,value.DataValue) for value in values])
+                g = loads(geom)
+
+                # save datavalues on the to_variableName
+                if g not in exchangeitems:
+                    exchangeitems[g] = {to_variableName:dv}
+                else:
+                    exchangeitems[g].update({to_variableName:dv})
+        return exchangeitems
 
 
     def insert_result_ts(self):

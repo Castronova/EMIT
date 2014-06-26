@@ -11,6 +11,11 @@ from osgeo import ogr, osr
 import imp
 from stdlib import Variable, Unit
 from odm2.api.ODMconnection import dbconnection, SessionFactory
+import odm2.api
+
+from db.api import postgresdb
+
+
 #import shapefile
 
 class multidict(dict):
@@ -120,7 +125,7 @@ def validate_config_ini(ini_path):
                 try:
                     classname = cparser.get(section,'classname')
                     filename = os.path.basename(abspath)
-                    module = imp.load_source(filename, abspath)
+                    module = imp.load_source(filename.split('.')[0], abspath)
                     m = getattr(module, classname)
                 except:
                     print 'Configuration Parsing Error: '+classname+' is not a valid class name'
@@ -207,7 +212,6 @@ def parse_config_without_validation(ini):
 
     return config_params
 
-
 def parse_config(ini):
     """
     parses metadata stored in *.ini file
@@ -291,8 +295,6 @@ def read_shapefile(shp):
         geoms.append(shapely_geom)
 
     return geoms, spatialRef
-
-
 
 def get_srs_from_epsg(code):
     """
@@ -422,7 +424,6 @@ def load_model(config_params):
 
     return (config_params['general'][0]['name'], instance)
 
-
 def create_database_connections_from_file(ini):
 
     # database connections dictionary
@@ -446,26 +447,32 @@ def create_database_connections_from_file(ini):
             d[option] = cparser.get(s,option)
 
         # build database connection
-        connection_string = dbconnection.create_connection(d['engine'],d['address'],d['db'],d['user'],d['pwd'])
+
+        dbconn = odm2.api.dbconnection()
+        connection_string = dbconn.createConnection(d['engine'],d['address'],d['db'],d['user'],d['pwd'])
+
 
         # add connection string to dictionary (for backup/debugging)
         d['connection_string'] = connection_string
 
         # create a session
         try:
-            session = SessionFactory(connection_string,None).get_session()
-        except:
+            session = SessionFactory(connection_string,False).getSession()
+            print '> Connected to : %s'%connection_string
+        except Exception, e:
+            print e
             session = None
             print 'Could not establish a connection with the database: '+connection_string
 
         # save this session in the db_connections object
         db_connections[d['name']] = {'session': session,
+                                     'connection_string':connection_string,
                                      'description':d['desc'],
                                      'args': d}
+
     return db_connections
 
-
-def get_ts_from_link(session, links, target_model):
+def get_ts_from_link(connection_string, dbactions, links, target_model):
     """
     queries the data
     :param session: database session where the data is stored
@@ -474,9 +481,12 @@ def get_ts_from_link(session, links, target_model):
     :return:
     """
 
-    if session is None:
-        print '>  [error] no default database has been specified'
-        return 0
+    simulation_dbapi = postgresdb(connection_string)
+
+
+    #if session is None:
+    #    print '>  [error] no default database has been specified'
+    #    return 0
 
     mapping = {}
     timeseries = {}
@@ -484,10 +494,28 @@ def get_ts_from_link(session, links, target_model):
     for id,link_inst in links.iteritems():
         f,t = link_inst.get_link()
         if t[0].get_name() == tname:
-            mapping[f[1].name()] = t[1].name()
+            mapping[t[1].name()] = f[1].name()
             print '>  %s -> %s'%(f[1].name(), t[1].name())
 
-        # get data and store in dict
+            # get output exchange item
+            from_unit = f[1].unit()
+            from_var = f[1].variable()
+            to_var = t[1].variable()
+            to_item = t[1]
+            name = f[0].get_name()
+            start = f[1].getStartTime()
+            end = f[1].getEndTime()
+
+            model = f[0]
+            actionid = dbactions[model.get_name()]
+
+            # query timeseries data from db
+            ts = simulation_dbapi.get_simulation_results(name,actionid,from_var.VariableNameCV(),from_unit.UnitName(),to_var.VariableNameCV(), start,end)
+
+            # store the timeseries based on exchange item
+            #timeseries[f[1].name()] = ts
+            timeseries.update(ts)
+
     return timeseries
 
 def save_model_results():

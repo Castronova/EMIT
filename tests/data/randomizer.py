@@ -1,7 +1,6 @@
 __author__ = 'tonycastronova'
 
 import random
-import utilities
 from wrappers import feed_forward
 import stdlib
 
@@ -24,8 +23,8 @@ class randomizer(feed_forward.feed_forward_wrapper):
         # Note: this calculation requires no input timeseries
 
         # get spatial objects (assuming that all variable exist at the same locations)
-        outputs = self.outputs()
-        geoms = outputs[0].geometries()
+        output = self.get_output_by_name('random_number')
+        geoms = output.geometries()
 
         # loop over each output geometry instance and generate a random number
         for g in geoms:
@@ -40,8 +39,8 @@ class randomizer(feed_forward.feed_forward_wrapper):
                 ts.append(((current_time),(random.random())))
 
                 # increment time
-                self.increment_time()
-                current_time = self.current_time()
+                current_time = self.increment_time(current_time)
+
 
             # save results as datavalues
             datavalues = stdlib.DataValues(timeseries=ts)

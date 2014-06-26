@@ -56,7 +56,7 @@ def validate_config_ini(ini_path):
         parsed_sections = cparser.sections()
 
         # if no sections are found, than the file format must be incorrect
-        if len(parsed_sections) == 0: raise Exception('Invalid model configuration file')
+        if len(parsed_sections) == 0: raise Exception('> [Exception] Invalid model configuration file')
 
         # load lookup tables
         dir = os.path.dirname(__file__)
@@ -128,7 +128,7 @@ def validate_config_ini(ini_path):
                     module = imp.load_source(filename.split('.')[0], abspath)
                     m = getattr(module, classname)
                 except:
-                    print 'Configuration Parsing Error: '+classname+' is not a valid class name'
+                    print '> [Error] Configuration Parsing Error: '+classname+' is not a valid class name'
 
     except Exception, e:
         print '> [Configuration Parsing Error] '+str(e)
@@ -154,7 +154,7 @@ def create_variable(variable_name_cv):
         V = Variable()
         V.VariableNameCV(value=variable_name_cv)
         V.VariableDefinition(value='unknown')
-        print '>  [WARNING] Variable not found in controlled vocabulary : '+variable_name_cv
+        #print '> [WARNING] Variable not found in controlled vocabulary : '+variable_name_cv
         return V
 
 def create_unit(unit_name):
@@ -175,7 +175,7 @@ def create_unit(unit_name):
         U.UnitName(value=unit_name)
         U.UnitTypeCV(value='unknown')
         U.UnitAbbreviation(value='unknown')
-        print '>  [WARNING] Unit not found in controlled vocabulary : '+unit_name
+        #print '> [WARNING] Unit not found in controlled vocabulary : '+unit_name
         return U
 
 def parse_config_without_validation(ini):
@@ -495,7 +495,7 @@ def get_ts_from_link(connection_string, dbactions, links, target_model):
         f,t = link_inst.get_link()
         if t[0].get_name() == tname:
             mapping[t[1].name()] = f[1].name()
-            print '>  %s -> %s'%(f[1].name(), t[1].name())
+            #print '>  %s -> %s'%(f[1].name(), t[1].name())
 
             # get output exchange item
             from_unit = f[1].unit()

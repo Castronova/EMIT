@@ -35,21 +35,15 @@ class randomizer(feed_forward.feed_forward_wrapper):
             # calculate a random number timeseries
             current_time = self.current_time()
             end = self.simulation_end()
-            while(current_time < end):
+            while(current_time <= end):
                 ts.append(((current_time),(random.random())))
 
                 # increment time
                 current_time = self.increment_time(current_time)
 
 
-            # save results as datavalues
-            datavalues = stdlib.DataValues(timeseries=ts)
-
-            # save the calculated results to the current geometry
-            g.datavalues(datavalues)
-
-
-        return 1
+            # save this timeseries to the output geom
+            self.set_geom_values('random_number',geom,ts)
 
 
     def save(self):

@@ -10,6 +10,7 @@ from odm2.api.ODM2.Simulation.services import readSimulation
 from odm2.api.ODM2.Simulation.services import createSimulation
 from db.api import postgresdb
 
+import time
 
 """
 Purpose: This file contains the logic used to run coupled model simulations
@@ -366,51 +367,73 @@ class Coordinator(object):
         # TODO: Get this from gui dialog
         preferences = os.path.abspath('../data/preferences')
 
-
-
         # todo: determine unresolved exchange items (utilities)
 
+
+        sim_st = time.time()
+
+
         # determine execution order
+        sys.stdout.write('> Determining execution order... ')
         exec_order = self.determine_execution_order()
+        sys.stdout.write('done\n')
+        for i in range(0, len(exec_order)):
+            print '> %d.) %s'%(i+1,self.get_model_by_id(exec_order[i]).get_name())
 
         # loop through models and execute run
         for modelid in exec_order:
 
+            st = time.time()
+
             # get the current model instance
             model = self.get_model_by_id(modelid)
 
-            #  retrieve inputs from database
-            input_data =  get_ts_from_link(self.__default_db['connection_string'],self._dbactions, self.__links, model)
+            print '> '
+            print '> ------------------'+len(model.get_name())*'-'
+            print '> Executing module: %s ' % model.get_name()
+            print '> ------------------'+len(model.get_name())*'-'
 
-            #sys.stdout.write()
+            #  retrieve inputs from database
+            sys.stdout.write('> [1 of 4] Retrieving input data... ')
+            input_data =  get_ts_from_link(self.__default_db['connection_string'],self._dbactions, self.__links, model)
+            sys.stdout.write('done\n')
+
+            sys.stdout.write('> [2 of 4] Performing calculation... ')
             # pass these inputs ts to the models' run function
             model.get_instance().run(input_data)
+            sys.stdout.write('done\n')
 
             # save these results
+            sys.stdout.write('> [3 of 4] Saving calculations to database... ')
             exchangeitems = model.get_instance().save()
 
             #  set these input data as exchange items in stdlib or wrapper class
-            #
             simulation = simulation_dbapi.create_simulation(preferences_path=preferences,
                                            config_params=model.get_config_params(),
                                            output_exchange_items=exchangeitems,
                                            )
 
+            sys.stdout.write('done\n')
+
             # store the database action associated with this simulation
             self._dbactions[model.get_name()] = simulation.ActionID
 
             # update links
+            sys.stdout.write('> [4 of 4] Updating links... ')
             self.update_links(model,exchangeitems)
+            sys.stdout.write('done\n')
 
-            #writer.insertSimulation()
-
-            # save exchange items in database
-            #writer.insertData(save_these_series)
+            print '> module simulation completed in %3.2f seconds' % (time.time() - st)
 
 
-        #   save output (model.save)
+        print '> '
+        print '> ------------------------------------------'
+        print '>           Simulation Summary '
+        print '> ------------------------------------------'
+        print '> Completed without error :)'
+        print '> Simulation duration: %3.2f seconds' % (time.time()-sim_st)
+        print '> ------------------------------------------'
 
-        pass
 
     def get_configuration_details(self,arg):
 
@@ -625,6 +648,7 @@ class Coordinator(object):
                             print '> %s'%command
                             self.parse_args(command.split(' '))
 
+        else: print '> Could not find path %s'%simulation_file
 
 
     def parse_args(self, arg):
@@ -661,7 +685,6 @@ class Coordinator(object):
             elif arg[0] == 'run':
                 print '> Running Simulation in Feed Forward Mode'
                 self.run_simulation()
-                print 'done'
 
             elif arg[0] == 'load':
                 if len(arg) == 1: print h.help_function('load')

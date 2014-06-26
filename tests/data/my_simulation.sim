@@ -1,0 +1,6 @@
+# Auto-generated simulation loading document
+# simulation name: My Test Simulation
+
+add ../tests/data/randomizer.mdl
+add ../tests/data/multiplier.mdl
+link M1 OUTPUT1 M2 INPUT1

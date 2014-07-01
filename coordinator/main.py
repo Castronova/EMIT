@@ -5,7 +5,7 @@ from coordinator import help as h
 from utilities import *
 import math
 import networkx as net
-
+import threading
 from odm2.api.ODM2.Simulation.services import readSimulation
 from odm2.api.ODM2.Simulation.services import createSimulation
 from db.api import postgresdb
@@ -372,6 +372,7 @@ class Coordinator(object):
 
         sim_st = time.time()
 
+        activethreads = []
 
         # determine execution order
         sys.stdout.write('> Determining execution order... ')

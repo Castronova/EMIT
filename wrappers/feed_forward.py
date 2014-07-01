@@ -19,7 +19,7 @@ class feed_forward_wrapper(object):
     def save(self):
         raise NotImplementedError('This is an abstract method that must be implemented!')
 
-    def run(self):
+    def run(self,inputs):
         raise NotImplementedError('This is an abstract method that must be implemented!')
 
     def initialize(self):

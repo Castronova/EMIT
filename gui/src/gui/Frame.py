@@ -10,8 +10,8 @@ import wx.aui
 from CanvasView import Canvas
 from CanvasLogic import CanvasLogic
 from DirectoryView import DirectoryCtrlView
-import wx.lib.floatcanvas.FloatCanvas as FC
-import wx.lib.floatcanvas.NavCanvas as NC
+#import wx.lib.floatcanvas.FloatCanvas as FC
+#import wx.lib.floatcanvas.NavCanvas as NC
 
 
 # ##########################################################################

@@ -1,18 +1,21 @@
+from images import icons
+
 __author__ = 'Mario'
 
 import wx
 import sys
-import random as rand
+
 sys.path.append("..")
-from wx.lib.floatcanvas import NavCanvas, Resources
+from wx.lib.floatcanvas import Resources
 from wx.lib.floatcanvas import FloatCanvas as FC
 from wx.lib.pubsub import pub as Publisher
+from NavToolbar import NavCanvas
 import os
 import numpy as N
 import textwrap as tw
 
 
-from CanvasLogic import LayoutTree, NodeObject, MovingTextBox, TraverseTree, ConnectorLine, MovingBitmap
+from CanvasLogic import ConnectorLine, MovingBitmap
 
 class TreeNode:
     dx = 15
@@ -28,10 +31,11 @@ class TreeNode:
 
 
 
-class Canvas(NavCanvas.NavCanvas):
+class Canvas(NavCanvas):
 
     def __init__(self, *args, **kwargs):
-        NavCanvas.NavCanvas.__init__(self, *args,**kwargs)
+        NavCanvas.__init__(self, *args,**kwargs)
+
         self.initSubscribers()
         self.models = {}
 
@@ -42,14 +46,6 @@ class Canvas(NavCanvas.NavCanvas):
         self.Moving = False
 
         #self.createLink()
-
-        '''
-        for x in range(100):
-            w = rand.randint(3,1570)
-            h = rand.randint(3,1570)
-            WH = (w/2, h/2)
-            R = self.Canvas.AddRectangle((w, h), WH, LineWidth = 2, FillColor = "BLUE", InForeground = True)
-        '''
 
         self.initBindings()
 

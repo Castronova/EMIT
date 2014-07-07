@@ -4,7 +4,9 @@ import os
 import time
 
 import wx
+
 from images import icons
+
 
 ID_BUTTON = 100
 ID_EXIT = 200

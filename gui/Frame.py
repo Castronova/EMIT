@@ -1,15 +1,13 @@
-from gui.src.gui.DirectoryView import DirectoryCtrlView
-
 __author__ = 'Mario'
 
 import wx
 import wx.xrc
 import wx.aui
 
-
 from CanvasView import Canvas
 from CanvasLogic import CanvasLogic
 from DirectoryView import DirectoryCtrlView
+
 #import wx.lib.floatcanvas.FloatCanvas as FC
 #import wx.lib.floatcanvas.NavCanvas as NC
 
@@ -49,6 +47,7 @@ class MainFrame(wx.Frame):
         self.initAUIManager()
         self.initSystem()
         self.initMenu()
+        self.Bind(wx.EVT_CLOSE, self.onClose)
 
 
     def initSystem(self):
@@ -84,19 +83,27 @@ class MainFrame(wx.Frame):
     def initMenu(self):
         ## Menu stuff
         self.m_statusBar2 = self.CreateStatusBar(1, wx.ST_SIZEGRIP, wx.ID_ANY)
-        self.m_menubar2 = wx.MenuBar(0)
-        self.m_menu3 = wx.Menu()
-        self.m_menubar2.Append(self.m_menu3, u"File")
 
-        self.m_menu4 = wx.Menu()
-        self.m_menubar2.Append(self.m_menu4, u"Tools")
-        self.SetMenuBar(self.m_menubar2)
+        self.m_menubar = wx.MenuBar()
 
-        self.m_menu5 = wx.Menu()
-        self.m_menubar2.Append(self.m_menu5, u"View")
-        self.SetMenuBar(self.m_menubar2)
+        self.m_fileMenu = wx.Menu()
+        #exit = wx.MenuItem(self.m_fileMenu, wx.ID_EXIT, '&Quit\tCtrl+Q')
+        exit = self.m_fileMenu.Append(wx.NewId(), '&Quit\tCtrl+Q', 'Quit application')
+
+        self.m_menubar.Append(self.m_fileMenu, "&File")
+
+        self.m_toolMenu = wx.Menu()
+        self.m_menubar.Append(self.m_toolMenu, "&Tools")
+
+        self.m_viewMenu = wx.Menu()
+        self.m_menubar.Append(self.m_viewMenu, "&View")
+
+        self.SetMenuBar(self.m_menubar)
 
         wx.CallAfter(self._postStart)
+
+        ## Events
+        self.Bind(wx.EVT_MENU, self.onClose, exit)
 
     def _postStart(self):
         ## Starts stuff after program has initiated
@@ -105,14 +112,33 @@ class MainFrame(wx.Frame):
     def __del__(self):
         self.m_mgr.UnInit()
 
+    def onClose(self, event):
+        windowsRemaining = len(wx.GetTopLevelWindows())
+        if windowsRemaining > 0:
+            import wx.lib.agw.aui.framemanager as aui
+            # logger.debug("Windows left to close: %d" % windowsRemaining)
+            for item in wx.GetTopLevelWindows():
+                #logger.debug("Windows %s" % item)
+                if not isinstance(item, self.__class__):
+                    if isinstance(item, aui.AuiFloatingFrame):
+                        item.Destroy()
+                    elif isinstance(item, aui.AuiSingleDockingGuide):
+                        item.Destroy()
+                    elif isinstance(item, aui.AuiDockingHintWindow):
+                        item.Destroy()
+                    elif isinstance(item, wx.Dialog):
+                        item.Destroy()
+                    item.Close()
+        self.Destroy()
+
 
 class SimpleFrame(MainFrame):
     def __init__(self, parent):
         MainFrame.__init__(self, parent)
 
+if __name__ == '__main__':
+    app = wx.App(False)
+    frame = SimpleFrame(None)
+    frame.Show(True)
 
-app = wx.App(False)
-frame = SimpleFrame(None)
-frame.Show(True)
-
-app.MainLoop()
+    app.MainLoop()

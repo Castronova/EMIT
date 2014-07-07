@@ -154,10 +154,6 @@ class DataValues(object):
         if timeseries is not None:
             self.update_start_end_times()
 
-
-
-
-
     def timeseries(self):
         return self.__timeseries
 

@@ -14,9 +14,9 @@ from odm2.api.ODMconnection import dbconnection, SessionFactory
 import odm2.api
 
 from db.api import postgresdb
+import uuid
 
-
-#import shapefile
+import shapefile
 
 class multidict(dict):
     _unique = 0
@@ -458,17 +458,22 @@ def create_database_connections_from_file(ini):
         # create a session
         try:
             session = SessionFactory(connection_string,False).getSession()
-            print '> Connected to : %s'%connection_string
+
+            # save this session in the db_connections object
+            db_id = uuid.uuid4().hex[:5]
+            db_connections[db_id] = {'name':d['name'],
+                                     'session': session,
+                                     'connection_string':connection_string,
+                                     'description':d['desc'],
+                                     'args': d}
+
+            print '> Connected to : %s [%s]'%(connection_string,db_id)
         except Exception, e:
             print e
             session = None
             print 'Could not establish a connection with the database: '+connection_string
 
-        # save this session in the db_connections object
-        db_connections[d['name']] = {'session': session,
-                                     'connection_string':connection_string,
-                                     'description':d['desc'],
-                                     'args': d}
+
 
     return db_connections
 

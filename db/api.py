@@ -12,6 +12,25 @@ from odm2.api.ODM2.Simulation.services import *
 from odm2.api.ODM2.Core.model import *
 
 
+def results_to_dict(cursor):
+
+    datasets = cursor.fetchall()
+    results = []
+    for dataset in datasets:
+        dict = {}
+        desc = cursor.description
+
+        for i in xrange(0,len(desc)):
+            name = desc[i][0]
+            value = dataset[i]
+            if name in dict:
+                dict[name].append(value)
+            else:
+                dict[name] = [value]
+
+        results.append(dict)
+    return results
+
 class postgresdb():
 
     def __init__(self,connectionstring):
@@ -332,6 +351,26 @@ class postgresdb():
                 else:
                     exchangeitems[g].update({to_variableName:dv})
         return exchangeitems
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### OLD ###
 
 
     def insert_result_ts(self):
@@ -683,21 +722,3 @@ class postgresdb():
 
 
 
-def results_to_dict(cursor):
-
-    datasets = cursor.fetchall()
-    results = []
-    for dataset in datasets:
-        dict = {}
-        desc = cursor.description
-
-        for i in xrange(0,len(desc)):
-            name = desc[i][0]
-            value = dataset[i]
-            if name in dict:
-                dict[name].append(value)
-            else:
-                dict[name] = [value]
-
-        results.append(dict)
-    return results

@@ -297,7 +297,6 @@ class Coordinator(object):
                         self.__links[id] = Link(id, f[0], t[0], item, t[1])
                         #f[1] = item
 
-
     def determine_execution_order(self):
         """
         determines the order in which models will be executed.
@@ -435,7 +434,6 @@ class Coordinator(object):
         print '> Simulation duration: %3.2f seconds' % (time.time()-sim_st)
         print '> ------------------------------------------'
 
-
     def get_configuration_details(self,arg):
 
         if len(self.__models.keys()) == 0:
@@ -523,7 +521,7 @@ class Coordinator(object):
         # print database info
         if arg.strip() == 'db' or arg.strip() == 'summary':
 
-            for name,db_dict in self._db.iteritems():
+            for id,db_dict in self._db.iteritems():
 
                 # string to store db output
                 db_output = []
@@ -531,6 +529,7 @@ class Coordinator(object):
                 maxlen = 0
 
                 # get the session args
+                name = db_dict['name']
                 desc = db_dict['description']
                 engine = db_dict['args']['engine']
                 address = db_dict['args']['address']
@@ -539,7 +538,8 @@ class Coordinator(object):
                 db = db_dict['args']['db']
 
 
-                db_output.append('DATABASE : ' + name)
+                db_output.append('DATABASE : ' + id)
+                db_output.append('name: '+name)
                 db_output.append('description: '+desc)
                 db_output.append('engine: '+engine)
                 db_output.append('address: '+address)
@@ -628,12 +628,21 @@ class Coordinator(object):
             # center the text
             return padding*' ' + text
 
-    def set_default_database(self,db_name):
+    def set_default_database(self,db_id=None):
+
+        # set it to the first postgres db
+        if db_id is None:
+            db_id = 'Any PostGreSQL Database'
+            for id,d in self._db.iteritems():
+                if d['args']['engine'] == 'postgresql':
+                    db_id = id
+                    break
+
         try:
-            self.__default_db = self._db[db_name]
-            print '> Default database : %s'%self._db[db_name]['connection_string']
+            self.__default_db = self._db[db_id]
+            print '> Default database : %s'%self._db[db_id]['connection_string']
         except:
-            print '> [error] could not find database: %s'%db_name
+            print '> [error] could not find database: %s'%db_id
 
     def load_simulation(self, simulation_file):
 
@@ -651,6 +660,29 @@ class Coordinator(object):
 
         else: print '> Could not find path %s'%simulation_file
 
+    def show_db_results(self, args):
+
+        # get database id
+        db_id = args[0]
+
+        if db_id not in self._db:
+            print '> [error] could not find database id: %s'%db_id
+            return
+
+
+        # get all result entries
+        from odm2.api.ODM2.Core.services import *
+        self._coreread = readCore(self._db[db_id]['connection_string'])
+
+        results = self._coreread.getAllResult()
+
+        if results:
+            print 'Id   Type     Variable    Unit    ValueCount'
+            for result in results:
+                print '%s    %s   %s  %s  %s '%(result.ResultID, result.ResultTypeCV,result.VariableObj.VariableCode,
+                                         result.UnitObj.UnitsName,result.ValueCount)
+        else:
+            print 'No results found'
 
     def parse_args(self, arg):
 
@@ -691,6 +723,10 @@ class Coordinator(object):
                 if len(arg) == 1: print h.help_function('load')
                 else: self.load_simulation(arg[1:])
 
+            elif arg[0] == 'db':
+                if len(arg) == 1: print h.help_function('db')
+                else: self.show_db_results(arg[1:])
+
 
 
             #todo: show database time series that are available
@@ -720,7 +756,7 @@ def main(argv):
     # TODO: This should be handled by gui
     # connect to databases
     coordinator.connect_to_db(['../data/connections'])
-    coordinator.set_default_database('ODM2 Simulation database')
+    coordinator.set_default_database()
 
     while arg != 'exit':
         # get the users command

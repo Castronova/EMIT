@@ -34,7 +34,7 @@ class DirectoryListCtrl(wx.ListCtrl):
         self.SetColumnWidth(1, 70)
         self.SetColumnWidth(2, 150)
 
-        self.il = wx.ImageList(16, 16)
+        self.il = wx.ImageList(22, 22)
         for i in images:
             self.il.Add(i)
         self.SetImageList(self.il, wx.IMAGE_LIST_SMALL)
@@ -43,7 +43,7 @@ class DirectoryListCtrl(wx.ListCtrl):
     def refreshList(self, files):
         j = 1
         self.InsertStringItem(0, '..')
-        self.SetItemImage(0, 5)
+        #self.SetItemImage(0, 5)
 
         for i in files:
             (name, ext) = os.path.splitext(i)

@@ -1,29 +1,32 @@
-from integration_framework.examples.swmm.bin import parse_swmm as ps
-from integration_framework.wrappers import model_wrapper
-
 __author__ = 'tonycastronova'
+
+
+import parse_swmm as ps
+from wrappers.feed_forward import feed_forward_wrapper
+
+
 
 
 
 import os
 
 
-class swmm_wrapper(model_wrapper.feed_forward_wrapper):
+class swmm_wrapper(feed_forward_wrapper):
 
-    def __init__(self):
-        super(model_wrapper.feed_forward_wrapper,self).__init__()
+    def __init__(self,config_params):
+        super(feed_forward_wrapper,self).__init__(config_params)
 
-    def data_directory(self):
-        """
-        returns the directory of the simulation input/output files
-        """
+        reldatadir = config_params['data'][0]['directory']
+        self.datadir(os.path.join(os.path.dirname(os.path.realpath(__file__)),reldatadir))
 
-        p1 =  os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../../../../model_wrappers/swmm/sim_test')
+    def run(self,inputs):
 
-        return os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                             '../../../../../model_wrappers/swmm/sim_test'))
 
-        #f = open(p2+'/sim.ini','r')
+        
+
+        pass
+
+
 
     def save(self):
         """
@@ -38,13 +41,13 @@ class swmm_wrapper(model_wrapper.feed_forward_wrapper):
 
 
 
-wrapper = swmm_wrapper()
-data = wrapper.data_directory()
-print ps.list(data+'/sim.out')
-print ps.listdetail(data+'/sim.out',type='subcatchment')
-print ps.listvariables(data+'/sim.out')
-
-
-
-#wrapper.save()
-print 'done'
+# wrapper = swmm_wrapper()
+# data = wrapper.data_directory()
+# print ps.list(data+'/sim.out')
+# print ps.listdetail(data+'/sim.out',type='subcatchment')
+# print ps.listvariables(data+'/sim.out')
+#
+#
+#
+# #wrapper.save()
+# print 'done'

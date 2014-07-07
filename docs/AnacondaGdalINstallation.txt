@@ -1,0 +1,7 @@
+Installing Gdal in anaconda:
+
+use the anaconda command promt
+
+C:\Anaconda> conda install gdal
+
+force it if it asks and you can't get the dependant programs to stop.

@@ -13,7 +13,7 @@ class randomizer(feed_forward.feed_forward_wrapper):
         self.__ts = []
 
 
-    def run(self,input_timeseries):
+    def run(self,inputs):
         """
         This is an abstract method that must be implemented.
         :param exchangeitems: list of input exchange items

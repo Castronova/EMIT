@@ -65,11 +65,14 @@ class Canvas(NavCanvas):
         self.Canvas.Unbind(FC.EVT_RIGHT_DCLICK)
 
         self.EventsAreBound = False
+
     def initBindings(self):
         self.Canvas.Bind(FC.EVT_MOTION, self.OnMove )
         self.Canvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp )
         self.Canvas.Bind(FC.EVT_RIGHT_DOWN, self.onRightDown)
         self.Canvas.Bind(FC.EVT_LEFT_DOWN, self.onLeftDown)
+
+
 
     def initSubscribers(self):
         Publisher.subscribe(self.createBox, "createBox")
@@ -77,25 +80,29 @@ class Canvas(NavCanvas):
     def createBox(self, xCoord, yCoord, filepath=None):
 
         if filepath:
-            w, h = 360, 240
+            w, h = 180, 120
             WH = (w/2, h/2)
             x,y = xCoord, yCoord
             FontSize = 14
             filename = os.path.basename(filepath)
 
-            R = self.Canvas.AddRectangle((x,y), WH, LineWidth = 2, FillColor = "BLUE")
+            R = self.Canvas.AddRectangle((x,y), (w,h), LineWidth = 2, FillColor = "BLUE")
             R.HitFill = True
             R.ID = filename
             R.Name = filename
+            R.wh = (w,h)
+            R.xy = (x,y)
             wrappedtext = tw.wrap(unicode(filename), 15)
-            print wrappedtext
+            print wrappedtext, 'R:', dir(R)
             label = self.Canvas.AddText("\n".join(wrappedtext), (x+1, y+h/2),
                                         Color = "White",  Size = FontSize,
                                         Weight=wx.BOLD, Style=wx.ITALIC )
             R.Text = label
-            print dir(label), label
+            #print dir(label), label
             #R.Bind(FC.EVT_FC_LEFT_UP, self.OnLeftUp )
+
             R.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit)
+            #self.Canvas.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit, id=R.ID)
 
             self.models[filename]=R
 
@@ -112,6 +119,7 @@ class Canvas(NavCanvas):
         Line = ConnectorLine(Bitmaps[0], Bitmaps[1], LineWidth=3, LineColor="Red")
         self.Canvas.AddObject(Line)
 
+
     def onLeftDown(self, event):
         print event.GetPosition(),
        # dxy = event.GetPosition() - self.StartPoint
@@ -119,6 +127,7 @@ class Canvas(NavCanvas):
         print dxy
 
     def ObjectHit(self, object):
+        print "Hit Object", object.Name
         if not self.Moving:
             self.Moving = True
             self.StartPoint = object.HitCoordsPixel
@@ -153,6 +162,8 @@ class Canvas(NavCanvas):
                 (x,y) = self.Canvas.ScalePixelToWorld(dxy)
                 self.MovingObject.Move((x,y))
                 self.MovingObject.Text.Move((x, y))
+
+
             self.Canvas.Draw(True)
 
     def onRightDown(self, event):
@@ -175,6 +186,17 @@ class MyFrame2(wx.Frame):
                           BackgroundColor = "White",
                           )
         '''
+class ClearCanvas(NavCanvas):
+    def __init__(self):
+        def __init__(self, *args, **kwargs):
+            NavCanvas.__init__(self, *args,**kwargs)
+
+            self.onRightDown()
+
+    def onRightDown(self, event):
+        print "Right Click"
+        self.Canvas.ClearAll()
+        self.Canvas.Draw()
 
 class Link:
     def __init__(self):

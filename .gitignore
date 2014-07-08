@@ -53,3 +53,7 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
+tests/data/sample gis/sample_points_nad83.shp.ed.lock
+tests/data/sample gis/sample_points_nad83.shp.WIN-BJU8D315IVD.3904.1000.sr.lock
+tests/data/sample gis/sample_poly_nad83.shp.ed.lock
+tests/data/sample gis/sample_poly_nad83.shp.WIN-BJU8D315IVD.3904.1000.sr.lock

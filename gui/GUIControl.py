@@ -221,6 +221,9 @@ class GUIMove(ZoomWithMouseWheel, GUIBase):
     def OnMove(self, event):
         # Always raise the Move event.
         self.Canvas._RaiseMouseEvent(event, FloatCanvas.EVT_FC_MOTION)
+
+
+
         if event.Dragging() and event.LeftIsDown() and not self.StartMove is None:
             self.EndMove = N.array(event.GetPosition())
             self.MoveImage(event)
@@ -440,19 +443,19 @@ class GUILink(GUIBase):
         print "creating link", R1, R2
         x1,y1  = (R1.BoundingBox[0] + (R1.wh[0]/2, R1.wh[1]/2))
         x2,y2  = (R2.BoundingBox[0] + (R2.wh[0]/2, R2.wh[1]/2))
+        #length = (((x2 - x1)**2)+(y2 - y1)**2)**.5
+        #dy = abs(y2 - y1)
+        #dx = abs(x2 - x1)
+        #angle = math.atan2(dx,dy) *180/math.pi
+
         length = (((x2 - x1)**2)+(y2 - y1)**2)**.5
-        dy = abs(y2 - y1)
-        dx = abs(x2 - x1)
-        angle = math.atan(dx/dy) *180/math.pi
+        dy = (y2 - y1)
+        dx = (x2 - x1)
+        angle = 90- math.atan2(dy,dx) *180/math.pi
 
-        print x1, y1
-        print x2, y2
-        #print length
-        print dx, dy
-        print angle
+        print 'angle: ',angle
 
-        #angle = 90
-        #length = dx
+
         self.Canvas.AddArrow((x1,y1), length, angle ,LineWidth = 5, LineColor = "Black", ArrowHeadAngle = 50)
         self.Canvas.Draw()
 

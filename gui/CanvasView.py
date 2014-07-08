@@ -121,10 +121,11 @@ class Canvas(NavCanvas):
 
 
     def onLeftDown(self, event):
-        print event.GetPosition(),
+        #print event.GetPosition(),
        # dxy = event.GetPosition() - self.StartPoint
         dxy = self.Canvas.PixelToWorld(event.GetPosition())
         print dxy
+
 
     def ObjectHit(self, object):
         print "Hit Object", object.Name

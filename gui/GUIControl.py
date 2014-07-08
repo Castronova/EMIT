@@ -392,13 +392,16 @@ class GUILink(GUIBase):
 
     Cursor = wx.CROSS_CURSOR
 
-class GUIDelete(GUIBase):
+class GUIDelete(GUIBase, FloatCanvas):
     '''
-    def __init__(self):
-        GUIBase.__init__(self)
-        self.clearcanvas()
+    def __init__(self, Canvas=None):
+        GUIBase.__init__(self, Canvas)
+        Canvas=FloatCanvas
+        self.Clear()
 
-    def clearcanvas(self):
-        self.canvas.ClearAll
+    def Clear(self, event=None):
+
+        self.FloatCanvas.ClearAll()
+        self.Canvas.Draw()
     '''
     pass

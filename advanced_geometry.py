@@ -46,7 +46,7 @@ class GriddedGeometry(object):
                 lat_row.append(geom_list[i].geom().y)
 
                 d,v = geom_list[i].datavalues().get_dates_values()
-                val_row.append(v)
+                val_row.append(list(v))
 
                 i += 1
 
@@ -57,13 +57,18 @@ class GriddedGeometry(object):
             values.append(val_row)
 
 
-        z = zip(values)
+        # arrange data by timeslices
+        tmp = [map(list,zip(*values[i])) for i in range(0,len(values))]
+        a = np.zeros((len(tmp[0]),len(tmp),len(tmp[0][0])))
 
-        self.__gridded_values = np.array(values)
+        for i in range(0,len(a[0][0])):
+            for j in range(0, len(a)):
+                a[j][i] = tmp[i][j]
 
-        self.__gridded_values = np.array(z)
+        self.__gridded_values = a
 
-        return np.array(z)
+
+        return self.__gridded_values
 
 
     def get_time_slice(self,datetime):
@@ -75,7 +80,7 @@ class GriddedGeometry(object):
 
         i = self.get_nearest_time(datetime)
 
-        return self.__gridded_values[:][:][i]
+        return self.__gridded_values[i]
 
 
     def add_point(self,x,y):

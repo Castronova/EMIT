@@ -17,12 +17,13 @@ class testGeometry(unittest.TestCase):
 
     def test_point_grid(self):
 
+        import random
 
         # generate point geometries
         pt_geoms = []
-        v = [(datetime.datetime(2014,1,1,12,0,0) + datetime.timedelta(days=i), i) for i in range(0,3)]
         for x in range(0,3):
             for y in range(0,3):
+                v = [(datetime.datetime(2014,1,1,12,0,0) + datetime.timedelta(days=i), i) for i in range(0,365)]
                 g = 'POINT (%d %d)' % (x,y)
                 dv = DataValues(v)
                 geom = Geometry()

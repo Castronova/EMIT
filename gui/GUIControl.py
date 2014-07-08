@@ -392,7 +392,7 @@ class GUILink(GUIBase):
 
     Cursor = wx.CROSS_CURSOR
 
-class GUIDelete(GUIBase, FloatCanvas):
+class GUIDelete(GUIBase):
     '''
     def __init__(self, Canvas=None):
         GUIBase.__init__(self, Canvas)

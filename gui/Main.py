@@ -1,5 +1,7 @@
 __author__ = 'Mario'
 
+import os
+
 import wx
 import wx.xrc
 import wx.aui
@@ -7,6 +9,8 @@ import wx.aui
 from CanvasView import Canvas
 from CanvasLogic import CanvasLogic
 from DirectoryView import DirectoryCtrlView
+
+import coordinator.main as cmd
 
 #import wx.lib.floatcanvas.FloatCanvas as FC
 #import wx.lib.floatcanvas.NavCanvas as NC
@@ -35,9 +39,29 @@ class FileDrop(wx.FileDropTarget):
         #x, y = self.window.Canvas.WorldToPixel((nx,ny))
         #print x,y
         #x = y = 0
-        self.window.createBox(filepath=filenames.pop(), xCoord=x, yCoord=y)
-        self.window.Canvas.Draw()
 
+
+        # make sure the correct file type was dragged
+        name, ext = os.path.splitext(filenames[0])
+        if ext == '.mdl' or ext =='.sim':
+
+            try:
+                # load the model (returns id)
+                modelid = coordinator.add_model(filenames[0])
+
+                # get the model instance
+                model = coordinator.get_model_by_id(modelid)
+
+                # get the name of the model
+                name = model.get_name()
+
+                self.window.createBox(name=name, id=modelid, xCoord=x, yCoord=y)
+                self.window.Canvas.Draw()
+            except:
+                print 'Could not load the model :( %s'%filenames[0]
+
+        else:
+            print 'I do not recognize this file type :('
 
 class MainFrame(wx.Frame):
     def __init__(self, parent):
@@ -162,6 +186,10 @@ class SimpleFrame(MainFrame):
         MainFrame.__init__(self, parent)
 
 if __name__ == '__main__':
+
+    # create and instance of the coordinator engine
+    coordinator = cmd.Coordinator()
+
     app = wx.App(False)
     frame = SimpleFrame(None)
     frame.Show(True)

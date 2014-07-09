@@ -77,22 +77,22 @@ class Canvas(NavCanvas):
     def initSubscribers(self):
         Publisher.subscribe(self.createBox, "createBox")
 
-    def createBox(self, xCoord, yCoord, filepath=None):
+    def createBox(self, xCoord, yCoord, id=None, name=None):
 
-        if filepath:
+        if name:
             w, h = 180, 120
             WH = (w/2, h/2)
             x,y = xCoord, yCoord
             FontSize = 14
-            filename = os.path.basename(filepath)
+            #filename = os.path.basename(filepath)
 
             R = self.Canvas.AddRectangle((x,y), (w,h), LineWidth = 2, FillColor = "BLUE")
             R.HitFill = True
-            R.ID = filename
-            R.Name = filename
+            R.ID = id
+            R.Name = name
             R.wh = (w,h)
             R.xy = (x,y)
-            wrappedtext = tw.wrap(unicode(filename), 15)
+            wrappedtext = tw.wrap(unicode(name), 15)
             print wrappedtext, 'R:', dir(R)
             label = self.Canvas.AddText("\n".join(wrappedtext), (x+1, y+h/2),
                                         Color = "White",  Size = FontSize,
@@ -104,7 +104,7 @@ class Canvas(NavCanvas):
             R.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit)
             #self.Canvas.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit, id=R.ID)
 
-            self.models[filename]=R
+            self.models[id]=R
 
             self.Canvas.Draw()
 

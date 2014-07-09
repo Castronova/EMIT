@@ -21,7 +21,19 @@ class DirectoryListCtrl(wx.ListCtrl):
         self.home = os.path.abspath("C:\\")
 
 
-        images = [icons.folder_documents.GetBitmap(), icons.folder.GetBitmap(), icons.earth.GetBitmap(),
+        #e = icons.earth
+
+        '''
+        wxImage image = bmp.ConvertToImage();
+        bmp = wxBitmap(image.Scale(32, 32));
+        // another possibility:
+        image.Rescale(32, 32);
+        bmp = image;
+        '''
+
+        images = [icons.folder_documents.GetBitmap(),
+                  icons.folder.GetBitmap(),
+                  icons.earth.GetBitmap(),
                   icons.GearSim.GetBitmap()]
         # # , 'images/source_py.png', 'images/image.png', 'images/pdf.png', 'images/up16.png'
 
@@ -36,7 +48,14 @@ class DirectoryListCtrl(wx.ListCtrl):
         self.SetColumnWidth(2, 150)
 
         self.il = wx.ImageList(22, 22)
+        #self.il = wx.ImageList(256, 256)
         for i in images:
+            if i.GetSize()[0] > 22 or i.GetSize()[1] < 22:
+                # need to resize
+                image = wx.ImageFromBitmap(i)
+                rescaled = image.Rescale(22,22)
+                i = wx.BitmapFromImage(image)
+
             self.il.Add(i)
         self.SetImageList(self.il, wx.IMAGE_LIST_SMALL)
         self.refreshList(files)

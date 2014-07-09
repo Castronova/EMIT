@@ -42,7 +42,8 @@ class FileDrop(wx.FileDropTarget):
 class MainFrame(wx.Frame):
     def __init__(self, parent):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title="", pos=wx.DefaultPosition,
-                          size=wx.Size(1500, 600), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
+                          size=wx.Size(1500, 650), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
+
 
         self.initAUIManager()
         self.initSystem()
@@ -60,11 +61,26 @@ class MainFrame(wx.Frame):
         self.m_mgr = wx.aui.AuiManager()
         self.m_mgr.SetManagedWindow(self.pnlDocking)
         self.m_mgr.SetFlags(wx.aui.AUI_MGR_DEFAULT)
-
+        '''
         self.m_directoryCtrl = DirectoryCtrlView(self.pnlDocking)
         self.m_mgr.AddPane(self.m_directoryCtrl,
                            wx.aui.AuiPaneInfo().Left().CloseButton(False).MaximizeButton(True).MinimizeButton(
                                True).PinButton(True).Resizable().MinSize(wx.Size(375,500)).Floatable())
+        '''
+        self.nb = wx.Notebook(self.pnlDocking)
+        self.m_mgr.AddPane(self.nb,
+                   wx.aui.AuiPaneInfo().Left().CloseButton(False).MaximizeButton(True).MinimizeButton(
+                       True).PinButton(True).Resizable().MinSize(wx.Size(375,500)).Floatable())
+
+        #p = wx.Panel(self)
+        page1 = DirectoryCtrlView(self.nb)
+        page2 = PageTwo(self.nb)
+        page3 = PageThree(self.nb)
+
+        self.nb.AddPage(page1, "Directory")
+        self.nb.AddPage(page2, "Model View")
+        self.nb.AddPage(page3, "Page 3")
+
 
         self.canvas = Canvas(parent=self.pnlDocking, ProjectionFun=None, Debug=0, BackgroundColor="White", )
         self.m_mgr.AddPane(self.canvas,
@@ -131,6 +147,15 @@ class MainFrame(wx.Frame):
                     item.Close()
         self.Destroy()
 
+class PageTwo(wx.Panel):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+        t = wx.StaticText(self, -1, "This is a PageTwo object", (40,40))
+
+class PageThree(wx.Panel):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+        t = wx.StaticText(self, -1, "This is a PageThree object", (60,60))
 
 class SimpleFrame(MainFrame):
     def __init__(self, parent):

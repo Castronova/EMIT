@@ -1,6 +1,6 @@
 __author__ = 'Mario'
 
-from ..Frame import SimpleFrame
+from ..Main import SimpleFrame
 import wx
 class TestFrame():
 

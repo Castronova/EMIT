@@ -11,6 +11,7 @@ from CanvasLogic import CanvasLogic
 from DirectoryView import DirectoryCtrlView
 
 import coordinator.main as cmd
+import random
 
 #import wx.lib.floatcanvas.FloatCanvas as FC
 #import wx.lib.floatcanvas.NavCanvas as NC
@@ -45,20 +46,32 @@ class FileDrop(wx.FileDropTarget):
         name, ext = os.path.splitext(filenames[0])
         if ext == '.mdl' or ext =='.sim':
 
+            models = None
             try:
-                # load the model (returns id)
-                modelid = coordinator.add_model(filenames[0])
+                if ext == '.mdl':
+                    # load the model (returns model instance
+                    models = [coordinator.add_model(filenames[0])]
 
-                # get the model instance
-                model = coordinator.get_model_by_id(modelid)
+                else:
+                    # load the simulation
+                    models, links = coordinator.load_simulation(filenames[0])
 
-                # get the name of the model
-                name = model.get_name()
+                # draw boxes for each model
+                offset = 0
+                for model in list(models):
+                    # get the name and id of the model
+                    name = model.get_name()
+                    modelid = model.get_id()
 
-                self.window.createBox(name=name, id=modelid, xCoord=x, yCoord=y)
-                self.window.Canvas.Draw()
-            except:
-                print 'Could not load the model :( %s'%filenames[0]
+                    newx = random.randrange(-1,2)*offset + x
+                    newy = random.randrange(-1,2)*offset + y
+
+                    self.window.createBox(name=name, id=modelid, xCoord=newx, yCoord=newy)
+                    self.window.Canvas.Draw()
+                    offset+=200
+            except Exception, e:
+                print 'Could not load the model :(. Hopefully this exception helps...'
+                print e
 
         else:
             print 'I do not recognize this file type :('

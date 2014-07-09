@@ -159,7 +159,7 @@ class Coordinator(object):
             self.__models[name] = thisModel
 
             # return the model id
-            return id
+            return thisModel
 
     def remove_model(self,linkablecomponent):
         """
@@ -646,7 +646,10 @@ class Coordinator(object):
 
     def load_simulation(self, simulation_file):
 
-        abspath = os.path.abspath(os.path.join(os.getcwd(),simulation_file[0]))
+        if simulation_file is list:
+            abspath = os.path.abspath(os.path.join(os.getcwd(),simulation_file[0]))
+        else:
+            abspath = os.path.abspath(os.path.join(os.getcwd(),simulation_file))
 
         if os.path.isfile(abspath):
             with open(abspath,'r') as f:
@@ -657,6 +660,9 @@ class Coordinator(object):
                         if command[0] != '#':
                             print '> %s'%command
                             self.parse_args(command.split(' '))
+
+            # return the models and links created
+            return self.__models.values(), self.__links.values()
 
         else: print '> Could not find path %s'%simulation_file
 

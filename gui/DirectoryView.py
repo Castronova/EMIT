@@ -119,10 +119,11 @@ class DirectoryCtrlView(wx.Panel):
 
     ## Tool bar events
     def OnHomeClick(self, event):
+
         currentdir = os.path.dirname(os.path.realpath(__file__))
         home = os.path.join(currentdir,'../tests/data')
         dirpath = os.path.abspath(home)
-        #dirpath = os.path.abspath("C:\\")
+
         try:
             self.directoryStack.append(os.getcwd())
             os.chdir(dirpath)
@@ -133,6 +134,7 @@ class DirectoryCtrlView(wx.Panel):
 
     def OnUpClick(self, event):
         self.directoryStack.append(os.getcwd())
+        parent = os.pardir
         os.chdir(os.pardir)
         self.dirCtrl.clearItems()
 

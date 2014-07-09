@@ -7,6 +7,8 @@ import wx
 
 from images import icons
 
+import glob
+
 
 ID_BUTTON = 100
 ID_EXIT = 200
@@ -17,19 +19,16 @@ class DirectoryListCtrl(wx.ListCtrl):
     def __init__(self, parent, id, pos, size, style):
         wx.ListCtrl.__init__(self, parent=parent, id=id, size=size, pos=pos, style=style)
 
-        files = os.listdir('.')
-        self.home = os.path.abspath("C:\\")
+        currentdir = os.path.dirname(os.path.realpath(__file__))
+        home = os.path.join(currentdir,'../tests/data')
+        dirpath = os.path.abspath(home)
+        self.home = dirpath
 
-
-        #e = icons.earth
-
-        '''
-        wxImage image = bmp.ConvertToImage();
-        bmp = wxBitmap(image.Scale(32, 32));
-        // another possibility:
-        image.Rescale(32, 32);
-        bmp = image;
-        '''
+        files = os.listdir(dirpath)
+        # types = (dirpath+'/*.mdl',dirpath+'/*.sim')
+        # files = []
+        # for f in types:
+        #     files.extend(glob.glob(f))
 
         images = [icons.folder_documents.GetBitmap(),
                   icons.folder.GetBitmap(),
@@ -58,19 +57,40 @@ class DirectoryListCtrl(wx.ListCtrl):
 
             self.il.Add(i)
         self.SetImageList(self.il, wx.IMAGE_LIST_SMALL)
-        self.refreshList(files)
+        self.refreshList(self.home)
 
-    def refreshList(self, files):
+    def refreshList(self,cwd):
+
+        print cwd
+
         j = 1
         self.InsertStringItem(0, '..')
         #self.SetItemImage(0, 5)
 
-        for i in files:
+        types = (cwd+'/*.mdl',cwd+'/*.sim')
+        filtered_files = []
+        for files in types:
+            filtered_files.extend(glob.glob(files))
+
+
+        # get directories
+        #directories = [x[0] for x in os.walk(cwd)]
+        directories = [ name for name in os.listdir(cwd) if os.path.isdir(os.path.join(cwd, name)) ]
+
+        for directory in sorted(directories):
+            size = ''
+            sec = ''
+            self.InsertStringItem(j, os.path.basename(directory))
+            #self.SetStringItem(j, 1, str(size) + ' B')
+            #self.SetStringItem(j, 2, time.strftime('%Y-%m-%d %H:%M', time.localtime(sec)))
+            self.SetItemImage(j, 1)
+
+        for i in filtered_files:
             (name, ext) = os.path.splitext(i)
             #ex = ext[1:]
             size = os.path.getsize(i)
             sec = os.path.getmtime(i)
-            self.InsertStringItem(j, i)
+            self.InsertStringItem(j, os.path.basename(i))
             #self.SetStringItem(j, 1, ex)
             self.SetStringItem(j, 1, str(size) + ' B')
             self.SetStringItem(j, 2, time.strftime('%Y-%m-%d %H:%M', time.localtime(sec)))
@@ -96,5 +116,5 @@ class DirectoryListCtrl(wx.ListCtrl):
 
     def clearItems(self):
         self.DeleteAllItems()
-        self.refreshList(os.listdir('.'))
-        self.selectedFiles = os.listdir('.')
+        self.refreshList(os.getcwd())
+        self.selectedFiles = os.listdir(os.getcwd())

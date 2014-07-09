@@ -104,7 +104,7 @@ class DirectoryCtrlView(wx.Panel):
             try:
                 self.directoryStack.append(os.getcwd())
                 os.chdir(dirpath)
-            except WindowsError as e:
+            except Exception, e:
                 self.directoryStack.append(os.getcwd())
                 os.chdir('..')
                 print "WindowsError! ", e
@@ -119,7 +119,10 @@ class DirectoryCtrlView(wx.Panel):
 
     ## Tool bar events
     def OnHomeClick(self, event):
-        dirpath = os.path.abspath("C:\\")
+        currentdir = os.path.dirname(os.path.realpath(__file__))
+        home = os.path.join(currentdir,'../tests/data')
+        dirpath = os.path.abspath(home)
+        #dirpath = os.path.abspath("C:\\")
         try:
             self.directoryStack.append(os.getcwd())
             os.chdir(dirpath)

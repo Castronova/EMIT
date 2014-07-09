@@ -79,7 +79,7 @@ class MainFrame(wx.Frame):
 
         self.nb.AddPage(page1, "Directory")
         self.nb.AddPage(page2, "Model View")
-        self.nb.AddPage(page3, "Page 3")
+        self.nb.AddPage(page3, "Link View")
 
 
         self.canvas = Canvas(parent=self.pnlDocking, ProjectionFun=None, Debug=0, BackgroundColor="White", )

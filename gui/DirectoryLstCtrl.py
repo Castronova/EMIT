@@ -21,7 +21,8 @@ class DirectoryListCtrl(wx.ListCtrl):
         self.home = os.path.abspath("C:\\")
 
 
-        images = [icons.folder_documents.GetBitmap(), icons.folder.GetBitmap()]
+        images = [icons.folder_documents.GetBitmap(), icons.folder.GetBitmap(), icons.earth.GetBitmap(),
+                  icons.GearSim.GetBitmap()]
         # # , 'images/source_py.png', 'images/image.png', 'images/pdf.png', 'images/up16.png'
 
         self.InsertColumn(0, 'Name')
@@ -57,16 +58,18 @@ class DirectoryListCtrl(wx.ListCtrl):
 
             if os.path.isdir(i):
                 self.SetItemImage(j, 1)
+
+            elif ext == '.mdl':
+                self.SetItemImage(j, 2)
+
+            elif ext == '.sim':
+                self.SetItemImage(j, 3)
+
+            elif ext == '.py':
+                self.SetItemImage(j, 3)
+
             else:
                 self.SetItemImage(j, 0)
-            '''
-            elif ex == 'py':
-                self.SetItemImage(j, 2)
-            elif ex == 'jpg':
-                self.SetItemImage(j, 3)
-            elif ex == 'pdf':
-                self.SetItemImage(j, 4)
-            '''
 
             if (j % 2) == 0:
                 self.SetItemBackgroundColour(j, '#e6f1f5')

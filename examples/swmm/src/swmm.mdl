@@ -21,8 +21,8 @@ value = 5
 variable_name_cv = Hydraulic_head
 unit_type_cv = meter
 
-[options]
-ignorecv = 1
-
 [data]
 directory = ../data
+
+[options]
+ignorecv = 1

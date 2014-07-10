@@ -236,117 +236,121 @@ class SwmmExtract():
         value = struct.unpack('f', self.fp.read(self.RECORDSIZE))[0]
         return (date, value)
 
-def list(filename, type=''):
-    ''' List objects in output file
-    :param filename: Filename of SWMM output file.
-    '''
-    res = []
-    obj = SwmmExtract(filename)
-    if type:
+class Parse():
+    def __init__(self):
+        pass
+
+    def list(filename, type=''):
+        ''' List objects in output file
+        :param filename: Filename of SWMM output file.
+        '''
+        res = []
+        obj = SwmmExtract(filename)
+        if type:
+            typenumber = obj.TypeCheck(type)
+            plist = [typenumber]
+        else:
+            plist = range(len(obj.itemlist))
+        #print('TYPE, NAME')
+        for i in plist:
+            for oname in obj.names[i]:
+                res.append('{0},{1}'.format(obj.itemlist[i],oname))
+        return res
+
+    def listdetail(filename, type, name=''):
+        ''' List nodes and metadata in output file
+        :param filename: Filename of SWMM output file.
+        :param type: Type to print out the table of (subcatchment, node, or link)
+        :param name: Optional specfic name to print only that entry.
+        '''
+        res = []
+        obj = SwmmExtract(filename)
         typenumber = obj.TypeCheck(type)
-        plist = [typenumber]
-    else:
-        plist = range(len(obj.itemlist))
-    #print('TYPE, NAME')
-    for i in plist:
-        for oname in obj.names[i]:
-            res.append('{0},{1}'.format(obj.itemlist[i],oname))
-    return res
+        if name:
+            objectlist = [obj.NameCheck(type, name)[0]]
+        else:
+            objectlist = obj.names[typenumber]
+        propnumbers = obj.propcode[typenumber]
+        headstr = ['#Name'] + [PROPCODE[typenumber][i] for i in propnumbers]
+        headfmtstr = '{0:<25},{1:<8},' + ','.join(
+                ['{'+str(i)+':>10}' for i in range(2,1+len(propnumbers))])
+        #print(headfmtstr.format(*tuple(headstr)))
+        fmtstr = '{0:<25},{1:<8},' + ','.join(
+                ['{'+str(i)+':10.2f}' for i in range(2,1+len(propnumbers))])
+        for i,oname in enumerate(objectlist):
+            #printvar = [oname]
+            d = {}
+            d['Name'] = oname
+            for j in obj.prop[typenumber][i]:
+                if j[0] == 0:
+                    d[PROPCODE[typenumber][j[0]]] = TYPECODE[typenumber][j[1]]
+                    #printvar.append(TYPECODE[typenumber][j[1]])
+                else:
+                    d[PROPCODE[typenumber][j[0]]] = j[1]
+                    #printvar.append(j[1])
+            #print(fmtstr.format(*tuple(printvar)))
+            res.append(d)
+        return res
 
-def listdetail(filename, type, name=''):
-    ''' List nodes and metadata in output file
-    :param filename: Filename of SWMM output file.
-    :param type: Type to print out the table of (subcatchment, node, or link)
-    :param name: Optional specfic name to print only that entry.
-    '''
-    res = []
-    obj = SwmmExtract(filename)
-    typenumber = obj.TypeCheck(type)
-    if name:
-        objectlist = [obj.NameCheck(type, name)[0]]
-    else:
-        objectlist = obj.names[typenumber]
-    propnumbers = obj.propcode[typenumber]
-    headstr = ['#Name'] + [PROPCODE[typenumber][i] for i in propnumbers]
-    headfmtstr = '{0:<25},{1:<8},' + ','.join(
-            ['{'+str(i)+':>10}' for i in range(2,1+len(propnumbers))])
-    #print(headfmtstr.format(*tuple(headstr)))
-    fmtstr = '{0:<25},{1:<8},' + ','.join(
-            ['{'+str(i)+':10.2f}' for i in range(2,1+len(propnumbers))])
-    for i,oname in enumerate(objectlist):
-        #printvar = [oname]
-        d = {}
-        d['Name'] = oname
-        for j in obj.prop[typenumber][i]:
-            if j[0] == 0:
-                d[PROPCODE[typenumber][j[0]]] = TYPECODE[typenumber][j[1]]
-                #printvar.append(TYPECODE[typenumber][j[1]])
-            else:
-                d[PROPCODE[typenumber][j[0]]] = j[1]
-                #printvar.append(j[1])
-        #print(fmtstr.format(*tuple(printvar)))
-        res.append(d)
-    return res
+    def listvariables(filename):
+        ''' List variables available for each type
+        :param filename: Filename of SWMM output file.
+        :param type: Type to print out the table of (subcatchment, node, link, pollutant, system)
+        '''
+        res = {}
+        obj = SwmmExtract(filename)
+        for type in ['subcatchment', 'node', 'link', 'pollutant', 'system']:
+            typenumber = obj.TypeCheck(type)
+            for i in obj.vars[typenumber]:
+                #print(type + ':' + VARCODE[typenumber][i]+','+ i)
+                res[type + ':' + VARCODE[typenumber][i]] = i
 
-def listvariables(filename):
-    ''' List variables available for each type
-    :param filename: Filename of SWMM output file.
-    :param type: Type to print out the table of (subcatchment, node, link, pollutant, system)
-    '''
-    res = {}
-    obj = SwmmExtract(filename)
-    for type in ['subcatchment', 'node', 'link', 'pollutant', 'system']:
-        typenumber = obj.TypeCheck(type)
-        for i in obj.vars[typenumber]:
-            #print(type + ':' + VARCODE[typenumber][i]+','+ i)
-            res[type + ':' + VARCODE[typenumber][i]] = i
+                #print('{0},{1},{2}'.format(type, VARCODE[typenumber][i], i))
+        return res
 
-            #print('{0},{1},{2}'.format(type, VARCODE[typenumber][i], i))
-    return res
+    def getdata(filename, labels):
+        ''' Get the time series data for a particular object and variable
+        :param filename: Filename of SWMM output file.
+        :param labels: The remaining arguments uniquely identify a time-series
+            in the binary file.  The format is
+            'TYPE,NAME,VARINDEX'.
+            For example: 'node,C64,1 node,C63,1 ...'
+            TYPE and NAME can be retrieved with
+                'swmmtoolbox list filename.out'
+            VARINDEX can be retrieved with
+                'swmmtoolbox listvariables filename.out'
+        '''
+        obj = SwmmExtract(filename)
+        ts = {}
+        for label in labels:
+            type, name, variableindex = label.split(',')
+            typenumber = obj.TypeCheck(type)
+            if type != 'system':
+                name = obj.NameCheck(type, name)[0]
+            begindate = datetime.datetime(1899,12,30)
 
-def getdata(filename, labels):
-    ''' Get the time series data for a particular object and variable
-    :param filename: Filename of SWMM output file.
-    :param labels: The remaining arguments uniquely identify a time-series
-        in the binary file.  The format is
-        'TYPE,NAME,VARINDEX'.
-        For example: 'node,C64,1 node,C63,1 ...'
-        TYPE and NAME can be retrieved with
-            'swmmtoolbox list filename.out'
-        VARINDEX can be retrieved with
-            'swmmtoolbox listvariables filename.out'
-    '''
-    obj = SwmmExtract(filename)
-    ts = {}
-    for label in labels:
-        type, name, variableindex = label.split(',')
-        typenumber = obj.TypeCheck(type)
-        if type != 'system':
-            name = obj.NameCheck(type, name)[0]
-        begindate = datetime.datetime(1899,12,30)
+            dates = []
+            values = []
 
-        dates = []
-        values = []
-        
-        
-        for time in range(obj.nperiods):
-            date, value = obj.GetSwmmResults(typenumber, name, int(variableindex), time)
-            days = int(date)
-            seconds = (date - days)*86400
-            date = begindate + datetime.timedelta(days = days, seconds = seconds)
-            
-            if name in ts:
-                ts[name].append((date,value))
-            else:
-                ts[name] = [(date,value)]
-                
-        #    dates.append(date)
-        #    values.append(value)
-        #jtsd = pd.DataFrame(pd.Series(values, index=dates),
-        #        columns=['{0}_{1}_{2}'.format(type,name,VARCODE[typenumber][int(variableindex)])])
-        #try:
-        #    result = result.join(jtsd)
-        #except NameError:
-        #    result = jtsd
-    #tsutils.printiso(result)
-    return ts
+
+            for time in range(obj.nperiods):
+                date, value = obj.GetSwmmResults(typenumber, name, int(variableindex), time)
+                days = int(date)
+                seconds = (date - days)*86400
+                date = begindate + datetime.timedelta(days = days, seconds = seconds)
+
+                if name in ts:
+                    ts[name].append((date,value))
+                else:
+                    ts[name] = [(date,value)]
+
+            #    dates.append(date)
+            #    values.append(value)
+            #jtsd = pd.DataFrame(pd.Series(values, index=dates),
+            #        columns=['{0}_{1}_{2}'.format(type,name,VARCODE[typenumber][int(variableindex)])])
+            #try:
+            #    result = result.join(jtsd)
+            #except NameError:
+            #    result = jtsd
+        #tsutils.printiso(result)
+        return ts

@@ -1,6 +1,7 @@
 __author__ = 'tonycastronova'
 
 import os
+import sys
 import ConfigParser
 import datetime
 import cPickle as pickle
@@ -28,6 +29,7 @@ class multidict(dict):
         dict.__setitem__(self, key, val)
 
 class ini_types():
+    # todo: add the ability to extend these types via inputfile
     name = 'str'
     description = 'str'
     value = 'int'
@@ -42,6 +44,8 @@ class ini_types():
     ignorecv = 'str'
     code = 'str'
     description = 'str'
+    generic_string = 'str'
+    directory = 'str'
 
 def validate_config_ini(ini_path):
 
@@ -99,7 +103,7 @@ def validate_config_ini(ini_path):
                 else:
                     # validate data type
                     if not isinstance(val,type(getattr(ini_types, option))):
-                        raise Exception(option+' is not of type '+getattr(ini_types, option))
+                            raise Exception(option+' is not of type '+getattr(ini_types, option))
 
                     if not ignorecv:
                         # check variable cv (i.e. lookup table)
@@ -118,6 +122,10 @@ def validate_config_ini(ini_path):
                 relpath = cparser.get(section,'filepath')
                 basedir = os.path.realpath(os.path.dirname(ini_path))
                 abspath = os.path.abspath(os.path.join(basedir,relpath))
+
+                # add the base path to the sys.path
+                sys.path.append(basedir)
+
                 if not os.path.isfile(abspath):
                     raise Exception(abspath+' is not a valid file')
 

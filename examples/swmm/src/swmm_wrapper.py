@@ -1,11 +1,13 @@
 __author__ = 'tonycastronova'
 
+import sys
 from os.path import *
+
 import subprocess
 
 from shapely.geometry import *
 from stdlib import Geometry, DataValues
-import parse_swmm as ps
+from parse_swmm import Parse as ps
 from wrappers.feed_forward import feed_forward_wrapper
 
 import re

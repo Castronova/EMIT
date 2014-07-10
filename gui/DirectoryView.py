@@ -43,6 +43,7 @@ class DirectoryCtrlView(wx.Panel):
         self.dirCtrl = DirectoryListCtrl(self, wx.ID_ANY, wx.DefaultPosition, wx.Size(1000, 400), wx.LC_REPORT)
         listCtrlSizer.Add(self.dirCtrl, 0, wx.ALL, 5)
 
+        self.directoryStack.append(self.dirCtrl.gethomepath())
         bSizer4 = wx.BoxSizer(wx.VERTICAL)
 
         self.sb = wx.TextCtrl(self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size(600, -1),
@@ -90,7 +91,8 @@ class DirectoryCtrlView(wx.Panel):
         self.Close(True)
 
     def OnClick(self, event):
-        path = os.path.join(os.getcwd(), event.GetText())
+        dirpath = self.dirCtrl.getcurrentdirectory()
+        path = os.path.join(dirpath, event.GetText())
         print path
         self.sb.SetValue(path)
 
@@ -119,13 +121,13 @@ class DirectoryCtrlView(wx.Panel):
 
     ## Tool bar events
     def OnHomeClick(self, event):
-
-        currentdir = os.path.dirname(os.path.realpath(__file__))
-        home = os.path.join(currentdir,'../tests/data')
-        dirpath = os.path.abspath(home)
+        dirpath = self.dirCtrl.gethomepath()
+        #currentdir = os.path.dirname(os.path.realpath(__file__))
+        #home = os.path.join(currentdir,'../tests/data')
+        #dirpath = os.path.abspath(home)
 
         try:
-            self.directoryStack.append(os.getcwd())
+            self.directoryStack.append(dirpath)
             os.chdir(dirpath)
             print "You have returned home: ", dirpath
             self.dirCtrl.clearItems()
@@ -133,15 +135,20 @@ class DirectoryCtrlView(wx.Panel):
             print 'Crap happened on the way home'
 
     def OnUpClick(self, event):
-        self.directoryStack.append(os.getcwd())
-        parent = os.pardir
-        os.chdir(os.pardir)
+        parent = os.path.abspath(os.path.join(self.dirCtrl.getcurrentdirectory(), os.pardir))
+
+        self.directoryStack.append(parent)
+
+        os.chdir(parent)
         self.dirCtrl.clearItems()
 
     def OnBackClick(self, event):
-        print "directory Stack: ", self.directoryStack
+        print 10*'-'
+        for d in self.directoryStack:
+            print d
         if len(self.directoryStack) > 0:
-            os.chdir(self.directoryStack.pop())
+            self.directoryStack.pop()
+            os.chdir(self.directoryStack[-1])
             self.dirCtrl.clearItems()
 
     def onDrag(self, event):
@@ -149,7 +156,8 @@ class DirectoryCtrlView(wx.Panel):
         obj = event.GetEventObject()
         id = event.GetIndex()
         filename = obj.GetItem(id).GetText()
-        dirname = os.path.dirname(os.path.abspath(os.listdir(".")[0]))
+        dirname = self.dirCtrl.getcurrentdirectory()
+        #dirname = os.path.dirname(os.path.abspath(os.listdir(".")[0]))
         fullpath = str(os.path.join(dirname, filename))
 
         data.AddFile(fullpath)

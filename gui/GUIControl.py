@@ -388,6 +388,7 @@ class GUILink(GUIBase):
         GUIBase.__init__(self, Canvas)
         self.Canvas = Canvas
         self.selected = []
+        self.links = []
 
     def GetHitObject(self, event, HitEvent):
         if self.Canvas.HitDict:
@@ -466,6 +467,11 @@ class GUILink(GUIBase):
         g.insert(0, g.pop())
         g.insert(0, g.pop())
         self.Canvas._DrawList = g
+
+
+        # save links
+        self.links.append([R1,R2])
+
         self.Canvas.Draw()
 
     def OnLeftUp(self, event):

@@ -104,7 +104,7 @@ class Canvas(NavCanvas):
             R.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit)
             #self.Canvas.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit, id=R.ID)
 
-            self.models[id]=R
+            self.models[R]=id
 
             self.Canvas.Draw()
 
@@ -163,6 +163,15 @@ class Canvas(NavCanvas):
                 (x,y) = self.Canvas.ScalePixelToWorld(dxy)
                 self.MovingObject.Move((x,y))
                 self.MovingObject.Text.Move((x, y))
+
+                # remove links
+                self.Canvas._DrawList = [obj for obj in self.Canvas._DrawList if type(obj) != FC.Arrow]
+
+                # recalculate links
+                rects = [obj for obj in self.Canvas._DrawList if type(obj) != FC.Rectangle]
+
+                # todo:  link functionality must be moved into this class so that we can redraw the links
+                # using links[[r1,r2],[...]] we can iterate of the rectangles and redraw links
 
 
             self.Canvas.Draw(True)

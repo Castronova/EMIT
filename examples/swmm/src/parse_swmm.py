@@ -44,7 +44,9 @@ VARCODE = {0: {0: 'Rainfall',
                2: 'Evaporation',
                3: 'Runoff_rate',
                4: 'Groundwater_outflow',
-               5: 'Groundwater_elevation'
+               5: 'Groundwater_elevation',
+               6: 'Wash_off_concentration',
+               7: 'Unknown',
                },
            1: {0: 'Depth_above_invert',
                1: 'Hydraulic_head',
@@ -52,6 +54,7 @@ VARCODE = {0: {0: 'Rainfall',
                3: 'Lateral_inflow',
                4: 'Total_inflow',
                5: 'Flow_lost_flooding',
+               6: 'Concentration',
                },
            2: {0: 'Flow_rate',
                1: 'Flow_depth',
@@ -256,6 +259,7 @@ def listdetail(filename, type, name=''):
     :param type: Type to print out the table of (subcatchment, node, or link)
     :param name: Optional specfic name to print only that entry.
     '''
+    res = []
     obj = SwmmExtract(filename)
     typenumber = obj.TypeCheck(type)
     if name:
@@ -266,17 +270,23 @@ def listdetail(filename, type, name=''):
     headstr = ['#Name'] + [PROPCODE[typenumber][i] for i in propnumbers]
     headfmtstr = '{0:<25},{1:<8},' + ','.join(
             ['{'+str(i)+':>10}' for i in range(2,1+len(propnumbers))])
-    print(headfmtstr.format(*tuple(headstr)))
+    #print(headfmtstr.format(*tuple(headstr)))
     fmtstr = '{0:<25},{1:<8},' + ','.join(
             ['{'+str(i)+':10.2f}' for i in range(2,1+len(propnumbers))])
     for i,oname in enumerate(objectlist):
-        printvar = [oname]
+        #printvar = [oname]
+        d = {}
+        d['Name'] = oname
         for j in obj.prop[typenumber][i]:
             if j[0] == 0:
-                printvar.append(TYPECODE[typenumber][j[1]])
+                d[PROPCODE[typenumber][j[0]]] = TYPECODE[typenumber][j[1]]
+                #printvar.append(TYPECODE[typenumber][j[1]])
             else:
-                printvar.append(j[1])
-        print(fmtstr.format(*tuple(printvar)))
+                d[PROPCODE[typenumber][j[0]]] = j[1]
+                #printvar.append(j[1])
+        #print(fmtstr.format(*tuple(printvar)))
+        res.append(d)
+    return res
 
 def listvariables(filename):
     ''' List variables available for each type
@@ -288,7 +298,9 @@ def listvariables(filename):
     for type in ['subcatchment', 'node', 'link', 'pollutant', 'system']:
         typenumber = obj.TypeCheck(type)
         for i in obj.vars[typenumber]:
+            #print(type + ':' + VARCODE[typenumber][i]+','+ i)
             res[type + ':' + VARCODE[typenumber][i]] = i
+
             #print('{0},{1},{2}'.format(type, VARCODE[typenumber][i], i))
     return res
 

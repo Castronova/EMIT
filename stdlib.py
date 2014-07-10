@@ -9,6 +9,7 @@ Standard classes
 # On OSX you also need to install geos. e.g, sudo port install geos
 from shapely.wkt import loads
 import datetime
+import uuid
 
 class ElementType():
     Point = 'Point'
@@ -192,15 +193,18 @@ class DataValues(object):
 
 class Geometry(object):
 
-    def __init__(self,geom=None,srs=None,elev=None,datavalues=None):
+    def __init__(self,geom=None,srs=None,elev=None,datavalues=None,id=uuid.uuid4().hex[:5]):
         self.__geom = geom
         self.__srs = srs
         self.__elev = elev
         self.__datavalues = datavalues
+        self.__id = id
 
         # TODO: use enum
         self.__type = None
 
+    def id(self):
+        return self.__id
 
     def geom(self,value=None):
         if value is None:

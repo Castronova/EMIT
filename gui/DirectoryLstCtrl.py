@@ -23,7 +23,7 @@ class DirectoryListCtrl(wx.ListCtrl):
         home = os.path.join(currentdir,'../tests/data')
         dirpath = os.path.abspath(home)
         self.home = dirpath
-
+        self.currentdirectory = dirpath
         files = os.listdir(dirpath)
         # types = (dirpath+'/*.mdl',dirpath+'/*.sim')
         # files = []
@@ -59,8 +59,19 @@ class DirectoryListCtrl(wx.ListCtrl):
         self.SetImageList(self.il, wx.IMAGE_LIST_SMALL)
         self.refreshList(self.home)
 
+    def getcurrentdirectory(self, value=None):
+
+        if value is not None:
+            self.currentdirectory=value
+        return self.currentdirectory
+
+    def gethomepath(self, value=None):
+
+        return self.home
+
     def refreshList(self,cwd):
 
+        self.getcurrentdirectory(cwd)
         print cwd
 
         j = 1

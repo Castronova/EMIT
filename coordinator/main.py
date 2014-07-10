@@ -647,9 +647,9 @@ class Coordinator(object):
     def load_simulation(self, simulation_file):
 
         if simulation_file is list:
-            abspath = os.path.abspath(os.path.join(os.getcwd(),simulation_file[0]))
+            abspath = os.path.abspath(simulation_file[0])
         else:
-            abspath = os.path.abspath(os.path.join(os.getcwd(),simulation_file))
+            abspath = os.path.abspath(simulation_file)
 
         if os.path.isfile(abspath):
             with open(abspath,'r') as f:

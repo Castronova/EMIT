@@ -1,6 +1,6 @@
 # Auto-generated simulation loading document
 # simulation name: My Test Simulation
 
-add ./randomizer.mdl
-add ./multiplier.mdl
+add /Users/tonycastronova/Documents/projects/iUtah/EMIT/tests/data/randomizer.mdl
+add /Users/tonycastronova/Documents/projects/iUtah/EMIT/tests/data/multiplier.mdl
 link M1 OUTPUT1 M2 INPUT1

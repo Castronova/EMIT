@@ -456,9 +456,14 @@ class GUILink(GUIBase):
         print 'angle: ',angle
 
 
-        self.Canvas.AddArrow((x1,y1), length, angle ,LineWidth = 5, LineColor = "Black", ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
+        #self.Canvas.AddArrow((x1,y1), length, angle ,LineWidth = 5, LineColor = "Black", ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
+        self.Canvas.AddArrow((x1,y1), length/2, angle ,LineWidth = 2, LineColor = "Black", ArrowHeadSize = 10, ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
+        xm = x1 + dx/2
+        ym = y1 + dy/2
+        self.Canvas.AddArrow((xm,ym), length/2, angle ,LineWidth = 2, LineColor = "Black", ArrowHeadSize = 10, ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
 
         g = self.Canvas._DrawList
+        g.insert(0, g.pop())
         g.insert(0, g.pop())
         self.Canvas._DrawList = g
         self.Canvas.Draw()

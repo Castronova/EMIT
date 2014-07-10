@@ -456,7 +456,11 @@ class GUILink(GUIBase):
         print 'angle: ',angle
 
 
-        self.Canvas.AddArrow((x1,y1), length, angle ,LineWidth = 5, LineColor = "Black", ArrowHeadAngle = 50)
+        self.Canvas.AddArrow((x1,y1), length, angle ,LineWidth = 5, LineColor = "Black", ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
+
+        g = self.Canvas._DrawList
+        g.insert(0, g.pop())
+        self.Canvas._DrawList = g
         self.Canvas.Draw()
 
     def OnLeftUp(self, event):

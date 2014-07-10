@@ -68,7 +68,7 @@ class FileDrop(wx.FileDropTarget):
 
                     self.window.createBox(name=name, id=modelid, xCoord=newx, yCoord=newy)
                     self.window.Canvas.Draw()
-                    offset+=200
+                    offset=200
             except Exception, e:
                 print 'Could not load the model :(. Hopefully this exception helps...'
                 print e

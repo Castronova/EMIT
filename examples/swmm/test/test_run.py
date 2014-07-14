@@ -41,4 +41,5 @@ class test_swmm(unittest.TestCase):
         self.assertTrue(swmm.run(inputs))
 
         # parse outputs
+        print 'done'
 

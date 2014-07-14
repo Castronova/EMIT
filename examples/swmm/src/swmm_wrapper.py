@@ -7,7 +7,7 @@ import subprocess
 
 from shapely.geometry import *
 from stdlib import Geometry, DataValues
-from parse_swmm import Parse as ps
+import parse_swmm as ps
 from wrappers.feed_forward import feed_forward_wrapper
 
 import re

@@ -336,6 +336,12 @@ class Coordinator(object):
                     order.insert(i+3,cycle[0])
                     break
 
+
+        # return single model if one model and no links
+        if len(order) == 0:
+            if len(self.__models) == 1:
+                order = [self.__models.values()[0].get_id()]
+
         # return execution order
         return order
 

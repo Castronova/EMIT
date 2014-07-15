@@ -13,23 +13,13 @@ from NavToolbar import NavCanvas
 import os
 import numpy as N
 import textwrap as tw
+import math
 
 
-from CanvasLogic import ConnectorLine, MovingBitmap
-
-class TreeNode:
-    dx = 15
-    dy = 4
-    def __init__(self, name, Children = []):
-        self.Name = name
-        self.Children = Children
-        self.Point = None # The coords of the node.
-
-    def __str__(self):
-        return "TreeNode: %s"%self.Name
-    __repr__ = __str__
-
-
+class MousePointer():
+    Default = 'default'
+    Link = 'link'
+    Delete = 'delete'
 
 class Canvas(NavCanvas):
 
@@ -39,16 +29,21 @@ class Canvas(NavCanvas):
         self.initSubscribers()
         self.models = {}
 
+        defaultCursor = wx.StockCursor(wx.CURSOR_DEFAULT)
+        defaultCursor.Name = 'default'
+        self._Cursor = defaultCursor
 
         self.UnBindAllMouseEvents()
         self.ZoomToFit(Event=None)
         self.MoveObject = None
         self.Moving = False
+        Pointers = MousePointer()
+        self.MousePointer = Pointers.Default
 
         #self.createLink()
-
+        self.linkrects = []
         self.initBindings()
-
+        self.links = []
 
     def UnBindAllMouseEvents(self):
         ## Here is how you unbind FloatCanvas mouse events
@@ -76,6 +71,15 @@ class Canvas(NavCanvas):
 
     def initSubscribers(self):
         Publisher.subscribe(self.createBox, "createBox")
+        Publisher.subscribe(self.setCursor, "setCursor")
+
+    def setCursor(self, value=None):
+        print "Cursor was set to value ", dir(value), value.GetHandle()
+        self._Cursor=value
+
+    def getCursor(self):
+        return self._Cursor
+
 
     def createBox(self, xCoord, yCoord, id=None, name=None):
 
@@ -111,24 +115,53 @@ class Canvas(NavCanvas):
         else:
             print "Nothing Selected"
 
-    def createLink(self):
-        Bitmaps = []
-        for Point in ((1,1), (-4,3)):
-            Bitmaps.append(MovingBitmap(Resources.getMondrianImage(), Point, Height=1))
-
-        Line = ConnectorLine(Bitmaps[0], Bitmaps[1], LineWidth=3, LineColor="Red")
-        self.Canvas.AddObject(Line)
-
-
     def onLeftDown(self, event):
         #print event.GetPosition(),
        # dxy = event.GetPosition() - self.StartPoint
         dxy = self.Canvas.PixelToWorld(event.GetPosition())
         print dxy
+        #Cursor = wx.CURSOR_BULLSEYE
+        #cnum = wx.StockCursor(Cursor)
+
+
+
+
+            #if not self.Canvas.HitTest(event, EventType):
+            #    self.Canvas._RaiseMouseEvent(event, EventType)
+            #else:
+            #    print "Selected an object"
 
 
     def ObjectHit(self, object):
         print "Hit Object", object.Name
+
+        cur = self.getCursor()
+
+        if cur.Name == 'link':
+            if len(self.linkrects)  > 0:
+                self.linkrects.append(object)
+                self.CreateLine(self.linkrects[0], self.linkrects[1])
+
+                # save links
+                self.links.append([self.linkrects[0], self.linkrects[1]])
+
+                self.linkrects=[]
+                self.Canvas.SetMode(self.Modes[0][1])
+            else:
+                self.linkrects.append(object)
+            # obj = object.GetEventObject()
+            #
+            # EventType = FC.EVT_FC_LEFT_DOWN
+            # obj = self.GetHitObject(object, EventType)
+            #
+            # if obj:
+            #
+            #
+            #     self.selected.append(obj)
+            #     if len(self.selected) == 2:
+            #         self.CreateLine(self.selected[0], self.selected[1])
+            #         self.selected = []
+
         if not self.Moving:
             self.Moving = True
             self.StartPoint = object.HitCoordsPixel
@@ -171,10 +204,59 @@ class Canvas(NavCanvas):
                 rects = [obj for obj in self.Canvas._DrawList if type(obj) != FC.Rectangle]
 
                 # todo:  link functionality must be moved into this class so that we can redraw the links
+                for link in self.links:
+                    self.CreateLine(link[0], link[1])
+
                 # using links[[r1,r2],[...]] we can iterate of the rectangles and redraw links
 
 
             self.Canvas.Draw(True)
+
+    def GetHitObject(self, event, HitEvent):
+        if self.Canvas.HitDict:
+            # check if there are any objects in the dict for this event
+            if self.Canvas.HitDict[ HitEvent ]:
+                xy = event.GetPosition()
+                color = self.Canvas.GetHitTestColor( xy )
+                if color in self.Canvas.HitDict[ HitEvent ]:
+                    Object = self.Canvas.HitDict[ HitEvent ][color]
+                    #self.Canvas._CallHitCallback(Object, xy, HitEvent)
+                    return Object
+            return False
+
+    def CreateLine(self, R1, R2):
+        print "creating link", R1, R2
+        x1,y1  = (R1.BoundingBox[0] + (R1.wh[0]/2, R1.wh[1]/2))
+        x2,y2  = (R2.BoundingBox[0] + (R2.wh[0]/2, R2.wh[1]/2))
+        #length = (((x2 - x1)**2)+(y2 - y1)**2)**.5
+        #dy = abs(y2 - y1)
+        #dx = abs(x2 - x1)
+        #angle = math.atan2(dx,dy) *180/math.pi
+
+        length = (((x2 - x1)**2)+(y2 - y1)**2)**.5
+        dy = (y2 - y1)
+        dx = (x2 - x1)
+        angle = 90- math.atan2(dy,dx) *180/math.pi
+
+        print 'angle: ',angle
+
+
+        #self.Canvas.AddArrow((x1,y1), length, angle ,LineWidth = 5, LineColor = "Black", ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
+        self.Canvas.AddArrow((x1,y1), length/2, angle ,LineWidth = 2, LineColor = "Black", ArrowHeadSize = 10, ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
+        xm = x1 + dx/2
+        ym = y1 + dy/2
+        self.Canvas.AddArrow((xm,ym), length/2, angle ,LineWidth = 2, LineColor = "Black", ArrowHeadSize = 10, ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
+
+        g = self.Canvas._DrawList
+        g.insert(0, g.pop())
+        g.insert(0, g.pop())
+        self.Canvas._DrawList = g
+
+
+
+
+        self.Canvas.Draw()
+
 
     def onRightDown(self, event):
         print "Right Click"

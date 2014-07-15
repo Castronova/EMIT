@@ -9,14 +9,14 @@ This approach was inspired by Christian Blouin, who also wrote the initial
 version of the code.
 
 """
-
+from wx.lib.pubsub import pub as Publisher
 import wx
 ## fixme: events should live in their own module, so all of FloatCanvas
 ##        wouldn't have to be imported here.
 from wx.lib.floatcanvas import FloatCanvas, Resources, NavCanvas
 from wx.lib.floatcanvas.Utilities import BBox
 import numpy as N
-import math
+from CanvasController import CanvasController
 
 class Cursors(object):
     """
@@ -124,17 +124,22 @@ class GUIMouse(GUIBase):
     raises a FloatCanvas mouse event for each event.
 
     """
+    def __init__(self):
 
-    Cursor = wx.NullCursor
+        self.Cursor = wx.NullCursor
+        self.Cursor.Name = 'default'
+
 
     # Handlers
     def OnLeftDown(self, event):
         EventType = FloatCanvas.EVT_FC_LEFT_DOWN
+        Publisher.sendMessage("setCursor", value=self.Cursor)
         if not self.Canvas.HitTest(event, EventType):
             self.Canvas._RaiseMouseEvent(event, EventType)
 
     def OnLeftUp(self, event):
         EventType = FloatCanvas.EVT_FC_LEFT_UP
+        Publisher.sendMessage("setCursor", value=self.Cursor)
         if not self.Canvas.HitTest(event, EventType):
             self.Canvas._RaiseMouseEvent(event, EventType)
 
@@ -382,112 +387,24 @@ class GUIZoomOut(ZoomWithMouseWheel, GUIBase):
         # Always raise the Move event.
         self.Canvas._RaiseMouseEvent(event,FloatCanvas.EVT_FC_MOTION)
 
+
 class GUILink(GUIBase):
-
-    def __init__(self, Canvas=None):
-        GUIBase.__init__(self, Canvas)
-        self.Canvas = Canvas
-        self.selected = []
-        self.links = []
-
-    def GetHitObject(self, event, HitEvent):
-        if self.Canvas.HitDict:
-            # check if there are any objects in the dict for this event
-            if self.Canvas.HitDict[ HitEvent ]:
-                xy = event.GetPosition()
-                color = self.Canvas.GetHitTestColor( xy )
-                if color in self.Canvas.HitDict[ HitEvent ]:
-                    Object = self.Canvas.HitDict[ HitEvent ][color]
-                    #self.Canvas._CallHitCallback(Object, xy, HitEvent)
-                    return Object
-            return False
-
-    def ObjectHit(self, event):
-        #print "Hit Object in Link Mode", dir(event)
-        pass
+    def __init__(self):
+        self.Cursor = wx.CROSS_CURSOR
+        self.Cursor.Name = 'link'
 
     def OnLeftDown(self, event):
-        obj = event.GetEventObject()
-        #print 'left down in GUILINK event! '#, dir(event)
-
+        Publisher.sendMessage("setCursor", value=self.Cursor)
         EventType = FloatCanvas.EVT_FC_LEFT_DOWN
-        obj = self.GetHitObject(event, EventType)
-        print "self.Canvas.Hittest exists? ", obj.Name
-        if obj:
-
-            '''
-            while 1:
-                x1,y1  = (obj.BoundingBox[0] + (obj.wh[0]/2, obj.wh[1]/2))
-
-                x2,y2 = self.Canvas.PixelToWorld(event.GetPosition())
-                length = (((x2 - x1)**2)+(y2 - y1)**2)**.5
-                dy = abs(y2 - y1)
-                dx = abs(x2 - x1)
-                angle = math.atan(dx/dy) *180/math.pi
-
-                self.Canvas.AddArrow((x1,y1), length, angle ,LineWidth = 5, LineColor = "Black", ArrowHeadAngle = 50)
-                self.Canvas.Refresh()
-                self.Canvas.Draw()
-
-            '''
-            self.selected.append(obj)
-            if len(self.selected) == 2:
-                self.CreateLine(self.selected[0], self.selected[1])
-                self.selected = []
-
-        #if not self.Canvas.HitTest(event, EventType):
-        #    self.Canvas._RaiseMouseEvent(event, EventType)
-        #else:
-        #    print "Selected an object"
-
-    def CreateLine(self, R1, R2):
-        print "creating link", R1, R2
-        x1,y1  = (R1.BoundingBox[0] + (R1.wh[0]/2, R1.wh[1]/2))
-        x2,y2  = (R2.BoundingBox[0] + (R2.wh[0]/2, R2.wh[1]/2))
-        #length = (((x2 - x1)**2)+(y2 - y1)**2)**.5
-        #dy = abs(y2 - y1)
-        #dx = abs(x2 - x1)
-        #angle = math.atan2(dx,dy) *180/math.pi
-
-        length = (((x2 - x1)**2)+(y2 - y1)**2)**.5
-        dy = (y2 - y1)
-        dx = (x2 - x1)
-        angle = 90- math.atan2(dy,dx) *180/math.pi
-
-        print 'angle: ',angle
-
-
-        #self.Canvas.AddArrow((x1,y1), length, angle ,LineWidth = 5, LineColor = "Black", ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
-        self.Canvas.AddArrow((x1,y1), length/2, angle ,LineWidth = 2, LineColor = "Black", ArrowHeadSize = 10, ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
-        xm = x1 + dx/2
-        ym = y1 + dy/2
-        self.Canvas.AddArrow((xm,ym), length/2, angle ,LineWidth = 2, LineColor = "Black", ArrowHeadSize = 10, ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
-
-        g = self.Canvas._DrawList
-        g.insert(0, g.pop())
-        g.insert(0, g.pop())
-        self.Canvas._DrawList = g
-
-
-        # save links
-        self.links.append([R1,R2])
-
-        self.Canvas.Draw()
+        if not self.Canvas.HitTest(event, EventType):
+            self.Canvas._RaiseMouseEvent(event, EventType)
+            #
 
     def OnLeftUp(self, event):
-        pass
-        #print "Left up in GUILINK event! "#, dir(event)
-
-        #EventType = FloatCanvas.EVT_FC_LEFT_UP
-
-        #if not self.Canvas.HitTest(event, EventType):
-        #    self.Canvas._RaiseMouseEvent(event, EventType)
-        #else:
-        #    print "Selected an object"
-
-
-
-
+        EventType = FloatCanvas.EVT_FC_LEFT_UP
+        if not self.Canvas.HitTest(event, EventType):
+            self.Canvas._RaiseMouseEvent(event, EventType)
+'''
     def OnMove(self, event):
         ## The Move event always gets raised, even if there is a hit-test
         EventType = FloatCanvas.EVT_FC_MOTION
@@ -497,11 +414,17 @@ class GUILink(GUIBase):
         self.Canvas.MouseOverTest(event)
         # then raise the event on the canvas
         self.Canvas._RaiseMouseEvent(event, EventType)
-
-    Cursor = wx.CROSS_CURSOR
+'''
 
 class GUIDelete(GUIBase):
     '''
+    def __init__(self, Canvas=None):
+        GUIBase.__init__(self, Canvas)
+        self.Canvas = Canvas
+
+        self.Canvas.ClearAll()
+        self.Canvas.Draw()
+
     def __init__(self, Canvas=None):
         GUIBase.__init__(self, Canvas)
         self.Clear()
@@ -512,4 +435,5 @@ class GUIDelete(GUIBase):
         self.Canvas.Draw()
     '''
     pass
+
 

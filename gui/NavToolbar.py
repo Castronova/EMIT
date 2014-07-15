@@ -25,12 +25,19 @@ class NavCanvas(wx.Panel):
                    **kwargs): # The rest just get passed into FloatCanvas
         wx.Panel.__init__(self, parent, id, size=size)
 
-        self.Modes = [("Pointer",  GUIMode.GUIMouse(),   Resources.getPointerBitmap()),
-                      ("Zoom In",  GUIMode.GUIZoomIn(),  Resources.getMagPlusBitmap()),
-                      ("Zoom Out", GUIMode.GUIZoomOut(), Resources.getMagMinusBitmap()),
-                      ("Pan",      GUIMode.GUIMove(),    Resources.getHandBitmap()),
-                      ("Add Link", GUIMode.GUILink(), icons.add_link.GetBitmap()),
-                      ("Clear", GUIMode.GUIDelete(), icons.Trash.GetBitmap())
+        self.GuiMouse = GUIMode.GUIMouse()
+        self.GuiZoomIn = GUIMode.GUIZoomIn()
+        self.GuiZoomOut = GUIMode.GUIZoomOut()
+        self.GuiMove = GUIMode.GUIMove()
+        self.GuiLink = GUIMode.GUILink()
+        self.GuiDelete = GUIMode.GUIDelete()
+
+        self.Modes = [("Pointer",  self.GuiMouse,   Resources.getPointerBitmap()),
+                      ("Zoom In",  self.GuiZoomIn,  Resources.getMagPlusBitmap()),
+                      ("Zoom Out", self.GuiZoomOut, Resources.getMagMinusBitmap()),
+                      ("Pan",      self.GuiMove,    Resources.getHandBitmap()),
+                      ("Add Link", self.GuiLink, icons.add_link.GetBitmap()),
+                      ("Clear", self.GuiDelete, icons.Trash.GetBitmap())
                       ]
 
         self.BuildToolbar()

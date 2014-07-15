@@ -1,6 +1,5 @@
 __author__ = 'tonycastronova'
 
-import sys
 from os.path import *
 
 import subprocess

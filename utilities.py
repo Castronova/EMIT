@@ -377,6 +377,10 @@ def build_exchange_items(params):
                     # define initial dataset for element
                     dv = stlib.DataValues()
 
+                    if srs is None:
+                        # set default srs
+                        srs = get_srs_from_epsg('4269')
+
                     # create element
                     elem = stlib.Geometry()
                     elem.geom(element)

@@ -137,6 +137,14 @@ class Canvas(NavCanvas):
 
         cur = self.getCursor()
 
+        # get the model view pane
+        mv = self.GetTopLevelParent().Children[0].FindWindowByName('notebook').FindWindowByLabel('Model View')
+
+        # get the model info from cmd
+
+
+        mv.setText('test')
+
         if cur.Name == 'link':
             if len(self.linkrects)  > 0:
                 self.linkrects.append(object)
@@ -238,7 +246,7 @@ class Canvas(NavCanvas):
         dx = (x2 - x1)
         angle = 90- math.atan2(dy,dx) *180/math.pi
 
-        print 'angle: ',angle
+        #print 'angle: ',angle
 
 
         #self.Canvas.AddArrow((x1,y1), length, angle ,LineWidth = 5, LineColor = "Black", ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')

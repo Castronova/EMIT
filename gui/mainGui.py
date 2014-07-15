@@ -120,6 +120,18 @@ class PageTwo(wx.Panel):
         #Canvas.ObjectHit()
         t = wx.StaticText(self, -1, "This view shows relevant model information.", (60,60))
 
+        self.contents = wx.TextCtrl(self, style=wx.TE_MULTILINE | wx.HSCROLL | wx.TE_READONLY)
+        self.contents.SetValue("New Text")
+
+        sizer = wx.BoxSizer()
+        sizer.Add(self.contents, 1, wx.ALL|wx.EXPAND, 5)
+        parent.SetSizer(sizer)
+        self.SetSizerAndFit(sizer)
+
+    def setText(self, value=None):
+        self.contents.SetValue(value)
+
+
 class PageThree(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
@@ -142,8 +154,8 @@ class consoleOutput(wx.Panel):
         panel.SetSizer(sizer)
 
         # redirect text here
-        redir= RedirectText(log)
-        sys.stdout=redir
+        #redir= RedirectText(log)
+        #sys.stdout=redir
 
 
         self.SetSizerAndFit(sizer)

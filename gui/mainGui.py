@@ -1,4 +1,6 @@
 __author__ = 'Mario'
+
+import sys
 import wx
 from DirectoryView import DirectoryCtrlView
 import sys
@@ -47,6 +49,18 @@ class MainGui(wx.Frame):
                                True).MinimizeButton(True).PinButton(True).Resizable().Floatable().Movable().MinSize(
                                wx.Size(1000, 400)))
 
+<<<<<<< HEAD
+        self.output = consoleOutput(self.pnlDocking)
+        self.m_mgr.AddPane(self.output,
+                          wx.aui.AuiPaneInfo().Center().Name("Output").Position(1).CloseButton(False).MaximizeButton(
+                               True).MinimizeButton(True).PinButton(True).Resizable().Floatable().Movable().MinSize(
+                               wx.Size(1000, 400)))
+=======
+
+>>>>>>> 49a41b8aea760f0f55ec1401f04776d602070854
+
+        self.m_mgr.Update()
+
         self.output = consoleOutput(self.pnlDocking)
         self.m_mgr.AddPane(self.output,
                           wx.aui.AuiPaneInfo().Center().Name("Output").Position(1).CloseButton(False).MaximizeButton(
@@ -54,8 +68,6 @@ class MainGui(wx.Frame):
                                wx.Size(1000, 400)))
 
         self.m_mgr.Update()
-
-
     def initMenu(self):
         ## Menu stuff
         self.m_statusBar2 = self.CreateStatusBar(1, wx.ST_SIZEGRIP, wx.ID_ANY)
@@ -114,6 +126,18 @@ class PageTwo(wx.Panel):
         #Canvas.ObjectHit()
         t = wx.StaticText(self, -1, "This view shows relevant model information.", (60,60))
 
+        self.contents = wx.TextCtrl(self, style=wx.TE_MULTILINE | wx.HSCROLL | wx.TE_READONLY)
+        self.contents.SetValue("New Text")
+
+        sizer = wx.BoxSizer()
+        sizer.Add(self.contents, 1, wx.ALL|wx.EXPAND, 5)
+        parent.SetSizer(sizer)
+        self.SetSizerAndFit(sizer)
+
+    def setText(self, value=None):
+        self.contents.SetValue(value)
+
+
 class PageThree(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
@@ -136,8 +160,14 @@ class consoleOutput(wx.Panel):
         panel.SetSizer(sizer)
 
         # redirect text here
+<<<<<<< HEAD
         redir= RedirectText(log)
         sys.stdout=redir
+=======
+        #redir= RedirectText(log)
+        #sys.stdout=redir
+
+>>>>>>> 49a41b8aea760f0f55ec1401f04776d602070854
 
         self.SetSizerAndFit(sizer)
 class RedirectText(object):

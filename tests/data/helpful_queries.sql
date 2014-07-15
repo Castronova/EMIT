@@ -15,3 +15,16 @@ where a."ActionID" in
 	limit 2
 )
 order by s."SimulationID" asc
+
+
+
+
+select tsrv."ValueDateTime",tsrv."DataValue", v."VariableCode", u."UnitsName"
+from "ODM2Simulation"."Simulations" as s
+join "ODM2Core"."Actions" a on a."ActionID" = s."ActionID"
+join "ODM2Core"."FeatureActions" fa on fa."ActionID" = a."ActionID"
+join "ODM2Core"."Results" r on r."FeatureActionID" = fa."FeatureActionID"
+join "ODM2Core"."Variables" v on v."VariableID" = r."VariableID"
+join "ODM2Core"."Units" u on u."UnitsID" = r."UnitsID"
+join "ODM2Results"."TimeSeriesResultValues" tsrv on tsrv."ResultID" = r."ResultID"
+where s."SimulationName" = 'SWMM' and r."ResultID" = 159;

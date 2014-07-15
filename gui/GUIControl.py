@@ -417,6 +417,9 @@ class GUILink(GUIBase):
 '''
 
 class GUIDelete(GUIBase):
+    pass
+
+
     '''
     def __init__(self, Canvas=None):
         GUIBase.__init__(self, Canvas)
@@ -434,6 +437,5 @@ class GUIDelete(GUIBase):
         self.FloatCanvas.ClearAll()
         self.Canvas.Draw()
     '''
-    pass
 
 

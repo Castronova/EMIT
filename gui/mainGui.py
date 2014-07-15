@@ -1,23 +1,21 @@
 __author__ = 'Mario'
 import wx
 from DirectoryView import DirectoryCtrlView
+import sys
 from CanvasView import Canvas
 
 class MainGui(wx.Frame):
     def __init__(self, parent):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title="", pos=wx.DefaultPosition,
                           size=wx.Size(1500, 650), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
-
-
-        self.initAUIManager()
         self.initMenu()
         self.Bind(wx.EVT_CLOSE, self.onClose)
 
-
-
+    def initCanvas(self, canvas):
+        self.Canvas = canvas
 
     def initAUIManager(self):
-        self.pnlDocking = wx.Panel(id=wx.ID_ANY, name='pnlDocking', parent=self, size=wx.Size(605, 458),
+        self.pnlDocking = wx.Panel(id=wx.ID_ANY, name='pnlDocking', parent=self, size=wx.Size(1500, 650),
                                    style=wx.TAB_TRAVERSAL)
 
         self.m_mgr = wx.aui.AuiManager()
@@ -44,15 +42,18 @@ class MainGui(wx.Frame):
         self.nb.AddPage(page3, "Link View")
 
 
-        self.canvas = Canvas(parent=self.pnlDocking, ProjectionFun=None, Debug=0, BackgroundColor="White", )
-        self.m_mgr.AddPane(self.canvas,
+        self.m_mgr.AddPane(self.Canvas,
                            wx.aui.AuiPaneInfo().Center().Name("Canvas").Position(0).CloseButton(False).MaximizeButton(
                                True).MinimizeButton(True).PinButton(True).Resizable().Floatable().Movable().MinSize(
                                wx.Size(1000, 400)))
 
+        self.output = consoleOutput(self.pnlDocking)
+        self.m_mgr.AddPane(self.output,
+                          wx.aui.AuiPaneInfo().Center().Name("Output").Position(1).CloseButton(False).MaximizeButton(
+                               True).MinimizeButton(True).PinButton(True).Resizable().Floatable().Movable().MinSize(
+                               wx.Size(1000, 400)))
+
         self.m_mgr.Update()
-
-
 
 
     def initMenu(self):
@@ -82,7 +83,7 @@ class MainGui(wx.Frame):
 
     def _postStart(self):
         ## Starts stuff after program has initiated
-        self.canvas.ZoomToFit(Event=None)
+        self.Canvas.ZoomToFit(Event=None)
 
     def __del__(self):
         self.m_mgr.UnInit()
@@ -117,3 +118,31 @@ class PageThree(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
         t = wx.StaticText(self, -1, "This view shows relations between models.", (60,60))
+
+class consoleOutput(wx.Panel):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+
+        # Add a panel so it looks the correct on all platforms
+        panel = wx.Panel(self, wx.ID_ANY)
+        log = wx.TextCtrl(self, -1, size=(100,100),
+                          style = wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
+
+
+
+        # # Add widgets to a sizer
+        sizer = wx.BoxSizer()
+        sizer.Add(log, 1, wx.ALL|wx.EXPAND, 5)
+        panel.SetSizer(sizer)
+
+        # redirect text here
+        redir= RedirectText(log)
+        sys.stdout=redir
+
+        self.SetSizerAndFit(sizer)
+class RedirectText(object):
+    def __init__(self,aWxTextCtrl):
+        self.out=aWxTextCtrl
+
+    def write(self,string):
+        self.out.WriteText(string)

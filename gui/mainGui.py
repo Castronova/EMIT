@@ -1,4 +1,6 @@
 __author__ = 'Mario'
+
+import sys
 import wx
 from DirectoryView import DirectoryCtrlView
 from CanvasView import Canvas
@@ -50,11 +52,16 @@ class MainGui(wx.Frame):
                                True).MinimizeButton(True).PinButton(True).Resizable().Floatable().Movable().MinSize(
                                wx.Size(1000, 400)))
 
+
+
+
+        self.output = consoleOutput(self.pnlDocking)
+        self.m_mgr.AddPane(self.output,
+                          wx.aui.AuiPaneInfo().Center().Name("Output").Position(1).CloseButton(False).MaximizeButton(
+                               True).MinimizeButton(True).PinButton(True).Resizable().Floatable().Movable().MinSize(
+                               wx.Size(1000, 400)))
+
         self.m_mgr.Update()
-
-
-
-
     def initMenu(self):
         ## Menu stuff
         self.m_statusBar2 = self.CreateStatusBar(1, wx.ST_SIZEGRIP, wx.ID_ANY)
@@ -117,3 +124,32 @@ class PageThree(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
         t = wx.StaticText(self, -1, "This view shows relations between models.", (60,60))
+
+class consoleOutput(wx.Panel):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+
+        # Add a panel so it looks the correct on all platforms
+        panel = wx.Panel(self, wx.ID_ANY)
+        log = wx.TextCtrl(self, -1, size=(100,100),
+                          style = wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
+
+
+
+        # # Add widgets to a sizer
+        sizer = wx.BoxSizer()
+        sizer.Add(log, 1, wx.ALL|wx.EXPAND, 5)
+        panel.SetSizer(sizer)
+
+        # redirect text here
+        redir= RedirectText(log)
+        sys.stdout=redir
+
+
+        self.SetSizerAndFit(sizer)
+class RedirectText(object):
+    def __init__(self,aWxTextCtrl):
+        self.out=aWxTextCtrl
+
+    def write(self,string):
+        self.out.WriteText(string)

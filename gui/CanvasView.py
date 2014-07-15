@@ -74,7 +74,7 @@ class Canvas(NavCanvas):
         Publisher.subscribe(self.setCursor, "setCursor")
 
     def setCursor(self, value=None):
-        print "Cursor was set to value ", dir(value), value.GetHandle()
+        #print "Cursor was set to value ", dir(value), value.GetHandle()
         self._Cursor=value
 
     def getCursor(self):

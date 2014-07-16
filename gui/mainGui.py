@@ -49,24 +49,21 @@ class MainGui(wx.Frame):
                                True).MinimizeButton(True).PinButton(True).Resizable().Floatable().Movable().MinSize(
                                wx.Size(1000, 400)))
 
-<<<<<<< HEAD
         self.output = consoleOutput(self.pnlDocking)
         self.m_mgr.AddPane(self.output,
                           wx.aui.AuiPaneInfo().Center().Name("Output").Position(1).CloseButton(False).MaximizeButton(
                                True).MinimizeButton(True).PinButton(True).Resizable().Floatable().Movable().MinSize(
                                wx.Size(1000, 400)))
-=======
 
->>>>>>> 49a41b8aea760f0f55ec1401f04776d602070854
-
+        
         self.m_mgr.Update()
-
+        '''
         self.output = consoleOutput(self.pnlDocking)
         self.m_mgr.AddPane(self.output,
                           wx.aui.AuiPaneInfo().Center().Name("Output").Position(1).CloseButton(False).MaximizeButton(
                                True).MinimizeButton(True).PinButton(True).Resizable().Floatable().Movable().MinSize(
                                wx.Size(1000, 400)))
-
+        '''
         self.m_mgr.Update()
     def initMenu(self):
         ## Menu stuff
@@ -160,14 +157,11 @@ class consoleOutput(wx.Panel):
         panel.SetSizer(sizer)
 
         # redirect text here
-<<<<<<< HEAD
         redir= RedirectText(log)
         sys.stdout=redir
-=======
         #redir= RedirectText(log)
         #sys.stdout=redir
 
->>>>>>> 49a41b8aea760f0f55ec1401f04776d602070854
 
         self.SetSizerAndFit(sizer)
 class RedirectText(object):

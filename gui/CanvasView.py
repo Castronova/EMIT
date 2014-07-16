@@ -5,7 +5,11 @@ __author__ = 'Mario'
 import wx
 import sys
 from NavToolbar import NavCanvas
-
+from wx.lib.floatcanvas import FloatCanvas as FC
+from wx.lib.pubsub import pub as Publisher
+import textwrap as tw
+import math
+import numpy as N
 
 sys.path.append("..")
 
@@ -14,9 +18,7 @@ class Canvas(NavCanvas):
     def __init__(self, *args, **kwargs):
         NavCanvas.__init__(self, *args,**kwargs)
 
-<<<<<<< HEAD
 
-=======
         self.initSubscribers()
         self.models = {}
 
@@ -261,7 +263,6 @@ class Canvas(NavCanvas):
         print "Right Click"
         self.Canvas.ClearAll()
         self.Canvas.Draw()
->>>>>>> 49a41b8aea760f0f55ec1401f04776d602070854
 
 
 #class DrawFrame(wx.Frame):
@@ -289,6 +290,11 @@ class ClearCanvas(NavCanvas):
         print "Right Click"
         self.Canvas.ClearAll()
         self.Canvas.Draw()
+
+class MousePointer():
+    Default = 'default'
+    Link = 'link'
+    Delete = 'delete'
 
 class Link:
     def __init__(self):

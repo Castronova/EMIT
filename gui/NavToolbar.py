@@ -31,12 +31,14 @@ class NavCanvas(wx.Panel):
         self.GuiMove = GUIMode.GUIMove()
         self.GuiLink = GUIMode.GUILink()
         self.GuiDelete = GUIMode.GUIDelete()
+        self.GuiRun = GUIMode.GUIRun()
 
         self.Modes = [("Pointer",  self.GuiMouse,   Resources.getPointerBitmap()),
                       ("Zoom In",  self.GuiZoomIn,  Resources.getMagPlusBitmap()),
                       ("Zoom Out", self.GuiZoomOut, Resources.getMagMinusBitmap()),
                       ("Pan",      self.GuiMove,    Resources.getHandBitmap()),
                       ("Add Link", self.GuiLink, icons.add_link.GetBitmap()),
+                      ("Run Model", self.GuiRun, icons.Run.GetBitmap()),
                       ("Clear", self.GuiDelete, icons.Trash.GetBitmap())
                       ]
 

@@ -90,7 +90,6 @@ class Canvas(NavCanvas):
             R.wh = (w,h)
             R.xy = (x,y)
             wrappedtext = tw.wrap(unicode(name), 15)
-            print wrappedtext, 'R:', dir(R)
             label = self.Canvas.AddText("\n".join(wrappedtext), (x+1, y+h/2),
                                         Color = "White",  Size = FontSize,
                                         Weight=wx.BOLD, Style=wx.ITALIC )

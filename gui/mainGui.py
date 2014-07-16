@@ -23,12 +23,7 @@ class MainGui(wx.Frame):
         self.m_mgr = wx.aui.AuiManager()
         self.m_mgr.SetManagedWindow(self.pnlDocking)
         self.m_mgr.SetFlags(wx.aui.AUI_MGR_DEFAULT)
-        '''
-        self.m_directoryCtrl = DirectoryCtrlView(self.pnlDocking)
-        self.m_mgr.AddPane(self.m_directoryCtrl,
-                           wx.aui.AuiPaneInfo().Left().CloseButton(False).MaximizeButton(True).MinimizeButton(
-                               True).PinButton(True).Resizable().MinSize(wx.Size(375,500)).Floatable())
-        '''
+
         self.nb = wx.Notebook(self.pnlDocking)
         self.m_mgr.AddPane(self.nb,
                    wx.aui.AuiPaneInfo().Left().CloseButton(False).MaximizeButton(True).MinimizeButton(
@@ -55,7 +50,7 @@ class MainGui(wx.Frame):
                                True).MinimizeButton(True).PinButton(True).Resizable().Floatable().Movable().MinSize(
                                wx.Size(1000, 400)))
 
-        
+
         self.m_mgr.Update()
         '''
         self.output = consoleOutput(self.pnlDocking)

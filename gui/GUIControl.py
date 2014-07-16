@@ -438,4 +438,5 @@ class GUIDelete(GUIBase):
         self.Canvas.Draw()
     '''
 
-
+class GUIRun(GUIBase):
+    pass

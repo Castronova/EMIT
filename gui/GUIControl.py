@@ -404,22 +404,9 @@ class GUILink(GUIBase):
         EventType = FloatCanvas.EVT_FC_LEFT_UP
         if not self.Canvas.HitTest(event, EventType):
             self.Canvas._RaiseMouseEvent(event, EventType)
-'''
-    def OnMove(self, event):
-        ## The Move event always gets raised, even if there is a hit-test
-        EventType = FloatCanvas.EVT_FC_MOTION
-        # process the object hit test for EVT_MOTION bindings
-        self.Canvas.HitTest(event, EventType)
-        # process enter and leave events
-        self.Canvas.MouseOverTest(event)
-        # then raise the event on the canvas
-        self.Canvas._RaiseMouseEvent(event, EventType)
-'''
+
 
 class GUIDelete(GUIBase):
-    pass
-
-
     '''
     def __init__(self, Canvas=None):
         GUIBase.__init__(self, Canvas)
@@ -437,6 +424,8 @@ class GUIDelete(GUIBase):
         self.FloatCanvas.ClearAll()
         self.Canvas.Draw()
     '''
+    pass
 
 class GUIRun(GUIBase):
+
     pass

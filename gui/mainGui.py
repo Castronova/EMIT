@@ -83,7 +83,7 @@ class MainGui(wx.Frame):
         wx.CallAfter(self._postStart)
 
         ## Events
-        self.Bind(wx.EVT_MENU, self.onClose, exit)
+        #self.Bind(wx.EVT_MENU, self.onClose, exit)
 
     def _postStart(self):
         ## Starts stuff after program has initiated
@@ -93,6 +93,7 @@ class MainGui(wx.Frame):
         self.m_mgr.UnInit()
 
     def onClose(self, event):
+
         windowsRemaining = len(wx.GetTopLevelWindows())
         if windowsRemaining > 0:
             import wx.lib.agw.aui.framemanager as aui
@@ -109,6 +110,7 @@ class MainGui(wx.Frame):
                     elif isinstance(item, wx.Dialog):
                         item.Destroy()
                     item.Close()
+
         self.Destroy()
 
 

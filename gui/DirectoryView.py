@@ -32,7 +32,6 @@ class DirectoryCtrlView(wx.Panel):
         self.initInterface()
         self.initBindings()
 
-
     def initInterface(self):
         panelSizer = wx.BoxSizer(wx.VERTICAL)
         self.toolbar = self.iconToolBar()

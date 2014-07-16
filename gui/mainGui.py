@@ -1,5 +1,7 @@
 __author__ = 'Mario'
 import wx
+#import wx.html
+import wx.html2
 from DirectoryView import DirectoryCtrlView
 import sys
 from CanvasView import Canvas
@@ -26,8 +28,8 @@ class MainGui(wx.Frame):
         self.nb = wx.Notebook(self.pnlDocking)
 
         self.output = wx.TextCtrl(self, -1, size=(100,100), style=wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
-        redir= RedirectText(self.output)
-        sys.stdout=redir
+        #redir= RedirectText(self.output)
+        #sys.stdout=redir
 
         page1 = DirectoryCtrlView(self.nb)
         page2 = PageTwo(self.nb)
@@ -37,7 +39,7 @@ class MainGui(wx.Frame):
         self.nb.AddPage(page2, "Model View")
         self.nb.AddPage(page3, "Link View")
 
-        
+
         self.m_mgr.AddPane(self.Canvas,
                            wx.aui.AuiPaneInfo().Center().Name("Canvas").Position(0).CloseButton(False).MaximizeButton(
                                True).MinimizeButton(True).PinButton(True).Resizable().Floatable(True).MinSize(
@@ -112,6 +114,25 @@ class PageTwo(wx.Panel):
         wx.Panel.__init__(self, parent)
         #Canvas.ObjectHit()
         t = wx.StaticText(self, -1, "This view shows relevant model information.", (60,60))
+
+
+
+        self.contents = wx.html2.WebView.New(self)
+
+
+
+        #self.contents = wx.html.HtmlWindow (self, style=wx.TE_MULTILINE | wx.HSCROLL | wx.TE_READONLY)
+        #self.contents.SetPage("New Text")
+
+
+
+        sizer = wx.BoxSizer()
+        sizer.Add(self.contents, 1, wx.ALL|wx.EXPAND, 5)
+        parent.SetSizer(sizer)
+        self.SetSizerAndFit(sizer)
+
+    def setText(self, value=None):
+        self.contents.SetPage(value,"")
 
 class PageThree(wx.Panel):
     def __init__(self, parent):

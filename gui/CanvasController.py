@@ -16,7 +16,8 @@ from wx.lib.floatcanvas.Utilities import BBox
 from wx.lib.pubsub import pub as Publisher
 import numpy as N
 import os
-
+import math
+import markdown2
 
 class CanvasController:
     def __init__(self, cmd, Canvas):
@@ -118,11 +119,24 @@ class CanvasController:
             R.Name = name
             R.wh = (w,h)
             R.xy = (x,y)
-            wrappedtext = tw.wrap(unicode(name), 15)
+
+            width = 15
+            wrappedtext = tw.wrap(unicode(name), width)
+            # new_line = []
+            # for line in wrappedtext:
+            #
+            #     frontpadding = int(math.floor((width - len(line))/2))
+            #     backpadding = int(math.ceil((width - len(line))/2))
+            #     line = ' '*frontpadding + line
+            #     line += ' '*backpadding
+            #     new_line.append(line)
+
             #print wrappedtext, 'R:', dir(R)
             label = self.FloatCanvas.AddText("\n".join(wrappedtext), (x+1, y+h/2),
                                         Color = "White",  Size = FontSize,
-                                        Weight=wx.BOLD, Style=wx.ITALIC )
+                                        Weight=wx.BOLD, Style=wx.ITALIC)
+
+
             R.Text = label
             #print dir(label), label
             #R.Bind(FC.EVT_FC_LEFT_UP, self.OnLeftUp )
@@ -181,22 +195,61 @@ class CanvasController:
                 # save links
                 self.links.append([self.linkRects[0], self.linkRects[1]])
 
+                # reset linkrects object
                 self.linkRects=[]
-                #self.Canvas.SetMode(self.Modes[0][1])
+
+                # change the mouse cursor
+                self.Canvas.SetMode(self.Modes[0][1])
             else:
                 self.linkRects.append(object)
-            # obj = object.GetEventObject()
-            #
-            # EventType = FC.EVT_FC_LEFT_DOWN
-            # obj = self.GetHitObject(object, EventType)
-            #
-            # if obj:
-            #
-            #
-            #     self.selected.append(obj)
-            #     if len(self.selected) == 2:
-            #         self.createLine(self.selected[0], self.selected[1])
-            #         self.selected = []
+
+        # populate model view
+        if cur.Name == 'default':
+            # get the model view container
+            mv = self.Canvas.GetTopLevelParent().Children[0].FindWindowByName('notebook').FindWindowByLabel('Model View')
+
+            # get the model object from cmd
+            obj_id = object.ID
+            obj = self.cmd.get_model_by_id(obj_id)
+
+            # format the model parameters for printing
+            params = obj.get_config_params()
+
+
+            text = ''
+
+            for arg,dict in params.iteritems():
+                title = arg
+
+                try:
+                    table = ''
+                    for k,v in dict[0].iteritems():
+                        table += '||%s||%s||\n' % (k, v)
+
+                    text += '###%s  \n%s  \n'%(title,table)
+                except: pass
+
+            #text = '\n'.join([k for k in params.keys()])
+
+            #text = '||a||b||\n||test||test||\n||test||test||'
+
+            #md = "###Heading\n---\n```\nsome code\n```"
+            html = markdown2.markdown(text, extras=["wiki-tables"])
+
+            #css = "<style>h3 a{font-weight:100;color: gold;text-decoration: none;}</style>"
+            css = "<style>tr:nth-child(even) " \
+                    "{ background-color: #e6f1f5;} " \
+                    "table {border-collapse: collapse;width:100%}" \
+                    "table td, table th {border: 1px solid #e6f1f5;}" \
+                    "h3 {color: #66A3E0}</style>"
+
+
+
+
+            # set the model params as text
+            mv.setText(css + html)
+
+
 
         if not self.Moving:
             self.Moving = True

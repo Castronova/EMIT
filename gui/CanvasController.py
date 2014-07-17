@@ -206,7 +206,10 @@ class CanvasController:
         # populate model view
         if cur.Name == 'default':
             # get the model view container
-            mv = self.Canvas.GetTopLevelParent().Children[0].FindWindowByName('notebook').FindWindowByLabel('Model View')
+            mainGui = self.Canvas.GetTopLevelParent()
+            mv = mainGui.Children[0].FindWindowByName('notebook').GetPage(1)
+
+            #mv = self.Canvas.GetTopLevelParent().m_mgr.GetPane(n
 
             # get the model object from cmd
             obj_id = object.ID

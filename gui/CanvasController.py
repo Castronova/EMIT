@@ -116,7 +116,7 @@ class CanvasController:
             FontSize = 14
             #filename = os.path.basename(filepath)
 
-            R = self.FloatCanvas.AddRectangle((x,y), (w,h), LineWidth = 2, FillColor = "BLUE")
+            R = self.FloatCanvas.AddRectangle((x,y), (w,h), LineWidth = 2, FillColor = "BLUE",InForeground=True)
             R.HitFill = True
             R.ID = id
             R.Name = name
@@ -137,7 +137,7 @@ class CanvasController:
             #print wrappedtext, 'R:', dir(R)
             label = self.FloatCanvas.AddText("\n".join(wrappedtext), (x+1, y+h/2),
                                         Color = "White",  Size = FontSize,
-                                        Weight=wx.BOLD, Style=wx.ITALIC)
+                                        Weight=wx.BOLD, Style=wx.ITALIC, InForeground=True)
 
 
             R.Text = label
@@ -318,22 +318,16 @@ class CanvasController:
                 self.MovingObject.Move((x,y))
                 self.MovingObject.Text.Move((x, y))
 
-                # remove links
-                #self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Arrow]
-                self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Line]
 
+                # clear lines from drawlist
+                self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Line]
 
                 # remove any polygons (arrowheads) from the _ForeDrawList
                 self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if type(obj) != FC.Polygon]
 
-                # recalculate links
-                #rects = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Rectangle]
-
+                # redraw links
                 for link in self.links:
                     self.createLine(link[0], link[1])
-
-                # using links[[r1,r2],[...]] we can iterate of the rectangles and redraw links
-
 
             self.FloatCanvas.Draw(True)
 

@@ -416,9 +416,10 @@ class GUILink(GUIBase):
         self.Canvas._RaiseMouseEvent(event, EventType)
 '''
 
-class GUIDelete(GUIBase):
+class GUIDelete(GUIBase, CanvasController):
+    #CanvasController.onRightDown()
     pass
-    
+
 class GUIRun(GUIBase):
     pass
 

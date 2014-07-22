@@ -65,7 +65,7 @@ class CanvasController:
     def initBindings(self):
         self.FloatCanvas.Bind(FC.EVT_MOTION, self.OnMove )
         self.FloatCanvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp )
-        self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.onRightDown)
+        #self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.onRightDown)
         self.FloatCanvas.Bind(FC.EVT_LEFT_DOWN, self.onLeftDown)
 
     def initSubscribers(self):
@@ -143,6 +143,7 @@ class CanvasController:
             #R.Bind(FC.EVT_FC_LEFT_UP, self.OnLeftUp )
 
             R.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit)
+            R.Bind(FC.EVT_FC_RIGHT_DOWN, self.RightClickCb )
             #self.Canvas.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit, id=R.ID)
 
             self.models[R]=id
@@ -179,6 +180,8 @@ class CanvasController:
 
         Arrow1.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
         Arrow2.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
+        Arrow1.Bind(FC.EVT_FC_RIGHT_DOWN, self.RightClickCb)
+        Arrow2.Bind(FC.EVT_FC_RIGHT_DOWN, self.RightClickCb)
 
         g = self.Canvas.Canvas._DrawList
         g.insert(0, g.pop())
@@ -190,7 +193,7 @@ class CanvasController:
 
     def ObjectHit(self, object):
         print "Hit Object(CanvasController)", object.Name
-
+        #self.FloatCanvas.Bind(FC.EVT_FC_RIGHT_DOWN( list, -1, self.RightClickCb ))
         cur = self.getCursor()
 
         if cur.Name == 'link':
@@ -318,6 +321,27 @@ class CanvasController:
         dlg.Destroy()
         #Example()
 
+    def RightClickCb( self, event ):
+        # record what was clicked
+        #self.list_item_clicked = right_click_context = event.GetText()
+
+        ### 2. Launcher creates wxMenu. ###
+        menu = wx.Menu()
+        for (id,title) in menu_title_by_id.items():
+            ### 3. Launcher packs menu with Append. ###
+            menu.Append( id, title )
+            ### 4. Launcher registers menu handlers with EVT_MENU, on the menu. ###
+            wx.EVT_MENU( menu, id, self.MenuSelectionCb )
+
+        ### 5. Launcher displays menu with call to PopupMenu, invoked on the source component, passing event's GetPoint. ###
+        self.frame.PopupMenu( menu, event.GetPoint() )
+        menu.Destroy() # destroy to avoid mem leak
+
+    def MenuSelectionCb( self, event ):
+        # do something
+        operation = menu_title_by_id[ event.GetId() ]
+        #target    = self.list_item_clicked
+        print 'Perform "%(operation)s" on "%(target)s."' % vars()
 
 
 class FileDrop(wx.FileDropTarget):
@@ -497,3 +521,12 @@ class TriangleShape1(FC.Polygon, MovingObjectMixin):
 
         Points += XY
         return Points
+
+menu_titles = [ "Open",
+                "Properties",
+                "Rename",
+                "Delete" ]
+
+menu_title_by_id = {}
+for title in menu_titles:
+    menu_title_by_id[ wx.NewId() ] = title

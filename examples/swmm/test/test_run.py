@@ -121,11 +121,12 @@ class test_swmm(unittest.TestCase):
             ax.add_patch(patch)
 
 
-            ax.axis('auto')
-            plt.draw()
+        ax.axis('auto')
+        plt.draw()
 
-
-        time.sleep(2)
+        plt.ioff()
+        plt.show()
+       # time.sleep(2)
 
 
     def test_build_coordinates(self):

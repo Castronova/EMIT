@@ -196,6 +196,8 @@ class CanvasController:
         #self.FloatCanvas.Bind(FC.EVT_FC_RIGHT_DOWN( list, -1, self.RightClickCb ))
         cur = self.getCursor()
 
+        print object.Name
+
         if cur.Name == 'link':
             if len(self.linkRects)  > 0:
                 self.linkRects.append(object)
@@ -208,7 +210,9 @@ class CanvasController:
                 self.linkRects=[]
 
                 # change the mouse cursor
+
                 #self.Canvas.SetMode(self.Modes[0][1])
+
             else:
                 self.linkRects.append(object)
 

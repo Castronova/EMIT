@@ -192,9 +192,10 @@ class CanvasController:
         #     self.FloatCanvas.AddObject(FC.Line((line[i],line[i+1]),LineColor=color,LineWidth=2,InForeground=False))
 
 
-        #self.FloatCanvas.AddObject(FC.Polygon(arrow,FillColor='Blue',InForeground=True))
+        self.FloatCanvas.AddObject(FC.Polygon(arrow,FillColor='Blue',InForeground=True))
+        #self.FloatCanvas.AddPolygon(arrow,FillColor='blue',InForeground=True)
 
-        self.FloatCanvas.AddPolygon(arrow,FillColor='blue',InForeground=True)
+
         # for pt in arrow:
         #     self.FloatCanvas.AddObject(FC.Point(pt, Color="Red", Diameter= 5, InForeground=True))
 
@@ -320,6 +321,10 @@ class CanvasController:
                 # remove links
                 #self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Arrow]
                 self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Line]
+
+
+                # remove any polygons (arrowheads) from the _ForeDrawList
+                self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if type(obj) != FC.Polygon]
 
                 # recalculate links
                 #rects = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Rectangle]

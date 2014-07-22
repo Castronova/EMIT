@@ -180,12 +180,21 @@ class CanvasController:
 
         for i in range(0,len(line)-1):
             self.FloatCanvas.AddObject(FC.Line((line[i],line[i+1]),LineColor=linegradient[i],LineWidth=2,InForeground=False))
-        #
-        # inverse = CanvasObjects.get_inverse(line, arrow_length=6)
-        # for i in range(0,len(inverse)-1):
-        #     self.FloatCanvas.AddObject(FC.Line((inverse[i],inverse[i+1]),LineColor=linegradient[i],LineWidth=2,InForeground=False))
 
-        self.FloatCanvas.AddObject(FC.Polygon(arrow,FillColor='Blue',InForeground=True))
+        #line = CanvasObjects.get_inverse(line, arrow_length=6)
+        #self.FloatCanvas.AddObject(FC.Point(start,Color='green',Diameter=10,InForeground= True))
+        #self.FloatCanvas.AddObject(FC.Point(end,Color='blue',Diameter=10,InForeground=True))
+
+        # import random
+        # r = lambda: random.randint(0,255)
+        # for i in range(0,len(line)-1):
+        #     color = '#%02X%02X%02X' % (r(),r(),r())
+        #     self.FloatCanvas.AddObject(FC.Line((line[i],line[i+1]),LineColor=color,LineWidth=2,InForeground=False))
+
+
+        #self.FloatCanvas.AddObject(FC.Polygon(arrow,FillColor='Blue',InForeground=True))
+
+        self.FloatCanvas.AddPolygon(arrow,FillColor='blue',InForeground=True)
         # for pt in arrow:
         #     self.FloatCanvas.AddObject(FC.Point(pt, Color="Red", Diameter= 5, InForeground=True))
 
@@ -313,7 +322,7 @@ class CanvasController:
                 self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Line]
 
                 # recalculate links
-                rects = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Rectangle]
+                #rects = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Rectangle]
 
                 for link in self.links:
                     self.createLine(link[0], link[1])

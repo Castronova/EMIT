@@ -101,43 +101,91 @@ def build_arrow(pts,arrow_length=3):
     # find start and end range based on distance from x2,y2
     idx = np.where(pts==x2)[0][0]
 
-    distance = 0
-    xstart = None
-    ystart = None
-    for x,y in pts[idx+1:]:
-        xstart = x
-        ystart = y
-        distance = math.sqrt((x2-x)**2 + (y2-y)**2)
-        if distance > 10: break
+    step = -.01 if pts[0][0] > pts[-1][0] else .01
+    x3 = np.arange(pts[0][0],pts[-1][0],step)
 
-    distance = 0
-    xend  = None
-    yend = None
-    for x,y in list(reversed(pts))[idx+1:]:
-        xend= x
-        yend = y
-        distance = math.sqrt((x2-x)**2 + (y2-y)**2)
-        if distance > 10: break
-
-
-    # from numpy import linspace
-    # x3 = linspace(pts[len(pts)/2 -10][0],pts[len(pts)/2 +10][0],100)
-
-    x3 = np.arange(xstart,xend,.1)
 
     y3 = [M*x + b for x in x3]
-    inverse = zip(x3, y3)
+    xy3 = zip(x3,y3)
 
     diff = [abs(x2-x)for x in x3]
     idx = diff.index(min(diff))
 
-    v1 = inverse[idx+5]
-    v2 = inverse[idx-5]
+    line = []
+    distance = 0
+    for x,y in xy3[idx+1:]:
+        line.append((x,y))
+        distance = math.sqrt((x2-x)**2 + (y2-y)**2)
+        if distance > 10: break
+
+    line.reverse()
+
+    distance = 0
+    xy3.reverse()
+    for x,y in xy3[len(xy3)-idx+1:]:
+        line.append((x,y))
+        distance = math.sqrt((x2-x)**2 + (y2-y)**2)
+        if distance > 10: break
+
+    v1 = line[0]
+    v2 = line[-1]
     v3 = (x1,y1)
     return v1,v2,v3
 
 
+def get_inverse(pts,arrow_length=3):
 
+
+    # get the center coordinate of line
+    x1,y1 = pts[len(pts)/2]
+
+    # get the point at 'length' away from center
+    x2,y2 = pts[(len(pts)/2) - int(arrow_length)]
+
+    #return (x1,y1), ()
+
+    actual_length = sqrt((x2-x1)**2 + (y2-y1)**2)
+
+    # determine the slope of this line segment
+    m = (y2-y1) / (x2-x1)
+    M = -1./m
+
+    # determine y intercept
+    b = y2 - M*x2
+
+    import numpy as np
+    import math
+
+    # find start and end range based on distance from x2,y2
+    idx = np.where(pts==x2)[0][0]
+
+    step = -.01 if pts[0][0] > pts[-1][0] else .01
+    x3 = np.arange(pts[0][0],pts[-1][0],step)
+
+    x3 = np.arange(pts[0][0],pts[-1][0],.1)
+    y3 = [M*x + b for x in x3]
+    xy3 = zip(x3,y3)
+
+    diff = [abs(x2-x)for x in x3]
+    idx = diff.index(min(diff))
+
+    line = []
+    distance = 0
+    for x,y in xy3[idx+1:]:
+        line.append((x,y))
+        distance = math.sqrt((x2-x)**2 + (y2-y)**2)
+        if distance > 10: break
+
+    line.reverse()
+
+    distance = 0
+    xy3.reverse()
+    for x,y in xy3[len(xy3)-idx+1:]:
+        line.append((x,y))
+        distance = math.sqrt((x2-x)**2 + (y2-y)**2)
+        if distance > 10: break
+
+    return line
 
 def draw_rounded_rectangle(canvas, center, width=50, height=50):
 

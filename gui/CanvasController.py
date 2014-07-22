@@ -18,6 +18,7 @@ import numpy as N
 import os
 import math
 import markdown2
+from LinkDialogueBox import LinkBox
 
 class CanvasController:
     def __init__(self, cmd, Canvas):
@@ -169,10 +170,15 @@ class CanvasController:
 
 
         #self.Canvas.AddArrow((x1,y1), length, angle ,LineWidth = 5, LineColor = "Black", ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
-        self.Canvas.Canvas.AddArrow((x1,y1), length/2, angle ,LineWidth = 2, LineColor = "Black", ArrowHeadSize = 10, ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
+        Arrow1 = self.Canvas.Canvas.AddArrow((x1,y1), length/2, angle ,LineWidth = 2, LineColor = "Black", ArrowHeadSize = 10, ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
         xm = x1 + dx/2
         ym = y1 + dy/2
-        self.Canvas.Canvas.AddArrow((xm,ym), length/2, angle ,LineWidth = 2, LineColor = "Black", ArrowHeadSize = 10, ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
+        Arrow2 = self.Canvas.Canvas.AddArrow((xm,ym), length/2, angle ,LineWidth = 2, LineColor = "Black", ArrowHeadSize = 10, ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
+        Arrow1.HitlineWidth = 6
+        Arrow2.HitlineWidth = 6
+
+        Arrow1.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
+        Arrow2.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
 
         g = self.Canvas.Canvas._DrawList
         g.insert(0, g.pop())
@@ -183,7 +189,7 @@ class CanvasController:
 
 
     def ObjectHit(self, object):
-        #print "Hit Object(CanvasController)", object.Name
+        print "Hit Object(CanvasController)", object.Name
 
         cur = self.getCursor()
 
@@ -202,8 +208,8 @@ class CanvasController:
 
                 # change the mouse cursor
 
-                self.FloatCanvas.SetMode(self.Canvas.Modes[0][1])
-                #self.Canvas.SetMode(self.Canvas.Modes[0][1])
+                #self.Canvas.SetMode(self.Modes[0][1])
+
             else:
                 self.linkRects.append(object)
 
@@ -307,6 +313,15 @@ class CanvasController:
                     #self.Canvas._CallHitCallback(Object, xy, HitEvent)
                     return Object
             return False
+
+    def ArrowClicked(self,event):
+        #self.Log("The Link was Clicked")
+        print "The Link was clicked"
+        dlg = LinkBox()
+        dlg.ShowModal()
+        dlg.Destroy()
+        #Example()
+
 
 
 class FileDrop(wx.FileDropTarget):

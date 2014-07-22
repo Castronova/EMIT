@@ -187,6 +187,8 @@ class CanvasController:
 
         cur = self.getCursor()
 
+        print object.Name
+
         if cur.Name == 'link':
             if len(self.linkRects)  > 0:
                 self.linkRects.append(object)
@@ -199,7 +201,9 @@ class CanvasController:
                 self.linkRects=[]
 
                 # change the mouse cursor
-                self.Canvas.SetMode(self.Modes[0][1])
+
+                self.FloatCanvas.SetMode(self.Canvas.Modes[0][1])
+                #self.Canvas.SetMode(self.Canvas.Modes[0][1])
             else:
                 self.linkRects.append(object)
 

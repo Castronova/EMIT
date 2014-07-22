@@ -13,12 +13,14 @@ import sys
 sys.path.append("..")
 from wx.lib.floatcanvas import FloatCanvas as FC
 from wx.lib.floatcanvas.Utilities import BBox
+from wx.lib.floatcanvas.NavCanvas import NavCanvas
 from wx.lib.pubsub import pub as Publisher
 import numpy as N
 import os
 import math
 import markdown2
 from LinkDialogueBox import LinkBox
+import CanvasObjects
 
 class CanvasController:
     def __init__(self, cmd, Canvas):
@@ -168,25 +170,42 @@ class CanvasController:
         angle = 90- math.atan2(dy,dx) *180/math.pi
 
         #print 'angle: ',angle
+        from matplotlib.pyplot import cm
+        cmap = cm.Blues
+        line = CanvasObjects.get_line_pts((x1,y1),(x2,y2),order=4, num=200)
+        linegradient = CanvasObjects.get_hex_from_gradient(cmap, len(line))
+        linegradient.reverse()
+        arrow = CanvasObjects.build_arrow(line, arrow_length=6)
 
+
+        for i in range(0,len(line)-1):
+            self.FloatCanvas.AddObject(FC.Line((line[i],line[i+1]),LineColor=linegradient[i],LineWidth=2,InForeground=False))
+        #
+        # inverse = CanvasObjects.get_inverse(line, arrow_length=6)
+        # for i in range(0,len(inverse)-1):
+        #     self.FloatCanvas.AddObject(FC.Line((inverse[i],inverse[i+1]),LineColor=linegradient[i],LineWidth=2,InForeground=False))
+
+        self.FloatCanvas.AddObject(FC.Polygon(arrow,FillColor='Blue',InForeground=True))
+        # for pt in arrow:
+        #     self.FloatCanvas.AddObject(FC.Point(pt, Color="Red", Diameter= 5, InForeground=True))
 
         #self.Canvas.AddArrow((x1,y1), length, angle ,LineWidth = 5, LineColor = "Black", ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
-        Arrow1 = self.Canvas.Canvas.AddArrow((x1,y1), length/2, angle ,LineWidth = 2, LineColor = "Black", ArrowHeadSize = 10, ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
-        xm = x1 + dx/2
-        ym = y1 + dy/2
-        Arrow2 = self.Canvas.Canvas.AddArrow((xm,ym), length/2, angle ,LineWidth = 2, LineColor = "Black", ArrowHeadSize = 10, ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
-        Arrow1.HitlineWidth = 6
-        Arrow2.HitlineWidth = 6
+        #Arrow1 = self.Canvas.Canvas.AddArrow((x1,y1), length/2, angle ,LineWidth = 2, LineColor = "Black", ArrowHeadSize = 10, ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
+        # xm = x1 + dx/2
+        # ym = y1 + dy/2
+        #Arrow2 = self.Canvas.Canvas.AddArrow((xm,ym), length/2, angle ,LineWidth = 2, LineColor = "Black", ArrowHeadSize = 10, ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
+        # Arrow1.HitlineWidth = 6
+        # Arrow2.HitlineWidth = 6
+        #
+        # Arrow1.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
+        # Arrow2.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
+        # Arrow1.Bind(FC.EVT_FC_RIGHT_DOWN, self.RightClickCb)
+        # Arrow2.Bind(FC.EVT_FC_RIGHT_DOWN, self.RightClickCb)
 
-        Arrow1.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
-        Arrow2.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
-        Arrow1.Bind(FC.EVT_FC_RIGHT_DOWN, self.RightClickCb)
-        Arrow2.Bind(FC.EVT_FC_RIGHT_DOWN, self.RightClickCb)
-
-        g = self.Canvas.Canvas._DrawList
-        g.insert(0, g.pop())
-        g.insert(0, g.pop())
-        self.Canvas.Canvas._DrawList = g
+        # g = self.Canvas.Canvas._DrawList
+        # g.insert(0, g.pop())
+        # g.insert(0, g.pop())
+        # self.Canvas.Canvas._DrawList = g
 
         self.Canvas.Canvas.Draw()
 
@@ -290,7 +309,8 @@ class CanvasController:
                 self.MovingObject.Text.Move((x, y))
 
                 # remove links
-                self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Arrow]
+                #self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Arrow]
+                self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Line]
 
                 # recalculate links
                 rects = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Rectangle]
@@ -340,7 +360,7 @@ class CanvasController:
         ### 5. Launcher displays menu with call to PopupMenu, invoked on the source component, passing event's GetPoint. ###
         self.frame.PopupMenu( menu, event.GetPoint() )
         menu.Destroy() # destroy to avoid mem leak
-
+    #
     def MenuSelectionCb( self, event ):
         # do something
         operation = menu_title_by_id[ event.GetId() ]

@@ -1,3 +1,5 @@
+__author__ = 'Mario'
+
 __author__ = 'tonycastronova'
 
 import wx
@@ -18,67 +20,54 @@ import numpy as N
 from numpy import meshgrid, linspace
 
 
-class DrawFrame(wx.Frame):
-
-    def __init__(self,parent, id,title,position,size):
-        wx.Frame.__init__(self,parent, id,title,position, size)
-
-        self.CreateStatusBar()
-        # Add the Canvas
-        NC = NavCanvas.NavCanvas(self,
-                                 size= (500,500),
-                                 ProjectionFun = None,
-                                 Debug = 0,
-                                 )
-
-        self.Canvas = NC.Canvas
-
-
-        self.Show(True)
-
-
         # --- draw link between centroids ---
 
-        # build link
-        link_pts = get_line_pts([-100,-170],[500,301],order=4, num=100)
-
-        # construct arrow in center of line
-        arrow_coords = build_arrow(link_pts, arrow_length=3)
+        # # build link
+        # link_pts = get_line_pts([-100,-170],[500,301],order=4, num=100)
+        #
+        # # construct arrow in center of line
+        # arrow_coords = build_arrow(link_pts, arrow_length=3)
 
         # plot the link and arrowhead
-        self.Canvas.AddObject(FloatCanvas.Polygon(arrow_coords,FillColor='Blue',InForeground=True))
-        #self.Canvas.AddObject(FloatCanvas.Line(link_pts,LineWidth=2,InForeground=False))
+        #self.Canvas.AddObject(FloatCanvas.Polygon(arrow_coords,FillColor='Blue',InForeground=True))
 
 
-        cmap = plt.cm.Blues
-        num_colors = len(link_pts)
-        colors = [cmap(1.*i/num_colors) for i in range(num_colors)]
-
-        # import random
-        # r = lambda: random.randint(0,255)
-        for i in range(0,len(link_pts)-1):
-            #color = '#%02X%02X%02X' % (r(),r(),r())
-            color = mcolors.rgb2hex(colors[i])
-            #color = colors[i][:-1]
-            self.Canvas.AddObject(FloatCanvas.Line((link_pts[i],link_pts[i+1]),LineColor=color,LineWidth=2,InForeground=False))
+        # cmap = plt.cm.Blues
+        # num_colors = len(link_pts)
+        # colors = [cmap(1.*i/num_colors) for i in range(num_colors)]
+        #
+        # for i in range(0,len(link_pts)-1):
+        #     color = mcolors.rgb2hex(colors[i])
+        #     #self.Canvas.AddObject(FloatCanvas.Line((link_pts[i],link_pts[i+1]),LineColor=color,LineWidth=2,InForeground=False))
 
 
 
         # --- draw rounded rectangle objects ---
         # draw some boxes
-        draw_rounded_rectangle(self.Canvas,(-100,-170),width=200, height=100)
-        draw_rounded_rectangle(self.Canvas,(500,301), width=250, height=150)
+        # draw_rounded_rectangle(self.Canvas,(-100,-170),width=200, height=100)
+        # draw_rounded_rectangle(self.Canvas,(500,301), width=250, height=150)
 
 
 
 
+        #
+        #
+        # # zoom to bounding box
+        # self.Canvas.ZoomToBB()
+        #
+        # return None
 
 
-        # zoom to bounding box
-        self.Canvas.ZoomToBB()
+def get_hex_from_gradient(gradient, num):
+    cmap = gradient
+    num_colors = num
+    colors = [cmap(1.*i/num_colors) for i in range(num_colors)]
 
-        return None
+    hexcolors = []
+    for i in range(0,num_colors):
+        hexcolors.append(mcolors.rgb2hex(colors[i]))
 
+    return hexcolors
 
 def build_arrow(pts,arrow_length=3):
 
@@ -88,12 +77,14 @@ def build_arrow(pts,arrow_length=3):
 
 
 
+
     # get the center coordinate of line
     x1,y1 = pts[len(pts)/2]
 
     # get the point at 'length' away from center
     x2,y2 = pts[(len(pts)/2) - int(arrow_length)]
 
+    #return (x1,y1), ()
 
     actual_length = sqrt((x2-x1)**2 + (y2-y1)**2)
 
@@ -104,16 +95,47 @@ def build_arrow(pts,arrow_length=3):
     # determine y intercept
     b = y2 - M*x2
 
+    import numpy as np
+    import math
 
-    # determine (x3,y3) and (x4,y4)
-    x3 = x2 + actual_length/3
-    y3 = M*x3 + b
+    # find start and end range based on distance from x2,y2
+    idx = np.where(pts==x2)[0][0]
 
-    x4 = x2 - actual_length/3
-    y4 = M*x4 + b
+    distance = 0
+    xstart = None
+    ystart = None
+    for x,y in pts[idx+1:]:
+        xstart = x
+        ystart = y
+        distance = math.sqrt((x2-x)**2 + (y2-y)**2)
+        if distance > 10: break
+
+    distance = 0
+    xend  = None
+    yend = None
+    for x,y in list(reversed(pts))[idx+1:]:
+        xend= x
+        yend = y
+        distance = math.sqrt((x2-x)**2 + (y2-y)**2)
+        if distance > 10: break
 
 
-    return (x1,y1), (x3,y3),(x4,y4)
+    # from numpy import linspace
+    # x3 = linspace(pts[len(pts)/2 -10][0],pts[len(pts)/2 +10][0],100)
+
+    x3 = np.arange(xstart,xend,.1)
+
+    y3 = [M*x + b for x in x3]
+    inverse = zip(x3, y3)
+
+    diff = [abs(x2-x)for x in x3]
+    idx = diff.index(min(diff))
+
+    v1 = inverse[idx+5]
+    v2 = inverse[idx-5]
+    v3 = (x1,y1)
+    return v1,v2,v3
+
 
 
 
@@ -149,14 +171,6 @@ def draw_rounded_rectangle(canvas, center, width=50, height=50):
         b = N.array(b[10:-10])
 
 
-        # # plot the edges
-        #for coords in [l,r,t,b]:
-        #    canvas.AddObject(FloatCanvas.Line(coords,LineColor = 'red'))
-
-
-        # build corners
-        corners = []
-
 
         ltc = bez.GetBezier([l[-1],l[-1]+[0,5],t[0]-[5,0],t[0]])
         rtc = bez.GetBezier([t[-1],t[-1]+[5,0],r[0]+[0,5],r[0]])
@@ -169,171 +183,14 @@ def draw_rounded_rectangle(canvas, center, width=50, height=50):
                     [lbc, [b[-1],b[-1]-[5,0]],[l[0]-[0,5],l[0]]]
                     ]
 
-        # plot corners
-        # for corner in corners:
-        #     pts = corner[0]
-        #     canvas.AddObject(FloatCanvas.Line(N.array([pts[0],pts[1]])))
-        #     canvas.AddObject(FloatCanvas.Line(N.array([pts[2],pts[3]])))
-        #     canvas.AddObject(FloatCanvas.Line(corner[1],LineColor='green'))
-
-
         # build polygon object
         coords = N.vstack((l,ltc,t,rtc,r,rbc,b,lbc))
 
-        canvas.AddObject(FloatCanvas.Polygon(coords,FillColor='yellow',FillStyle='Solid'))
+
+        return coords
 
 
-#        canvas.Canvas.AddObject(FloatCanvas.Line(lc,LineColor='yellow'))
-
-
-
-
-
-
-class SmoothLine(FloatCanvas.Line):
-    """
-
-    The SmoothLine class is identical to the Line class except that it uses a
-    GC rather than a DC.
-
-    """
-    def _Draw(self, dc , WorldToPixel, ScaleWorldToPixel, HTdc=None):
-        Points = WorldToPixel(self.Points)
-        GC = wx.GraphicsContext.Create(dc)
-        GC.SetPen(self.Pen)
-        GC.DrawLines(Points)
-
-
-class AlphaLine(FloatCanvas.Line):
-    """
-
-    The AlphaLine class draws a line with a border and a fill colour with
-    optional 'start alpha' and 'end alpha' to determine the fill gradient
-
-    """
-    def __init__(self,Points,
-            LineColor = "Blue",
-            LineStyle = "Solid",
-            LineWidth    = 1,
-            InForeground = True,
-            StartAlpha = 0,
-            EndAlpha = 255,
-            BorderColour = "White"):
-
-        FloatCanvas.DrawObject.__init__(self, InForeground)
-
-        self.Points = N.array(Points,N.float)
-        self.CalcBoundingBox()
-
-        self.LineColor = LineColor
-        self.LineStyle = LineStyle
-        self.LineWidth = LineWidth
-        self.StartAlpha = StartAlpha
-        self.EndAlpha = EndAlpha
-        self.BorderColour = BorderColour
-
-    def Perpendicular(self, line, length):
-        """Return a point that is perpendicular to 'line'
-
-        Given a line defined as two points [(x1, y1), (x2, y2)] return a point
-        that will create a new line that is perpendicular. 'length' gives the
-        vertical distance from (x2, y2)
-
-        """
-        x1,y1 = line[0]
-        x2,y2 = line[1]
-        angle = pi
-
-        theta = atan((x2 - x1) / (y2 - y1))
-        alpha = 2 * pi - (angle + theta)
-        l = length * cos(alpha)
-        dx = l * sin(alpha)
-        dy = l * cos(alpha)
-
-        if dx != abs(dx):
-            dx *= -1
-
-        if dy != abs(dy):
-            dy *= -1
-
-        x3 = x2 - dx
-        y3 = y2 - dy
-
-        return x3,y3
-
-    def _Draw(self, dc , WorldToPixel, ScaleWorldToPixel, HTdc=None):
-        #Points = WorldToPixel(self.Points)
-        bcolour = self.BorderColour
-
-        Points = self.Points
-        GC = wx.GraphicsContext.Create(dc)
-
-
-
-        c = wx.Colour()
-        c.SetFromName(self.LineColor)
-        r,g,b = c.Get()
-
-        c1 = wx.Colour(r, g, b, self.StartAlpha)
-        c2 = wx.Colour(r, g, b, self.EndAlpha)
-
-        Path = GC.CreatePath()
-
-        bottomline = Points[1:].copy()
-
-        lastline = Points[-2:]
-        firstline = Points[:2]
-        firstline = firstline[::-1]
-        perplast = self.Perpendicular(lastline, self.LineWidth)
-        perpfirst = self.Perpendicular(firstline, self.LineWidth)
-        data = Points[:]
-        data[:,1] -= self.LineWidth
-
-        while perplast[0] >  data[-1,0]:
-            data = data[:-1]
-
-        data = N.resize(data, (len(data) + 1,2))
-        data[-1] = perplast
-
-        data = data[::-1]
-
-        while  perpfirst[0] > data[-1,0]:
-            data = data[:-1]
-
-        data = N.resize(data, (len(data) + 1,2))
-        data[-1] = perpfirst
-        topline = data
-
-
-        Path.MoveToPoint(WorldToPixel(perpfirst))
-
-        if bottomline[-1, 0] >= perplast[0]:
-            bottomline[-1] = perplast
-
-        bottomline = WorldToPixel(bottomline)
-        for point in bottomline:
-            Path.AddLineToPoint(point)
-
-        topline = WorldToPixel(topline)
-        for point in topline:
-            Path.AddLineToPoint(point)
-
-        GC.SetPen(wx.Pen(bcolour))
-        GC.DrawPath(Path)
-
-        Points = WorldToPixel(Points)
-        m = Points[:,0].size - 1
-
-        Brush = \
-            GC.CreateLinearGradientBrush(Points[0,0], \
-            Points[0,1], Points[m,0], Points[m,1], c1, c2)
-
-        GC.SetBrush(Brush)
-        GC.FillPath(Path)
-
-
-
-def get_line_pts(start, end, order=3, num=10):
+def get_line_pts(start, end, order=3, num=100):
 
 
         # get start and end x,y
@@ -356,7 +213,7 @@ def get_line_pts(start, end, order=3, num=10):
         control_pts = N.array(lineArray)
 
         from numpy import linspace
-
+        import numpy
         n = order
         V = num
 
@@ -365,26 +222,11 @@ def get_line_pts(start, end, order=3, num=10):
 
         pts = []
         for val in linspace( 0, 1, V ):
-            #print '%s: %s' % (val, bez( val ))
-            pts.append(tuple(bez(val)))
+            #pts.append(tuple(bez(val)))
+            pts.append(numpy.array(bez(val)))
 
-        #for pt in pts:
-        #    print pt
 
         return pts
-        # g.SmoothingMode = SmoothingMode.AntiAlias;
-        # g.DrawBeziers(arrowPen, lineArray);
-        # _arrowPath.AddBeziers(lineArray);
-        # _arrowPath.Flatten();
-        #
-        # //g.DrawLine(linePen, startX, startY, endX, endY);
-        #
-        # if (Math.Abs(startX - endX) + Math.Abs(startY - endY) > 10)
-        # {
-        #     return windowTrianglePoints;
-        # }
-        # else
-        #     return new Point[0];
 
 
 def GetTrianglePoints(startx,starty,endx,endy):
@@ -403,8 +245,9 @@ def GetTrianglePoints(startx,starty,endx,endy):
 
 
         # calculate the arrow vertices
-        px = midx + size *(startx - midx)/length
-        py = midy + size *(starty - midy)/length
+        # px = midx + size *(startx - midx)/length
+        # py = midy + size *(starty - midy)/length
+        px = py = 10
 
         vx = midx - px
         vy = midy - py
@@ -545,9 +388,4 @@ class bezier():
             pts.append(tuple(bez(val)))
 
         return pts
-
-
-app = wx.PySimpleApp()
-DrawFrame(None, -1, "FloatCanvas Rectangle Drawer", wx.DefaultPosition, (700,700) )
-app.MainLoop()
 

@@ -237,6 +237,8 @@ class CanvasController:
         arrow_shape.type = CanvasObjects.ShapeType.ArrowHead
         self.FloatCanvas.AddObject(arrow_shape)
 
+        arrow_shape.Bind(FC.EVT_FC_RIGHT_DOWN, self.ArrowClicked)
+
 
         #self.FloatCanvas.AddPolygon(arrow,FillColor='blue',InForeground=True)
 
@@ -398,9 +400,9 @@ class CanvasController:
         print "The Link was clicked"
         linkwiz = LinkWizard.wizLink(self.FloatCanvas)
 
-        dlg = LinkBox()
-        dlg.ShowModal()
-        dlg.Destroy()
+        # dlg = LinkBox()
+        # dlg.ShowModal()
+        # dlg.Destroy()
         #Example()
 
     def RightClickCb( self, event ):

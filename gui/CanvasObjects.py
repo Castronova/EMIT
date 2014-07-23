@@ -92,6 +92,7 @@ def build_arrow(pts,arrow_length=3):
     m = (y2-y1) / (x2-x1)
     M = -1./m
 
+
     # determine y intercept
     b = y2 - M*x2
 

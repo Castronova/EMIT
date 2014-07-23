@@ -21,6 +21,7 @@ import math
 import markdown2
 from LinkDialogueBox import LinkBox
 import CanvasObjects
+import LinkWizard
 
 class CanvasController:
     def __init__(self, cmd, Canvas):
@@ -159,10 +160,6 @@ class CanvasController:
         #print "creating link", R1, R2
         x1,y1  = (R1.BoundingBox[0] + (R1.wh[0]/2, R1.wh[1]/2))
         x2,y2  = (R2.BoundingBox[0] + (R2.wh[0]/2, R2.wh[1]/2))
-        #length = (((x2 - x1)**2)+(y2 - y1)**2)**.5
-        #dy = abs(y2 - y1)
-        #dx = abs(x2 - x1)
-        #angle = math.atan2(dx,dy) *180/math.pi
 
         length = (((x2 - x1)**2)+(y2 - y1)**2)**.5
         dy = (y2 - y1)
@@ -176,11 +173,10 @@ class CanvasController:
         linegradient = CanvasObjects.get_hex_from_gradient(cmap, len(line))
         linegradient.reverse()
         arrow = CanvasObjects.build_arrow(line, arrow_length=6)
-
+        print arrow
 
         for i in range(0,len(line)-1):
             self.FloatCanvas.AddObject(FC.Line((line[i],line[i+1]),LineColor=linegradient[i],LineWidth=2,InForeground=False))
-
         #line = CanvasObjects.get_inverse(line, arrow_length=6)
         #self.FloatCanvas.AddObject(FC.Point(start,Color='green',Diameter=10,InForeground= True))
         #self.FloatCanvas.AddObject(FC.Point(end,Color='blue',Diameter=10,InForeground=True))
@@ -193,24 +189,8 @@ class CanvasController:
 
 
         self.FloatCanvas.AddObject(FC.Polygon(arrow,FillColor='Blue',InForeground=True))
-        #self.FloatCanvas.AddPolygon(arrow,FillColor='blue',InForeground=True)
-
-
-        # for pt in arrow:
-        #     self.FloatCanvas.AddObject(FC.Point(pt, Color="Red", Diameter= 5, InForeground=True))
-
-        #self.Canvas.AddArrow((x1,y1), length, angle ,LineWidth = 5, LineColor = "Black", ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
-        #Arrow1 = self.Canvas.Canvas.AddArrow((x1,y1), length/2, angle ,LineWidth = 2, LineColor = "Black", ArrowHeadSize = 10, ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
-        # xm = x1 + dx/2
-        # ym = y1 + dy/2
-        #Arrow2 = self.Canvas.Canvas.AddArrow((xm,ym), length/2, angle ,LineWidth = 2, LineColor = "Black", ArrowHeadSize = 10, ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
-        # Arrow1.HitlineWidth = 6
-        # Arrow2.HitlineWidth = 6
-        #
-        # Arrow1.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
-        # Arrow2.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
-        # Arrow1.Bind(FC.EVT_FC_RIGHT_DOWN, self.RightClickCb)
-        # Arrow2.Bind(FC.EVT_FC_RIGHT_DOWN, self.RightClickCb)
+        triangle = self.FloatCanvas.AddObject(FC.Polygon(arrow,FillColor='Blue',InForeground=True))
+        triangle.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
 
         # g = self.Canvas.Canvas._DrawList
         # g.insert(0, g.pop())
@@ -348,6 +328,8 @@ class CanvasController:
     def ArrowClicked(self,event):
         #self.Log("The Link was Clicked")
         print "The Link was clicked"
+        linkwiz = LinkWizard.wizLink(self.FloatCanvas)
+
         dlg = LinkBox()
         dlg.ShowModal()
         dlg.Destroy()
@@ -434,125 +416,6 @@ class FileDrop(wx.FileDropTarget):
             print 'I do not recognize this file type :('
 
 
-class GUILink():
-
-    def __init__(self, Canvas=None):
-        self.__init__(self, Canvas)
-        self.Canvas = Canvas
-        self.selected = []
-        self.links = []
-
-    def GetHitObject(self, event, HitEvent):
-        if self.Canvas.HitDict:
-            # check if there are any objects in the dict for this event
-            if self.Canvas.HitDict[ HitEvent ]:
-                xy = event.GetPosition()
-                color = self.Canvas.GetHitTestColor( xy )
-                if color in self.Canvas.HitDict[ HitEvent ]:
-                    Object = self.Canvas.HitDict[ HitEvent ][color]
-                    #self.Canvas._CallHitCallback(Object, xy, HitEvent)
-                    return Object
-            return False
-
-## DONT CARE ABOUT THIS STUFF
-class MovingObjectMixin:
-    """
-    Methods required for a Moving object
-
-    """
-    def GetOutlinePoints(self):
-        """
-        Returns a set of points with which to draw the outline when moving the
-        object.
-
-        Points are a NX2 array of (x,y) points in World coordinates.
-
-
-        """
-        BB = self.BoundingBox
-        OutlinePoints = N.array(
-            ( (BB[0, 0], BB[0, 1]), (BB[0, 0], BB[1, 1]), (BB[1, 0], BB[1, 1]), (BB[1, 0], BB[0, 1]),
-            ))
-
-        return OutlinePoints
-
-class ConnectorObjectMixin:
-    """
-    Mixin class for DrawObjects that can be connected with lines
-
-    Note that this version only works for Objects that have an "XY" attribute:
-      that is, one that is derived from XHObjectMixin.
-
-    """
-
-    def GetConnectPoint(self):
-        return self.XY
-
-class MovingBitmap(FC.ScaledBitmap, MovingObjectMixin, ConnectorObjectMixin):
-    """
-    ScaledBitmap Object that can be moved
-    """
-    # # All we need to do is is inherit from:
-    # #  ScaledBitmap, MovingObjectMixin and ConnectorObjectMixin
-    pass
-
-
-class MovingCircle(FC.Circle, MovingObjectMixin, ConnectorObjectMixin):
-    """
-    ScaledBitmap Object that can be moved
-    """
-    # # All we need to do is is inherit from:
-    # #  Circle MovingObjectMixin and ConnectorObjectMixin
-    pass
-
-
-class MovingGroup(FC.Group, MovingObjectMixin, ConnectorObjectMixin):
-    def GetConnectPoint(self):
-        return self.BoundingBox.Center
-
-    def CalcBoundingBox(self):
-        self.BoundingBox = BBox.fromPoints((self.Object1.GetConnectPoint(), self.Object2.GetConnectPoint()))
-        if self._Canvas:
-            self._Canvas.BoundingBoxDirty = True
-
-
-    def _Draw(self, dc, WorldToPixel, ScaleWorldToPixel, HTdc=None):
-        Points = N.array((self.Object1.GetConnectPoint(), self.Object2.GetConnectPoint()))
-        Points = WorldToPixel(Points)
-        dc.SetPen(self.Pen)
-        dc.DrawLines(Points)
-        if HTdc and self.HitAble:
-            HTdc.SetPen(self.HitPen)
-            HTdc.DrawLines(Points)
-
-
-class TriangleShape1(FC.Polygon, MovingObjectMixin):
-    def __init__(self, XY, L):
-        """
-        An equilateral triangle object
-        XY is the middle of the triangle
-        L is the length of one side of the Triangle
-        """
-
-        XY = N.asarray(XY)
-        XY.shape = (2,)
-
-        Points = self.CompPoints(XY, L)
-
-        FC.Polygon.__init__(self, Points, LineColor="Black", LineStyle="Solid", LineWidth=2, FillColor="Red",
-                            FillStyle="Solid")
-
-    # # Override the default OutlinePoints
-    #def GetOutlinePoints(self):
-        #return self.Points
-
-    def CompPoints(self, XY, L):
-        c = L / N.sqrt(3)
-
-        Points = N.array(((0, c), ( L / 2.0, -c / 2.0), (-L / 2.0, -c / 2.0)), N.float_)
-
-        Points += XY
-        return Points
 
 menu_titles = [ "Open",
                 "Properties",

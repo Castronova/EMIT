@@ -215,7 +215,10 @@ class CanvasController:
 
 
         for i in range(0,len(line)-1):
-            self.FloatCanvas.AddObject(FC.Line((line[i],line[i+1]),LineColor=linegradient[i],LineWidth=2,InForeground=False))
+            l = FC.Line((line[i],line[i+1]),LineColor=linegradient[i],LineWidth=2,InForeground=False)
+            l.type = CanvasObjects.ShapeType.Link
+            self.FloatCanvas.AddObject(l)
+
 
         #line = CanvasObjects.get_inverse(line, arrow_length=6)
         #self.FloatCanvas.AddObject(FC.Point(start,Color='green',Diameter=10,InForeground= True))

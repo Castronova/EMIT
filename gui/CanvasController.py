@@ -111,18 +111,29 @@ class CanvasController:
     def createBox(self, xCoord, yCoord, id=None, name=None):
 
         if name:
+
+
             w, h = 180, 120
             WH = (w/2, h/2)
             x,y = xCoord, yCoord
             FontSize = 14
             #filename = os.path.basename(filepath)
 
-            R = self.FloatCanvas.AddRectangle((x,y), (w,h), LineWidth = 2, FillColor = "BLUE",InForeground=True)
-            R.HitFill = True
+            # get the coordinates for the rounded rectangle
+            rect_coords = CanvasObjects.build_rounded_rectangle((x,y), width=w, height=h)
+
+            R = self.FloatCanvas.AddObject(FC.Polygon(rect_coords,FillColor='#A2CAF5',InForeground=True))
+
+            #R = self.FloatCanvas.AddRectangle((x,y), (w,h), LineWidth = 2, FillColor = "BLUE",InForeground=True)
+            #R.HitFill = True
             R.ID = id
             R.Name = name
             R.wh = (w,h)
             R.xy = (x,y)
+
+            # set the shape type so that we can identify it later
+            R.type = CanvasObjects.ShapeType.Model
+
 
             width = 15
             wrappedtext = tw.wrap(unicode(name), width)
@@ -136,12 +147,40 @@ class CanvasController:
             #     new_line.append(line)
 
             #print wrappedtext, 'R:', dir(R)
-            label = self.FloatCanvas.AddText("\n".join(wrappedtext), (x+1, y+h/2),
-                                        Color = "White",  Size = FontSize,
-                                        Weight=wx.BOLD, Style=wx.ITALIC, InForeground=True)
+
+            #wx.DC.DrawLabel('This is some text',R)
+            #DrawLabel(self, text, rect, alignment=wxALIGN_LEFT|wxALIGN_TOP, indexAccel=-1)
 
 
+
+            #FC.DrawLabel(self, text, rect, alignment=wxALIGN_LEFT|wxALIGN_TOP, indexAccel=-1)
+
+            #textbox = FC.ScaledText(wrappedtext, (x,y),Size=FontSize,Color='White',InForeground=True,Position='cc',Width=w)
+            #__init__(self, String, Point, Size, Color, BackgroundColor, LineColor, LineStyle, LineWidth, Width, PadSize, Family, Style, Weight, Underlined, Position, Alignment, Font, LineSpacing, InForeground)
+            #textbox.type  =CanvasObjects.ShapeType.Label
+
+            #label = self.FloatCanvas.AddObject(textbox)
+
+            # define the font
+            font = wx.Font(16, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+            # print "font", font.GetPixelSize()
+            #
+            # textwidth =len(max(wrappedtext))*font.GetPixelSize()[1]
+            # textheight = len(wrappedtext)*font.GetPixelSize()[1]
+            # location = (x - .25*textwidth,y+.5*textheight)
+
+            label = self.FloatCanvas.AddScaledTextBox(unicode(name), (x,y), #(x+1, y+h/2),
+                                        Color = "Black",  Size = FontSize, Width= w-10, Position = "cc", Alignment = "center",
+                                        Weight=wx.BOLD, Style=wx.ITALIC, InForeground=True, Font = font, LineWidth = 0, LineColor = None)
+
+
+            # set the type of this object so that we can find it later
+            label.type = CanvasObjects.ShapeType.Label
+
+            # add this text as an attribute of the rectangle
             R.Text = label
+
+
             #print dir(label), label
             #R.Bind(FC.EVT_FC_LEFT_UP, self.OnLeftUp )
 
@@ -176,7 +215,10 @@ class CanvasController:
         print arrow
 
         for i in range(0,len(line)-1):
-            self.FloatCanvas.AddObject(FC.Line((line[i],line[i+1]),LineColor=linegradient[i],LineWidth=2,InForeground=False))
+            l = FC.Line((line[i],line[i+1]),LineColor=linegradient[i],LineWidth=2,InForeground=False)
+            l.type = CanvasObjects.ShapeType.Link
+            self.FloatCanvas.AddObject(l)
+
         #line = CanvasObjects.get_inverse(line, arrow_length=6)
         #self.FloatCanvas.AddObject(FC.Point(start,Color='green',Diameter=10,InForeground= True))
         #self.FloatCanvas.AddObject(FC.Point(end,Color='blue',Diameter=10,InForeground=True))
@@ -188,9 +230,33 @@ class CanvasController:
         #     self.FloatCanvas.AddObject(FC.Line((line[i],line[i+1]),LineColor=color,LineWidth=2,InForeground=False))
 
 
-        self.FloatCanvas.AddObject(FC.Polygon(arrow,FillColor='Blue',InForeground=True))
-        triangle = self.FloatCanvas.AddObject(FC.Polygon(arrow,FillColor='Blue',InForeground=True))
-        triangle.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
+
+        # create the arrowhead object
+        arrow_shape = FC.Polygon(arrow,FillColor='Blue',InForeground=True)
+        # set the shape type so that we can identify it later
+        arrow_shape.type = CanvasObjects.ShapeType.ArrowHead
+        self.FloatCanvas.AddObject(arrow_shape)
+
+
+        #self.FloatCanvas.AddPolygon(arrow,FillColor='blue',InForeground=True)
+
+
+        # for pt in arrow:
+        #     self.FloatCanvas.AddObject(FC.Point(pt, Color="Red", Diameter= 5, InForeground=True))
+
+        #self.Canvas.AddArrow((x1,y1), length, angle ,LineWidth = 5, LineColor = "Black", ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
+        #Arrow1 = self.Canvas.Canvas.AddArrow((x1,y1), length/2, angle ,LineWidth = 2, LineColor = "Black", ArrowHeadSize = 10, ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
+        # xm = x1 + dx/2
+        # ym = y1 + dy/2
+        #Arrow2 = self.Canvas.Canvas.AddArrow((xm,ym), length/2, angle ,LineWidth = 2, LineColor = "Black", ArrowHeadSize = 10, ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
+        # Arrow1.HitlineWidth = 6
+        # Arrow2.HitlineWidth = 6
+        #
+        # Arrow1.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
+        # Arrow2.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
+        # Arrow1.Bind(FC.EVT_FC_RIGHT_DOWN, self.RightClickCb)
+        # Arrow2.Bind(FC.EVT_FC_RIGHT_DOWN, self.RightClickCb)
+
 
         # g = self.Canvas.Canvas._DrawList
         # g.insert(0, g.pop())
@@ -300,10 +366,12 @@ class CanvasController:
 
 
                 # clear lines from drawlist
-                self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Line]
+                self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != CanvasObjects.ShapeType.Link]
+                #self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Line]
 
-                # remove any polygons (arrowheads) from the _ForeDrawList
-                self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if type(obj) != FC.Polygon]
+                # remove any arrowheads from the _ForeDrawList
+                self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if obj.type != CanvasObjects.ShapeType.ArrowHead]
+                #self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if type(obj) != FC.Polygon]
 
                 # redraw links
                 for link in self.links:

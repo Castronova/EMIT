@@ -58,6 +58,13 @@ from numpy import meshgrid, linspace
         # return None
 
 
+class ShapeType():
+    ArrowHead = 'ArrowHead'
+    Model = 'Model'
+    Link = 'Link'
+    Label= 'Label'
+
+
 def get_hex_from_gradient(gradient, num):
     cmap = gradient
     num_colors = num
@@ -188,10 +195,10 @@ def get_inverse(pts,arrow_length=3):
 
     return line
 
-def draw_rounded_rectangle(canvas, center, width=50, height=50):
+def build_rounded_rectangle(center, width=50, height=50):
 
         bez = bezier()
-        s = N.array(center)
+        s = N.array(center,dtype=int)
         w = width
         h = height
         wh = N.array([width,height])

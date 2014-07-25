@@ -47,7 +47,7 @@ class CanvasController:
         self.Canvas.SetDropTarget(dt)
 
         self.linkRects = []
-        self.links = []
+        self.links = {}
         self.models = {}
 
     def UnBindAllMouseEvents(self):
@@ -219,20 +219,9 @@ class CanvasController:
             l.type = CanvasObjects.ShapeType.Link
             self.FloatCanvas.AddObject(l)
 
-        #line = CanvasObjects.get_inverse(line, arrow_length=6)
-        #self.FloatCanvas.AddObject(FC.Point(start,Color='green',Diameter=10,InForeground= True))
-        #self.FloatCanvas.AddObject(FC.Point(end,Color='blue',Diameter=10,InForeground=True))
-
-        # import random
-        # r = lambda: random.randint(0,255)
-        # for i in range(0,len(line)-1):
-        #     color = '#%02X%02X%02X' % (r(),r(),r())
-        #     self.FloatCanvas.AddObject(FC.Line((line[i],line[i+1]),LineColor=color,LineWidth=2,InForeground=False))
-
-
-
         # create the arrowhead object
         arrow_shape = FC.Polygon(arrow,FillColor='Blue',InForeground=True)
+
         # set the shape type so that we can identify it later
         arrow_shape.type = CanvasObjects.ShapeType.ArrowHead
         self.FloatCanvas.AddObject(arrow_shape)
@@ -240,30 +229,9 @@ class CanvasController:
         arrow_shape.Bind(FC.EVT_FC_RIGHT_DOWN, self.ArrowClicked)
 
 
-        #self.FloatCanvas.AddPolygon(arrow,FillColor='blue',InForeground=True)
+        # store the link and rectangles in the self.links list
+        self.links[arrow_shape] = [R1,R2]
 
-
-        # for pt in arrow:
-        #     self.FloatCanvas.AddObject(FC.Point(pt, Color="Red", Diameter= 5, InForeground=True))
-
-        #self.Canvas.AddArrow((x1,y1), length, angle ,LineWidth = 5, LineColor = "Black", ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
-        #Arrow1 = self.Canvas.Canvas.AddArrow((x1,y1), length/2, angle ,LineWidth = 2, LineColor = "Black", ArrowHeadSize = 10, ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
-        # xm = x1 + dx/2
-        # ym = y1 + dy/2
-        #Arrow2 = self.Canvas.Canvas.AddArrow((xm,ym), length/2, angle ,LineWidth = 2, LineColor = "Black", ArrowHeadSize = 10, ArrowHeadAngle = 50)#, end = 'ARROW_POSITION_MIDDLE')
-        # Arrow1.HitlineWidth = 6
-        # Arrow2.HitlineWidth = 6
-        #
-        # Arrow1.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
-        # Arrow2.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
-        # Arrow1.Bind(FC.EVT_FC_RIGHT_DOWN, self.RightClickCb)
-        # Arrow2.Bind(FC.EVT_FC_RIGHT_DOWN, self.RightClickCb)
-
-
-        # g = self.Canvas.Canvas._DrawList
-        # g.insert(0, g.pop())
-        # g.insert(0, g.pop())
-        # self.Canvas.Canvas._DrawList = g
 
         self.Canvas.Canvas.Draw()
 
@@ -279,9 +247,6 @@ class CanvasController:
             if len(self.linkRects)  > 0:
                 self.linkRects.append(object)
                 self.createLine(self.linkRects[0], self.linkRects[1])
-
-                # save links
-                self.links.append([self.linkRects[0], self.linkRects[1]])
 
                 # reset linkrects object
                 self.linkRects=[]
@@ -376,8 +341,9 @@ class CanvasController:
                 #self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if type(obj) != FC.Polygon]
 
                 # redraw links
-                for link in self.links:
-                    self.createLine(link[0], link[1])
+                for link in self.links.keys():
+                    r1,r2 = self.links[link]
+                    self.createLine(r1,r2)
 
             self.FloatCanvas.Draw(True)
 
@@ -397,6 +363,41 @@ class CanvasController:
 
     def ArrowClicked(self,event):
         #self.Log("The Link was Clicked")
+
+        # get the models associated with the link
+        polygons = self.links[event]
+
+        # get r1 and r2
+        r1 = polygons[0]
+        r2 = polygons[1]
+
+        # get output items from r1
+        model = self.cmd.get_model_by_id(r1.ID)
+
+        # get exchange items
+        eitems = model.get_output_exchange_items()
+
+        for item in eitems:
+            print 'Type: ', item.get_type()
+            print "Name: ", item.name()
+            print "Variable: ", item.variable().VariableNameCV()
+            print "Unit: ", item.unit().UnitName()
+            print 10*'-'
+
+        # get output items from r1
+        model = self.cmd.get_model_by_id(r2.ID)
+
+        # get exchange items
+        eitems = model.get_input_exchange_items()
+
+        for item in eitems:
+            print 'Type: ', item.get_type()
+            print "Name: ", item.name()
+            print "Variable: ", item.variable().VariableNameCV()
+            print "Unit: ", item.unit().UnitName()
+            print 10*'-'
+
+
         print "The Link was clicked"
         linkwiz = LinkWizard.wizLink(self.FloatCanvas)
 
@@ -408,6 +409,14 @@ class CanvasController:
     def RightClickCb( self, event ):
         # record what was clicked
         #self.list_item_clicked = right_click_context = event.GetText()
+
+
+        # get the link object
+        # get the model id's from the link
+        # get the model objects from the models id's
+
+
+
 
         ### 2. Launcher creates wxMenu. ###
         menu = wx.Menu()

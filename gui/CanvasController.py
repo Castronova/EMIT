@@ -22,6 +22,7 @@ import markdown2
 from LinkDialogueBox import LinkBox
 import CanvasObjects
 import LinkWizard
+from LinkStart import LinkStart
 
 class CanvasController:
     def __init__(self, cmd, Canvas):
@@ -104,7 +105,6 @@ class CanvasController:
     def setCursor(self, value=None):
         #print "Cursor was set to value ", dir(value), value.GetHandle()
         self._Cursor=value
-
     def getCursor(self):
         return self._Cursor
 
@@ -375,31 +375,36 @@ class CanvasController:
         model = self.cmd.get_model_by_id(r1.ID)
 
         # get exchange items
-        eitems = model.get_output_exchange_items()
-
-        for item in eitems:
-            print 'Type: ', item.get_type()
-            print "Name: ", item.name()
-            print "Variable: ", item.variable().VariableNameCV()
-            print "Unit: ", item.unit().UnitName()
-            print 10*'-'
-
+        inputitems = model.get_output_exchange_items()
         # get output items from r1
         model = self.cmd.get_model_by_id(r2.ID)
 
         # get exchange items
-        eitems = model.get_input_exchange_items()
-
-        for item in eitems:
-            print 'Type: ', item.get_type()
-            print "Name: ", item.name()
-            print "Variable: ", item.variable().VariableNameCV()
-            print "Unit: ", item.unit().UnitName()
-            print 10*'-'
+        outputitems = model.get_input_exchange_items()
 
 
-        print "The Link was clicked"
-        linkwiz = LinkWizard.wizLink(self.FloatCanvas)
+
+        # for item in eitems:
+        #     print 'Type: ', item.get_type()
+        #     print "Name: ", item.name()
+        #     print "Variable: ", item.variable().VariableNameCV()
+        #     print "Unit: ", item.unit().UnitName()
+        #     print 10*'-'
+        #
+        #
+        #
+        # for item in eitems:
+        #     print 'Type: ', item.get_type()
+        #     print "Name: ", item.name()
+        #     print "Variable: ", item.variable().VariableNameCV()
+        #     print "Unit: ", item.unit().UnitName()
+        #     print 10*'-'
+
+
+        # print "The Link was clicked"
+        linkstart = LinkStart(self.FloatCanvas, inputitems, outputitems)
+        linkstart.Show()
+        #linkwiz = LinkWizard.wizLink(self.FloatCanvas, inputitems, outputitems)
 
         # dlg = LinkBox()
         # dlg.ShowModal()
@@ -414,16 +419,9 @@ class CanvasController:
         # get the link object
         # get the model id's from the link
         # get the model objects from the models id's
-
-
-
-
-        ### 2. Launcher creates wxMenu. ###
         menu = wx.Menu()
         for (id,title) in menu_title_by_id.items():
-            ### 3. Launcher packs menu with Append. ###
             menu.Append( id, title )
-            ### 4. Launcher registers menu handlers with EVT_MENU, on the menu. ###
             wx.EVT_MENU( menu, id, self.MenuSelectionCb )
 
         ### 5. Launcher displays menu with call to PopupMenu, invoked on the source component, passing event's GetPoint. ###

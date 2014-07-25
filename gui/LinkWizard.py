@@ -14,6 +14,8 @@ import pnlTemporal
 import pnlDetails
 
 
+
+
 [wxID_WIZLINK, wxID_PNLCREATELINK, wxID_PNLSPATIAL, wxID_PNLTEMPORAL,
  wxID_PNLDETAILS,
 ] = [wx.NewId() for _init_ctrls in range(5)]
@@ -35,12 +37,14 @@ class Details(wiz.PyWizardPage):
         self.sizer = sizer
         self.SetSizer(sizer)
 
+
         title = wx.StaticText(self, -1, title)
         title.SetFont(wx.Font(18, wx.SWISS, wx.NORMAL, wx.BOLD))
         sizer.Add(title, 10, wx.ALIGN_CENTRE|wx.ALL, 5)
         sizer.Add(wx.StaticLine(self, -1), 5, wx.EXPAND|wx.ALL, 5)
         self.pnlDetail=pnlDetails.pnlDetails(self)
         self.sizer.Add(self.pnlDetail, 85, wx.ALL, 5)
+
 
     def SetNext(self, next):
         self.next = next
@@ -132,6 +136,9 @@ class CreateLink(wiz.PyWizardPage):
         self.pnlIntroduction=pnlCreateLink.pnlCreateLink(self, inputitems, outputitems)
         self.sizer.Add(self.pnlIntroduction, 85, wx.ALL, 5)
 
+    def GetName(*args, **kwargs):
+        return 'CreateLink'
+
     def SetNext(self, next):
         self.next = next
 
@@ -179,6 +186,8 @@ class wizLink(wx.wizard.Wizard):
         self.Bind(wx.wizard.EVT_WIZARD_PAGE_CHANGED, self.on_page_changing)
         self.Bind(wx.wizard.EVT_WIZARD_FINISHED, self.on_wizard_finished)
 
+
+
     def get_metadata(self):
         pass
         # if self.is_changing_series:
@@ -194,12 +203,15 @@ class wizLink(wx.wizard.Wizard):
         # #logger.debug("site: %s, variable: %s, method: %s, source: %s, qcl: %s"% (site.id,variable.id, method.id, source.id, qcl.id))
         # return site, variable, method, source, qcl
 
-    def __init__(self, parent, inputitems, outputitems):
+    def __init__(self, parent, outputid, inputid, outputitems, inputitems, cmd):
         self._init_ctrls(parent)
         #self.series_service = service_man.get_series_service()
         #self.record_service = record_service
         self.is_changing_series = False
         #self.currSeries = record_service.get_series()
+        self.cmd = cmd
+        self.inputid = inputid
+        self.outputid = outputid
 
         self.page1 = CreateLink(self, "Link Connection", inputitems, outputitems)
 
@@ -232,8 +244,13 @@ class wizLink(wx.wizard.Wizard):
         self.Destroy()
 
     def on_page_changing(self, event):
+
+        if event.Page.GetName() == "CreateLink":
+            self.page2.pnlDetail.SetData(self.page1.pnlIntroduction.links)
+            #self.text3.SetValue(self.text2.GetValue())
+
         if event.Page == self.page2:
-            self.page2.fill_summary()
+            self.page2.pnlDetail.printData()
         elif event.Page==self.page1:
             self.is_changing_series = False
         else:
@@ -241,6 +258,24 @@ class wizLink(wx.wizard.Wizard):
 
 
     def on_wizard_finished(self, event):
+
+
+        #--- create link objects ---
+
+        # get links from page1
+        link = self.page1.pnlIntroduction.links[0]
+
+        # set these links in the cmd
+        self.cmd.add_link(self.outputid, link[0].get_id(),
+                          self.inputid, link[1].get_id())
+
+
+        self.Close()
+        event.Skip()
+
+
+
+
         # Site, Variable, Method, Source, QCL= self.get_metadata()
         # #if qcl exits use its its
         # closeSuccessful = False
@@ -316,5 +351,3 @@ class wizLink(wx.wizard.Wizard):
         #     else:
         #         Publisher.sendMessage("refreshSeries")
 
-            self.Close()
-            event.Skip()

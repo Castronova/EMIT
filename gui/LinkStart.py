@@ -8,16 +8,23 @@ import LinkWizard
 
 class LinkStart ( wx.Frame ):
 
-    def __init__( self, parent, input, output):
+    def __init__( self, parent, from_model, to_model, input, output, cmd):
         wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( 500,300 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
         self.input = input
         self.output = output
         self.FloatCanvas = parent
         self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
 
+        self.cmd = cmd
+        self.from_model = from_model
+        self.to_model = to_model
+
         bSizer1 = wx.BoxSizer( wx.HORIZONTAL )
 
-        self.m_listCtrl1 = wx.ListCtrl( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_ICON )
+        self.m_listCtrl1 = wx.ListCtrl( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_REPORT )
+        self.m_listCtrl1.InsertColumn(0, 'links')
+        self.m_listCtrl1.SetColumnWidth(0, 200)
+
         bSizer1.Add( self.m_listCtrl1, 0, wx.ALL, 5 )
 
         bSizer2 = wx.BoxSizer( wx.VERTICAL )
@@ -38,6 +45,9 @@ class LinkStart ( wx.Frame ):
         self.m_button2.Bind(wx.EVT_LEFT_DOWN, self.RemoveClick)
         self.m_button3.Bind(wx.EVT_LEFT_DOWN, self.CloseClick)
 
+        # populate listctrl with links
+        self.PopulateLinks()
+
 
         self.SetSizer( bSizer1 )
         self.Layout()
@@ -45,14 +55,25 @@ class LinkStart ( wx.Frame ):
         self.Centre( wx.BOTH )
 
     def AddClick(self, event):
-        linkwiz = LinkWizard.wizLink(self.FloatCanvas, self.input, self.output)
+        linkwiz = LinkWizard.wizLink(self.FloatCanvas, self.from_model.get_id(), self.to_model.get_id(), self.output, self.input, self.cmd)
 
+        self.PopulateLinks()
 
     def RemoveClick(self, event):
         pass
 
     def CloseClick(self, event):
         self.Destroy()
+
+    def PopulateLinks(self):
+
+        links = self.cmd.get_links_btwn_models(self.from_model.get_id(), self.to_model.get_id())
+
+        for link in links:
+            text = "%s : %s --> %s : %s"%(link[0][0].get_name(),link[0][1].name(),link[1][0].get_name(),link[1][1].name())
+
+            #text = 'This is overflowing'
+            self.m_listCtrl1.InsertStringItem(0, text)
 
 
     def __del__( self ):

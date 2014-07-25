@@ -249,6 +249,18 @@ class Coordinator(object):
 
         return links
 
+    def get_links_btwn_models(self, from_model, to_model):
+
+        links = []
+        for linkid, link in self.__links.iteritems():
+            # get the from/to link info
+            From, To = link.get_link()
+
+            if  From[0].get_id() == from_model and To[0].get_id() == to_model:
+                links.append([From, To])
+
+        return links
+
     def get_link_by_id(self,id):
         """
         returns all the links corresponding with a linkable component

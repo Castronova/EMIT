@@ -372,15 +372,15 @@ class CanvasController:
         r2 = polygons[1]
 
         # get output items from r1
-        model = self.cmd.get_model_by_id(r1.ID)
+        from_model = self.cmd.get_model_by_id(r1.ID)
 
         # get exchange items
-        inputitems = model.get_output_exchange_items()
+        inputitems = from_model.get_output_exchange_items()
         # get output items from r1
-        model = self.cmd.get_model_by_id(r2.ID)
+        to_model = self.cmd.get_model_by_id(r2.ID)
 
         # get exchange items
-        outputitems = model.get_input_exchange_items()
+        outputitems = to_model.get_input_exchange_items()
 
 
 
@@ -402,7 +402,7 @@ class CanvasController:
 
 
         # print "The Link was clicked"
-        linkstart = LinkStart(self.FloatCanvas, inputitems, outputitems)
+        linkstart = LinkStart(self.FloatCanvas, from_model, to_model, inputitems, outputitems, self.cmd)
         linkstart.Show()
         #linkwiz = LinkWizard.wizLink(self.FloatCanvas, inputitems, outputitems)
 

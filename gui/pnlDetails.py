@@ -17,27 +17,46 @@ class pnlDetails ( wx.Panel ):
               style=wx.TAB_TRAVERSAL)
         self.SetClientSize(wx.Size(423, 319))
 
-        bSizer1 = wx.BoxSizer( wx.VERTICAL )
+        self._data = []
+
+        self.bSizer1 = wx.BoxSizer( wx.VERTICAL )
         bSizer6 = wx.BoxSizer( wx.HORIZONTAL )
-        bSizer1.Add( bSizer6, 1, wx.EXPAND, 5 )
+        self.bSizer1.Add( bSizer6, 1, wx.EXPAND, 5 )
         bSizer5 = wx.BoxSizer( wx.HORIZONTAL )
 
         self.m_listCtrl4 = wx.ListCtrl( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_ICON )
         self.m_listCtrl5 = wx.ListCtrl( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_ICON )
-        self.m_button3 = wx.Button( self, wx.ID_ANY, u"MyButton", wx.DefaultPosition, wx.DefaultSize, 0 )
-        self.m_button4 = wx.Button( self, wx.ID_ANY, u"MyButton", wx.DefaultPosition, wx.DefaultSize, 0 )
+        # self.m_button3 = wx.Button( self, wx.ID_ANY, u"MyButton", wx.DefaultPosition, wx.DefaultSize, 0 )
+        # self.m_button4 = wx.Button( self, wx.ID_ANY, u"MyButton", wx.DefaultPosition, wx.DefaultSize, 0 )
 
         bSizer6.Add( self.m_listCtrl4, 0, wx.ALL, 5 )
         bSizer6.Add( self.m_listCtrl5, 0, wx.ALL, 5 )
-        bSizer5.Add( self.m_button3, 0, wx.ALL, 5 )
-        bSizer5.Add( self.m_button4, 0, wx.ALL, 5 )
+        # bSizer5.Add( self.m_button3, 0, wx.ALL, 5 )
+        # bSizer5.Add( self.m_button4, 0, wx.ALL, 5 )
 
 
-        bSizer1.Add( bSizer5, 1, wx.EXPAND, 5 )
+        self.bSizer1.Add( bSizer5, 1, wx.EXPAND, 5 )
 
+        self._details = wx.StaticText(self,-1,'test',(0,0))
 
-        self.SetSizer( bSizer1 )
+        self.SetSizer( self.bSizer1 )
         self.Layout()
+
+
+    def SetData(self,value):
+        self._data = value
+
+    def printData(self):
+
+        sometext = self._data[0][0].name() +'\n'
+        sometext+= self._data[0][1].name()
+
+        #sometext = '\n'.join(self._data[0])
+        self._details.SetLabel(sometext)
+        #self.bizer1.Layout()
+        self.Layout()
+
+
 
     def __del__( self ):
         pass

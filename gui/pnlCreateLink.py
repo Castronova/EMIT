@@ -19,9 +19,10 @@ class pnlCreateLink ( wx.Panel ):
         self.selectedinput = None
         self.selectedoutput = None
         self.links = []
-        input = [item.name() for item in inputitems]
-        output = [item.name() for item in outputitems]
-
+        self.inputitems = inputitems
+        self.outputitems = outputitems
+        self.input = [item.name() for item in inputitems]
+        self.output = [item.name() for item in outputitems]
 
 
         bSizer1 = wx.BoxSizer( wx.VERTICAL )
@@ -75,7 +76,8 @@ class pnlCreateLink ( wx.Panel ):
 
     def InputSelect(self, event):
 
-        self.selectedinput = event.Text
+        self.selectedinput = self.inputitems[event.GetIndex()]
+        #self.selectedinput = event.Text
 
         self.activateLinkButton()
 
@@ -87,7 +89,7 @@ class pnlCreateLink ( wx.Panel ):
 
     def OutputSelect(self, event):
 
-        self.selectedoutput = event.Text
+        self.selectedoutput = self.outputitems[event.GetIndex()]
 
         self.activateLinkButton()
 

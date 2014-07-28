@@ -28,7 +28,7 @@ class LinkStart ( wx.Frame ):
 
         self.m_listCtrl1 = wx.ListCtrl( self, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.Size(400, 230), style=wx.LC_REPORT )
         self.m_listCtrl1.InsertColumn(0, 'links')
-        self.m_listCtrl1.SetColumnWidth(0, 200)
+        self.m_listCtrl1.SetColumnWidth(0, 400)
 
         self.panel1.AddChild( self.m_listCtrl1)
 

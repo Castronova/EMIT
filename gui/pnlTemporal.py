@@ -19,17 +19,17 @@ class pnlTemporal ( wx.Panel ):
 
         bSizer6 = wx.BoxSizer( wx.VERTICAL )
 
-        m_radioBox1Choices = [ u"Nearest Time", "Arithmatic Average",  "Geometric Average"]
+        m_radioBox1Choices = [ u"PlaceHolder", "PlaceHolder",  "PlaceHolder"]
         self.m_radioBox1 = wx.RadioBox( self, wx.ID_ANY, u"Temporal Shift", wx.DefaultPosition, wx.DefaultSize, m_radioBox1Choices, 1, wx.RA_SPECIFY_COLS )
         self.m_radioBox1.SetSelection( 0 )
         bSizer6.Add( self.m_radioBox1, 0, wx.ALL, 5 )
 
-        m_radioBox2Choices = [ u"1 Day", "1 Week", "1 Month", "3 Month", "1 Year" ]
+        m_radioBox2Choices = [ u"PlaceHolder", "PlaceHolder", "PlaceHolder", "PlaceHolder", "PlaceHolder" ]
         self.m_radioBox2 = wx.RadioBox( self, wx.ID_ANY, u"Time Range", wx.DefaultPosition, wx.DefaultSize, m_radioBox2Choices, 1, wx.RA_SPECIFY_COLS )
         self.m_radioBox2.SetSelection( 0 )
         bSizer6.Add( self.m_radioBox2, 0, wx.ALL, 5 )
 
-        self.m_radioBtn1 = wx.RadioButton( self, wx.ID_ANY, u"Set Unit as Smallest Possible", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_radioBtn1 = wx.RadioButton( self, wx.ID_ANY, u"PlaceHolder", wx.DefaultPosition, wx.DefaultSize, 0 )
         bSizer6.Add( self.m_radioBtn1, 0, wx.ALL, 5 )
 
 

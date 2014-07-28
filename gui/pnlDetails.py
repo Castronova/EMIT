@@ -6,8 +6,8 @@ import wx.xrc
 import wx
 
 [wxID_PNLCREATELINK, wxID_PNLSPATIAL, wxID_PNLTEMPORAL,
- wxID_PNLDETAILS,
-] = [wx.NewId() for _init_ctrls in range(4)]
+ wxID_PNLDETAILS, wxID_PNLSUMMARYTREESUMMARY,
+] = [wx.NewId() for _init_ctrls in range(5)]
 
 class pnlDetails ( wx.Panel ):
 
@@ -19,10 +19,12 @@ class pnlDetails ( wx.Panel ):
 
         self._data = []
         bSizer5 = wx.BoxSizer( wx.VERTICAL )
-
-        self.m_treeCtrl2 = wx.TreeCtrl( self, id=wx.ID_ANY, pos=wx.Point(50, 50), size=wx.Size(425,250) )
-        bSizer5.Add( self.m_treeCtrl2, 0, wx.ALL, 5 )
-
+        #
+        # self.m_treeCtrl2 = wx.TreeCtrl( self, id=wx.ID_ANY, pos=wx.Point(50, 50), size=wx.Size(425,250) )
+        # bSizer5.Add( self.m_treeCtrl2, 0, wx.ALL, 5 )
+        self.treeSummary = MyTree(id=wxID_PNLSUMMARYTREESUMMARY,
+               parent=self, pos=wx.Point(0, 0),
+              size=wx.Size(423, 319), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT)
 
         self.SetSizer( bSizer5 )
         self.Layout()
@@ -38,7 +40,7 @@ class pnlDetails ( wx.Panel ):
 
         sometext = "This is placeholder text.  We need to think about what should be displayed here. \n\n"
         sometext += self._data[0].name() +'\n'
-        sometext+= self._data[1].name()
+        sometext += self._data[1].name()
 
         #sometext = '\n'.join(self._data[0])
 
@@ -50,9 +52,29 @@ class pnlDetails ( wx.Panel ):
         #self.bizer1.Layout()
         self.Layout()
 
-
-
-
-
     def __del__( self ):
         pass
+
+class MyTree(wx.TreeCtrl):
+
+    def __init__(self, parent, id, pos, size, style):
+
+         wx.TreeCtrl.__init__(self, parent, id, pos, size, style)
+         self.root = self.AddRoot('Series')
+         self.m1 = self.AppendItem(self.root, 'Output Model')
+         self.m2 = self.AppendItem(self.root, 'Input Model')
+         self.v = self.AppendItem(self.root, 'Variable')
+
+         self.sc=self.AppendItem(self.m1, 'ID: ')
+         self.sn=self.AppendItem(self.m1, 'Name: ')
+
+         self.sc=self.AppendItem(self.m2, 'ID: ')
+         self.sn=self.AppendItem(self.m2, 'Name: ')
+
+         self.vc=self.AppendItem(self.v, 'ID: ')
+         self.vn=self.AppendItem(self.v, 'Name: ')
+         self.vu=self.AppendItem(self.v, 'Units: ')
+         self.vvt=self.AppendItem(self.v, 'Value Type: ')
+         self.vts=self.AppendItem(self.v, 'Time Support: ')
+         self.vtu=self.AppendItem(self.v, 'Time Units: ')
+         self.vdt=self.AppendItem(self.v, 'Data Type: ')

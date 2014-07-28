@@ -104,7 +104,7 @@ class Spatial(wiz.PyWizardPage):
         sizer.Add(title, 10, wx.ALIGN_CENTRE|wx.ALL, 5)
         sizer.Add(wx.StaticLine(self, -1), 5, wx.EXPAND|wx.ALL, 5)
         self.pnlIntroduction=pnlSpatial.pnlSpatial(self)
-        self.sizer.Add(self.pnlIntroduction, 85, wx.ALL, 5)
+        self.sizer.Add(self.pnlIntroduction, 85, wx.ALL|wx.EXPAND, 5)
 
     def SetNext(self, next):
         self.next = next
@@ -135,6 +135,7 @@ class CreateLink(wiz.PyWizardPage):
         sizer.Add(wx.StaticLine(self, -1), 5, wx.EXPAND|wx.ALL, 5)
         self.pnlIntroduction=pnlCreateLink.pnlCreateLink(self, inputitems, outputitems)
         self.sizer.Add(self.pnlIntroduction, 85, wx.ALL, 5)
+
 
 
 
@@ -269,8 +270,8 @@ class wizLink(wx.wizard.Wizard):
         if event.Page == self.page3:
 
             #self.page3.pnlDetail.SetData(self.page1.pnlIntroduction.links)
-            self.page3.pnlDetail.SetData(self.page1.pnlIntroduction.get_link())
-            self.page3.pnlDetail.printData()
+            self.page4.pnlDetail.SetData(self.page1.pnlIntroduction.get_link())
+            self.page4.pnlDetail.printData()
 
         elif event.Page==self.page1:
             self.is_changing_series = False

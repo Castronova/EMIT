@@ -386,7 +386,13 @@ class CanvasController:
             self.linkRects=[]
 
             #change the mouse cursor
-            #self.Canvas.SetMode(self.Modes[0][1])
+
+
+            e = e = wx._core.CommandEvent(10013)
+            e.Id = -2017
+            # self.Canvas.GuiMouse.OnLeftUp(e)
+            #self.Canvas.
+            self.Canvas.SetMode(e)
 
     def GetHitObject(self, event, HitEvent):
         if self.Canvas.Canvas.HitDict:

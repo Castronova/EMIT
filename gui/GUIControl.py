@@ -17,6 +17,7 @@ from wx.lib.floatcanvas import FloatCanvas, Resources, NavCanvas
 from wx.lib.floatcanvas.Utilities import BBox
 import numpy as N
 from CanvasController import CanvasController
+from wx.lib.pubsub import pub as Publisher
 
 class Cursors(object):
     """
@@ -128,7 +129,6 @@ class GUIMouse(GUIBase):
 
         self.Cursor = wx.NullCursor
         self.Cursor.Name = 'default'
-
 
     # Handlers
     def OnLeftDown(self, event):

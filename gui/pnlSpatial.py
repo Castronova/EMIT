@@ -13,20 +13,22 @@ import wx
 
 class pnlSpatial ( wx.Panel ):
 
-    def __init__( self, prnt ):
+    def __init__( self, prnt):
         wx.Panel.__init__(self, id=wxID_PNLSPATIAL, name=u'pnlIntro', parent=prnt,
-              pos=wx.Point(571, 262), size=wx.Size(439, 357),
+              pos=wx.Point(571, 262), size=wx.Size(10, 10),
               style=wx.TAB_TRAVERSAL)
-        self.SetClientSize(wx.Size(423, 319))
+        self.SetClientSize(wx.Size(10, 10))
 
         self.parent = prnt
+
 
         # create some sizers
         sizer = wx.BoxSizer(wx.VERTICAL)
 
         # A button
         self.button =wx.Button(self, label="Placeholder")
-        self.radiobutton = wx.RadioButton(self, wx.ID_ANY, u"Set Unit as Smallest Possible")
+        self.radiobutton1 = wx.RadioButton(self, wx.ID_ANY, u"Placeholder")
+        self.radiobutton2 = wx.RadioButton(self, wx.ID_ANY, u"Placeholder")
         self.Bind(wx.EVT_BUTTON, self.OnClick,self.button)
 
         # put up a figure
@@ -34,12 +36,13 @@ class pnlSpatial ( wx.Panel ):
         self.axes = self.drawplot(self.figure)
         self.canvas = FigureCanvas(self, -1, self.figure)
 
-        sizer.Add(self.canvas, 0, wx.ALIGN_CENTER|wx.ALL)
+        sizer.Add(self.canvas, 100, wx.ALIGN_CENTER|wx.ALL)
         sizer.Add(self.button, 0, wx.ALIGN_CENTER|wx.ALL)
-        sizer.Add(self.radiobutton, 0, wx.ALIGN_CENTER|wx.ALL)
+        sizer.Add(self.radiobutton1, 0, wx.ALIGN_CENTER|wx.ALL)
+        sizer.Add(self.radiobutton2, 0, wx.ALIGN_CENTER|wx.ALL)
 
-        self.SetSizerAndFit(sizer)
-        self.Fit()
+        self.SetSizer(sizer)
+        #self.Fit()
     def log(self, fmt, *args):
         print (fmt % args)
     def OnClick(self,event):

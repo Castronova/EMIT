@@ -261,13 +261,17 @@ class wizLink(wx.wizard.Wizard):
     def on_page_changing(self, event):
 
         if event.Page.GetName() == "CreateLink":
+            pass
 
 
-            self.page3.pnlDetail.SetData(self.page1.pnlIntroduction.links)
             #self.text3.SetValue(self.text2.GetValue())
 
         if event.Page == self.page3:
+
+            #self.page3.pnlDetail.SetData(self.page1.pnlIntroduction.links)
+            self.page3.pnlDetail.SetData(self.page1.pnlIntroduction.get_link())
             self.page3.pnlDetail.printData()
+
         elif event.Page==self.page1:
             self.is_changing_series = False
         else:
@@ -280,7 +284,7 @@ class wizLink(wx.wizard.Wizard):
         #--- create link objects ---
 
         # get links from page1
-        link = self.page1.pnlIntroduction.links[0]
+        link = self.page1.pnlIntroduction.links
 
         # set these links in the cmd
         self.cmd.add_link(self.outputid, link[0].get_id(),

@@ -23,7 +23,7 @@ class pnlCreateLink ( wx.Panel ):
 
         self.selectedinput = None
         self.selectedoutput = None
-        self.links = []
+        self.links = [None, None]
         self.inputitems = inputitems
         self.outputitems = outputitems
         self.input = [item.name() for item in inputitems]
@@ -77,7 +77,13 @@ class pnlCreateLink ( wx.Panel ):
         self.Layout()
 
     def activateLinkButton(self):
-        if self.selectedinput is not None and self.selectedoutput is not None:
+
+
+
+        #if self.selectedinput is not None and self.selectedoutput is not None:
+        if None not in self.links:
+            #self.links = [self.selectedinput, self.selectedoutput]
+
             #self.m_button1.Enable()
             Publisher.sendMessage("activateNextButton")
         else:
@@ -86,28 +92,38 @@ class pnlCreateLink ( wx.Panel ):
 
     def InputSelect(self, event):
 
-        self.selectedinput = self.inputitems[event.GetIndex()]
+        #self.selectedinput = self.inputitems[event.GetIndex()]
         #self.selectedinput = event.Text
 
+        self.set_link(0,self.inputitems[event.GetIndex()])
         self.activateLinkButton()
 
     def InputDeselect(self, event):
 
-        self.selectedinput = None
+        #self.selectedinput = None
 
+        self.set_link(0, None)
         self.activateLinkButton()
 
     def OutputSelect(self, event):
 
-        self.selectedoutput = self.outputitems[event.GetIndex()]
+        #self.selectedoutput = self.outputitems[event.GetIndex()]
 
+        self.set_link(1,self.outputitems[event.GetIndex()])
         self.activateLinkButton()
 
     def OutputDeselect(self, event):
 
-        self.selectedoutput = None
+        #self.selectedoutput = None
 
+        self.set_link(1,None)
         self.activateLinkButton()
+
+    def set_link(self,index,value):
+        self.links[index] = value
+
+    def get_link(self):
+        return self.links
 
     def CreateLink(self, event):
         link = [self.selectedinput, self.selectedoutput]

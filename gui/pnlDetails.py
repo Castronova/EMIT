@@ -36,13 +36,19 @@ class pnlDetails ( wx.Panel ):
 
     def printData(self):
 
-         sometext = self._data[0][0].name() +'\n'
-         sometext+= self._data[0][1].name()
+        sometext = "This is placeholder text.  We need to think about what should be displayed here. \n\n"
+        sometext += self._data[0].name() +'\n'
+        sometext+= self._data[1].name()
 
-         #sometext = '\n'.join(self._data[0])
-         self._details.SetLabel(sometext)
-         #self.bizer1.Layout()
-         self.Layout()
+        #sometext = '\n'.join(self._data[0])
+
+        #self.m_treeCtrl2.SetLabel(sometext)
+        #self.m_treeCtrl2.InsertItem(0,0,sometext)
+
+
+        self.SetLabel(sometext)
+        #self.bizer1.Layout()
+        self.Layout()
 
 
 

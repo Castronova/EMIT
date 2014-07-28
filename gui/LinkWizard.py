@@ -273,10 +273,10 @@ class wizLink(wx.wizard.Wizard):
             self.page4.pnlDetail.SetData(self.page1.pnlIntroduction.get_link())
             self.page4.pnlDetail.printData()
 
-        elif event.Page==self.page1:
-            self.is_changing_series = False
-        else:
-            self.is_changing_series = True
+        # elif event.Page==self.page1:
+        #     self.is_changing_series = False
+        # else:
+        #     self.is_changing_series = True
 
 
     def on_wizard_finished(self, event):

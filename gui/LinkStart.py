@@ -26,11 +26,12 @@ class LinkStart ( wx.Frame ):
         self.panel1 = wx.Panel( self, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize, style=wx.TAB_TRAVERSAL)
         bSizer1.Add(self.panel1, 1, wx.EXPAND | wx.ALL, 5)
 
-        self.m_listCtrl1 = wx.ListCtrl( self, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.Size(400, 230), style=wx.LC_REPORT )
+        self.m_listCtrl1 = wx.ListCtrl( self, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.Size(200, 200), style=wx.LC_REPORT )
         self.m_listCtrl1.InsertColumn(0, 'links')
-        self.m_listCtrl1.SetColumnWidth(0, 400)
+        self.m_listCtrl1.SetColumnWidth(0, 100)
 
-        self.panel1.AddChild( self.m_listCtrl1)
+        # TODO: Fix.  This line causes error on Mac.
+        #self.panel1.AddChild( self.m_listCtrl1)
 
         bSizer2 = wx.BoxSizer( wx.VERTICAL )
         self.panel2 = wx.Panel( self, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize, style=wx.TAB_TRAVERSAL)

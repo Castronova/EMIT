@@ -51,6 +51,8 @@ class CanvasController:
         self.links = {}
         self.models = {}
 
+        self.link_clicks = 0
+
     def UnBindAllMouseEvents(self):
         ## Here is how you unbind FloatCanvas mouse events
         self.Canvas.Unbind(FC.EVT_LEFT_DOWN)
@@ -248,19 +250,21 @@ class CanvasController:
         print object.Name
 
         if cur.Name == 'link':
-            if len(self.linkRects)  > 0:
-                self.linkRects.append(object)
-                self.createLine(self.linkRects[0], self.linkRects[1])
-
-                # reset linkrects object
-                self.linkRects=[]
-
-                # change the mouse cursor
-
-                #self.Canvas.SetMode(self.Modes[0][1])
-
-            else:
-                self.linkRects.append(object)
+            self.linkRects.append(object)
+        # if cur.Name == 'link':
+        #     if len(self.linkRects)  > 0:
+        #         self.linkRects.append(object)
+        #         self.createLine(self.linkRects[0], self.linkRects[1])
+        #
+        #         # reset linkrects object
+        #         self.linkRects=[]
+        #
+        #         # change the mouse cursor
+        #
+        #         #self.Canvas.SetMode(self.Modes[0][1])
+        #
+        #     else:
+        #         self.linkRects.append(object)
 
         # populate model view
         if cur.Name == 'default':
@@ -352,6 +356,37 @@ class CanvasController:
             self.FloatCanvas.Draw(True)
 
 
+        # count clicks
+        cur = self.getCursor()
+        if cur.Name == 'link':
+            self.AddinkCursorClick()
+
+        #if self.link
+
+        # create link
+        #if len(self.linkRects)  > 0:
+        #         self.linkRects.append(object)
+        #         self.createLine(self.linkRects[0], self.linkRects[1])
+        #
+        #         # reset linkrects object
+        #         self.linkRects=[]
+        #
+        #         #
+
+
+    def AddinkCursorClick(self):
+        self.link_clicks += 1
+
+        if self.link_clicks == 2:
+            if len(self.linkRects) == 2:
+                self.createLine(self.linkRects[0], self.linkRects[1])
+
+            # reset
+            self.link_clicks = 0
+            self.linkRects=[]
+
+            #change the mouse cursor
+            #self.Canvas.SetMode(self.Modes[0][1])
 
     def GetHitObject(self, event, HitEvent):
         if self.Canvas.Canvas.HitDict:

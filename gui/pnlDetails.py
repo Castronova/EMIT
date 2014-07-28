@@ -42,6 +42,8 @@ class pnlDetails ( wx.Panel ):
 
         #sometext = '\n'.join(self._data[0])
 
+
+
         #self.m_treeCtrl2.SetLabel(sometext)
         #self.m_treeCtrl2.InsertItem(0,0,sometext)
 

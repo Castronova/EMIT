@@ -23,6 +23,7 @@ from LinkDialogueBox import LinkBox
 import CanvasObjects
 import LinkWizard
 from LinkStart import LinkStart
+from ContextMenu import LinkContextMenu, ModelContextMenu, GeneralContextMenu
 
 class CanvasController:
     def __init__(self, cmd, Canvas):
@@ -73,10 +74,16 @@ class CanvasController:
         self.FloatCanvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp )
         #self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.onRightDown)
         self.FloatCanvas.Bind(FC.EVT_LEFT_DOWN, self.onLeftDown)
+        self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.LaunchContext)
+
+
 
     def initSubscribers(self):
         Publisher.subscribe(self.createBox, "createBox")
         Publisher.subscribe(self.setCursor, "setCursor")
+
+
+
 
     def OnMove(self, event):
         """
@@ -97,9 +104,31 @@ class CanvasController:
             self.MoveObject = self.StartObject + dxy
             dc.DrawPolygon(self.MoveObject)
 
-    def onRightDown(self, event):
-        self.Canvas.ClearAll()
-        self.Canvas.Draw()
+    def LaunchContext(self, event):
+
+        # get hit object
+        #self.GetHitObject(event, event.EventType)
+
+        # if canvas is selected
+        if type(event) == wx.lib.floatcanvas.FloatCanvas._MouseEvent:
+            self.Canvas.PopupMenu(GeneralContextMenu(self), event.GetPosition())
+
+        elif type(event) == wx.lib.floatcanvas.FloatCanvas.Polygon:
+            #if object is link
+            if event.type == "ArrowHead":
+                self.Canvas.PopupMenu(LinkContextMenu(self), event.HitCoordsPixel.Get())
+
+            # if object is model
+            elif event.type == 'Model':
+                self.Canvas.PopupMenu(ModelContextMenu(self), event.HitCoordsPixel.Get())
+
+        # # if object is neither
+        # else:
+        #     self.Canvas.PopupMenu(GeneralContextMenu(self), event.GetPosition())
+
+
+        #self.Canvas.ClearAll()
+        #self.Canvas.Draw()
 
     def onLeftDown(self, event):
         pass
@@ -187,7 +216,9 @@ class CanvasController:
             #R.Bind(FC.EVT_FC_LEFT_UP, self.OnLeftUp )
 
             R.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit)
-            R.Bind(FC.EVT_FC_RIGHT_DOWN, self.RightClickCb )
+            R.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
+
+            ### R.Bind(FC.EVT_FC_RIGHT_DOWN, self.RightClickCb )
             #self.Canvas.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit, id=R.ID)
 
             self.models[R]=id
@@ -228,7 +259,9 @@ class CanvasController:
         arrow_shape.type = CanvasObjects.ShapeType.ArrowHead
         self.FloatCanvas.AddObject(arrow_shape)
 
-        arrow_shape.Bind(FC.EVT_FC_RIGHT_DOWN, self.ArrowClicked)
+        # bind the arrow to left click
+        arrow_shape.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
+        arrow_shape.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
 
 
         # store the link and rectangles in the self.links list
@@ -407,6 +440,9 @@ class CanvasController:
             return False
 
     def ArrowClicked(self,event):
+
+        #if event
+
         #self.Log("The Link was Clicked")
 
         # get the models associated with the link

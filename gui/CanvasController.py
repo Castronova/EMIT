@@ -116,7 +116,7 @@ class CanvasController:
         elif type(event) == wx.lib.floatcanvas.FloatCanvas.Polygon:
             #if object is link
             if event.type == "ArrowHead":
-                self.Canvas.PopupMenu(LinkContextMenu(self), event.HitCoordsPixel.Get())
+                self.Canvas.PopupMenu(LinkContextMenu(self,event), event.HitCoordsPixel.Get())
 
             # if object is model
             elif event.type == 'Model':
@@ -129,6 +129,29 @@ class CanvasController:
 
         #self.Canvas.ClearAll()
         #self.Canvas.Draw()
+
+
+    def RemoveLink(self, link_obj):
+
+        # remove the link entry in self.links
+        link = self.links.pop(link_obj)
+
+        # remove the link from the cmd
+        from_id = link[0].Name
+        to_id = link[1].Name
+
+        # get the link id
+        linkids = self.cmd.get_links_btwn_models(from_id,to_id)
+
+        # remove all links
+        for linkid in linkids:
+            self.cmd.remove_link_by_id(linkid)
+
+        # redraw the canvas
+        self.RedrawConfiguration()
+
+
+
 
     def onLeftDown(self, event):
         pass
@@ -363,6 +386,23 @@ class CanvasController:
             self.MovingObject = object
 
 
+    def RedrawConfiguration(self):
+        # clear lines from drawlist
+        self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != CanvasObjects.ShapeType.Link]
+        #self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Line]
+
+        # remove any arrowheads from the _ForeDrawList
+        self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if obj.type != CanvasObjects.ShapeType.ArrowHead]
+        #self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if type(obj) != FC.Polygon]
+
+        # redraw links
+        for link in self.links.keys():
+            r1,r2 = self.links[link]
+            self.createLine(r1,r2)
+
+        self.FloatCanvas.Draw(True)
+
+
     def OnLeftUp(self, event):
         if self.Moving:
             self.Moving = False
@@ -421,11 +461,14 @@ class CanvasController:
             #change the mouse cursor
 
 
-            e = e = wx._core.CommandEvent(10013)
-            e.Id = -2017
-            # self.Canvas.GuiMouse.OnLeftUp(e)
-            #self.Canvas.
-            self.Canvas.SetMode(e)
+            self.FloatCanvas.SetMode(self.Canvas.GuiMouse)
+
+
+            # e = e = wx._core.CommandEvent(10013)
+            # e.Id = -2017
+            # # self.Canvas.GuiMouse.OnLeftUp(e)
+            # #self.Canvas.
+            # self.Canvas.SetMode(e)
 
     def GetHitObject(self, event, HitEvent):
         if self.Canvas.Canvas.HitDict:

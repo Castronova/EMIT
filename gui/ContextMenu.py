@@ -5,9 +5,10 @@ import wx
 
 class LinkContextMenu(wx.Menu):
 
-    def __init__(self, parent):
+    def __init__(self, parent, e):
         super(LinkContextMenu, self).__init__()
 
+        self.arrow_obj = e
         self.parent = parent
 
         mmi = wx.MenuItem(self, wx.NewId(), 'Edit')
@@ -20,12 +21,11 @@ class LinkContextMenu(wx.Menu):
 
 
     def OnAddLink(self, e):
-        self.parent.ArrowClicked(e)
+        self.parent.ArrowClicked(self.arrow_obj)
 
     def RemoveLink(self, e):
-        # todo:
-        #self.parent.RemoveLink(e)
-        pass
+        self.parent.RemoveLink(self.arrow_obj)
+
 
     def OnMinimize(self, e):
         self.parent.Iconize()
@@ -73,6 +73,7 @@ class GeneralContextMenu(wx.Menu):
 
         mmi = wx.MenuItem(self, wx.NewId(), 'Add Link')
         self.AppendItem(mmi)
+        self.Bind(wx.EVT_MENU, self.OnAddLink, mmi)
 
         mmi = wx.MenuItem(self, wx.NewId(), 'Load Configuration')
         self.AppendItem(mmi)
@@ -92,7 +93,9 @@ class GeneralContextMenu(wx.Menu):
         # self.Bind(wx.EVT_MENU, self.OnClose, cmi)
 
     def OnAddLink(self, e):
-        self.parent.ArrowClicked(e)
+
+        self.parent.FloatCanvas.SetMode(self.parent.Canvas.GuiLink)
+
 
     def OnMinimize(self, e):
         self.parent.Iconize()

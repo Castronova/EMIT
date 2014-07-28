@@ -216,8 +216,8 @@ class wizLink(wx.wizard.Wizard):
         self.page1 = CreateLink(self, "Link Connection", inputitems, outputitems)
 
         self.page2 = Spatial(self, "Spatial Adjustment")
-        #self.page3 = Temporal(self, "Temporal Adjustment")
-        self.page3 = Details(self, "Link Details")
+        self.page3 = Temporal(self, "Temporal Adjustment")
+        self.page4 = Details(self, "Link Details")
         #self.page5 = SummaryPage(self, "Summary", service_man)
 
         self.FitToPage(self.page1)
@@ -230,9 +230,9 @@ class wizLink(wx.wizard.Wizard):
         self.page2.SetNext(self.page3)
 
         self.page3.SetPrev(self.page2)
-        # self.page3.SetNext(self.page4)
-        #
-        # self.page4.SetPrev(self.page3)
+        self.page3.SetNext(self.page4)
+
+        self.page4.SetPrev(self.page3)
         # self.page4.SetNext(self.page5)
         #
         # self.page5.SetPrev(self.page4)
@@ -246,11 +246,11 @@ class wizLink(wx.wizard.Wizard):
     def on_page_changing(self, event):
 
         if event.Page.GetName() == "CreateLink":
-            self.page3.pnlDetail.SetData(self.page1.pnlIntroduction.links)
+            self.page4.pnlDetail.SetData(self.page1.pnlIntroduction.links)
             #self.text3.SetValue(self.text2.GetValue())
 
-        if event.Page == self.page3:
-            self.page3.pnlDetail.printData()
+        if event.Page == self.page4:
+            self.page4.pnlDetail.printData()
         elif event.Page==self.page1:
             self.is_changing_series = False
         else:

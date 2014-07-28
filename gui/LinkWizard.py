@@ -12,7 +12,7 @@ import pnlCreateLink
 import pnlSpatial
 import pnlTemporal
 import pnlDetails
-
+from wx.lib.pubsub import pub as Publisher
 
 
 
@@ -136,6 +136,8 @@ class CreateLink(wiz.PyWizardPage):
         self.pnlIntroduction=pnlCreateLink.pnlCreateLink(self, inputitems, outputitems)
         self.sizer.Add(self.pnlIntroduction, 85, wx.ALL, 5)
 
+
+
     def GetName(*args, **kwargs):
         return 'CreateLink'
 
@@ -186,7 +188,20 @@ class wizLink(wx.wizard.Wizard):
         self.Bind(wx.wizard.EVT_WIZARD_PAGE_CHANGED, self.on_page_changing)
         self.Bind(wx.wizard.EVT_WIZARD_FINISHED, self.on_wizard_finished)
 
+        self.initSubscribers()
 
+
+    def initSubscribers(self):
+        Publisher.subscribe(self.activateNextButton, "activateNextButton")
+        Publisher.subscribe(self.deactivateNextButton, "deactivateNextButton")
+
+    def activateNextButton(self):
+        foward_btn = self.FindWindowById(wx.ID_FORWARD)
+        foward_btn.Enable()
+
+    def deactivateNextButton(self):
+        foward_btn = self.FindWindowById(wx.ID_FORWARD)
+        foward_btn.Disable()
 
     def get_metadata(self):
         pass
@@ -246,6 +261,8 @@ class wizLink(wx.wizard.Wizard):
     def on_page_changing(self, event):
 
         if event.Page.GetName() == "CreateLink":
+
+
             self.page3.pnlDetail.SetData(self.page1.pnlIntroduction.links)
             #self.text3.SetValue(self.text2.GetValue())
 

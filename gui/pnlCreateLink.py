@@ -2,7 +2,10 @@ __author__ = 'Mario'
 
 import wx
 import wx.xrc
+
 import wx
+import sys
+from wx.lib.pubsub import pub as Publisher
 
 [wxID_PNLCREATELINK, wxID_PNLSPATIAL, wxID_PNLTEMPORAL,
  wxID_PNLDETAILS,
@@ -15,6 +18,8 @@ class pnlCreateLink ( wx.Panel ):
               pos=wx.Point(571, 262), size=wx.Size(439, 357),
               style=wx.TAB_TRAVERSAL)
         self.SetClientSize(wx.Size(423, 319))
+
+
 
         self.selectedinput = None
         self.selectedoutput = None
@@ -32,12 +37,12 @@ class pnlCreateLink ( wx.Panel ):
 
         self.m_listCtrl1 = wx.ListCtrl( self, wx.ID_ANY, wx.DefaultPosition, wx.Size(210, 200), wx.LC_REPORT )
         self.m_listCtrl2 = wx.ListCtrl( self, wx.ID_ANY, wx.DefaultPosition, wx.Size(210, 200), wx.LC_REPORT )
-        self.m_button1 = wx.Button( self, wx.ID_ANY, u"Create Link", wx.DefaultPosition, wx.DefaultSize, 0)
-        self.m_button1.Disable()
+        #self.m_button1 = wx.Button( self, wx.ID_ANY, u"Create Link", wx.DefaultPosition, wx.DefaultSize, 0)
+        #self.m_button1.Disable()
 
         bSizer6.Add( self.m_listCtrl1, 0, wx.ALL, 5 )
         bSizer6.Add( self.m_listCtrl2, 0, wx.ALL, 5 )
-        bSizer5.Add( self.m_button1, 0, wx.ALL, 5 )
+        #bSizer5.Add( self.m_button1, 0, wx.ALL, 5 )
 
 
         bSizer1.Add( bSizer5, 1, wx.EXPAND, 5 )
@@ -52,12 +57,15 @@ class pnlCreateLink ( wx.Panel ):
         self.m_listCtrl1.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.InputDeselect)
         self.m_listCtrl2.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OutputSelect)
         self.m_listCtrl2.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.OutputDeselect)
-        self.m_button1.Bind(wx.EVT_LEFT_DOWN, self.CreateLink)
+        #self.m_button1.Bind(wx.EVT_LEFT_DOWN, self.CreateLink)
         self.Bind
 
         #wx.StaticText(self, -1,"Error", pos = (20, 200))
 
-        import sys
+        # deactivate Next button
+        self.activateLinkButton()
+
+
         for i in inputitems:
             self.m_listCtrl1.InsertStringItem(sys.maxint, i.name())
 
@@ -70,9 +78,11 @@ class pnlCreateLink ( wx.Panel ):
 
     def activateLinkButton(self):
         if self.selectedinput is not None and self.selectedoutput is not None:
-            self.m_button1.Enable()
+            #self.m_button1.Enable()
+            Publisher.sendMessage("activateNextButton")
         else:
-            self.m_button1.Disable()
+            #self.m_button1.Disable()
+            Publisher.sendMessage("deactivateNextButton")
 
     def InputSelect(self, event):
 

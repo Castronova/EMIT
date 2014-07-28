@@ -17,26 +17,23 @@ class pnlTemporal ( wx.Panel ):
               style=wx.TAB_TRAVERSAL)
         self.SetClientSize(wx.Size(423, 319))
 
-        bSizer1 = wx.BoxSizer( wx.VERTICAL )
-        bSizer6 = wx.BoxSizer( wx.HORIZONTAL )
-        bSizer1.Add( bSizer6, 1, wx.EXPAND, 5 )
-        bSizer5 = wx.BoxSizer( wx.HORIZONTAL )
+        bSizer6 = wx.BoxSizer( wx.VERTICAL )
 
-        self.m_listCtrl4 = wx.ListCtrl( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_ICON )
-        self.m_listCtrl5 = wx.ListCtrl( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_ICON )
-        self.m_button3 = wx.Button( self, wx.ID_ANY, u"MyButton", wx.DefaultPosition, wx.DefaultSize, 0 )
-        self.m_button4 = wx.Button( self, wx.ID_ANY, u"MyButton", wx.DefaultPosition, wx.DefaultSize, 0 )
+        m_radioBox1Choices = [ u"Nearest Time", "Arithmatic Average",  "Geometric Average"]
+        self.m_radioBox1 = wx.RadioBox( self, wx.ID_ANY, u"Temporal Shift", wx.DefaultPosition, wx.DefaultSize, m_radioBox1Choices, 1, wx.RA_SPECIFY_COLS )
+        self.m_radioBox1.SetSelection( 0 )
+        bSizer6.Add( self.m_radioBox1, 0, wx.ALL, 5 )
 
-        bSizer6.Add( self.m_listCtrl4, 0, wx.ALL, 5 )
-        bSizer6.Add( self.m_listCtrl5, 0, wx.ALL, 5 )
-        bSizer5.Add( self.m_button3, 0, wx.ALL, 5 )
-        bSizer5.Add( self.m_button4, 0, wx.ALL, 5 )
+        m_radioBox2Choices = [ u"1 Day", "1 Week", "1 Month", "3 Month", "1 Year" ]
+        self.m_radioBox2 = wx.RadioBox( self, wx.ID_ANY, u"Time Range", wx.DefaultPosition, wx.DefaultSize, m_radioBox2Choices, 1, wx.RA_SPECIFY_COLS )
+        self.m_radioBox2.SetSelection( 0 )
+        bSizer6.Add( self.m_radioBox2, 0, wx.ALL, 5 )
 
-
-        bSizer1.Add( bSizer5, 1, wx.EXPAND, 5 )
+        self.m_radioBtn1 = wx.RadioButton( self, wx.ID_ANY, u"Set Unit as Smallest Possible", wx.DefaultPosition, wx.DefaultSize, 0 )
+        bSizer6.Add( self.m_radioBtn1, 0, wx.ALL, 5 )
 
 
-        self.SetSizer( bSizer1 )
+        self.SetSizer( bSizer6 )
         self.Layout()
 
     def __del__( self ):

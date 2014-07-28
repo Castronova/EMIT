@@ -231,8 +231,8 @@ class wizLink(wx.wizard.Wizard):
         self.page1 = CreateLink(self, "Link Connection", inputitems, outputitems)
 
         self.page2 = Spatial(self, "Spatial Adjustment")
-        #self.page3 = Temporal(self, "Temporal Adjustment")
-        self.page3 = Details(self, "Link Details")
+        self.page3 = Temporal(self, "Temporal Adjustment")
+        self.page4 = Details(self, "Link Details")
         #self.page5 = SummaryPage(self, "Summary", service_man)
 
         self.FitToPage(self.page1)
@@ -245,9 +245,9 @@ class wizLink(wx.wizard.Wizard):
         self.page2.SetNext(self.page3)
 
         self.page3.SetPrev(self.page2)
-        # self.page3.SetNext(self.page4)
-        #
-        # self.page4.SetPrev(self.page3)
+        self.page3.SetNext(self.page4)
+
+        self.page4.SetPrev(self.page3)
         # self.page4.SetNext(self.page5)
         #
         # self.page5.SetPrev(self.page4)

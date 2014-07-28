@@ -9,7 +9,10 @@ import LinkWizard
 class LinkStart ( wx.Frame ):
 
     def __init__( self, parent, from_model, to_model, input, output, cmd):
-        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( 500,300 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( 500,250 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+
+
+
         self.input = input
         self.output = output
         self.FloatCanvas = parent
@@ -20,14 +23,18 @@ class LinkStart ( wx.Frame ):
         self.to_model = to_model
 
         bSizer1 = wx.BoxSizer( wx.HORIZONTAL )
+        self.panel1 = wx.Panel( self, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize, style=wx.TAB_TRAVERSAL)
+        bSizer1.Add(self.panel1, 1, wx.EXPAND | wx.ALL, 5)
 
-        self.m_listCtrl1 = wx.ListCtrl( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_REPORT )
+        self.m_listCtrl1 = wx.ListCtrl( self, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.Size(400, 230), style=wx.LC_REPORT )
         self.m_listCtrl1.InsertColumn(0, 'links')
         self.m_listCtrl1.SetColumnWidth(0, 200)
 
-        bSizer1.Add( self.m_listCtrl1, 0, wx.ALL, 5 )
+        self.panel1.AddChild( self.m_listCtrl1)
 
         bSizer2 = wx.BoxSizer( wx.VERTICAL )
+        self.panel2 = wx.Panel( self, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize, style=wx.TAB_TRAVERSAL)
+        bSizer2.Add(self.panel2, 1, wx.EXPAND | wx.ALL, 5)
 
         self.m_button1 = wx.Button( self, wx.ID_ANY, u"Add", wx.DefaultPosition, wx.DefaultSize, 0 )
         bSizer2.Add( self.m_button1, 0, wx.ALL, 5 )

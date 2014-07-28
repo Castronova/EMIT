@@ -83,7 +83,7 @@ class Temporal(wiz.PyWizardPage):
         self.prev = prev
 
     def GetNext(self):
-        return
+        return self.next
 
     def GetPrev(self):
         return self.prev
@@ -113,7 +113,7 @@ class Spatial(wiz.PyWizardPage):
         self.prev = prev
 
     def GetNext(self):
-        return
+        return self.next
 
     def GetPrev(self):
         return self.prev
@@ -215,9 +215,9 @@ class wizLink(wx.wizard.Wizard):
 
         self.page1 = CreateLink(self, "Link Connection", inputitems, outputitems)
 
-        #self.page2 = Spatial(self, "Spatial Adjustment")
+        self.page2 = Spatial(self, "Spatial Adjustment")
         #self.page3 = Temporal(self, "Temporal Adjustment")
-        self.page2 = Details(self, "Link Details")
+        self.page3 = Details(self, "Link Details")
         #self.page5 = SummaryPage(self, "Summary", service_man)
 
         self.FitToPage(self.page1)
@@ -227,9 +227,9 @@ class wizLink(wx.wizard.Wizard):
         self.page1.SetNext(self.page2)
 
         self.page2.SetPrev(self.page1)
-        # self.page2.SetNext(self.page3)
+        self.page2.SetNext(self.page3)
 
-        # self.page3.SetPrev(self.page2)
+        self.page3.SetPrev(self.page2)
         # self.page3.SetNext(self.page4)
         #
         # self.page4.SetPrev(self.page3)
@@ -246,11 +246,11 @@ class wizLink(wx.wizard.Wizard):
     def on_page_changing(self, event):
 
         if event.Page.GetName() == "CreateLink":
-            self.page2.pnlDetail.SetData(self.page1.pnlIntroduction.links)
+            self.page3.pnlDetail.SetData(self.page1.pnlIntroduction.links)
             #self.text3.SetValue(self.text2.GetValue())
 
-        if event.Page == self.page2:
-            self.page2.pnlDetail.printData()
+        if event.Page == self.page3:
+            self.page3.pnlDetail.printData()
         elif event.Page==self.page1:
             self.is_changing_series = False
         else:

@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     # create and instance of the coordinator engine
     cmd = cmd.Coordinator()
-
+    wx.Log.SetLogLevel(0)
     app = wx.App(False)
     frame = MainGui(None)
     frame.Show(True)

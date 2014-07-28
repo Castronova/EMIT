@@ -19,10 +19,10 @@ class NavCanvas(wx.Panel):
     """
 
     def __init__(self,
-                   parent,
-                   id = wx.ID_ANY,
-                   size = wx.DefaultSize,
-                   **kwargs): # The rest just get passed into FloatCanvas
+                 parent,
+                 id = wx.ID_ANY,
+                 size = wx.DefaultSize,
+                 **kwargs): # The rest just get passed into FloatCanvas
         wx.Panel.__init__(self, parent, id, size=size)
 
         self.GuiMouse = GUIMode.GUIMouse()
@@ -41,8 +41,7 @@ class NavCanvas(wx.Panel):
                       ("Add Link", self.GuiLink, icons.add_link.GetBitmap()),
                       ("Run Model", self.GuiRun, icons.Run.GetBitmap()),
                       ("Clear", self.GuiDelete, icons.Trash.GetBitmap())
-                      ]
-
+        ]
         self.BuildToolbar()
         ## Create the vertical sizer for the toolbar and Panel
         box = wx.BoxSizer(wx.VERTICAL)
@@ -76,8 +75,8 @@ class NavCanvas(wx.Panel):
             tool = tb.AddRadioTool(wx.ID_ANY, shortHelp=Mode[0], bitmap=Mode[2])
             self.Bind(wx.EVT_TOOL, self.SetMode, tool)
             self.ModesDict[tool.GetId()]=Mode[1]
-        #self.ZoomOutTool = tb.AddRadioTool(wx.ID_ANY, bitmap=Resources.getMagMinusBitmap(), shortHelp = "Zoom Out")
-        #self.Bind(wx.EVT_TOOL, lambda evt : self.SetMode(Mode=self.GUIZoomOut), self.ZoomOutTool)
+            #self.ZoomOutTool = tb.AddRadioTool(wx.ID_ANY, bitmap=Resources.getMagMinusBitmap(), shortHelp = "Zoom Out")
+            #self.Bind(wx.EVT_TOOL, lambda evt : self.SetMode(Mode=self.GUIZoomOut), self.ZoomOutTool)
 
     def AddToolbarZoomButton(self, tb):
         tb.AddSeparator()

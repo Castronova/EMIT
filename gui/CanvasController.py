@@ -212,7 +212,7 @@ class CanvasController:
         linegradient = CanvasObjects.get_hex_from_gradient(cmap, len(line))
         linegradient.reverse()
         arrow = CanvasObjects.build_arrow(line, arrow_length=6)
-        print arrow
+       # print arrow
 
         for i in range(0,len(line)-1):
             l = FC.Line((line[i],line[i+1]),LineColor=linegradient[i],LineWidth=2,InForeground=False)
@@ -230,6 +230,10 @@ class CanvasController:
 
 
         # store the link and rectangles in the self.links list
+        for k,v in self.links.iteritems():
+            if v == [R1,R2]:
+                self.links.pop(k)
+                break
         self.links[arrow_shape] = [R1,R2]
 
 

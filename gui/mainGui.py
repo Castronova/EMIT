@@ -6,6 +6,7 @@ import wx.html2
 from DirectoryView import DirectoryCtrlView
 import sys
 from CanvasView import Canvas
+from wx.lib.pubsub import pub as Publisher
 
 class MainGui(wx.Frame):
     def __init__(self, parent):
@@ -46,17 +47,17 @@ class MainGui(wx.Frame):
 
         self.m_mgr.AddPane(self.Canvas,
                            wx.aui.AuiPaneInfo().Center().Name("Canvas").Position(0).CloseButton(False).MaximizeButton(
-                               True).MinimizeButton(True).PinButton(True).Resizable().Floatable(True).MinSize(
+                               True).MinimizeButton(True).MinimizeButton( True ).PinButton(True).Resizable().Floatable(True).MinSize(
                                wx.Size(1000, 400)))
 
         self.m_mgr.AddPane(self.output,
                           wx.aui.AuiPaneInfo().Center().Name("Output").Position(1).CloseButton(False).MaximizeButton(
-                               True).MinimizeButton(True).PinButton(True).Resizable().Floatable().MinSize(
+                               True).MinimizeButton(True).MinimizeButton( True ).PinButton(True).Resizable().Floatable().MinSize(
                                wx.Size(1000, 200)))
 
         self.m_mgr.AddPane(self.nb,
                    wx.aui.AuiPaneInfo().Left().CloseButton(False).MaximizeButton(True).MinimizeButton(
-                       True).PinButton(True).Resizable().MinSize(wx.Size(375,500)).Floatable())
+                       True).MinimizeButton( True ).PinButton(True).Resizable().MinSize(wx.Size(375,500)).Floatable())
 
         self.m_mgr.Update()
 
@@ -155,8 +156,9 @@ class TimeSeries(wx.Panel):
 
 
 
-        m_choice2Choices = ['Database 1', 'Database 2']
-        self.m_choice2 = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_choice2Choices, 0 )
+        self.m_choice2Choices = []
+
+        self.m_choice2 = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, self.m_choice2Choices, 0 )
         self.m_choice2.SetSelection( 0 )
         bSizer2.Add( self.m_choice2, 0, wx.ALL, 5 )
 
@@ -194,9 +196,12 @@ class TimeSeries(wx.Panel):
         self.Database.SetDefaultCellAlignment( wx.ALIGN_LEFT, wx.ALIGN_TOP )
         bSizer1.Add( self.Database, 0, wx.ALL, 5 )
 
-
+        #Publisher.subscribe(self.appenditem, 'DatabaseConnection')
         self.SetSizer( bSizer1 )
         self.Layout()
+
+    # def appenditem(self, var):
+    #     self.m_choice2Choices.append(var)
 
     def AddConnection(self, event):
         DBFrame = AddConnectionFrame(self)
@@ -254,12 +259,21 @@ class AddConnectionFrame ( wx.Frame ):
 
         self.m_button3 = wx.Button( self, wx.ID_ANY, u"Add Connection", wx.DefaultPosition, wx.DefaultSize, 0 )
         bSizer4.Add( self.m_button3, 0, wx.ALL, 5 )
+        self.m_button3.Bind(wx.EVT_BUTTON, self.AddClose)
 
 
         self.SetSizer( bSizer4 )
         self.Layout()
 
         self.Centre( wx.BOTH )
+
+    def AddClose(self, event):
+        var = self.m_textCtrl2.GetValue()
+        print var
+        #Publisher.sendMessage('DatabaseConnection', var)
+
+
+        self.Destroy()
 
     def __del__( self ):
         pass

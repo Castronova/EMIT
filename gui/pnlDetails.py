@@ -71,6 +71,14 @@ class MyTree(wx.TreeCtrl):
         self.v = self.AppendItem(self.root, 'Variable')
 
         self.sc=self.AppendItem(self.m1, 'ID: ')
+
+        #tmpId = self.AppendItem(self.treeRoot, str(i))
+        #key = self.makeNewKey()
+        #self.items[key] = ['node', i]
+        self.SetItemPyData(self.sc, 'value')
+
+
+
         self.sn=self.AppendItem(self.m1, 'Name: ')
 
         self.sc=self.AppendItem(self.m2, 'ID: ')
@@ -84,11 +92,13 @@ class MyTree(wx.TreeCtrl):
         self.vtu=self.AppendItem(self.v, 'Time Units: ')
         self.vdt=self.AppendItem(self.v, 'Data Type: ')
 
-        self.Bind(wx.EVT_LEFT_UP, self.onClick)
 
-    def onClick(self, e):
-        print 'TreeCntrl Clicked'
-        #obj = Publisher.sendMessage("GetHitObject", (e, e.EventType))
-        self.HitTest(e.GetPostionTuple)
+        self.Bind(wx.EVT_LEFT_UP,self.OnLeftUp)
 
+    def OnLeftUp(self, event):
+
+        item, location = self.HitTest(event.GetPositionTuple())
+
+        data = self.GetPyData(item)
+        if data is not None: print data
 

@@ -29,8 +29,9 @@ class MainGui(wx.Frame):
         self.nb = wx.Notebook(self.pnlDocking)
 
         self.output = wx.TextCtrl(self, -1, size=(100,100), style=wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
-        # redir= RedirectText(self.output)
-        # sys.stdout=redir
+
+        #redir= RedirectText(self.output)
+        #sys.stdout=redir
 
         page1 = DirectoryCtrlView(self.nb)
         page2 = ModelView(self.nb)

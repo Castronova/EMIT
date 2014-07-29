@@ -69,6 +69,7 @@ class CanvasController:
         self.Canvas.Unbind(FC.EVT_RIGHT_DCLICK)
 
         self.EventsAreBound = False
+
     def initBindings(self):
         self.FloatCanvas.Bind(FC.EVT_MOTION, self.OnMove )
         self.FloatCanvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp )
@@ -81,7 +82,7 @@ class CanvasController:
     def initSubscribers(self):
         Publisher.subscribe(self.createBox, "createBox")
         Publisher.subscribe(self.setCursor, "setCursor")
-
+        Publisher.subscribe(self.run, "run")
 
 
 
@@ -130,6 +131,10 @@ class CanvasController:
         #self.Canvas.ClearAll()
         #self.Canvas.Draw()
 
+    def run(self):
+
+        self.cmd.run_simulation()
+
 
     def RemoveLink(self, link_obj):
 
@@ -149,9 +154,6 @@ class CanvasController:
 
         # redraw the canvas
         self.RedrawConfiguration()
-
-
-
 
     def onLeftDown(self, event):
         pass
@@ -433,6 +435,9 @@ class CanvasController:
         cur = self.getCursor()
         if cur.Name == 'link':
             self.AddinkCursorClick()
+
+
+
 
         #if self.link
 

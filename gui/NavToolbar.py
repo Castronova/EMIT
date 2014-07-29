@@ -8,6 +8,7 @@ import wx
 from wx.lib.floatcanvas import FloatCanvas
 from images import icons
 import GUIControl as GUIMode
+from wx.lib.pubsub import pub as Publisher
 
 class NavCanvas(wx.Panel):
     """
@@ -97,6 +98,11 @@ class NavCanvas(wx.Panel):
 
     def SetMode(self, event):
         Mode = self.ModesDict[event.GetId()]
+
+
+        if Mode == self.GuiRun:
+            Publisher.sendMessage("run")
+
         self.Canvas.SetMode(Mode)
 
     def ZoomToFit(self,Event):

@@ -149,11 +149,23 @@ class TimeSeries(wx.Panel):
         wx.Panel.__init__ ( self, parent, id = wx.ID_ANY, pos = wx.DefaultPosition, size = wx.Size( 500,300 ), style = wx.TAB_TRAVERSAL )
 
         bSizer1 = wx.BoxSizer( wx.VERTICAL )
+        bSizer2 = wx.BoxSizer( wx.HORIZONTAL )
+        bSizer1.SetMinSize( wx.Size( 400, 300))
+        bSizer2.SetMinSize( wx.Size( -1, 30))
 
-        m_choice2Choices = ['From Database 1', 'From Database 2']
+
+
+        m_choice2Choices = ['Database 1', 'Database 2']
         self.m_choice2 = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_choice2Choices, 0 )
         self.m_choice2.SetSelection( 0 )
-        bSizer1.Add( self.m_choice2, 0, wx.ALL, 5 )
+        bSizer2.Add( self.m_choice2, 0, wx.ALL, 5 )
+
+        self.m_button1 = wx.Button( self, wx.ID_ANY, u"Add Connection", wx.DefaultPosition, wx.DefaultSize, 0 )
+        bSizer2.Add( self.m_button1, 0, wx.ALL, 5 )
+        self.m_button1.Bind(wx.EVT_LEFT_DOWN, self.AddConnection)
+
+
+        bSizer1.Add( bSizer2, 1, wx.EXPAND, 5 )
 
         self.Database = wx.grid.Grid( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
 
@@ -186,6 +198,10 @@ class TimeSeries(wx.Panel):
         self.SetSizer( bSizer1 )
         self.Layout()
 
+    def AddConnection(self, event):
+        DBFrame = AddConnectionFrame(self)
+        DBFrame.Show()
+
     def __del__( self ):
         pass
 
@@ -216,3 +232,34 @@ class RedirectText(object):
 
     def write(self,string):
         self.out.WriteText(string)
+
+class AddConnectionFrame ( wx.Frame ):
+
+    def __init__( self, parent ):
+        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( 358,150 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+
+        self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
+
+        bSizer4 = wx.BoxSizer( wx.VERTICAL )
+
+
+        bSizer4.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+
+        wx.StaticText(self, id=wx.ID_ANY, label="Enter Database Connection", pos=wx.DefaultPosition)
+
+        self.m_textCtrl2 = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_textCtrl2.SetMinSize( wx.Size( 450,-1 ) )
+
+        bSizer4.Add( self.m_textCtrl2, 0, wx.ALL, 5 )
+
+        self.m_button3 = wx.Button( self, wx.ID_ANY, u"Add Connection", wx.DefaultPosition, wx.DefaultSize, 0 )
+        bSizer4.Add( self.m_button3, 0, wx.ALL, 5 )
+
+
+        self.SetSizer( bSizer4 )
+        self.Layout()
+
+        self.Centre( wx.BOTH )
+
+    def __del__( self ):
+        pass

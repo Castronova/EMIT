@@ -32,12 +32,14 @@ class MainGui(wx.Frame):
         sys.stdout=redir
 
         page1 = DirectoryCtrlView(self.nb)
-        page2 = PageTwo(self.nb)
-        page3 = PageThree(self.nb)
+        page2 = ModelView(self.nb)
+        page3 = LinkView(self.nb)
+        page4 = TimeSeries(self.nb)
 
         self.nb.AddPage(page1, "Directory")
         self.nb.AddPage(page2, "Model View")
         self.nb.AddPage(page3, "Link View")
+        self.nb.AddPage(page4, "Series Selector")
 
 
         self.m_mgr.AddPane(self.Canvas,
@@ -109,7 +111,7 @@ class MainGui(wx.Frame):
         self.Destroy()
 
 
-class PageTwo(wx.Panel):
+class ModelView(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
         #Canvas.ObjectHit()
@@ -134,10 +136,16 @@ class PageTwo(wx.Panel):
     def setText(self, value=None):
         self.contents.SetPage(value,"")
 
-class PageThree(wx.Panel):
+class LinkView(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
         t = wx.StaticText(self, -1, "This view shows relations between models.", (60,60))
+
+class TimeSeries(wx.Panel):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+        t = wx.StaticText(self, -1, "This will be a series selector.", (60,60))
+
 
 class consoleOutput(wx.Panel):
     def __init__(self, parent):

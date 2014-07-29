@@ -204,8 +204,29 @@ class TimeSeries(wx.Panel):
     #     self.m_choice2Choices.append(var)
 
     def AddConnection(self, event):
-        DBFrame = AddConnectionFrame(self)
-        DBFrame.Show()
+
+        dlg = AddConnectionDialog(self, -1, "Sample Dialog", size=(350, 200),
+                         style=wx.DEFAULT_DIALOG_STYLE,
+                         )
+        dlg.CenterOnScreen()
+
+        # this does not return until the dialog is closed.
+        val = dlg.ShowModal()
+        params = dlg.getConnectionParams()
+
+        dlg.Destroy()
+        Publisher.sendMessage('DatabaseConnection', params)
+
+
+        # dlg = wx.TextEntryDialog(
+        #         self, 'Please enter connection information below: ',
+        #         'Database Connection', 'Python')
+        #
+        # dlg.SetValue("")
+        #
+        # connectionstring = dlg.GetValue()
+
+
 
     def __del__( self ):
         pass
@@ -238,42 +259,138 @@ class RedirectText(object):
     def write(self,string):
         self.out.WriteText(string)
 
-class AddConnectionFrame ( wx.Frame ):
+class AddConnectionDialog(wx.Dialog):
+    def __init__(
+            self, parent, ID, title, size=wx.DefaultSize, pos=wx.DefaultPosition,
+            style=wx.DEFAULT_DIALOG_STYLE,
+            ):
 
-    def __init__( self, parent ):
-        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( 358,150 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+        # Instead of calling wx.Dialog.__init__ we precreate the dialog
+        # so we can set an extra style that must be set before
+        # creation, and then we create the GUI object using the Create
+        # method.
+        pre = wx.PreDialog()
+        pre.SetExtraStyle(wx.DIALOG_EX_CONTEXTHELP)
+        pre.Create(parent, ID, title, pos, size, style)
 
-        self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
+        # This next step is the most important, it turns this Python
+        # object into the real wrapper of the dialog (instead of pre)
+        # as far as the wxPython extension is concerned.
+        self.PostCreate(pre)
 
-        bSizer4 = wx.BoxSizer( wx.VERTICAL )
+        # Now continue with the normal construction of the dialog
+        # contents
+        sizer = wx.BoxSizer(wx.VERTICAL)
 
+        label = wx.StaticText(self, -1, "Database Connection")
+        sizer.Add(label, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
 
-        bSizer4.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+        box = wx.BoxSizer(wx.HORIZONTAL)
 
-        wx.StaticText(self, id=wx.ID_ANY, label="Enter Database Connection", pos=wx.DefaultPosition)
+        label = wx.StaticText(self, -1, "Engine :")
+        label.SetHelpText("Database Parsing Engine (e.g. mysql, psycopg2, etc)")
+        box.Add(label, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
 
-        self.m_textCtrl2 = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-        self.m_textCtrl2.SetMinSize( wx.Size( 450,-1 ) )
+        self.engine = wx.TextCtrl(self, -1, "", size=(80,-1))
+        box.Add(self.engine, 1, wx.ALIGN_CENTRE|wx.ALL, 5)
 
-        bSizer4.Add( self.m_textCtrl2, 0, wx.ALL, 5 )
+        sizer.Add(box, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
 
-        self.m_button3 = wx.Button( self, wx.ID_ANY, u"Add Connection", wx.DefaultPosition, wx.DefaultSize, 0 )
-        bSizer4.Add( self.m_button3, 0, wx.ALL, 5 )
-        self.m_button3.Bind(wx.EVT_BUTTON, self.AddClose)
-
-
-        self.SetSizer( bSizer4 )
-        self.Layout()
-
-        self.Centre( wx.BOTH )
-
-    def AddClose(self, event):
-        var = self.m_textCtrl2.GetValue()
-        print var
-        #Publisher.sendMessage('DatabaseConnection', var)
+        box = wx.BoxSizer(wx.HORIZONTAL)
+        #d['engine'],d['address'],d['db'],d['user'],d['pwd']
 
 
-        self.Destroy()
+        label = wx.StaticText(self, -1, "Address :")
+        label.SetHelpText("Database Address")
+        box.Add(label, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
 
-    def __del__( self ):
-        pass
+        self.address = wx.TextCtrl(self, -1, "", size=(80,-1))
+        box.Add(self.address, 1, wx.ALIGN_CENTRE|wx.ALL, 5)
+
+        sizer.Add(box, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
+
+        box = wx.BoxSizer(wx.HORIZONTAL)
+        #d['engine'],d['address'],d['db'],d['user'],d['pwd']
+
+
+        label = wx.StaticText(self, -1, "Name :")
+        label.SetHelpText("Database Name")
+        box.Add(label, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+
+        self.name = wx.TextCtrl(self, -1, "", size=(80,-1))
+
+        box.Add(self.name, 1, wx.ALIGN_CENTRE|wx.ALL, 5)
+
+        sizer.Add(box, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
+
+        box = wx.BoxSizer(wx.HORIZONTAL)
+        #d['engine'],d['address'],d['db'],d['user'],d['pwd']
+
+
+        label = wx.StaticText(self, -1, "User :")
+        label.SetHelpText("Database Username")
+        box.Add(label, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+
+        self.user = wx.TextCtrl(self, -1, "", size=(80,-1))
+
+        box.Add(self.user, 1, wx.ALIGN_CENTRE|wx.ALL, 5)
+
+        sizer.Add(box, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
+
+        box = wx.BoxSizer(wx.HORIZONTAL)
+        #d['engine'],d['address'],d['db'],d['user'],d['pwd']
+
+
+        label = wx.StaticText(self, -1, "Password :")
+        label.SetHelpText("Database Password")
+        box.Add(label, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+
+        self.password = wx.TextCtrl(self, -1, "", size=(80,-1))
+        self.password.SetHelpText("Here's some help text for field #2")
+        box.Add(self.password, 1, wx.ALIGN_CENTRE|wx.ALL, 5)
+
+        sizer.Add(box, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
+
+
+
+        line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
+        sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.TOP, 5)
+
+        btnsizer = wx.StdDialogButtonSizer()
+
+        if wx.Platform != "__WXMSW__":
+            btn = wx.ContextHelpButton(self)
+            btnsizer.AddButton(btn)
+
+        self.btnok = wx.Button(self, wx.ID_OK)
+        self.btnok.SetDefault()
+        btnsizer.AddButton(self.btnok)
+        self.btnok.Disable()
+
+        btn = wx.Button(self, wx.ID_CANCEL)
+        btnsizer.AddButton(btn)
+        btnsizer.Realize()
+
+        sizer.Add(btnsizer, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
+
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+
+
+        self.engine.Bind(wx.EVT_TEXT, self.OnTextEnter)
+        self.address.Bind(wx.EVT_TEXT, self.OnTextEnter)
+        self.name.Bind(wx.EVT_TEXT, self.OnTextEnter)
+        self.user.Bind(wx.EVT_TEXT, self.OnTextEnter)
+
+
+    def getConnectionParams(self):
+        return self.engine.GetValue(), self.address.GetValue(), self.name.GetValue(), self.user.GetValue(), self.password.GetValue()
+
+    def OnTextEnter(self, event):
+        if self.engine.GetValue() == '' or \
+                self.address.GetValue() == '' or  \
+                self.name.GetValue() == '' or  \
+                self.user.GetValue() == '':
+            self.btnok.Disable()
+        else:
+            self.btnok.Enable()

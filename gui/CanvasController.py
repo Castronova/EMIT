@@ -83,7 +83,7 @@ class CanvasController:
         Publisher.subscribe(self.createBox, "createBox")
         Publisher.subscribe(self.setCursor, "setCursor")
         Publisher.subscribe(self.run, "run")
-        Publisher.subscribe(self.GetHitObject, "GetHitObject")
+        Publisher.subscribe(self.AddDatabaseConnection, "DatabaseConnection")
 
 
 
@@ -557,6 +557,10 @@ class CanvasController:
         ### 5. Launcher displays menu with call to PopupMenu, invoked on the source component, passing event's GetPoint. ###
         self.frame.PopupMenu( menu, event.GetPoint() )
         menu.Destroy() # destroy to avoid mem leak
+
+    def AddDatabaseConnection(self, params):
+        self.cmd.create_database_connections_from_args(params)
+
     #
     def MenuSelectionCb( self, event ):
         # do something

@@ -614,6 +614,10 @@ class FileDrop(wx.FileDropTarget):
                     self.controller.createBox(name=name, id=modelid, xCoord=newx, yCoord=newy)
                     self.window.Canvas.Draw()
                     offset=200
+
+                #for link in list(links):
+                #    self.controller.createLine()
+
             except Exception, e:
                 print 'Could not load the model :(. Hopefully this exception helps...'
                 print e

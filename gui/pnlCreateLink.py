@@ -58,7 +58,6 @@ class pnlCreateLink ( wx.Panel ):
         self.m_listCtrl2.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OutputSelect)
         self.m_listCtrl2.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.OutputDeselect)
         #self.m_button1.Bind(wx.EVT_LEFT_DOWN, self.CreateLink)
-        self.Bind
 
         #wx.StaticText(self, -1,"Error", pos = (20, 200))
 

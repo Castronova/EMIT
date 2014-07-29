@@ -1,5 +1,6 @@
 __author__ = 'Mario'
 import wx
+import wx.grid as grid
 #import wx.html
 import wx.html2
 from DirectoryView import DirectoryCtrlView
@@ -28,8 +29,8 @@ class MainGui(wx.Frame):
         self.nb = wx.Notebook(self.pnlDocking)
 
         self.output = wx.TextCtrl(self, -1, size=(100,100), style=wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
-        redir= RedirectText(self.output)
-        sys.stdout=redir
+        # redir= RedirectText(self.output)
+        # sys.stdout=redir
 
         page1 = DirectoryCtrlView(self.nb)
         page2 = ModelView(self.nb)
@@ -142,9 +143,50 @@ class LinkView(wx.Panel):
         t = wx.StaticText(self, -1, "This view shows relations between models.", (60,60))
 
 class TimeSeries(wx.Panel):
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent)
-        t = wx.StaticText(self, -1, "This will be a series selector.", (60,60))
+
+    def __init__( self, parent ):
+        wx.Panel.__init__ ( self, parent, id = wx.ID_ANY, pos = wx.DefaultPosition, size = wx.Size( 500,300 ), style = wx.TAB_TRAVERSAL )
+
+        bSizer1 = wx.BoxSizer( wx.VERTICAL )
+
+        m_choice2Choices = ['From Database 1', 'From Database 2']
+        self.m_choice2 = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_choice2Choices, 0 )
+        self.m_choice2.SetSelection( 0 )
+        bSizer1.Add( self.m_choice2, 0, wx.ALL, 5 )
+
+        self.Database = wx.grid.Grid( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
+
+        # Grid
+        self.Database.CreateGrid( 5, 5 )
+        self.Database.EnableEditing( True )
+        self.Database.EnableGridLines( True )
+        self.Database.SetGridLineColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_HIGHLIGHT ) )
+        self.Database.EnableDragGridSize( False )
+        self.Database.SetMargins( 0, 0 )
+
+        # Columns
+        self.Database.EnableDragColMove( False )
+        self.Database.EnableDragColSize( True )
+        self.Database.SetColLabelSize( 30 )
+        self.Database.SetColLabelAlignment( wx.ALIGN_CENTRE, wx.ALIGN_CENTRE )
+
+        # Rows
+        self.Database.EnableDragRowSize( True )
+        self.Database.SetRowLabelSize( 80 )
+        self.Database.SetRowLabelAlignment( wx.ALIGN_CENTRE, wx.ALIGN_CENTRE )
+
+        # Label Appearance
+
+        # Cell Defaults
+        self.Database.SetDefaultCellAlignment( wx.ALIGN_LEFT, wx.ALIGN_TOP )
+        bSizer1.Add( self.Database, 0, wx.ALL, 5 )
+
+
+        self.SetSizer( bSizer1 )
+        self.Layout()
+
+    def __del__( self ):
+        pass
 
 
 class consoleOutput(wx.Panel):

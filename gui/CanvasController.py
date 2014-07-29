@@ -83,6 +83,7 @@ class CanvasController:
         Publisher.subscribe(self.createBox, "createBox")
         Publisher.subscribe(self.setCursor, "setCursor")
         Publisher.subscribe(self.run, "run")
+        Publisher.subscribe(self.GetHitObject, "GetHitObject")
 
 
 

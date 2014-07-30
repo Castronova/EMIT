@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #----------------------------------------------------------------------------
-# Name:         ObjectListView.py
+# Name:         objectListViewDatabase.py
 # Author:       Phillip Piper
 # Created:      29 February 2008
 # Copyright:    (c) 2008 Phillip Piper

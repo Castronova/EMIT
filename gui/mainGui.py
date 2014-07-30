@@ -7,9 +7,12 @@ from DirectoryView import DirectoryCtrlView
 import sys
 from CanvasView import Canvas
 from wx.lib.pubsub import pub as Publisher
+import utilities
 import wx.lib.agw.ultimatelistctrl as ULC
 from ObjectListView.ObjectListView import FastObjectListView
 import wx.aui
+import objectListViewDatabase
+
 
 class MainGui(wx.Frame):
     def __init__(self, parent):
@@ -247,31 +250,40 @@ class TimeSeries(wx.Panel):
         #
         # bSizer3.Add(self.list, 1, wx.EXPAND)
 
-
-        Publisher.subscribe(self.refresh, "refreshDialogDatabases")
+        # Publisher.subscribe(self.refresh, "refreshDialogDatabases")
+        Publisher.subscribe(self.getKnownDatabases, "getKnownDatabases")
         Publisher.subscribe(self.connection_added_status, "connectionAddedStatus")
+        bSizer3.Add(objectListViewDatabase.MainPanel(self))
 
 
         self.SetSizer( bSizer1 )
         self.Layout()
 
-    def getKnownDatabases(self):
-        Publisher.sendMessage('getDatabases')
+    def getKnownDatabases(self, value = None):
+        if value is None:
+            Publisher.sendMessage('getDatabases')
+        else:
+            self._databases = value
+            choices = ['---']
+            for k,v in self._databases.iteritems():
+                choices.append(self._databases[k]['name'])
+            self.m_choice2.SetItems(choices)
 
 
-    def refresh(self,databases):
-        self._databases = databases
-
-        choices = ['---']
-        for k,v in databases.iteritems():
-            choices.append(databases[k]['name'])
-        self.m_choice2.SetItems(choices)
+    # def refresh(self,databases):
+    #     self._databases = databases
+    #
+    #     choices = ['---']
+    #     for k,v in databases.iteritems():
+    #         choices.append(databases[k]['name'])
+    #     self.m_choice2.SetItems(choices)
 
     def connection_added_status(self,value=None,connection_string=''):
         if value is not None:
             self._connection_added = value
             self._conection_string = connection_string
         return self._connection_added
+
 
 
     def AddConnection(self, event):

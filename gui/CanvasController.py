@@ -578,13 +578,15 @@ class CanvasController:
 
     def getDatabases(self):
         knownconnections = self.cmd.get_db_connections()
-        Publisher.sendMessage('refreshDialogDatabases',databases=knownconnections)
+        Publisher.sendMessage('getKnownDatabases',value=knownconnections)
 
     def MenuSelectionCb( self, event ):
         # do something
         operation = menu_title_by_id[ event.GetId() ]
         #target    = self.list_item_clicked
         print 'Perform "%(operation)s" on "%(target)s."' % vars()
+
+
 
 
 class FileDrop(wx.FileDropTarget):

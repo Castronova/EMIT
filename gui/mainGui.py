@@ -7,9 +7,12 @@ from DirectoryView import DirectoryCtrlView
 import sys
 from CanvasView import Canvas
 from wx.lib.pubsub import pub as Publisher
+import utilities
 import wx.lib.agw.ultimatelistctrl as ULC
 from ObjectListView.ObjectListView import FastObjectListView
 import wx.aui
+import objectListViewDatabase
+
 
 class MainGui(wx.Frame):
     def __init__(self, parent):
@@ -223,8 +226,7 @@ class TimeSeries(wx.Panel):
         # self.list.SetItemWindow(index, 1, choice, expand=True)
         #
         # bSizer3.Add(self.list, 1, wx.EXPAND)
-
-
+        bSizer3.Add(objectListViewDatabase.MainPanel(self))
 
         self.SetSizer( bSizer1 )
         self.Layout()

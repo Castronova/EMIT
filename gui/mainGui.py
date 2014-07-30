@@ -328,7 +328,7 @@ class AddConnectionDialog(wx.Dialog):
         ######################################################
 
         label = wx.StaticText(self, -1, "*Title :")
-        label.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.BOLD))
+        label.SetFont(label.GetFont().MakeBold())
         label.SetHelpText("Title of the database connection")
         self.title = wx.TextCtrl(self, wx.ID_ANY, '', size=(200,-1))
         box = wx.BoxSizer(wx.HORIZONTAL)
@@ -349,7 +349,7 @@ class AddConnectionDialog(wx.Dialog):
 
 
         label = wx.StaticText(self, -1, "*Engine :")
-        label.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.BOLD))
+        label.SetFont(label.GetFont().MakeBold())
         label.SetHelpText("Database Parsing Engine (e.g. mysql, psycopg2, etc)")
         self.engine = wx.TextCtrl(self, -1, "", size=(80,-1))
         box = wx.BoxSizer(wx.HORIZONTAL)
@@ -358,7 +358,7 @@ class AddConnectionDialog(wx.Dialog):
         gridsizer.Add(self.engine, 0, wx.EXPAND)
 
         label = wx.StaticText(self, -1, "*Address :")
-        label.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.BOLD))
+        label.SetFont(label.GetFont().MakeBold())
         label.SetHelpText("Database Address")
         self.address = wx.TextCtrl(self, -1, "", size=(80,-1))
         box = wx.BoxSizer(wx.HORIZONTAL)
@@ -367,7 +367,7 @@ class AddConnectionDialog(wx.Dialog):
         gridsizer.Add(self.address, 0, wx.EXPAND)
 
         label = wx.StaticText(self, -1, "*Database :")
-        label.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.BOLD))
+        label.SetFont(label.GetFont().MakeBold())
         label.SetHelpText("Database Name")
         self.name = wx.TextCtrl(self, -1, "", size=(80,-1))
         box = wx.BoxSizer(wx.HORIZONTAL)
@@ -376,7 +376,7 @@ class AddConnectionDialog(wx.Dialog):
         gridsizer.Add(self.name, 0, wx.EXPAND)
 
         label = wx.StaticText(self, -1, "*User :")
-        label.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.BOLD))
+        label.SetFont(label.GetFont().MakeBold())
         label.SetHelpText("Database Username")
         self.user = wx.TextCtrl(self, -1, "", size=(80,-1))
         box = wx.BoxSizer(wx.HORIZONTAL)

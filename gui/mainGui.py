@@ -191,7 +191,7 @@ class TimeSeries(wx.Panel):
         #
         # bSizer3.Add(self.list, 1, wx.EXPAND)
 
-        
+
 
         self.SetSizer( bSizer1 )
         self.Layout()

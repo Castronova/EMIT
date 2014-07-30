@@ -48,6 +48,7 @@ class MainGui(wx.Frame):
         self.nb.AddPage(page4, "Series Selector")
 
 
+
         self.m_mgr.AddPane(self.Canvas,
                            wx.aui.AuiPaneInfo().
                            Center().
@@ -66,6 +67,7 @@ class MainGui(wx.Frame):
                           Caption('Python Console').
                           Center().
                           Name("Console").
+                          Position(1).
                           CloseButton(False).
                           MaximizeButton(True)
                           .Movable()
@@ -93,9 +95,18 @@ class MainGui(wx.Frame):
         #                    Floatable())
 
 
-
+        self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED,self.OnSelect)
 
         self.m_mgr.Update()
+
+    def OnSelect(self,event):
+
+
+        selected_page = self.nb.GetPage(event.GetSelection())
+
+        if selected_page.Label == 'Series Selector':
+            selected_page.getKnownDatabases()
+
 
 
     def initMenu(self):
@@ -185,6 +196,10 @@ class TimeSeries(wx.Panel):
     def __init__( self, parent ):
         wx.Panel.__init__ ( self, parent, id = wx.ID_ANY, pos = wx.DefaultPosition, size = wx.Size( 500,300 ), style = wx.TAB_TRAVERSAL )
 
+        self._databases = {}
+        self._connection_added = True
+        self._conection_string = ''
+
         bSizer1 = wx.BoxSizer( wx.VERTICAL )
         bSizer2 = wx.BoxSizer( wx.HORIZONTAL )
         bSizer3 = wx.BoxSizer( wx.VERTICAL )
@@ -196,11 +211,19 @@ class TimeSeries(wx.Panel):
         bSizer1.Add( bSizer2, 1, wx.EXPAND, 5 )
         bSizer1.Add( bSizer3, 1, wx.EXPAND, 5 )
 
-        self.m_choice2Choices = []
+        # populate the choice box
+        #databases = Publisher.sendMessage('GetDatabases')
+
+        self.m_choice2Choices = ['Select a Database','test1','test2']
 
         self.m_choice2 = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, self.m_choice2Choices, 0 )
         self.m_choice2.SetSelection( 0 )
         bSizer2.Add( self.m_choice2, 0, wx.ALL, 5 )
+
+
+
+
+
 
         self.m_button1 = wx.Button( self, wx.ID_ANY, u"Add Connection", wx.DefaultPosition, wx.DefaultSize, 0 )
         bSizer2.Add( self.m_button1, 0, wx.ALL, 5 )
@@ -225,45 +248,81 @@ class TimeSeries(wx.Panel):
         # bSizer3.Add(self.list, 1, wx.EXPAND)
 
 
+        Publisher.subscribe(self.refresh, "refreshDialogDatabases")
+        Publisher.subscribe(self.connection_added_status, "connectionAddedStatus")
+
 
         self.SetSizer( bSizer1 )
         self.Layout()
 
+    def getKnownDatabases(self):
+        Publisher.sendMessage('getDatabases')
+
+
+    def refresh(self,databases):
+        self._databases = databases
+
+        choices = ['---']
+        for k,v in databases.iteritems():
+            choices.append(databases[k]['name'])
+        self.m_choice2.SetItems(choices)
+
+    def connection_added_status(self,value=None,connection_string=''):
+        if value is not None:
+            self._connection_added = value
+            self._conection_string = connection_string
+        return self._connection_added
 
 
     def AddConnection(self, event):
 
-        dlg = AddConnectionDialog(self, -1, "Sample Dialog", size=(350, 200),
-                         style=wx.DEFAULT_DIALOG_STYLE,
-                         )
-        dlg.CenterOnScreen()
+        params = []
 
-        # this does not return until the dialog is closed.
-        val = dlg.ShowModal()
-        params = dlg.getConnectionParams()
+        while 1:
+            dlg = AddConnectionDialog(self, -1, "Sample Dialog", size=(350, 200),
+                             style=wx.DEFAULT_DIALOG_STYLE,
+                             )
+            dlg.CenterOnScreen()
 
-        dlg.Destroy()
+            if params:
+                dlg.set_values(title=params[0],
+                                  desc = params[1],
+                                  engine = params[2],
+                                  address = params[3],
+                                  name = params[4],
+                                  user = params[5],
+                                  pwd = params[6])
 
-        #title, desc, engine, address, name, user, pwd)
-
-        Publisher.sendMessage('DatabaseConnection',
-                              title=params[0],
-                              desc = params[1],
-                              engine = params[2],
-                              address = params[3],
-                              name = params[4],
-                              user = params[5],
-                              pwd = params[6])
+            # this does not return until the dialog is closed.
+            val = dlg.ShowModal()
 
 
-        # dlg = wx.TextEntryDialog(
-        #         self, 'Please enter connection information below: ',
-        #         'Database Connection', 'Python')
-        #
-        # dlg.SetValue("")
-        #
-        # connectionstring = dlg.GetValue()
+            if val == 5101:
+                # cancel is selected
+                return
+            elif val == 5100:
+                params = dlg.getConnectionParams()
 
+                dlg.Destroy()
+
+
+
+                # create the database connection
+                Publisher.sendMessage('DatabaseConnection',
+                                      title=params[0],
+                                      desc = params[1],
+                                      engine = params[2],
+                                      address = params[3],
+                                      name = params[4],
+                                      user = params[5],
+                                      pwd = params[6])
+
+                if self.connection_added_status():
+                    Publisher.sendMessage('getDatabases')
+                    return
+                else:
+
+                    wx.MessageBox('I was unable to connect to the database with the information provided :( \n\n'+self._conection_string, 'Info', wx.OK | wx.ICON_ERROR)
 
 
     def __del__( self ):
@@ -296,6 +355,34 @@ class RedirectText(object):
 
     def write(self,string):
         self.out.WriteText(string)
+
+class TestPopup(wx.PopupWindow):
+    """Adds a bit of text and mouse movement to the wx.PopupWindow"""
+    def __init__(self, parent, style):
+        wx.PopupWindow.__init__(self, parent, style)
+        pnl = self.pnl = wx.Panel(self)
+        pnl.SetBackgroundColour("CADET BLUE")
+
+
+        st = wx.StaticText(pnl, -1,
+                          "This is a special kind of top level\n"
+                          "window that can be used for\n"
+                          "popup menus, combobox popups\n"
+                          "and such.\n\n"
+                          "Try positioning the demo near\n"
+                          "the bottom of the screen and \n"
+                          "hit the button again.\n\n"
+                          "In this demo this window can\n"
+                          "be dragged with the left button\n"
+                          "and closed with the right."
+                          ,
+                          pos=(10,10))
+
+        sz = st.GetBestSize()
+        self.SetSize( (sz.width+20, sz.height+20) )
+        pnl.SetSize( (sz.width+20, sz.height+20) )
+
+        wx.CallAfter(self.Refresh)
 
 class AddConnectionDialog(wx.Dialog):
     def __init__(
@@ -427,6 +514,15 @@ class AddConnectionDialog(wx.Dialog):
         self.user.Bind(wx.EVT_TEXT, self.OnTextEnter)
         self.title.Bind(wx.EVT_TEXT, self.OnTextEnter)
 
+
+    def set_values(self,title,desc,engine, address, name, user,pwd):
+        self.title.Value = title
+        self.description.Value = desc
+        self.engine.Value = engine
+        self.address.Value = address
+        self.name.Value = name
+        self.user.Value = user
+        self.password.Value = pwd
 
     def getConnectionParams(self):
         engine = self.engine.GetValue()

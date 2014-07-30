@@ -32,6 +32,7 @@ if __name__ == '__main__':
     # connect to databases and set default
     currentdir = dirname(abspath(__file__))
     connections_txt = abspath(join(currentdir,'../data/connections'))
+
     cmd.connect_to_db([connections_txt])
     cmd.set_default_database()
 

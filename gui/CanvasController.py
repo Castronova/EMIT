@@ -85,7 +85,7 @@ class CanvasController:
         Publisher.subscribe(self.setCursor, "setCursor")
         Publisher.subscribe(self.run, "run")
         Publisher.subscribe(self.AddDatabaseConnection, "DatabaseConnection")
-
+        Publisher.subscribe(self.getDatabases, "getDatabases")
 
 
     def OnMove(self, event):
@@ -561,9 +561,25 @@ class CanvasController:
 
     def AddDatabaseConnection(self, title, desc, engine, address, name, user, pwd):
 
-        self.utilities.create_database_connections_from_args(params)
+        # build the database connection
+        connection = utilities.create_database_connections_from_args(title, desc, engine, address, name, user, pwd)
 
-    #
+
+        if type(connection) == dict and any(connection):
+            # store the connection
+            self.cmd.add_db_connection(connection)
+
+            # notify that the connection was added successfully
+            Publisher.sendMessage('connectionAddedStatus',value=True,connection_string=connection[connection.keys()[0]]['connection_string'])
+        else:
+            # notify that the connection was not added successfully
+            Publisher.sendMessage('connectionAddedStatus',value=False,connection_string=connection)
+
+
+    def getDatabases(self):
+        knownconnections = self.cmd.get_db_connections()
+        Publisher.sendMessage('refreshDialogDatabases',databases=knownconnections)
+
     def MenuSelectionCb( self, event ):
         # do something
         operation = menu_title_by_id[ event.GetId() ]

@@ -411,43 +411,28 @@ def build_exchange_items(params):
 
     return exchange_items
 
-def create_database_connections_from_args(params):
+def create_database_connections_from_args(title, desc, engine, address, db, user, pwd):
 
-    engine = params[0]
-    address = params[1]
-    db = params[2]
-    user = params[3]
-    pwd = params[4]
 
+    d = {'name':title,
+         'desc':desc ,
+         'engine':engine,
+         'address':address,
+         'db': db,
+         'user': user,
+         'pwd': pwd}
 
     # database connections dictionary
     db_connections = {}
 
-    # parse the dataabase connections file
-    # params = {}
-    # cparser = ConfigParser.ConfigParser(None, multidict)
-    # cparser.read(ini)
-    # sections = cparser.sections()
-
-    # create a session for each database connection in the ini file
-    # for s in sections:
-    #     # get the section key (minus the random number)
-    #     #section = s.split('^')[0]
-    #
-    #     # put ini args into a dictionary
-    #     options = cparser.options(s)
-    #
-    #     for option in options:
-    #         d[option] = cparser.get(s,option)
-
-        # build database connection
+    # build database connection
 
     dbconn = odm2.api.dbconnection()
     connection_string = dbconn.createConnection(engine,address,db,user,pwd)
 
 
-        # add connection string to dictionary (for backup/debugging)
-    # d['connection_string'] = connection_string
+    # add connection string to dictionary (for backup/debugging)
+    d['connection_string'] = connection_string
 
     # create a session
     try:
@@ -455,17 +440,19 @@ def create_database_connections_from_args(params):
 
         # save this session in the db_connections object
         db_id = uuid.uuid4().hex[:5]
-        db_connections[db_id] = {'name':db,
+
+        db_connections[db_id] = {'name':d['name'],
                                  'session': session,
                                  'connection_string':connection_string,
-                                 'description':'None',
-                                 'args': 'None'}
+                                 'description':d['desc'],
+                                 'args': d}
 
         print '> Connected to : %s [%s]'%(connection_string,db_id)
     except Exception, e:
         print e
         session = None
         print 'Could not establish a connection with the database: '+connection_string
+        return connection_string
 
 
 

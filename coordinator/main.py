@@ -112,6 +112,34 @@ class Coordinator(object):
 
         self._dbactions = {}
 
+
+    def set_db_connections(self,value={}):
+        self._db = value
+        return self._db
+
+    def add_db_connection(self,value):
+        self._db.update(value)
+        return self._db
+
+    def get_db_connections(self):
+        return self._db
+
+    def set_default_database(self,db_id=None):
+
+        # set it to the first postgres db
+        if db_id is None:
+            db_id = 'Any PostGreSQL Database'
+            for id,d in self._db.iteritems():
+                if d['args']['engine'] == 'postgresql':
+                    db_id = id
+                    break
+
+        try:
+            self.__default_db = self._db[db_id]
+            print '> Default database : %s'%self._db[db_id]['connection_string']
+        except:
+            print '> [error] could not find database: %s'%db_id
+
     def get_new_id(self):
         self.__incr += 1
         return self.__incr
@@ -591,9 +619,6 @@ class Coordinator(object):
 
             print 'test'
 
-    def get_db_connections(self):
-        return self._db
-
     def connect_to_db(self,in_args):
 
         # remove any empty list objects
@@ -605,6 +630,7 @@ class Coordinator(object):
             if os.path.isfile(abspath):
                 try:
                     connections = create_database_connections_from_file(args[0])
+                    #self.set_default_database()
                     self._db = connections
                     return True
                 except Exception,e:
@@ -645,22 +671,6 @@ class Coordinator(object):
 
             # center the text
             return padding*' ' + text
-
-    def set_default_database(self,db_id=None):
-
-        # set it to the first postgres db
-        if db_id is None:
-            db_id = 'Any PostGreSQL Database'
-            for id,d in self._db.iteritems():
-                if d['args']['engine'] == 'postgresql':
-                    db_id = id
-                    break
-
-        try:
-            self.__default_db = self._db[db_id]
-            print '> Default database : %s'%self._db[db_id]['connection_string']
-        except:
-            print '> [error] could not find database: %s'%db_id
 
     def load_simulation(self, simulation_file):
 

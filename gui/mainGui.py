@@ -7,6 +7,7 @@ from DirectoryView import DirectoryCtrlView
 import sys
 from CanvasView import Canvas
 from wx.lib.pubsub import pub as Publisher
+import wx.aui
 
 class MainGui(wx.Frame):
     def __init__(self, parent):
@@ -46,18 +47,43 @@ class MainGui(wx.Frame):
 
 
         self.m_mgr.AddPane(self.Canvas,
-                           wx.aui.AuiPaneInfo().Center().Name("Canvas").Position(0).CloseButton(False).MaximizeButton(
-                               True).MinimizeButton(True).MinimizeButton( True ).PinButton(True).Resizable().Floatable(True).MinSize(
-                               wx.Size(1000, 400)))
+                           wx.aui.AuiPaneInfo().
+                           Center().
+                           Name("Canvas").
+                           Position(0).
+                           CloseButton(False).
+                           MaximizeButton(True).
+                           MinimizeButton(True).
+                           PinButton(True).
+                           Resizable().
+                           Floatable(True).
+                           MinSize(wx.Size(1000, 400)))
 
         self.m_mgr.AddPane(self.output,
-                          wx.aui.AuiPaneInfo().Center().Name("Output").Position(1).CloseButton(False).MaximizeButton(
-                               True).MinimizeButton(True).MinimizeButton( True ).PinButton(True).Resizable().Floatable().MinSize(
-                               wx.Size(1000, 200)))
+                          wx.aui.AuiPaneInfo().
+                          Center().Name("Output").
+                          Position(1).
+                          CloseButton(False).
+                          MaximizeButton(True).
+                          MinimizeButton().
+                          PinButton(True).
+                          Resizable().
+                          Floatable().
+                          MinSize(wx.Size(1000, 200)))
 
         self.m_mgr.AddPane(self.nb,
-                   wx.aui.AuiPaneInfo().Left().CloseButton(False).MaximizeButton(True).MinimizeButton(
-                       True).MinimizeButton( True ).PinButton(True).Resizable().MinSize(wx.Size(375,500)).Floatable())
+                           wx.aui.AuiPaneInfo().
+                           Left().
+                           CloseButton(False).
+                           MaximizeButton(True).
+                           MinimizeButton().
+                           PinButton(True).
+                           Resizable().
+                           MinSize(wx.Size(375,500)).
+                           Floatable())
+
+
+
 
         self.m_mgr.Update()
 
@@ -215,7 +241,17 @@ class TimeSeries(wx.Panel):
         params = dlg.getConnectionParams()
 
         dlg.Destroy()
-        Publisher.sendMessage('DatabaseConnection', params)
+
+        #title, desc, engine, address, name, user, pwd)
+
+        Publisher.sendMessage('DatabaseConnection',
+                              title=params[0],
+                              desc = params[1],
+                              engine = params[2],
+                              address = params[3],
+                              name = params[4],
+                              user = params[5],
+                              pwd = params[6])
 
 
         # dlg = wx.TextEntryDialog(
@@ -280,81 +316,87 @@ class AddConnectionDialog(wx.Dialog):
 
         # Now continue with the normal construction of the dialog
         # contents
-        sizer = wx.BoxSizer(wx.VERTICAL)
 
+        gridsizer = wx.FlexGridSizer(rows=7,cols=2,hgap=5,vgap=5)
+
+        titleSizer = wx.BoxSizer(wx.HORIZONTAL)
         label = wx.StaticText(self, -1, "Database Connection")
-        sizer.Add(label, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+        titleSizer.Add(label, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
 
+        ######################################################
+
+        label = wx.StaticText(self, -1, "*Title :")
+        label.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.BOLD))
+        label.SetHelpText("Title of the database connection")
+        self.title = wx.TextCtrl(self, wx.ID_ANY, '', size=(200,-1))
         box = wx.BoxSizer(wx.HORIZONTAL)
+        box.Add(label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
+        gridsizer.Add(box,0,wx.ALIGN_LEFT)
+        gridsizer.Add(self.title, 0, wx.EXPAND)
 
-        label = wx.StaticText(self, -1, "Engine :")
+
+        label = wx.StaticText(self, -1, "Description :")
+        label.SetHelpText("Description of the database connection")
+        self.description = wx.TextCtrl(self, -1, "", size=(80,-1))
+        box = wx.BoxSizer(wx.HORIZONTAL)
+        box.Add(label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
+        gridsizer.Add(box,0,wx.ALIGN_LEFT)
+        gridsizer.Add(self.description, 0, wx.EXPAND)
+
+        ######################################################
+
+
+        label = wx.StaticText(self, -1, "*Engine :")
+        label.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.BOLD))
         label.SetHelpText("Database Parsing Engine (e.g. mysql, psycopg2, etc)")
-        box.Add(label, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
-
         self.engine = wx.TextCtrl(self, -1, "", size=(80,-1))
-        box.Add(self.engine, 1, wx.ALIGN_CENTRE|wx.ALL, 5)
-
-        sizer.Add(box, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
-
         box = wx.BoxSizer(wx.HORIZONTAL)
-        #d['engine'],d['address'],d['db'],d['user'],d['pwd']
+        box.Add(label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
+        gridsizer.Add(box,0,wx.ALIGN_LEFT)
+        gridsizer.Add(self.engine, 0, wx.EXPAND)
 
-
-        label = wx.StaticText(self, -1, "Address :")
+        label = wx.StaticText(self, -1, "*Address :")
+        label.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.BOLD))
         label.SetHelpText("Database Address")
-        box.Add(label, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
-
         self.address = wx.TextCtrl(self, -1, "", size=(80,-1))
-        box.Add(self.address, 1, wx.ALIGN_CENTRE|wx.ALL, 5)
-
-        sizer.Add(box, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
-
         box = wx.BoxSizer(wx.HORIZONTAL)
-        #d['engine'],d['address'],d['db'],d['user'],d['pwd']
+        box.Add(label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
+        gridsizer.Add(box,0,wx.ALIGN_LEFT)
+        gridsizer.Add(self.address, 0, wx.EXPAND)
 
-
-        label = wx.StaticText(self, -1, "Name :")
+        label = wx.StaticText(self, -1, "*Database :")
+        label.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.BOLD))
         label.SetHelpText("Database Name")
-        box.Add(label, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
-
         self.name = wx.TextCtrl(self, -1, "", size=(80,-1))
-
-        box.Add(self.name, 1, wx.ALIGN_CENTRE|wx.ALL, 5)
-
-        sizer.Add(box, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
-
         box = wx.BoxSizer(wx.HORIZONTAL)
-        #d['engine'],d['address'],d['db'],d['user'],d['pwd']
+        box.Add(label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
+        gridsizer.Add(box,0,wx.ALIGN_LEFT)
+        gridsizer.Add(self.name, 0, wx.EXPAND)
 
-
-        label = wx.StaticText(self, -1, "User :")
+        label = wx.StaticText(self, -1, "*User :")
+        label.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.BOLD))
         label.SetHelpText("Database Username")
-        box.Add(label, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
-
         self.user = wx.TextCtrl(self, -1, "", size=(80,-1))
-
-        box.Add(self.user, 1, wx.ALIGN_CENTRE|wx.ALL, 5)
-
-        sizer.Add(box, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
-
         box = wx.BoxSizer(wx.HORIZONTAL)
-        #d['engine'],d['address'],d['db'],d['user'],d['pwd']
-
+        box.Add(label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
+        gridsizer.Add(box,0,wx.ALIGN_LEFT)
+        gridsizer.Add(self.user, 0, wx.EXPAND)
 
         label = wx.StaticText(self, -1, "Password :")
         label.SetHelpText("Database Password")
-        box.Add(label, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
-
         self.password = wx.TextCtrl(self, -1, "", size=(80,-1))
-        self.password.SetHelpText("Here's some help text for field #2")
-        box.Add(self.password, 1, wx.ALIGN_CENTRE|wx.ALL, 5)
+        box = wx.BoxSizer(wx.HORIZONTAL)
+        box.Add(label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
+        gridsizer.Add(box,0,wx.ALIGN_LEFT)
+        gridsizer.Add(self.password, 0, wx.EXPAND)
 
-        sizer.Add(box, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(titleSizer, 0, wx.CENTER)
+        sizer.Add(wx.StaticLine(self), 0, wx.ALL|wx.EXPAND, 5)
+        sizer.Add(gridsizer, 0, wx.ALL|wx.EXPAND, 5)
+        sizer.Add(wx.StaticLine(self), 0, wx.ALL|wx.EXPAND, 5)
+        self.SetSizeHints(250,300,500,400)
 
-
-
-        line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
-        sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.TOP, 5)
 
         btnsizer = wx.StdDialogButtonSizer()
 
@@ -381,16 +423,26 @@ class AddConnectionDialog(wx.Dialog):
         self.address.Bind(wx.EVT_TEXT, self.OnTextEnter)
         self.name.Bind(wx.EVT_TEXT, self.OnTextEnter)
         self.user.Bind(wx.EVT_TEXT, self.OnTextEnter)
+        self.title.Bind(wx.EVT_TEXT, self.OnTextEnter)
 
 
     def getConnectionParams(self):
-        return self.engine.GetValue(), self.address.GetValue(), self.name.GetValue(), self.user.GetValue(), self.password.GetValue()
+        engine = self.engine.GetValue()
+        address = self.address.GetValue()
+        name = self.name.GetValue()
+        user = self.user.GetValue()
+        pwd = self.password.GetValue()
+        title = self.title.GetValue()
+        desc = self.description.GetValue()
+
+        return title,desc, engine,address,name,user,pwd,title,desc
 
     def OnTextEnter(self, event):
         if self.engine.GetValue() == '' or \
                 self.address.GetValue() == '' or  \
                 self.name.GetValue() == '' or  \
-                self.user.GetValue() == '':
+                self.user.GetValue() == '' or \
+                self.title.GetValue() =='' :
             self.btnok.Disable()
         else:
             self.btnok.Enable()

@@ -558,8 +558,9 @@ class CanvasController:
         self.frame.PopupMenu( menu, event.GetPoint() )
         menu.Destroy() # destroy to avoid mem leak
 
-    def AddDatabaseConnection(self, params):
-        self.cmd.create_database_connections_from_args(params)
+    def AddDatabaseConnection(self, title, desc, engine, address, name, user, pwd):
+
+        #self.cmd.create_database_connections_from_args(params)
 
     #
     def MenuSelectionCb( self, event ):

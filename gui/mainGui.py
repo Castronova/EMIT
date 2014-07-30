@@ -7,6 +7,8 @@ from DirectoryView import DirectoryCtrlView
 import sys
 from CanvasView import Canvas
 from wx.lib.pubsub import pub as Publisher
+import wx.lib.agw.ultimatelistctrl as ULC
+from ObjectListView.ObjectListView import FastObjectListView
 
 class MainGui(wx.Frame):
     def __init__(self, parent):
@@ -51,13 +53,14 @@ class MainGui(wx.Frame):
                                wx.Size(1000, 400)))
 
         self.m_mgr.AddPane(self.output,
-                          wx.aui.AuiPaneInfo().Center().Name("Output").Position(1).CloseButton(False).MaximizeButton(
-                               True).MinimizeButton(True).MinimizeButton( True ).PinButton(True).Resizable().Floatable().MinSize(
+                          wx.aui.AuiPaneInfo().Caption('Python Console').Center().Name("Console").CloseButton(False).MaximizeButton(
+                               True).Movable().MinimizeButton(True).PinButton(True).Resizable().Floatable().MinSize(
                                wx.Size(1000, 200)))
 
         self.m_mgr.AddPane(self.nb,
                    wx.aui.AuiPaneInfo().Left().CloseButton(False).MaximizeButton(True).MinimizeButton(
-                       True).MinimizeButton( True ).PinButton(True).Resizable().MinSize(wx.Size(375,500)).Floatable())
+                    True ).PinButton(True).Resizable().MinSize(wx.Size(375,500)).Floatable().FloatingSize(size=(600, 800)).CloseButton(
+                    True))
 
         self.m_mgr.Update()
 
@@ -151,10 +154,14 @@ class TimeSeries(wx.Panel):
 
         bSizer1 = wx.BoxSizer( wx.VERTICAL )
         bSizer2 = wx.BoxSizer( wx.HORIZONTAL )
+        bSizer3 = wx.BoxSizer( wx.VERTICAL )
+
         bSizer1.SetMinSize( wx.Size( 400, 300))
-        bSizer2.SetMinSize( wx.Size( -1, 30))
+        bSizer2.SetMinSize( wx.Size( -1, 40))
+        bSizer3.SetMinSize( wx.Size( -1, 350))
 
-
+        bSizer1.Add( bSizer2, 1, wx.EXPAND, 5 )
+        bSizer1.Add( bSizer3, 1, wx.EXPAND, 5 )
 
         self.m_choice2Choices = []
 
@@ -166,42 +173,30 @@ class TimeSeries(wx.Panel):
         bSizer2.Add( self.m_button1, 0, wx.ALL, 5 )
         self.m_button1.Bind(wx.EVT_LEFT_DOWN, self.AddConnection)
 
+        # self.list = ULC.UltimateListCtrl(self, wx.ID_ANY, agwStyle=wx.LC_REPORT | wx.LC_VRULES | wx.LC_HRULES | wx.LC_SINGLE_SEL)
+        #
+        # self.list.InsertColumn(0, "Column 1")
+        # self.list.InsertColumn(1, "Column 2")
+        #
+        # index = self.list.InsertStringItem(sys.maxint, "Item 1")
+        # self.list.SetStringItem(index, 1, "Sub-item 1")
+        #
+        # index = self.list.InsertStringItem(sys.maxint, "Item 2")
+        # self.list.SetStringItem(index, 1, "Sub-item 2")
+        #
+        # choice = wx.Choice(self.list, -1, choices=["one", "two"])
+        # index = self.list.InsertStringItem(sys.maxint, "A widget")
+        #
+        # self.list.SetItemWindow(index, 1, choice, expand=True)
+        #
+        # bSizer3.Add(self.list, 1, wx.EXPAND)
 
-        bSizer1.Add( bSizer2, 1, wx.EXPAND, 5 )
+        
 
-        self.Database = wx.grid.Grid( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
-
-        # Grid
-        self.Database.CreateGrid( 5, 5 )
-        self.Database.EnableEditing( True )
-        self.Database.EnableGridLines( True )
-        self.Database.SetGridLineColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_HIGHLIGHT ) )
-        self.Database.EnableDragGridSize( False )
-        self.Database.SetMargins( 0, 0 )
-
-        # Columns
-        self.Database.EnableDragColMove( False )
-        self.Database.EnableDragColSize( True )
-        self.Database.SetColLabelSize( 30 )
-        self.Database.SetColLabelAlignment( wx.ALIGN_CENTRE, wx.ALIGN_CENTRE )
-
-        # Rows
-        self.Database.EnableDragRowSize( True )
-        self.Database.SetRowLabelSize( 80 )
-        self.Database.SetRowLabelAlignment( wx.ALIGN_CENTRE, wx.ALIGN_CENTRE )
-
-        # Label Appearance
-
-        # Cell Defaults
-        self.Database.SetDefaultCellAlignment( wx.ALIGN_LEFT, wx.ALIGN_TOP )
-        bSizer1.Add( self.Database, 0, wx.ALL, 5 )
-
-        #Publisher.subscribe(self.appenditem, 'DatabaseConnection')
         self.SetSizer( bSizer1 )
         self.Layout()
 
-    # def appenditem(self, var):
-    #     self.m_choice2Choices.append(var)
+
 
     def AddConnection(self, event):
 

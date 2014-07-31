@@ -64,6 +64,10 @@ class MainGui(wx.Frame):
         self.nb.AddPage(page3, "Link View")
         self.nb.AddPage(page4, "Series Selector")
 
+        self.nb.GetPage(0).SetLabel("Directory")
+        self.nb.GetPage(1).SetLabel("Model View")
+        self.nb.GetPage(2).SetLabel("Link View")
+        self.nb.GetPage(3).SetLabel("Series Selector")
 
         self.m_mgr.AddPane(self.Canvas,
                aui.AuiPaneInfo().
@@ -242,7 +246,7 @@ class TimeSeries(wx.Panel):
         bSizer1.Add( bSizer3, 1, wx.EXPAND, 5 )
 
         # populate the choice box
-        #databases = Publisher.sendMessage('GetDatabases')
+        databases = Publisher.sendMessage('GetDatabases')
 
 
         self.m_choice2 = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, [], 0 )

@@ -12,11 +12,14 @@ class Database(object):
     'ISBN', 'Author', 'Manufacturer', 'Title'
     """
     #----------------------------------------------------------------------
-    def __init__(self, time, value, varname, varunit):
+    def __init__(self, timeunit, varname, varunit, sitecode, sitename, begintime, endtime):
+        self.sitename = sitename
+        self.sitecode = sitecode
         self.variablename = varname
-        self.Value = value
         self.variableunit = varunit
-        self.time = time
+        self.Time = timeunit
+        self.begintime = begintime
+        self.endtime = endtime
 
 
 ########################################################################
@@ -24,10 +27,9 @@ class MainPanel(wx.Panel):
     #----------------------------------------------------------------------
     def __init__(self, parent):
         wx.Panel.__init__(self, parent=parent, id=wx.ID_ANY)
-        self.products = [Database("wxPython in Action", "Robin Dunn",
-                              "1932394621", "Manning"),
-                         Database("Hello World", "Warren and Carter Sande",
-                              "1933988495", "Manning")
+        self.products = [Database("Main Lake1", "19",
+                                  "Chlorophyll a", "micrograms per liter",
+                                  "day", "1992-05-07 11:45:00", "1996-01-02 00:00:00"),
                          ]
 
         self.dataOlv = ObjectListView(self, wx.ID_ANY, style=wx.LC_REPORT|wx.SUNKEN_BORDER)
@@ -60,17 +62,20 @@ class MainPanel(wx.Panel):
                          "mfg":"Course Technology"},
                         {"title":"Learning Python", "author":"Mark Lutz",
                          "isbn":"0596513984", "mfg":"O'Reilly"}
-                        ]
+        ]
         data = self.products + product_dict
         self.dataOlv.SetObjects(data)
 
     #----------------------------------------------------------------------
     def setBooks(self, data=None):
         self.dataOlv.SetColumns([
-            ColumnDefn("VariableName", "left", 220, "varname"),
-            ColumnDefn("Value", "left", 200, "value"),
-            ColumnDefn("VariableUnit", "right", 100, "varunit"),
-            ColumnDefn("Time", "left", 180, "time")
+            ColumnDefn("Sitename", "left", 180, "sitename"),
+            ColumnDefn("Sitecode", "left", 180, "sitecode"),
+            ColumnDefn("VariableName", "left", 220, "variablename"),
+            ColumnDefn("VariableUnit", "right", 100, "variablename"),
+            ColumnDefn("Time", "left", 180, "Time"),
+            ColumnDefn("BeginDateTime", "left", 180, "begintime"),
+            ColumnDefn("EndDateTime", "left", 180, "endtime")
         ])
 
         self.dataOlv.SetObjects(self.products)

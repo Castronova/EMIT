@@ -571,7 +571,6 @@ class CanvasController:
     def RemoveModel(self, model_obj):
 
 
-
         # remove the model from the canvas
         removed_model = self.models.pop(model_obj)
 

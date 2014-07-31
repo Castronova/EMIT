@@ -14,6 +14,10 @@ from stdlib import Variable, Unit
 from odm2.api.ODMconnection import dbconnection, SessionFactory
 import odm2.api
 
+from odm2.api.ODM2.Connection.services import *
+
+
+
 from db.api import postgresdb
 import uuid
 
@@ -438,7 +442,11 @@ def create_database_connections_from_args(title, desc, engine, address, db, user
     try:
         session = SessionFactory(connection_string,False).getSession()
 
-        #check_if_is_instance = session.identity_key()
+        # check if the database is valid
+        connection =  readConnection(d['connection_string'])
+
+        if not connection.isValid():
+            return connection_string
 
         # save this session in the db_connections object
         db_id = uuid.uuid4().hex[:5]
@@ -500,8 +508,6 @@ def create_database_connections_from_file(ini):
 
     # create a session for each database connection in the ini file
     for s in sections:
-        # get the section key (minus the random number)
-        #section = s.split('^')[0]
 
         # put ini args into a dictionary
         options = cparser.options(s)
@@ -510,7 +516,6 @@ def create_database_connections_from_file(ini):
             d[option] = cparser.get(s,option)
 
         # build database connection
-
         dbconn = odm2.api.dbconnection()
         connection_string = dbconn.createConnection(d['engine'],d['address'],d['db'],d['user'],d['pwd'])
 
@@ -518,9 +523,14 @@ def create_database_connections_from_file(ini):
         # add connection string to dictionary (for backup/debugging)
         d['connection_string'] = connection_string
 
-        # create a session
         try:
+            # create a session
             session = SessionFactory(connection_string,False).getSession()
+
+            # check if the database is valid
+            connection =  readConnection(d['connection_string'])
+            if not connection.isValid():
+                raise Exception('Invalid database connection string')
 
             # save this session in the db_connections object
             db_id = uuid.uuid4().hex[:5]

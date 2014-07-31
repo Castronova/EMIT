@@ -8,10 +8,20 @@ user = tonycastronova
 pwd = water
 
 [connection]
-name = ODM1 Observation database
+name = ODM2 MySQL Observation database
 desc = MySQL database with lots of observed timeseries
 engine = mysql
-address = jws.uwrl.usu.edu
-db = ODM
-user = ODM
-pwd = ODM123!!
+address = 127.0.0.1:3306
+db = ODM2
+user = root
+pwd = water
+
+[connection]
+name = Live ODM2
+desc = ODM2 database ported from ODM1.1
+engine = mssql
+address = waterdata.usu.edu
+db = ODM2
+user = TSA
+pwd = TSA!wat3r
+

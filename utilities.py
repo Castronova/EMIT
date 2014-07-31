@@ -438,6 +438,8 @@ def create_database_connections_from_args(title, desc, engine, address, db, user
     try:
         session = SessionFactory(connection_string,False).getSession()
 
+        #check_if_is_instance = session.identity_key()
+
         # save this session in the db_connections object
         db_id = uuid.uuid4().hex[:5]
 

@@ -13,6 +13,7 @@ from ObjectListView.ObjectListView import FastObjectListView
 import wx.aui
 import objectListViewDatabase
 
+from odm2.api.ODM2.Core.services import readCore
 
 class MainGui(wx.Frame):
     def __init__(self, parent):
@@ -217,13 +218,13 @@ class TimeSeries(wx.Panel):
         # populate the choice box
         #databases = Publisher.sendMessage('GetDatabases')
 
-        self.m_choice2Choices = ['Select a Database','test1','test2']
 
-        self.m_choice2 = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, self.m_choice2Choices, 0 )
+        self.m_choice2 = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, [], 0 )
         self.m_choice2.SetSelection( 0 )
         bSizer2.Add( self.m_choice2, 0, wx.ALL, 5 )
 
 
+        self.m_choice2.Bind(wx.EVT_CHOICE,self.DbChanged)
 
 
 
@@ -258,6 +259,38 @@ class TimeSeries(wx.Panel):
 
         self.SetSizer( bSizer1 )
         self.Layout()
+
+    def DbChanged(self, event):
+
+
+        # get the name of the selected database
+        selected_db = self.m_choice2.GetStringSelection()
+
+        for key, db in self._databases.iteritems():
+
+            # get the database session associated with the selected name
+            if db['name'] == selected_db:
+
+
+                # query the database and get basic series info
+                core_connection = readCore(db['connection_string'])
+                all_results = core_connection.getAllResult()
+
+                print 'done'
+
+                # exit
+                break
+
+        return
+        #print self._databases
+
+        # get the database connection (send message to canvas controller)
+
+    # def GetDatabase(self,value=None):
+    #     if value is None:
+    #         Publisher.sendMessage('')
+    #     else:
+    #         return value
 
     def getKnownDatabases(self, value = None):
         if value is None:
@@ -368,34 +401,6 @@ class RedirectText(object):
     def write(self,string):
         self.out.WriteText(string)
 
-class TestPopup(wx.PopupWindow):
-    """Adds a bit of text and mouse movement to the wx.PopupWindow"""
-    def __init__(self, parent, style):
-        wx.PopupWindow.__init__(self, parent, style)
-        pnl = self.pnl = wx.Panel(self)
-        pnl.SetBackgroundColour("CADET BLUE")
-
-
-        st = wx.StaticText(pnl, -1,
-                          "This is a special kind of top level\n"
-                          "window that can be used for\n"
-                          "popup menus, combobox popups\n"
-                          "and such.\n\n"
-                          "Try positioning the demo near\n"
-                          "the bottom of the screen and \n"
-                          "hit the button again.\n\n"
-                          "In this demo this window can\n"
-                          "be dragged with the left button\n"
-                          "and closed with the right."
-                          ,
-                          pos=(10,10))
-
-        sz = st.GetBestSize()
-        self.SetSize( (sz.width+20, sz.height+20) )
-        pnl.SetSize( (sz.width+20, sz.height+20) )
-
-        wx.CallAfter(self.Refresh)
-
 class AddConnectionDialog(wx.Dialog):
     def __init__(
             self, parent, ID, title, size=wx.DefaultSize, pos=wx.DefaultPosition,
@@ -450,11 +455,15 @@ class AddConnectionDialog(wx.Dialog):
         label = wx.StaticText(self, -1, "*Engine :")
         label.SetFont(label.GetFont().MakeBold())
         label.SetHelpText("Database Parsing Engine (e.g. mysql, psycopg2, etc)")
-        self.engine = wx.TextCtrl(self, -1, "", size=(80,-1))
+        #self.engine = wx.TextCtrl(self, -1, "", size=(80,-1))
+        engine_choices = ['PostgreSQL', 'MySQL']
+        self.engine = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, engine_choices, 0 )
+        self.engine.SetSelection( 0 )
         box = wx.BoxSizer(wx.HORIZONTAL)
         box.Add(label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
         gridsizer.Add(box,0,wx.ALIGN_LEFT)
         gridsizer.Add(self.engine, 0, wx.EXPAND)
+
 
         label = wx.StaticText(self, -1, "*Address :")
         label.SetFont(label.GetFont().MakeBold())
@@ -520,7 +529,7 @@ class AddConnectionDialog(wx.Dialog):
         sizer.Fit(self)
 
 
-        self.engine.Bind(wx.EVT_TEXT, self.OnTextEnter)
+        #self.engine.Bind(wx.EVT_TEXT, self.OnTextEnter)
         self.address.Bind(wx.EVT_TEXT, self.OnTextEnter)
         self.name.Bind(wx.EVT_TEXT, self.OnTextEnter)
         self.user.Bind(wx.EVT_TEXT, self.OnTextEnter)
@@ -537,7 +546,10 @@ class AddConnectionDialog(wx.Dialog):
         self.password.Value = pwd
 
     def getConnectionParams(self):
-        engine = self.engine.GetValue()
+
+        engine = self.engine.GetStringSelection().lower()
+
+        #engine = self.engine.GetValue()
         address = self.address.GetValue()
         name = self.name.GetValue()
         user = self.user.GetValue()
@@ -548,8 +560,7 @@ class AddConnectionDialog(wx.Dialog):
         return title,desc, engine,address,name,user,pwd,title,desc
 
     def OnTextEnter(self, event):
-        if self.engine.GetValue() == '' or \
-                self.address.GetValue() == '' or  \
+        if self.address.GetValue() == '' or  \
                 self.name.GetValue() == '' or  \
                 self.user.GetValue() == '' or \
                 self.title.GetValue() =='' :

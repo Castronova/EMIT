@@ -51,8 +51,8 @@ class NavCanvas(wx.Panel):
         self.Canvas = FloatCanvas.FloatCanvas(self, **kwargs)
         box.Add(self.Canvas, 1, wx.GROW)
 
-        self.output = wx.TextCtrl(self, -1, size=(100,100), style=wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
-        box.Add(self.output, 0, wx.GROW)
+        # self.output = wx.TextCtrl(self, -1, size=(100,100), style=wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
+        # box.Add(self.output, 0, wx.GROW)
 
         self.SetSizerAndFit(box)
 

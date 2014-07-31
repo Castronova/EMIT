@@ -22,7 +22,7 @@ class MainGui(wx.Frame):
 
         self.pnlDocking = wx.Panel(id=wx.ID_ANY, name='pnlDocking', parent=self, size=wx.Size(1500, 650),
                                    style=wx.TAB_TRAVERSAL)
-        #self.output = wx.TextCtrl(self, -1, size=(100,100), style=wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
+
 
         #self.Bind(wx.EVT_CLOSE, self.onClose)
         self.initMenu()
@@ -45,6 +45,8 @@ class MainGui(wx.Frame):
         self.m_mgr = aui.AuiManager()
         self.m_mgr.SetManagedWindow(self.pnlDocking)
         # self.m_mgr.SetFlags(aui.AUI_MGR_DEFAULT)
+
+        self.output = wx.TextCtrl(self, -1, size=(100,100), style=wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
 
         self.Canvas = Canvas(self.pnlDocking)
         #self.Canvas.output.WriteText(
@@ -82,22 +84,21 @@ class MainGui(wx.Frame):
                Movable().
                Floatable(True).
                MinSize(wx.Size(1000, 400)))
-        #
-        # self.m_mgr.AddPane(self.output,
-        #                   wx.aui.AuiPaneInfo().
-        #                   Caption('Output').
-        #                   Center().
-        #                   Name("Console").
-        #                   Position(1).
-        #                   CloseButton(False).
-        #                   MaximizeButton(True)
-        #                   .Movable()
-        #                   .MinimizeButton(True).
-        #                   PinButton(True).
-        #                   Resizable().
-        #                   Floatable().
-        #                   MinSize(wx.Size(1000, 200)).
-        #                   MaxSize(wx.Size(1000, 200)))
+
+        self.m_mgr.AddPane(self.output,
+              aui.AuiPaneInfo().
+              Caption('Output').
+              Center().
+              Name("Console").
+              Position(1).
+              CloseButton(False).
+              MaximizeButton(True)
+              .Movable()
+              .MinimizeButton(True).
+              PinButton(True).
+              Resizable().
+              Floatable().
+              MinSize(wx.Size(1000, 200)))
 
 
         self.m_mgr.AddPane(self.nb,

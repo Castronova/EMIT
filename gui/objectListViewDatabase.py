@@ -4,7 +4,7 @@ import wx
 from ObjectListView import ObjectListView, ColumnDefn
 
 ########################################################################
-class Book(object):
+class Database(object):
     """
     Model of the Book object
 
@@ -12,11 +12,11 @@ class Book(object):
     'ISBN', 'Author', 'Manufacturer', 'Title'
     """
     #----------------------------------------------------------------------
-    def __init__(self, title, author, isbn, mfg):
-        self.isbn = isbn
-        self.author = author
-        self.mfg = mfg
-        self.title = title
+    def __init__(self, time, value, varname, varunit):
+        self.variablename = varname
+        self.Value = value
+        self.variableunit = varunit
+        self.time = time
 
 
 ########################################################################
@@ -24,9 +24,9 @@ class MainPanel(wx.Panel):
     #----------------------------------------------------------------------
     def __init__(self, parent):
         wx.Panel.__init__(self, parent=parent, id=wx.ID_ANY)
-        self.products = [Book("wxPython in Action", "Robin Dunn",
+        self.products = [Database("wxPython in Action", "Robin Dunn",
                               "1932394621", "Manning"),
-                         Book("Hello World", "Warren and Carter Sande",
+                         Database("Hello World", "Warren and Carter Sande",
                               "1933988495", "Manning")
                          ]
 
@@ -53,8 +53,8 @@ class MainPanel(wx.Panel):
 
         """
         print "updating..."
-        product_dict = [{"title":"Core Python Programming", "author":"Wesley Chun",
-                         "isbn":"0132269937", "mfg":"Prentice Hall"},
+        product_dict = [{"varname":"Core Python Programming", "Value":"Wesley Chun",
+                         "varunit":"0132269937", "time":"Prentice Hall"},
                         {"title":"Python Programming for the Absolute Beginner",
                          "author":"Michael Dawson", "isbn":"1598631128",
                          "mfg":"Course Technology"},
@@ -67,10 +67,10 @@ class MainPanel(wx.Panel):
     #----------------------------------------------------------------------
     def setBooks(self, data=None):
         self.dataOlv.SetColumns([
-            ColumnDefn("Title", "left", 220, "title"),
-            ColumnDefn("Author", "left", 200, "author"),
-            ColumnDefn("ISBN", "right", 100, "isbn"),
-            ColumnDefn("Mfg", "left", 180, "mfg")
+            ColumnDefn("VariableName", "left", 220, "varname"),
+            ColumnDefn("Value", "left", 200, "value"),
+            ColumnDefn("VariableUnit", "right", 100, "varunit"),
+            ColumnDefn("Time", "left", 180, "time")
         ])
 
         self.dataOlv.SetObjects(self.products)

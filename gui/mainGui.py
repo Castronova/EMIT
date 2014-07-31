@@ -13,7 +13,7 @@ from ObjectListView.ObjectListView import FastObjectListView
 import wx.lib.agw.aui as aui
 import objectListViewDatabase
 
-from odm2.api.ODM2.Core.services import readCore
+from odm2.api.ODM2.Core.services import *
 
 class MainGui(wx.Frame):
     def __init__(self, parent):
@@ -303,6 +303,7 @@ class TimeSeries(wx.Panel):
 
 
                 # query the database and get basic series info
+
                 core_connection = readCore(db['connection_string'])
                 all_results = core_connection.getAllResult()
 

@@ -35,9 +35,10 @@ class LinkContextMenu(wx.Menu):
 
 class ModelContextMenu(wx.Menu):
 
-    def __init__(self, parent):
+    def __init__(self, parent, e):
         super(ModelContextMenu, self).__init__()
 
+        self.model_obj = e
         self.parent = parent
 
         mmi = wx.MenuItem(self, wx.NewId(), 'View Details')
@@ -45,6 +46,7 @@ class ModelContextMenu(wx.Menu):
 
         mmi = wx.MenuItem(self, wx.NewId(), 'Remove')
         self.AppendItem(mmi)
+        self.Bind(wx.EVT_MENU, self.RemoveModel)
 
         #self.Bind(wx.EVT_MENU, self.OnAddLink, mmi)
 
@@ -60,6 +62,9 @@ class ModelContextMenu(wx.Menu):
 
     def OnClose(self, e):
         self.parent.Close()
+
+    def RemoveModel(self, e):
+        self.parent.RemoveModel(self.model_obj)
 
 class GeneralContextMenu(wx.Menu):
 

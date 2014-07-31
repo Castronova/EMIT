@@ -123,7 +123,7 @@ class CanvasController:
 
             # if object is model
             elif event.type == 'Model':
-                self.Canvas.PopupMenu(ModelContextMenu(self), event.HitCoordsPixel.Get())
+                self.Canvas.PopupMenu(ModelContextMenu(self,event), event.HitCoordsPixel.Get())
 
         # # if object is neither
         # else:
@@ -399,6 +399,15 @@ class CanvasController:
         self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if obj.type != CanvasObjects.ShapeType.ArrowHead]
         #self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if type(obj) != FC.Polygon]
 
+        # remove any models
+        i = 0
+        modelids = [model.ID for model in self.models]
+        modellabels = [model.Name for model in self.models]
+        self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList
+                                          if (obj.type == CanvasObjects.ShapeType.Model and obj.ID in modelids)
+                                          or (obj.type == CanvasObjects.ShapeType.Label and obj.String in modellabels)]
+
+
         # redraw links
         for link in self.links.keys():
             r1,r2 = self.links[link]
@@ -558,6 +567,27 @@ class CanvasController:
         ### 5. Launcher displays menu with call to PopupMenu, invoked on the source component, passing event's GetPoint. ###
         self.frame.PopupMenu( menu, event.GetPoint() )
         menu.Destroy() # destroy to avoid mem leak
+
+    def RemoveModel(self, model_obj):
+
+
+
+        # remove the model from the canvas
+        removed_model = self.models.pop(model_obj)
+
+        updated_links = {}
+        for k,v in self.links.iteritems():
+            if model_obj not in v:
+                updated_links[k] = v
+        self.links = updated_links
+
+        # remove the model from the cmd engine
+        self.cmd.remove_model_by_id(model_obj.ID)
+
+        # redraw the canvas
+        self.RedrawConfiguration()
+
+
 
     def AddDatabaseConnection(self, title, desc, engine, address, name, user, pwd):
 

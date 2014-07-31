@@ -33,26 +33,27 @@ class DirectoryCtrlView(wx.Panel):
         self.initBindings()
 
     def initInterface(self):
+        border = 3
         panelSizer = wx.BoxSizer(wx.VERTICAL)
         self.toolbar = self.iconToolBar()
-        panelSizer.Add(self.toolbar, 0, wx.EXPAND, 5)
+        panelSizer.Add(self.toolbar, 0, wx.EXPAND, border)
 
         listCtrlSizer = wx.BoxSizer(wx.VERTICAL)
-
-        listCtrlSizer.SetMinSize(wx.Size(800, 600))
-        self.dirCtrl = DirectoryListCtrl(self, wx.ID_ANY, wx.DefaultPosition, wx.Size(1000, 400), wx.LC_REPORT)
-        listCtrlSizer.Add(self.dirCtrl, 0, wx.ALL, 5)
-
-        self.directoryStack.append(self.dirCtrl.gethomepath())
-        bSizer4 = wx.BoxSizer(wx.VERTICAL)
+        listCtrlSizer.SetMinSize(wx.Size(1000, 600))
+        #bSizer4 = wx.BoxSizer(wx.VERTICAL)
 
         self.sb = wx.TextCtrl(self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size(600, -1),
-                                       wx.TE_READONLY)
-        bSizer4.Add(self.sb, 0, wx.ALL, 5)
+                                       wx.TE_READONLY|wx.TE_CHARWRAP)
+        listCtrlSizer.Add(self.sb, 0, wx.ALL | wx.EXPAND, border)
+       # bSizer4.Add(self.sb, 0, wx.ALL | wx.EXPAND, border)
 
-        listCtrlSizer.Add(bSizer4, 1, wx.EXPAND, 5)
+        #listCtrlSizer.Add(bSizer4, 1, wx.EXPAND, border)
 
-        panelSizer.Add(listCtrlSizer, 1, wx.ALIGN_CENTER | wx.ALL | wx.EXPAND, 5)
+        self.dirCtrl = DirectoryListCtrl(self, wx.ID_ANY, wx.DefaultPosition, wx.Size(1000, 400), wx.LC_REPORT)
+        listCtrlSizer.Add(self.dirCtrl, 1, wx.ALL, border)
+
+        self.directoryStack.append(self.dirCtrl.gethomepath())
+        panelSizer.Add(listCtrlSizer, 1, wx.ALIGN_CENTER | wx.ALL | wx.EXPAND, border)
 
         self.SetSizer(panelSizer)
         self.Layout()

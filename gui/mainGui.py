@@ -10,7 +10,7 @@ from wx.lib.pubsub import pub as Publisher
 import utilities
 import wx.lib.agw.ultimatelistctrl as ULC
 from ObjectListView.ObjectListView import FastObjectListView
-import wx.aui
+import wx.lib.agw.aui as aui
 import objectListViewDatabase
 
 from odm2.api.ODM2.Core.services import readCore
@@ -22,21 +22,34 @@ class MainGui(wx.Frame):
 
         self.pnlDocking = wx.Panel(id=wx.ID_ANY, name='pnlDocking', parent=self, size=wx.Size(1500, 650),
                                    style=wx.TAB_TRAVERSAL)
+        #self.output = wx.TextCtrl(self, -1, size=(100,100), style=wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
+
         #self.Bind(wx.EVT_CLOSE, self.onClose)
         self.initMenu()
         self.initAUIManager()
+        self._init_sizers()
 
+    def _init_sizers(self):
+        # generated method, don't edit
+        self.s = wx.BoxSizer(wx.VERTICAL)
+        self._init_s_Items(self.s)
+        self.SetSizer(self.s)
+
+    def _init_s_Items(self, parent):
+        # generated method, don't edit
+        #parent.AddWindow(self._ribbon, 0, wx.EXPAND)
+        parent.AddWindow(self.pnlDocking, 85, flag=wx.ALL | wx.EXPAND)
 
     def initAUIManager(self):
 
-        self.m_mgr = wx.aui.AuiManager()
+        self.m_mgr = aui.AuiManager()
         self.m_mgr.SetManagedWindow(self.pnlDocking)
-        self.m_mgr.SetFlags(wx.aui.AUI_MGR_DEFAULT)
+        # self.m_mgr.SetFlags(aui.AUI_MGR_DEFAULT)
 
         self.Canvas = Canvas(self.pnlDocking)
+        #self.Canvas.output.WriteText(
         self.nb = wx.Notebook(self.pnlDocking)
 
-        self.output = wx.TextCtrl(self, -1, size=(100,100), style=wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
 
         #redir= RedirectText(self.output)
         #sys.stdout=redir
@@ -52,39 +65,52 @@ class MainGui(wx.Frame):
         self.nb.AddPage(page4, "Series Selector")
 
 
-
         self.m_mgr.AddPane(self.Canvas,
-                           wx.aui.AuiPaneInfo().
-                           Center().
-                           Name("Canvas").
-                           Position(0).
-                           CloseButton(False).
-                           MaximizeButton(True).
-                           MinimizeButton(True).
-                           PinButton(True).
-                           Resizable().
-                           Floatable(True).
-                           MinSize(wx.Size(1000, 400)))
+               aui.AuiPaneInfo().
+               Center().
+               Name("Canvas").
+               Position(0).
+               CloseButton(False).
+               MaximizeButton(True).
+               MinimizeButton(True).
+               PinButton(True).
+               Resizable().
+               Movable().
+               Floatable(True).
+               MinSize(wx.Size(1000, 400)))
+        #
+        # self.m_mgr.AddPane(self.output,
+        #                   wx.aui.AuiPaneInfo().
+        #                   Caption('Output').
+        #                   Center().
+        #                   Name("Console").
+        #                   Position(1).
+        #                   CloseButton(False).
+        #                   MaximizeButton(True)
+        #                   .Movable()
+        #                   .MinimizeButton(True).
+        #                   PinButton(True).
+        #                   Resizable().
+        #                   Floatable().
+        #                   MinSize(wx.Size(1000, 200)).
+        #                   MaxSize(wx.Size(1000, 200)))
 
-        self.m_mgr.AddPane(self.output,
-                          wx.aui.AuiPaneInfo().
-                          Caption('Python Console').
-                          Center().
-                          Name("Console").
-                          Position(1).
-                          CloseButton(False).
-                          MaximizeButton(True)
-                          .Movable()
-                          .MinimizeButton(True).
-                          PinButton(True).
-                          Resizable().
-                          Floatable().
-                          MinSize(wx.Size(1000, 200)))
 
         self.m_mgr.AddPane(self.nb,
-                   wx.aui.AuiPaneInfo().Left().CloseButton(False).MaximizeButton(True).MinimizeButton(
-                    True ).PinButton(True).Resizable().MinSize(wx.Size(375,500)).Floatable().FloatingSize(size=(600, 800)).CloseButton(
-                    True))
+                   aui.AuiPaneInfo().
+                   Left().
+                   Dock().
+                   CloseButton(False).
+                   MaximizeButton(True).
+                   MinimizeButton(True).
+                   MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_SMART).
+                   PinButton(True).
+                   Resizable().
+                   MinSize(wx.Size(375,500)).
+                   Floatable().
+                   Movable().
+                   FloatingSize(size=(600, 800)).
+                   CloseButton(True))
 
 
         # self.m_mgr.AddPane(self.nb,

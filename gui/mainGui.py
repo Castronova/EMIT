@@ -283,7 +283,7 @@ class TimeSeries(wx.Panel):
         # bSizer2.Add( self.m_choice2, 0, wx.ALL, 5 )
 
 
-        # self.m_choice2.Bind(wx.EVT_CHOICE,self.DbChanged)
+        self.m_choice3.Bind(wx.EVT_CHOICE,self.DbChanged)
 
 
 
@@ -322,9 +322,6 @@ class TimeSeries(wx.Panel):
         # get the name of the selected database
         selected_db = self.m_choice3.GetStringSelection()
 
-        # get the listview control
-        table = self.bnb.GetPage(1)
-
         for key, db in self._databases.iteritems():
 
             # get the database session associated with the selected name
@@ -336,12 +333,43 @@ class TimeSeries(wx.Panel):
                 core_connection = readCore(db['session'])
 
                 from db import api as dbapi
+                from gui.objectListViewDatabase import Database
+
                 u = dbapi.utils(db['session'])
                 series = u.getAllSeries()
                 #all_results = core_connection.getAllResult()
 
-                # for s in series:
-                #
+                # loop through all of the returned data
+                data = []
+                for s in series:
+                    # sitename
+                    sn = '?'
+                    # sitecode
+                    sc = '?'
+                    # variablename
+                    v = s.VariableObj.VariableCode
+                    # variableunit
+                    u = s.UnitObj.UnitsName
+                    # time unit
+                    t = '?'
+                    # begin
+                    b = '?'
+                    # end
+                    e = '?'
+
+                    data.extend([Database(sn,sc,v,u,t,b,e)])
+
+                # set the data objects in the olv control
+                self.m_olvSeries.SetObjects(data)
+
+
+                    # self.products = [Database("Main Lake1", "19",
+                    #               "Chlorophyll a", "micrograms per liter",
+                    #               "day", "1992-05-07 11:45:00", "1996-01-02 00:00:00"),
+                    #      ]
+
+                # self.m_olvSeries.Refresh()
+
                 #
                 # print 'done'
 

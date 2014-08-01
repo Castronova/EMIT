@@ -376,7 +376,7 @@ class utils(serviceBase):
             :type list:
         """
 
-        series = self._session.query(Result).\
+        return self._session.query(Result).\
                 join(Variable). \
                 join(Unit). \
                 join(Featureaction). \

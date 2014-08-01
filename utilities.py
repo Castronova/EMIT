@@ -11,8 +11,8 @@ from shapely.geometry import mapping, shape
 from osgeo import ogr, osr
 import imp
 from stdlib import Variable, Unit
-from odm2.src.api import dbconnection
-
+#from odm2.src.api import dbconnection
+from api import dbconnection
 
 from db.api import postgresdb
 import uuid

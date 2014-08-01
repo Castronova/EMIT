@@ -5,11 +5,13 @@ import datetime
 import utilities
 import stdlib
 from shapely.wkt import loads
-from odm2.src.api.ODM2.Core.services import *
-from odm2.src.api.ODM2.SamplingFeatures.services import *
-from odm2.src.api.ODM2.Results.services import *
-from odm2.src.api.ODM2.Simulation.services import *
-from odm2.src.api.ODM2.Core.model import *
+
+
+from ODM2.Core.services import *
+from ODM2.SamplingFeatures.services import *
+from ODM2.Results.services import *
+from ODM2.Simulation.services import *
+from ODM2.Core.model import *
 
 # from odm2.api.ODM2.Core.services import *
 # from odm2.api.ODM2.SamplingFeatures.services import *

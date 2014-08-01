@@ -2,7 +2,11 @@
 
 __author__ = 'Mario'
 
+
 import os
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.abspath(__file__),'../../../odm2/src')))
 
 import wx
 import wx.xrc
@@ -16,8 +20,6 @@ from mainGui import  MainGui
 from CanvasController import CanvasController
 from CanvasView import Canvas
 
-from os.path import *
-import sys
 
 
 # ##########################################################################
@@ -30,8 +32,8 @@ if __name__ == '__main__':
     cmd = cmd.Coordinator()
 
     # connect to databases and set default
-    currentdir = dirname(abspath(__file__))
-    connections_txt = abspath(join(currentdir,'../data/connections'))
+    currentdir = os.path.dirname(os.path.abspath(__file__))
+    connections_txt = os.path.abspath(os.path.join(currentdir,'../data/connections'))
 
     cmd.connect_to_db([connections_txt])
     cmd.set_default_database()

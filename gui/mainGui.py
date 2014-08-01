@@ -13,7 +13,7 @@ from ObjectListView.ObjectListView import FastObjectListView
 import wx.lib.agw.aui as aui
 import objectListViewDatabase
 
-from odm2.src.api.ODM2.Core.services import *
+from ODM2.Core.services import *
 
 
 class MainGui(wx.Frame):

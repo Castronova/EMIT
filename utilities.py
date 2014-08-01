@@ -11,11 +11,7 @@ from shapely.geometry import mapping, shape
 from osgeo import ogr, osr
 import imp
 from stdlib import Variable, Unit
-from odm2.api.ODMconnection import dbconnection, SessionFactory
-import odm2.api
-
-from odm2.api.ODM2.Connection.services import *
-
+from odm2.src.api import dbconnection
 
 
 from db.api import postgresdb
@@ -431,26 +427,21 @@ def create_database_connections_from_args(title, desc, engine, address, db, user
 
     # build database connection
 
-    dbconn = odm2.api.dbconnection()
-    connection_string = dbconn.createConnection(engine,address,db,user,pwd)
+    #dbconn = odm2.api.dbconnection()
+    session = dbconnection.createConnection(engine,address,db,user,pwd)
 
 
     # add connection string to dictionary (for backup/debugging)
-    d['connection_string'] = connection_string
+    # d['connection_string'] = connection_string
 
     # create a session
-    try:
-        session = SessionFactory(connection_string,False).getSession()
+    if session:
 
-        # check if the database is valid
-        connection =  readConnection(d['connection_string'])
-
-        if not connection.isValid():
-            return connection_string
+        # get the connection string
+        connection_string = session.engine.url
 
         # save this session in the db_connections object
         db_id = uuid.uuid4().hex[:5]
-
         db_connections[db_id] = {'name':d['name'],
                                  'session': session,
                                  'connection_string':connection_string,
@@ -458,13 +449,9 @@ def create_database_connections_from_args(title, desc, engine, address, db, user
                                  'args': d}
 
         print '> Connected to : %s [%s]'%(connection_string,db_id)
-    except Exception, e:
-        print e
-        session = None
-        print 'Could not establish a connection with the database: '+connection_string
-        return connection_string
-
-
+    else:
+        print 'Could not establish a connection with the database'
+        return None
 
     return db_connections
 
@@ -516,21 +503,14 @@ def create_database_connections_from_file(ini):
             d[option] = cparser.get(s,option)
 
         # build database connection
-        dbconn = odm2.api.dbconnection()
-        connection_string = dbconn.createConnection(d['engine'],d['address'],d['db'],d['user'],d['pwd'])
+        #dbconn = odm2.api.dbconnection()
+        session = dbconnection.createConnection(d['engine'],d['address'],d['db'],d['user'],d['pwd'])
 
+        if session:
+            connection_string = session.engine.url
 
-        # add connection string to dictionary (for backup/debugging)
-        d['connection_string'] = connection_string
-
-        try:
-            # create a session
-            session = SessionFactory(connection_string,False).getSession()
-
-            # check if the database is valid
-            connection =  readConnection(d['connection_string'])
-            if not connection.isValid():
-                raise Exception('Invalid database connection string')
+            # add connection string to dictionary (for backup/debugging)
+            d['connection_string'] = connection_string
 
             # save this session in the db_connections object
             db_id = uuid.uuid4().hex[:5]
@@ -541,10 +521,9 @@ def create_database_connections_from_file(ini):
                                      'args': d}
 
             print '> Connected to : %s [%s]'%(connection_string,db_id)
-        except Exception, e:
-            print e
-            session = None
-            print 'Could not establish a connection with the database: '+connection_string
+        else:
+            print 'Could not establish a connection with the database'
+            return None
 
 
 

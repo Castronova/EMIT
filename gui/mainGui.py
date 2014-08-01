@@ -13,7 +13,8 @@ from ObjectListView.ObjectListView import FastObjectListView
 import wx.lib.agw.aui as aui
 import objectListViewDatabase
 
-from odm2.api.ODM2.Core.services import *
+from odm2.src.api.ODM2.Core.services import *
+
 
 class MainGui(wx.Frame):
     def __init__(self, parent):
@@ -233,7 +234,7 @@ class TimeSeries(wx.Panel):
 
         self._databases = {}
         self._connection_added = True
-        self._conection_string = ''
+
 
         bSizer1 = wx.BoxSizer( wx.VERTICAL )
         bSizer2 = wx.BoxSizer( wx.HORIZONTAL )
@@ -399,7 +400,7 @@ class TimeSeries(wx.Panel):
                     return
                 else:
 
-                    wx.MessageBox('I was unable to connect to the database with the information provided :( \n\n'+self._conection_string, 'Info', wx.OK | wx.ICON_ERROR)
+                    wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
 
 
     def __del__( self ):

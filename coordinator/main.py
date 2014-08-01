@@ -6,8 +6,8 @@ from utilities import *
 import math
 import networkx as net
 import threading
-from odm2.api.ODM2.Simulation.services import readSimulation
-from odm2.api.ODM2.Simulation.services import createSimulation
+from odm2.src.api.ODM2.Simulation.services import readSimulation
+from odm2.src.api.ODM2.Simulation.services import createSimulation
 from db.api import postgresdb
 
 import time

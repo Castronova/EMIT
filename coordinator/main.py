@@ -1,13 +1,20 @@
 __author__ = 'tonycastronova'
 
+
+import os
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.abspath(__file__),'../../../odm2/src')))
+
+
 import sys, getopt
 from coordinator import help as h
 from utilities import *
 import math
 import networkx as net
 import threading
-from odm2.src.api.ODM2.Simulation.services import readSimulation
-from odm2.src.api.ODM2.Simulation.services import createSimulation
+from ODM2.Simulation.services import readSimulation
+from ODM2.Simulation.services import createSimulation
 from db.api import postgresdb
 
 import time

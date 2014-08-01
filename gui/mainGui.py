@@ -151,7 +151,7 @@ class MainGui(wx.Frame):
     def OnSelect(self,event):
 
 
-        selected_page = self.nb.GetPage(event.GetSelection())
+        selected_page = self.bnb.GetPage(event.GetSelection())
 
         if selected_page.Label == 'Series Selector':
             selected_page.getKnownDatabases()
@@ -320,7 +320,10 @@ class TimeSeries(wx.Panel):
 
 
         # get the name of the selected database
-        selected_db = self.m_choice2.GetStringSelection()
+        selected_db = self.m_choice3.GetStringSelection()
+
+        # get the listview control
+        table = self.bnb.GetPage(1)
 
         for key, db in self._databases.iteritems():
 
@@ -364,7 +367,7 @@ class TimeSeries(wx.Panel):
             choices = ['---']
             for k,v in self._databases.iteritems():
                 choices.append(self._databases[k]['name'])
-            self.m_choice2.SetItems(choices)
+            self.m_choice3.SetItems(choices)
 
 
     # def refresh(self,databases):

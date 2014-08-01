@@ -2496,7 +2496,12 @@ class FastObjectListView(AbstractVirtualObjectListView):
                 if idx != -1:
                     self.RefreshItem(idx)
         else:
-            self.RefreshItems(0, self.GetItemCount() - 1)
+            try:
+            #itemcount = self.GetItemCount() if self.GetItemCount() > 0 else 0
+            #self.RefreshItem(0,itemcount)
+                self.RefreshItems(0, self.GetItemCount() - 1)
+            except:
+                return
 
     #----------------------------------------------------------------------------
     #  Accessing

@@ -453,8 +453,8 @@ class consoleOutput(wx.Panel):
         panel.SetSizer(sizer)
 
         # redirect text here
-        redir= RedirectText(log)
-        sys.stdout=redir
+        # redir= RedirectText(log)
+        # sys.stdout=redir
 
         self.SetSizerAndFit(sizer)
 

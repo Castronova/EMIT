@@ -47,7 +47,7 @@ class MainGui(wx.Frame):
         self.m_mgr.SetManagedWindow(self.pnlDocking)
         # self.m_mgr.SetFlags(aui.AUI_MGR_DEFAULT)
 
-        self.output = wx.TextCtrl(self, -1, size=(100,100), style=wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
+        # self.output = wx.TextCtrl(self, -1, size=(100,100), style=wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
 
         self.Canvas = Canvas(self.pnlDocking)
         #self.Canvas.output.WriteText(
@@ -60,17 +60,30 @@ class MainGui(wx.Frame):
         page1 = DirectoryCtrlView(self.nb)
         page2 = ModelView(self.nb)
         page3 = LinkView(self.nb)
-        page4 = TimeSeries(self.nb)
+        # page4 = TimeSeries(self.nb)
 
         self.nb.AddPage(page1, "Directory")
         self.nb.AddPage(page2, "Model View")
         self.nb.AddPage(page3, "Link View")
-        self.nb.AddPage(page4, "Series Selector")
+        # self.nb.AddPage(page4, "Series Selector")
 
         self.nb.GetPage(0).SetLabel("Directory")
         self.nb.GetPage(1).SetLabel("Model View")
         self.nb.GetPage(2).SetLabel("Link View")
-        self.nb.GetPage(3).SetLabel("Series Selector")
+        # self.nb.GetPage(3).SetLabel("Series Selector")
+
+        self.bnb = wx.Notebook(self.pnlDocking)
+
+        output = consoleOutput(self.bnb)
+        seriesselector = TimeSeries(self.bnb)
+
+        self.bnb.AddPage(output, "Output")
+        self.bnb.AddPage(seriesselector, "Series Selector")
+
+        self.bnb.GetPage(0).SetLabel("Output")
+        self.bnb.GetPage(1).SetLabel("Series Selector")
+
+
 
         self.m_mgr.AddPane(self.Canvas,
                aui.AuiPaneInfo().
@@ -86,7 +99,7 @@ class MainGui(wx.Frame):
                Floatable(True).
                MinSize(wx.Size(1000, 400)))
 
-        self.m_mgr.AddPane(self.output,
+        self.m_mgr.AddPane(self.bnb,
               aui.AuiPaneInfo().
               Caption('Output').
               Center().
@@ -103,20 +116,20 @@ class MainGui(wx.Frame):
 
 
         self.m_mgr.AddPane(self.nb,
-                   aui.AuiPaneInfo().
-                   Left().
-                   Dock().
-                   CloseButton(False).
-                   MaximizeButton(True).
-                   MinimizeButton(True).
-                   MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_SMART).
-                   PinButton(True).
-                   Resizable().
-                   MinSize(wx.Size(375,500)).
-                   Floatable().
-                   Movable().
-                   FloatingSize(size=(600, 800)).
-                   CloseButton(True))
+               aui.AuiPaneInfo().
+               Left().
+               Dock().
+               CloseButton(False).
+               MaximizeButton(True).
+               MinimizeButton(True).
+               MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_SMART).
+               PinButton(True).
+               Resizable().
+               MinSize(wx.Size(375,500)).
+               Floatable().
+               Movable().
+               FloatingSize(size=(600, 800)).
+               CloseButton(True))
 
 
         # self.m_mgr.AddPane(self.nb,

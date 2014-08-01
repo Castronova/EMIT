@@ -39,14 +39,14 @@ class MainPanel(wx.Panel):
         self.dataOlv.cellEditMode = ObjectListView.CELLEDIT_SINGLECLICK
 
         # create an update button
-        updateBtn = wx.Button(self, wx.ID_ANY, "Update OLV")
-        updateBtn.Bind(wx.EVT_BUTTON, self.updateControl)
+        # updateBtn = wx.Button(self, wx.ID_ANY, "Update OLV")
+        # updateBtn.Bind(wx.EVT_BUTTON, self.updateControl)
 
         # Create some sizers
         mainSizer = wx.BoxSizer(wx.VERTICAL)
 
         mainSizer.Add(self.dataOlv, 1, wx.ALL|wx.EXPAND, 5)
-        mainSizer.Add(updateBtn, 0, wx.ALL|wx.CENTER, 5)
+        # mainSizer.Add(updateBtn, 0, wx.ALL|wx.CENTER, 5)
         self.SetSizer(mainSizer)
 
     #----------------------------------------------------------------------
@@ -80,6 +80,8 @@ class MainPanel(wx.Panel):
 
         self.dataOlv.SetObjects(self.products)
 
+########################################################################
+#For Unittest Use
 ########################################################################
 class MainFrame(wx.Frame):
     #----------------------------------------------------------------------

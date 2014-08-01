@@ -241,6 +241,9 @@ class LinkView(wx.Panel):
         t = wx.StaticText(self, -1, "This view shows relations between models.", (60,60))
 
 class TimeSeries(wx.Panel):
+    """
+
+    """
 
     def __init__( self, parent ):
         wx.Panel.__init__ ( self, parent, id = wx.ID_ANY, pos = wx.DefaultPosition, size = wx.Size( 500,500 ), style = wx.TAB_TRAVERSAL )
@@ -248,43 +251,31 @@ class TimeSeries(wx.Panel):
         self._databases = {}
         self._connection_added = True
 
-        seriesSelectorSizer = wx.BoxSizer( wx.VERTICAL )
-
-        buttonSizer = wx.BoxSizer( wx.HORIZONTAL )
-
-        buttonSizer.SetMinSize( wx.Size( -1,45 ) )
         m_choice3Choices = []
         self.m_choice3 = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_choice3Choices, 0 )
         self.m_choice3.SetSelection( 0 )
-        buttonSizer.Add( self.m_choice3, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
-
         self.addConnectionButton = wx.Button( self, wx.ID_ANY, u"Add Connection", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_olvSeries = olv.OlvSeries(self, pos = wx.DefaultPosition, size = wx.DefaultSize, id = wx.ID_ANY, style=wx.LC_REPORT|wx.SUNKEN_BORDER  )
+
+        # Bindings
+        self.addConnectionButton.Bind(wx.EVT_LEFT_DOWN, self.AddConnection)
+
+        # Sizers
+        seriesSelectorSizer = wx.BoxSizer( wx.VERTICAL )
+        buttonSizer = wx.BoxSizer( wx.HORIZONTAL )
+        buttonSizer.SetMinSize( wx.Size( -1,45 ) )
+
+        buttonSizer.Add( self.m_choice3, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
         buttonSizer.Add( self.addConnectionButton, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
-
-
         seriesSelectorSizer.Add( buttonSizer, 0, wx.ALL|wx.EXPAND, 5 )
-
-        self.m_listCtrl3 = olv.OlvSeries(parent = self, pos = wx.DefaultPosition, size = wx.DefaultSize, id = wx.ID_ANY, style=wx.LC_REPORT|wx.SUNKEN_BORDER  )
-        seriesSelectorSizer.Add( self.m_listCtrl3, 1, wx.ALL|wx.EXPAND, 5 )
-
+        seriesSelectorSizer.Add( self.m_olvSeries, 1, wx.ALL|wx.EXPAND, 5 )
 
         self.SetSizer( seriesSelectorSizer )
         self.Layout()
 
-        #
-        # bSizer1 = wx.BoxSizer( wx.VERTICAL )
-        # bSizer2 = wx.BoxSizer( wx.HORIZONTAL )
-        # bSizer3 = wx.BoxSizer( wx.VERTICAL )
-        #
-        # bSizer1.SetMinSize( wx.Size( 400, 300))
-        # bSizer2.SetMinSize( wx.Size( -1, 40))
-        # bSizer3.SetMinSize( wx.Size( -1, 350))
-        #
-        # bSizer1.Add( bSizer2, 1, wx.EXPAND, 5 )
-        # bSizer1.Add( bSizer3, 1, wx.EXPAND, 5 )
-
-        # populate the choice box
         databases = Publisher.sendMessage('GetDatabases')
+        Publisher.subscribe(self.getKnownDatabases, "getKnownDatabases")
+        Publisher.subscribe(self.connection_added_status, "connectionAddedStatus")
 
 
         # self.m_choice2 = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, [], 0 )
@@ -299,7 +290,6 @@ class TimeSeries(wx.Panel):
 
         # self.m_button1 = wx.Button( self, wx.ID_ANY, u"Add Connection", wx.DefaultPosition, wx.DefaultSize, 0 )
         # bSizer2.Add( self.m_button1, 0, wx.ALL, 5 )
-        # self.m_button1.Bind(wx.EVT_LEFT_DOWN, self.AddConnection)
 
         # self.list = ULC.UltimateListCtrl(self, wx.ID_ANY, agwStyle=wx.LC_REPORT | wx.LC_VRULES | wx.LC_HRULES | wx.LC_SINGLE_SEL)
         #
@@ -320,8 +310,6 @@ class TimeSeries(wx.Panel):
         # bSizer3.Add(self.list, 1, wx.EXPAND)
 
         # Publisher.subscribe(self.refresh, "refreshDialogDatabases")
-        Publisher.subscribe(self.getKnownDatabases, "getKnownDatabases")
-        Publisher.subscribe(self.connection_added_status, "connectionAddedStatus")
         # bSizer3.Add(objectListViewDatabase.MainPanel(self))
 
 

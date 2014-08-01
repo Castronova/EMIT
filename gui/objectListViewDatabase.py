@@ -33,11 +33,10 @@ class OlvSeries(FastObjectListView):
                                   "day", "1992-05-07 11:45:00", "1996-01-02 00:00:00"),
                          ]
 
-        self.dataOlv = FastObjectListView(self, )
         self.setBooks()
 
         # Allow the cell values to be edited when double-clicked
-        self.dataOlv.cellEditMode = FastObjectListView.CELLEDIT_SINGLECLICK
+        self.cellEditMode = FastObjectListView.CELLEDIT_SINGLECLICK
 
 
 
@@ -65,12 +64,12 @@ class OlvSeries(FastObjectListView):
 
         values = ["sitename", "sitecode", "variablename", "variableunit", "Time", "begintime", "endtime"]
 
-        seriesColumns = [ ColumnDefn(key, align = "left", minimumWidth=-1, valueGetter=value)
+        seriesColumns = [ ColumnDefn(key, align = "left", minimumWidth=100, valueGetter=value)
                             for key, value in OrderedDict(zip(keys, values)).iteritems()]
 
-        self.dataOlv.SetColumns(seriesColumns)
+        self.SetColumns(seriesColumns)
 
-        self.dataOlv.SetObjects(self.products)
+        self.SetObjects(self.products)
 
 ########################################################################
 #For Unittest Use

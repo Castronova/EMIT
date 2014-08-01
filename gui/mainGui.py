@@ -342,10 +342,17 @@ class TimeSeries(wx.Panel):
 
                 # query the database and get basic series info
 
-                core_connection = readCore(db['connection_string'])
-                all_results = core_connection.getAllResult()
+                core_connection = readCore(db['session'])
 
-                print 'done'
+                from db import api as dbapi
+                u = dbapi.utils(db['session'])
+                series = u.getAllSeries()
+                #all_results = core_connection.getAllResult()
+
+                # for s in series:
+                #
+                #
+                # print 'done'
 
                 # exit
                 break

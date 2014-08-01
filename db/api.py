@@ -362,7 +362,29 @@ class postgresdb():
 
 
 
-    
+from ODM2 import serviceBase
+from ODM2.Core.model import *
+from ODM2.Results.model import *
+
+
+class utils(serviceBase):
+
+    def getAllSeries(self):
+        """ General select statement for retrieving many results.  This is intended to be used when populating gui tables
+
+        :return :
+            :type list:
+        """
+
+        series = self._session.query(Result).\
+                join(Variable). \
+                join(Unit). \
+                join(Featureaction). \
+                join(Action). \
+                join(Timeseriesresultvalue, Timeseriesresultvalue.ResultID == Result.ResultID). \
+                all()
+
+
 
 
 

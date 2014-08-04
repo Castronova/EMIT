@@ -3,6 +3,7 @@ __author__ = 'Mario'
 import wx
 from collections import OrderedDict
 from ObjectListView import FastObjectListView, ColumnDefn
+import os
 
 ########################################################################
 class Database(object):
@@ -34,28 +35,14 @@ class OlvSeries(FastObjectListView):
                          ]
 
         self.setBooks()
+        # self.Bind(wx.EVT_LIST_BEGIN_DRAG, self.onDrag)
+        self.Bind(wx.EVT_LIST_BEGIN_DRAG, self.onDrag)
 
         # Allow the cell values to be edited when double-clicked
         self.cellEditMode = FastObjectListView.CELLEDIT_SINGLECLICK
 
 
 
-    #----------------------------------------------------------------------
-    def updateControl(self, event):
-        """
-
-        """
-        print "updating..."
-        product_dict = [{"varname":"Core Python Programming", "Value":"Wesley Chun",
-                         "varunit":"0132269937", "time":"Prentice Hall"},
-                        {"title":"Python Programming for the Absolute Beginner",
-                         "author":"Michael Dawson", "isbn":"1598631128",
-                         "mfg":"Course Technology"},
-                        {"title":"Learning Python", "author":"Mark Lutz",
-                         "isbn":"0596513984", "mfg":"O'Reilly"}
-        ]
-        data = self.products + product_dict
-        self.dataOlv.SetObjects(data)
 
     #----------------------------------------------------------------------
     def setBooks(self, data=None):
@@ -71,8 +58,23 @@ class OlvSeries(FastObjectListView):
 
         self.SetObjects(self.products)
 
+    def onDrag(self, event):
+        data = wx.FileDataObject()
+        obj = event.GetEventObject()
+        id = event.GetIndex()
+        filename = obj.GetItem(id).GetText()
+        dataname = str(filename)
+
+        data.AddFile(dataname)
+
+        dropSource = wx.DropSource(obj)
+        dropSource.SetData(data)
+        result = dropSource.DoDragDrop()
+        print filename
+
+
 ########################################################################
-#For Unittest Use
+###                      For Unittest Use                            ###
 ########################################################################
 class MainFrame(wx.Frame):
     #----------------------------------------------------------------------

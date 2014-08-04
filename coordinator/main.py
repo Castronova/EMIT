@@ -15,6 +15,7 @@ import networkx as net
 import threading
 from ODM2.Simulation.services import readSimulation
 from ODM2.Simulation.services import createSimulation
+from ODM2.Core.services import readCore
 from db.api import postgresdb
 
 import time
@@ -414,7 +415,7 @@ class Coordinator(object):
         #reader = readSimulation(self.get_default_db()['connection_string'])
         #writer = createSimulation(self.get_default_db()['connection_string'])
 
-        simulation_dbapi = postgresdb(self.get_default_db()['connection_string'])
+        simulation_dbapi = postgresdb(self.get_default_db()['session'])
 
         # TODO: Get this from gui dialog
         preferences = os.path.abspath('../data/preferences')
@@ -448,7 +449,7 @@ class Coordinator(object):
 
             #  retrieve inputs from database
             sys.stdout.write('> [1 of 4] Retrieving input data... ')
-            input_data =  get_ts_from_link(self.__default_db['connection_string'],self._dbactions, self.__links, model)
+            input_data =  get_ts_from_link(self.__default_db['session'],self._dbactions, self.__links, model)
             sys.stdout.write('done\n')
 
             sys.stdout.write('> [2 of 4] Performing calculation... ')
@@ -638,6 +639,8 @@ class Coordinator(object):
                 try:
                     connections = create_database_connections_from_file(args[0])
                     #self.set_default_database()
+
+
                     self._db = connections
                     return True
                 except Exception,e:
@@ -713,7 +716,7 @@ class Coordinator(object):
 
         # get all result entries
         from odm2.api.ODM2.Core.services import *
-        self._coreread = readCore(self._db[db_id]['connection_string'])
+        self._coreread = readCore(self._db[db_id]['session'])
 
         results = self._coreread.getAllResult()
 

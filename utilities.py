@@ -523,7 +523,7 @@ def create_database_connections_from_file(ini):
             print '> Connected to : %s [%s]'%(connection_string,db_id)
         else:
             print 'Could not establish a connection with the database'
-            return None
+            #return None
 
 
 

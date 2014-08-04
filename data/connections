@@ -11,10 +11,10 @@ pwd = water
 name = ODM2 MySQL Observation database
 desc = MySQL database with lots of observed timeseries
 engine = mysql
-address = 127.0.0.1:3306
+address = castro-server.bluezone.usu.edu:3306
 db = ODM2
-user = root
-pwd = water
+user = mysql
+pwd = mysql
 
 [connection]
 name = Live ODM2
@@ -25,3 +25,11 @@ db = ODM2
 user = TSA
 pwd = TSA!wat3r
 
+[connection]
+name = ODM2 Simulation database - Live
+desc = PostgreSQL database with hydrology simulations
+engine = postgresql
+address = castro-server.bluezone.usu.edu
+db = ODM2
+user = postgres
+pwd = postgres

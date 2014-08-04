@@ -179,7 +179,7 @@ class postgresdb():
 
         # create processing level
         processinglevel = self._coreread.getProcessingLevelByCode(processingCode=2)
-        if not processinglevel: self._corewrite.createProcessingLevel(code=2,
+        if not processinglevel: processinglevel = self._corewrite.createProcessingLevel(code=2,
                                                                       definition='Derived Product',
                                                                       explanation='Derived products require scientific and technical interpretation and include multiple-sensor data. An example might be basin average precipitation derived from rain gages using an interpolation procedure.')
 
@@ -188,6 +188,7 @@ class postgresdb():
                                                 dscode='Input_%s'%name,
                                                 dstitle='Input for Simulation: %s'%name,
                                                 dsabstract=description)
+
 
         # loop over output exchange items
         for exchangeitem in output_exchange_items:
@@ -246,7 +247,7 @@ class postgresdb():
                 result = Result()
                 result.ResultUUID = uuid.uuid4().hex
                 result.FeatureActionID = featureaction.FeatureActionID
-                result.ResultTypeCV = 'Time Series Coverage'
+                result.ResultTypeCV = 'time series'
                 result.VariableID = variable.VariableID
                 result.UnitsID = unit.UnitsID
                 result.ProcessingLevelID = processinglevel.ProcessingLevelID

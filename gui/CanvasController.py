@@ -79,7 +79,6 @@ class CanvasController:
         self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.LaunchContext)
 
 
-
     def initSubscribers(self):
         Publisher.subscribe(self.createBox, "createBox")
         Publisher.subscribe(self.setCursor, "setCursor")
@@ -587,7 +586,6 @@ class CanvasController:
         self.RedrawConfiguration()
 
 
-
     def AddDatabaseConnection(self, title, desc, engine, address, name, user, pwd):
 
         # build the database connection
@@ -603,7 +601,6 @@ class CanvasController:
         else:
             # notify that the connection was not added successfully
             Publisher.sendMessage('connectionAddedStatus',value=False,connection_string=connection)
-
 
     def getDatabases(self):
         knownconnections = self.cmd.get_db_connections()
@@ -677,6 +674,8 @@ class FileDrop(wx.FileDropTarget):
                 print e
 
         else:
+            self.controller.createBox(name=name, id=wx.ID_ANY, xCoord=x, yCoord=y)
+            self.window.Canvas.Draw()
             print 'I do not recognize this file type :('
 
 

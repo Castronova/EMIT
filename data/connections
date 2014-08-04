@@ -2,10 +2,10 @@
 name = ODM2 Simulation database
 desc = PostgreSQL database with hydrology simulations
 engine = postgresql
-address = localhost
-db = odm2CamelCase
-user = tonycastronova
-pwd = water
+address = castro-server.bluezone.usu.edu
+db = ODM2
+user = postgres
+pwd = postgres
 
 [connection]
 name = ODM2 MySQL Observation database

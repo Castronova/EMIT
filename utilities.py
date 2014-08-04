@@ -507,6 +507,9 @@ def create_database_connections_from_file(ini):
         session = dbconnection.createConnection(d['engine'],d['address'],d['db'],d['user'],d['pwd'])
 
         if session:
+            # adjusting timeout
+            session.engine.pool._timeout = 30
+
             connection_string = session.engine.url
 
             # add connection string to dictionary (for backup/debugging)

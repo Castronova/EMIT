@@ -97,10 +97,14 @@ class OlvSeries(FastObjectListView):
         resultID = obj.GetItem(id,0).GetText()
 
         # get data for this row
-        x,y = self.getData(resultID)
+        x,y, resobj = self.getData(resultID)
+
+        # get metadata
+        xlabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
+        title = '%s' % (resobj.VariableObj.VariableCode)
 
         # plot the data
-        PlotFrame = MatplotFrame(self.Parent, x, y)
+        PlotFrame = MatplotFrame(self.Parent, x, y, title, xlabel)
         PlotFrame.Show()
 
     def getDbSession(self):
@@ -118,13 +122,17 @@ class OlvSeries(FastObjectListView):
         readres = readResults(session)
         results = readres.getTimeSeriesValuesByResultId(resultId=int(resultID))
 
+        from ODM2.Core.services import readCore
+        core = readCore(session)
+        obj = core.getResultByID(resultID=int(resultID))
+
         dates = []
         values = []
         for val in results:
             dates.append(val.ValueDateTime)
             values.append(val.DataValue)
 
-        return dates,values
+        return dates,values,obj
 
 
 

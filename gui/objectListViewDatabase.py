@@ -3,6 +3,7 @@ __author__ = 'Mario'
 import wx
 from collections import OrderedDict
 from ObjectListView import FastObjectListView, ColumnDefn
+from frmMatPlotLib import MatplotFrame
 import os
 
 ########################################################################
@@ -39,7 +40,9 @@ class OlvSeries(FastObjectListView):
         self.Bind(wx.EVT_LIST_BEGIN_DRAG, self.onDrag)
 
         # Allow the cell values to be edited when double-clicked
-        self.cellEditMode = FastObjectListView.CELLEDIT_SINGLECLICK
+        # self.cellEditMode = FastObjectListView.CELLEDIT_SINGLECLICK
+
+        self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.onDoubleClick)
 
 
 
@@ -72,6 +75,9 @@ class OlvSeries(FastObjectListView):
         result = dropSource.DoDragDrop()
         print filename
 
+    def onDoubleClick(self, event):
+        PlotFrame = MatplotFrame(self.Parent)
+        MatplotFrame.Show()
 
 ########################################################################
 ###                      For Unittest Use                            ###

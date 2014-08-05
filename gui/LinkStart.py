@@ -32,7 +32,7 @@ class LinkStart ( wx.Frame ):
         new = wx.Button(btnPanel, wx.ID_NEW, 'Add', size=(90, 30))
         ren = wx.Button(btnPanel, wx.ID_RESET, 'Rename', size=(90, 30))
         dlt = wx.Button(btnPanel, wx.ID_DELETE, 'Delete', size=(90, 30))
-        clr = wx.Button(btnPanel, wx.ID_CLEAR, 'Clear', size=(90, 30))
+        close = wx.Button(btnPanel, wx.ID_CLEAR, 'Close', size=(90, 30))
 
         self.Bind(wx.EVT_BUTTON, self.AddClick, id=wx.ID_NEW)
         self.Bind(wx.EVT_BUTTON, self.OnRename, id=wx.ID_RESET)
@@ -44,7 +44,7 @@ class LinkStart ( wx.Frame ):
         vbox.Add(new)
         vbox.Add(ren, 0, wx.TOP, 5)
         vbox.Add(dlt, 0, wx.TOP, 5)
-        vbox.Add(clr, 0, wx.TOP, 5)
+        vbox.Add(close, 0, wx.TOP, 5)
 
         btnPanel.SetSizer(vbox)
         hbox.Add(btnPanel, 0.6, wx.EXPAND | wx.RIGHT, 20)
@@ -101,7 +101,7 @@ class LinkStart ( wx.Frame ):
             self.listbox.Delete(sel)
 
     def OnClear(self, event):
-        self.listbox.Clear()
+        self.Destroy()
 
 
     def __del__( self ):

@@ -165,7 +165,7 @@ class CanvasController:
     def getCursor(self):
         return self._Cursor
 
-    def createBox(self, xCoord, yCoord, id=None, name=None):
+    def createBox(self, xCoord, yCoord, id=None, name=None, color='#A2CAF5'):
 
         if name:
 
@@ -179,7 +179,7 @@ class CanvasController:
             # get the coordinates for the rounded rectangle
             rect_coords = CanvasObjects.build_rounded_rectangle((x,y), width=w, height=h)
 
-            R = self.FloatCanvas.AddObject(FC.Polygon(rect_coords,FillColor='#A2CAF5',InForeground=True))
+            R = self.FloatCanvas.AddObject(FC.Polygon(rect_coords,FillColor=color,InForeground=True))
 
             #R = self.FloatCanvas.AddRectangle((x,y), (w,h), LineWidth = 2, FillColor = "BLUE",InForeground=True)
             #R.HitFill = True
@@ -338,8 +338,10 @@ class CanvasController:
             obj = self.cmd.get_model_by_id(obj_id)
 
             # format the model parameters for printing
-            params = obj.get_config_params()
 
+            try:
+                params = obj.get_config_params()
+            except: params = {}
 
             text = ''
 
@@ -674,7 +676,7 @@ class FileDrop(wx.FileDropTarget):
                 print e
 
         else:
-            self.controller.createBox(name=name, id=wx.ID_ANY, xCoord=x, yCoord=y)
+            self.controller.createBox(name=name, id=wx.ID_ANY, xCoord=x, yCoord=y, color='#FFFFFF')
             self.window.Canvas.Draw()
             print 'I do not recognize this file type :('
 

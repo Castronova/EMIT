@@ -683,9 +683,8 @@ class FileDrop(wx.FileDropTarget):
                 print e
 
         else:
-            self.controller.createBox(name=name, id=wx.ID_ANY, xCoord=x, yCoord=y, color='#FFFFFF')
+            self.controller.createBox(name=name, id=wx.ID_ANY, xCoord=x, yCoord=y, color='#FFFF99')
             self.window.Canvas.Draw()
-            print 'I do not recognize this file type :('
 
 
 

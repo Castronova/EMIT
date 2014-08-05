@@ -15,7 +15,7 @@ import wx
 class MatplotFrame(wx.Frame):
     def __init__(self, parent):
         wx.Frame.__init__(self, parent, id = wx.ID_ANY, title = wx.EmptyString,
-                          pos = wx.DefaultPosition, size = wx.Size( 500,300 ),
+                          pos = wx.DefaultPosition, size = wx.Size( 750,500 ),
                           style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
 
         Sizer = wx.BoxSizer(wx.VERTICAL)

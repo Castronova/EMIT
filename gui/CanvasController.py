@@ -652,8 +652,10 @@ class FileDrop(wx.FileDropTarget):
 
                 else:
                     # load the simulation
-                    models, links = self.cmd.load_simulation(filenames[0])
+                    models, links, link_objs = self.cmd.load_simulation(filenames[0])
 
+                array = N.zeros((3,3))
+                index_order = [(1,1),(0,0),(2,2),(2,0),(2,2),(0,1),(1,0),(1,2),(2,1)]
                 # draw boxes for each model
                 offset = 0
                 for model in list(models):
@@ -668,8 +670,13 @@ class FileDrop(wx.FileDropTarget):
                     self.window.Canvas.Draw()
                     offset=200
 
-                #for link in list(links):
-                #    self.controller.createLine()
+                # draw the link line
+
+                for link in list(link_objs):
+
+                    R1 = self.controller.models.keys()[self.controller.models.values().index(link[0])]
+                    R2 = self.controller.models.keys()[self.controller.models.values().index(link[2])]
+                    self.controller.createLine(R1,R2)
 
             except Exception, e:
                 print 'Could not load the model :(. Hopefully this exception helps...'

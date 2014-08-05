@@ -5,6 +5,7 @@ from collections import OrderedDict
 from ObjectListView import FastObjectListView, ColumnDefn
 from frmMatPlotLib import MatplotFrame
 import os
+from wx.lib.pubsub import pub as Publisher
 
 ########################################################################
 class Database(object):
@@ -15,7 +16,8 @@ class Database(object):
     'ISBN', 'Author', 'Manufacturer', 'Title'
     """
     #----------------------------------------------------------------------
-    def __init__(self, sitename, sitecode, varname, varunit, timeunit, begintime, endtime):
+    def __init__(self, resultid, sitename, sitecode, varname, varunit, timeunit, begintime, endtime):
+        self.resultid = resultid
         self.sitename = sitename
         self.sitecode = sitecode
         self.variablename = varname
@@ -30,10 +32,16 @@ class OlvSeries(FastObjectListView):
     #----------------------------------------------------------------------
     def __init__(self, *args, **kwargs ):
         FastObjectListView.__init__(self, *args, **kwargs)
-        self.products = [Database("Main Lake1", "19",
-                                  "Chlorophyll a", "micrograms per liter",
-                                  "day", "1992-05-07 11:45:00", "1996-01-02 00:00:00"),
+        # self.products = [Database("1","Main Lake1", "19",
+        #                           "Chlorophyll a", "micrograms per liter",
+        #                           "day", "1992-05-07 11:45:00", "1996-01-02 00:00:00"),
+        #                  ]
+
+        self.products = [Database("","", "",
+                                  "", "",
+                                  "", "", ""),
                          ]
+
 
         self.setBooks()
         # self.Bind(wx.EVT_LIST_BEGIN_DRAG, self.onDrag)
@@ -49,10 +57,10 @@ class OlvSeries(FastObjectListView):
 
     #----------------------------------------------------------------------
     def setBooks(self, data=None):
-        keys = ["Sitename", "Sitecode", "VariableName", "VariableUnit", "Time",
+        keys = ["ResultID","Sitename", "Sitecode", "VariableName", "VariableUnit", "Time",
                   "BeginDateTime", "EndDateTime"]
 
-        values = ["sitename", "sitecode", "variablename", "variableunit", "Time", "begintime", "endtime"]
+        values = ["resultid","sitename", "sitecode", "variablename", "variableunit", "Time", "begintime", "endtime"]
 
         seriesColumns = [ ColumnDefn(key, align = "left", minimumWidth=100, valueGetter=value)
                             for key, value in OrderedDict(zip(keys, values)).iteritems()]
@@ -65,6 +73,11 @@ class OlvSeries(FastObjectListView):
         data = wx.FileDataObject()
         obj = event.GetEventObject()
         id = event.GetIndex()
+
+        resultID = obj.GetItem(id,0).GetText()
+
+        #x,y = self.getData(resultID)
+
         filename = obj.GetItem(id).GetText()
         dataname = str(filename)
 
@@ -76,8 +89,44 @@ class OlvSeries(FastObjectListView):
         print filename
 
     def onDoubleClick(self, event):
-        PlotFrame = MatplotFrame(self.Parent)
+
+        # get row associated with the event
+        data = wx.FileDataObject()
+        obj = event.GetEventObject()
+        id = event.GetIndex()
+        resultID = obj.GetItem(id,0).GetText()
+
+        # get data for this row
+        x,y = self.getData(resultID)
+
+        # plot the data
+        PlotFrame = MatplotFrame(self.Parent, x, y)
         PlotFrame.Show()
+
+    def getDbSession(self):
+        selected_db = self.Parent.m_choice3.GetStringSelection()
+        for key, db in self.Parent._databases.iteritems():
+            # get the database session associated with the selected name
+            if db['name'] == selected_db:
+                return db['session']
+        return None
+
+    def getData(self,resultID):
+
+        from ODM2.Results.services import readResults
+        session = self.getDbSession()
+        readres = readResults(session)
+        results = readres.getTimeSeriesValuesByResultId(resultId=int(resultID))
+
+        dates = []
+        values = []
+        for val in results:
+            dates.append(val.ValueDateTime)
+            values.append(val.DataValue)
+
+        return dates,values
+
+
 
 ########################################################################
 ###                      For Unittest Use                            ###

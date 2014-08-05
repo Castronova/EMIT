@@ -316,6 +316,7 @@ class TimeSeries(wx.Panel):
         # self.SetSizer( bSizer1 )
         # self.Layout()
 
+
     def DbChanged(self, event):
 
 
@@ -342,6 +343,9 @@ class TimeSeries(wx.Panel):
                 # loop through all of the returned data
                 data = []
                 for s in series:
+                    # resultid
+                    r = s.ResultID
+
                     # sitename
                     sn = '?'
                     # sitecode
@@ -357,35 +361,16 @@ class TimeSeries(wx.Panel):
                     # end
                     e = '?'
 
-                    data.extend([Database(sn,sc,v,u,t,b,e)])
+                    data.extend([Database(r,sn,sc,v,u,t,b,e)])
 
                 # set the data objects in the olv control
                 self.m_olvSeries.SetObjects(data)
 
 
-                    # self.products = [Database("Main Lake1", "19",
-                    #               "Chlorophyll a", "micrograms per liter",
-                    #               "day", "1992-05-07 11:45:00", "1996-01-02 00:00:00"),
-                    #      ]
-
-                # self.m_olvSeries.Refresh()
-
-                #
-                # print 'done'
-
                 # exit
                 break
 
         return
-        #print self._databases
-
-        # get the database connection (send message to canvas controller)
-
-    # def GetDatabase(self,value=None):
-    #     if value is None:
-    #         Publisher.sendMessage('')
-    #     else:
-    #         return value
 
     def getKnownDatabases(self, value = None):
         if value is None:
@@ -396,15 +381,6 @@ class TimeSeries(wx.Panel):
             for k,v in self._databases.iteritems():
                 choices.append(self._databases[k]['name'])
             self.m_choice3.SetItems(choices)
-
-
-    # def refresh(self,databases):
-    #     self._databases = databases
-    #
-    #     choices = ['---']
-    #     for k,v in databases.iteritems():
-    #         choices.append(databases[k]['name'])
-    #     self.m_choice2.SetItems(choices)
 
     def connection_added_status(self,value=None,connection_string=''):
         if value is not None:

@@ -689,6 +689,7 @@ class Coordinator(object):
         else:
             abspath = os.path.abspath(simulation_file)
 
+        link_objs = []
         if os.path.isfile(abspath):
             with open(abspath,'r') as f:
                 lines = f.readlines()
@@ -699,8 +700,11 @@ class Coordinator(object):
                             print '> %s'%command
                             self.parse_args(command.split(' '))
 
+                            if 'link' in command:
+                                link_objs.append(command.split(' ')[1:])
+
             # return the models and links created
-            return self.__models.values(), self.__links.values()
+            return self.__models.values(), self.__links.values(), link_objs
 
         else: print '> Could not find path %s'%simulation_file
 

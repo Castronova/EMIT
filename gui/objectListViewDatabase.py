@@ -81,11 +81,24 @@ class OlvSeries(FastObjectListView):
         filename = obj.GetItem(id).GetText()
         dataname = str(filename)
 
+        #  # pickle the lines list
+        # import cPickle
+        # e = cPickle.dumps({'event':event,'resultid':resultID}, 1)
+        # data = wx.CustomDataObject("d")
+        # data.SetData(e)
+        #
+        #
+        # data = wx.CustomDataObject("DoodleLines")
+
         data.AddFile(dataname)
+        # data = wx.DataObject()
+        # data.SetData(event)
+        #data.AddFile(self)
 
         dropSource = wx.DropSource(obj)
         dropSource.SetData(data)
         result = dropSource.DoDragDrop()
+
         print filename
 
     def onDoubleClick(self, event):
@@ -131,6 +144,8 @@ class OlvSeries(FastObjectListView):
         for val in results:
             dates.append(val.ValueDateTime)
             values.append(val.DataValue)
+
+        #session.close()
 
         return dates,values,obj
 

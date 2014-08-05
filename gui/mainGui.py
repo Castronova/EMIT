@@ -322,6 +322,9 @@ class TimeSeries(wx.Panel):
         # get the name of the selected database
         selected_db = self.m_choice3.GetStringSelection()
 
+        # set the current database in canvas controller
+        Publisher.sendMessage('SetCurrentDb',value=selected_db)
+
         for key, db in self._databases.iteritems():
 
             # get the database session associated with the selected name

@@ -25,6 +25,8 @@ import CanvasObjects
 import LinkWizard
 from LinkStart import LinkStart
 from ContextMenu import LinkContextMenu, ModelContextMenu, GeneralContextMenu
+from wrappers import data_wrapper
+
 
 class CanvasController:
     def __init__(self, cmd, Canvas):
@@ -54,6 +56,9 @@ class CanvasController:
         self.models = {}
 
         self.link_clicks = 0
+
+
+        self._currentDbSession = self.cmd.get_default_db()
 
     def UnBindAllMouseEvents(self):
         ## Here is how you unbind FloatCanvas mouse events
@@ -85,7 +90,7 @@ class CanvasController:
         Publisher.subscribe(self.run, "run")
         Publisher.subscribe(self.AddDatabaseConnection, "DatabaseConnection")
         Publisher.subscribe(self.getDatabases, "getDatabases")
-
+        Publisher.subscribe(self.getCurrentDbSession, "SetCurrentDb")
 
     def OnMove(self, event):
         """
@@ -135,6 +140,15 @@ class CanvasController:
     def run(self):
 
         self.cmd.run_simulation()
+
+    def getCurrentDbSession(self, value = None):
+        if value is not None:
+            dbs = self.cmd.get_db_connections()
+            for db in dbs.iterkeys():
+                if dbs[db]['name'] == value:
+                    self._currentDbSession = dbs[db]['session']
+                    break
+        return self._currentDbSession
 
 
     def RemoveLink(self, link_obj):
@@ -683,10 +697,109 @@ class FileDrop(wx.FileDropTarget):
                 print e
 
         else:
+            # -- must be a data object --
+
+
+            # get info about the data series
+            from ODM2.Core.services import readCore
+            from ODM2.Results.services import readResults
+            from shapely import wkb
+            import stdlib, uuid
+
+            # get the session
+            session = self.controller.getCurrentDbSession()
+
+            # get result object and result timeseries
+            core = readCore(session)
+            obj = core.getResultByID(resultID=int(name))
+            readres = readResults(session)
+            results = readres.getTimeSeriesValuesByResultId(resultId=int(name))
+
+            # separate the date and value pairs in the timeseries
+            dates = [date.ValueDateTime for date in results]
+            values = [val.DataValue for val in results]
+
+            # basic exchange item info
+            id = uuid.uuid4().hex[:8]
+            name = obj.VariableObj.VariableCode
+            desc = obj.VariableObj.VariableDefinition
+            unit = obj.UnitObj.UnitsName
+            vari = obj.VariableObj.VariableNameCV
+            type = stdlib.ExchangeItemType.Output
+            start = min(dates)
+            end = max(dates)
+
+            # build datavalue object
+            data = stdlib.DataValues(timeseries=zip(dates,values))
+
+            # build geometry object
+            # todo: this assumes single geometry! fix
+            shape = wkb.loads(str(obj.FeatureActionObj.SamplingFeatureObj.FeatureGeometry.data))
+            geometry = stdlib.Geometry(geom=shape,srs=None,elev=None,datavalues=data)
+
+
+            # build exchange item object
+            item = stdlib.ExchangeItem(id=id, name=name, desc=desc, geometry=[geometry], unit=unit, variable=vari,type=type )
+
+            # create an instance of data wrapper
+            dwrapper_inst = data_wrapper.data_wrapper(name= name,starttime=start,endtime=end,output=item,description=obj.VariableObj.VariableDefinition)
+
+
+            # generate a unique model id
+            id = uuid.uuid4().hex[:8]
+
+            from coordinator import main
+            # create a model instance
+            thisModel = main.Model(id= id,
+                              name=name,
+                              instance=dwrapper_inst,
+                              desc=desc,
+                              input_exchange_items= [],
+                              output_exchange_items=  [item],
+                              params=None)
+
+            # save the model
+            self.cmd.Models(thisModel)
+            #self.cmd.__models[name] = thisModel
+
+
+            # draw a box for this model
             self.controller.createBox(name=name, id=wx.ID_ANY, xCoord=x, yCoord=y, color='#FFFF99')
             self.window.Canvas.Draw()
 
 
+    def getObj(self,resultID):
+
+        session = self.getDbSession()
+
+        from ODM2.Core.services import readCore
+        core = readCore(session)
+        obj = core.getResultByID(resultID=int(resultID))
+
+        session.close()
+
+        return obj
+
+    def getData(self,resultID):
+
+        from ODM2.Results.services import readResults
+        session = self.getDbSession()
+        readres = readResults(session)
+        results = readres.getTimeSeriesValuesByResultId(resultId=int(resultID))
+
+        from ODM2.Core.services import readCore
+        core = readCore(session)
+        obj = core.getResultByID(resultID=int(resultID))
+
+        dates = []
+        values = []
+        for val in results:
+            dates.append(val.ValueDateTime)
+            values.append(val.DataValue)
+
+        session.close()
+
+        return dates,values,obj
 
 menu_titles = [ "Open",
                 "Properties",

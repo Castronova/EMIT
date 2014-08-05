@@ -54,8 +54,7 @@ class MainGui(wx.Frame):
         self.nb = wx.Notebook(self.pnlDocking)
 
 
-        #redir= RedirectText(self.output)
-        #sys.stdout=redir
+
 
         page1 = DirectoryCtrlView(self.nb)
         page2 = ModelView(self.nb)
@@ -453,6 +452,9 @@ class consoleOutput(wx.Panel):
         panel = wx.Panel(self, wx.ID_ANY)
         log = wx.TextCtrl(self, -1, size=(100,100),
                           style = wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
+
+        redir= RedirectText(log)
+        sys.stdout=redir
 
         # # Add widgets to a sizer
         sizer = wx.BoxSizer()

@@ -20,7 +20,9 @@ class MatplotFrame(wx.Frame):
 
         Sizer = wx.BoxSizer(wx.VERTICAL)
 
-        Sizer.Add( pnlSpatial)
+        spatialPanel = pnlSpatial(self)
+
+        Sizer.Add( spatialPanel)
 
         self.SetSizer(Sizer)
         self.Layout()

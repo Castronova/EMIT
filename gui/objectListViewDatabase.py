@@ -77,7 +77,7 @@ class OlvSeries(FastObjectListView):
 
     def onDoubleClick(self, event):
         PlotFrame = MatplotFrame(self.Parent)
-        MatplotFrame.Show()
+        PlotFrame.Show()
 
 ########################################################################
 ###                      For Unittest Use                            ###

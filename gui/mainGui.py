@@ -453,17 +453,15 @@ class consoleOutput(wx.Panel):
         log = wx.TextCtrl(self, -1, size=(100,100),
                           style = wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
 
-        redir= RedirectText(log)
-        sys.stdout=redir
+        # redir= RedirectText(log)
+        # sys.stdout=redir
+
 
         # # Add widgets to a sizer
         sizer = wx.BoxSizer()
         sizer.Add(log, 1, wx.ALL|wx.EXPAND, 5)
         panel.SetSizer(sizer)
 
-        # redirect text here
-        # redir= RedirectText(log)
-        # sys.stdout=redir
 
         self.SetSizerAndFit(sizer)
 

@@ -532,7 +532,7 @@ def create_database_connections_from_file(ini):
 
     return db_connections
 
-def get_ts_from_link(connection_string, dbactions, links, target_model):
+def get_ts_from_link(dbapi, dbactions, links, target_model):
     """
     queries the data
     :param session: database session where the data is stored
@@ -541,7 +541,6 @@ def get_ts_from_link(connection_string, dbactions, links, target_model):
     :return:
     """
 
-    simulation_dbapi = postgresdb(connection_string)
 
 
     #if session is None:
@@ -570,11 +569,12 @@ def get_ts_from_link(connection_string, dbactions, links, target_model):
             actionid = dbactions[model.get_name()]
 
             # query timeseries data from db
-            ts = simulation_dbapi.get_simulation_results(name,actionid,from_var.VariableNameCV(),from_unit.UnitName(),to_var.VariableNameCV(), start,end)
+            ts = dbapi.get_simulation_results(name,actionid,from_var.VariableNameCV(),from_unit.UnitName(),to_var.VariableNameCV(), start,end)
 
             # store the timeseries based on exchange item
             #timeseries[f[1].name()] = ts
             timeseries.update(ts)
+
 
     return timeseries
 

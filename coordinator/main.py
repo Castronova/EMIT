@@ -449,7 +449,7 @@ class Coordinator(object):
 
             #  retrieve inputs from database
             sys.stdout.write('> [1 of 4] Retrieving input data... ')
-            input_data =  get_ts_from_link(self.__default_db['session'],self._dbactions, self.__links, model)
+            input_data =  get_ts_from_link(simulation_dbapi,self._dbactions, self.__links, model)
             sys.stdout.write('done\n')
 
             sys.stdout.write('> [2 of 4] Performing calculation... ')

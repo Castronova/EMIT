@@ -13,14 +13,14 @@ import wx
 ] = [wx.NewId() for _init_ctrls in range(4)]
 
 class MatplotFrame(wx.Frame):
-    def __init__(self, parent, dates, values):
+    def __init__(self, parent, dates, values, title='', xlabel=''):
         wx.Frame.__init__(self, parent, id = wx.ID_ANY, title = wx.EmptyString,
                           pos = wx.DefaultPosition, size = wx.Size( 500,500 ),
                           style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
 
         Sizer = wx.BoxSizer(wx.VERTICAL)
 
-        spatialPanel = pnlSpatial(self,dates,values)
+        spatialPanel = pnlSpatial(self,dates,values, title, xlabel)
 
         #spatialPanel.set_data(dates,values)
 
@@ -32,7 +32,7 @@ class MatplotFrame(wx.Frame):
 
 class pnlSpatial ( wx.Panel ):
 
-    def __init__( self, prnt, x, y):
+    def __init__( self, prnt, x, y, title, xlabel):
         wx.Panel.__init__(self, id=wxID_PNLSPATIAL, name=u'pnlIntro', parent=prnt,
               style=wx.TAB_TRAVERSAL)
         self.SetClientSize(wx.Size(10, 10))
@@ -53,6 +53,9 @@ class pnlSpatial ( wx.Panel ):
         # put up a figure
         self.figure = plt.figure()
         self.axes = self.drawplot(self.figure)
+        self.axes.set_title(title)
+        self.axes.set_ylabel(xlabel)
+
         self.canvas = FigureCanvas(self, -1, self.figure)
 
         sizer.Add(self.canvas, 100, wx.ALIGN_CENTER|wx.ALL)

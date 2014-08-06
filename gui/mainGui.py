@@ -248,6 +248,9 @@ class TimeSeries(wx.Panel):
         # get the name of the selected database
         selected_db = self.m_choice3.GetStringSelection()
 
+        # set the current database in canvas controller
+        Publisher.sendMessage('SetCurrentDb',value=selected_db)
+
         for key, db in self._databases.iteritems():
 
             # get the database session associated with the selected name
@@ -379,17 +382,15 @@ class consoleOutput(wx.Panel):
         log = wx.TextCtrl(self, -1, size=(100,100),
                           style = wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
 
-        redir= RedirectText(log)
-        sys.stdout=redir
+        # redir= RedirectText(log)
+        # sys.stdout=redir
+
 
         # # Add widgets to a sizer
         sizer = wx.BoxSizer()
         sizer.Add(log, 1, wx.ALL|wx.EXPAND, 5)
         panel.SetSizer(sizer)
 
-        # redirect text here
-        # redir= RedirectText(log)
-        # sys.stdout=redir
 
         self.SetSizerAndFit(sizer)
 

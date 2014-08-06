@@ -270,9 +270,9 @@ class ExchangeItem(object):
         self.__saved = False
         self.__seriesID = None
 
-        # determine start and end times
-        for geom in self.__geoms:
-            self.__calculate_start_and_end_times(geom.datavalues())
+        # # determine start and end times
+        # for geom in self.__geoms:
+        #     self.__calculate_start_and_end_times(geom.datavalues())
 
     def getStartTime(self):
         return min(g.datavalues().start() for g in self.__geoms)
@@ -389,13 +389,13 @@ class ExchangeItem(object):
         # self.__calculate_start_and_end_times(value)
         pass
 
-    def __calculate_start_and_end_times(self,dv):
-        #for dv in datavalues:
-        if dv.earliest_date() is not None and dv.latest_date() is not None:
-            if dv.earliest_date() < self.StartTime:
-                self.StartTime = dv.earliest_date()
-            if dv.latest_date() > self.EndTime:
-                self.EndTime = dv.latest_date()
+    # def __calculate_start_and_end_times(self,dv):
+    #     #for dv in datavalues:
+    #     if dv.earliest_date() is not None and dv.latest_date() is not None:
+    #         if dv.earliest_date() < self.StartTime:
+    #             self.StartTime = dv.earliest_date()
+    #         if dv.latest_date() > self.EndTime:
+    #             self.EndTime = dv.latest_date()
 
     def session(self,value=None):
         """

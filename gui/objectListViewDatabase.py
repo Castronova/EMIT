@@ -81,11 +81,24 @@ class OlvSeries(FastObjectListView):
         filename = obj.GetItem(id).GetText()
         dataname = str(filename)
 
+        #  # pickle the lines list
+        # import cPickle
+        # e = cPickle.dumps({'event':event,'resultid':resultID}, 1)
+        # data = wx.CustomDataObject("d")
+        # data.SetData(e)
+        #
+        #
+        # data = wx.CustomDataObject("DoodleLines")
+
         data.AddFile(dataname)
+        # data = wx.DataObject()
+        # data.SetData(event)
+        #data.AddFile(self)
 
         dropSource = wx.DropSource(obj)
         dropSource.SetData(data)
         result = dropSource.DoDragDrop()
+
         print filename
 
     def onDoubleClick(self, event):
@@ -97,10 +110,14 @@ class OlvSeries(FastObjectListView):
         resultID = obj.GetItem(id,0).GetText()
 
         # get data for this row
-        x,y = self.getData(resultID)
+        x,y, resobj = self.getData(resultID)
+
+        # get metadata
+        xlabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
+        title = '%s' % (resobj.VariableObj.VariableCode)
 
         # plot the data
-        PlotFrame = MatplotFrame(self.Parent, x, y)
+        PlotFrame = MatplotFrame(self.Parent, x, y, title, xlabel)
         PlotFrame.Show()
 
     def getDbSession(self):
@@ -118,13 +135,19 @@ class OlvSeries(FastObjectListView):
         readres = readResults(session)
         results = readres.getTimeSeriesValuesByResultId(resultId=int(resultID))
 
+        from ODM2.Core.services import readCore
+        core = readCore(session)
+        obj = core.getResultByID(resultID=int(resultID))
+
         dates = []
         values = []
         for val in results:
             dates.append(val.ValueDateTime)
             values.append(val.DataValue)
 
-        return dates,values
+        #session.close()
+
+        return dates,values,obj
 
 
 

@@ -48,7 +48,7 @@ class Model(object):
     """
     defines a model that has been loaded into a configuration
     """
-    def __init__(self, id, name, instance, desc=None, input_exchange_items={}, output_exchange_items={}, params=None):
+    def __init__(self, id, name, instance, desc=None, input_exchange_items=[], output_exchange_items=[], params=None):
         self.__name = name
         self.__description = desc
         self.__iei = {}
@@ -120,6 +120,11 @@ class Coordinator(object):
 
         self._dbactions = {}
 
+
+    def Models(self, model=None):
+        if model is not None:
+            self.__models[model.get_name()] = model
+        return model
 
     def set_db_connections(self,value={}):
         self._db = value
@@ -449,7 +454,7 @@ class Coordinator(object):
 
             #  retrieve inputs from database
             sys.stdout.write('> [1 of 4] Retrieving input data... ')
-            input_data =  get_ts_from_link(self.__default_db['session'],self._dbactions, self.__links, model)
+            input_data =  get_ts_from_link(simulation_dbapi,self._dbactions, self.__links, model)
             sys.stdout.write('done\n')
 
             sys.stdout.write('> [2 of 4] Performing calculation... ')

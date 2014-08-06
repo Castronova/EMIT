@@ -3,6 +3,7 @@ __author__ = 'Mario'
 import wx
 from collections import OrderedDict
 from ObjectListView import FastObjectListView, ColumnDefn
+from ObjectListView import ObjectListView as OLV
 from frmMatPlotLib import MatplotFrame
 import os
 from wx.lib.pubsub import pub as Publisher
@@ -37,26 +38,25 @@ class OlvSeries(FastObjectListView):
         #                           "day", "1992-05-07 11:45:00", "1996-01-02 00:00:00"),
         #                  ]
 
-        self.products = [Database("","", "",
+        self.initialSeries = [Database("","", "",
                                   "", "",
                                   "", "", ""),
                          ]
 
 
-        self.setBooks()
+        self.setSeries()
         # self.Bind(wx.EVT_LIST_BEGIN_DRAG, self.onDrag)
         self.Bind(wx.EVT_LIST_BEGIN_DRAG, self.onDrag)
 
         # Allow the cell values to be edited when double-clicked
         # self.cellEditMode = FastObjectListView.CELLEDIT_SINGLECLICK
-
+        self.useAlternateBackColors = True
+        self.oddRowsBackColor = wx.Colour(191, 217, 217)
         self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.onDoubleClick)
 
 
-
-
     #----------------------------------------------------------------------
-    def setBooks(self, data=None):
+    def setSeries(self, data=None):
         keys = ["ResultID","Sitename", "Sitecode", "VariableName", "VariableUnit", "Time",
                   "BeginDateTime", "EndDateTime"]
 
@@ -67,7 +67,7 @@ class OlvSeries(FastObjectListView):
 
         self.SetColumns(seriesColumns)
 
-        self.SetObjects(self.products)
+        self.SetObjects(self.initialSeries)
 
     def onDrag(self, event):
         data = wx.FileDataObject()

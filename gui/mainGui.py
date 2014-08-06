@@ -1,15 +1,10 @@
 __author__ = 'Mario'
 import wx
-import wx.grid as grid
-#import wx.html
 import wx.html2
 from DirectoryView import DirectoryCtrlView
 import sys
 from CanvasView import Canvas
 from wx.lib.pubsub import pub as Publisher
-import utilities
-import wx.lib.agw.ultimatelistctrl as ULC
-from ObjectListView.ObjectListView import FastObjectListView
 import wx.lib.agw.aui as aui
 import objectListViewDatabase as olv
 
@@ -50,7 +45,6 @@ class MainGui(wx.Frame):
         # self.output = wx.TextCtrl(self, -1, size=(100,100), style=wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
 
         self.Canvas = Canvas(self.pnlDocking)
-        #self.Canvas.output.WriteText(
         self.nb = wx.Notebook(self.pnlDocking)
 
 
@@ -58,18 +52,15 @@ class MainGui(wx.Frame):
 
         page1 = DirectoryCtrlView(self.nb)
         page2 = ModelView(self.nb)
-        page3 = LinkView(self.nb)
-        # page4 = TimeSeries(self.nb)
+        # page3 = LinkView(self.nb)
 
         self.nb.AddPage(page1, "Directory")
-        self.nb.AddPage(page2, "Model View")
-        self.nb.AddPage(page3, "Link View")
-        # self.nb.AddPage(page4, "Series Selector")
+        self.nb.AddPage(page2, "Model Information")
+        # self.nb.AddPage(page3, "Link View")
 
         self.nb.GetPage(0).SetLabel("Directory")
-        self.nb.GetPage(1).SetLabel("Model View")
-        self.nb.GetPage(2).SetLabel("Link View")
-        # self.nb.GetPage(3).SetLabel("Series Selector")
+        self.nb.GetPage(1).SetLabel("Model Information")
+        # self.nb.GetPage(2).SetLabel("Link View")
 
         self.bnb = wx.Notebook(self.pnlDocking)
 
@@ -130,31 +121,16 @@ class MainGui(wx.Frame):
                FloatingSize(size=(600, 800)).
                CloseButton(True))
 
-
-        # self.m_mgr.AddPane(self.nb,
-        #                    wx.aui.AuiPaneInfo().
-        #                    Left().
-        #                    CloseButton(False).
-        #                    MaximizeButton(True).
-        #                    MinimizeButton().
-        #                    PinButton(True).
-        #                    Resizable().
-        #                    MinSize(wx.Size(375,500)).
-        #                    Floatable())
-
-
         self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED,self.OnSelect)
 
         self.m_mgr.Update()
 
     def OnSelect(self,event):
 
-
         selected_page = self.bnb.GetPage(event.GetSelection())
 
         if selected_page.Label == 'Series Selector':
             selected_page.getKnownDatabases()
-
 
 
     def initMenu(self):
@@ -214,17 +190,10 @@ class ModelView(wx.Panel):
         wx.Panel.__init__(self, parent)
         #Canvas.ObjectHit()
         t = wx.StaticText(self, -1, "This view shows relevant model information.", (60,60))
-
-
-
         self.contents = wx.html2.WebView.New(self)
-
-
 
         #self.contents = wx.html.HtmlWindow (self, style=wx.TE_MULTILINE | wx.HSCROLL | wx.TE_READONLY)
         #self.contents.SetPage("New Text")
-
-
 
         sizer = wx.BoxSizer()
         sizer.Add(self.contents, 1, wx.ALL|wx.EXPAND, 5)
@@ -233,11 +202,6 @@ class ModelView(wx.Panel):
 
     def setText(self, value=None):
         self.contents.SetPage(value,"")
-
-class LinkView(wx.Panel):
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent)
-        t = wx.StaticText(self, -1, "This view shows relations between models.", (60,60))
 
 class TimeSeries(wx.Panel):
     """
@@ -276,48 +240,10 @@ class TimeSeries(wx.Panel):
         Publisher.subscribe(self.getKnownDatabases, "getKnownDatabases")
         Publisher.subscribe(self.connection_added_status, "connectionAddedStatus")
 
-
-        # self.m_choice2 = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, [], 0 )
-        # self.m_choice2.SetSelection( 0 )
-        # bSizer2.Add( self.m_choice2, 0, wx.ALL, 5 )
-
-
         self.m_choice3.Bind(wx.EVT_CHOICE,self.DbChanged)
 
 
-
-
-        # self.m_button1 = wx.Button( self, wx.ID_ANY, u"Add Connection", wx.DefaultPosition, wx.DefaultSize, 0 )
-        # bSizer2.Add( self.m_button1, 0, wx.ALL, 5 )
-
-        # self.list = ULC.UltimateListCtrl(self, wx.ID_ANY, agwStyle=wx.LC_REPORT | wx.LC_VRULES | wx.LC_HRULES | wx.LC_SINGLE_SEL)
-        #
-        # self.list.InsertColumn(0, "Column 1")
-        # self.list.InsertColumn(1, "Column 2")
-        #
-        # index = self.list.InsertStringItem(sys.maxint, "Item 1")
-        # self.list.SetStringItem(index, 1, "Sub-item 1")
-        #
-        # index = self.list.InsertStringItem(sys.maxint, "Item 2")
-        # self.list.SetStringItem(index, 1, "Sub-item 2")
-        #
-        # choice = wx.Choice(self.list, -1, choices=["one", "two"])
-        # index = self.list.InsertStringItem(sys.maxint, "A widget")
-        #
-        # self.list.SetItemWindow(index, 1, choice, expand=True)
-        #
-        # bSizer3.Add(self.list, 1, wx.EXPAND)
-
-        # Publisher.subscribe(self.refresh, "refreshDialogDatabases")
-        # bSizer3.Add(objectListViewDatabase.MainPanel(self))
-
-
-        # self.SetSizer( bSizer1 )
-        # self.Layout()
-
-
     def DbChanged(self, event):
-
 
         # get the name of the selected database
         selected_db = self.m_choice3.GetStringSelection()
@@ -481,21 +407,11 @@ class AddConnectionDialog(wx.Dialog):
             style=wx.DEFAULT_DIALOG_STYLE,
             ):
 
-        # Instead of calling wx.Dialog.__init__ we precreate the dialog
-        # so we can set an extra style that must be set before
-        # creation, and then we create the GUI object using the Create
-        # method.
         pre = wx.PreDialog()
         pre.SetExtraStyle(wx.DIALOG_EX_CONTEXTHELP)
         pre.Create(parent, ID, title, pos, size, style)
 
-        # This next step is the most important, it turns this Python
-        # object into the real wrapper of the dialog (instead of pre)
-        # as far as the wxPython extension is concerned.
         self.PostCreate(pre)
-
-        # Now continue with the normal construction of the dialog
-        # contents
 
         gridsizer = wx.FlexGridSizer(rows=7,cols=2,hgap=5,vgap=5)
 

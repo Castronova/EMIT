@@ -420,6 +420,8 @@ class GUIDelete(GUIBase, CanvasController):
     #CanvasController.onRightDown()
     pass
 
+
+
 class GUIRun(GUIBase):
     pass
 

@@ -46,9 +46,9 @@ class Variable(object):
 
     def VariableDefinition(self,value=None):
         if value is None:
-            return self.__variableNameDefinition
+            return self.__variableDefinition
         else:
-            self.__variableNameDefinition = value
+            self.__variableDefinition = value
 
 class Unit(object):
     """

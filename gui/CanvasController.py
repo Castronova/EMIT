@@ -25,7 +25,7 @@ import CanvasObjects
 import LinkWizard
 from LinkStart import LinkStart
 from ContextMenu import LinkContextMenu, ModelContextMenu, GeneralContextMenu
-from wrappers import data_wrapper
+from wrappers import odm2_data
 
 
 class CanvasController:
@@ -355,6 +355,8 @@ class CanvasController:
 
             try:
                 params = obj.get_config_params()
+                if params is None:
+                    params = {}
             except: params = {}
 
             text = ''
@@ -697,65 +699,79 @@ class FileDrop(wx.FileDropTarget):
                 print e
 
         else:
-            # -- must be a data object --
+            # # -- must be a data object --
+            #
+            #
+            # # get info about the data series
+            # from ODM2.Core.services import readCore
+            # from ODM2.Results.services import readResults
+            # from shapely import wkb
+            # import stdlib, uuid
+            #
+            # # get the session
+            # session = self.controller.getCurrentDbSession()
+            #
+            # # get result object and result timeseries
+            # core = readCore(session)
+            # obj = core.getResultByID(resultID=int(name))
+            # readres = readResults(session)
+            # results = readres.getTimeSeriesValuesByResultId(resultId=int(name))
+            #
+            # # separate the date and value pairs in the timeseries
+            # dates = [date.ValueDateTime for date in results]
+            # values = [val.DataValue for val in results]
+            #
+            # # basic exchange item info
+            # id = uuid.uuid4().hex[:8]
+            # name = obj.VariableObj.VariableCode
+            # desc = obj.VariableObj.VariableDefinition
+            # #unit = obj.UnitObj.UnitsName
+            # #vari = obj.VariableObj.VariableNameCV
+            # type = stdlib.ExchangeItemType.Output
+            # start = min(dates)
+            # end = max(dates)
+            #
+            # # build datavalue object
+            # data = stdlib.DataValues(timeseries=zip(dates,values))
+            #
+            # # build geometry object
+            # # todo: this assumes single geometry! fix
+            # shape = wkb.loads(str(obj.FeatureActionObj.SamplingFeatureObj.FeatureGeometry.data))
+            # geometry = stdlib.Geometry(geom=shape,srs=None,elev=None,datavalues=data)
+            #
+            # # build variable
+            # variable = stdlib.Variable()
+            # variable.VariableDefinition(obj.VariableObj.VariableDefinition)
+            # variable.VariableNameCV(obj.VariableObj.VariableNameCV)
+            #
+            # # build unit
+            # unit = stdlib.Unit()
+            # unit.UnitAbbreviation(obj.UnitObj.UnitsAbbreviation)
+            # unit.UnitName(obj.UnitObj.UnitsName)
+            # unit.UnitTypeCV(obj.UnitObj.UnitsTypeCV)
+            #
+            # # build exchange item object
+            # item = stdlib.ExchangeItem(id=id, name=name, desc=desc, geometry=[geometry], unit=unit, variable=variable,type=type )
 
 
-            # get info about the data series
-            from ODM2.Core.services import readCore
-            from ODM2.Results.services import readResults
-            from shapely import wkb
-            import stdlib, uuid
-
-            # get the session
-            session = self.controller.getCurrentDbSession()
-
-            # get result object and result timeseries
-            core = readCore(session)
-            obj = core.getResultByID(resultID=int(name))
-            readres = readResults(session)
-            results = readres.getTimeSeriesValuesByResultId(resultId=int(name))
-
-            # separate the date and value pairs in the timeseries
-            dates = [date.ValueDateTime for date in results]
-            values = [val.DataValue for val in results]
-
-            # basic exchange item info
-            id = uuid.uuid4().hex[:8]
-            name = obj.VariableObj.VariableCode
-            desc = obj.VariableObj.VariableDefinition
-            unit = obj.UnitObj.UnitsName
-            vari = obj.VariableObj.VariableNameCV
-            type = stdlib.ExchangeItemType.Output
-            start = min(dates)
-            end = max(dates)
-
-            # build datavalue object
-            data = stdlib.DataValues(timeseries=zip(dates,values))
-
-            # build geometry object
-            # todo: this assumes single geometry! fix
-            shape = wkb.loads(str(obj.FeatureActionObj.SamplingFeatureObj.FeatureGeometry.data))
-            geometry = stdlib.Geometry(geom=shape,srs=None,elev=None,datavalues=data)
-
-
-            # build exchange item object
-            item = stdlib.ExchangeItem(id=id, name=name, desc=desc, geometry=[geometry], unit=unit, variable=vari,type=type )
 
             # create an instance of data wrapper
-            dwrapper_inst = data_wrapper.data_wrapper(name= name,starttime=start,endtime=end,output=item,description=obj.VariableObj.VariableDefinition)
+            #dwrapper_inst = odm2_data.odm2(resultid=name, session=self.controller.getCurrentDbSession())
 
 
             # generate a unique model id
-            id = uuid.uuid4().hex[:8]
+            #id = uuid.uuid4().hex[:8]
+
+            inst = odm2_data.odm2(resultid=name, session=self.controller.getCurrentDbSession())
 
             from coordinator import main
             # create a model instance
-            thisModel = main.Model(id= id,
-                              name=name,
-                              instance=dwrapper_inst,
-                              desc=desc,
+            thisModel = main.Model(id=inst.id(),
+                              name=inst.name(),
+                              instance=inst,
+                              desc=inst.description(),
                               input_exchange_items= [],
-                              output_exchange_items=  [item],
+                              output_exchange_items=  [inst.outputs()],
                               params=None)
 
             # save the model
@@ -764,7 +780,7 @@ class FileDrop(wx.FileDropTarget):
 
 
             # draw a box for this model
-            self.controller.createBox(name=name, id=wx.ID_ANY, xCoord=x, yCoord=y, color='#FFFF99')
+            self.controller.createBox(name=inst.name(), id=inst.id(), xCoord=x, yCoord=y, color='#FFFF99')
             self.window.Canvas.Draw()
 
 

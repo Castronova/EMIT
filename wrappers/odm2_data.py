@@ -2,23 +2,84 @@ __author__ = 'tonycastronova'
 
 import datetime as dt
 import utilities
+from ODM2.Core.services import readCore
+from ODM2.Results.services import readResults
+from shapely import wkb
+import stdlib, uuid
 
-class data_wrapper(object):
-    def __init__(self,name, starttime, endtime, output, description=''):
-        self.__output = output
-        self.__start = starttime
-        self.__end = endtime
+
+class odm2(object):
+    def __init__(self,resultid, session):
+
+
+
+        # get result object and result timeseries
+        core = readCore(session)
+        obj = core.getResultByID(resultID=int(resultid))
+        readres = readResults(session)
+        results = readres.getTimeSeriesValuesByResultId(resultId=int(resultid))
+
+        # separate the date and value pairs in the timeseries
+        dates = [date.ValueDateTime for date in results]
+        values = [val.DataValue for val in results]
+
+        # basic exchange item info
+        id = uuid.uuid4().hex[:8]
+        name = obj.VariableObj.VariableCode
+        desc = obj.VariableObj.VariableDefinition
+        #unit = obj.UnitObj.UnitsName
+        #vari = obj.VariableObj.VariableNameCV
+        type = stdlib.ExchangeItemType.Output
+        start = min(dates)
+        end = max(dates)
+
+        # build datavalue object
+        data = stdlib.DataValues(timeseries=zip(dates,values))
+
+        # build geometry object
+        # todo: this assumes single geometry! fix
+        shape = wkb.loads(str(obj.FeatureActionObj.SamplingFeatureObj.FeatureGeometry.data))
+        geometry = stdlib.Geometry(geom=shape,srs=None,elev=None,datavalues=data)
+
+        # build variable
+        variable = stdlib.Variable()
+        variable.VariableDefinition(obj.VariableObj.VariableDefinition)
+        variable.VariableNameCV(obj.VariableObj.VariableNameCV)
+
+        # build unit
+        unit = stdlib.Unit()
+        unit.UnitAbbreviation(obj.UnitObj.UnitsAbbreviation)
+        unit.UnitName(obj.UnitObj.UnitsName)
+        unit.UnitTypeCV(obj.UnitObj.UnitsTypeCV)
+
+        # build exchange item object
+        item = stdlib.ExchangeItem(id=id, name=name, desc=desc, geometry=[geometry], unit=unit, variable=variable,type=type )
+
+        # set global parameters
+        self.__id = id
         self.__name = name
-        self.__desc = description
-
-        # set initial conditions
+        self.__start=start
+        self.__end=end
+        self.__output=item
+        self.__desc=obj.VariableObj.VariableDefinition
         self.__current_time = self.simulation_start()
+        self.__actionid = obj.FeatureActionObj.ActionObj.ActionID
+        self.__obj = obj
 
     def save(self):
-        return self.__output
+        return [self.__output]
 
     def run(self,inputs):
         pass
+
+    def obj(self):
+        return self.__obj
+
+    def actionid(self):
+        return self.__actionid
+
+    def id(self):
+        return self.__id
 
     def time_step(self):
         """
@@ -34,9 +95,9 @@ class data_wrapper(object):
         # if self.__outputs is None:
         #     ei = utilities.build_exchange_items(self.__params)
         #     self.__outputs = [i for i in ei if i.get_type() == 'output' ]
-        # return self.__outputs
+        return self.__output
 
-        raise NotImplementedError('This is an abstract method that must be implemented!')
+        #raise NotImplementedError('This is an abstract method that must be implemented!')
 
     def simulation_start(self):
         return self.__start

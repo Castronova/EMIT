@@ -17,7 +17,7 @@ from ODM2.Simulation.services import readSimulation
 from ODM2.Simulation.services import createSimulation
 from ODM2.Core.services import readCore
 from db.api import postgresdb
-
+import wrappers
 import time
 
 """
@@ -124,7 +124,7 @@ class Coordinator(object):
     def Models(self, model=None):
         if model is not None:
             self.__models[model.get_name()] = model
-        return model
+        return self.__models
 
     def set_db_connections(self,value={}):
         self._db = value
@@ -466,16 +466,23 @@ class Coordinator(object):
             sys.stdout.write('> [3 of 4] Saving calculations to database... ')
             exchangeitems = model.get_instance().save()
 
-            #  set these input data as exchange items in stdlib or wrapper class
-            simulation = simulation_dbapi.create_simulation(preferences_path=preferences,
-                                           config_params=model.get_config_params(),
-                                           output_exchange_items=exchangeitems,
-                                           )
 
-            sys.stdout.write('done\n')
+            # only insert data if its not already in a database
+            if type(model.get_instance()) != wrappers.odm2_data.odm2:
 
-            # store the database action associated with this simulation
-            self._dbactions[model.get_name()] = simulation.ActionID
+                #  set these input data as exchange items in stdlib or wrapper class
+                simulation = simulation_dbapi.create_simulation(preferences_path=preferences,
+                                               config_params=model.get_config_params(),
+                                               output_exchange_items=exchangeitems,
+                                               )
+
+                sys.stdout.write('done\n')
+
+                # store the database action associated with this simulation
+                self._dbactions[model.get_name()] = simulation.ActionID
+
+            else:
+                self._dbactions[model.get_instance().name()] = model.get_instance().actionid()
 
             # update links
             sys.stdout.write('> [4 of 4] Updating links... ')

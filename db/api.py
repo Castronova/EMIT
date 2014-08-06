@@ -343,22 +343,28 @@ class postgresdb():
         # select the result corresponding to the unit and variable
         resultid = None
         for result, geom in results:
-            if result.VariableObj.VariableCode == from_variableName and result.UnitObj.UnitsName == from_unitName:
-                resultid = result.ResultID
+            if result.VariableObj.VariableCode != from_variableName:
+                print '> WARNING: Variables are inconsistent.  %s !=  %s' %(result.VariableObj.VariableCode, from_variableName)
+
+            if result.UnitObj.UnitsName != from_unitName:
+                print '> WARNING: Units are inconsistent.  %s !=  %s'%(result.UnitObj.UnitsName, from_unitName)
+
+            resultid = result.ResultID
 
 
-                # get the timeseries values
-                values = self._resread.getTimeSeriesValuesByTime(resultid=resultid,starttime=startTime,endtime=endTime)
+            # get the timeseries values
+            values = self._resread.getTimeSeriesValuesByTime(resultid=resultid,starttime=startTime,endtime=endTime)
 
-                # save each timeseries to a geometry
-                dv = stdlib.DataValues(timeseries=[(value.ValueDateTime,value.DataValue) for value in values])
-                g = loads(geom)
+            # save each timeseries to a geometry
+            dv = stdlib.DataValues(timeseries=[(value.ValueDateTime,value.DataValue) for value in values])
+            g = loads(geom)
 
-                # save datavalues on the to_variableName
-                if g not in exchangeitems:
-                    exchangeitems[g] = {to_variableName:dv}
-                else:
-                    exchangeitems[g].update({to_variableName:dv})
+            # save datavalues on the to_variableName
+            if g not in exchangeitems:
+                exchangeitems[g] = {to_variableName:dv}
+            else:
+                exchangeitems[g].update({to_variableName:dv})
+
         return exchangeitems
 
 

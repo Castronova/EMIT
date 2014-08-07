@@ -160,14 +160,15 @@ class CanvasController:
         link = self.links.pop(link_obj)
 
         # remove the link from the cmd
-        from_id = link[0].Name
-        to_id = link[1].Name
+        from_id = link[0].ID
+        to_id = link[1].ID
 
         # get the link id
-        linkids = self.cmd.get_links_btwn_models(from_id,to_id)
+        links = self.cmd.get_links_btwn_models(from_id,to_id)
 
         # remove all links
-        for linkid in linkids:
+        for link in links:
+            linkid = link.get_id()
             self.cmd.remove_link_by_id(linkid)
 
         # redraw the canvas

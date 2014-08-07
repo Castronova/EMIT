@@ -428,7 +428,8 @@ class Coordinator(object):
             From, To = link.get_link()
 
             if  From[0].get_id() == from_model and To[0].get_id() == to_model:
-                links.append([From, To])
+                #links.append([From, To])
+                links.append(link)
 
         return links
 

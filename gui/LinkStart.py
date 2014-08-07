@@ -74,7 +74,8 @@ class LinkStart ( wx.Frame ):
 
         links = self.cmd.get_links_btwn_models(self.from_model.get_id(), self.to_model.get_id())
 
-        for link in links:
+        for l in links:
+            link = l.get_link()
             text = "%s : %s --> %s : %s"%(link[0][0].get_name(),link[0][1].name(),link[1][0].get_name(),link[1][1].name())
 
             #text = 'This is overflowing'

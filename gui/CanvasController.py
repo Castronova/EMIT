@@ -624,9 +624,11 @@ class CanvasController:
         print 'Perform "%(operation)s" on "%(target)s."' % vars()
 
     def clear(self, link_obj=None, model_obj=None):
-        self.cmd.remove_model_by_id(True)
-        self.cmd.remove_link_by_id(True)
 
+        # clear links and models in cmd
+        self.cmd.clear_all()
+
+        # clear links and model in gui
         self.links.clear()
         self.models.clear()
 

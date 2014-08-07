@@ -112,7 +112,7 @@ class NavCanvas(wx.Panel):
 
 
 
-        self.Canvas.SetMode(self.ModesDict[-31990])
+        #self.Canvas.SetMode(self.ModesDict[-31990])
         # self.Canvas.SetMode(self.GuiMouse)
 
     # def SetClear(self, event):

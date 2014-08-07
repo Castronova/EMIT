@@ -175,11 +175,17 @@ class Coordinator(object):
 
         self._dbactions = {}
 
+    def clear_all(self):
+        self.__links = {}
+        self.__models = {}
 
     def Models(self, model=None):
         if model is not None:
             self.__models[model.get_name()] = model
         return self.__models
+
+    def Links(self, link=None):
+        return self.__links
 
     def set_db_connections(self,value={}):
         self._db = value

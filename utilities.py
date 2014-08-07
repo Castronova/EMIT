@@ -443,6 +443,7 @@ def create_database_connections_from_args(title, desc, engine, address, db, user
 
         # save this session in the db_connections object
         db_id = uuid.uuid4().hex[:5]
+        d['id'] = db_id
         db_connections[db_id] = {'name':d['name'],
                                  'session': session,
                                  'connection_string':connection_string,
@@ -516,8 +517,11 @@ def create_database_connections_from_file(ini):
             # add connection string to dictionary (for backup/debugging)
             d['connection_string'] = connection_string
 
+
             # save this session in the db_connections object
             db_id = uuid.uuid4().hex[:5]
+            d['id'] = db_id
+
             db_connections[db_id] = {'name':d['name'],
                                      'session': session,
                                      'connection_string':connection_string,

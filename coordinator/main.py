@@ -20,9 +20,14 @@ from db.api import postgresdb
 import wrappers
 import time
 
+from wrappers import odm2_data
+import datatypes
+
 """
 Purpose: This file contains the logic used to run coupled model simulations
 """
+
+
 
 class Link(object):
     """
@@ -55,7 +60,8 @@ class Model(object):
         self.__oei = {}
         self.__id = id
         self.__params = params
-
+        self.__type = None
+        self.__attrib  = {}
 
         for iei in input_exchange_items:
             self.__iei[iei.name()] = iei
@@ -66,6 +72,18 @@ class Model(object):
         self.__inst = instance
         self.__params_path = None
 
+    def type(self,value=None):
+        if value is not None:
+            self.__type = value
+        return self.__type
+
+    def attrib(self, value=None):
+        """
+        Provides a method for storing model specific attributes
+        """
+        if value is not None:
+            self.__attrib = value
+        return self.__attrib
 
     def get_input_exchange_items(self):
         if len(self.__iei.keys()) > 0:
@@ -197,7 +215,7 @@ class Coordinator(object):
     def get_default_db(self):
         return self.__default_db
 
-    def add_model(self, ini_path, id=None):
+    def add_model(self, ini_path, id=None,type=None, attrib=None):
         """
         stores model component objects when added to a configuration
         """
@@ -237,11 +255,42 @@ class Coordinator(object):
 
             thisModel.params_path(ini_path)
 
+            if type: thisModel.type(type)
+            if attrib: thisModel.attrib(attrib)
+
             # save the model
             self.__models[name] = thisModel
 
             # return the model id
             return thisModel
+
+    def add_data_model(self,resultid, databaseid):
+
+        session = self.get_db_connections()[databaseid]['session']
+
+        inst = odm2_data.odm2(resultid=resultid, session=session)
+
+        from coordinator import main
+        # create a model instance
+        thisModel = main.Model(id=inst.id(),
+                          name=inst.name(),
+                          instance=inst,
+                          desc=inst.description(),
+                          input_exchange_items= [],
+                          output_exchange_items=  [inst.outputs()],
+                          params=None)
+
+
+        # save the result and database ids
+        att = {'resultid':resultid}
+        att['databaseid'] = databaseid
+        thisModel.attrib(att)
+        thisModel.type(datatypes.ModelTypes.Data)
+
+         # save the model
+        self.Models(thisModel)
+
+        return thisModel
 
     def remove_model(self,linkablecomponent):
         """

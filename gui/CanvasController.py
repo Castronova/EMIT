@@ -29,6 +29,7 @@ from wrappers import odm2_data
 import xml.etree.ElementTree as et
 from xml.dom import minidom
 
+import datatypes
 
 class CanvasController:
     def __init__(self, cmd, Canvas):
@@ -56,6 +57,7 @@ class CanvasController:
         self.linkRects = []
         self.links = {}
         self.models = {}
+        self.dbmodel_required_db = {}
 
         self.link_clicks = 0
 
@@ -601,9 +603,15 @@ class CanvasController:
 
             # notify that the connection was added successfully
             Publisher.sendMessage('connectionAddedStatus',value=True,connection_string=connection[connection.keys()[0]]['connection_string'])
+
+            return True
         else:
             # notify that the connection was not added successfully
             Publisher.sendMessage('connectionAddedStatus',value=False,connection_string=connection)
+
+            return False
+
+
 
     def getDatabases(self):
         knownconnections = self.cmd.get_db_connections()
@@ -634,6 +642,7 @@ class CanvasController:
         tree = et.Element('Simulation')
 
         links = []
+        db_ids = []
         # add models to the xml tree
         for shape, modelid in self.models.iteritems():
             attributes = {}
@@ -642,9 +651,20 @@ class CanvasController:
             attributes['x'] = str((bbox[0][0] + bbox[1][0]) / 2)
             attributes['y'] = str((bbox[0][1] + bbox[1][1]) / 2)
             attributes['name'] = model.get_name()
-            attributes['mdl'] = model.params_path()
             attributes['id'] = model.get_id()
-            et.SubElement(tree,'Model',attributes)
+
+            if model.type() == datatypes.ModelTypes.FeedForward:
+                attributes['mdl'] = model.params_path()
+                et.SubElement(tree,'Model',attributes)
+
+            elif model.type() == datatypes.ModelTypes.Data:
+                attributes['databaseid'] = model.attrib()['databaseid']
+                attributes['resultid'] = model.attrib()['resultid']
+                et.SubElement(tree,'DataModel',attributes)
+
+                # save this db id
+                if model.attrib()['databaseid'] not in db_ids:
+                    db_ids.append(model.attrib()['databaseid'])
 
             link = self.cmd.get_links_by_model(modelid)
             for l in link:
@@ -672,6 +692,26 @@ class CanvasController:
             et.SubElement(tree,'Link',attributes)
 
 
+        # save required databases
+        for db_id in db_ids:
+            attributes = {}
+
+            connections = self.cmd.get_db_connections()
+
+            db_conn = connections[db_id]['args']
+
+            if db_conn:
+                attributes['name'] = db_conn['name']
+                attributes['desc'] = db_conn['desc']
+                attributes['engine'] = db_conn['engine']
+                attributes['address'] = db_conn['address']
+                attributes['db'] = db_conn['db']
+                attributes['user'] = db_conn['user']
+                attributes['pwd'] = db_conn['pwd']
+                attributes['connection_string'] = str(db_conn['connection_string'])
+                et.SubElement(tree,'DbConnection',attributes)
+
+
         # format the xml nicely
         rough_string = et.tostring(tree, 'utf-8')
         reparsed = minidom.parseString(rough_string)
@@ -689,10 +729,55 @@ class CanvasController:
         # get the root
         root = tree.getroot()
 
+        # make sure the required database connections are loaded
+        connections = self.cmd.get_db_connections()
+        conn_ids = {}
+        for db_conn in root.iter('DbConnection'):
+
+            database_exists = False
+            for id, dic in connections.iteritems():
+                if str(dic['args']['connection_string']) == db_conn.attrib['connection_string']:
+                    #dic['args']['id'] = db_conn.attrib['id']
+                    database_exists = True
+
+                    # map the connection ids
+                    conn_ids[db_conn.attrib['databaseid']] = dic['args']['id']
+                    break
+
+            # if database doesn't exist, then connect to it
+            if not database_exists:
+                connect = wx.MessageBox('This database connection does not currently exist.  Click OK to connect.', 'Info', wx.OK | wx.ICON_ERROR)
+
+
+                if connect.ShowModal() != wx.OK:
+
+                    # attempt to connect to the database
+                    title=dic['args']['name'],
+                    desc = dic['args']['desc'],
+                    engine = dic['args']['engine'],
+                    address = dic['args']['address'],
+                    name = dic['args']['db'],
+                    user = dic['args']['user'],
+                    pwd = dic['args']['pwd']
+
+                    if not self.AddDatabaseConnection(title,desc,engine,address,name,user, pwd):
+                        wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
+                        return
+
+                    # map the connection id
+                    conn_ids[db_conn.attrib['id']] = db_conn.attrib['id']
+
+                else: return
+
+
         # loop through each model and load it
         for model in root.iter('Model'):
+
+            # get the data type
+            dtype = datatypes.ModelTypes.FeedForward
+
             # load the model
-            self.cmd.add_model(model.attrib['mdl'], id=model.attrib['id'])
+            self.cmd.add_model(model.attrib['mdl'], id=model.attrib['id'],type=dtype)
 
             # draw the box
             name = model.attrib['name']
@@ -702,6 +787,20 @@ class CanvasController:
             y = float(model.attrib['y'])
 
             self.createBox(name=name, id=modelid, xCoord=x, yCoord=y)
+
+        for data in root.iter('DataModel'):
+
+            resultid = data.attrib['resultid']
+            databaseid = data.attrib['databaseid']
+            mappedid = conn_ids[databaseid]
+
+            model = self.cmd.add_data_model(resultid,mappedid)
+
+            x = float(data.attrib['x'])
+            y = float(data.attrib['y'])
+
+
+            self.createBox(name=model.get_name(), id=model.get_id(), xCoord=x, yCoord=y, color='#FFFF99')
 
         for link in root.iter('Link'):
 
@@ -722,6 +821,7 @@ class CanvasController:
 
             # this draws the line
             self.createLine(R1,R2)
+
 
 
         self.FloatCanvas.Draw()
@@ -762,8 +862,11 @@ class FileDrop(wx.FileDropTarget):
             models = None
             try:
                 if ext == '.mdl':
+
+                    dtype = datatypes.ModelTypes.FeedForward
+
                     # load the model (returns model instance
-                    model = self.cmd.add_model(filenames[0])
+                    model = self.cmd.add_model(filenames[0],type=dtype)
 
                     name = model.get_name()
                     modelid = model.get_id()
@@ -879,8 +982,24 @@ class FileDrop(wx.FileDropTarget):
                               output_exchange_items=  [inst.outputs()],
                               params=None)
 
-            # save the model
+
+            # save the result id
+            att = {'resultid':name}
+
+            # save the database connection
+            dbs = self.cmd.get_db_connections()
+            for id, dic in dbs.iteritems():
+                if dic['session'] == self.controller.getCurrentDbSession():
+                    att['databaseid'] = id
+                    thisModel.attrib(att)
+                    break
+
+            thisModel.type(datatypes.ModelTypes.Data)
+
+
+             # save the model
             self.cmd.Models(thisModel)
+
             #self.cmd.__models[name] = thisModel
 
 

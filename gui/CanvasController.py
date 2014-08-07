@@ -160,14 +160,15 @@ class CanvasController:
         link = self.links.pop(link_obj)
 
         # remove the link from the cmd
-        from_id = link[0].Name
-        to_id = link[1].Name
+        from_id = link[0].ID
+        to_id = link[1].ID
 
         # get the link id
-        linkids = self.cmd.get_links_btwn_models(from_id,to_id)
+        links = self.cmd.get_links_btwn_models(from_id,to_id)
 
         # remove all links
-        for linkid in linkids:
+        for link in links:
+            linkid = link.get_id()
             self.cmd.remove_link_by_id(linkid)
 
         # redraw the canvas
@@ -624,9 +625,11 @@ class CanvasController:
         print 'Perform "%(operation)s" on "%(target)s."' % vars()
 
     def clear(self, link_obj=None, model_obj=None):
-        self.cmd.remove_model_by_id(True)
-        self.cmd.remove_link_by_id(True)
 
+        # clear links and models in cmd
+        self.cmd.clear_all()
+
+        # clear links and model in gui
         self.links.clear()
         self.models.clear()
 
@@ -778,7 +781,8 @@ class CanvasController:
             dtype = datatypes.ModelTypes.FeedForward
 
             # load the model
-            self.cmd.add_model(model.attrib['mdl'], id=model.attrib['id'],type=dtype)
+            #self.cmd.add_model(model.attrib['mdl'], id=model.attrib['id'],type=dtype)
+            self.cmd.add_model(dtype,id=model.attrib['id'], attrib=model.attrib)
 
             # draw the box
             name = model.attrib['name']
@@ -791,11 +795,16 @@ class CanvasController:
 
         for data in root.iter('DataModel'):
 
+            # get the data type
+            dtype = datatypes.ModelTypes.Data
+
             resultid = data.attrib['resultid']
             databaseid = data.attrib['databaseid']
             mappedid = conn_ids[databaseid]
 
-            model = self.cmd.add_data_model(resultid,mappedid)
+            #model = self.cmd.add_data_model(resultid,mappedid,id=data.attrib['id'],type=dtype)
+            data.attrib['databaseid'] = mappedid
+            model = self.cmd.add_model(dtype,id=data.attrib['id'], attrib=data.attrib)
 
             x = float(data.attrib['x'])
             y = float(data.attrib['y'])

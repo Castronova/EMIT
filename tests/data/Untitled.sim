@@ -1,5 +1,8 @@
 <?xml version="1.0" ?>
 <Simulation>
-  <Model id="1d1a2" mdl="/Users/tonycastronova/Documents/projects/iUtah/EMIT/tests/data/randomizer.mdl" name="Random Number Generator" x="-305.0" y="-28.0"/>
-  <Model id="4319b" mdl="/Users/tonycastronova/Documents/projects/iUtah/EMIT/tests/data/multiplier.mdl" name="Multiplier" x="4.0" y="-19.0"/>
+  <DataModel databaseid="99a3c" id="dfcd2256" name="simflow" resultid="1" x="-51.0" y="-92.0"/>
+  <Model id="877ee" mdl="/Users/tonycastronova/Documents/projects/iUtah/EMIT/tests/data/randomizer.mdl" name="Random Number Generator" x="-279.0" y="74.0"/>
+  <Model id="3e420" mdl="/Users/tonycastronova/Documents/projects/iUtah/EMIT/tests/data/multiplier.mdl" name="Multiplier" x="195.0" y="52.0"/>
+  <Link from_id="dfcd2256" from_item="simflow" from_item_id="dfcd2256" from_name="simflow" to_id="3e420" to_item="some_value" to_item_id="405a5" to_name="Multiplier"/>
+  <DbConnection address="castro-server.bluezone.usu.edu" connection_string="postgresql+psycopg2://postgres:postgres@castro-server.bluezone.usu.edu/ODM2" databaseid="99a3c" db="ODM2" desc="PostgreSQL database with hydrology simulations" engine="postgresql" name="ODM2 Simulation database - Live" pwd="postgres" user="postgres"/>
 </Simulation>

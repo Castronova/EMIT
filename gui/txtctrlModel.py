@@ -6,6 +6,8 @@ import wx
 
 import wx
 import wx.xrc
+from pnlSpatial import pnlSpatial
+from pnlCreateLink import pnlCreateLink
 
 ###########################################################################
 ## Class ModelTxtCtrl
@@ -18,46 +20,82 @@ class ModelTxtCtrl ( wx.Frame ):
 
         self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
 
-        NBSizer = wx.BoxSizer( wx.VERTICAL )
 
+        #Define Objects
         self.txtNotebook = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
         self.txtctrlView = wx.Panel( self.txtNotebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-        txtctrlSizer = wx.BoxSizer( wx.VERTICAL )
 
         self.TextDisplay = wx.TextCtrl( self.txtctrlView, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE|wx.TE_WORDWRAP )
-        txtctrlSizer.Add( self.TextDisplay, 0, wx.ALL|wx.EXPAND, 5 )
-
-
-        self.txtctrlView.SetSizer( txtctrlSizer )
-        self.txtctrlView.Layout()
-        txtctrlSizer.Fit( self.txtctrlView )
-        self.txtNotebook.AddPage( self.txtctrlView, u"TxtCtrl", True )
         self.treectrlView = wx.Panel( self.txtNotebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-        treectrlSizer = wx.BoxSizer( wx.VERTICAL )
+        self.IMPORTNEW = MyTree( self.treectrlView, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TR_DEFAULT_STYLE )
+        self.matplotView = pnlSpatial( self.txtNotebook)
 
-        self.IMPORTNEW = wx.TreeCtrl( self.treectrlView, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TR_DEFAULT_STYLE )
-        treectrlSizer.Add( self.IMPORTNEW, 0, wx.ALL, 5 )
-
-
-        self.treectrlView.SetSizer( treectrlSizer )
-        self.treectrlView.Layout()
-        treectrlSizer.Fit( self.treectrlView )
+        self.txtNotebook.AddPage( self.txtctrlView, u"TxtCtrl", True )
         self.txtNotebook.AddPage( self.treectrlView, u"ListCtrl", False )
-        self.matplotView = wx.Panel( self.txtNotebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
         self.txtNotebook.AddPage( self.matplotView, u"Spatial", False )
 
+        #Sizers
+        NBSizer = wx.BoxSizer( wx.VERTICAL )
+        txtctrlSizer = wx.BoxSizer( wx.VERTICAL )
+        treectrlSizer = wx.BoxSizer( wx.VERTICAL )
+
+        self.txtctrlView.SetSizer( txtctrlSizer )
+        self.treectrlView.SetSizer( treectrlSizer )
+
+        txtctrlSizer.Add( self.TextDisplay, 0, wx.ALL|wx.EXPAND, 5 )
+        treectrlSizer.Add( self.IMPORTNEW, 0, wx.ALL, 5 )
         NBSizer.Add( self.txtNotebook, 1, wx.EXPAND |wx.ALL, 5 )
 
+        self.txtctrlView.Layout()
+        txtctrlSizer.Fit( self.txtctrlView )
+
+        self.treectrlView.Layout()
+        treectrlSizer.Fit( self.treectrlView )
 
         self.SetSizer( NBSizer )
         self.Layout()
 
         self.Centre( wx.BOTH )
 
+class MyTree(wx.TreeCtrl):
+
+    def __init__(self, parent, id, pos, size, style):
+
+        wx.TreeCtrl.__init__(self, parent, id, pos, size, style)
+
+        self.Bind(wx.EVT_LEFT_UP,self.OnLeftUp)
+
+    def OnLeftUp(self, event):
+
+        item, location = self.HitTest(event.GetPositionTuple())
+
+        data = self.GetPyData(item)
+        if data is not None: print data
+
+    def Populate(self, exchangeitems):
+
+        root = self.AddRoot('Series')
 
 
+        for exchangeitem in exchangeitems:
+            item = self.AppendItem(root,exchangeitem.name())
+            self.SetItemPyData(item, exchangeitem.name())
 
+            variable = self.AppendItem(item, 'Variable')
+            self.SetItemPyData(variable, exchangeitem.name())
+            vname = self.AppendItem(variable, 'Name: %s' % exchangeitem.variable().VariableNameCV())
+            self.SetItemPyData(vname, exchangeitem.name())
+            vdef = self.AppendItem(variable, 'Def: %s' % exchangeitem.variable().VariableDefinition())
+            self.SetItemPyData(vdef, exchangeitem.name())
 
+            unit = self.AppendItem(item, 'Unit')
+            self.SetItemPyData(unit, exchangeitem.name())
+            uname = self.AppendItem(unit, 'Name: %s' % exchangeitem.unit().UnitName())
+            self.SetItemPyData(uname, exchangeitem.name())
+            uabbv = self.AppendItem(unit,'Abbv: %s' % exchangeitem.unit().UnitAbbreviation())
+            self.SetItemPyData(uabbv, exchangeitem.name())
+            utype = self.AppendItem(unit,'Type: %s' % exchangeitem.unit().UnitTypeCV())
+            self.SetItemPyData(utype, exchangeitem.name())
 
 # class MainWindow(wx.Frame):
 #     def __init__(self, parent, title):

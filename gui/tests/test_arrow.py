@@ -149,9 +149,9 @@ def draw_rounded_rectangle(canvas, center, width=50, height=50):
         b = N.array(b[10:-10])
 
 
-        # # plot the edges
-        #for coords in [l,r,t,b]:
-        #    canvas.AddObject(FloatCanvas.Line(coords,LineColor = 'red'))
+        # plot the edges
+        for coords in [l,r,t,b]:
+           canvas.AddObject(FloatCanvas.Line(coords,LineColor = 'red'))
 
 
         # build corners
@@ -170,20 +170,20 @@ def draw_rounded_rectangle(canvas, center, width=50, height=50):
                     ]
 
         # plot corners
-        # for corner in corners:
-        #     pts = corner[0]
-        #     canvas.AddObject(FloatCanvas.Line(N.array([pts[0],pts[1]])))
-        #     canvas.AddObject(FloatCanvas.Line(N.array([pts[2],pts[3]])))
-        #     canvas.AddObject(FloatCanvas.Line(corner[1],LineColor='green'))
+        for corner in corners:
+            pts = corner[0]
+            canvas.AddObject(FloatCanvas.Line(N.array([pts[0],pts[1]])))
+            canvas.AddObject(FloatCanvas.Line(N.array([pts[2],pts[3]])))
+            canvas.AddObject(FloatCanvas.Line(corner[1],LineColor='green'))
 
 
         # build polygon object
         coords = N.vstack((l,ltc,t,rtc,r,rbc,b,lbc))
 
-        canvas.AddObject(FloatCanvas.Polygon(coords,FillColor='yellow',FillStyle='Solid'))
+        # canvas.AddObject(FloatCanvas.Polygon(coords,FillColor='yellow',FillStyle='Solid'))
 
 
-#        canvas.Canvas.AddObject(FloatCanvas.Line(lc,LineColor='yellow'))
+        # canvas.Canvas.AddObject(FloatCanvas.Line(lc,LineColor='yellow'))
 
 
 

@@ -151,6 +151,7 @@ class OlvSeries(FastObjectListView):
         return dates,values,obj
 
     def olvrefresh(self):
+        self.RepopulateList()
         self.Refresh()
         print "Series Selector Refreshed"
 

@@ -374,7 +374,7 @@ class TimeSeries(wx.Panel):
                     wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
 
     def OLVRefresh(self, event):
-        pass
+        Publisher.sendMessage("olvrefresh")
 
 
 class consoleOutput(wx.Panel):

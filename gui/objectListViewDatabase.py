@@ -43,6 +43,7 @@ class OlvSeries(FastObjectListView):
                                   "", "", ""),
                          ]
 
+        Publisher.subscribe(self.olvrefresh, "olvrefresh")
 
         self.setSeries()
         # self.Bind(wx.EVT_LIST_BEGIN_DRAG, self.onDrag)
@@ -148,6 +149,10 @@ class OlvSeries(FastObjectListView):
         #session.close()
 
         return dates,values,obj
+
+    def olvrefresh(self):
+        self.Refresh()
+        print "Series Selector Refreshed"
 
 
 

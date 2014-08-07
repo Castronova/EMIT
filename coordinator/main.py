@@ -221,82 +221,89 @@ class Coordinator(object):
     def get_default_db(self):
         return self.__default_db
 
-    def add_model(self, ini_path, id=None,type=None, attrib=None):
+    def add_model(self, type, id=None, attrib=None):
         """
         stores model component objects when added to a configuration
         """
+        thisModel = None
 
-        # parse the model configuration parameters
-        params = parse_config(ini_path)
 
-        if params is not None:
-            # load model
-            name,model_inst = load_model(params)
+        if type == datatypes.ModelTypes.FeedForward:
 
-            # make sure this model doesnt already exist
-            if name in self.__models:
-                print 'Model named '+name+' already exists in configuration'
-                return None
+            ini_path = attrib['mdl']
 
-            # build exchange items
-            ei = build_exchange_items(params)
+            # parse the model configuration parameters
+            params = parse_config(ini_path)
 
-            # organize input and output items
-            iei = [item for item in ei if item.get_type() == 'input']
-            oei = [item for item in ei if item.get_type() == 'output']
+            if params is not None:
+                # load model
+                name,model_inst = load_model(params)
 
-            # generate a unique model id
-            if id is None:
-                id = uuid.uuid4().hex[:5]
-            #id = 'M'+str(self.get_new_id())
+                # make sure this model doesnt already exist
+                if name in self.__models:
+                    print 'Model named '+name+' already exists in configuration'
+                    return None
+
+                # build exchange items
+                ei = build_exchange_items(params)
+
+                # organize input and output items
+                iei = [item for item in ei if item.get_type() == 'input']
+                oei = [item for item in ei if item.get_type() == 'output']
+
+                # generate a unique model id
+                if id is None:
+                    id = uuid.uuid4().hex[:5]
+                #id = 'M'+str(self.get_new_id())
+
+                # create a model instance
+                thisModel = Model(id= id,
+                                  name=name,
+                                  instance=model_inst,
+                                  desc=params['general'][0]['description'],
+                                  input_exchange_items= iei,
+                                  output_exchange_items= oei,
+                                  params=params)
+
+                thisModel.params_path(ini_path)
+
+        elif type == datatypes.ModelTypes.Data:
+
+            databaseid = attrib['databaseid']
+            resultid = attrib['resultid']
+
+            # get the database session
+            session = self.get_db_connections()[databaseid]['session']
+
+            # create odm2 datamodel instance
+            inst = odm2_data.odm2(resultid=resultid, session=session)
 
             # create a model instance
-            thisModel = Model(id= id,
-                              name=name,
-                              instance=model_inst,
-                              desc=params['general'][0]['description'],
-                              input_exchange_items= iei,
-                              output_exchange_items= oei,
-                              params=params)
-
-            thisModel.params_path(ini_path)
-
-            if type: thisModel.type(type)
-            if attrib: thisModel.attrib(attrib)
-
-            # save the model
-            self.__models[name] = thisModel
-
-            # return the model id
-            return thisModel
-
-    def add_data_model(self,resultid, databaseid):
-
-        session = self.get_db_connections()[databaseid]['session']
-
-        inst = odm2_data.odm2(resultid=resultid, session=session)
-
-        from coordinator import main
-        # create a model instance
-        thisModel = main.Model(id=inst.id(),
-                          name=inst.name(),
-                          instance=inst,
-                          desc=inst.description(),
-                          input_exchange_items= [],
-                          output_exchange_items=  [inst.outputs()],
-                          params=None)
+            thisModel = Model(id=attrib['id'],
+                              name=inst.name(),
+                              instance=inst,
+                              desc=inst.description(),
+                              input_exchange_items= [],
+                              output_exchange_items=  [inst.outputs()],
+                              params=None)
 
 
-        # save the result and database ids
-        att = {'resultid':resultid}
-        att['databaseid'] = databaseid
-        thisModel.attrib(att)
-        thisModel.type(datatypes.ModelTypes.Data)
+            # save the result and database ids
+            att = {'resultid':resultid}
+            att['databaseid'] = databaseid
+            thisModel.attrib(att)
 
-         # save the model
-        self.Models(thisModel)
 
+        # set type and attribute params
+        thisModel.type(type)
+        thisModel.attrib(attrib)
+
+        # save the model
+        self.__models[thisModel.get_name()] = thisModel
+
+        # return the model id
         return thisModel
+
 
     def remove_model(self,linkablecomponent):
         """

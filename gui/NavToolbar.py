@@ -110,7 +110,10 @@ class NavCanvas(wx.Panel):
         if Mode == self.GuiDelete:
             Publisher.sendMessage("clear")
 
-        self.Canvas.SetMode(Mode)
+
+
+        self.Canvas.SetMode(self.ModesDict[-31990])
+        # self.Canvas.SetMode(self.GuiMouse)
 
     # def SetClear(self, event):
     #     Mode = self.ModesDict[event.GetId()]

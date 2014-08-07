@@ -15,8 +15,7 @@ from wx.lib.pubsub import pub as Publisher
 
 from DirectoryLstCtrl import DirectoryListCtrl
 from images import icons
-
-
+from txtctrlModel import ModelTxtCtrl
 
 ###########################################################################
 ## Class directoryCtrlPanel
@@ -114,8 +113,11 @@ class DirectoryCtrlView(wx.Panel):
         elif os.path.isfile(dirpath):
             fileName, fileExtension = os.path.splitext(dirpath)
             print "Execute me", fileExtension
-            if fileExtension == ".txt" or fileExtension == ".py":
-                Publisher.sendMessage('createBox', filepath=dirpath)
+            if fileExtension == ".mdl" or fileExtension == ".sim":
+
+                ShowModel = ModelTxtCtrl(self)
+                ShowModel.Show()
+                # Publisher.sendMessage('createBox', filepath=dirpath)
 
         self.dirCtrl.clearItems()
 

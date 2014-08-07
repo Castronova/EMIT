@@ -79,7 +79,7 @@ class CanvasController:
     def initBindings(self):
         self.FloatCanvas.Bind(FC.EVT_MOTION, self.OnMove )
         self.FloatCanvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp )
-        #self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.onRightDown)
+        # self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.onRightDown)
         self.FloatCanvas.Bind(FC.EVT_LEFT_DOWN, self.onLeftDown)
         self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.LaunchContext)
 
@@ -88,6 +88,7 @@ class CanvasController:
         Publisher.subscribe(self.createBox, "createBox")
         Publisher.subscribe(self.setCursor, "setCursor")
         Publisher.subscribe(self.run, "run")
+        Publisher.subscribe(self.clear, "clear")
         Publisher.subscribe(self.AddDatabaseConnection, "DatabaseConnection")
         Publisher.subscribe(self.getDatabases, "getDatabases")
         Publisher.subscribe(self.getCurrentDbSession, "SetCurrentDb")
@@ -205,7 +206,6 @@ class CanvasController:
             # set the shape type so that we can identify it later
             R.type = CanvasObjects.ShapeType.Model
 
-
             width = 15
             wrappedtext = tw.wrap(unicode(name), width)
             # new_line = []
@@ -217,18 +217,7 @@ class CanvasController:
             #     line += ' '*backpadding
             #     new_line.append(line)
 
-            #print wrappedtext, 'R:', dir(R)
-
-            #wx.DC.DrawLabel('This is some text',R)
-            #DrawLabel(self, text, rect, alignment=wxALIGN_LEFT|wxALIGN_TOP, indexAccel=-1)
-
-
-
             #FC.DrawLabel(self, text, rect, alignment=wxALIGN_LEFT|wxALIGN_TOP, indexAccel=-1)
-
-            #textbox = FC.ScaledText(wrappedtext, (x,y),Size=FontSize,Color='White',InForeground=True,Position='cc',Width=w)
-            #__init__(self, String, Point, Size, Color, BackgroundColor, LineColor, LineStyle, LineWidth, Width, PadSize, Family, Style, Weight, Underlined, Position, Alignment, Font, LineSpacing, InForeground)
-            #textbox.type  =CanvasObjects.ShapeType.Label
 
             #label = self.FloatCanvas.AddObject(textbox)
 
@@ -630,7 +619,14 @@ class CanvasController:
         #target    = self.list_item_clicked
         print 'Perform "%(operation)s" on "%(target)s."' % vars()
 
+    def clear(self, link_obj=None, model_obj=None):
+        self.cmd.remove_model_by_id(True)
+        self.cmd.remove_link_by_id(True)
 
+        self.links.clear()
+        self.models.clear()
+
+        self.RedrawConfiguration()
 
 
 class FileDrop(wx.FileDropTarget):

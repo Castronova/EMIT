@@ -217,19 +217,24 @@ class TimeSeries(wx.Panel):
         m_choice3Choices = []
         self.m_choice3 = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_choice3Choices, 0 )
         self.m_choice3.SetSelection( 0 )
+        self.addRefreshButton = wx.Button(self, wx.ID_ANY, u"Refresh", wx.DefaultPosition, wx.DefaultSize, 0)
         self.addConnectionButton = wx.Button( self, wx.ID_ANY, u"Add Connection", wx.DefaultPosition, wx.DefaultSize, 0 )
         self.m_olvSeries = olv.OlvSeries(self, pos = wx.DefaultPosition, size = wx.DefaultSize, id = wx.ID_ANY, style=wx.LC_REPORT|wx.SUNKEN_BORDER  )
 
         # Bindings
         self.addConnectionButton.Bind(wx.EVT_LEFT_DOWN, self.AddConnection)
+        self.addRefreshButton.Bind(wx.EVT_LEFT_DOWN, self.OLVRefresh)
 
         # Sizers
         seriesSelectorSizer = wx.BoxSizer( wx.VERTICAL )
         buttonSizer = wx.BoxSizer( wx.HORIZONTAL )
         buttonSizer.SetMinSize( wx.Size( -1,45 ) )
 
+
         buttonSizer.Add( self.m_choice3, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
         buttonSizer.Add( self.addConnectionButton, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+        buttonSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+        buttonSizer.Add( self.addRefreshButton, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
         seriesSelectorSizer.Add( buttonSizer, 0, wx.ALL|wx.EXPAND, 5 )
         seriesSelectorSizer.Add( self.m_olvSeries, 1, wx.ALL|wx.EXPAND, 5 )
 
@@ -368,8 +373,7 @@ class TimeSeries(wx.Panel):
 
                     wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
 
-
-    def __del__( self ):
+    def OLVRefresh(self, event):
         pass
 
 

@@ -284,8 +284,9 @@ class wizLink(wx.wizard.Wizard):
         link = self.page1.pnlIntroduction.links
 
         # set these links in the cmd
-        self.cmd.add_link(self.outputid, link[0].get_id(),
-                          self.inputid, link[1].get_id())
+
+        self.cmd.add_link(self.outputid, link[0].name(),
+                          self.inputid, link[1].name())
 
 
         self.Close()

@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
 <Simulation>
-  <DataModel databaseid="56b55" id="a4af3a3d" name="simflow" resultid="1" x="-234.0" y="-99.0"/>
-  <DbConnection address="castro-server.bluezone.usu.edu" connection_string="postgresql+psycopg2://postgres:postgres@castro-server.bluezone.usu.edu/ODM2" databaseid="56b55" db="ODM2" desc="PostgreSQL database with hydrology simulations" engine="postgresql" id="a4af3a3d" name="ODM2 Simulation database - Live" pwd="postgres" resultid="1" user="postgres" x="-234.0" y="-99.0"/>
+  <Model id="1d1a2" mdl="/Users/tonycastronova/Documents/projects/iUtah/EMIT/tests/data/randomizer.mdl" name="Random Number Generator" x="-305.0" y="-28.0"/>
+  <Model id="4319b" mdl="/Users/tonycastronova/Documents/projects/iUtah/EMIT/tests/data/multiplier.mdl" name="Multiplier" x="4.0" y="-19.0"/>
 </Simulation>

@@ -708,6 +708,7 @@ class CanvasController:
                 attributes['db'] = db_conn['db']
                 attributes['user'] = db_conn['user']
                 attributes['pwd'] = db_conn['pwd']
+                attributes['databaseid'] = db_conn['id']
                 attributes['connection_string'] = str(db_conn['connection_string'])
                 et.SubElement(tree,'DbConnection',attributes)
 

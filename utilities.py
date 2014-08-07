@@ -392,7 +392,8 @@ def build_exchange_items(params):
 
         # increment item id
         itemid += 1
-        id = iotype.upper()+str(itemid)
+        #id = iotype.upper()+str(itemid)
+        id = uuid.uuid4().hex[:5]
 
         # create exchange item
         ei = stlib.ExchangeItem(id,

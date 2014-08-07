@@ -26,6 +26,8 @@ import LinkWizard
 from LinkStart import LinkStart
 from ContextMenu import LinkContextMenu, ModelContextMenu, GeneralContextMenu
 from wrappers import odm2_data
+import xml.etree.ElementTree as et
+from xml.dom import minidom
 
 
 class CanvasController:
@@ -82,7 +84,6 @@ class CanvasController:
         # self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.onRightDown)
         self.FloatCanvas.Bind(FC.EVT_LEFT_DOWN, self.onLeftDown)
         self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.LaunchContext)
-
 
     def initSubscribers(self):
         Publisher.subscribe(self.createBox, "createBox")
@@ -151,7 +152,6 @@ class CanvasController:
                     break
         return self._currentDbSession
 
-
     def RemoveLink(self, link_obj):
 
         # remove the link entry in self.links
@@ -177,6 +177,7 @@ class CanvasController:
     def setCursor(self, value=None):
         #print "Cursor was set to value ", dir(value), value.GetHandle()
         self._Cursor=value
+
     def getCursor(self):
         return self._Cursor
 
@@ -303,7 +304,6 @@ class CanvasController:
 
         self.Canvas.Canvas.Draw()
 
-
     def ObjectHit(self, object):
         print "Hit Object(CanvasController)", object.Name
         #self.FloatCanvas.Bind(FC.EVT_FC_RIGHT_DOWN( list, -1, self.RightClickCb ))
@@ -395,7 +395,6 @@ class CanvasController:
             self.MoveObject = None
             self.MovingObject = object
 
-
     def RedrawConfiguration(self):
         # clear lines from drawlist
         self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != CanvasObjects.ShapeType.Link]
@@ -420,7 +419,6 @@ class CanvasController:
             self.createLine(r1,r2)
 
         self.FloatCanvas.Draw(True)
-
 
     def OnLeftUp(self, event):
         if self.Moving:
@@ -467,7 +465,6 @@ class CanvasController:
         #         self.linkRects=[]
         #
         #         #
-
 
     def AddinkCursorClick(self):
         self.link_clicks += 1
@@ -592,7 +589,6 @@ class CanvasController:
         # redraw the canvas
         self.RedrawConfiguration()
 
-
     def AddDatabaseConnection(self, title, desc, engine, address, name, user, pwd):
 
         # build the database connection
@@ -627,6 +623,112 @@ class CanvasController:
         self.models.clear()
 
         self.RedrawConfiguration()
+        
+    def SaveSimulation(self, path):
+
+        if len(self.models.keys()) == 0:
+            print '> Nothing to save!'
+            return
+
+        # create an xml tree
+        tree = et.Element('Simulation')
+
+        links = []
+        # add models to the xml tree
+        for shape, modelid in self.models.iteritems():
+            attributes = {}
+            model = self.cmd.get_model_by_id(modelid)
+            bbox = shape.BoundingBox
+            attributes['x'] = str((bbox[0][0] + bbox[1][0]) / 2)
+            attributes['y'] = str((bbox[0][1] + bbox[1][1]) / 2)
+            attributes['name'] = model.get_name()
+            attributes['mdl'] = model.params_path()
+            attributes['id'] = model.get_id()
+            et.SubElement(tree,'Model',attributes)
+
+            link = self.cmd.get_links_by_model(modelid)
+            for l in link:
+                if l not in links:
+                    links.append(l)
+
+        # add links to the xml tree
+        for link in links:
+            attributes = {}
+
+            from_model, from_item = link[0]
+            to_model, to_item = link[1]
+
+
+            attributes['from_name'] = from_model.get_name()
+            attributes['from_id'] = from_model.get_id()
+            attributes['from_item'] = from_item.name()
+            attributes['from_item_id'] = from_item.get_id()
+
+            attributes['to_name'] = to_model.get_name()
+            attributes['to_id'] = to_model.get_id()
+            attributes['to_item'] = to_item.name()
+            attributes['to_item_id'] = to_item.get_id()
+
+            et.SubElement(tree,'Link',attributes)
+
+
+        # format the xml nicely
+        rough_string = et.tostring(tree, 'utf-8')
+        reparsed = minidom.parseString(rough_string)
+        prettyxml = reparsed.toprettyxml(indent="  ")
+
+        # save the xml doc
+        with open(path,'w') as f:
+            f.write(prettyxml)
+
+
+    def loadsimulation(self, file):
+
+        tree = et.parse(file)
+
+        # get the root
+        root = tree.getroot()
+
+        # loop through each model and load it
+        for model in root.iter('Model'):
+            # load the model
+            self.cmd.add_model(model.attrib['mdl'], id=model.attrib['id'])
+
+            # draw the box
+            name = model.attrib['name']
+            modelid = model.attrib['id']
+
+            x = float(model.attrib['x'])
+            y = float(model.attrib['y'])
+
+            self.createBox(name=name, id=modelid, xCoord=x, yCoord=y)
+
+        for link in root.iter('Link'):
+
+            R1 = None
+            R2 = None
+            for R, id in self.models.iteritems():
+                if id == link.attrib['from_id']:
+                    R1 = R
+                elif id == link.attrib['to_id']:
+                    R2 = R
+
+            if R1 is None or R2 is None:
+                raise Exception('Could not find Model identifer in loaded models')
+
+            # add the link object
+            self.cmd.add_link_by_name(  link.attrib['from_id'], link.attrib['from_item'],
+                                link.attrib['to_id'], link.attrib['to_item'])
+
+            # this draws the line
+            self.createLine(R1,R2)
+
+
+        self.FloatCanvas.Draw()
+        #self.Canvas.Draw()
+
+
+
 
 
 class FileDrop(wx.FileDropTarget):
@@ -651,6 +753,7 @@ class FileDrop(wx.FileDropTarget):
         #print x,y
         #x = y = 0
 
+        link_objs = []
 
         # make sure the correct file type was dragged
         name, ext = os.path.splitext(filenames[0])
@@ -660,35 +763,41 @@ class FileDrop(wx.FileDropTarget):
             try:
                 if ext == '.mdl':
                     # load the model (returns model instance
-                    models = [self.cmd.add_model(filenames[0])]
+                    model = self.cmd.add_model(filenames[0])
 
-                else:
-                    # load the simulation
-                    models, links, link_objs = self.cmd.load_simulation(filenames[0])
-
-                array = N.zeros((3,3))
-                index_order = [(1,1),(0,0),(2,2),(2,0),(2,2),(0,1),(1,0),(1,2),(2,1)]
-                # draw boxes for each model
-                offset = 0
-                for model in list(models):
-                    # get the name and id of the model
                     name = model.get_name()
                     modelid = model.get_id()
 
-                    newx = random.randrange(-1,2)*offset + x
-                    newy = random.randrange(-1,2)*offset + y
+                    self.controller.createBox(name=name, id=modelid, xCoord=x, yCoord=y)
 
-                    self.controller.createBox(name=name, id=modelid, xCoord=newx, yCoord=newy)
-                    self.window.Canvas.Draw()
-                    offset=200
+                else:
+                    # load the simulation
+                    #models, links, link_objs = self.cmd.load_simulation(filenames[0])
+                    self.controller.loadsimulation(filenames[0])
+
+                # array = N.zeros((3,3))
+                # index_order = [(1,1),(0,0),(2,2),(2,0),(2,2),(0,1),(1,0),(1,2),(2,1)]
+                # # draw boxes for each model
+                # offset = 0
+                # for model in list(models):
+                #     # get the name and id of the model
+                #     name = model.get_name()
+                #     modelid = model.get_id()
+                #
+                #     newx = random.randrange(-1,2)*offset + x
+                #     newy = random.randrange(-1,2)*offset + y
+                #
+                #     self.controller.createBox(name=name, id=modelid, xCoord=newx, yCoord=newy)
+                #     self.window.Canvas.Draw()
+                #     offset=200
 
                 # draw the link line
 
-                for link in list(link_objs):
-
-                    R1 = self.controller.models.keys()[self.controller.models.values().index(link[0])]
-                    R2 = self.controller.models.keys()[self.controller.models.values().index(link[2])]
-                    self.controller.createLine(R1,R2)
+                # for link in list(link_objs):
+                #
+                #     R1 = self.controller.models.keys()[self.controller.models.values().index(link[0])]
+                #     R2 = self.controller.models.keys()[self.controller.models.values().index(link[2])]
+                #     self.controller.createLine(R1,R2)
 
             except Exception, e:
                 print 'Could not load the model :(. Hopefully this exception helps...'

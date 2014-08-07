@@ -56,6 +56,7 @@ class Model(object):
         self.__id = id
         self.__params = params
 
+
         for iei in input_exchange_items:
             self.__iei[iei.name()] = iei
 
@@ -63,11 +64,18 @@ class Model(object):
             self.__oei[oei.name()] = oei
 
         self.__inst = instance
+        self.__params_path = None
+
 
     def get_input_exchange_items(self):
-        return [j for i,j in self.__iei.items()]
+        if len(self.__iei.keys()) > 0:
+            return [j for i,j in self.__iei.items()]
+        else: return []
+
     def get_output_exchange_items(self):
-        return [j for i,j in self.__oei.items()]
+        if len(self.__oei.keys()) > 0:
+            return [j for i,j in self.__oei.items()]
+        else: return []
 
     def get_input_exchange_item(self,value):
         ii = None
@@ -93,6 +101,31 @@ class Model(object):
 
         return oi
 
+
+    def get_input_exchange_item_by_name(self,value):
+        ii = None
+
+        for k,v in self.__iei.iteritems():
+            if v.name() == value:
+                ii = self.__iei[k]
+
+        if ii is None:
+            print '>  Could not find Input Exchange Item: '+value
+
+        return ii
+
+    def get_output_exchange_item_by_name(self,value):
+        oi = None
+
+        for k,v in self.__oei.iteritems():
+            if v.name() == value:
+                oi = self.__oei[k]
+
+        if oi is None:
+            print '>  Could not find Output Exchange Item: '+value
+
+        return oi
+
     def get_description(self):
         return self.__description
     def get_name(self):
@@ -106,6 +139,10 @@ class Model(object):
     def get_config_params(self):
         return self.__params
 
+    def params_path(self, value=None):
+        if value is not None:
+            self.__params_path = value
+        return self.__params_path
 
 class Coordinator(object):
     def __init__(self):
@@ -160,7 +197,7 @@ class Coordinator(object):
     def get_default_db(self):
         return self.__default_db
 
-    def add_model(self, ini_path):
+    def add_model(self, ini_path, id=None):
         """
         stores model component objects when added to a configuration
         """
@@ -185,7 +222,9 @@ class Coordinator(object):
             oei = [item for item in ei if item.get_type() == 'output']
 
             # generate a unique model id
-            id = 'M'+str(self.get_new_id())
+            if id is None:
+                id = uuid.uuid4().hex[:5]
+            #id = 'M'+str(self.get_new_id())
 
             # create a model instance
             thisModel = Model(id= id,
@@ -195,6 +234,8 @@ class Coordinator(object):
                               input_exchange_items= iei,
                               output_exchange_items= oei,
                               params=params)
+
+            thisModel.params_path(ini_path)
 
             # save the model
             self.__models[name] = thisModel
@@ -240,7 +281,7 @@ class Coordinator(object):
                 return self.__models[m]
         return None
 
-    def add_link(self,from_id, from_item_name, to_id, to_item_name):
+    def add_link(self,from_id, from_item_id, to_id, to_item_id):
         """
         adds a data link between two components
         """
@@ -256,14 +297,48 @@ class Coordinator(object):
             print e
             return None
 
-
         # check that input and output exchange items exist
-        ii = To.get_input_exchange_item(to_item_name)
-        oi = From.get_output_exchange_item(from_item_name)
+        ii = To.get_input_exchange_item_by_name(to_item_id)
+        oi = From.get_output_exchange_item_by_name(from_item_id)
 
         if ii is not None and oi is not None:
             # generate a unique model id
-            id = 'L'+str(self.get_new_id())
+            #id = 'L'+str(self.get_new_id())
+            id = 'L'+uuid.uuid4().hex[:5]
+
+            # create link
+            link = Link(id,From,To,oi,ii)
+            self.__links[id] = link
+
+            return id
+        else:
+            print '>  Could Not Create Link :('
+
+
+    def add_link_by_name(self,from_id, from_item_name, to_id, to_item_name):
+        """
+        adds a data link between two components
+        """
+
+        # check that from and to models exist in composition
+        From = self.get_model_by_id(from_id)
+        To = self.get_model_by_id(to_id)
+        try:
+
+            if self.get_model_by_id(from_id) is None: raise Exception(from_id+' does not exist in configuration')
+            if self.get_model_by_id(to_id) is None: raise Exception(to_id+' does not exist in configuration')
+        except Exception, e:
+            print e
+            return None
+
+        # check that input and output exchange items exist
+        ii = To.get_input_exchange_item_by_name(to_item_name)
+        oi = From.get_output_exchange_item_by_name(from_item_name)
+
+        if ii is not None and oi is not None:
+            # generate a unique model id
+            #id = 'L'+str(self.get_new_id())
+            id = 'L'+uuid.uuid4().hex[:5]
 
             # create link
             link = Link(id,From,To,oi,ii)

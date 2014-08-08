@@ -20,8 +20,6 @@ class pnlCreateLink ( wx.Panel ):
         self.SetClientSize(wx.Size(423, 319))
 
 
-
-
         self.selectedinput = None
         self.selectedoutput = None
         self.links = [None, None]
@@ -36,11 +34,6 @@ class pnlCreateLink ( wx.Panel ):
         bSizer1.Add( bSizer6, 1, wx.EXPAND, 5 )
         bSizer5 = wx.BoxSizer( wx.HORIZONTAL )
 
-        #self.m_listCtrl1 = wx.ListCtrl( self, wx.ID_ANY, wx.DefaultPosition, wx.Size(210, 200), wx.LC_REPORT )
-        #self.m_listCtrl2 = wx.ListCtrl( self, wx.ID_ANY, wx.DefaultPosition, wx.Size(210, 200), wx.LC_REPORT )
-        #self.SaveButton = wx.Button( self, wx.ID_ANY, u"Create Link", wx.DefaultPosition, wx.DefaultSize, 0)
-        #self.SaveButton.Disable()
-
         self.outputs = MyTree(id=wxID_PNLCREATELINK,
                parent=self, pos=wx.Point(0, 0),
               size=wx.Size(210, 200), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT)
@@ -52,33 +45,7 @@ class pnlCreateLink ( wx.Panel ):
         self.output_text = wx.StaticText(self,id=wxID_PNLCREATELINK,pos=wx.Point(0,210),size=wx.Size(210,10))
         self.input_text  = wx.StaticText(self,id=wxID_PNLCREATELINK,pos=wx.Point(210,200),size=wx.Size(210,10))
 
-
-
-        #bSizer6.Add( self.m_listCtrl1, 0, wx.ALL, 5 )
-        #Sizer6.Add( self.m_listCtrl2, 0, wx.ALL, 5 )
-        #bSizer5.Add( self.SaveButton, 0, wx.ALL, 5 )
-
-
         bSizer1.Add( bSizer5, 1, wx.EXPAND, 5 )
-
-        #panel = pnlCreateLink(self)
-        # self.m_listCtrl1.InsertColumn(0, 'input')
-        # self.m_listCtrl1.SetColumnWidth(0, 200)
-        #self.m_listCtrl2.InsertColumn(0, 'output')
-        #self.m_listCtrl2.SetColumnWidth(0, 200)
-
-        # self.m_listCtrl1.Bind(wx.EVT_LIST_ITEM_SELECTED, self.InputSelect)
-        # self.m_listCtrl1.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.InputDeselect)
-        #self.m_listCtrl2.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OutputSelect)
-        #self.m_listCtrl2.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.OutputDeselect)
-        #self.SaveButton.Bind(wx.EVT_LEFT_DOWN, self.CreateLink)
-
-        #self.Bind
-
-
-
-
-        #wx.StaticText(self, -1,"Error", pos = (20, 200))
 
         # deactivate Next button
         self.activateLinkButton()
@@ -239,7 +206,7 @@ class MyTree(wx.TreeCtrl):
         wx.TreeCtrl.__init__(self, parent, id, pos, size, style)
         # self.root = self.AddRoot('Series')
         # self.m1 = self.AppendItem(self.root, 'Output Model')
-        # self.m2 = self.AppendItem(self.root, 'Input Model')
+        # self.model = self.AppendItem(self.root, 'Input Model')
         # self.v = self.AppendItem(self.root, 'Variable')
         #
         # self.sc=self.AppendItem(self.m1, 'ID: ')
@@ -251,8 +218,8 @@ class MyTree(wx.TreeCtrl):
         #
         # self.sn=self.AppendItem(self.m1, 'Name: ')
         #
-        # self.sc=self.AppendItem(self.m2, 'ID: ')
-        # self.sn=self.AppendItem(self.m2, 'Name: ')
+        # self.sc=self.AppendItem(self.model, 'ID: ')
+        # self.sn=self.AppendItem(self.model, 'Name: ')
         #
         # self.vc=self.AppendItem(self.v, 'ID: ')
         # self.vn=self.AppendItem(self.v, 'Name: ')

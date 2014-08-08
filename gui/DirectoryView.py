@@ -187,7 +187,7 @@ class DirectoryCtrlView(wx.Panel):
         view = ModelTxtCtrl(self)
         listview = MyTree(self)
         view.PopulateEdit(self.sb.GetValue())
-        listview.PopulateDetails(self.sb.GetValue())
+        view.PopulateDetails(self.sb.GetValue())
 
         view.Show()
         #ShowModel.Show()

@@ -7,7 +7,9 @@ import wx
 import wx
 import wx.xrc
 from pnlSpatial import pnlSpatial
-from pnlCreateLink import pnlCreateLink
+from pnlDetails import pnlDetails
+
+from wx.lib.pubsub import pub as Publisher
 
 ###########################################################################
 ## Class ModelTxtCtrl
@@ -27,12 +29,15 @@ class ModelTxtCtrl ( wx.Frame ):
 
         self.TextDisplay = wx.TextCtrl( self.txtctrlView, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE|wx.TE_WORDWRAP )
         self.treectrlView = wx.Panel( self.txtNotebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-        self.IMPORTNEW = MyTree( self.treectrlView, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TR_DEFAULT_STYLE )
-        self.matplotView = pnlSpatial( self.txtNotebook)
+        self.IMPORTNEW = pnlDetails( self.treectrlView )
+        self.matplotView = pnlSpatial( self.txtNotebook )
 
         self.txtNotebook.AddPage( self.txtctrlView, u"TxtCtrl", True )
         self.txtNotebook.AddPage( self.treectrlView, u"ListCtrl", False )
         self.txtNotebook.AddPage( self.matplotView, u"Spatial", False )
+
+        #InitSubscibers
+        Publisher.subscribe(self.open, 'texteditpath')
 
         #Sizers
         NBSizer = wx.BoxSizer( wx.VERTICAL )
@@ -56,6 +61,29 @@ class ModelTxtCtrl ( wx.Frame ):
         self.Layout()
 
         self.Centre( wx.BOTH )
+
+    def open(self):
+        # In this case, the dialog is created within the method because
+        # the directory name, etc, may be changed during the running of the
+        # application. In theory, you could create one earlier, store it in
+        # your frame object and change it when it was called to reflect
+        # current parameters / values
+        dlg = wx.FileDialog(self, "Choose a file", self.dirname, "", "*.*", wx.OPEN)
+        if dlg.ShowModal() == wx.ID_OK:
+            self.filename=dlg.GetFilename()
+            self.dirname=dlg.GetDirectory()
+
+            # Open the file, read the contents and set them into
+            # the text edit window
+            filehandle=open(os.path.join(self.dirname, self.filename),'r')
+            self.control.SetValue(filehandle.read())
+            filehandle.close()
+
+            # Report on name of latest file read
+            self.SetTitle("Editing ... "+self.filename)
+            # Later - could be enhanced to include a "changed" flag whenever
+            # the text is actually changed, could also be altered on "save" ...
+        dlg.Destroy()
 
 class MyTree(wx.TreeCtrl):
 

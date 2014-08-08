@@ -17,6 +17,8 @@ from DirectoryLstCtrl import DirectoryListCtrl
 from images import icons
 from txtctrlModel import ModelTxtCtrl
 
+from ContextMenu import DirectoryContextMenu
+
 ###########################################################################
 ## Class directoryCtrlPanel
 ###########################################################################
@@ -60,6 +62,9 @@ class DirectoryCtrlView(wx.Panel):
         self.sb.SetValue(os.getcwd())
 
     def initBindings(self):
+
+
+
         # # List control events
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnClick)
         self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnDClick)
@@ -70,6 +75,8 @@ class DirectoryCtrlView(wx.Panel):
         self.Bind(wx.EVT_TOOL, self.OnUpClick, id=UpID)
 
         self.Bind(wx.EVT_LIST_BEGIN_DRAG, self.onDrag)
+
+        self.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.OnRightClick)
 
     def iconToolBar(self):
         toolbar = wx.ToolBar(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TB_HORIZONTAL)
@@ -169,3 +176,14 @@ class DirectoryCtrlView(wx.Panel):
         dropSource.SetData(data)
         result = dropSource.DoDragDrop()
        #print fullpath
+
+    def OnRightClick(self, event):
+        self.dirCtrl.PopupMenu(DirectoryContextMenu(self,event), event.GetPosition())
+
+
+    def ShowDetails(self):
+        import txtctrlModel
+        view = ModelTxtCtrl(self)
+        view.open(self.sb.GetValue())
+        view.Show()
+        #ShowModel.Show()

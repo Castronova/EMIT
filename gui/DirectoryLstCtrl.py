@@ -69,6 +69,7 @@ class DirectoryListCtrl(wx.ListCtrl):
 
         return self.home
 
+
     def refreshList(self,cwd):
 
         self.getcurrentdirectory(cwd)

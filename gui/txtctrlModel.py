@@ -21,6 +21,7 @@ class ModelTxtCtrl ( wx.Frame ):
         wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition,
                             size = wx.Size( 500,300 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 
+
         self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
 
 
@@ -41,7 +42,7 @@ class ModelTxtCtrl ( wx.Frame ):
         self.txtNotebook.AddPage( self.matplotView, u"Spatial View", False )
 
         #InitSubscibers
-        Publisher.subscribe(self.open, 'texteditpath')
+        #Publisher.subscribe(self.open, 'texteditpath')
 
         #Sizers
         NBSizer = wx.BoxSizer( wx.VERTICAL )

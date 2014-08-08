@@ -15,7 +15,7 @@ from wx.lib.pubsub import pub as Publisher
 
 from DirectoryLstCtrl import DirectoryListCtrl
 from images import icons
-from txtctrlModel import ModelTxtCtrl
+from txtctrlModel import ModelTxtCtrl, MyTree
 
 from ContextMenu import DirectoryContextMenu
 import utilities
@@ -189,8 +189,9 @@ class DirectoryCtrlView(wx.Panel):
         # create the details view
         view = ModelTxtCtrl(self)
 
+
         # load the file contents
-        view.OnOpen(self.sb.GetValue())
+        view.PopulateEdit(self.sb.GetValue())
 
 
         # load the geometry data
@@ -198,6 +199,9 @@ class DirectoryCtrlView(wx.Panel):
         view.PopulateSpatial(self.read_geoms(self.sb.GetValue(),'output'),'output')
 
         # show the details view
+        listview = MyTree(self)
+        view.PopulateEdit(self.sb.GetValue())
+        listview.PopulateDetails(self.sb.GetValue())
         view.Show()
 
 

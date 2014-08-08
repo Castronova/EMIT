@@ -18,23 +18,27 @@ from wx.lib.pubsub import pub as Publisher
 class ModelTxtCtrl ( wx.Frame ):
 
     def __init__( self, parent ):
-        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( 500,300 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition,
+                            size = wx.Size( 500,300 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 
         self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
 
 
         #Define Objects
         self.txtNotebook = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
-        self.txtctrlView = wx.Panel( self.txtNotebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+        self.txtctrlView = wx.Panel( self.txtNotebook, wx.ID_ANY, wx.DefaultPosition,
+                                     wx.DefaultSize, wx.TAB_TRAVERSAL )
+        self.TextDisplay = wx.TextCtrl( self.txtctrlView, wx.ID_ANY, wx.EmptyString,
+                                        wx.DefaultPosition, wx.Size(400, 600), wx.TE_MULTILINE|wx.TE_WORDWRAP )
 
-        self.TextDisplay = wx.TextCtrl( self.txtctrlView, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE|wx.TE_WORDWRAP )
-        self.treectrlView = wx.Panel( self.txtNotebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+        self.treectrlView = wx.Panel( self.txtNotebook, wx.ID_ANY, wx.DefaultPosition,
+                                      wx.DefaultSize, wx.TAB_TRAVERSAL )
         self.IMPORTNEW = pnlDetails( self.treectrlView )
         self.matplotView = pnlSpatial( self.txtNotebook )
 
-        self.txtNotebook.AddPage( self.txtctrlView, u"TxtCtrl", True )
-        self.txtNotebook.AddPage( self.treectrlView, u"ListCtrl", False )
-        self.txtNotebook.AddPage( self.matplotView, u"Spatial", False )
+        self.txtNotebook.AddPage( self.treectrlView, u"Detail View", False )
+        self.txtNotebook.AddPage( self.txtctrlView, u"Edit", True )
+        self.txtNotebook.AddPage( self.matplotView, u"Spatial View", False )
 
         #InitSubscibers
         Publisher.subscribe(self.open, 'texteditpath')
@@ -62,28 +66,18 @@ class ModelTxtCtrl ( wx.Frame ):
 
         self.Centre( wx.BOTH )
 
-    def open(self):
-        # In this case, the dialog is created within the method because
-        # the directory name, etc, may be changed during the running of the
-        # application. In theory, you could create one earlier, store it in
-        # your frame object and change it when it was called to reflect
-        # current parameters / values
-        dlg = wx.FileDialog(self, "Choose a file", self.dirname, "", "*.*", wx.OPEN)
-        if dlg.ShowModal() == wx.ID_OK:
-            self.filename=dlg.GetFilename()
-            self.dirname=dlg.GetDirectory()
+    def open(self, fileExtension):
 
-            # Open the file, read the contents and set them into
-            # the text edit window
-            filehandle=open(os.path.join(self.dirname, self.filename),'r')
-            self.control.SetValue(filehandle.read())
-            filehandle.close()
+        # Open the file, read the contents and set them into
+        # the text edit window
+        filehandle=open(fileExtension)
+        self.TextDisplay.SetValue(filehandle.read())
+        filehandle.close()
 
-            # Report on name of latest file read
-            self.SetTitle("Editing ... "+self.filename)
-            # Later - could be enhanced to include a "changed" flag whenever
-            # the text is actually changed, could also be altered on "save" ...
-        dlg.Destroy()
+        # Report on name of latest file read
+        self.SetTitle("Editor")
+        # Later - could be enhanced to include a "changed" flag whenever
+        # the text is actually changed, could also be altered on "save" ...
 
 class MyTree(wx.TreeCtrl):
 

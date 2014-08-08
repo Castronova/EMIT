@@ -88,6 +88,22 @@ class ModelTxtCtrl ( wx.Frame ):
         # Later - could be enhanced to include a "changed" flag whenever
         # the text is actually changed, could also be altered on "save" ...
 
+    def PopulateSpatial(self, coordlist, type):
+        #pass
+
+
+        #colors = self.matplotView.buildGradientColor(len(coordlist),cmap='jet')
+
+        if type == 'input':
+            self.matplotView.input_data(coordlist)
+        elif type == 'output':
+            self.matplotView.output_data(coordlist)
+        #
+        # i = 0
+        # for coords in coordlist:
+        #     self.matplotView.addSeries(zip(*coords),color=colors[i])
+        #     i += 1
+
     def OnSave(self, fileExtension):
         Publisher.subscribe(self.OnSave, 'textsavepath')
         # Grab the content to be saved
@@ -98,6 +114,7 @@ class ModelTxtCtrl ( wx.Frame ):
         filehandle=open((fileExtension),'w')
         filehandle.write(itcontains)
         filehandle.close()
+
 
 class MyTree(wx.TreeCtrl):
 

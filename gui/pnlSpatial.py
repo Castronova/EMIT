@@ -31,83 +31,95 @@ class pnlSpatial ( wx.Panel ):
         self.radiobutton2 = wx.RadioButton(self, wx.ID_ANY, u"Placeholder")
         self.Bind(wx.EVT_BUTTON, self.OnClick,self.button)
 
+        self.__input_data = []
+        self.__output_data = []
+
+        self.inputCheckbox = wx.CheckBox(self, wx.ID_ANY,'Inputs')
+        self.outputCheckbox = wx.CheckBox(self, wx.ID_ANY,'Outputs')
+
+        self.inputCheckbox.Disable()
+        self.outputCheckbox.Disable()
+
+        self.inputCheckbox.Bind(wx.EVT_CHECKBOX, self.UpdatePlot)
+        self.outputCheckbox.Bind(wx.EVT_CHECKBOX, self.UpdatePlot)
+        #self.outputCheckbox.Bind(wx.EVT_CHECKBOX, self.redraw)
+
         # put up a figure
         self.figure = plt.figure()
-        self.axes = self.drawplot(self.figure)
+        self.ax = self.figure.add_subplot(1,1,1)
+
+
+        #self.axes = self.drawplot(self.figure)
         self.canvas = FigureCanvas(self, -1, self.figure)
 
         sizer.Add(self.canvas, 100, wx.ALIGN_CENTER|wx.ALL)
-        sizer.Add(self.button, 0, wx.ALIGN_CENTER|wx.ALL)
-        sizer.Add(self.radiobutton1, 0, wx.ALIGN_CENTER|wx.ALL)
-        sizer.Add(self.radiobutton2, 0, wx.ALIGN_CENTER|wx.ALL)
+        #sizer.Add(self.button, 0, wx.ALIGN_CENTER|wx.ALL)
+        sizer.Add(self.inputCheckbox, 0, wx.ALIGN_CENTER|wx.ALL)
+        sizer.Add(self.outputCheckbox, 0, wx.ALIGN_CENTER|wx.ALL)
 
         self.SetSizer(sizer)
         #self.Fit()
+
+
+
     def log(self, fmt, *args):
         print (fmt % args)
     def OnClick(self,event):
         self.log("button clicked, id#%d\n", event.GetId())
-    def drawplot(self, fig):
-        ax = fig.add_subplot(1,1,1)
-        t = np.arange(0,1,0.001)
-        ax.plot(t,t*t)
-        ax.grid()
-        return ax
 
-        # self.Sizer = wx.BoxSizer( wx.VERTICAL )
-        # self.Sizerpnl = wx.BoxSizer(wx.VERTICAL)
-        # self.Sizer2 = wx.BoxSizer(wx.VERTICAL)
-        #
-        # self.plotpnl = wx.Panel( self,id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.Size(425,250), style=wx.TAB_TRAVERSAL )
-        # self.Sizer.Add( self.plotpnl, 1, wx.EXPAND |wx.ALL, 5 )
-        # self.Sizerpnl.Fit(self.plotpnl)
-        #
-        # self.m_panel2 = wx.Panel( self,id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.Size(425,95), style=wx.TAB_TRAVERSAL )
-        # self.Sizer.Add( self.m_panel2, 1, wx.EXPAND |wx.ALL, 5 )
-        # self.Sizer2.Fit(self.m_panel2)
-        #
-        # self.m_radioBtn1 = wx.RadioButton( self, wx.ID_ANY, u"Set Unit as Smallest Possible", wx.DefaultPosition, wx.DefaultSize, 0 )
-        # self.Sizer2.Add( self.m_radioBtn1, 0, wx.ALL, 5 )
-        #
-        # self.plotpnl.figure = Figure()
-        # self.plotpnl.axes = self.plotpnl.figure.add_subplot(111)
-        # self.plotpnl.canvas = FigureCanvas(self, -1, self.plotpnl.figure)
-        # self.Sizerpnl.Add(self.plotpnl.canvas, 1, wx.LEFT | wx.TOP | wx.GROW)
-        # self.SetSizer(self.Sizerpnl)
-        # self.plotpnl.Fit()
+    def input_data(self, value=[]):
+        if len(value) != 0:
+            for val in value:
+                self.__input_data.append(zip(*val))
+            self.inputCheckbox.Enable()
+        else:
+            return self.__input_data
+
+    def output_data(self, value=[]):
+        if len(value) != 0:
+            for val in value:
+                self.__output_data.append(zip(*val))
+            self.outputCheckbox.Enable()
+        else:
+            return self.__output_data
+
+    def buildGradientColor(self, num, cmap='Blues'):
+        c = getattr(plt.cm, cmap)
+        num_colors = num
+        return [c(1.*i/num_colors) for i in range(num_colors)]
+
+    def setInputSeries(self):
+
+        inputs = self.input_data()
+        colors = self.buildGradientColor(len(inputs),'jet')
+        i = 0
+        for geom in inputs:
+            self.addSeries(geom,colors[i])
+            i += 1
+
+    def setOutputSeries(self):
+
+        outputs = self.output_data()
+        colors = self.buildGradientColor(len(outputs),'jet')
+        i = 0
+        for geom in outputs:
+            self.addSeries(geom,colors[i])
+            i += 1
+
+    def UpdatePlot(self,event):
+        self.ax.cla()
+        if self.inputCheckbox.IsChecked():
+            self.setInputSeries()
+        if self.outputCheckbox.IsChecked():
+            self.setOutputSeries()
+
+        self.canvas.draw()
+
+    def addSeries(self, geom, color):
+
+        self.ax.plot(geom[0],geom[1],color=color)
+        self.ax.grid()
+        self.ax.axis('auto')
+        self.ax.margins(0.1)
 
 
-##########################################################################################
-
-        # np.random.seed(1234)
-        #
-        # Nsteps = 500
-        # t = np.arange(Nsteps)
-        #
-        # mu = 0.002
-        # sigma = 0.01
-        #
-        # # the steps and position
-        # S = mu + sigma*np.random.randn(Nsteps)
-        # X = S.cumsum()
-        #
-        # # the 1 sigma upper and lower analytic population bounds
-        # lower_bound = mu*t - sigma*np.sqrt(t)
-        # upper_bound = mu*t + sigma*np.sqrt(t)
-        #
-        # fig, ax = plt.subplots(1)
-        # ax.plot(t, X, lw=2, label='walker position', color='blue')
-        # ax.plot(t, mu*t, lw=1, label='population mean', color='black', ls='--')
-        # ax.fill_between(t, lower_bound, upper_bound, facecolor='yellow', alpha=0.5,
-        #                 label='1 sigma range')
-        # ax.legend(loc='upper left')
-        #
-        # # here we use the where argument to only fill the region where the
-        # # walker is above the population 1 sigma boundary
-        # ax.fill_between(t, upper_bound, X, where=X>upper_bound, facecolor='blue', alpha=0.5)
-        # ax.set_xlabel('num steps')
-        # ax.set_ylabel('position')
-        # ax.grid()
-
-        # self.SetSizer( self.Sizer )
-        # self.Layout()

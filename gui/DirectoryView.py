@@ -18,6 +18,8 @@ from images import icons
 from txtctrlModel import ModelTxtCtrl
 
 from ContextMenu import DirectoryContextMenu
+import utilities
+from shapely import wkt
 
 ###########################################################################
 ## Class directoryCtrlPanel
@@ -183,8 +185,73 @@ class DirectoryCtrlView(wx.Panel):
 
 
     def ShowDetails(self):
-        import txtctrlModel
+
+        # create the details view
         view = ModelTxtCtrl(self)
-        view.open(self.sb.GetValue())
+
+        # load the file contents
+        view.OnOpen(self.sb.GetValue())
+
+
+        # load the geometry data
+        view.PopulateSpatial(self.read_geoms(self.sb.GetValue(),'input'),'input')
+        view.PopulateSpatial(self.read_geoms(self.sb.GetValue(),'output'),'output')
+
+        # show the details view
         view.Show()
+
+
+    def read_geoms(self, filepath, type):
+
+        coords = []
+
+        # if this is a mdl file
+        if filepath.split('.')[-1] == 'mdl':
+
+            # parse the mdl file
+            dic = utilities.parse_config_without_validation(self.sb.GetValue())
+
+            geom = []
+
+            input_geoms = []
+            if type in dic:
+                for input in dic[type]:
+                    eset = input['elementset']
+
+                    # check if the value is a path
+                    if os.path.dirname(eset ) != '':
+                        if not os.path.isfile(eset):
+                            raise Exception('Could not find file: %s'%eset)
+
+                        geom,srs = utilities.read_shapefile(eset)
+
+                    # otherwise it must be a wkt
+                    else:
+                        value = ''
+                        try:
+                            value = eset.strip('\'').strip('"')
+                            geoms = wkt.loads(value)
+
+                            if 'Multi' in geoms.geometryType():
+                                    geom  = [g for g in geoms]
+                            else:
+                                geom = [geoms]
+
+                        except:
+                            raise Exception('Could not load WKT string: %s.'%value)
+
+
+
+                # build coord list
+                for g in geom:
+                    if g.type == 'Polygon':
+                        coords.append(list(g.boundary.coords))
+                    elif g.type == 'Point':
+                        coords.append(list(g.coords))
+                    elif g.type == 'LineString':
+                        coords.append(list(g.coords))
+
+        return coords
+
         #ShowModel.Show()
+

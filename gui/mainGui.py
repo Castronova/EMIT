@@ -127,11 +127,12 @@ class MainGui(wx.Frame):
 
     def OnSelect(self,event):
 
-        selected_page = self.bnb.GetPage(event.GetSelection())
+        try:
+            selected_page = self.bnb.GetPage(event.GetSelection())
 
-        if selected_page.Label == 'Series Selector':
-            selected_page.getKnownDatabases()
-
+            if selected_page.Label == 'Series Selector':
+                selected_page.getKnownDatabases()
+        except: pass
 
     def initMenu(self):
         ## Menu stuff

@@ -115,23 +115,40 @@ class ModelTxtCtrl ( wx.Frame ):
         #     i += 1
 
     def PopulateDetails(self, fileExtension):
+
+        # get a dictionary of config parameters
         d = utilities.parse_config_without_validation(fileExtension)
-        L = ((d[d.keys()[1]])[0])
-        C = d.keys()
 
-        # print C
-        print L
-        # print d.get('general')
-        general = d.pop('general')
-        # print general[0]
+        root = self.DetailTree.AddRoot('Data')
+        # get sorted sections
+        sections = sorted(d.keys())
 
-        for i in d.keys():
-            d.pop(i)
+        for section in sections:
+            # add this item as a group
+            g = self.DetailTree.AppendItem(root, section)
 
-        # print d.keys()
+            # all all sub elements
 
-        # self.DetailTree
+            if type(d[section]) == list:
+                items = d[section]
+                for item in items:
+                    p = g
+                    while len(item.keys()) > 0:
+                    #for item in d[section]:
+                        if 'variable_name_cv' in item:
+                            var = item.pop('variable_name_cv')
+                            p =  self.DetailTree.AppendItem(g,var)
 
+
+                        # get the next item in the dictionary
+                        i = item.popitem()
+
+
+                        if i[0] != 'type':
+                            k = self.DetailTree.AppendItem(p,i[0])
+                            self.DetailTree.AppendItem(k, i[1])
+            else:
+                self.DetailTree.AppendItem(g,d[section])
 
 
     def OnSave(self, event):
@@ -151,37 +168,58 @@ class MyTree(wx.TreeCtrl):
     def __init__(self,*args, **kwargs):
 
         wx.TreeCtrl.__init__(self, *args, **kwargs)
-        self.root = self.AddRoot('Model Information')
-        self.gen = self.AppendItem(self.root, 'General')
-        self.model = self.AppendItem(self.root, 'Model')
-        self.v = self.AppendItem(self.root, 'Variable')
+        # self.root = self.AddRoot('Model Information')
+        # self.gen = self.AppendItem(self.root, 'General')
+        # self.model = self.AppendItem(self.root, 'Model')
+        # self.v = self.AppendItem(self.root, 'Variable')
+        #
+        # self.sn=self.AppendItem(self.gen, 'Name: ')
+        # self.sc=self.AppendItem(self.gen, 'Start: ')
+        # self.sc=self.AppendItem(self.gen, 'End: ')
+        #
+        # self.mn=self.AppendItem(self.model, 'Name: ')
+        # self.md=self.AppendItem(self.model, 'Description: ')
+        #
+        # self.SetItemPyData(self.sc, 'value')
+        #
+        # self.vu=self.AppendItem(self.v, 'Name: ')
+        # self.vc=self.AppendItem(self.v, 'Element Set: ')
+        # self.vn=self.AppendItem(self.v, 'Unit: ')
 
-        self.sn=self.AppendItem(self.gen, 'Name: ')
-        self.sc=self.AppendItem(self.gen, 'Start: ')
-        self.sc=self.AppendItem(self.gen, 'End: ')
-
-        self.mn=self.AppendItem(self.model, 'Name: ')
-        self.md=self.AppendItem(self.model, 'Description: ')
-
-        self.SetItemPyData(self.sc, 'value')
-
-        self.vu=self.AppendItem(self.v, 'Name: ')
-        self.vc=self.AppendItem(self.v, 'Element Set: ')
-        self.vn=self.AppendItem(self.v, 'Unit: ')
-
+        #self.PopulateDetails()
 
         self.Bind(wx.EVT_LEFT_UP,self.OnLeftUp)
 
     def PopulateDetails(self, fileExtension):
+
+        return
+
         d = utilities.parse_config_without_validation(fileExtension)
 
-        d.pop(d.has_key())
+
+        #d.pop(d.has_key())
         # d.pop(d.keys())
 
-        print d.keys()
+        groups = sorted(d.keys())
 
-        for i in d:
-            return i
+        for group in groups:
+            # add this item as a group
+            g = self.AppendItem(self.root, group)
+
+            # all all sub elements
+
+            if type(d[group]) == dict:
+
+                for key, value in d[group].iteritems():
+                    self.AppendItem(g, value)
+
+
+
+
+        # print d.keys()
+        #
+        # for i in d:
+        #     return i
 
 
             # self.DetailTree

@@ -199,11 +199,11 @@ class DirectoryCtrlView(wx.Panel):
         view.PopulateSpatial(self.read_geoms(self.sb.GetValue(),'output'),'output')
 
         # show the details view
-        listview = MyTree(self)
+        #listview = MyTree(self)
         view.PopulateEdit(self.sb.GetValue())
         view.PopulateDetails(self.sb.GetValue())
 
-        listview.PopulateDetails(self.sb.GetValue())
+        #listview.PopulateDetails(self.sb.GetValue())
         view.Show()
 
 

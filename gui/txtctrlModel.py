@@ -116,12 +116,19 @@ class ModelTxtCtrl ( wx.Frame ):
 
     def PopulateDetails(self, fileExtension):
         d = utilities.parse_config_without_validation(fileExtension)
+        L = ((d[d.keys()[1]])[0])
+        C = d.keys()
 
-        for i in d:
-            return i
+        # print C
+        print L
+        # print d.get('general')
+        general = d.pop('general')
+        # print general[0]
 
+        for i in d.keys():
+            d.pop(i)
 
-        print d.keys()
+        # print d.keys()
 
         # self.DetailTree
 
@@ -144,32 +151,23 @@ class MyTree(wx.TreeCtrl):
     def __init__(self,*args, **kwargs):
 
         wx.TreeCtrl.__init__(self, *args, **kwargs)
-        self.root = self.AddRoot('Series')
-        self.m1 = self.AppendItem(self.root, 'Output Model')
-        self.m2 = self.AppendItem(self.root, 'Input Model')
+        self.root = self.AddRoot('Model Information')
+        self.gen = self.AppendItem(self.root, 'General')
+        self.model = self.AppendItem(self.root, 'Model')
         self.v = self.AppendItem(self.root, 'Variable')
 
-        self.sc=self.AppendItem(self.m1, 'ID: ')
+        self.sn=self.AppendItem(self.gen, 'Name: ')
+        self.sc=self.AppendItem(self.gen, 'Start: ')
+        self.sc=self.AppendItem(self.gen, 'End: ')
 
-        #tmpId = self.AppendItem(self.treeRoot, str(i))
-        #key = self.makeNewKey()
-        #self.items[key] = ['node', i]
+        self.mn=self.AppendItem(self.model, 'Name: ')
+        self.md=self.AppendItem(self.model, 'Description: ')
+
         self.SetItemPyData(self.sc, 'value')
 
-
-
-        self.sn=self.AppendItem(self.m1, 'Name: ')
-
-        self.sc=self.AppendItem(self.m2, 'ID: ')
-        self.sn=self.AppendItem(self.m2, 'Name: ')
-
-        self.vc=self.AppendItem(self.v, 'ID: ')
-        self.vn=self.AppendItem(self.v, 'Name: ')
-        self.vu=self.AppendItem(self.v, 'Units: ')
-        self.vvt=self.AppendItem(self.v, 'Value Type: ')
-        self.vts=self.AppendItem(self.v, 'Time Support: ')
-        self.vtu=self.AppendItem(self.v, 'Time Units: ')
-        self.vdt=self.AppendItem(self.v, 'Data Type: ')
+        self.vu=self.AppendItem(self.v, 'Name: ')
+        self.vc=self.AppendItem(self.v, 'Element Set: ')
+        self.vn=self.AppendItem(self.v, 'Unit: ')
 
 
         self.Bind(wx.EVT_LEFT_UP,self.OnLeftUp)
@@ -177,13 +175,16 @@ class MyTree(wx.TreeCtrl):
     def PopulateDetails(self, fileExtension):
         d = utilities.parse_config_without_validation(fileExtension)
 
+        d.pop(d.has_key())
+        # d.pop(d.keys())
+
+        print d.keys()
+
         for i in d:
             return i
 
 
-        print d.keys()
-
-        # self.DetailTree
+            # self.DetailTree
 
     def OnLeftUp(self, event):
 

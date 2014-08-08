@@ -118,6 +118,7 @@ class DirectoryCtrlView(wx.Panel):
                 ShowModel = ModelTxtCtrl(self)
                 ShowModel.Show()
                 Publisher.sendMessage('texteditpath', fileExtension=dirpath)
+                Publisher.sendMessage('textsavepath', fileExtension=dirpath)
 
         self.dirCtrl.clearItems()
 

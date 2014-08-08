@@ -38,8 +38,8 @@ class pnlCreateLink ( wx.Panel ):
 
         #self.m_listCtrl1 = wx.ListCtrl( self, wx.ID_ANY, wx.DefaultPosition, wx.Size(210, 200), wx.LC_REPORT )
         #self.m_listCtrl2 = wx.ListCtrl( self, wx.ID_ANY, wx.DefaultPosition, wx.Size(210, 200), wx.LC_REPORT )
-        #self.m_button1 = wx.Button( self, wx.ID_ANY, u"Create Link", wx.DefaultPosition, wx.DefaultSize, 0)
-        #self.m_button1.Disable()
+        #self.SaveButton = wx.Button( self, wx.ID_ANY, u"Create Link", wx.DefaultPosition, wx.DefaultSize, 0)
+        #self.SaveButton.Disable()
 
         self.outputs = MyTree(id=wxID_PNLCREATELINK,
                parent=self, pos=wx.Point(0, 0),
@@ -56,7 +56,7 @@ class pnlCreateLink ( wx.Panel ):
 
         #bSizer6.Add( self.m_listCtrl1, 0, wx.ALL, 5 )
         #Sizer6.Add( self.m_listCtrl2, 0, wx.ALL, 5 )
-        #bSizer5.Add( self.m_button1, 0, wx.ALL, 5 )
+        #bSizer5.Add( self.SaveButton, 0, wx.ALL, 5 )
 
 
         bSizer1.Add( bSizer5, 1, wx.EXPAND, 5 )
@@ -71,7 +71,7 @@ class pnlCreateLink ( wx.Panel ):
         # self.m_listCtrl1.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.InputDeselect)
         #self.m_listCtrl2.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OutputSelect)
         #self.m_listCtrl2.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.OutputDeselect)
-        #self.m_button1.Bind(wx.EVT_LEFT_DOWN, self.CreateLink)
+        #self.SaveButton.Bind(wx.EVT_LEFT_DOWN, self.CreateLink)
 
         #self.Bind
 
@@ -158,10 +158,10 @@ class pnlCreateLink ( wx.Panel ):
         if None not in self.links:
             #self.links = [self.selectedinput, self.selectedoutput]
 
-            #self.m_button1.Enable()
+            #self.SaveButton.Enable()
             Publisher.sendMessage("activateNextButton")
         else:
-            #self.m_button1.Disable()
+            #self.SaveButton.Disable()
             Publisher.sendMessage("deactivateNextButton")
 
     def InputSelect(self, input_item_name):

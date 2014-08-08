@@ -7,7 +7,7 @@ from osgeo import ogr
 test_geoms = ['sample_points_nad83.shp','sample_poly_nad83.shp']
 test_codes = ['points_nad83', 'poly_nad83']
 
-# open the shapefile
+# OnOpen the shapefile
 driver = ogr.GetDriverByName('ESRI Shapefile')
 
 

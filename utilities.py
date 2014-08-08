@@ -283,7 +283,7 @@ def read_shapefile(shp):
     returns (shapely geometry, spatial reference system)
     """
 
-    # open the shapefile
+    # OnOpen the shapefile
     driver = ogr.GetDriverByName('ESRI Shapefile')
     dataset = driver.Open(shp)
 

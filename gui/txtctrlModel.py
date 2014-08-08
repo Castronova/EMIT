@@ -19,7 +19,7 @@ class ModelTxtCtrl ( wx.Frame ):
 
     def __init__( self, parent ):
         wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition,
-                            size = wx.Size( 500,300 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+                            size = wx.Size( 500,500 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 
         self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
 
@@ -29,7 +29,7 @@ class ModelTxtCtrl ( wx.Frame ):
         self.txtctrlView = wx.Panel( self.txtNotebook, wx.ID_ANY, wx.DefaultPosition,
                                      wx.DefaultSize, wx.TAB_TRAVERSAL )
         self.TextDisplay = wx.TextCtrl( self.txtctrlView, wx.ID_ANY, wx.EmptyString,
-                                        wx.DefaultPosition, wx.Size(400, 600), wx.TE_MULTILINE|wx.TE_WORDWRAP )
+                                        wx.DefaultPosition, wx.Size(450, 350), wx.TE_MULTILINE|wx.TE_WORDWRAP )
 
         self.treectrlView = wx.Panel( self.txtNotebook, wx.ID_ANY, wx.DefaultPosition,
                                       wx.DefaultSize, wx.TAB_TRAVERSAL )
@@ -40,8 +40,13 @@ class ModelTxtCtrl ( wx.Frame ):
         self.txtNotebook.AddPage( self.txtctrlView, u"Edit", True )
         self.txtNotebook.AddPage( self.matplotView, u"Spatial View", False )
 
+        self.SaveButton = wx.Button( self.txtctrlView, wx.ID_ANY, u"Save Changes", wx.DefaultPosition, wx.DefaultSize, 0 )
+
+
         #InitSubscibers
-        Publisher.subscribe(self.open, 'texteditpath')
+        Publisher.subscribe(self.OnOpen, 'texteditpath')
+
+
 
         #Sizers
         NBSizer = wx.BoxSizer( wx.VERTICAL )
@@ -52,8 +57,13 @@ class ModelTxtCtrl ( wx.Frame ):
         self.treectrlView.SetSizer( treectrlSizer )
 
         txtctrlSizer.Add( self.TextDisplay, 0, wx.ALL|wx.EXPAND, 5 )
+        txtctrlSizer.Add( self.SaveButton, 0, wx.ALL, 5 )
         treectrlSizer.Add( self.IMPORTNEW, 0, wx.ALL, 5 )
         NBSizer.Add( self.txtNotebook, 1, wx.EXPAND |wx.ALL, 5 )
+
+
+        #Bindings
+        self.SaveButton.Bind( wx.EVT_BUTTON, self.OnSave )
 
         self.txtctrlView.Layout()
         txtctrlSizer.Fit( self.txtctrlView )
@@ -66,7 +76,7 @@ class ModelTxtCtrl ( wx.Frame ):
 
         self.Centre( wx.BOTH )
 
-    def open(self, fileExtension):
+    def OnOpen(self, fileExtension):
 
         # Open the file, read the contents and set them into
         # the text edit window
@@ -78,6 +88,17 @@ class ModelTxtCtrl ( wx.Frame ):
         self.SetTitle("Editor")
         # Later - could be enhanced to include a "changed" flag whenever
         # the text is actually changed, could also be altered on "save" ...
+
+    def OnSave(self, fileExtension):
+        Publisher.subscribe(self.OnSave, 'textsavepath')
+        # Grab the content to be saved
+        itcontains = self.TextDisplay.GetValue()
+
+        # Open the file for write, write, close
+
+        filehandle=open((fileExtension),'w')
+        filehandle.write(itcontains)
+        filehandle.close()
 
 class MyTree(wx.TreeCtrl):
 
@@ -161,7 +182,7 @@ class MyTree(wx.TreeCtrl):
 #         if dlg.ShowModal() == wx.ID_OK:
 #             self.filename = dlg.GetFilename()
 #             self.dirname = dlg.GetDirectory()
-#             f = open(os.path.join(self.dirname, self.filename), 'r')
+#             f = OnOpen(os.path.join(self.dirname, self.filename), 'r')
 #             self.control.SetValue(f.read())
 #             f.close()
 #         dlg.Destroy()

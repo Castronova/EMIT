@@ -13,7 +13,7 @@ def help_function(function):
 
     if function == 'save':
         pass
-    elif function == 'open':
+    elif function == 'OnOpen':
         pass
     elif function =='add':
         return  "> Usage:\t Adds models to a configuration.\n" \
@@ -67,7 +67,7 @@ def help():
             '\n> Advanced Functions \n' +\
             '> (for more function information use the command "help {function name} )" \n'+\
             '  save    - saves model configuration \n'+\
-            '  open    - opens existing configuration \n'+\
+            '  OnOpen    - opens existing configuration \n'+\
             '  add     - adds a model to the configuration \n' + \
             '  remove  - removes a model from the configuration \n'+\
             '  link    - creates link between two models \n' +\

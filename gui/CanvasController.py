@@ -612,8 +612,6 @@ class CanvasController:
 
             return False
 
-
-
     def getDatabases(self):
         knownconnections = self.cmd.get_db_connections()
         Publisher.sendMessage('getKnownDatabases',value=knownconnections)

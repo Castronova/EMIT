@@ -17,15 +17,14 @@ class Database(object):
     'ISBN', 'Author', 'Manufacturer', 'Title'
     """
     #----------------------------------------------------------------------
-    def __init__(self, resultid, sitename, sitecode, varname, varunit, timeunit, begintime, endtime):
+    def __init__(self, resultid, featurecode, variable, unit, data_type, org, date_created):
         self.resultid = resultid
-        self.sitename = sitename
-        self.sitecode = sitecode
-        self.variablename = varname
-        self.variableunit = varunit
-        self.Time = timeunit
-        self.begintime = begintime
-        self.endtime = endtime
+        self.featurecode = featurecode
+        self.variable = variable
+        self.unit = unit
+        self.data_type = data_type
+        self.org = org
+        self.date_created = date_created
 
 
 ########################################################################
@@ -40,7 +39,7 @@ class OlvSeries(FastObjectListView):
 
         self.initialSeries = [Database("","", "",
                                   "", "",
-                                  "", "", ""),
+                                  "", ""),
                          ]
 
         Publisher.subscribe(self.olvrefresh, "olvrefresh")
@@ -58,11 +57,14 @@ class OlvSeries(FastObjectListView):
 
     #----------------------------------------------------------------------
     def setSeries(self, data=None):
-        keys = ["ResultID","Sitename", "Sitecode", "VariableName", "VariableUnit", "Time",
-                  "BeginDateTime", "EndDateTime"]
+        # keys = ["ResultID","Sitename", "Sitecode", "VariableName", "VariableUnit", "Time",
+        #           "BeginDateTime", "EndDateTime"]
+        #
+        # values = ["resultid","sitename", "sitecode", "variablename", "variableunit", "Time", "begintime", "endtime"]
+        #
 
-        values = ["resultid","sitename", "sitecode", "variablename", "variableunit", "Time", "begintime", "endtime"]
-
+        keys = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
+        values = ["resultid", "featurecode", "variable", "unit", "data_type", "org", "date_created"]
         seriesColumns = [ ColumnDefn(key, align = "left", minimumWidth=100, valueGetter=value)
                             for key, value in OrderedDict(zip(keys, values)).iteritems()]
 

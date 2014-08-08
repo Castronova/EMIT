@@ -277,25 +277,15 @@ class TimeSeries(wx.Panel):
                 # loop through all of the returned data
                 data = []
                 for s in series:
-                    # resultid
-                    r = s.ResultID
+                    resultid = s.ResultID
+                    variable = s.VariableObj.VariableCode
+                    unit = s.UnitObj.UnitsName
+                    date_created = s.FeatureActionObj.ActionObj.BeginDateTime
+                    data_type = s.FeatureActionObj.ActionObj.ActionTypeCV
+                    featurecode = s.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode
+                    org = s.FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName
 
-                    # sitename
-                    sn = '?'
-                    # sitecode
-                    sc = '?'
-                    # variablename
-                    v = s.VariableObj.VariableCode
-                    # variableunit
-                    u = s.UnitObj.UnitsName
-                    # time unit
-                    t = '?'
-                    # begin
-                    b = '?'
-                    # end
-                    e = '?'
-
-                    data.extend([Database(r,sn,sc,v,u,t,b,e)])
+                    data.extend([Database(resultid,featurecode,variable,unit,data_type,org,date_created)])
 
                 # set the data objects in the olv control
                 self.m_olvSeries.SetObjects(data)

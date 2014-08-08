@@ -875,8 +875,12 @@ class FileDrop(wx.FileDropTarget):
 
                     dtype = datatypes.ModelTypes.FeedForward
 
+                    # load the model
+                    #self.cmd.add_model(model.attrib['mdl'], id=model.attrib['id'],type=dtype)
+                    model = self.cmd.add_model(dtype,attrib={'mdl':filenames[0]})
+
                     # load the model (returns model instance
-                    model = self.cmd.add_model(filenames[0],type=dtype)
+                    #model = self.cmd.add_model(filenames[0],type=dtype)
 
                     name = model.get_name()
                     modelid = model.get_id()

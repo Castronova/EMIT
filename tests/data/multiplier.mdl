@@ -23,6 +23,12 @@ unit_type_cv = international inch
 elementset = POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))
 epsg_code = 2921
 
+[output]
+variable_name_cv = multipliedValue2
+unit_type_cv = international inch
+elementset = POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))
+epsg_code = 2921
+
 [input]
 variable_name_cv = some_value
 unit_type_cv = international inch

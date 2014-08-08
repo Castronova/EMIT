@@ -1,14 +1,17 @@
 __author__ = 'tonycastronova'
 
 import unittest
-import odm2.api
+#import odm2.api
+
 
 
 import utilities
 from shapely.wkt import loads
 
-from odm2.api.ODMconnection import SessionFactory
-from odm2.api.ODM2.Core.model import *
+from ODMconnection import dbconnection
+
+from ODMconnection import SessionFactory
+from ODM2.Core.model import *
 from sqlalchemy import func
 
 import matplotlib.pyplot as plt
@@ -32,11 +35,13 @@ class testSpatial(unittest.TestCase):
         db = 'odm2CamelCase'
         user = 'tonycastronova'
         pwd = 'water'
-        dbconn = odm2.api.dbconnection()
-        connection_string = dbconn.createConnection(engine,address,db,user,pwd)
+        dbconn = dbconnection()
+        connection = dbconn.createConnection(engine,address,db,user,pwd)
 
-        self._session_factory = SessionFactory(connection_string, False)
-        self._session = self._session_factory.getSession()
+#        self._session_factory = SessionFactory(connection_string, False)
+        self._session = connection.getSession()
+
+
 
     def test_get_intersecting(self):
 

@@ -21,6 +21,7 @@ class ModelTxtCtrl ( wx.Frame ):
         wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition,
                             size = wx.Size( 500,500 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 
+
         self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
 
 
@@ -44,9 +45,7 @@ class ModelTxtCtrl ( wx.Frame ):
 
 
         #InitSubscibers
-        Publisher.subscribe(self.OnOpen, 'texteditpath')
-
-
+        #Publisher.subscribe(self.OnOpen, 'texteditpath')
 
         #Sizers
         NBSizer = wx.BoxSizer( wx.VERTICAL )

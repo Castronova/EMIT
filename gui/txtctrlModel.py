@@ -8,6 +8,7 @@ import wx
 import wx.xrc
 from pnlSpatial import pnlSpatial
 from pnlDetails import pnlDetails
+import utilities
 
 from wx.lib.pubsub import pub as Publisher
 
@@ -34,7 +35,10 @@ class ModelTxtCtrl ( wx.Frame ):
 
         self.treectrlView = wx.Panel( self.txtNotebook, wx.ID_ANY, wx.DefaultPosition,
                                       wx.DefaultSize, wx.TAB_TRAVERSAL )
-        self.IMPORTNEW = pnlDetails( self.treectrlView )
+        self.DetailTree = MyTree( self.treectrlView, id=wx.ID_ANY,
+                pos=wx.Point(0, 0),
+              size=wx.Size(423, 319), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT )
+        # self.DetailTree = wx.TreeCtrl( self.treectrlView )
         self.matplotView = pnlSpatial( self.txtNotebook )
 
         self.txtNotebook.AddPage( self.treectrlView, u"Detail View", False )
@@ -57,7 +61,8 @@ class ModelTxtCtrl ( wx.Frame ):
 
         txtctrlSizer.Add( self.TextDisplay, 0, wx.ALL|wx.EXPAND, 5 )
         txtctrlSizer.Add( self.SaveButton, 0, wx.ALL, 5 )
-        treectrlSizer.Add( self.IMPORTNEW, 0, wx.ALL, 5 )
+        treectrlSizer.Add( self.DetailTree, 0, wx.ALL, 5 )
+        # treectrlSizer.Add( self.DetailTree, 0, wx.ALL, 5 )
         NBSizer.Add( self.txtNotebook, 1, wx.EXPAND |wx.ALL, 5 )
 
 
@@ -75,7 +80,7 @@ class ModelTxtCtrl ( wx.Frame ):
 
         self.Centre( wx.BOTH )
 
-    def OnOpen(self, fileExtension):
+    def PopulateEdit(self, fileExtension):
 
         # Open the file, read the contents and set them into
         # the text edit window
@@ -87,6 +92,19 @@ class ModelTxtCtrl ( wx.Frame ):
         self.SetTitle("Editor")
         # Later - could be enhanced to include a "changed" flag whenever
         # the text is actually changed, could also be altered on "save" ...
+
+    def PopulateDetails(self, fileExtension):
+        d = utilities.parse_config_without_validation(fileExtension)
+
+        for i in d:
+            return i
+
+
+        print d.keys()
+
+        # self.DetailTree
+
+
 
     def OnSave(self, fileExtension):
         Publisher.subscribe(self.OnSave, 'textsavepath')
@@ -101,11 +119,49 @@ class ModelTxtCtrl ( wx.Frame ):
 
 class MyTree(wx.TreeCtrl):
 
-    def __init__(self, parent, id, pos, size, style):
+    def __init__(self,*args, **kwargs):
 
-        wx.TreeCtrl.__init__(self, parent, id, pos, size, style)
+        wx.TreeCtrl.__init__(self, *args, **kwargs)
+        self.root = self.AddRoot('Series')
+        self.m1 = self.AppendItem(self.root, 'Output Model')
+        self.m2 = self.AppendItem(self.root, 'Input Model')
+        self.v = self.AppendItem(self.root, 'Variable')
+
+        self.sc=self.AppendItem(self.m1, 'ID: ')
+
+        #tmpId = self.AppendItem(self.treeRoot, str(i))
+        #key = self.makeNewKey()
+        #self.items[key] = ['node', i]
+        self.SetItemPyData(self.sc, 'value')
+
+
+
+        self.sn=self.AppendItem(self.m1, 'Name: ')
+
+        self.sc=self.AppendItem(self.m2, 'ID: ')
+        self.sn=self.AppendItem(self.m2, 'Name: ')
+
+        self.vc=self.AppendItem(self.v, 'ID: ')
+        self.vn=self.AppendItem(self.v, 'Name: ')
+        self.vu=self.AppendItem(self.v, 'Units: ')
+        self.vvt=self.AppendItem(self.v, 'Value Type: ')
+        self.vts=self.AppendItem(self.v, 'Time Support: ')
+        self.vtu=self.AppendItem(self.v, 'Time Units: ')
+        self.vdt=self.AppendItem(self.v, 'Data Type: ')
+
 
         self.Bind(wx.EVT_LEFT_UP,self.OnLeftUp)
+
+    def PopulateDetails(self, fileExtension):
+        d = utilities.parse_config_without_validation(fileExtension)
+
+        for i in d:
+            return i
+
+
+        print d.keys()
+
+        # self.DetailTree
 
     def OnLeftUp(self, event):
 
@@ -113,79 +169,3 @@ class MyTree(wx.TreeCtrl):
 
         data = self.GetPyData(item)
         if data is not None: print data
-
-    def Populate(self, exchangeitems):
-
-        root = self.AddRoot('Series')
-
-
-        for exchangeitem in exchangeitems:
-            item = self.AppendItem(root,exchangeitem.name())
-            self.SetItemPyData(item, exchangeitem.name())
-
-            variable = self.AppendItem(item, 'Variable')
-            self.SetItemPyData(variable, exchangeitem.name())
-            vname = self.AppendItem(variable, 'Name: %s' % exchangeitem.variable().VariableNameCV())
-            self.SetItemPyData(vname, exchangeitem.name())
-            vdef = self.AppendItem(variable, 'Def: %s' % exchangeitem.variable().VariableDefinition())
-            self.SetItemPyData(vdef, exchangeitem.name())
-
-            unit = self.AppendItem(item, 'Unit')
-            self.SetItemPyData(unit, exchangeitem.name())
-            uname = self.AppendItem(unit, 'Name: %s' % exchangeitem.unit().UnitName())
-            self.SetItemPyData(uname, exchangeitem.name())
-            uabbv = self.AppendItem(unit,'Abbv: %s' % exchangeitem.unit().UnitAbbreviation())
-            self.SetItemPyData(uabbv, exchangeitem.name())
-            utype = self.AppendItem(unit,'Type: %s' % exchangeitem.unit().UnitTypeCV())
-            self.SetItemPyData(utype, exchangeitem.name())
-
-# class MainWindow(wx.Frame):
-#     def __init__(self, parent, title):
-#         wx.Frame.__init__(self, parent, title=title, size=(500,400))
-#         self.control = wx.TextCtrl(self, style=wx.TE_MULTILINE)
-#         self.CreateStatusBar() # A StatusBar in the bottom of the window
-#
-#         # Setting up the menu.
-#         filemenu= wx.Menu()
-#
-#         # wx.ID_ABOUT and wx.ID_EXIT are standard ids provided by wxWidgets.
-#         menuAbout = filemenu.Append(wx.ID_ABOUT, "&About"," Information about this program")
-#         menuExit = filemenu.Append(wx.ID_EXIT,"E&xit"," Terminate the program")
-#         menuOpen = filemenu.Append(wx.ID_OPEN,"O&pen"," Open File")
-#
-#         # Creating the menubar.
-#         menuBar = wx.MenuBar()
-#         menuBar.Append(filemenu,"&File") # Adding the "filemenu" to the MenuBar
-#         self.SetMenuBar(menuBar)  # Adding the MenuBar to the Frame content.
-#
-#         # Set events.
-#         self.Bind(wx.EVT_MENU, self.OnAbout, menuAbout)
-#         self.Bind(wx.EVT_MENU, self.OnExit, menuExit)
-#         self.Bind(wx.EVT_MENU, self.OnOpen, menuOpen)
-#
-#         self.Show(True)
-#
-#     def OnAbout(self,e):
-#         # A message dialog box with an OK button. wx.OK is a standard ID in wxWidgets.
-#         dlg = wx.MessageDialog( self, "A small text editor", "About Sample Editor", wx.OK)
-#         dlg.ShowModal() # Show it
-#         dlg.Destroy() # finally destroy it when finished.
-#
-#     def OnExit(self,e):
-#         self.Close(True)  # Close the frame.
-#
-#     def OnOpen(self,e):
-#         """ Open a file"""
-#         self.dirname = ''
-#         dlg = wx.FileDialog(self, "Choose a file", self.dirname, "", "*.*", wx.OPEN)
-#         if dlg.ShowModal() == wx.ID_OK:
-#             self.filename = dlg.GetFilename()
-#             self.dirname = dlg.GetDirectory()
-#             f = OnOpen(os.path.join(self.dirname, self.filename), 'r')
-#             self.control.SetValue(f.read())
-#             f.close()
-#         dlg.Destroy()
-#
-# app = wx.App(False)
-# frame = ModelTxtCtrl(None)
-# app.MainLoop()

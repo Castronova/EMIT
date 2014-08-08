@@ -15,7 +15,7 @@ from wx.lib.pubsub import pub as Publisher
 
 from DirectoryLstCtrl import DirectoryListCtrl
 from images import icons
-from txtctrlModel import ModelTxtCtrl
+from txtctrlModel import ModelTxtCtrl, MyTree
 
 from ContextMenu import DirectoryContextMenu
 
@@ -185,6 +185,9 @@ class DirectoryCtrlView(wx.Panel):
     def ShowDetails(self):
         import txtctrlModel
         view = ModelTxtCtrl(self)
-        view.open(self.sb.GetValue())
+        listview = MyTree(self)
+        view.PopulateEdit(self.sb.GetValue())
+        listview.PopulateDetails(self.sb.GetValue())
+
         view.Show()
         #ShowModel.Show()

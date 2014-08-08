@@ -554,7 +554,7 @@ def get_ts_from_link(dbapi, dbactions, links, target_model):
 
     mapping = {}
     timeseries = {}
-    tname = target_model.get_name()
+    tname = target_model.name()
     for id,link_inst in links.iteritems():
         f,t = link_inst.get_link()
         if t[0].get_name() == tname:

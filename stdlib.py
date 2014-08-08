@@ -389,13 +389,13 @@ class ExchangeItem(object):
         # self.__calculate_start_and_end_times(value)
         pass
 
-    # def __calculate_start_and_end_times(self,dv):
-    #     #for dv in datavalues:
-    #     if dv.earliest_date() is not None and dv.latest_date() is not None:
-    #         if dv.earliest_date() < self.StartTime:
-    #             self.StartTime = dv.earliest_date()
-    #         if dv.latest_date() > self.EndTime:
-    #             self.EndTime = dv.latest_date()
+    def __calculate_start_and_end_times(self,dv):
+        #for dv in datavalues:
+        if dv.earliest_date() is not None and dv.latest_date() is not None:
+            if dv.earliest_date() < self.StartTime:
+                self.StartTime = dv.earliest_date()
+            if dv.latest_date() > self.EndTime:
+                self.EndTime = dv.latest_date()
 
     def session(self,value=None):
         """

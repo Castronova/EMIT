@@ -23,6 +23,8 @@ class ModelTxtCtrl ( wx.Frame ):
                             size = wx.Size( 500,500 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 
 
+        self.current_file = None
+
         self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
 
 
@@ -84,6 +86,8 @@ class ModelTxtCtrl ( wx.Frame ):
 
         # Open the file, read the contents and set them into
         # the text edit window
+        self.current_file = fileExtension
+
         filehandle=open(fileExtension)
         self.TextDisplay.SetValue(filehandle.read())
         filehandle.close()
@@ -92,6 +96,23 @@ class ModelTxtCtrl ( wx.Frame ):
         self.SetTitle("Editor")
         # Later - could be enhanced to include a "changed" flag whenever
         # the text is actually changed, could also be altered on "save" ...
+
+
+    def PopulateSpatial(self, coordlist, type):
+        #pass
+
+
+        #colors = self.matplotView.buildGradientColor(len(coordlist),cmap='jet')
+
+        if type == 'input':
+            self.matplotView.input_data(coordlist)
+        elif type == 'output':
+            self.matplotView.output_data(coordlist)
+        #
+        # i = 0
+        # for coords in coordlist:
+        #     self.matplotView.addSeries(zip(*coords),color=colors[i])
+        #     i += 1
 
     def PopulateDetails(self, fileExtension):
         d = utilities.parse_config_without_validation(fileExtension)
@@ -113,16 +134,17 @@ class ModelTxtCtrl ( wx.Frame ):
 
 
 
-    def OnSave(self, fileExtension):
+    def OnSave(self, event):
         Publisher.subscribe(self.OnSave, 'textsavepath')
         # Grab the content to be saved
-        itcontains = self.TextDisplay.GetValue()
+        itcontains = self.TextDisplay.GetValue().encode('utf-8').strip()
 
         # Open the file for write, write, close
 
-        filehandle=open((fileExtension),'w')
+        filehandle=open((self.current_file),'w')
         filehandle.write(itcontains)
         filehandle.close()
+
 
 class MyTree(wx.TreeCtrl):
 

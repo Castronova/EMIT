@@ -23,6 +23,8 @@ class ModelTxtCtrl ( wx.Frame ):
                             size = wx.Size( 500,500 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 
 
+        self.current_file = None
+
         self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
 
 
@@ -84,6 +86,8 @@ class ModelTxtCtrl ( wx.Frame ):
 
         # Open the file, read the contents and set them into
         # the text edit window
+        self.current_file = fileExtension
+
         filehandle=open(fileExtension)
         self.TextDisplay.SetValue(filehandle.read())
         filehandle.close()
@@ -123,14 +127,14 @@ class ModelTxtCtrl ( wx.Frame ):
 
 
 
-    def OnSave(self, fileExtension):
+    def OnSave(self, event):
         Publisher.subscribe(self.OnSave, 'textsavepath')
         # Grab the content to be saved
-        itcontains = self.TextDisplay.GetValue()
+        itcontains = self.TextDisplay.GetValue().encode('utf-8').strip()
 
         # Open the file for write, write, close
 
-        filehandle=open((fileExtension),'w')
+        filehandle=open((self.current_file),'w')
         filehandle.write(itcontains)
         filehandle.close()
 

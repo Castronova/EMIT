@@ -117,6 +117,7 @@ class OlvSeries(FastObjectListView):
         xlabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
         title = '%s' % (resobj.VariableObj.VariableCode)
 
+
         # plot the data
         PlotFrame = MatplotFrame(self.Parent, x, y, title, xlabel)
         PlotFrame.Show()

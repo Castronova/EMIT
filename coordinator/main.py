@@ -472,19 +472,19 @@ class Coordinator(object):
         :return:
         """
 
-        name = model.get_name()
+        name = model.name()
         for id,link_inst in self.__links.iteritems():
             f,t = link_inst.get_link()
 
             if t[0].get_name() == name:
                 for item in exchangeitems:
-                    if t[1].get_id() == item.get_id():
+                    if t[1].name() == item.name():
                         self.__links[id] = Link(id, f[0], t[0], f[1], item)
                         #t[1] = item
 
             elif f[0].get_name() == name:
                 for item in exchangeitems:
-                    if f[1].get_id() == item.get_id():
+                    if f[1].name() == item.name():
                         self.__links[id] = Link(id, f[0], t[0], item, t[1])
                         #f[1] = item
 
@@ -583,48 +583,49 @@ class Coordinator(object):
             st = time.time()
 
             # get the current model instance
-            model = self.get_model_by_id(modelid)
+            model_obj = self.get_model_by_id(modelid)
+            model_inst = model_obj.get_instance()
 
             print '> '
-            print '> ------------------'+len(model.get_name())*'-'
-            print '> Executing module: %s ' % model.get_name()
-            print '> ------------------'+len(model.get_name())*'-'
+            print '> ------------------'+len(model_inst.name())*'-'
+            print '> Executing module: %s ' % model_inst.name()
+            print '> ------------------'+len(model_inst.name())*'-'
 
             #  retrieve inputs from database
             sys.stdout.write('> [1 of 4] Retrieving input data... ')
-            input_data =  get_ts_from_link(simulation_dbapi,self._dbactions, self.__links, model)
+            input_data =  get_ts_from_link(simulation_dbapi,self._dbactions, self.__links, model_inst)
             sys.stdout.write('done\n')
 
             sys.stdout.write('> [2 of 4] Performing calculation... ')
             # pass these inputs ts to the models' run function
-            model.get_instance().run(input_data)
+            model_inst.run(input_data)
             sys.stdout.write('done\n')
 
             # save these results
             sys.stdout.write('> [3 of 4] Saving calculations to database... ')
-            exchangeitems = model.get_instance().save()
+            exchangeitems = model_inst.save()
 
 
             # only insert data if its not already in a database
-            if type(model.get_instance()) != wrappers.odm2_data.odm2:
+            if type(model_inst) != wrappers.odm2_data.odm2:
 
                 #  set these input data as exchange items in stdlib or wrapper class
                 simulation = simulation_dbapi.create_simulation(preferences_path=preferences,
-                                               config_params=model.get_config_params(),
+                                               config_params=model_obj.get_config_params(),
                                                output_exchange_items=exchangeitems,
                                                )
 
                 sys.stdout.write('done\n')
 
                 # store the database action associated with this simulation
-                self._dbactions[model.get_name()] = simulation.ActionID
+                self._dbactions[model_inst.name()] = simulation.ActionID
 
             else:
-                self._dbactions[model.get_instance().name()] = model.get_instance().actionid()
+                self._dbactions[model_inst.name()] = model_inst.actionid()
 
             # update links
             sys.stdout.write('> [4 of 4] Updating links... ')
-            self.update_links(model,exchangeitems)
+            self.update_links(model_inst,exchangeitems)
             sys.stdout.write('done\n')
 
             print '> module simulation completed in %3.2f seconds' % (time.time() - st)

@@ -63,8 +63,9 @@ class odm2(object):
         self.__output=item
         self.__desc=obj.VariableObj.VariableDefinition
         self.__current_time = self.simulation_start()
-        self.__actionid = obj.FeatureActionObj.ActionObj.ActionID
+        #self.__actionid = obj.FeatureActionObj.ActionObj.ActionID
         self.__obj = obj
+        self.__resultid = obj.ResultID
 
     def save(self):
         return [self.__output]
@@ -74,9 +75,12 @@ class odm2(object):
 
     def obj(self):
         return self.__obj
+    #
+    # def actionid(self):
+    #     return self.__actionid
 
-    def actionid(self):
-        return self.__actionid
+    def resultid(self):
+        return self.__resultid
 
     def id(self):
         return self.__id

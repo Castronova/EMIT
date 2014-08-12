@@ -173,7 +173,7 @@ class Coordinator(object):
         self._db = {}
         self.__default_db = None
 
-        self._dbactions = {}
+        self._dbresults = {}
 
     def clear_all(self):
         self.__links = {}
@@ -593,7 +593,7 @@ class Coordinator(object):
 
             #  retrieve inputs from database
             sys.stdout.write('> [1 of 4] Retrieving input data... ')
-            input_data =  get_ts_from_link(simulation_dbapi,self._dbactions, self.__links, model_inst)
+            input_data =  get_ts_from_link(simulation_dbapi,self._dbresults, self.__links, model_inst)
             sys.stdout.write('done\n')
 
             sys.stdout.write('> [2 of 4] Performing calculation... ')
@@ -618,10 +618,10 @@ class Coordinator(object):
                 sys.stdout.write('done\n')
 
                 # store the database action associated with this simulation
-                self._dbactions[model_inst.name()] = simulation.ActionID
+                self._dbresults[model_inst.name()] = (simulation.ResultID,'action')
 
             else:
-                self._dbactions[model_inst.name()] = model_inst.actionid()
+                self._dbresults[model_inst.name()] = (model_inst.resultid(), 'result')
 
             # update links
             sys.stdout.write('> [4 of 4] Updating links... ')

@@ -329,13 +329,17 @@ class postgresdb():
 
         return sim
 
-    def get_simulation_results(self,simulationName, actionid, from_variableName, from_unitName, to_variableName, startTime, endTime):
+    def get_simulation_results(self,simulationName, actionid, actiontype, from_variableName, from_unitName, to_variableName, startTime, endTime):
 
         # get the simulation object from simulationName
         #simulation = self._simread.getSimulationByActionID(actionID=actionid)
 
+
         # get the simulation results
-        results = self._coreread.getResultByActionID(actionID=actionid)
+        if actiontype == 'action':
+            results = self._coreread.getResultAndGeomByActionID(actionID=actionid)
+        else:
+            results = [self._coreread.getResultAndGeomByID(resultID=actionid)]
 
         exchangeitems = {}
         timeseries = []

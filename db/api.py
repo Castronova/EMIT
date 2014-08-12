@@ -270,7 +270,7 @@ class postgresdb():
                                                                                      datavalues=values,
                                                                                      datetimes=dates,
                                                                                      datetimeoffsets=[-6 for i in range(len(dates))],
-                                                                                     censorcodecv='unknown',
+                                                                                     censorcodecv='nc',
                                                                                      qualitycodecv='unknown',
                                                                                      timeaggregationinterval=timestepvalue,
                                                                                      timeaggregationunit=timestepunit.UnitsID)

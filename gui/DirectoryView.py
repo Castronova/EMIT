@@ -218,10 +218,13 @@ class DirectoryCtrlView(wx.Panel):
             dic = utilities.parse_config_without_validation(self.sb.GetValue())
 
             geom = []
-
-            input_geoms = []
             if type in dic:
                 for input in dic[type]:
+
+                    # return empty coord array if no elementset is defined
+                    if 'elementset' not in input:
+                        return []
+
                     eset = input['elementset']
 
                     # check if the value is a path

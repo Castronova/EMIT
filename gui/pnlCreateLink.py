@@ -42,8 +42,8 @@ class pnlCreateLink ( wx.Panel ):
                parent=self, pos=wx.Point(220, 0),
               size=wx.Size(210, 200), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT)
 
-        self.output_text = wx.StaticText(self,id=wxID_PNLCREATELINK,pos=wx.Point(0,210),size=wx.Size(210,10))
-        self.input_text  = wx.StaticText(self,id=wxID_PNLCREATELINK,pos=wx.Point(210,200),size=wx.Size(210,10))
+        #self.output_text = wx.StaticText(self,id=wxID_PNLCREATELINK,pos=wx.Point(0,210),size=wx.Size(210,10))
+        #self.input_text  = wx.StaticText(self,id=wxID_PNLCREATELINK,pos=wx.Point(210,200),size=wx.Size(210,10))
 
         bSizer1.Add( bSizer5, 1, wx.EXPAND, 5 )
 
@@ -84,14 +84,14 @@ class pnlCreateLink ( wx.Panel ):
         if not item.IsOk():
             # nothing selected
             self.OutputDeselect(event)
-            self.output_text.SetLabel('')
+            #self.output_text.SetLabel('')
 
         else:
 
             # get the data for the selected item
             data = self.outputs.GetPyData(item)
 
-            self.output_text.SetLabel(data)
+            #self.output_text.SetLabel(data)
 
             self.OutputSelect(data)
 
@@ -106,13 +106,13 @@ class pnlCreateLink ( wx.Panel ):
         if not item.IsOk():
             # nothing selected
             self.OutputDeselect(event)
-            self.input_text.SetLabel('')
+            #self.input_text.SetLabel('')
         else:
 
             # get the data for the selected item
             data = self.inputs.GetPyData(item)
 
-            self.input_text.SetLabel(data)
+            #self.input_text.SetLabel(data)
 
             self.InputSelect(data)
 

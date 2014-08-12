@@ -99,20 +99,10 @@ class ModelTxtCtrl ( wx.Frame ):
 
 
     def PopulateSpatial(self, coordlist, type):
-        #pass
-
-
-        #colors = self.matplotView.buildGradientColor(len(coordlist),cmap='jet')
-
         if type == 'input':
             self.matplotView.input_data(coordlist)
         elif type == 'output':
             self.matplotView.output_data(coordlist)
-        #
-        # i = 0
-        # for coords in coordlist:
-        #     self.matplotView.addSeries(zip(*coords),color=colors[i])
-        #     i += 1
 
     def PopulateDetails(self, fileExtension):
 
@@ -168,61 +158,8 @@ class MyTree(wx.TreeCtrl):
     def __init__(self,*args, **kwargs):
 
         wx.TreeCtrl.__init__(self, *args, **kwargs)
-        # self.root = self.AddRoot('Model Information')
-        # self.gen = self.AppendItem(self.root, 'General')
-        # self.model = self.AppendItem(self.root, 'Model')
-        # self.v = self.AppendItem(self.root, 'Variable')
-        #
-        # self.sn=self.AppendItem(self.gen, 'Name: ')
-        # self.sc=self.AppendItem(self.gen, 'Start: ')
-        # self.sc=self.AppendItem(self.gen, 'End: ')
-        #
-        # self.mn=self.AppendItem(self.model, 'Name: ')
-        # self.md=self.AppendItem(self.model, 'Description: ')
-        #
-        # self.SetItemPyData(self.sc, 'value')
-        #
-        # self.vu=self.AppendItem(self.v, 'Name: ')
-        # self.vc=self.AppendItem(self.v, 'Element Set: ')
-        # self.vn=self.AppendItem(self.v, 'Unit: ')
-
-        #self.PopulateDetails()
 
         self.Bind(wx.EVT_LEFT_UP,self.OnLeftUp)
-
-    def PopulateDetails(self, fileExtension):
-
-        return
-
-        d = utilities.parse_config_without_validation(fileExtension)
-
-
-        #d.pop(d.has_key())
-        # d.pop(d.keys())
-
-        groups = sorted(d.keys())
-
-        for group in groups:
-            # add this item as a group
-            g = self.AppendItem(self.root, group)
-
-            # all all sub elements
-
-            if type(d[group]) == dict:
-
-                for key, value in d[group].iteritems():
-                    self.AppendItem(g, value)
-
-
-
-
-        # print d.keys()
-        #
-        # for i in d:
-        #     return i
-
-
-            # self.DetailTree
 
     def OnLeftUp(self, event):
 

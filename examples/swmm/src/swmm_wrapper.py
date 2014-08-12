@@ -8,7 +8,7 @@ from shapely.geometry import *
 from stdlib import Geometry, DataValues
 import parse_swmm as ps
 from wrappers.feed_forward import feed_forward_wrapper
-
+import uuid
 import re
 
 """
@@ -29,15 +29,19 @@ class swmm(feed_forward_wrapper):
         #--- get input and output directories ---
         cwd = abspath(dirname(__file__))
         self.exe = join(cwd,'swmm5')
-        self.inp = join(self.__datadir,'sim.inp')
-        self.rpt = join(self.__datadir,'sim.rpt')
-        self.out = join(self.__datadir,'sim.out')
+        self.sim_input = join(self.__datadir,config_params['data'][0]['input'])
+
+        # generate random names for inp, rpt, and out
+        self.swmm_file_name = uuid.uuid4().hex[:5]
+        self.inp = join(self.__datadir,self.swmm_file_name+'.inp')
+        self.rpt = join(self.__datadir,self.swmm_file_name+'.rpt')
+        self.out = join(self.__datadir,self.swmm_file_name+'.out')
         self.console = open(join(self.__datadir,'console.out'),'w')
 
         #--- read input file and build geometries ---
 
         # build link geometries
-        link_geoms = self.build_swmm_geoms(self.inp,'vertices')
+        link_geoms = self.build_swmm_geoms(self.sim_input,'vertices')
 
         # get the stage output exchange item
         stage = self.get_output_by_name('Hydraulic_head')
@@ -57,6 +61,8 @@ class swmm(feed_forward_wrapper):
     def run(self,inputs):
 
         # todo: use input rainfall to write inp file
+        self.set_rainfall_input(inputs)
+
 
         # run the simulation
         subprocess.call([self.exe,self.inp,self.rpt,self.out], stdout=self.console)
@@ -147,6 +153,28 @@ class swmm(feed_forward_wrapper):
 
 
         return geoms
+
+
+    def set_rainfall_input(self, inputs):
+
+        '''
+        [RAINGAGES]
+        ;;               Rain      Time   Snow   Data
+        ;;Name           Type      Intrvl Catch  Source
+        ;;-------------- --------- ------ ------ ----------
+        300_main_street  CUMULATIVE 0:01   1.0    TIMESERIES 300_main_st_7_11_2012
+        '''
+
+        # open the input file (original)
+        sim = open(self.sim_input,'r')
+        in_lines = sim.readall()
+
+        # write simulation specific input file
+        f = open(self.inp,'w')
+        f.write(in_lines)
+
+
+
 
 
     def find(self, lst, predicate):

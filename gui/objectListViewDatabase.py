@@ -65,7 +65,7 @@ class OlvSeries(FastObjectListView):
 
         keys = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
         values = ["resultid", "featurecode", "variable", "unit", "data_type", "org", "date_created"]
-        seriesColumns = [ ColumnDefn(key, align = "left", minimumWidth=100, valueGetter=value)
+        seriesColumns = [ ColumnDefn(key, align = "left", minimumWidth=150, valueGetter=value)
                             for key, value in OrderedDict(zip(keys, values)).iteritems()]
 
         self.SetColumns(seriesColumns)

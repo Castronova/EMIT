@@ -102,8 +102,9 @@ def validate_config_ini(ini_path):
                         raise ValueError("Incorrect data format, should be "+getattr(ini_types, option))
                 else:
                     # validate data type
-                    if not isinstance(val,type(getattr(ini_types, option))):
-                            raise Exception(option+' is not of type '+getattr(ini_types, option))
+
+                    #if not isinstance(val,type(getattr(ini_types, option))):
+                    #        raise Exception(option+' is not of type '+getattr(ini_types, option))
 
                     if not ignorecv:
                         # check variable cv (i.e. lookup table)

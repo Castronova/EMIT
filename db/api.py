@@ -329,11 +329,16 @@ class postgresdb():
 
         return sim
 
-    def get_simulation_results(self,simulationName, actionid, actiontype, from_variableName, from_unitName, to_variableName, startTime, endTime):
+    def get_simulation_results(self,simulationName, dbactions, from_variableName, from_unitName, to_variableName, startTime, endTime):
 
         # get the simulation object from simulationName
         #simulation = self._simread.getSimulationByActionID(actionID=actionid)
 
+        actionid, session, actiontype = dbactions[simulationName]
+
+        # initialize the session
+        self._coreread = readCore(session)
+        self._resread = readResults(session)
 
         # get the simulation results
         if actiontype == 'action':
@@ -358,6 +363,9 @@ class postgresdb():
 
             # get the timeseries values
             values = self._resread.getTimeSeriesValuesByTime(resultid=resultid,starttime=startTime,endtime=endTime)
+
+            if len(values) == 0:
+                raise Exception('> [Error] Could not find any data for specified time range: %s, %s - %s'%(from_variableName,startTime,endTime))
 
             # save each timeseries to a geometry
             dv = stdlib.DataValues(timeseries=[(value.ValueDateTime,value.DataValue) for value in values])

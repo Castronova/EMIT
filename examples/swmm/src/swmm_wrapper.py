@@ -10,6 +10,7 @@ import parse_swmm as ps
 from wrappers.feed_forward import feed_forward_wrapper
 import uuid
 import re
+import datetime
 
 """
 NOTES:
@@ -165,15 +166,47 @@ class swmm(feed_forward_wrapper):
         300_main_street  CUMULATIVE 0:01   1.0    TIMESERIES 300_main_st_7_11_2012
         '''
 
+        # get the time series associated with the input exchange item
+        geom, eitem = inputs.items()[0]
+        data = eitem.values()[0]
+        d, v = data.get_dates_values()
+        dates = list(d)
+        values = list(v)
+
         # open the input file (original)
         sim = open(self.sim_input,'r')
-        in_lines = sim.readall()
+        in_lines = sim.readlines()
 
         # write simulation specific input file
         f = open(self.inp,'w')
-        f.write(in_lines)
+        for line in in_lines:
+            f.write(line)
+
+        # timeseries values must be relative to the start of the swmm simulation
+        offset = (self.simulation_start() - dates[0]).total_seconds()
+        for i in xrange(0, len(dates)):
+            dates[i] -= datetime.timedelta(seconds=offset)
 
 
+        # write the rainfall data
+        f.write('\n[TIMESERIES\n')
+        f.write(';;Name           Date       Time       Value   \n')
+        f.write(';;-------------- ---------- ---------- ----------\n')
+        for i in xrange(0, len(dates)):
+
+            f.write('rain_gage_data\t%s\t%s\t%2.3f\n' %(dates[i].strftime('%m/%d/%Y'), dates[i].strftime('%H:%M'),values[i]))
+
+
+        # add a raingage
+        f.write('\n[RAINGAGES]\n')
+        f.write(';;;\n')
+        f.write(';;Name           Type      Intrvl Catch  Source\n')
+        f.write(';;-------------- --------- ------ ------ ----------\n')
+        f.write('300_main_street  CUMULATIVE 0:01   1.0    TIMESERIES rain_gage_data\n')
+
+        f.close()
+
+        print 'here'
 
 
 

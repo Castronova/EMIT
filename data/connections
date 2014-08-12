@@ -1,4 +1,13 @@
 [connection]
+name = ODM2 Simulation database - Live
+desc = PostgreSQL database with hydrology simulations
+engine = postgresql
+address = castro-server.bluezone.usu.edu
+db = ODM2-Live
+user = postgres
+pwd = postgres
+
+[connection]
 name = ODM2 Simulation database
 desc = PostgreSQL database with hydrology simulations
 engine = postgresql
@@ -18,11 +27,3 @@ user = mysql
 pwd = mysql
 
 
-[connection]
-name = ODM2 Simulation database - Live
-desc = PostgreSQL database with hydrology simulations
-engine = postgresql
-address = castro-server.bluezone.usu.edu
-db = ODM2-Live
-user = postgres
-pwd = postgres

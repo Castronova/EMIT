@@ -580,11 +580,17 @@ class Coordinator(object):
         # loop through models and execute run
         for modelid in exec_order:
 
+
+
             st = time.time()
 
             # get the current model instance
             model_obj = self.get_model_by_id(modelid)
             model_inst = model_obj.get_instance()
+
+            # set the default session if it hasn't been specified otherwise
+            if model_inst.session() is None:
+                model_inst.session(self.get_default_db()['session'])
 
             print '> '
             print '> ------------------'+len(model_inst.name())*'-'
@@ -618,10 +624,10 @@ class Coordinator(object):
                 sys.stdout.write('done\n')
 
                 # store the database action associated with this simulation
-                self._dbresults[model_inst.name()] = (simulation.ResultID,'action')
+                self._dbresults[model_inst.name()] = (simulation.ResultID,model_inst.session(),'action')
 
             else:
-                self._dbresults[model_inst.name()] = (model_inst.resultid(), 'result')
+                self._dbresults[model_inst.name()] = (model_inst.resultid(), model_inst.session(), 'result')
 
             # update links
             sys.stdout.write('> [4 of 4] Updating links... ')

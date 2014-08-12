@@ -67,11 +67,16 @@ class odm2(object):
         self.__obj = obj
         self.__resultid = obj.ResultID
 
+        self.__session = session
+
     def save(self):
         return [self.__output]
 
     def run(self,inputs):
         pass
+
+    def session(self):
+        return self.__session
 
     def obj(self):
         return self.__obj

@@ -13,8 +13,12 @@ class feed_forward_wrapper(object):
         # set initial conditions
         self.__current_time = self.simulation_start()
 
-    def data_directory(self):
-        raise NotImplementedError('This is an abstract method that must be implemented!')
+        self.__session = None
+
+
+
+    # def data_directory(self):
+    #     raise NotImplementedError('This is an abstract method that must be implemented!')
 
     def save(self):
         raise NotImplementedError('This is an abstract method that must be implemented!')
@@ -22,8 +26,13 @@ class feed_forward_wrapper(object):
     def run(self,inputs):
         raise NotImplementedError('This is an abstract method that must be implemented!')
 
-    def initialize(self):
-        raise NotImplementedError('This is an abstract method that must be implemented!')
+    # def initialize(self):
+    #     raise NotImplementedError('This is an abstract method that must be implemented!')
+
+    def session(self, value = None):
+        if value is not None:
+            self.__session = value
+        return self.__session
 
     def time_step(self):
         """

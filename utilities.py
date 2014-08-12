@@ -568,15 +568,18 @@ def get_ts_from_link(dbapi, dbactions, links, target_model):
             to_var = t[1].variable()
             to_item = t[1]
             name = f[0].get_name()
-            start = f[1].getStartTime()
-            end = f[1].getEndTime()
+            # start = f[1].getStartTime()
+            # end = f[1].getEndTime()
 
-            model = f[0]
+            start = t[0].get_instance().simulation_start()
+            end = t[0].get_instance().simulation_end()
 
-            actionid, type = dbactions[model.get_name()]
+            #model = f[0]
+
+            #actionid, type = dbactions[model.get_name()]
 
             # query timeseries data from db
-            ts = dbapi.get_simulation_results(name,actionid,type,from_var.VariableNameCV(),from_unit.UnitName(),to_var.VariableNameCV(), start,end)
+            ts = dbapi.get_simulation_results(name,dbactions,from_var.VariableNameCV(),from_unit.UnitName(),to_var.VariableNameCV(), start,end)
 
             # store the timeseries based on exchange item
             #timeseries[f[1].name()] = ts

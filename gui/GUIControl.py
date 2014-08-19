@@ -423,7 +423,14 @@ class GUIDelete(GUIBase, CanvasController):
 
 
 class GUIRun(GUIBase):
-    pass
+    # Publisher.sendMessage("run")
+
+    print 'Hello'
+    Publisher.sendMessage("run")
+
+    print 'Hi'
+
+    # pass
 
     '''
     def __init__(self, Canvas=None):

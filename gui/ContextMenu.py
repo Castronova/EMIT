@@ -15,6 +15,7 @@ class LinkContextMenu(wx.Menu):
         self.AppendItem(mmi)
         self.Bind(wx.EVT_MENU, self.OnAddLink, mmi)
 
+
         mmi = wx.MenuItem(self, wx.NewId(), 'Remove')
         self.AppendItem(mmi)
         self.Bind(wx.EVT_MENU, self.RemoveLink, mmi)
@@ -93,6 +94,9 @@ class GeneralContextMenu(wx.Menu):
         mmi = wx.MenuItem(self, wx.NewId(), 'Clear Configuration')
         self.AppendItem(mmi)
 
+        mmi = wx.MenuItem(self, wx.NewId(), 'Run')
+        self.AppendItem(mmi)
+        self.Bind(wx.EVT_MENU, self.OnClickRun, mmi)
 
 
         #self.Bind(wx.EVT_MENU, self.OnAddLink, mmi)
@@ -104,6 +108,10 @@ class GeneralContextMenu(wx.Menu):
     def OnAddLink(self, e):
 
         self.parent.FloatCanvas.SetMode(self.parent.Canvas.GuiLink)
+
+    def OnClickRun(self, e):
+
+        self.parent.FloatCanvas.SetMode(self.parent.Canvas.GuiRun)
 
     def SaveConfiguration(self,e):
 

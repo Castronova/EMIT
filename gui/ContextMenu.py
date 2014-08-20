@@ -111,7 +111,7 @@ class GeneralContextMenu(wx.Menu):
 
     def OnClickRun(self, e):
 
-        self.parent.FloatCanvas.SetMode(self.parent.Canvas.GuiRun)
+        self.parent.run()
 
     def SaveConfiguration(self,e):
 

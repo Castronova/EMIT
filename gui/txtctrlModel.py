@@ -37,18 +37,17 @@ class ModelTxtCtrl ( wx.Frame ):
 
         self.treectrlView = wx.Panel( self.txtNotebook, wx.ID_ANY, wx.DefaultPosition,
                                       wx.DefaultSize, wx.TAB_TRAVERSAL )
-        self.DetailTree = MyTree( self.treectrlView, id=wx.ID_ANY,
-                pos=wx.Point(0, 0),
-              size=wx.Size(423, 319), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT )
+        self.DetailTree = MyTree( self.treectrlView, id=wx.ID_ANY, pos=wx.Point(0, 0),
+                                  size=wx.Size(423, 319), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT )
         # self.DetailTree = wx.TreeCtrl( self.treectrlView )
+
         self.matplotView = pnlSpatial( self.txtNotebook )
 
-        self.txtNotebook.AddPage( self.treectrlView, u"Detail View", False )
-        self.txtNotebook.AddPage( self.txtctrlView, u"Edit", True )
-        self.txtNotebook.AddPage( self.matplotView, u"Spatial View", False )
-
-        self.SaveButton = wx.Button( self.txtctrlView, wx.ID_ANY, u"Save Changes", wx.DefaultPosition, wx.DefaultSize, 0 )
-
+        self.txtNotebook.AddPage( self.treectrlView, u"General", True )
+        self.txtNotebook.AddPage( self.matplotView, u"Spatial", False )
+        self.txtNotebook.AddPage( self.txtctrlView, u"Edit", False )
+        self.SaveButton = wx.Button( self.txtctrlView, wx.ID_ANY, u"Save Changes",
+                                     wx.DefaultPosition, wx.DefaultSize, 0 )
 
         #InitSubscibers
         #Publisher.subscribe(self.OnOpen, 'texteditpath')
@@ -81,6 +80,39 @@ class ModelTxtCtrl ( wx.Frame ):
         self.Layout()
 
         self.Centre( wx.BOTH )
+        self.InitMenu()
+
+
+    def InitMenu(self):
+
+        menubar = wx.MenuBar()
+        viewMenu = wx.Menu()
+
+        self.shst = viewMenu.Append(wx.ID_ANY, 'Show Edit',
+                                    'Show Edit', kind=wx.ITEM_CHECK)
+
+        viewMenu.Check(self.shst.GetId(), False)
+
+        self.Bind(wx.EVT_MENU, self.ToggleStatusBar, self.shst)
+
+        menubar.Append(viewMenu, '&Edit')
+        self.SetMenuBar(menubar)
+
+        self.SetSize((500, 500))
+        self.SetTitle('Check menu item')
+        self.Centre()
+        self.Show(True)
+
+
+    def ToggleStatusBar(self, e):
+
+        if self.shst.IsChecked():
+
+
+            pass
+
+        else:
+            pass
 
     def PopulateEdit(self, fileExtension):
 
@@ -110,6 +142,8 @@ class ModelTxtCtrl ( wx.Frame ):
         d = utilities.parse_config_without_validation(fileExtension)
 
         root = self.DetailTree.AddRoot('Data')
+        self.DetailTree.ExpandAll()
+
         # get sorted sections
         sections = sorted(d.keys())
 
@@ -124,7 +158,7 @@ class ModelTxtCtrl ( wx.Frame ):
                 for item in items:
                     p = g
                     while len(item.keys()) > 0:
-                    #for item in d[section]:
+                        #for item in d[section]:
                         if 'variable_name_cv' in item:
                             var = item.pop('variable_name_cv')
                             p =  self.DetailTree.AppendItem(g,var)
@@ -158,6 +192,8 @@ class MyTree(wx.TreeCtrl):
     def __init__(self,*args, **kwargs):
 
         wx.TreeCtrl.__init__(self, *args, **kwargs)
+
+        self.ExpandAll()
 
         self.Bind(wx.EVT_LEFT_UP,self.OnLeftUp)
 

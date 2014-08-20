@@ -26,10 +26,10 @@ class pnlSpatial ( wx.Panel ):
         sizer = wx.BoxSizer(wx.VERTICAL)
 
         # A button
-        self.button =wx.Button(self, label="Placeholder")
-        self.radiobutton1 = wx.RadioButton(self, wx.ID_ANY, u"Placeholder")
-        self.radiobutton2 = wx.RadioButton(self, wx.ID_ANY, u"Placeholder")
-        self.Bind(wx.EVT_BUTTON, self.OnClick,self.button)
+        # self.button =wx.Button(self, label="Placeholder")
+        # self.radiobutton1 = wx.RadioButton(self, wx.ID_ANY, u"Placeholder")
+        # self.radiobutton2 = wx.RadioButton(self, wx.ID_ANY, u"Placeholder")
+        # self.Bind(wx.EVT_BUTTON, self.OnClick,self.button)
 
         self.__input_data = []
         self.__output_data = []

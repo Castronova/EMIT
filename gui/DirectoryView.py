@@ -17,7 +17,7 @@ from DirectoryLstCtrl import DirectoryListCtrl
 from images import icons
 from txtctrlModel import ModelTxtCtrl, MyTree
 
-from ContextMenu import DirectoryContextMenu
+from ContextMenu import DirectoryContextMenu, ModelContextMenu
 import utilities
 from shapely import wkt
 

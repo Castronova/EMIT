@@ -30,6 +30,7 @@ import xml.etree.ElementTree as et
 from xml.dom import minidom
 
 import datatypes
+from DirectoryView import DirectoryCtrlView as DCV
 
 class CanvasController:
     def __init__(self, cmd, Canvas):
@@ -632,7 +633,11 @@ class CanvasController:
         self.models.clear()
 
         self.RedrawConfiguration()
-        
+
+    def DetailView(self):
+        # DCV.ShowDetails()
+        pass
+
     def SaveSimulation(self, path):
 
         if len(self.models.keys()) == 0:
@@ -722,7 +727,6 @@ class CanvasController:
         # save the xml doc
         with open(path,'w') as f:
             f.write(prettyxml)
-
 
     def loadsimulation(self, file):
 

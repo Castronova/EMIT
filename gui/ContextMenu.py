@@ -44,7 +44,7 @@ class ModelContextMenu(wx.Menu):
 
         mmi = wx.MenuItem(self, wx.NewId(), 'View Details')
         self.AppendItem(mmi)
-        self.Bind(wx.EVT_MENU, self.PopupDisplay, mmi)
+        self.Bind(wx.EVT_MENU, DirectoryContextMenu.OnViewDetails, mmi)
 
         mmi = wx.MenuItem(self, wx.NewId(), 'Remove')
         self.AppendItem(mmi)
@@ -55,8 +55,9 @@ class ModelContextMenu(wx.Menu):
         # cmi = wx.MenuItem(self, wx.NewId(), 'Close')
         # self.AppendItem(cmi)
         # self.Bind(wx.EVT_MENU, self.OnClose, cmi)
+
     def PopupDisplay(self, e):
-        pass
+        self.parent.DetailView(e)
 
     def OnAddLink(self, e):
         self.parent.ArrowClicked(e)
@@ -141,19 +142,15 @@ class DirectoryContextMenu(wx.Menu):
         self.AppendItem(mmi)
         self.Bind(wx.EVT_MENU, self.OnViewDetails, mmi)
 
-
     def OnViewDetails(self, e):
        # self.parent.ArrowClicked(self.arrow_obj)
         self.parent.ShowDetails()
-
-
 
     def OnMinimize(self, e):
         self.parent.Iconize()
 
     def OnClose(self, e):
         self.parent.Close()
-
 
 
 

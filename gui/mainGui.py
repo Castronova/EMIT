@@ -65,13 +65,16 @@ class MainGui(wx.Frame):
         self.bnb = wx.Notebook(self.pnlDocking)
 
         output = consoleOutput(self.bnb)
+        seriesoutput = OutputTimeSeries(self.bnb)
         seriesselector = TimeSeries(self.bnb)
 
-        self.bnb.AddPage(output, "Output")
-        self.bnb.AddPage(seriesselector, "Series Selector")
+        self.bnb.AddPage(output, "Console")
+        self.bnb.AddPage(seriesselector, "Remote Time Series")
+        self.bnb.AddPage(seriesoutput, "Output Time Series")
 
-        self.bnb.GetPage(0).SetLabel("Output")
-        self.bnb.GetPage(1).SetLabel("Series Selector")
+        self.bnb.GetPage(0).SetLabel("Console")
+        self.bnb.GetPage(1).SetLabel("Remote Time Series")
+        self.bnb.GetPage(2).SetLabel("Output Time Series")
 
 
 
@@ -367,6 +370,20 @@ class TimeSeries(wx.Panel):
     def OLVRefresh(self, event):
         Publisher.sendMessage("olvrefresh")
 
+class OutputTimeSeries(wx.Panel):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+
+        panel = wx.Panel(self, wx.ID_ANY)
+        log = wx.TextCtrl(self, -1, size=(100,100),
+                          style = wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
+
+        sizer = wx.BoxSizer()
+        sizer.Add(log, 1, wx.ALL|wx.EXPAND, 5)
+        panel.SetSizer(sizer)
+
+
+        self.SetSizerAndFit(sizer)
 
 class consoleOutput(wx.Panel):
     def __init__(self, parent):

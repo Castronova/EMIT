@@ -94,11 +94,12 @@ class GeneralContextMenu(wx.Menu):
 
         mmi = wx.MenuItem(self, wx.NewId(), 'Clear Configuration')
         self.AppendItem(mmi)
+        self.Bind(wx.EVT_MENU, self.OnClickClear, mmi)
+
 
         mmi = wx.MenuItem(self, wx.NewId(), 'Run')
         self.AppendItem(mmi)
         self.Bind(wx.EVT_MENU, self.OnClickRun, mmi)
-
 
         #self.Bind(wx.EVT_MENU, self.OnAddLink, mmi)
 
@@ -113,6 +114,10 @@ class GeneralContextMenu(wx.Menu):
     def OnClickRun(self, e):
 
         self.parent.run()
+
+    def OnClickClear(self, e):
+
+        self.parent.clear()
 
     def SaveConfiguration(self,e):
 

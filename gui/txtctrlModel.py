@@ -27,10 +27,9 @@ class ModelTxtCtrl ( wx.Frame ):
 
         self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
 
-
         #Define Objects
-        self.txtNotebook = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
 
+        self.txtNotebook = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
         self.txtctrlView = wx.Panel( self.txtNotebook, wx.ID_ANY, wx.DefaultPosition,
                                      wx.DefaultSize, wx.TAB_TRAVERSAL )
         self.TextDisplay = wx.TextCtrl( self.txtctrlView, wx.ID_ANY, wx.EmptyString,
@@ -38,15 +37,16 @@ class ModelTxtCtrl ( wx.Frame ):
 
         self.treectrlView = wx.Panel( self.txtNotebook, wx.ID_ANY, wx.DefaultPosition,
                                       wx.DefaultSize, wx.TAB_TRAVERSAL )
-        self.DetailTree = MyTree( self.treectrlView, id=wx.ID_ANY, pos=wx.Point(0, 0),
-                                  size=wx.Size(423, 319), style=wx.TR_HAS_BUTTONS )
-        self.DetailTree = wx.TreeCtrl( self.treectrlView )
-
+        self.DetailTree = MyTree( self.treectrlView, id=wx.ID_ANY,
+                pos=wx.Point(0, 0),
+              size=wx.Size(423, 319), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT )
+        # self.DetailTree = wx.TreeCtrl( self.treectrlView )
         self.matplotView = pnlSpatial( self.txtNotebook )
 
-        self.txtNotebook.AddPage( self.treectrlView, u"General", True )
-        self.txtNotebook.AddPage( self.matplotView, u"Spatial", False )
+        self.txtNotebook.AddPage( self.treectrlView, u"Detail View", True )
+        self.txtNotebook.AddPage( self.matplotView, u"Spatial View", False )
         self.txtNotebook.AddPage( self.txtctrlView, u"Edit", False )
+
         self.SaveButton = wx.Button( self.txtctrlView, wx.ID_ANY, u"Save Changes",
                                      wx.DefaultPosition, wx.DefaultSize, 0 )
 

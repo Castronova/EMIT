@@ -96,7 +96,6 @@ class GeneralContextMenu(wx.Menu):
         self.AppendItem(mmi)
         self.Bind(wx.EVT_MENU, self.OnClickClear, mmi)
 
-
         mmi = wx.MenuItem(self, wx.NewId(), 'Run')
         self.AppendItem(mmi)
         self.Bind(wx.EVT_MENU, self.OnClickRun, mmi)

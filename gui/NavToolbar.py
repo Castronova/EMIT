@@ -38,10 +38,10 @@ class NavCanvas(wx.Panel):
         self.Modes = [("Pointer",  self.GuiMouse,   icons.Cursor.GetBitmap()),
                       ("Zoom In",  self.GuiZoomIn,  icons.Zoom_In.GetBitmap()),
                       ("Zoom Out", self.GuiZoomOut, icons.Zoom_Out.GetBitmap()),
-                      ("Pan",      self.GuiMove,    icons.Move.GetBitmap()),
+                      ("Pan",      self.GuiMove,    icons.Move.GetBitmap())
                       # ("Add Link", self.GuiLink, icons.add_link.GetBitmap()),
                       # ("Run Model", self.GuiRun, icons.Run.GetBitmap()),
-                      ("Clear", self.GuiDelete, icons.Trash.GetBitmap())
+                      # ("Clear", self.GuiDelete, icons.Trash.GetBitmap())
         ]
         self.BuildToolbar()
         ## Create the vertical sizer for the toolbar and Panel
@@ -58,7 +58,7 @@ class NavCanvas(wx.Panel):
 
         # default to first mode
         #self.ToolBar.ToggleTool(self.PointerTool.GetId(), True)
-        self.Canvas.SetMode(self.Modes[0][1])
+        # self.Canvas.SetMode(self.Modes[0][1])
 
     def BuildToolbar(self):
         """

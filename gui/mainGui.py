@@ -133,7 +133,7 @@ class MainGui(wx.Frame):
         try:
             selected_page = self.bnb.GetPage(event.GetSelection())
 
-            if selected_page.Label == 'Series Selector':
+            if selected_page.Label == 'Remote Time Series':
                 selected_page.getKnownDatabases()
         except: pass
 

@@ -39,8 +39,8 @@ class NavCanvas(wx.Panel):
                       ("Zoom In",  self.GuiZoomIn,  icons.Zoom_In.GetBitmap()),
                       ("Zoom Out", self.GuiZoomOut, icons.Zoom_Out.GetBitmap()),
                       ("Pan",      self.GuiMove,    icons.Move.GetBitmap()),
-                      ("Add Link", self.GuiLink, icons.add_link.GetBitmap()),
-                      ("Run Model", self.GuiRun, icons.Run.GetBitmap()),
+                      # ("Add Link", self.GuiLink, icons.add_link.GetBitmap()),
+                      # ("Run Model", self.GuiRun, icons.Run.GetBitmap()),
                       ("Clear", self.GuiDelete, icons.Trash.GetBitmap())
         ]
         self.BuildToolbar()
@@ -100,28 +100,18 @@ class NavCanvas(wx.Panel):
         self.ZoomButton.Hide()
         self.ZoomButton.Show()
 
+    def SetRun(self, event):
+        Publisher.sendMessage("run")
+
+
     def SetMode(self, event):
         Mode = self.ModesDict[event.GetId()]
-
 
         if Mode == self.GuiRun:
             Publisher.sendMessage("run")
 
         if Mode == self.GuiDelete:
             Publisher.sendMessage("clear")
-
-
-
-        #self.Canvas.SetMode(self.ModesDict[-31990])
-        # self.Canvas.SetMode(self.GuiMouse)
-
-    # def SetClear(self, event):
-    #     Mode = self.ModesDict[event.GetId()]
-    #
-    #     if Mode ==self.GuiDelete:
-    #         Publisher.sendMessage("clear")
-    #
-    #     self.Canvas.SetMode(Mode)
 
     def ZoomToFit(self,Event):
         self.Canvas.ZoomToBB()

@@ -379,7 +379,52 @@ class TimeSeries(wx.Panel):
 
                     wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
 
+
+    def refresh_database(self):
+
+        # get the name of the selected database
+        selected_db = self.m_choice3.GetStringSelection()
+
+        for key, db in self._databases.iteritems():
+
+            # get the database session associated with the selected name
+            if db['name'] == selected_db:
+
+                # query the database and get basic series info
+
+                from db import api as dbapi
+                from gui.objectListViewDatabase import Database
+
+                u = dbapi.utils(db['session'])
+                series = u.getAllSeries()
+
+                # loop through all of the returned data
+                data = []
+                for s in series:
+                    resultid = s.ResultID
+                    variable = s.VariableObj.VariableCode
+                    unit = s.UnitObj.UnitsName
+                    date_created = s.FeatureActionObj.ActionObj.BeginDateTime
+                    data_type = s.FeatureActionObj.ActionObj.ActionTypeCV
+                    featurecode = s.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode
+                    org = s.FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName
+
+                    data.extend([Database(resultid,featurecode,variable,unit,data_type,org,date_created)])
+
+                # set the data objects in the olv control
+                self.m_olvSeries.SetObjects(data)
+
+
+                # exit
+                break
+
+        return
+
     def OLVRefresh(self, event):
+        # refresh the database
+        self.refresh_database()
+
+        # refresh the object list view
         Publisher.sendMessage("olvrefresh")
 
 class OutputTimeSeries(wx.Panel):

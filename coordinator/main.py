@@ -626,7 +626,7 @@ class Coordinator(object):
                 sys.stdout.write('done\n')
 
                 # store the database action associated with this simulation
-                self._dbresults[model_inst.name()] = (simulation.ResultID,model_inst.session(),'action')
+                self._dbresults[model_inst.name()] = (simulation.ActionID,model_inst.session(),'action')
 
             else:
                 self._dbresults[model_inst.name()] = (model_inst.resultid(), model_inst.session(), 'result')

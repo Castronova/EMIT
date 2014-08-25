@@ -392,6 +392,9 @@ class TimeSeries(wx.Panel):
         # get the name of the selected database
         selected_db = self.m_choice3.GetStringSelection()
 
+        #set the selected choice
+        self.__selected_choice_idx = self.m_choice3.GetSelection()
+
         for key, db in self._databases.iteritems():
 
             # get the database session associated with the selected name
@@ -461,8 +464,8 @@ class consoleOutput(wx.Panel):
         log = wx.TextCtrl(self, -1, size=(100,100),
                           style = wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
 
-        # redir= RedirectText(log)
-        # sys.stdout=redir
+        redir= RedirectText(log)
+        sys.stdout=redir
 
 
         # # Add widgets to a sizer

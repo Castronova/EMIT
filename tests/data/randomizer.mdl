@@ -4,14 +4,14 @@ classname = randomizer
 
 [model]
 code = tonys_random_number_generator
-name = Tony’s random number generator module
+name = Tonyâ€™s random number generator module
 description = This is a module that generates random numbers
 
 [general]
 name = Random Number Generator
 description = The model produces random numbers
 simulation_start = 03/01/2014 12:00:00
-simulation_end = 05/01/2014 23:00:00
+simulation_end = 05/01/2014 13:00:00
 
 [time_step]
 unit_type_cv = hour

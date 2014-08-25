@@ -175,6 +175,10 @@ class Coordinator(object):
 
         self._dbresults = {}
 
+
+        # TODO: Get this from gui dialog
+        self.preferences = os.path.abspath(os.path.join(os.path.dirname(__file__),'../data/preferences'))
+        
     def clear_all(self):
         self.__links = {}
         self.__models = {}
@@ -560,9 +564,7 @@ class Coordinator(object):
 
         simulation_dbapi = postgresdb(self.get_default_db()['session'])
 
-        # TODO: Get this from gui dialog
-        preferences = os.path.abspath('../data/preferences')
-
+        
         # todo: determine unresolved exchange items (utilities)
 
 
@@ -616,7 +618,7 @@ class Coordinator(object):
             if type(model_inst) != wrappers.odm2_data.odm2:
 
                 #  set these input data as exchange items in stdlib or wrapper class
-                simulation = simulation_dbapi.create_simulation(preferences_path=preferences,
+                simulation = simulation_dbapi.create_simulation(preferences_path=self.preferences,
                                                config_params=model_obj.get_config_params(),
                                                output_exchange_items=exchangeitems,
                                                )

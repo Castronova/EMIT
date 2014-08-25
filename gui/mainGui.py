@@ -219,7 +219,8 @@ class TimeSeries(wx.Panel):
         self._connection_added = True
 
         m_choice3Choices = []
-        self.m_choice3 = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_choice3Choices, 0 )
+        self.m_choice3 = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.Size(200, 23), m_choice3Choices, 0)
+        print self.m_choice3.Size
         self.m_choice3.SetSelection( 0 )
         self.addRefreshButton = wx.Button(self, wx.ID_ANY, u"Refresh", wx.DefaultPosition, wx.DefaultSize, 0)
         self.addConnectionButton = wx.Button( self, wx.ID_ANY, u"Add Connection", wx.DefaultPosition, wx.DefaultSize, 0 )

@@ -7,8 +7,10 @@ from CanvasView import Canvas
 from wx.lib.pubsub import pub as Publisher
 import wx.lib.agw.aui as aui
 import objectListViewDatabase as olv
-
 from ODM2.Core.services import *
+import logging
+
+
 
 
 class MainGui(wx.Frame):
@@ -218,6 +220,8 @@ class TimeSeries(wx.Panel):
         self._databases = {}
         self._connection_added = True
 
+        self.__logger = logging.getLogger('root')
+
 
         m_choice3Choices = []
         self.m_choice3 = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.Size(200, 23), m_choice3Choices, 0)
@@ -421,11 +425,15 @@ class TimeSeries(wx.Panel):
         return
 
     def OLVRefresh(self, event):
+
+
         # refresh the database
         self.refresh_database()
 
         # refresh the object list view
         Publisher.sendMessage("olvrefresh")
+
+        self.__logger.info ('Database "%s" refreshed'%self.m_choice3.GetStringSelection())
 
 class OutputTimeSeries(wx.Panel):
     def __init__(self, parent):

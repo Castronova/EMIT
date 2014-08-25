@@ -218,10 +218,13 @@ class TimeSeries(wx.Panel):
         self._databases = {}
         self._connection_added = True
 
+
         m_choice3Choices = []
         self.m_choice3 = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.Size(200, 23), m_choice3Choices, 0)
         print self.m_choice3.Size
-        self.m_choice3.SetSelection( 0 )
+        self.__selected_choice_idx = 0
+        self.m_choice3.SetSelection( self.__selected_choice_idx)
+
         self.addRefreshButton = wx.Button(self, wx.ID_ANY, u"Refresh", wx.DefaultPosition, wx.DefaultSize, 0)
         self.addConnectionButton = wx.Button( self, wx.ID_ANY, u"Add Connection", wx.DefaultPosition, wx.DefaultSize, 0 )
         self.m_olvSeries = olv.OlvSeries(self, pos = wx.DefaultPosition, size = wx.DefaultSize, id = wx.ID_ANY, style=wx.LC_REPORT|wx.SUNKEN_BORDER  )
@@ -257,6 +260,9 @@ class TimeSeries(wx.Panel):
 
         # get the name of the selected database
         selected_db = self.m_choice3.GetStringSelection()
+
+        # set the selected choice
+        self.__selected_choice_idx = self.m_choice3.GetSelection()
 
         # set the current database in canvas controller
         Publisher.sendMessage('SetCurrentDb',value=selected_db)
@@ -309,6 +315,11 @@ class TimeSeries(wx.Panel):
             for k,v in self._databases.iteritems():
                 choices.append(self._databases[k]['name'])
             self.m_choice3.SetItems(choices)
+
+            # set the selected choice
+            self.m_choice3.SetSelection( self.__selected_choice_idx)
+
+
 
     def connection_added_status(self,value=None,connection_string=''):
         if value is not None:

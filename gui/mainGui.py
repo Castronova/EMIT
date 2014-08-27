@@ -7,8 +7,10 @@ from CanvasView import Canvas
 from wx.lib.pubsub import pub as Publisher
 import wx.lib.agw.aui as aui
 import objectListViewDatabase as olv
-
 from ODM2.Core.services import *
+import logging
+
+import threading
 
 
 class MainGui(wx.Frame):
@@ -216,6 +218,8 @@ class TimeSeries(wx.Panel):
         self._databases = {}
         self._connection_added = True
 
+        self.__logger = logging.getLogger('root')
+
 
         m_choice3Choices = []
         self.m_choice3 = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.Size(200, 23), m_choice3Choices, 0)
@@ -255,53 +259,56 @@ class TimeSeries(wx.Panel):
 
     def DbChanged(self, event):
 
-        # get the name of the selected database
-        selected_db = self.m_choice3.GetStringSelection()
-
-        # set the selected choice
-        self.__selected_choice_idx = self.m_choice3.GetSelection()
-
-        # set the current database in canvas controller
-        Publisher.sendMessage('SetCurrentDb',value=selected_db)
-
-        for key, db in self._databases.iteritems():
-
-            # get the database session associated with the selected name
-            if db['name'] == selected_db:
+        self.OLVRefresh(event)
 
 
-                # query the database and get basic series info
-
-                core_connection = readCore(db['session'])
-
-                from db import api as dbapi
-                from gui.objectListViewDatabase import Database
-
-                u = dbapi.utils(db['session'])
-                series = u.getAllSeries()
-                #all_results = core_connection.getAllResult()
-
-                # loop through all of the returned data
-                data = []
-                for s in series:
-                    resultid = s.ResultID
-                    variable = s.VariableObj.VariableCode
-                    unit = s.UnitObj.UnitsName
-                    date_created = s.FeatureActionObj.ActionObj.BeginDateTime
-                    data_type = s.FeatureActionObj.ActionObj.ActionTypeCV
-                    featurecode = s.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode
-                    org = s.FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName
-
-                    data.extend([Database(resultid,featurecode,variable,unit,data_type,org,date_created)])
-
-                # set the data objects in the olv control
-                self.m_olvSeries.SetObjects(data)
-
-
-                # exit
-                break
-
-        return
+        # # get the name of the selected database
+        # selected_db = self.m_choice3.GetStringSelection()
+        #
+        # # set the selected choice
+        # self.__selected_choice_idx = self.m_choice3.GetSelection()
+        #
+        # # set the current database in canvas controller
+        # Publisher.sendMessage('SetCurrentDb',value=selected_db)
+        #
+        # for key, db in self._databases.iteritems():
+        #
+        #     # get the database session associated with the selected name
+        #     if db['name'] == selected_db:
+        #
+        #
+        #         # query the database and get basic series info
+        #
+        #         core_connection = readCore(db['session'])
+        #
+        #         from db import api as dbapi
+        #         from gui.objectListViewDatabase import Database
+        #
+        #         u = dbapi.utils(db['session'])
+        #         series = u.getAllSeries()
+        #         #all_results = core_connection.getAllResult()
+        #
+        #         # loop through all of the returned data
+        #         data = []
+        #         for s in series:
+        #             resultid = s.ResultID
+        #             variable = s.VariableObj.VariableCode
+        #             unit = s.UnitObj.UnitsName
+        #             date_created = s.FeatureActionObj.ActionObj.BeginDateTime
+        #             data_type = s.FeatureActionObj.ActionObj.ActionTypeCV
+        #             featurecode = s.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode
+        #             org = s.FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName
+        #
+        #             data.extend([Database(resultid,featurecode,variable,unit,data_type,org,date_created)])
+        #
+        #         # set the data objects in the olv control
+        #         self.m_olvSeries.SetObjects(data)
+        #
+        #
+        #         # exit
+        #         break
+        #
+        # return
 
     def getKnownDatabases(self, value = None):
         if value is None:
@@ -382,6 +389,9 @@ class TimeSeries(wx.Panel):
         # get the name of the selected database
         selected_db = self.m_choice3.GetStringSelection()
 
+        #set the selected choice
+        self.__selected_choice_idx = self.m_choice3.GetSelection()
+
         for key, db in self._databases.iteritems():
 
             # get the database session associated with the selected name
@@ -411,18 +421,21 @@ class TimeSeries(wx.Panel):
                 # set the data objects in the olv control
                 self.m_olvSeries.SetObjects(data)
 
-
+                self.__logger.info ('Database "%s" refreshed'%self.m_choice3.GetStringSelection())
                 # exit
                 break
 
         return
 
     def OLVRefresh(self, event):
-        # refresh the database
-        self.refresh_database()
+
+        thr = threading.Thread(target=self.refresh_database, args=(), kwargs={})
+        thr.start()
 
         # refresh the object list view
-        Publisher.sendMessage("olvrefresh")
+        #Publisher.sendMessage("olvrefresh")
+
+
 
 class OutputTimeSeries(wx.Panel):
     def __init__(self, parent):

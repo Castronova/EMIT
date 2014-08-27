@@ -12,6 +12,7 @@ import wx
 import wx.xrc
 import wx.aui
 
+import log
 from CanvasView import Canvas
 from DirectoryView import DirectoryCtrlView
 
@@ -27,6 +28,9 @@ from CanvasView import Canvas
 # ##########################################################################
 
 if __name__ == '__main__':
+
+    # setup logger
+    logger = log.setup_custom_logger('root')
 
     # create and instance of the coordinator engine
     cmd = cmd.Coordinator()

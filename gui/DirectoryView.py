@@ -102,26 +102,26 @@ class DirectoryCtrlView(wx.Panel):
     def OnClick(self, event):
         dirpath = self.dirCtrl.getcurrentdirectory()
         path = os.path.join(dirpath, event.GetText())
-        print path
+        print '> ', path
         self.sb.SetValue(path)
 
 
     def OnDClick(self, event):
         ## Check if clicked Item is a directory
         dirpath = os.path.join(os.getcwd(), event.GetText())
-        print "Dirpath is a file?: ", os.path.isfile(dirpath)
+        print "> Dirpath is a file?: ", os.path.isfile(dirpath)
         if os.path.isdir(dirpath):
-            print "Changing path to: ", dirpath
+            print "> Changing path to: ", dirpath
             try:
                 self.directoryStack.append(os.getcwd())
                 os.chdir(dirpath)
             except Exception, e:
                 self.directoryStack.append(os.getcwd())
                 os.chdir('..')
-                print "WindowsError! ", e
+                print "> WindowsError! ", e
         elif os.path.isfile(dirpath):
             fileName, fileExtension = os.path.splitext(dirpath)
-            print "Execute me", fileExtension
+            print "> Execute me", fileExtension
             if fileExtension == ".mdl" or fileExtension == ".sim":
 
                 ShowModel = ModelTxtCtrl(self)
@@ -142,10 +142,10 @@ class DirectoryCtrlView(wx.Panel):
         try:
             self.directoryStack.append(dirpath)
             os.chdir(dirpath)
-            print "You have returned home: ", dirpath
+            # print "You have returned home: ", dirpath
             self.dirCtrl.clearItems()
         except:
-            print 'Crap happened on the way home'
+            print '> Home Not Defined'
 
     def OnUpClick(self, event):
         parent = os.path.abspath(os.path.join(self.dirCtrl.getcurrentdirectory(), os.pardir))
@@ -156,9 +156,9 @@ class DirectoryCtrlView(wx.Panel):
         self.dirCtrl.clearItems()
 
     def OnBackClick(self, event):
-        print 10*'-'
-        for d in self.directoryStack:
-            print d
+        # print 10*'-'
+        # for d in self.directoryStack:
+        #     print d
         if len(self.directoryStack) > 0:
             self.directoryStack.pop()
             os.chdir(self.directoryStack[-1])

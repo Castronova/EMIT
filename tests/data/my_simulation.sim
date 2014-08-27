@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <Simulation>
-  <Model id="9a14e" mdl="C:\Users\Mario\Documents\Projects\EMIT\tests\data\multiplier.mdl" name="Multiplier" x="-300.0" y="-133.0"/>
-  <Model id="a42a8" mdl="C:\Users\Mario\Documents\Projects\EMIT\tests\data\randomizer.mdl" name="Random Number Generator" x="241.0" y="97.0"/>
-  <Link from_id="a42a8" from_item="random_number" from_item_id="92022" from_name="Random Number Generator" to_id="9a14e" to_item="some_value" to_item_id="bb920" to_name="Multiplier"/>
+  <Model id="d46dd" mdl="C:\Users\Mario\Documents\Projects\EMIT\tests\data\randomizer.mdl" name="Random Number Generator" x="-270.0" y="14.0"/>
+  <Model id="7ac00" mdl="C:\Users\Mario\Documents\Projects\EMIT\tests\data\multiplier.mdl" name="Multiplier" x="212.0" y="79.0"/>
+  <Link from_id="d46dd" from_item="random_number" from_item_id="e3e55" from_name="Random Number Generator" to_id="7ac00" to_item="some_value" to_item_id="2c808" to_name="Multiplier"/>
 </Simulation>

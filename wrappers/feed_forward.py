@@ -137,8 +137,6 @@ class feed_forward_wrapper(object):
                 return
         raise Exception ('Error setting data for variable: %s' % variablename)
 
-
-
     def get_input_by_name(self,inputname):
 
         inputs = self.inputs()
@@ -148,3 +146,4 @@ class feed_forward_wrapper(object):
                 return input
 
         raise Exception('Could not find input: %s' + inputname)
+

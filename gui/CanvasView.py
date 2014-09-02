@@ -39,7 +39,6 @@ class ClearCanvas(NavCanvas):
             self.onRightDown()
 
     def onRightDown(self, event):
-        print "Right Click"
         self.Canvas.ClearAll()
         self.Canvas.Draw()
 

@@ -79,6 +79,7 @@ class pnlSpatial ( wx.Panel ):
 
     def log(self, fmt, *args):
         print (fmt % args)
+
     def OnClick(self,event):
         self.log("button clicked, id#%d\n", event.GetId())
 

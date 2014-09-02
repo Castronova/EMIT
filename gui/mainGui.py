@@ -50,8 +50,6 @@ class MainGui(wx.Frame):
         self.nb = wx.Notebook(self.pnlDocking)
 
 
-
-
         page1 = DirectoryCtrlView(self.nb)
         page2 = ModelView(self.nb)
         # page3 = LinkView(self.nb)
@@ -225,7 +223,6 @@ class TimeSeries(wx.Panel):
 
         m_choice3Choices = []
         self.m_choice3 = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.Size(200, 23), m_choice3Choices, 0)
-        print self.m_choice3.Size
         self.__selected_choice_idx = 0
         self.m_choice3.SetSelection( self.__selected_choice_idx)
 

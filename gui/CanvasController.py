@@ -245,7 +245,7 @@ class CanvasController:
             # add this text as an attribute of the rectangle
             R.Text = label
 
-
+            print '> ', name, ' has been added to the canvas.'
             #print dir(label), label
             #R.Bind(FC.EVT_FC_LEFT_UP, self.OnLeftUp )
 
@@ -260,7 +260,8 @@ class CanvasController:
             self.FloatCanvas.Draw()
 
         else:
-            print "Nothing Selected"
+            # print "Nothing Selected"
+            pass
 
     def createLine(self, R1, R2):
         #print "creating link", R1, R2
@@ -309,11 +310,11 @@ class CanvasController:
         self.Canvas.Canvas.Draw()
 
     def ObjectHit(self, object):
-        print "Hit Object(CanvasController)", object.Name
+        # print "Hit Object(CanvasController)", object.Name
         #self.FloatCanvas.Bind(FC.EVT_FC_RIGHT_DOWN( list, -1, self.RightClickCb ))
         cur = self.getCursor()
 
-        print object.Name
+        # print object.Name
 
         if cur.Name == 'link':
             self.linkRects.append(object)
@@ -621,7 +622,7 @@ class CanvasController:
         # do something
         operation = menu_title_by_id[ event.GetId() ]
         #target    = self.list_item_clicked
-        print 'Perform "%(operation)s" on "%(target)s."' % vars()
+        print '> Perform "%(operation)s" on "%(target)s."' % vars()
 
     def clear(self, link_obj=None, model_obj=None):
 
@@ -919,8 +920,8 @@ class FileDrop(wx.FileDropTarget):
                 #     self.controller.createLine(R1,R2)
 
             except Exception, e:
-                print 'Could not load the model :(. Hopefully this exception helps...'
-                print e
+                print '> Could not load the model. Please verify that the model file exists.'
+                print '> "(e)"'
 
         else:
             # # -- must be a data object --

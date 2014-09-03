@@ -2,6 +2,7 @@ __author__ = 'Mario'
 import wx
 import wx.html2
 from DirectoryView import DirectoryCtrlView
+from AllFileVeiw import FileCtrlView
 import sys
 from CanvasView import Canvas
 from wx.lib.pubsub import pub as Publisher
@@ -52,15 +53,15 @@ class MainGui(wx.Frame):
 
         page1 = DirectoryCtrlView(self.nb)
         page2 = ModelView(self.nb)
-        # page3 = LinkView(self.nb)
+        # page3 = FileCtrlView(self.nb)
 
         self.nb.AddPage(page1, "Directory")
         self.nb.AddPage(page2, "Model Information")
-        # self.nb.AddPage(page3, "Link View")
+        # self.nb.AddPage(page3, "All Files")
 
         self.nb.GetPage(0).SetLabel("Directory")
         self.nb.GetPage(1).SetLabel("Model Information")
-        # self.nb.GetPage(2).SetLabel("Link View")
+        # self.nb.GetPage(2).SetLabel("All Files")
 
         self.bnb = wx.Notebook(self.pnlDocking)
 
@@ -79,50 +80,50 @@ class MainGui(wx.Frame):
 
 
         self.m_mgr.AddPane(self.Canvas,
-               aui.AuiPaneInfo().
-               Center().
-               Name("Canvas").
-               Position(0).
-               CloseButton(False).
-               MaximizeButton(True).
-               MinimizeButton(True).
-               PinButton(True).
-               Resizable().
-               Movable().
-               Floatable(True).
-               MinSize(wx.Size(1000, 400)))
+                           aui.AuiPaneInfo().
+                           Center().
+                           Name("Canvas").
+                           Position(0).
+                           CloseButton(False).
+                           MaximizeButton(True).
+                           MinimizeButton(True).
+                           PinButton(True).
+                           Resizable().
+                           Movable().
+                           Floatable(True).
+                           MinSize(wx.Size(1000, 400)))
 
         self.m_mgr.AddPane(self.bnb,
-              aui.AuiPaneInfo().
-              Caption('Output').
-              Center().
-              Name("Console").
-              Position(1).
-              CloseButton(False).
-              MaximizeButton(True)
-              .Movable()
-              .MinimizeButton(True).
-              PinButton(True).
-              Resizable().
-              Floatable().
-              MinSize(wx.Size(1000, 200)))
+                           aui.AuiPaneInfo().
+                           Caption('Output').
+                           Center().
+                           Name("Console").
+                           Position(1).
+                           CloseButton(False).
+                           MaximizeButton(True)
+                           .Movable()
+                           .MinimizeButton(True).
+                           PinButton(True).
+                           Resizable().
+                           Floatable().
+                           MinSize(wx.Size(1000, 200)))
 
 
         self.m_mgr.AddPane(self.nb,
-               aui.AuiPaneInfo().
-               Left().
-               Dock().
-               CloseButton(False).
-               MaximizeButton(True).
-               MinimizeButton(True).
-               MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_SMART).
-               PinButton(True).
-               Resizable().
-               MinSize(wx.Size(375,500)).
-               Floatable().
-               Movable().
-               FloatingSize(size=(600, 800)).
-               CloseButton(True))
+                           aui.AuiPaneInfo().
+                           Left().
+                           Dock().
+                           CloseButton(False).
+                           MaximizeButton(True).
+                           MinimizeButton(True).
+                           MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_SMART).
+                           PinButton(True).
+                           Resizable().
+                           MinSize(wx.Size(375,500)).
+                           Floatable().
+                           Movable().
+                           FloatingSize(size=(600, 800)).
+                           CloseButton(True))
 
         self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED,self.OnSelect)
 
@@ -152,7 +153,10 @@ class MainGui(wx.Frame):
         self.m_toolMenu = wx.Menu()
         self.m_menubar.Append(self.m_toolMenu, "&Tools")
 
+
         self.m_viewMenu = wx.Menu()
+        ShowDir = self.m_viewMenu.Append(wx.NewId(), '&Directory View\tCtrl+D', 'Shows file directory', wx.ITEM_RADIO)
+        ShowAll = self.m_viewMenu.Append(wx.NewId(), '&All Files\tCtrl+A', 'Show all associated files', wx.ITEM_RADIO)
         self.m_menubar.Append(self.m_viewMenu, "&View")
 
         self.SetMenuBar(self.m_menubar)
@@ -161,6 +165,9 @@ class MainGui(wx.Frame):
 
         ## Events
         self.Bind(wx.EVT_MENU, self.onClose, exit)
+        self.Bind(wx.EVT_MENU, self.onDirectory, ShowDir)
+        self.Bind(wx.EVT_MENU, self.onAllFiles, ShowAll)
+
 
     def _postStart(self):
         ## Starts stuff after program has initiated
@@ -188,6 +195,23 @@ class MainGui(wx.Frame):
                     item.Close()
         self.Destroy()
 
+    def onDirectory(self, event):
+        #TODO: make sure this is default and tie in the notebook functionality here
+        pass
+
+    def onAllFiles(self, event):
+        page3 = FileCtrlView(self.nb)
+        # page4 = ModelView(self.nb)
+
+        self.nb.AddPage(page3, "All Files")
+        # self.nb.AddPage(page4, "Model Information")
+
+        self.nb.GetPage(2).SetLabel("All Files")
+        # self.nb.GetPage(1).SetLabel("Model Information")
+
+        self.nb.RemovePage(0)
+        self.nb.RemovePage(1)
+
 
 class ModelView(wx.Panel):
     def __init__(self, parent):
@@ -206,6 +230,11 @@ class ModelView(wx.Panel):
 
     def setText(self, value=None):
         self.contents.SetPage(value,"")
+
+class AllFileView(wx.Panel):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+
 
 class TimeSeries(wx.Panel):
     """

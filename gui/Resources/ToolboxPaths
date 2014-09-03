@@ -1,0 +1,6 @@
+[Tests]
+path = ..\tests
+
+
+[Examples]
+path = ..\examples

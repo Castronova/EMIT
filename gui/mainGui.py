@@ -3,6 +3,7 @@ import wx
 import wx.html2
 from DirectoryView import DirectoryCtrlView
 from AllFileVeiw import FileCtrlView
+from Toolbox import TestPanel
 import sys
 from CanvasView import Canvas
 from wx.lib.pubsub import pub as Publisher
@@ -53,15 +54,15 @@ class MainGui(wx.Frame):
 
         page1 = DirectoryCtrlView(self.nb)
         page2 = ModelView(self.nb)
-        # page3 = FileCtrlView(self.nb)
+        page3 = TestPanel(self.nb)
 
         self.nb.AddPage(page1, "Directory")
         self.nb.AddPage(page2, "Model Information")
-        # self.nb.AddPage(page3, "All Files")
+        self.nb.AddPage(page3, "All Files")
 
         self.nb.GetPage(0).SetLabel("Directory")
         self.nb.GetPage(1).SetLabel("Model Information")
-        # self.nb.GetPage(2).SetLabel("All Files")
+        self.nb.GetPage(2).SetLabel("All Files")
 
         self.bnb = wx.Notebook(self.pnlDocking)
 

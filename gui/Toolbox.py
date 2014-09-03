@@ -2,6 +2,7 @@ __author__ = 'Mario'
 import wx
 import wx.gizmos as gizmos
 from images import icons
+from ContextMenu import TreeContextMenu
 import ConfigParser
 import os
 from os.path import *
@@ -59,7 +60,7 @@ class ToolboxPanel(wx.Panel):
             else:
                 modelpaths[section].append(d)
 
-        self.tree.AddColumn("Main column")
+        self.tree.AddColumn("File Categories")
         self.tree.SetMainColumn(0) # the one with the tree in it...
         self.tree.SetColumnWidth(0, 175)
         self.root = self.tree.AddRoot("Models")
@@ -92,9 +93,14 @@ class ToolboxPanel(wx.Panel):
 
         self.tree.Expand(self.root)
 
-        self.tree.GetMainWindow().Bind(wx.EVT_RIGHT_UP, self.OnRightUp)
+        self.tree.GetMainWindow().Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
         self.tree.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnActivate)
+        self.tree.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnContextMenu)
+        self.tree.Bind(wx.EVT_TREE_BEGIN_DRAG, self.onDrag)
+        # self.tree.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnContextMenu)
 
+    def OnContextMenu(self, evt):
+        self.tree.PopupMenu(TreeContextMenu(self,evt), evt.GetPosition())
 
     def OnActivate(self, evt):
 
@@ -106,6 +112,21 @@ class ToolboxPanel(wx.Panel):
                 print self.items[i]
                 break
         pass
+
+    def onDrag(self, event):
+        data = wx.FileDataObject()
+        obj = event.GetEventObject()
+        id = event.GetIndex()
+        filename = obj.GetItem(id).GetText()
+        dirname = self.tree.GetName
+        #dirname = os.path.dirname(os.path.abspath(os.listdir(".")[0]))
+        fullpath = str(os.path.join(dirname, filename))
+
+        data.AddFile(fullpath)
+
+        dropSource = wx.DropSource(obj)
+        dropSource.SetData(data)
+        result = dropSource.DoDragDrop()
 
     def OnRightUp(self, evt):
         pos = evt.GetPosition()

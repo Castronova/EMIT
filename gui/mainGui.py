@@ -63,6 +63,7 @@ class MainGui(wx.Frame):
         self.nb.GetPage(0).SetLabel("Directory")
         self.nb.GetPage(1).SetLabel("Model View")
         self.nb.GetPage(2).SetLabel("Toolbox View")
+        self.nb.SetSelection(0)
 
         self.bnb = wx.Notebook(self.pnlDocking)
 
@@ -197,22 +198,12 @@ class MainGui(wx.Frame):
         self.Destroy()
 
     def onDirectory(self, event):
-        #TODO: make sure this is default and tie in the notebook functionality here
+        self.nb.SetSelection(0)
         pass
 
     def onAllFiles(self, event):
-        page3 = FileCtrlView(self.nb)
-        # page4 = ModelView(self.nb)
-
-        self.nb.AddPage(page3, "All Files")
-        # self.nb.AddPage(page4, "Model Information")
-
-        self.nb.GetPage(2).SetLabel("All Files")
-        # self.nb.GetPage(1).SetLabel("Model Information")
-
-        self.nb.RemovePage(0)
-        self.nb.RemovePage(1)
-
+        self.nb.SetSelection(2)
+        pass
 
 class ModelView(wx.Panel):
     def __init__(self, parent):
@@ -263,6 +254,7 @@ class TimeSeries(wx.Panel):
         # Bindings
         self.addConnectionButton.Bind(wx.EVT_LEFT_DOWN, self.AddConnection)
         self.addRefreshButton.Bind(wx.EVT_LEFT_DOWN, self.OLVRefresh)
+        self.m_choice3.Bind(wx.EVT_CHOICE,self.DbChanged)
 
         # Sizers
         seriesSelectorSizer = wx.BoxSizer( wx.VERTICAL )
@@ -284,7 +276,6 @@ class TimeSeries(wx.Panel):
         Publisher.subscribe(self.getKnownDatabases, "getKnownDatabases")
         Publisher.subscribe(self.connection_added_status, "connectionAddedStatus")
 
-        self.m_choice3.Bind(wx.EVT_CHOICE,self.DbChanged)
 
 
     def DbChanged(self, event):

@@ -8,7 +8,7 @@ from os.path import *
 import fnmatch
 
 
-class TestPanel(wx.Panel):
+class ToolboxPanel(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
         self.Bind(wx.EVT_SIZE, self.OnSize)
@@ -28,7 +28,7 @@ class TestPanel(wx.Panel):
         fldridx     = il.Add(wx.ArtProvider_GetBitmap(wx.ART_FOLDER,      wx.ART_OTHER, isz))
         fldropenidx = il.Add(wx.ArtProvider_GetBitmap(wx.ART_FILE_OPEN,   wx.ART_OTHER, isz))
         fileidx     = il.Add(wx.ArtProvider_GetBitmap(wx.ART_NORMAL_FILE, wx.ART_OTHER, isz))
-        # smileidx    = il.Add(images.Smiles.GetBitmap())
+        mdlidx    = il.Add(icons.Earth_icon.GetBitmap())
 
         self.tree.SetImageList(il)
         self.il = il
@@ -86,8 +86,8 @@ class TestPanel(wx.Panel):
                         self.items[child] = fullpath
 
                         child.__setattr__('path',fullpath)
-                        self.tree.SetItemImage(child, fldropenidx, which = wx.TreeItemIcon_Expanded)
-                        self.tree.SetItemImage(child, fldropenidx, which = wx.TreeItemIcon_Normal)
+                        self.tree.SetItemImage(child, mdlidx, which = wx.TreeItemIcon_Expanded)
+                        self.tree.SetItemImage(child, mdlidx, which = wx.TreeItemIcon_Normal)
 
 
         self.tree.Expand(self.root)
@@ -98,7 +98,7 @@ class TestPanel(wx.Panel):
 
     def OnActivate(self, evt):
 
-        item = self.tree.GetItemText(evt.GetItem())
+        # item = self.tree.GetItemText(evt.GetItem())
         item = self.tree.GetSelection()
 
         for i in self.items.keys():
@@ -119,7 +119,7 @@ class TestPanel(wx.Panel):
 
 
 def runTest(frame, nb):
-    win = TestPanel(nb)
+    win = ToolboxPanel(nb)
     return win
 
 #----------------------------------------------------------------------

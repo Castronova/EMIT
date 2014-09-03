@@ -3,7 +3,7 @@ import wx
 import wx.html2
 from DirectoryView import DirectoryCtrlView
 from AllFileVeiw import FileCtrlView
-from Toolbox import TestPanel
+from Toolbox import ToolboxPanel
 import sys
 from CanvasView import Canvas
 from wx.lib.pubsub import pub as Publisher
@@ -54,7 +54,7 @@ class MainGui(wx.Frame):
 
         page1 = DirectoryCtrlView(self.nb)
         page2 = ModelView(self.nb)
-        page3 = TestPanel(self.nb)
+        page3 = ToolboxPanel(self.nb)
 
         self.nb.AddPage(page1, "Directory")
         self.nb.AddPage(page2, "Model Information")

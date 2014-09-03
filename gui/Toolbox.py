@@ -40,6 +40,8 @@ class TestPanel(wx.Panel):
         sections = cparser.sections()
         modelpaths = {}
 
+        self.items = {}
+
         for s in sections:
             # get the section key (minus the random number)
             section = s.split('^')[0]
@@ -51,8 +53,6 @@ class TestPanel(wx.Panel):
             d = {}
             for option in options:
                 d[option] = cparser.get(s,option)
-            # d['type'] = section
-
 
             if section not in modelpaths:
                 modelpaths[section] = [d]
@@ -82,47 +82,12 @@ class TestPanel(wx.Panel):
 
                         txt =  filename.split('.mdl')[0]
                         child = self.tree.AppendItem(cat, txt)
+
+                        self.items[child] = fullpath
+
+                        child.__setattr__('path',fullpath)
                         self.tree.SetItemImage(child, fldropenidx, which = wx.TreeItemIcon_Expanded)
                         self.tree.SetItemImage(child, fldropenidx, which = wx.TreeItemIcon_Normal)
-
-            # create some columns
-        # self.tree.AddColumn("Main column")
-        # self.tree.AddColumn("Column 1")
-        # self.tree.AddColumn("Column 2")
-        # self.tree.SetMainColumn(0) # the one with the tree in it...
-        # self.tree.SetColumnWidth(0, 175)
-        #
-        #
-        # self.root = self.tree.AddRoot("The Root Item")
-        # self.tree.SetItemText(self.root, "col 1 root", 1)
-        # self.tree.SetItemText(self.root, "col 2 root", 2)
-        # self.tree.SetItemImage(self.root, fldridx, which = wx.TreeItemIcon_Normal)
-        # self.tree.SetItemImage(self.root, fldropenidx, which = wx.TreeItemIcon_Expanded)
-        #
-        #
-        # for x in range(15):
-        #     txt = "Item %d" % x
-        #     child = self.tree.AppendItem(self.root, txt)
-        #     self.tree.SetItemText(child, txt + "(c1)", 1)
-        #     self.tree.SetItemText(child, txt + "(c2)", 2)
-        #     self.tree.SetItemImage(child, fldridx, which = wx.TreeItemIcon_Normal)
-        #     self.tree.SetItemImage(child, fldropenidx, which = wx.TreeItemIcon_Expanded)
-        #
-        #     for y in range(5):
-        #         txt = "item %d-%s" % (x, chr(ord("a")+y))
-        #         last = self.tree.AppendItem(child, txt)
-        #         self.tree.SetItemText(last, txt + "(c1)", 1)
-        #         self.tree.SetItemText(last, txt + "(c2)", 2)
-        #         self.tree.SetItemImage(last, fldridx, which = wx.TreeItemIcon_Normal)
-        #         self.tree.SetItemImage(last, fldropenidx, which = wx.TreeItemIcon_Expanded)
-        #
-        #         for z in range(5):
-        #             txt = "item %d-%s-%d" % (x, chr(ord("a")+y), z)
-        #             item = self.tree.AppendItem(last,  txt)
-        #             self.tree.SetItemText(item, txt + "(c1)", 1)
-        #             self.tree.SetItemText(item, txt + "(c2)", 2)
-        #             self.tree.SetItemImage(item, fileidx, which = wx.TreeItemIcon_Normal)
-        #             # self.tree.SetItemImage(item, smileidx, which = wx.TreeItemIcon_Selected)
 
 
         self.tree.Expand(self.root)
@@ -132,7 +97,14 @@ class TestPanel(wx.Panel):
 
 
     def OnActivate(self, evt):
-        # self.log.write('OnActivate: %s' % self.tree.GetItemText(evt.GetItem()))
+
+        item = self.tree.GetItemText(evt.GetItem())
+        item = self.tree.GetSelection()
+
+        for i in self.items.keys():
+            if i == item:
+                print self.items[i]
+                break
         pass
 
     def OnRightUp(self, evt):
@@ -144,6 +116,7 @@ class TestPanel(wx.Panel):
 
     def OnSize(self, evt):
         self.tree.SetSize(self.GetSize())
+
 
 def runTest(frame, nb):
     win = TestPanel(nb)

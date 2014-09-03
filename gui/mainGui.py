@@ -57,12 +57,12 @@ class MainGui(wx.Frame):
         page3 = ToolboxPanel(self.nb)
 
         self.nb.AddPage(page1, "Directory")
-        self.nb.AddPage(page2, "Model Information")
-        self.nb.AddPage(page3, "All Files")
+        self.nb.AddPage(page2, "Model View")
+        self.nb.AddPage(page3, "Toolbox View")
 
         self.nb.GetPage(0).SetLabel("Directory")
-        self.nb.GetPage(1).SetLabel("Model Information")
-        self.nb.GetPage(2).SetLabel("All Files")
+        self.nb.GetPage(1).SetLabel("Model View")
+        self.nb.GetPage(2).SetLabel("Toolbox View")
 
         self.bnb = wx.Notebook(self.pnlDocking)
 

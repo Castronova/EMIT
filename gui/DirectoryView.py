@@ -29,7 +29,7 @@ from shapely import wkt
 
 class DirectoryCtrlView(wx.Panel):
     def __init__(self, parent):
-        wx.Panel.__init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.Size(500, 300),
+        wx.Panel.__init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.Size(350, 300),
                           style=wx.TAB_TRAVERSAL)
         self.directoryStack = []
         self.initInterface()
@@ -42,10 +42,10 @@ class DirectoryCtrlView(wx.Panel):
         panelSizer.Add(self.toolbar, 0, wx.EXPAND, border)
 
         listCtrlSizer = wx.BoxSizer(wx.VERTICAL)
-        listCtrlSizer.SetMinSize(wx.Size(1000, 600))
+        listCtrlSizer.SetMinSize(wx.Size(350, 600))
         #bSizer4 = wx.BoxSizer(wx.VERTICAL)
 
-        self.sb = wx.TextCtrl(self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size(600, -1),
+        self.sb = wx.TextCtrl(self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size(350, -1),
                                        wx.TE_READONLY|wx.TE_CHARWRAP)
         listCtrlSizer.Add(self.sb, 0, wx.ALL | wx.EXPAND, border)
        # bSizer4.Add(self.sb, 0, wx.ALL | wx.EXPAND, border)

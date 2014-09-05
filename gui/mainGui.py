@@ -24,7 +24,7 @@ class MainGui(wx.Frame):
                                    style=wx.TAB_TRAVERSAL)
 
 
-        #self.Bind(wx.EVT_CLOSE, self.onClose)
+        # self.Bind(wx.EVT_CLOSE, self.onClose)
         self.initMenu()
         self.initAUIManager()
         self._init_sizers()
@@ -49,21 +49,24 @@ class MainGui(wx.Frame):
         # self.output = wx.TextCtrl(self, -1, size=(100,100), style=wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
 
         self.Canvas = Canvas(self.pnlDocking)
-        self.nb = wx.Notebook(self.pnlDocking)
+        self.Directory = DirectoryCtrlView(self.pnlDocking)
+        self.Toolbox = ToolboxPanel(self.pnlDocking)
+        self.Toolbox.Hide()
 
+        # self.nb = wx.Notebook(self.pnlDocking)
 
-        page1 = DirectoryCtrlView(self.nb)
-        page2 = ToolboxPanel(self.nb)
-        page3 = ModelView(self.nb)
+        # page1 = DirectoryCtrlView(self.nb)
+        # page2 = ToolboxPanel(self.nb)
+        # page3 = ModelView(self.nb)
 
-        self.nb.AddPage(page1, "Directory")
-        self.nb.AddPage(page2, "Model Toolbox")
-        self.nb.AddPage(page3, "Model View")
-
-        self.nb.GetPage(0).SetLabel("Directory")
-        self.nb.GetPage(1).SetLabel("Model Toolbox")
-        # self.nb.GetPage(2).SetLabel("Model View")
-        self.nb.SetSelection(0)
+        # self.nb.AddPage(page1, "Directory")
+        # self.nb.AddPage(page2, "Model Toolbox")
+        # self.nb.AddPage(page3, "Model View")
+        #
+        # self.nb.GetPage(0).SetLabel("Directory")
+        # self.nb.GetPage(1).SetLabel("Model Toolbox")
+        # # self.nb.GetPage(2).SetLabel("Model View")
+        # self.nb.SetSelection(0)
 
         self.bnb = wx.Notebook(self.pnlDocking)
 
@@ -81,7 +84,7 @@ class MainGui(wx.Frame):
 
 
 
-        self.m_mgr.AddPane(self.Canvas,
+        CanvasPane = self.m_mgr.AddPane(self.Canvas,
                            aui.AuiPaneInfo().
                            Center().
                            Name("Canvas").
@@ -95,7 +98,7 @@ class MainGui(wx.Frame):
                            Floatable(True).
                            MinSize(wx.Size(1000, 400)))
 
-        self.m_mgr.AddPane(self.bnb,
+        BottomNoteBookPane = self.m_mgr.AddPane(self.bnb,
                            aui.AuiPaneInfo().
                            Caption('Output').
                            Center().
@@ -111,7 +114,7 @@ class MainGui(wx.Frame):
                            MinSize(wx.Size(1000, 200)))
 
 
-        self.m_mgr.AddPane(self.nb,
+        DirectoryPane = self.m_mgr.AddPane(self.Directory,
                            aui.AuiPaneInfo().
                            Left().
                            Dock().
@@ -121,13 +124,30 @@ class MainGui(wx.Frame):
                            MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_SMART).
                            PinButton(True).
                            Resizable().
-                           MinSize(wx.Size(375,500)).
+                           MinSize(wx.Size(275,400)).
                            Floatable().
                            Movable().
                            FloatingSize(size=(600, 800)).
                            CloseButton(True))
 
-        self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED,self.OnSelect)
+        ToolboxPane = self.m_mgr.AddPane(self.Toolbox,
+                           aui.AuiPaneInfo().
+                           Left().
+                           Dock().
+                           CloseButton(False).
+                           MaximizeButton(True).
+                           MinimizeButton(True).
+                           MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_SMART).
+                           PinButton(True).
+                           Resizable().
+                           MinSize(wx.Size(275,400)).
+                           Floatable().
+                           Movable().
+                           FloatingSize(size=(600, 800)).
+                           Hide().
+                           CloseButton(True))
+
+        # self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED,self.OnSelect)
 
         self.m_mgr.Update()
 
@@ -170,7 +190,6 @@ class MainGui(wx.Frame):
         self.Bind(wx.EVT_MENU, self.onDirectory, ShowDir)
         self.Bind(wx.EVT_MENU, self.onAllFiles, ShowAll)
 
-
     def _postStart(self):
         ## Starts stuff after program has initiated
         self.Canvas.ZoomToFit(Event=None)
@@ -198,11 +217,15 @@ class MainGui(wx.Frame):
         self.Destroy()
 
     def onDirectory(self, event):
-        self.nb.SetSelection(0)
+        self.m_mgr.GetPane('self.Toolbox').Hide()
+        self.m_mgr.GetPane('self.Directory').Show()
+        self.m_mgr.Update()
         pass
 
     def onAllFiles(self, event):
-        self.nb.SetSelection(2)
+        self.m_mgr.GetPane('self.Directory').Hide()
+        self.m_mgr.GetPane('self.Toolbox').Show()
+        self.m_mgr.Update()
         pass
 
 class ModelView(wx.Panel):
@@ -226,7 +249,6 @@ class ModelView(wx.Panel):
 class AllFileView(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
-
 
 class TimeSeries(wx.Panel):
     """
@@ -455,8 +477,6 @@ class TimeSeries(wx.Panel):
 
         # refresh the object list view
         #Publisher.sendMessage("olvrefresh")
-
-
 
 class OutputTimeSeries(wx.Panel):
     def __init__(self, parent):

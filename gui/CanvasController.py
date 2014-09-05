@@ -382,7 +382,11 @@ class CanvasController:
 
 
             # set the model params as text
-            mv.setText(css + html)
+            try:
+                mv.setText(css + html)
+
+            except:
+                pass
 
 
 

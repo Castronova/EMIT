@@ -2,12 +2,15 @@ __author__ = 'Mario'
 import wx
 import wx.gizmos as gizmos
 from images import icons
-from ContextMenu import TreeContextMenu
+from ContextMenu import TreeContextMenu, DirectoryContextMenu
+import DirectoryView as DV
 import ConfigParser
 import os
 from os.path import *
 import fnmatch
 import wx.lib.customtreectrl as CT
+import utilities
+from shapely import wkt
 
 
 class ToolboxPanel(wx.Panel):
@@ -103,13 +106,12 @@ class ToolboxPanel(wx.Panel):
         # self.tree.GetMainWindow().Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
         self.tree.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
         self.tree.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnActivate)
-        self.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnContextMenu)
-        # self.Bind(wx.EVT_TREE_BEGIN_DRAG, self.onDrag, self.tree)
+        # self.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnContextMenu)
+        self.Bind(wx.EVT_TREE_ITEM_MENU, self.OnContextMenu)
         self.Bind(wx.EVT_TREE_BEGIN_DRAG, self.onDrag)
-        # self.tree.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnContextMenu)
 
     def OnContextMenu(self, evt):
-        self.tree.PopupMenu(TreeContextMenu(self,evt), evt.GetPosition())
+        self.tree.PopupMenu(TreeContextMenu(self,evt))
 
     def OnActivate(self, evt):
 

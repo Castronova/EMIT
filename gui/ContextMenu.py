@@ -166,7 +166,7 @@ class TreeContextMenu(wx.Menu):
 
         mmi = wx.MenuItem(self, wx.NewId(), 'View Details')
         self.AppendItem(mmi)
-        self.Bind(wx.EVT_MENU, self.OnViewDetails, mmi)
+        # self.Bind(wx.EVT_MENU, self.OnViewDetails, mmi)
 
     def OnViewDetails(self, e):
        # self.parent.ArrowClicked(self.arrow_obj)

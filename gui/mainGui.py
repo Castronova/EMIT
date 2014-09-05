@@ -53,16 +53,16 @@ class MainGui(wx.Frame):
 
 
         page1 = DirectoryCtrlView(self.nb)
-        page2 = ModelView(self.nb)
-        page3 = ToolboxPanel(self.nb)
+        page2 = ToolboxPanel(self.nb)
+        page3 = ModelView(self.nb)
 
         self.nb.AddPage(page1, "Directory")
-        self.nb.AddPage(page2, "Model View")
-        self.nb.AddPage(page3, "Toolbox View")
+        self.nb.AddPage(page2, "Model Toolbox")
+        self.nb.AddPage(page3, "Model View")
 
         self.nb.GetPage(0).SetLabel("Directory")
-        self.nb.GetPage(1).SetLabel("Model View")
-        self.nb.GetPage(2).SetLabel("Toolbox View")
+        self.nb.GetPage(1).SetLabel("Model Toolbox")
+        # self.nb.GetPage(2).SetLabel("Model View")
         self.nb.SetSelection(0)
 
         self.bnb = wx.Notebook(self.pnlDocking)
@@ -77,7 +77,7 @@ class MainGui(wx.Frame):
 
         self.bnb.GetPage(0).SetLabel("Console")
         self.bnb.GetPage(1).SetLabel("Remote Time Series")
-        self.bnb.GetPage(2).SetLabel("Output Time Series")
+        # self.bnb.GetPage(2).SetLabel("Output Time Series")
 
 
 

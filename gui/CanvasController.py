@@ -314,8 +314,6 @@ class CanvasController:
         #self.FloatCanvas.Bind(FC.EVT_FC_RIGHT_DOWN( list, -1, self.RightClickCb ))
         cur = self.getCursor()
 
-        # print object.Name
-
         if cur.Name == 'link':
             self.linkRects.append(object)
         # if cur.Name == 'link':

@@ -7,22 +7,25 @@ import ConfigParser
 import os
 from os.path import *
 import fnmatch
+import wx.lib.customtreectrl as CT
 
 
 class ToolboxPanel(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
         self.Bind(wx.EVT_SIZE, self.OnSize)
+        #
+        # self.tree = gizmos.TreeListCtrl(self, -1, style =
+        #                                 wx.TR_DEFAULT_STYLE
+        #                                 #| wx.TR_HAS_BUTTONS
+        #                                 #| wx.TR_TWIST_BUTTONS
+        #                                 #| wx.TR_ROW_LINES
+        #                                 #| wx.TR_COLUMN_LINES
+        #                                 #| wx.TR_NO_LINES
+        #                                 | wx.TR_FULL_ROW_HIGHLIGHT
+        #                            )
 
-        self.tree = gizmos.TreeListCtrl(self, -1, style =
-                                        wx.TR_DEFAULT_STYLE
-                                        #| wx.TR_HAS_BUTTONS
-                                        #| wx.TR_TWIST_BUTTONS
-                                        #| wx.TR_ROW_LINES
-                                        #| wx.TR_COLUMN_LINES
-                                        #| wx.TR_NO_LINES
-                                        | wx.TR_FULL_ROW_HIGHLIGHT
-                                   )
+        self.tree = CT.CustomTreeCtrl(self, -1, style=wx.TR_DEFAULT_STYLE )
 
         isz = (16,16)
         il = wx.ImageList(isz[0], isz[1])
@@ -42,6 +45,7 @@ class ToolboxPanel(wx.Panel):
         modelpaths = {}
 
         self.items = {}
+        self.filepath = {}
 
         for s in sections:
             # get the section key (minus the random number)
@@ -60,9 +64,9 @@ class ToolboxPanel(wx.Panel):
             else:
                 modelpaths[section].append(d)
 
-        self.tree.AddColumn("File Categories")
-        self.tree.SetMainColumn(0) # the one with the tree in it...
-        self.tree.SetColumnWidth(0, 175)
+        # self.tree.AddColumn("File Categories")
+        # self.tree.SetMainColumn(0) # the one with the tree in it...
+        # self.tree.SetColumnWidth(0, 175)
         self.root = self.tree.AddRoot("Models")
         self.tree.SetItemImage(self.root, fldropenidx, which = wx.TreeItemIcon_Expanded)
         self.tree.SetItemImage(self.root, fldropenidx, which = wx.TreeItemIcon_Normal)
@@ -76,6 +80,7 @@ class ToolboxPanel(wx.Panel):
                 path = d['path']
                 apath = join(dirname(abspath(__file__)), path)
                 matches = []
+                self.dirlist = []
                 for root, dirnames, filenames in os.walk(apath):
                     for filename in fnmatch.filter(filenames, '*.mdl'):
                         matches.append(os.path.join(root, filename))
@@ -83,20 +88,24 @@ class ToolboxPanel(wx.Panel):
 
                         txt =  filename.split('.mdl')[0]
                         child = self.tree.AppendItem(cat, txt)
+                        self.filepath[txt] = fullpath
 
                         self.items[child] = fullpath
 
-                        child.__setattr__('path',fullpath)
+                        child.__setattr__('path', fullpath)
                         self.tree.SetItemImage(child, mdlidx, which = wx.TreeItemIcon_Expanded)
                         self.tree.SetItemImage(child, mdlidx, which = wx.TreeItemIcon_Normal)
 
 
         self.tree.Expand(self.root)
+        self.tree.ExpandAll()
 
-        self.tree.GetMainWindow().Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
+        # self.tree.GetMainWindow().Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
+        self.tree.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
         self.tree.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnActivate)
-        self.tree.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnContextMenu)
-        self.tree.Bind(wx.EVT_TREE_BEGIN_DRAG, self.onDrag)
+        self.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnContextMenu)
+        # self.Bind(wx.EVT_TREE_BEGIN_DRAG, self.onDrag, self.tree)
+        self.Bind(wx.EVT_TREE_BEGIN_DRAG, self.onDrag)
         # self.tree.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnContextMenu)
 
     def OnContextMenu(self, evt):
@@ -116,11 +125,9 @@ class ToolboxPanel(wx.Panel):
     def onDrag(self, event):
         data = wx.FileDataObject()
         obj = event.GetEventObject()
-        id = event.GetIndex()
-        filename = obj.GetItem(id).GetText()
-        dirname = self.tree.GetName
-        #dirname = os.path.dirname(os.path.abspath(os.listdir(".")[0]))
-        fullpath = str(os.path.join(dirname, filename))
+        id = event.GetItem()
+        filename = id.GetText()
+        fullpath = self.filepath[filename]
 
         data.AddFile(fullpath)
 

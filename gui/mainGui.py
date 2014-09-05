@@ -144,7 +144,6 @@ class MainGui(wx.Frame):
                            Floatable().
                            Movable().
                            FloatingSize(size=(600, 800)).
-                           Hide().
                            CloseButton(True))
 
         # self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED,self.OnSelect)

@@ -18,7 +18,7 @@ from wx.lib.pubsub import pub as Publisher
 
 class ModelTxtCtrl ( wx.Frame ):
 
-    def __init__( self, parent ):
+    def __init__( self, parent, spatial=True, temporal=True, edit=True ):
         wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition,
                             size = wx.Size( 500,500 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 
@@ -27,50 +27,63 @@ class ModelTxtCtrl ( wx.Frame ):
 
         self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
 
+        # create the sizers
+        NBSizer = wx.BoxSizer( wx.VERTICAL )
+        txtctrlSizer = wx.BoxSizer( wx.VERTICAL )
+        treectrlSizer = wx.BoxSizer( wx.VERTICAL )
+
+
+
         #Define Objects
 
+        # intialize the notebook
         self.txtNotebook = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
-        self.txtctrlView = wx.Panel( self.txtNotebook, wx.ID_ANY, wx.DefaultPosition,
-                                     wx.DefaultSize, wx.TAB_TRAVERSAL )
-        self.TextDisplay = wx.TextCtrl( self.txtctrlView, wx.ID_ANY, wx.EmptyString,
-                                        wx.DefaultPosition, wx.Size(450, 350), wx.TE_MULTILINE|wx.TE_WORDWRAP )
 
+
+
+
+        # make the detail view
         self.treectrlView = wx.Panel( self.txtNotebook, wx.ID_ANY, wx.DefaultPosition,
                                       wx.DefaultSize, wx.TAB_TRAVERSAL )
         self.DetailTree = MyTree( self.treectrlView, id=wx.ID_ANY,
                 pos=wx.Point(0, 0),
               size=wx.Size(423, 319), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT )
-        # self.DetailTree = wx.TreeCtrl( self.treectrlView )
-        self.matplotView = pnlSpatial( self.txtNotebook )
-
-        self.txtNotebook.AddPage( self.treectrlView, u"Detail View", True )
-        self.txtNotebook.AddPage( self.matplotView, u"Spatial View", False )
-        self.txtNotebook.AddPage( self.txtctrlView, u"Edit", False )
-
-        self.SaveButton = wx.Button( self.txtctrlView, wx.ID_ANY, u"Save Changes",
-                                     wx.DefaultPosition, wx.DefaultSize, 0 )
-
-
-        #Sizers
-        NBSizer = wx.BoxSizer( wx.VERTICAL )
-        txtctrlSizer = wx.BoxSizer( wx.VERTICAL )
-        treectrlSizer = wx.BoxSizer( wx.VERTICAL )
-
-        self.txtctrlView.SetSizer( txtctrlSizer )
+        self.txtNotebook.AddPage( self.treectrlView, u"Model Details", True )
         self.treectrlView.SetSizer( treectrlSizer )
-
-        txtctrlSizer.Add( self.TextDisplay, 0, wx.ALL|wx.EXPAND, 5 )
-        txtctrlSizer.Add( self.SaveButton, 0, wx.ALL, 5 )
         treectrlSizer.Add( self.DetailTree, 0, wx.ALL, 5 )
-        # treectrlSizer.Add( self.DetailTree, 0, wx.ALL, 5 )
+
+        # make the spatial view
+        if spatial:
+            self.matplotView = pnlSpatial( self.txtNotebook )
+            self.txtNotebook.AddPage( self.matplotView, u"Spatial Definition", False )
+
+
+        # make edit view
+        if edit:
+            self.txtctrlView = wx.Panel( self.txtNotebook, wx.ID_ANY, wx.DefaultPosition,
+                                     wx.DefaultSize, wx.TAB_TRAVERSAL )
+            self.txtNotebook.AddPage( self.txtctrlView, u"Edit", False )
+
+            self.SaveButton = wx.Button( self.txtctrlView, wx.ID_ANY, u"Save Changes",
+                                         wx.DefaultPosition, wx.DefaultSize, 0 )
+
+            self.txtctrlView.SetSizer( txtctrlSizer )
+
+
+            self.TextDisplay = wx.TextCtrl( self.txtctrlView, wx.ID_ANY, wx.EmptyString,
+                                        wx.DefaultPosition, wx.Size(450, 350), wx.TE_MULTILINE|wx.TE_WORDWRAP )
+
+            txtctrlSizer.Add( self.TextDisplay, 0, wx.ALL|wx.EXPAND, 5 )
+            txtctrlSizer.Add( self.SaveButton, 0, wx.ALL, 5 )
+
+
+
         NBSizer.Add( self.txtNotebook, 1, wx.EXPAND |wx.ALL, 5 )
+
 
 
         #Bindings
         self.SaveButton.Bind( wx.EVT_BUTTON, self.OnSave )
-        #
-        # self.txtctrlView.Layout()
-        # txtctrlSizer.Fit( self.txtctrlView )
 
         self.treectrlView.Layout()
         treectrlSizer.Fit( self.treectrlView )

@@ -2,6 +2,7 @@ __author__ = 'tonycastronova'
 
 
 import wx
+from txtctrlModel import ModelTxtCtrl
 
 class LinkContextMenu(wx.Menu):
 
@@ -44,7 +45,8 @@ class ModelContextMenu(wx.Menu):
 
         mmi = wx.MenuItem(self, wx.NewId(), 'View Details')
         self.AppendItem(mmi)
-        self.Bind(wx.EVT_MENU, DirectoryContextMenu.OnViewDetails, mmi)
+        #self.Bind(wx.EVT_MENU, DirectoryContextMenu.OnViewDetails, mmi)
+        self.Bind(wx.EVT_MENU, self.ShowModelDetails, mmi)
 
         mmi = wx.MenuItem(self, wx.NewId(), 'Remove')
         self.AppendItem(mmi)
@@ -55,6 +57,32 @@ class ModelContextMenu(wx.Menu):
         # cmi = wx.MenuItem(self, wx.NewId(), 'Close')
         # self.AppendItem(cmi)
         # self.Bind(wx.EVT_MENU, self.OnClose, cmi)
+
+    def ShowModelDetails(self, e):
+
+        f = wx.Frame(self.GetParent())
+
+        # create the details view
+        view = ModelTxtCtrl(f)
+
+
+        # # load the file contents
+        # view.PopulateEdit(self.sb.GetValue())
+        #
+        #
+        # # load the geometry data
+        # view.PopulateSpatial(self.read_geoms(self.sb.GetValue(),'input'),'input')
+        # view.PopulateSpatial(self.read_geoms(self.sb.GetValue(),'output'),'output')
+        #
+        # # show the details view
+        # #listview = MyTree(self)
+        # view.PopulateEdit(self.sb.GetValue())
+        # view.PopulateDetails(self.sb.GetValue())
+
+        #listview.PopulateDetails(self.sb.GetValue())
+        view.Show()
+
+
 
     def PopupDisplay(self, e):
         self.parent.DetailView(e)

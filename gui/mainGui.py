@@ -181,7 +181,7 @@ class MainGui(wx.Frame):
 
 
         self.m_viewMenu = wx.Menu()
-        ShowAll = self.m_viewMenu.Append(wx.NewId(), '&All Files\tCtrl+A', 'Show all associated files', wx.ITEM_RADIO)
+        ShowAll = self.m_viewMenu.Append(wx.NewId(), '&Toolbox View\tCtrl+A', 'Show all associated files', wx.ITEM_RADIO)
         ShowDir = self.m_viewMenu.Append(wx.NewId(), '&Directory View\tCtrl+D', 'Shows file directory', wx.ITEM_RADIO)
         self.m_menubar.Append(self.m_viewMenu, "&View")
 

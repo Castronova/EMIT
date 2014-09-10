@@ -43,14 +43,11 @@ class DirectoryCtrlView(wx.Panel):
 
         listCtrlSizer = wx.BoxSizer(wx.VERTICAL)
         listCtrlSizer.SetMinSize(wx.Size(350, 600))
-        #bSizer4 = wx.BoxSizer(wx.VERTICAL)
 
         self.sb = wx.TextCtrl(self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size(350, -1),
                                        wx.TE_READONLY|wx.TE_CHARWRAP)
         listCtrlSizer.Add(self.sb, 0, wx.ALL | wx.EXPAND, border)
-       # bSizer4.Add(self.sb, 0, wx.ALL | wx.EXPAND, border)
 
-        #listCtrlSizer.Add(bSizer4, 1, wx.EXPAND, border)
 
         self.dirCtrl = DirectoryListCtrl(self, wx.ID_ANY, wx.DefaultPosition, wx.Size(1000, 400), wx.LC_REPORT)
         listCtrlSizer.Add(self.dirCtrl, 1, wx.ALL, border)
@@ -88,9 +85,9 @@ class DirectoryCtrlView(wx.Panel):
         tool = toolbar.AddLabelTool(UpID, label='Up one directory', bitmap=icons.go_up.GetBitmap())
         tool = toolbar.AddLabelTool(HomeID, label='Go Home', bitmap=icons.go_home.GetBitmap())
         tool = toolbar.AddLabelTool(RefreshID, label='Refresh', bitmap=icons.view_refresh.GetBitmap())
-        tool = toolbar.AddLabelTool(SaveID, label='Save', bitmap=icons.document_save.GetBitmap())
-        tool = toolbar.AddLabelTool(TerminalID, label='Terminal', bitmap=icons.draw_star.GetBitmap())
-        tool = toolbar.AddLabelTool(HelpID, label='Help', bitmap=icons.help_info.GetBitmap())
+        # tool = toolbar.AddLabelTool(SaveID, label='Save', bitmap=icons.document_save.GetBitmap())
+        # tool = toolbar.AddLabelTool(TerminalID, label='Terminal', bitmap=icons.draw_star.GetBitmap())
+        # tool = toolbar.AddLabelTool(HelpID, label='Help', bitmap=icons.help_info.GetBitmap())
 
         toolbar.AddSeparator()
         toolbar.Realize()

@@ -113,12 +113,12 @@ class GeneralContextMenu(wx.Menu):
         self.AppendItem(mmi)
         self.Bind(wx.EVT_MENU, self.OnAddLink, mmi)
 
-        mmi = wx.MenuItem(self, wx.NewId(), 'Load Configuration')
-        self.AppendItem(mmi)
-
-        mmi = wx.MenuItem(self, wx.NewId(), 'Save Configuration')
-        self.AppendItem(mmi)
-        self.Bind(wx.EVT_MENU, self.SaveConfiguration, mmi)
+        # mmi = wx.MenuItem(self, wx.NewId(), 'Load Configuration')
+        # self.AppendItem(mmi)
+        #
+        # mmi = wx.MenuItem(self, wx.NewId(), 'Save Configuration')
+        # self.AppendItem(mmi)
+        # self.Bind(wx.EVT_MENU, self.SaveConfiguration, mmi)
 
         mmi = wx.MenuItem(self, wx.NewId(), 'Clear Configuration')
         self.AppendItem(mmi)

@@ -72,12 +72,12 @@ class MainGui(wx.Frame):
         self.bnb = wx.Notebook(self.pnlDocking)
 
         output = consoleOutput(self.bnb)
-        seriesoutput = OutputTimeSeries(self.bnb)
+        # seriesoutput = OutputTimeSeries(self.bnb)
         seriesselector = TimeSeries(self.bnb)
 
         self.bnb.AddPage(output, "Console")
         self.bnb.AddPage(seriesselector, "Remote Time Series")
-        self.bnb.AddPage(seriesoutput, "Output Time Series")
+        # self.bnb.AddPage(seriesoutput, "Output Time Series")
 
         self.bnb.GetPage(0).SetLabel("Console")
         self.bnb.GetPage(1).SetLabel("Remote Time Series")
@@ -112,7 +112,7 @@ class MainGui(wx.Frame):
                            PinButton(True).
                            Resizable().
                            Floatable().
-                           MinSize(wx.Size(1000, 200)))
+                           MinSize(wx.Size(1200, 200)))
 
 
         self.m_mgr.AddPane(self.Directory,
@@ -223,18 +223,52 @@ class MainGui(wx.Frame):
         self.Destroy()
 
     def LoadConfiguration(self,event):
-        pass
+
+        if self.contentNotSaved:
+
+            if wx.MessageBox("Current content has not been saved! Proceed?", "Please confirm",
+                             wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
+                return
+
+            # else: proceed asking to the user the new file to open
+
+            openFileDialog = wx.FileDialog(self, "Open XYZ file", "", "",
+                                           "XYZ files (*.xyz)|*.xyz", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+
+            if openFileDialog.ShowModal() == wx.ID_CANCEL:
+                return     # the user changed idea...
+
+            # proceed loading the file chosen by the user
+            # this can be done with e.g. wxPython input streams:
+            input_stream = wx.FileInputStream(openFileDialog.GetPath())
+
+            if not input_stream.IsOk():
+
+                wx.LogError("Cannot open file '%s'."%openFileDialog.GetPath())
+                return
+            pass
 
     def SaveConfiguration(self,event):
         save = wx.FileDialog(self.Canvas.GetTopLevelParent(), "Save Configuration","","",
                              "Simulation Files (*.sim)|*.sim", wx.FD_SAVE  | wx.FD_OVERWRITE_PROMPT)
 
         from ContextMenu import GeneralContextMenu
-        if save.ShowModal() != wx.ID_CANCEL:
-            path = save.GetPath()
+        if save.ShowModal() == wx.ID_CANCEL:
+            return     # the user changed idea...
 
-        CanvasController.SaveSimulation(path)
-        self.parent.SaveSimulation(path)
+        # save the current contents in the file
+        # this can be done with e.g. wxPython output streams:
+        output_stream = save.GetPath()
+        CanvasController.SaveSimulation(self, path=output_stream)
+        if not output_stream.IsOk():
+            wx.LogError("Cannot save current contents in file '%s'."%save.GetPath())
+            return
+
+        # if save.ShowModal() != wx.ID_CANCEL:
+        #     path = save.GetPath()
+        #
+        # CanvasController.SaveSimulation(path)
+        # self.parent.SaveSimulation(path)
 
     def onDirectory(self, event):
         ToolboxPane = self.m_mgr.GetPane(self.Toolbox)

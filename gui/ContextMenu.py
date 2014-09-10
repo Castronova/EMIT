@@ -78,8 +78,8 @@ class GeneralContextMenu(wx.Menu):
 
         self.parent = parent
 
-        mmi = wx.MenuItem(self, wx.NewId(), 'Add Model')
-        self.AppendItem(mmi)
+        # mmi = wx.MenuItem(self, wx.NewId(), 'Add Model')
+        # self.AppendItem(mmi)
 
         mmi = wx.MenuItem(self, wx.NewId(), 'Add Link')
         self.AppendItem(mmi)

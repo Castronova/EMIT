@@ -7,17 +7,18 @@ from Toolbox import ToolboxPanel
 import sys
 from CanvasView import Canvas
 from wx.lib.pubsub import pub as Publisher
+from CanvasController import CanvasController
 import wx.lib.agw.aui as aui
 import objectListViewDatabase as olv
 from ODM2.Core.services import *
 import logging
-
+from ContextMenu import GeneralContextMenu
 import threading
 
 
 class MainGui(wx.Frame):
     def __init__(self, parent):
-        wx.Frame.__init__(self, parent, id=wx.ID_ANY, title="", pos=wx.DefaultPosition,
+        wx.Frame.__init__(self, parent, id=wx.ID_ANY, title="Environmental Model Integration Project", pos=wx.DefaultPosition,
                           size=wx.Size(1200, 750), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
 
         self.pnlDocking = wx.Panel(id=wx.ID_ANY, name='pnlDocking', parent=self, size=wx.Size(1200, 750),
@@ -84,7 +85,7 @@ class MainGui(wx.Frame):
 
 
 
-        CanvasPane = self.m_mgr.AddPane(self.Canvas,
+        self.m_mgr.AddPane(self.Canvas,
                            aui.AuiPaneInfo().
                            Center().
                            Name("Canvas").
@@ -98,7 +99,7 @@ class MainGui(wx.Frame):
                            Floatable(True).
                            MinSize(wx.Size(1000, 400)))
 
-        BottomNoteBookPane = self.m_mgr.AddPane(self.bnb,
+        self.m_mgr.AddPane(self.bnb,
                            aui.AuiPaneInfo().
                            Caption('Output').
                            Center().
@@ -114,7 +115,7 @@ class MainGui(wx.Frame):
                            MinSize(wx.Size(1000, 200)))
 
 
-        DirectoryPane = self.m_mgr.AddPane(self.Directory,
+        self.m_mgr.AddPane(self.Directory,
                            aui.AuiPaneInfo().
                            Left().
                            Dock().
@@ -128,9 +129,10 @@ class MainGui(wx.Frame):
                            Floatable().
                            Movable().
                            FloatingSize(size=(600, 800)).
+                           Show(show=False).Hide().
                            CloseButton(True))
 
-        ToolboxPane = self.m_mgr.AddPane(self.Toolbox,
+        self.m_mgr.AddPane(self.Toolbox,
                            aui.AuiPaneInfo().
                            Left().
                            Dock().
@@ -144,6 +146,7 @@ class MainGui(wx.Frame):
                            Floatable().
                            Movable().
                            FloatingSize(size=(600, 800)).
+                           Show(show=True).
                            CloseButton(True))
 
         # self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED,self.OnSelect)
@@ -167,6 +170,8 @@ class MainGui(wx.Frame):
 
         self.m_fileMenu = wx.Menu()
         #exit = wx.MenuItem(self.m_fileMenu, wx.ID_EXIT, '&Quit\tCtrl+Q')
+        Save = self.m_fileMenu.Append(wx.NewId(), '&Save Configuration\tCtrl+S', 'Save Configuration')
+        Open = self.m_fileMenu.Append(wx.NewId(), '&Load Configuration\tCtrl+O', 'Load Configuration')
         exit = self.m_fileMenu.Append(wx.NewId(), '&Quit\tCtrl+Q', 'Quit application')
 
         self.m_menubar.Append(self.m_fileMenu, "&File")
@@ -176,8 +181,8 @@ class MainGui(wx.Frame):
 
 
         self.m_viewMenu = wx.Menu()
-        ShowDir = self.m_viewMenu.Append(wx.NewId(), '&Directory View\tCtrl+D', 'Shows file directory', wx.ITEM_RADIO)
         ShowAll = self.m_viewMenu.Append(wx.NewId(), '&All Files\tCtrl+A', 'Show all associated files', wx.ITEM_RADIO)
+        ShowDir = self.m_viewMenu.Append(wx.NewId(), '&Directory View\tCtrl+D', 'Shows file directory', wx.ITEM_RADIO)
         self.m_menubar.Append(self.m_viewMenu, "&View")
 
         self.SetMenuBar(self.m_menubar)
@@ -185,6 +190,8 @@ class MainGui(wx.Frame):
         wx.CallAfter(self._postStart)
 
         ## Events
+        self.Bind(wx.EVT_MENU, self.SaveConfiguration, Save)
+        self.Bind(wx.EVT_MENU, self.LoadConfiguration, Open)
         self.Bind(wx.EVT_MENU, self.onClose, exit)
         self.Bind(wx.EVT_MENU, self.onDirectory, ShowDir)
         self.Bind(wx.EVT_MENU, self.onAllFiles, ShowAll)
@@ -215,15 +222,33 @@ class MainGui(wx.Frame):
                     item.Close()
         self.Destroy()
 
+    def LoadConfiguration(self,event):
+        pass
+
+    def SaveConfiguration(self,event):
+        save = wx.FileDialog(self.Canvas.GetTopLevelParent(), "Save Configuration","","",
+                             "Simulation Files (*.sim)|*.sim", wx.FD_SAVE  | wx.FD_OVERWRITE_PROMPT)
+
+        from ContextMenu import GeneralContextMenu
+        if save.ShowModal() != wx.ID_CANCEL:
+            path = save.GetPath()
+
+        CanvasController.SaveSimulation(path)
+        self.parent.SaveSimulation(path)
+
     def onDirectory(self, event):
-        self.m_mgr.GetPane('self.Toolbox').Hide()
-        self.m_mgr.GetPane('self.Directory').Show()
+        ToolboxPane = self.m_mgr.GetPane(self.Toolbox)
+        ToolboxPane.Hide()
+        DirectoryPane = self.m_mgr.GetPane(self.Directory)
+        DirectoryPane.Show(show=True)
         self.m_mgr.Update()
         pass
 
     def onAllFiles(self, event):
-        self.m_mgr.GetPane('self.Directory').Hide()
-        self.m_mgr.GetPane('self.Toolbox').Show()
+        DirectoryPane = self.m_mgr.GetPane(self.Directory)
+        DirectoryPane.Hide()
+        ToolboxPane = self.m_mgr.GetPane(self.Toolbox)
+        ToolboxPane.Show(show=True)
         self.m_mgr.Update()
         pass
 

@@ -16,6 +16,7 @@ from shapely import wkt
 class ToolboxPanel(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
+        self.SetBackgroundColour((0,0,0))
         self.Bind(wx.EVT_SIZE, self.OnSize)
         #
         # self.tree = gizmos.TreeListCtrl(self, -1, style =
@@ -29,7 +30,7 @@ class ToolboxPanel(wx.Panel):
         #                            )
 
         self.tree = CT.CustomTreeCtrl(self, -1, style=wx.TR_DEFAULT_STYLE )
-
+        self.tree.SetBackgroundColour((255,255,255))
         isz = (16,16)
         il = wx.ImageList(isz[0], isz[1])
         fldridx     = il.Add(wx.ArtProvider_GetBitmap(wx.ART_FOLDER,      wx.ART_OTHER, isz))
@@ -70,7 +71,7 @@ class ToolboxPanel(wx.Panel):
         # self.tree.AddColumn("File Categories")
         # self.tree.SetMainColumn(0) # the one with the tree in it...
         # self.tree.SetColumnWidth(0, 175)
-        self.root = self.tree.AddRoot("Models")
+        self.root = self.tree.AddRoot("Model Toolbox")
         self.tree.SetItemImage(self.root, fldropenidx, which = wx.TreeItemIcon_Expanded)
         self.tree.SetItemImage(self.root, fldropenidx, which = wx.TreeItemIcon_Normal)
 

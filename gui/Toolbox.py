@@ -12,9 +12,14 @@ import wx.lib.customtreectrl as CT
 import utilities
 from shapely import wkt
 
+from txtctrlModel import ModelTxtCtrl
 
 class ToolboxPanel(wx.Panel):
     def __init__(self, parent):
+
+        # create object to store the currently selected item's path
+        self.__currently_selected_item_path = None
+
         wx.Panel.__init__(self, parent)
         self.SetBackgroundColour((0,0,0))
         self.Bind(wx.EVT_SIZE, self.OnSize)
@@ -112,7 +117,20 @@ class ToolboxPanel(wx.Panel):
         self.Bind(wx.EVT_TREE_BEGIN_DRAG, self.onDrag)
 
     def OnContextMenu(self, evt):
+
+        # save the currently selected item
+        self.SetCurrentlySelected(evt)
+
+        # launch the context menu
         self.tree.PopupMenu(TreeContextMenu(self,evt))
+
+    def SetCurrentlySelected(self,evt):
+        item = self.tree.GetSelection()
+
+        for i in self.items.keys():
+            if i == item:
+                self.__currently_selected_item_path = os.path.abspath(self.items[i])
+                break
 
     def OnActivate(self, evt):
 
@@ -148,6 +166,30 @@ class ToolboxPanel(wx.Panel):
     def OnSize(self, evt):
         self.tree.SetSize(self.GetSize())
 
+    def ShowDetails(self):
+
+        f = self.GetParent()
+
+        # create the details view
+        view = ModelTxtCtrl(f,spatial=False)
+
+        print self.__currently_selected_item_path
+
+        # load the file contents
+        view.PopulateEdit(self.__currently_selected_item_path)
+
+
+        # # load the geometry data
+        # view.PopulateSpatial(self.read_geoms(self.sb.GetValue(),'input'),'input')
+        # view.PopulateSpatial(self.read_geoms(self.sb.GetValue(),'output'),'output')
+
+        # show the details view
+        #listview = MyTree(self)
+        view.PopulateEdit(self.__currently_selected_item_path)
+        view.PopulateDetails(self.__currently_selected_item_path)
+
+        #listview.PopulateDetails(self.sb.GetValue())
+        view.Show()
 
 def runTest(frame, nb):
     win = ToolboxPanel(nb)

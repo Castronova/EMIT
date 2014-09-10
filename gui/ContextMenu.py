@@ -62,8 +62,8 @@ class ModelContextMenu(wx.Menu):
 
         f = wx.Frame(self.GetParent())
 
-        # create the details view
-        view = ModelTxtCtrl(f)
+        # create the details view (no edit)
+        view = ModelTxtCtrl(f, edit=False)
 
 
         # # load the file contents
@@ -194,7 +194,7 @@ class TreeContextMenu(wx.Menu):
 
         mmi = wx.MenuItem(self, wx.NewId(), 'View Details')
         self.AppendItem(mmi)
-        # self.Bind(wx.EVT_MENU, self.OnViewDetails, mmi)
+        self.Bind(wx.EVT_MENU, self.OnViewDetails, mmi)
 
     def OnViewDetails(self, e):
        # self.parent.ArrowClicked(self.arrow_obj)

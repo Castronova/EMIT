@@ -76,6 +76,8 @@ class ModelTxtCtrl ( wx.Frame ):
             txtctrlSizer.Add( self.TextDisplay, 0, wx.ALL|wx.EXPAND, 5 )
             txtctrlSizer.Add( self.SaveButton, 0, wx.ALL, 5 )
 
+            #Bindings
+            self.SaveButton.Bind( wx.EVT_BUTTON, self.OnSave )
 
 
         NBSizer.Add( self.txtNotebook, 1, wx.EXPAND |wx.ALL, 5 )
@@ -83,7 +85,7 @@ class ModelTxtCtrl ( wx.Frame ):
 
 
         #Bindings
-        self.SaveButton.Bind( wx.EVT_BUTTON, self.OnSave )
+        #self.SaveButton.Bind( wx.EVT_BUTTON, self.OnSave )
 
         self.treectrlView.Layout()
         treectrlSizer.Fit( self.treectrlView )

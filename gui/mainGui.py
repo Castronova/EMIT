@@ -17,13 +17,17 @@ import threading
 
 
 class MainGui(wx.Frame):
-    def __init__(self, parent):
+    def __init__(self, parent, cmd):
+
+
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title="Environmental Model Integration Project", pos=wx.DefaultPosition,
                           size=wx.Size(1200, 750), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
 
         self.pnlDocking = wx.Panel(id=wx.ID_ANY, name='pnlDocking', parent=self, size=wx.Size(1200, 750),
                                    style=wx.TAB_TRAVERSAL)
 
+        # save cmd object in pnlDocking so that children can access it
+        self.pnlDocking.__setattr__('cmd',cmd)
 
         # self.Bind(wx.EVT_CLOSE, self.onClose)
         self.initMenu()
@@ -181,8 +185,8 @@ class MainGui(wx.Frame):
 
 
         self.m_viewMenu = wx.Menu()
-        ShowAll = self.m_viewMenu.Append(wx.NewId(), '&Toolbox View\tCtrl+A', 'Show all associated files', wx.ITEM_RADIO)
-        ShowDir = self.m_viewMenu.Append(wx.NewId(), '&Directory View\tCtrl+D', 'Shows file directory', wx.ITEM_RADIO)
+        ShowAll = self.m_viewMenu.Append(wx.NewId(), '&Toolbox\tCtrl+A', 'Show all associated files', wx.ITEM_RADIO)
+        ShowDir = self.m_viewMenu.Append(wx.NewId(), '&Directory\tCtrl+D', 'Shows file directory', wx.ITEM_RADIO)
         self.m_menubar.Append(self.m_viewMenu, "&View")
 
         self.SetMenuBar(self.m_menubar)

@@ -458,8 +458,6 @@ def create_database_connections_from_args(title, desc, engine, address, db, user
 
     return db_connections
 
-
-
 def load_model(config_params):
     """
     Creates an instance of the model by loading the contents of the configuration ini file.

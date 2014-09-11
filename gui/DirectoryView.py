@@ -35,6 +35,9 @@ class DirectoryCtrlView(wx.Panel):
         self.initInterface()
         self.initBindings()
 
+        self.cmd = parent.__getattribute__('cmd')
+
+
     def initInterface(self):
         border = 3
         panelSizer = wx.BoxSizer(wx.VERTICAL)
@@ -184,7 +187,7 @@ class DirectoryCtrlView(wx.Panel):
     def ShowDetails(self):
 
         # create the details view
-        view = ModelTxtCtrl(self)
+        view = ModelTxtCtrl(self,spatial=False)
 
 
         # load the file contents
@@ -192,8 +195,8 @@ class DirectoryCtrlView(wx.Panel):
 
 
         # load the geometry data
-        view.PopulateSpatial(self.read_geoms(self.sb.GetValue(),'input'),'input')
-        view.PopulateSpatial(self.read_geoms(self.sb.GetValue(),'output'),'output')
+        # view.PopulateSpatial(self.read_geoms(self.sb.GetValue(),'input'),'input')
+        # view.PopulateSpatial(self.read_geoms(self.sb.GetValue(),'output'),'output')
 
         # show the details view
         #listview = MyTree(self)

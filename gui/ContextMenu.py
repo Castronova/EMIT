@@ -2,6 +2,7 @@ __author__ = 'tonycastronova'
 
 
 import wx
+import spatial_utilities as spatial
 from txtctrlModel import ModelTxtCtrl
 
 class LinkContextMenu(wx.Menu):
@@ -9,6 +10,7 @@ class LinkContextMenu(wx.Menu):
     def __init__(self, parent, e):
         super(LinkContextMenu, self).__init__()
 
+        self.cmd = parent.cmd
         self.arrow_obj = e
         self.parent = parent
 
@@ -40,6 +42,7 @@ class ModelContextMenu(wx.Menu):
     def __init__(self, parent, e):
         super(ModelContextMenu, self).__init__()
 
+        self.cmd = parent.cmd
         self.model_obj = e
         self.parent = parent
 
@@ -60,11 +63,24 @@ class ModelContextMenu(wx.Menu):
 
     def ShowModelDetails(self, e):
 
+        # get model id
+        id = self.model_obj.ID
+
+        # create a frame to bind the details page to
         f = wx.Frame(self.GetParent())
 
         # create the details view (no edit)
         view = ModelTxtCtrl(f, edit=False)
 
+        # get the input geometries
+        ogeoms = spatial.get_input_geoms(self.cmd, id)
+
+        # get the output geometries
+        igeoms = spatial.get_output_geoms(self.cmd, id)
+
+        # load geometry data
+        view.PopulateSpatialGeoms(ogeoms, type='output')
+        view.PopulateSpatialGeoms(igeoms, type='input')
 
         # # load the file contents
         # view.PopulateEdit(self.sb.GetValue())
@@ -75,11 +91,13 @@ class ModelContextMenu(wx.Menu):
         # view.PopulateSpatial(self.read_geoms(self.sb.GetValue(),'output'),'output')
         #
         # # show the details view
-        # #listview = MyTree(self)
+        # # listview = MyTree(self)
         # view.PopulateEdit(self.sb.GetValue())
-        # view.PopulateDetails(self.sb.GetValue())
 
-        #listview.PopulateDetails(self.sb.GetValue())
+        mdl_path= self.cmd.get_model_by_id(self.model_obj.ID)._Model__attrib['mdl']
+        view.PopulateDetails(mdl_path)
+
+        # listview.PopulateDetails(self.sb.GetValue())
         view.Show()
 
 
@@ -104,6 +122,7 @@ class GeneralContextMenu(wx.Menu):
     def __init__(self, parent):
         super(GeneralContextMenu, self).__init__()
 
+        self.cmd = parent.cmd
         self.parent = parent
 
         # mmi = wx.MenuItem(self, wx.NewId(), 'Add Model')
@@ -161,12 +180,12 @@ class GeneralContextMenu(wx.Menu):
     def OnClose(self, e):
         self.parent.Close()
 
-
 class DirectoryContextMenu(wx.Menu):
 
     def __init__(self, parent, e):
         super(DirectoryContextMenu, self).__init__()
 
+        self.cmd = parent.cmd
         self.arrow_obj = e
         self.parent = parent
 
@@ -189,6 +208,7 @@ class TreeContextMenu(wx.Menu):
     def __init__(self, parent, e):
         super(TreeContextMenu, self).__init__()
 
+        self.cmd = parent.cmd
         self.arrow_obj = e
         self.parent = parent
 

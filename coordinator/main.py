@@ -308,7 +308,6 @@ class Coordinator(object):
         # return the model id
         return thisModel
 
-
     def remove_model(self,linkablecomponent):
         """
         removes model component objects from the registry
@@ -379,7 +378,6 @@ class Coordinator(object):
             return id
         else:
             print '>  Could Not Create Link :('
-
 
     def add_link_by_name(self,from_id, from_item_name, to_id, to_item_name):
         """
@@ -468,7 +466,7 @@ class Coordinator(object):
         #         return 1
         # return 0
 
-    def update_links(self,model, exchangeitems):
+    def update_links(self, model, exchangeitems):
         """
         Updates the model associated with the link.  This is necessary after the run phase to update the data
         values stored on the link object

@@ -46,18 +46,18 @@ class pnlSpatial ( wx.Panel ):
 
         # put up a figure
         self.figure = plt.figure()
-        self.input = self.figure.add_subplot(1,3,1)
-        self.mapping = self.figure.add_subplot(1,3,2)
-        self.output = self.figure.add_subplot(1,3,3)
+        self.ax = self.figure.add_subplot(1,1,1)
+        # self.mapping = self.figure.add_subplot(1,3,2)
+        # self.output = self.figure.add_subplot(1,3,3)
 
         # format plot axis (suppress)
 
-        self.input.xaxis._visible = False
-        self.input.yaxis._visible = False
-        self.mapping.xaxis._visible = False
-        self.mapping.yaxis._visible = False
-        self.output.xaxis._visible = False
-        self.output.yaxis._visible = False
+        self.ax.xaxis._visible = False
+        self.ax.yaxis._visible = False
+        # self.mapping.xaxis._visible = False
+        # self.mapping.yaxis._visible = False
+        # self.output.xaxis._visible = False
+        # self.output.yaxis._visible = False
 
 
 

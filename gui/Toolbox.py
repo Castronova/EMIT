@@ -17,6 +17,8 @@ from txtctrlModel import ModelTxtCtrl
 class ToolboxPanel(wx.Panel):
     def __init__(self, parent):
 
+        self.cmd = parent.__getattribute__('cmd')
+
         # create object to store the currently selected item's path
         self.__currently_selected_item_path = None
 

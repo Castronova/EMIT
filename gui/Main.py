@@ -22,10 +22,10 @@ from CanvasController import CanvasController
 from CanvasView import Canvas
 
 
-
 # ##########################################################################
 # # Class MainFrame
 # ##########################################################################
+
 
 if __name__ == '__main__':
 
@@ -34,6 +34,7 @@ if __name__ == '__main__':
 
     # create and instance of the coordinator engine
     cmd = cmd.Coordinator()
+
 
     # connect to databases and set default
     currentdir = os.path.dirname(os.path.abspath(__file__))
@@ -47,7 +48,7 @@ if __name__ == '__main__':
 
     wx.Log.SetLogLevel(0)
     app = wx.App(False)
-    frame = MainGui(None)
+    frame = MainGui(None,cmd)
     frame.Show(True)
 
     CanvasController(cmd, frame.Canvas)

@@ -150,6 +150,20 @@ class ModelTxtCtrl ( wx.Frame ):
         elif type == 'output':
             self.matplotView.output_data(coordlist)
 
+    def PopulateSpatialGeoms(self, geometrycoords, type):
+
+        # todo: extend support for multiple inputs/outputs
+        for variable, geom in geometrycoords.iteritems():
+
+            if type == 'input':
+                self.matplotView.input_data(geom)
+            elif type == 'output':
+                self.matplotView.output_data(geom)
+
+
+            # todo: extend support for multiple inputs/outputs
+            return
+
     def PopulateDetails(self, fileExtension):
 
         # get a dictionary of config parameters

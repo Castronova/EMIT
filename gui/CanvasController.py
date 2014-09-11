@@ -310,7 +310,7 @@ class CanvasController:
         self.Canvas.Canvas.Draw()
 
     def ObjectHit(self, object):
-        # print "Hit Object(CanvasController)", object.Name
+        print "Hit Object(CanvasController)", object.Name
         #self.FloatCanvas.Bind(FC.EVT_FC_RIGHT_DOWN( list, -1, self.RightClickCb ))
         cur = self.getCursor()
 

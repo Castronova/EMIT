@@ -135,9 +135,9 @@ class GeneralContextMenu(wx.Menu):
         # mmi = wx.MenuItem(self, wx.NewId(), 'Load Configuration')
         # self.AppendItem(mmi)
         #
-        # mmi = wx.MenuItem(self, wx.NewId(), 'Save Configuration')
-        # self.AppendItem(mmi)
-        # self.Bind(wx.EVT_MENU, self.SaveConfiguration, mmi)
+        mmi = wx.MenuItem(self, wx.NewId(), 'Save Configuration')
+        self.AppendItem(mmi)
+        self.Bind(wx.EVT_MENU, self.SaveConfiguration, mmi)
 
         mmi = wx.MenuItem(self, wx.NewId(), 'Clear Configuration')
         self.AppendItem(mmi)
@@ -162,15 +162,20 @@ class GeneralContextMenu(wx.Menu):
         self.parent.run()
 
     def OnClickClear(self, e):
+        dlg = wx.MessageDialog(None, 'Are you sure you would like to clear configuration?', 'Question', wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
 
-        self.parent.clear()
+        if dlg.ShowModal() !=wx.ID_NO:
+            self.parent.clear()
+
+        # elif dlg.ShowModal() !=wx.ID_NO:
+        #     self.parent.clear()
 
     def SaveConfiguration(self,e):
 
         save = wx.FileDialog(self.parent.Canvas.GetTopLevelParent(), "Save Configuration","","",
                              "Simulation Files (*.sim)|*.sim", wx.FD_SAVE  | wx.FD_OVERWRITE_PROMPT)
 
-        if save.ShowModal() != wx.ID_CANCEL:
+        if save.ShowModal() != wx.ID_OK:
             path = save.GetPath()
             self.parent.SaveSimulation(path)
 
@@ -179,6 +184,11 @@ class GeneralContextMenu(wx.Menu):
 
     def OnClose(self, e):
         self.parent.Close()
+
+    def Warn(parent, message, caption = 'Warning!'):
+        dlg = wx.MessageDialog(parent, message, caption, wx.OK | wx.ICON_WARNING)
+        dlg.ShowModal()
+        dlg.Destroy()
 
 class DirectoryContextMenu(wx.Menu):
 

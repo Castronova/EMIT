@@ -168,30 +168,59 @@ class ToolboxPanel(wx.Panel):
     def OnSize(self, evt):
         self.tree.SetSize(self.GetSize())
 
+    def OnExpandAll(self):
+        self.tree.Expand(self.root)
+
+    def OnCollapseAll(self):
+        self.tree.Collapse(self.root)
+
     def ShowDetails(self):
 
-        f = self.GetParent()
-
-        # create the details view
-        view = ModelTxtCtrl(f,spatial=False)
-
-        print self.__currently_selected_item_path
-
-        # load the file contents
-        view.PopulateEdit(self.__currently_selected_item_path)
-
-
+        # f = self.GetParent()
+        #
+        # # create the details view
+        # view = ModelTxtCtrl(f,spatial=False)
+        #
+        # print self.__currently_selected_item_path
+        #
+        # # load the file contents
+        # view.PopulateEdit(self.__currently_selected_item_path)
+        #
+        #
+        # # # load the geometry data
+        # # view.PopulateSpatial(self.read_geoms(self.sb.GetValue(),'input'),'input')
+        # # view.PopulateSpatial(self.read_geoms(self.sb.GetValue(),'output'),'output')
+        #
+        # # show the details view
+        # #listview = MyTree(self)
+        # view.PopulateEdit(self.__currently_selected_item_path)
+        # view.PopulateDetails(self.__currently_selected_item_path)
+        #
+        # #listview.PopulateDetails(self.sb.GetValue())
+        # view.Show()
+        #
+        # def ShowDetails(self):
+        #
+        # # create the details view
+        # view = ModelTxtCtrl(self,spatial=False)
+        #
+        #
+        # # load the file contents
+        # view.PopulateEdit(self.sb.GetValue())
+        #
+        #
         # # load the geometry data
-        # view.PopulateSpatial(self.read_geoms(self.sb.GetValue(),'input'),'input')
-        # view.PopulateSpatial(self.read_geoms(self.sb.GetValue(),'output'),'output')
-
-        # show the details view
-        #listview = MyTree(self)
-        view.PopulateEdit(self.__currently_selected_item_path)
-        view.PopulateDetails(self.__currently_selected_item_path)
-
-        #listview.PopulateDetails(self.sb.GetValue())
-        view.Show()
+        # # view.PopulateSpatial(self.read_geoms(self.sb.GetValue(),'input'),'input')
+        # # view.PopulateSpatial(self.read_geoms(self.sb.GetValue(),'output'),'output')
+        #
+        # # show the details view
+        # #listview = MyTree(self)
+        # view.PopulateEdit(self.sb.GetValue())
+        # view.PopulateDetails(self.sb.GetValue())
+        #
+        # #listview.PopulateDetails(self.sb.GetValue())
+        # view.Show()
+        pass
 
 def runTest(frame, nb):
     win = ToolboxPanel(nb)

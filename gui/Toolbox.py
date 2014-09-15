@@ -2,15 +2,14 @@ __author__ = 'Mario'
 import wx
 import wx.gizmos as gizmos
 from images import icons
-from ContextMenu import TreeContextMenu, DirectoryContextMenu
-import DirectoryView as DV
+from ContextMenu import TreeContextMenu, TreeItemContextMenu
+from txtctrlModel import ModelTxtCtrl
 import ConfigParser
 import os
 from os.path import *
 import fnmatch
 import wx.lib.customtreectrl as CT
 import utilities
-from shapely import wkt
 
 from txtctrlModel import ModelTxtCtrl
 
@@ -114,8 +113,8 @@ class ToolboxPanel(wx.Panel):
         # self.tree.GetMainWindow().Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
         self.tree.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
         self.tree.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnActivate)
-        # self.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnContextMenu)
-        self.Bind(wx.EVT_TREE_ITEM_MENU, self.OnContextMenu)
+        self.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnItemContextMenu)
+        # self.Bind(wx.EVT_TREE_ITEM_MENU, self.OnItemContextMenu)
         self.Bind(wx.EVT_TREE_BEGIN_DRAG, self.onDrag)
 
     def OnContextMenu(self, evt):
@@ -125,6 +124,11 @@ class ToolboxPanel(wx.Panel):
 
         # launch the context menu
         self.tree.PopupMenu(TreeContextMenu(self,evt))
+
+    def OnItemContextMenu(self, evt):
+
+        self.tree.GetSelection()
+        self.tree.PopupMenu(TreeItemContextMenu(self,evt))
 
     def SetCurrentlySelected(self,evt):
         item = self.tree.GetSelection()
@@ -174,53 +178,31 @@ class ToolboxPanel(wx.Panel):
     def OnCollapseAll(self):
         self.tree.Collapse(self.root)
 
+
     def ShowDetails(self):
 
-        # f = self.GetParent()
+        # create the details view
+        view = ModelTxtCtrl(self,spatial=False)
+        # view2 = self.tree
         #
-        # # create the details view
-        # view = ModelTxtCtrl(f,spatial=False)
-        #
-        # print self.__currently_selected_item_path
-        #
-        # # load the file contents
-        # view.PopulateEdit(self.__currently_selected_item_path)
-        #
-        #
-        # # # load the geometry data
-        # # view.PopulateSpatial(self.read_geoms(self.sb.GetValue(),'input'),'input')
-        # # view.PopulateSpatial(self.read_geoms(self.sb.GetValue(),'output'),'output')
-        #
-        # # show the details view
-        # #listview = MyTree(self)
-        # view.PopulateEdit(self.__currently_selected_item_path)
-        # view.PopulateDetails(self.__currently_selected_item_path)
-        #
-        # #listview.PopulateDetails(self.sb.GetValue())
-        # view.Show()
-        #
-        # def ShowDetails(self):
-        #
-        # # create the details view
-        # view = ModelTxtCtrl(self,spatial=False)
-        #
-        #
-        # # load the file contents
-        # view.PopulateEdit(self.sb.GetValue())
-        #
-        #
-        # # load the geometry data
-        # # view.PopulateSpatial(self.read_geoms(self.sb.GetValue(),'input'),'input')
-        # # view.PopulateSpatial(self.read_geoms(self.sb.GetValue(),'output'),'output')
-        #
-        # # show the details view
-        # #listview = MyTree(self)
-        # view.PopulateEdit(self.sb.GetValue())
-        # view.PopulateDetails(self.sb.GetValue())
-        #
-        # #listview.PopulateDetails(self.sb.GetValue())
-        # view.Show()
-        pass
+        # view2.GetSelections()
+
+        # load the file contents
+        view.PopulateEdit(self.tree.GetSelection())
+
+
+        # load the geometry data
+        # view.PopulateSpatial(self.read_geoms(self.sb.GetValue(),'input'),'input')
+        # view.PopulateSpatial(self.read_geoms(self.sb.GetValue(),'output'),'output')
+
+        # show the details view
+        #listview = MyTree(self)
+        view.PopulateEdit(self.tree.GetSelection())
+        view.PopulateDetails(self.tree.GetSelection())
+
+        #listview.PopulateDetails(self.sb.GetValue())
+        view.Show()
+
 
 def runTest(frame, nb):
     win = ToolboxPanel(nb)

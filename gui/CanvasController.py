@@ -923,7 +923,7 @@ class FileDrop(wx.FileDropTarget):
 
             except Exception, e:
                 print '> Could not load the model. Please verify that the model file exists.'
-                print '> "(e)"'
+                print '> %s' % e
 
         else:
             # # -- must be a data object --

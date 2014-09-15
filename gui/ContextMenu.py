@@ -73,10 +73,10 @@ class ModelContextMenu(wx.Menu):
         view = ModelTxtCtrl(f, edit=False)
 
         # get the input geometries
-        ogeoms = spatial.get_input_geoms(self.cmd, id)
+        ogeoms = spatial.get_output_geoms(self.cmd, id)
 
         # get the output geometries
-        igeoms = spatial.get_output_geoms(self.cmd, id)
+        igeoms = spatial.get_input_geoms(self.cmd, id)
 
         # load geometry data
         view.PopulateSpatialGeoms(ogeoms, type='output')

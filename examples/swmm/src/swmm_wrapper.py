@@ -3,7 +3,7 @@ __author__ = 'tonycastronova'
 from os.path import *
 
 import subprocess
-
+import spatial_utilities as sutils
 from shapely.geometry import *
 from stdlib import Geometry, DataValues
 import parse_swmm as ps
@@ -44,6 +44,11 @@ class swmm(feed_forward_wrapper):
         # build link geometries
         link_geoms = self.build_swmm_geoms(self.sim_input,'vertices')
 
+        # todo: set input and output geometries based on config properties
+        # set input geometries
+        # ids, links = zip(*link_geoms)
+        # sutils.set_output_geoms(self,'Hydraulic_head', links)
+
         # get the stage output exchange item
         stage = self.get_output_by_name('Hydraulic_head')
 
@@ -59,6 +64,7 @@ class swmm(feed_forward_wrapper):
         stage.add_geometry(elems)
 
 
+        print 'done with initialize'
     def run(self,inputs):
 
         # todo: use input rainfall to write inp file

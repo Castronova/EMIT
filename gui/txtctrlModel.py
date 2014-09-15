@@ -152,6 +152,8 @@ class ModelTxtCtrl ( wx.Frame ):
 
     def PopulateSpatialGeoms(self, geometrycoords, type):
 
+        if geometrycoords is None: return
+
         # todo: extend support for multiple inputs/outputs
         for variable, geom in geometrycoords.iteritems():
 
@@ -161,6 +163,8 @@ class ModelTxtCtrl ( wx.Frame ):
                 self.matplotView.output_data(geom)
 
 
+            # todo: show 'other' geometeries such as catchments, flowlines, etc...
+            
             # todo: extend support for multiple inputs/outputs
             return
 

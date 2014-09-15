@@ -208,23 +208,28 @@ class MainGui(wx.Frame):
         self.m_mgr.UnInit()
 
     def onClose(self, event):
-        windowsRemaining = len(wx.GetTopLevelWindows())
-        if windowsRemaining > 0:
-            import wx.lib.agw.aui.framemanager as aui
-            # logger.debug("Windows left to close: %d" % windowsRemaining)
-            for item in wx.GetTopLevelWindows():
-                #logger.debug("Windows %s" % item)
-                if not isinstance(item, self.__class__):
-                    if isinstance(item, aui.AuiFloatingFrame):
-                        item.Destroy()
-                    elif isinstance(item, aui.AuiSingleDockingGuide):
-                        item.Destroy()
-                    elif isinstance(item, aui.AuiDockingHintWindow):
-                        item.Destroy()
-                    elif isinstance(item, wx.Dialog):
-                        item.Destroy()
-                    item.Close()
-        self.Destroy()
+        dlg = wx.MessageDialog(None, 'Are you sure you want to exit?', 'Question',
+                               wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
+
+        if dlg.ShowModal() !=wx.ID_NO:
+
+            windowsRemaining = len(wx.GetTopLevelWindows())
+            if windowsRemaining > 0:
+                import wx.lib.agw.aui.framemanager as aui
+                # logger.debug("Windows left to close: %d" % windowsRemaining)
+                for item in wx.GetTopLevelWindows():
+                    #logger.debug("Windows %s" % item)
+                    if not isinstance(item, self.__class__):
+                        if isinstance(item, aui.AuiFloatingFrame):
+                            item.Destroy()
+                        elif isinstance(item, aui.AuiSingleDockingGuide):
+                            item.Destroy()
+                        elif isinstance(item, aui.AuiDockingHintWindow):
+                            item.Destroy()
+                        elif isinstance(item, wx.Dialog):
+                            item.Destroy()
+                        item.Close()
+            self.Destroy()
 
     def LoadConfiguration(self,event):
 
@@ -263,10 +268,7 @@ class MainGui(wx.Frame):
         # save the current contents in the file
         # this can be done with e.g. wxPython output streams:
         output_stream = save.GetPath()
-        CanvasController.SaveSimulation(self, path=output_stream)
-        if not output_stream.IsOk():
-            wx.LogError("Cannot save current contents in file '%s'."%save.GetPath())
-            return
+        CanvasController.SaveSimulation(output_stream)
 
         # if save.ShowModal() != wx.ID_CANCEL:
         #     path = save.GetPath()

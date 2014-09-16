@@ -154,19 +154,24 @@ class ModelTxtCtrl ( wx.Frame ):
 
         if geometrycoords is None: return
 
-        # todo: extend support for multiple inputs/outputs
-        for variable, geom in geometrycoords.iteritems():
+        if type == 'input':
+            self.matplotView.set_input_data(geometrycoords)
+        elif type == 'output':
+                self.matplotView.set_output_data(geometrycoords)
 
-            if type == 'input':
-                self.matplotView.input_data(geom)
-            elif type == 'output':
-                self.matplotView.output_data(geom)
-
-
-            # todo: show 'other' geometeries such as catchments, flowlines, etc...
-            
-            # todo: extend support for multiple inputs/outputs
-            return
+        # # todo: extend support for multiple inputs/outputs
+        # for variable, geom in geometrycoords.iteritems():
+        #
+        #     if type == 'input':
+        #         self.matplotView.input_data(geom)
+        #     elif type == 'output':
+        #         self.matplotView.output_data(geom)
+        #
+        #
+        #     # todo: show 'other' geometeries such as catchments, flowlines, etc...
+        #
+        #     # todo: extend support for multiple inputs/outputs
+        #     return
 
     def PopulateDetails(self, fileExtension):
 

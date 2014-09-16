@@ -21,6 +21,8 @@ class pnlSpatial ( wx.Panel ):
 
         self.parent = prnt
 
+        self.__input_geoms = {}
+        self.__output_geoms = {}
 
         # create some sizers
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -34,15 +36,21 @@ class pnlSpatial ( wx.Panel ):
         self.__input_data = []
         self.__output_data = []
 
-        self.inputCheckbox = wx.CheckBox(self, wx.ID_ANY,'Inputs')
-        self.outputCheckbox = wx.CheckBox(self, wx.ID_ANY,'Outputs')
+        # self.inputCheckbox = wx.CheckBox(self, wx.ID_ANY,'Inputs')
+        # self.outputCheckbox = wx.CheckBox(self, wx.ID_ANY,'Outputs')
 
-        self.inputCheckbox.Disable()
-        self.outputCheckbox.Disable()
+        self.inputCombo = wx.ComboBox(self, wx.ID_ANY,name='input_combo',choices=[])
+        self.outputCombo = wx.ComboBox(self, wx.ID_ANY,name='output_combo', choices=[])
 
-        self.inputCheckbox.Bind(wx.EVT_CHECKBOX, self.UpdatePlot)
-        self.outputCheckbox.Bind(wx.EVT_CHECKBOX, self.UpdatePlot)
-        #self.outputCheckbox.Bind(wx.EVT_CHECKBOX, self.redraw)
+
+        # self.inputCheckbox.Disable()
+        # self.outputCheckbox.Disable()
+
+        # self.inputCheckbox.Bind(wx.EVT_CHECKBOX, self.UpdatePlot)
+        # self.outputCheckbox.Bind(wx.EVT_CHECKBOX, self.UpdatePlot)
+
+        self.inputCombo.Bind(wx.EVT_COMBOBOX, self.UpdatePlot)
+        self.outputCombo.Bind(wx.EVT_COMBOBOX, self.UpdatePlot)
 
         # put up a figure
         self.figure = plt.figure()
@@ -66,8 +74,11 @@ class pnlSpatial ( wx.Panel ):
 
         sizer.Add(self.canvas, 100, wx.ALIGN_CENTER|wx.ALL)
         #sizer.Add(self.button, 0, wx.ALIGN_CENTER|wx.ALL)
-        sizer.Add(self.inputCheckbox, 0, wx.ALIGN_CENTER|wx.ALL)
-        sizer.Add(self.outputCheckbox, 0, wx.ALIGN_CENTER|wx.ALL)
+        #sizer.Add(self.inputCheckbox, 0, wx.ALIGN_CENTER|wx.ALL)
+        #sizer.Add(self.outputCheckbox, 0, wx.ALIGN_CENTER|wx.ALL)
+
+        sizer.Add(self.inputCombo, 0, wx.ALIGN_LEFT|wx.ALL)
+        sizer.Add(self.outputCombo, 0, wx.ALIGN_LEFT|wx.ALL)
 
         self.SetSizer(sizer)
         #self.Fit()
@@ -80,21 +91,29 @@ class pnlSpatial ( wx.Panel ):
     def OnClick(self,event):
         self.log("button clicked, id#%d\n", event.GetId())
 
-    def input_data(self, value=[]):
-        if len(value) != 0:
-            for val in value:
-                self.__input_data.append(zip(*val))
-            self.inputCheckbox.Enable()
-        else:
-            return self.__input_data
+    def set_input_data(self, value):
+        """
+        :param value: dictionary {variable: [geoms]}
+        :return:
+        """
+        self.inputCombo.SetItems([' ']+value.keys())
+        self.__input_data = value
 
-    def output_data(self, value=[]):
-        if len(value) != 0:
-            for val in value:
-                self.__output_data.append(zip(*val))
-            self.outputCheckbox.Enable()
-        else:
-            return self.__output_data
+    def get_input_geom(self, var_name):
+
+        return self.__input_data[var_name]
+
+    def set_output_data(self, value):
+        """
+        :param value: dictionary {variable: [geoms]}
+        :return:
+        """
+        self.outputCombo.SetItems([' ']+value.keys())
+        self.__output_data = value
+
+    def get_output_geom(self, var_name):
+
+        return self.__output_data[var_name]
 
     def buildGradientColor(self, num, cmap='Blues'):
         c = getattr(plt.cm, cmap)
@@ -120,17 +139,41 @@ class pnlSpatial ( wx.Panel ):
             i += 1
 
     def UpdatePlot(self,event):
+
         self.ax.cla()
-        if self.inputCheckbox.IsChecked():
-            self.setInputSeries()
-        if self.outputCheckbox.IsChecked():
-            self.setOutputSeries()
+
+        # get parent control
+        parent = event.GetEventObject().Name
+
+        # get variable name
+        var_name = event.GetString()
+
+        if parent == 'input_combo':
+            data = self.get_input_geom(var_name)
+            colors = self.buildGradientColor(len(data),'Blues')
+            self.SetPlotData(geoms=data,colors=colors)
+            self.outputCombo.SetSelection(0)
+        if parent == 'output_combo':
+            data = self.get_output_geom(var_name)
+            colors = self.buildGradientColor(len(data),'Reds')
+            self.SetPlotData(geoms=data,colors=colors)
+            self.inputCombo.SetSelection(0)
+
+        # if self.inputCheckbox.IsChecked():
+        #     self.setInputSeries()
+        # if self.outputCheckbox.IsChecked():
+        #     self.setOutputSeries()
 
         self.canvas.draw()
 
-    def addSeries(self, geom, color):
+    def SetPlotData(self, geoms, colors):
 
-        self.ax.plot(geom[0],geom[1],color=color)
+        i = 0
+        for g in geoms:
+            x,y = zip(*g)
+            self.ax.plot(x,y,color=colors[i])
+            i += 1
+
         self.ax.grid()
         self.ax.axis('auto')
         self.ax.margins(0.1)

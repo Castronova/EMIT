@@ -75,6 +75,7 @@ class DirectoryCtrlView(wx.Panel):
         self.Bind(wx.EVT_TOOL, self.OnHomeClick, id=HomeID)
         self.Bind(wx.EVT_TOOL, self.OnBackClick, id=PreviousID)
         self.Bind(wx.EVT_TOOL, self.OnUpClick, id=UpID)
+        self.Bind(wx.EVT_TOOL, self.OnRefresh, id=RefreshID)
 
         self.Bind(wx.EVT_LIST_BEGIN_DRAG, self.onDrag)
 
@@ -183,6 +184,8 @@ class DirectoryCtrlView(wx.Panel):
     def OnRightClick(self, event):
         self.dirCtrl.PopupMenu(DirectoryContextMenu(self,event), event.GetPosition())
 
+    def OnRefresh(self, event):
+        self.dirCtrl.Refresh()
 
     def ShowDetails(self):
 

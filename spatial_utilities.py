@@ -4,21 +4,19 @@ import stdlib
 
 def get_input_geoms(cmd, model_id):
 
-    # # get the model by id
-    # model = cmd.get_model_by_id(model_id)
-    #
-    # # get the mdoel inputs
-    # inputs = model.get_instance().inputs()
-    # # inputs_exchange_items = model.get_input_exchange_items()
-    #
-    # # store input geometries by exchange item name
-    # input_geoms = {}
-    # for iei in inputs:
-    #     input_geoms[iei.name()] = get_coords(iei.geometries())
-    #
-    # return input_geoms
+    # get the model by id
+    model = cmd.get_model_by_id(model_id)
 
-    pass
+    # get the mdoel inputs
+    inputs = model.get_instance().inputs()
+
+    # store input geometries by exchange item name
+    input_geoms = {}
+    for iei in inputs:
+        input_geoms[iei.name()] = get_coords(iei.geometries())
+
+    return input_geoms
+
 
 def get_output_geoms(cmd, model_id):
 
@@ -70,4 +68,12 @@ def get_coords(geometries):
                 coord_list.append(coord)
 
             geoms.append(coord_list)
+
+        elif shapely_geom.type == 'Point':
+            coord_list = []
+            for coord in shapely_geom.coords:
+                coord_list.append(coord)
+
+            geoms.append(coord_list)
+
     return geoms

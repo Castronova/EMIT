@@ -41,22 +41,35 @@ class feed_forward_wrapper(object):
         return (int(self.__params['time_step'][0]['value']),self.__params['time_step'][0]['unit_type_cv'])
         #raise NotImplementedError('This is an abstract method that must be implemented!')
 
-    def outputs(self):
-        """
-            ini configuration file
-        """
-        if self.__outputs is None:
-            ei = utilities.build_exchange_items(self.__params)
-            self.__outputs = [i for i in ei if i.get_type() == 'output' ]
+    def outputs(self, value = None):
+        # """
+        #     ini configuration file
+        # """
+        # if self.__outputs is None:
+        #     ei = utilities.build_exchange_items(self.__params)
+        #     self.__outputs = [i for i in ei if i.get_type() == 'output' ]
+        # return self.__outputs
+        #
+        # #raise NotImplementedError('This is an abstract method that must be implemented!')
+
+        if value is not None:
+            self.__outputs = value
         return self.__outputs
 
-        #raise NotImplementedError('This is an abstract method that must be implemented!')
 
-    def inputs(self):
-        """
-            ini configuration file
-        """
-        raise NotImplementedError('This is an abstract method that must be implemented!')
+
+    def inputs(self, value = None):
+
+        # todo: utilities should have a config parsing function that can be used to populate inputs and outputs
+
+        # """
+        #     ini configuration file
+        # """
+        # raise NotImplementedError('This is an abstract method that must be implemented!')
+
+        if value is not None:
+            self.__inputs = value
+        return self.__inputs
 
     def simulation_start(self):
         """

@@ -2,5 +2,5 @@
 path = ../tests
 
 
-[Examples]
-path = ../examples
+[Hydrology Models]
+path = ../models/swmm

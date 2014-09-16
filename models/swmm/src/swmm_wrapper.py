@@ -5,13 +5,13 @@ from os.path import *
 import subprocess
 import spatial_utilities as sutils
 from shapely.geometry import *
-from stdlib import Geometry, DataValues
+from stdlib import Geometry, DataValues, ExchangeItem, ExchangeItemType
 import parse_swmm as ps
 from wrappers.feed_forward import feed_forward_wrapper
 import uuid
 import re
 import datetime
-
+import utilities
 import geometry as swmm_geom
 
 """
@@ -128,39 +128,91 @@ class swmm(feed_forward_wrapper):
 
     def build_swmm_inputs_and_outputs(self, geoms):
 
-        # Note: catchments accept precip input
-        #       streams provide output
-        #       nodes provide output
+        # define the model inputs and outputs
+        outputs = {'subcatchment':['Groundwater_outflow','Wash_off_concentration','Groundwater_elevation','Runoff_rate'],
+                   'link' : ['Flow_depth','Flow_rate','Flow_velocity'],
+                   'node' : ['Volume_stored_ponded','Lateral_inflow','Total_inflow','Depth_above_invert','Hydraulic_head','Flow_lost_flooding']
+        }
 
-        input_file = self.sim_input
-        types = ['subcatchment', 'node', 'link', 'pollutant', 'system']
+        inputs = {'subcatchment' : ['Evaporation','Rainfall','Snow_depth'],
+                   'link' : ['Froude_number','Capacity'],
+                   'node' : []
+        }
 
-        # build catchment inputs
-        # for
+        # build outputs
+        output_items = []
+        for key, vars in outputs.iteritems():
+            for var_name in vars:
 
-        # build geometry and type dictionary
-        io = {}
+                # build variable and unit
+                variable = utilities.create_variable(var_name)
+                unit = utilities.create_unit(var_name)
 
-        id_inc = 0
-        for name, geoms in geoms.iteritems():
-            elements = []
-            for geom in geoms:
-                dv = DataValues()
-                elem = Geometry(geom=geom,id=id_inc)
-                elem.type(geom.geom_type)
-                elem.srs(None)
-                elem.datavalues(dv)
-                elements.append(elem)
-                id_inc += 1
-            io[name] = elements
-
-        # catchment_outputs = ['Runoff','Evaporation']
-        # for name in catchment_outputs:
-        #     # set the geometry for hydraulic head
-        #     if name == 'Hydraulic_head':
+                # build elementset
+                geometries = geoms[key]
+                elementset = []
+                for i, geom in geometries:
+                    dv = DataValues()
+                    elem = Geometry(geom=geom,id=i)
+                    elem.type(geom.geom_type)
+                    elem.srs(None)
+                    elem.datavalues(dv)
+                    elementset.append(elem)
 
 
-        return io
+                # create exchange item
+                ei = ExchangeItem(id,
+                                name=variable.VariableNameCV(),
+                                desc=variable.VariableDefinition(),
+                                geometry=elementset,
+                                unit= unit,
+                                variable=variable,
+                                type=ExchangeItemType.Output)
+
+                # save the output item
+                output_items.append(ei)
+
+        # build inputs
+        input_items = []
+        for key, vars in inputs.iteritems():
+            for var_name in vars:
+
+                # build variable and unit
+                variable = utilities.create_variable(var_name)
+                unit = utilities.create_unit(var_name)
+
+                # build elementset
+                id_inc = 0
+                geometries = geoms[key]
+                elementset = []
+                for i, geom in geometries:
+                    dv = DataValues()
+                    elem = Geometry(geom=geom,id=id_inc)
+                    elem.type(geom.geom_type)
+                    elem.srs(None)
+                    elem.datavalues(dv)
+                    elementset.append(elem)
+                    id_inc += 1
+
+
+                # create exchange item
+                ei = ExchangeItem(id,
+                                name=variable.VariableNameCV(),
+                                desc=variable.VariableDefinition(),
+                                geometry=elementset,
+                                unit= unit,
+                                variable=variable,
+                                type=ExchangeItemType.Input)
+
+                # save the output item
+                input_items.append(ei)
+
+
+
+        # set the input and output items
+        self.outputs(value = output_items)
+        self.inputs(value = input_items)
+
 
     def build_geometries(self):
 
@@ -180,9 +232,9 @@ class swmm(feed_forward_wrapper):
 
 
         # store the geoms by their type
-        geoms['catchments'] = catchments
-        geoms['streams'] = streams
-        geoms['nodes'] = nodes
+        geoms['subcatchment'] = catchments
+        geoms['link'] = streams
+        geoms['node'] = nodes
 
         return geoms
 

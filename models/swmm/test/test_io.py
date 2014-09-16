@@ -12,9 +12,15 @@ class test_swmm(unittest.TestCase):
         o =abspath(join(dirname(__file__),'../data/sim.out'))
 
 
-        #
-        # # get variables
-        # vars = ps.listvariables(o)
-        #
-        # for k, v in vars.iteritems():
-        #     print k,v
+
+        # get variables
+        vars = ps.listvariables(o)
+
+        for k, v in vars.iteritems():
+            print k,v
+
+
+
+
+
+

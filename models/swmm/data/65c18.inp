@@ -11639,3 +11639,89 @@ ws-174           606781.412         238678.437
 ;;-------------- ------------------ ------------------
 300_main_street  606998.056         238976.463        
 
+
+[TIMESERIES
+;;Name           Date       Time       Value   
+;;-------------- ---------- ---------- ----------
+rain_gage_data	09/23/2011	00:00	0.000
+rain_gage_data	09/23/2011	00:01	0.254
+rain_gage_data	09/23/2011	00:02	0.254
+rain_gage_data	09/23/2011	00:03	0.254
+rain_gage_data	09/23/2011	00:04	0.508
+rain_gage_data	09/23/2011	00:05	0.508
+rain_gage_data	09/23/2011	00:06	0.508
+rain_gage_data	09/23/2011	00:07	0.508
+rain_gage_data	09/23/2011	00:08	0.508
+rain_gage_data	09/23/2011	00:09	1.016
+rain_gage_data	09/23/2011	00:10	1.524
+rain_gage_data	09/23/2011	00:11	1.778
+rain_gage_data	09/23/2011	00:12	1.778
+rain_gage_data	09/23/2011	00:13	2.032
+rain_gage_data	09/23/2011	00:14	2.794
+rain_gage_data	09/23/2011	00:15	3.048
+rain_gage_data	09/23/2011	00:16	3.302
+rain_gage_data	09/23/2011	00:17	3.556
+rain_gage_data	09/23/2011	00:18	3.810
+rain_gage_data	09/23/2011	00:19	4.064
+rain_gage_data	09/23/2011	00:20	4.318
+rain_gage_data	09/23/2011	00:21	4.572
+rain_gage_data	09/23/2011	00:22	5.080
+rain_gage_data	09/23/2011	00:23	5.842
+rain_gage_data	09/23/2011	00:24	6.858
+rain_gage_data	09/23/2011	00:25	7.874
+rain_gage_data	09/23/2011	00:26	8.890
+rain_gage_data	09/23/2011	00:27	9.906
+rain_gage_data	09/23/2011	00:28	11.170
+rain_gage_data	09/23/2011	00:29	12.440
+rain_gage_data	09/23/2011	00:30	13.710
+rain_gage_data	09/23/2011	00:31	15.240
+rain_gage_data	09/23/2011	00:32	16.760
+rain_gage_data	09/23/2011	00:33	18.030
+rain_gage_data	09/23/2011	00:34	19.050
+rain_gage_data	09/23/2011	00:35	20.060
+rain_gage_data	09/23/2011	00:36	20.820
+rain_gage_data	09/23/2011	00:37	21.840
+rain_gage_data	09/23/2011	00:38	23.110
+rain_gage_data	09/23/2011	00:39	24.130
+rain_gage_data	09/23/2011	00:40	25.140
+rain_gage_data	09/23/2011	00:41	25.900
+rain_gage_data	09/23/2011	00:42	26.670
+rain_gage_data	09/23/2011	00:43	27.680
+rain_gage_data	09/23/2011	00:44	28.950
+rain_gage_data	09/23/2011	00:45	29.970
+rain_gage_data	09/23/2011	00:46	30.730
+rain_gage_data	09/23/2011	00:47	31.750
+rain_gage_data	09/23/2011	00:48	32.510
+rain_gage_data	09/23/2011	00:49	33.520
+rain_gage_data	09/23/2011	00:50	34.790
+rain_gage_data	09/23/2011	00:51	35.560
+rain_gage_data	09/23/2011	00:52	37.080
+rain_gage_data	09/23/2011	00:53	37.840
+rain_gage_data	09/23/2011	00:54	39.110
+rain_gage_data	09/23/2011	00:55	39.870
+rain_gage_data	09/23/2011	00:56	40.890
+rain_gage_data	09/23/2011	00:57	41.650
+rain_gage_data	09/23/2011	00:58	42.160
+rain_gage_data	09/23/2011	00:59	42.410
+rain_gage_data	09/23/2011	01:00	43.680
+rain_gage_data	09/23/2011	01:01	44.450
+rain_gage_data	09/23/2011	01:02	45.210
+rain_gage_data	09/23/2011	01:03	45.720
+rain_gage_data	09/23/2011	01:04	46.480
+rain_gage_data	09/23/2011	01:05	47.240
+rain_gage_data	09/23/2011	01:06	47.750
+rain_gage_data	09/23/2011	01:07	48.510
+rain_gage_data	09/23/2011	01:08	49.530
+rain_gage_data	09/23/2011	01:09	50.800
+rain_gage_data	09/23/2011	01:10	51.810
+rain_gage_data	09/23/2011	01:11	51.810
+rain_gage_data	09/23/2011	01:12	52.070
+rain_gage_data	09/23/2011	01:13	52.070
+rain_gage_data	09/23/2011	01:14	52.070
+rain_gage_data	09/23/2011	01:15	52.320
+
+[RAINGAGES]
+;;;
+;;Name           Type      Intrvl Catch  Source
+;;-------------- --------- ------ ------ ----------
+300_main_street  CUMULATIVE 0:01   1.0    TIMESERIES rain_gage_data

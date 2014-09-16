@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<Simulation>
+  <DataModel databaseid="fd499" id="31ba5ada" name="cumulative_precipitation" resultid="5" x="-277.0" y="-97.0"/>
+  <Model id="969f9" mdl="/Users/tonycastronova/Documents/projects/iUtah/EMIT/examples/swmm/src/swmm.mdl" name="SWMM" x="85.0" y="36.0"/>
+  <Link from_id="31ba5ada" from_item="cumulative_precipitation" from_item_id="31ba5ada" from_name="cumulative_precipitation" to_id="969f9" to_item="rainfall" to_item_id="3dfe6" to_name="SWMM"/>
+  <DbConnection address="castro-server.bluezone.usu.edu" connection_string="postgresql+psycopg2://postgres:postgres@castro-server.bluezone.usu.edu/ODM2-Live" databaseid="fd499" db="ODM2-Live" desc="PostgreSQL database with hydrology simulations" engine="postgresql" name="ODM2 Simulation database - Live" pwd="postgres" user="postgres"/>
+</Simulation>

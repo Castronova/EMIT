@@ -10,7 +10,7 @@ Standard classes
 from shapely.wkt import loads
 import datetime
 import uuid
-import utilities
+# import utilities
 
 class ElementType():
     Point = 'Point'
@@ -203,9 +203,10 @@ class Geometry(object):
         # TODO: use enum
         self.__type = None
 
-        if self.__srs is None:
-            # set default srs
-            self.__srs = utilities.get_srs_from_epsg('4269')
+        # todo: fix.  this is causing a circular dependency btwn utilities and stdlib
+        # if self.__srs is None:
+        #     # set default srs
+        #     self.__srs = utilities.get_srs_from_epsg('4269')
 
     def id(self):
         return self.__id

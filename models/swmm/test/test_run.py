@@ -8,9 +8,11 @@ import utilities
 import matplotlib.pyplot as plt
 from descartes.patch import *
 
-from examples.swmm.src import swmm_wrapper
 from examples.swmm.src import geometry
+from examples.swmm.src import swmm_wrapper
 
+
+# from ..src.parse_swmm import *
 
 import time
 
@@ -212,3 +214,13 @@ class test_swmm(unittest.TestCase):
         plt.show()
 
 
+    def test_get_output(self):
+        o =abspath(join(dirname(__file__),'../data/sim.out'))
+
+
+
+        # get variables
+        vars = listvariables(o)
+
+        for k, v in vars.iteritems():
+            print k,v

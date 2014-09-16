@@ -12,6 +12,8 @@ import uuid
 import re
 import datetime
 
+import geometry as swmm_geom
+
 """
 NOTES:
 * .mdl must have a 'data' section which includes a 'directory' key providing the path to the swmm inputs/outputs
@@ -42,29 +44,45 @@ class swmm(feed_forward_wrapper):
         #--- read input file and build geometries ---
 
         # build link geometries
-        link_geoms = self.build_swmm_geoms(self.sim_input,'vertices')
+        #geoms = self.build_swmm_geoms(self.sim_input,'vertices')
 
-        # todo: set input and output geometries based on config properties
-        # set input geometries
-        # ids, links = zip(*link_geoms)
-        # sutils.set_output_geoms(self,'Hydraulic_head', links)
+        geoms = self.build_geometries()
+        io = self.build_swmm_inputs_and_outputs(geoms)
 
-        # get the stage output exchange item
-        stage = self.get_output_by_name('Hydraulic_head')
+        # build inputs and outputs from inp file
 
-        # add link geometries to stage exchange item
-        elems = []
-        for link, geom in link_geoms:
-            dv = DataValues()
-            elem = Geometry(geom=geom,id=link)
-            elem.type(geom.geom_type)
-            elem.srs(None)
-            elem.datavalues(dv)
-            elems.append(elem)
-        stage.add_geometry(elems)
+
+        # # add link geometries to stage exchange item
+        # for geom_name, geoms in geoms.iteritems():
+        #
+        #     elements = []
+        #     for geom in geoms:
+        #         dv = DataValues()
+        #         elem = Geometry(geom=geom,id=link)
+        #         elem.type(geom.geom_type)
+        #         elem.srs(None)
+        #         elem.datavalues(dv)
+        #         elements.append(elem)
+
+
+
+        # todo: only build the geometry if it is defined in the config
+        # save the inputs and outputs to the exchange items
+
+        # outputs = self.outputs()
+        # for o in outputs:
+        #     name = o.name()
+        #
+        #     # set the geometry for hydraulic head
+        #     if name == 'Hydraulic_head':
+        #
+        # stage = self.get_output_by_name('Hydraulic_head')
+        # stage.add_geometry(elements)
 
 
         print 'done with initialize'
+
+
     def run(self,inputs):
 
         # todo: use input rainfall to write inp file
@@ -108,6 +126,65 @@ class swmm(feed_forward_wrapper):
     def save(self):
         return self.outputs()
 
+    def build_swmm_inputs_and_outputs(self, geoms):
+
+        # Note: catchments accept precip input
+        #       streams provide output
+        #       nodes provide output
+
+        input_file = self.sim_input
+        types = ['subcatchment', 'node', 'link', 'pollutant', 'system']
+
+        # build catchment inputs
+        # for
+
+        # build geometry and type dictionary
+        io = {}
+
+        id_inc = 0
+        for name, geoms in geoms.iteritems():
+            elements = []
+            for geom in geoms:
+                dv = DataValues()
+                elem = Geometry(geom=geom,id=id_inc)
+                elem.type(geom.geom_type)
+                elem.srs(None)
+                elem.datavalues(dv)
+                elements.append(elem)
+                id_inc += 1
+            io[name] = elements
+
+        # catchment_outputs = ['Runoff','Evaporation']
+        # for name in catchment_outputs:
+        #     # set the geometry for hydraulic head
+        #     if name == 'Hydraulic_head':
+
+
+        return io
+
+    def build_geometries(self):
+
+        # store the geometries based on type
+        geoms = {}
+
+        input_file = self.sim_input
+
+        # build catchments
+        catchments = swmm_geom.build_catchments(input_file)
+
+        # build rivers
+        streams = swmm_geom.build_links(input_file)
+
+        # build nodes
+        nodes = swmm_geom.build_coordinates(input_file)
+
+
+        # store the geoms by their type
+        geoms['catchments'] = catchments
+        geoms['streams'] = streams
+        geoms['nodes'] = nodes
+
+        return geoms
 
     def build_swmm_geoms(self,inp,type):
         lines = None
@@ -164,14 +241,6 @@ class swmm(feed_forward_wrapper):
 
     def set_rainfall_input(self, inputs):
 
-        '''
-        [RAINGAGES]
-        ;;               Rain      Time   Snow   Data
-        ;;Name           Type      Intrvl Catch  Source
-        ;;-------------- --------- ------ ------ ----------
-        300_main_street  CUMULATIVE 0:01   1.0    TIMESERIES 300_main_st_7_11_2012
-        '''
-
         # get the time series associated with the input exchange item
         geom, eitem = inputs.items()[0]
         data = eitem.values()[0]
@@ -193,22 +262,20 @@ class swmm(feed_forward_wrapper):
         for i in xrange(0, len(dates)):
             dates[i] -= datetime.timedelta(seconds=offset)
 
+        # add a raingage
+        f.write('\n[RAINGAGES]\n')
+        f.write(';;;\n')
+        f.write(';;Name           Type      Intrvl Catch  Source\n')
+        f.write(';;-------------- --------- ------ ------ ----------\n')
+        f.write('rain_gage_data  CUMULATIVE 0:01   1.0    TIMESERIES precipitation\n')
 
         # write the rainfall data
         f.write('\n[TIMESERIES\n')
         f.write(';;Name           Date       Time       Value   \n')
         f.write(';;-------------- ---------- ---------- ----------\n')
         for i in xrange(0, len(dates)):
+            f.write('precipitation\t%s\t%s\t%2.3f\n' %(dates[i].strftime('%m/%d/%Y'), dates[i].strftime('%H:%M'),values[i]))
 
-            f.write('rain_gage_data\t%s\t%s\t%2.3f\n' %(dates[i].strftime('%m/%d/%Y'), dates[i].strftime('%H:%M'),values[i]))
-
-
-        # add a raingage
-        f.write('\n[RAINGAGES]\n')
-        f.write(';;;\n')
-        f.write(';;Name           Type      Intrvl Catch  Source\n')
-        f.write(';;-------------- --------- ------ ------ ----------\n')
-        f.write('300_main_street  CUMULATIVE 0:01   1.0    TIMESERIES rain_gage_data\n')
 
         f.close()
 
@@ -218,3 +285,5 @@ class swmm(feed_forward_wrapper):
 
     def find(self, lst, predicate):
         return (i for i, j in enumerate(lst) if predicate(j)).next()
+
+

@@ -244,8 +244,8 @@ class wizLink(wx.wizard.Wizard):
         self.page2.SetNext(self.page4)
 
        #
-
-        self.page4.SetPrev(self.page1)
+        self.page2.SetPrev(self.page1)
+        self.page4.SetPrev(self.page2)
         # self.page4.SetNext(self.page5)
         #
         # self.page5.SetPrev(self.page4)

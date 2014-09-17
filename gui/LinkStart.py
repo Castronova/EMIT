@@ -30,8 +30,8 @@ class LinkStart ( wx.Frame ):
         btnPanel = wx.Panel(panel, -1)
         vbox = wx.BoxSizer(wx.VERTICAL)
         new = wx.Button(btnPanel, wx.ID_NEW, 'Add', size=(90, 30))
-        ren = wx.Button(btnPanel, wx.ID_RESET, 'Rename', size=(90, 30))
-        dlt = wx.Button(btnPanel, wx.ID_DELETE, 'Delete', size=(90, 30))
+        ren = wx.Button(btnPanel, wx.ID_RESET, 'Edit', size=(90, 30))
+        dlt = wx.Button(btnPanel, wx.ID_DELETE, 'Clear All', size=(90, 30))
         close = wx.Button(btnPanel, wx.ID_CLEAR, 'Close', size=(90, 30))
 
         self.Bind(wx.EVT_BUTTON, self.AddClick, id=wx.ID_NEW)
@@ -97,6 +97,16 @@ class LinkStart ( wx.Frame ):
 
 
     def OnDelete(self, event):
+
+        rmlink = self.cmd.remove_link_all()
+        all = self.listbox.GetSelections()
+
+        try:
+            for i in range(0,stop=None, step=1):
+                self.listbox.Delete(i)
+        except:
+            pass
+
         sel = self.listbox.GetSelection()
         if sel != -1:
             self.listbox.Delete(sel)

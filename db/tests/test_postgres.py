@@ -64,7 +64,7 @@ class test_simulation_services(unittest.TestCase):
         # build exchange items from file
         config = os.path.realpath('../../tests/configuration.ini')
         params = gui.parse_config(config)
-        eitems = mdl.build_exchange_items(params)
+        eitems = mdl.build_exchange_items_from_config(params)
 
         # add some data to simulate 'output' exchange items
         vals= [(dt.datetime(2014,1,1,0,0,0) + dt.timedelta(days=i), i) for i in range(0,100)]

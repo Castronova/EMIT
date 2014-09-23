@@ -18,11 +18,12 @@ class multiply(feed_forward.feed_forward_wrapper):
 
 
         # build inputs and outputs
-        io = mdl.build_exchange_items(config_params)
+        io = mdl.build_exchange_items_from_config(config_params)
 
-        print 'here'
-        # self.outputs(value = output_items)
-        # self.inputs(value = input_items)
+        # set inputs and outputs
+        self.inputs(value=io['input'])
+        self.outputs(value=io['output'])
+
 
     def run(self,inputs):
         """

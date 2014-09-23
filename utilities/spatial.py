@@ -18,11 +18,12 @@ def get_input_geoms(cmd, model_id):
 
     # store input geometries by exchange item name
     input_geoms = {}
-    for iei in inputs:
-        input_geoms[iei.name()] = get_coords(iei.geometries())
+
+    if inputs is not None:
+        for iei in inputs:
+            input_geoms[iei.name()] = get_coords(iei.geometries())
 
     return input_geoms
-
 
 def get_output_geoms(cmd, model_id):
 
@@ -35,11 +36,12 @@ def get_output_geoms(cmd, model_id):
 
     # store output geometries by exchange item name
     output_geoms = {}
-    for oei in outputs:
-        output_geoms[oei.name()] = get_coords(oei.geometries())
+
+    if outputs is not None:
+        for oei in outputs:
+            output_geoms[oei.name()] = get_coords(oei.geometries())
 
     return output_geoms
-
 
 def set_output_geoms(model, variable, geoms):
 
@@ -53,7 +55,6 @@ def set_output_geoms(model, variable, geoms):
 
         # add this geometry to the exchange item
         oei.add_geometry(geom)
-
 
 def get_coords(geometries):
 

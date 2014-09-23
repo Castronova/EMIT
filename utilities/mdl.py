@@ -50,7 +50,7 @@ def create_unit(unit_name):
         #print '> [WARNING] Unit not found in controlled vocabulary : '+unit_name
         return U
 
-def build_exchange_items(params):
+def build_exchange_items_from_config(params):
 
     exchange_items = []
     oei = []
@@ -62,6 +62,7 @@ def build_exchange_items(params):
     eitems = iitems + oitems
 
     itemid = 0
+    items = {'input':[],'output':[]}
 
     # loop through each input/output and create an exchange item
     for io in eitems:
@@ -134,10 +135,15 @@ def build_exchange_items(params):
                                 variable=variable,
                                 type=iotype)
 
+
+        # save exchange items based on type
+        items[ei.get_type()].append(ei)
+
         # add to exchange item
         #for ds in datasets:
         #    ei.add_geometry(ds)
 
-        exchange_items.append(ei)
+        #exchange_items.append(ei)
 
-    return exchange_items
+    #return exchange_items
+    return items

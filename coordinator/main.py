@@ -251,11 +251,14 @@ class Coordinator(object):
                     return None
 
                 # build exchange items
-                ei = build_exchange_items(params)
+                # ei = build_exchange_items_from_config(params)
+                #
+                # # organize input and output items
+                # iei = [item for item in ei if item.get_type() == 'input']
+                # oei = [item for item in ei if item.get_type() == 'output']
 
-                # organize input and output items
-                iei = [item for item in ei if item.get_type() == 'input']
-                oei = [item for item in ei if item.get_type() == 'output']
+                iei = model_inst.inputs()
+                oei = model_inst.outputs()
 
                 # generate a unique model id
                 if id is None:
@@ -266,7 +269,7 @@ class Coordinator(object):
                 thisModel = Model(id= id,
                                   name=name,
                                   instance=model_inst,
-                                  desc=params['general'][0]['description'],
+                                  desc=params['general'][0]['description'],    #todo: get this from the feed forward wrapper b/c it may not exist in mdl!!!
                                   input_exchange_items= iei,
                                   output_exchange_items= oei,
                                   params=params)

@@ -153,6 +153,6 @@ class testExchangeItem(unittest.TestCase):
         config = os.path.realpath('./configuration.ini')
 
         params = gui.parse_config(config)
-        eitems = mdl.build_exchange_items(params)
+        eitems = mdl.build_exchange_items_from_config(params)
 
         print 'done'

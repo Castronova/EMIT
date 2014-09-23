@@ -1,17 +1,17 @@
 __author__ = 'tonycastronova'
 
 from os.path import *
-
 import subprocess
-import spatial_utilities as sutils
-from shapely.geometry import *
-from stdlib import Geometry, DataValues, ExchangeItem, ExchangeItemType
-import parse_swmm as ps
-from wrappers.feed_forward import feed_forward_wrapper
 import uuid
 import re
 import datetime
-import utilities
+
+from shapely.geometry import *
+
+from stdlib import Geometry, DataValues, ExchangeItem, ExchangeItemType
+import parse_swmm as ps
+from wrappers.feed_forward import feed_forward_wrapper
+from utilities import mdl
 import geometry as swmm_geom
 
 """
@@ -122,9 +122,10 @@ class swmm(feed_forward_wrapper):
         return 1
 
 
-
     def save(self):
         return self.outputs()
+
+
 
     def build_swmm_inputs_and_outputs(self, geoms):
 
@@ -145,8 +146,8 @@ class swmm(feed_forward_wrapper):
             for var_name in vars:
 
                 # build variable and unit
-                variable = utilities.create_variable(var_name)
-                unit = utilities.create_unit(var_name)
+                variable = mdl.create_variable(var_name)
+                unit = mdl.create_unit(var_name)
 
                 # build elementset
                 geometries = geoms[key]
@@ -178,8 +179,8 @@ class swmm(feed_forward_wrapper):
             for var_name in vars:
 
                 # build variable and unit
-                variable = utilities.create_variable(var_name)
-                unit = utilities.create_unit(var_name)
+                variable = mdl.create_variable(var_name)
+                unit = mdl.create_unit(var_name)
 
                 # build elementset
                 id_inc = 0
@@ -212,7 +213,6 @@ class swmm(feed_forward_wrapper):
         # set the input and output items
         self.outputs(value = output_items)
         self.inputs(value = input_items)
-
 
     def build_geometries(self):
 
@@ -290,7 +290,6 @@ class swmm(feed_forward_wrapper):
 
         return geoms
 
-
     def set_rainfall_input(self, inputs):
 
         # get the time series associated with the input exchange item
@@ -332,8 +331,6 @@ class swmm(feed_forward_wrapper):
         f.close()
 
         print 'here'
-
-
 
     def find(self, lst, predicate):
         return (i for i, j in enumerate(lst) if predicate(j)).next()

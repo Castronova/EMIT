@@ -8,7 +8,7 @@ import wx
 import wx.xrc
 from pnlSpatial import pnlSpatial
 from pnlDetails import pnlDetails
-import utilities
+from utilities import gui
 
 from wx.lib.pubsub import pub as Publisher
 
@@ -176,7 +176,7 @@ class ModelTxtCtrl ( wx.Frame ):
     def PopulateDetails(self, fileExtension):
 
         # get a dictionary of config parameters
-        d = utilities.parse_config_without_validation(fileExtension)
+        d = gui.parse_config_without_validation(fileExtension)
 
         root = self.DetailTree.AddRoot('Data')
         self.DetailTree.ExpandAll()

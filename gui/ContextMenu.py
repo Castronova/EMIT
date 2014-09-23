@@ -1,8 +1,9 @@
+from utilities import spatial
+
 __author__ = 'tonycastronova'
 
 
 import wx
-import spatial_utilities as spatial
 from txtctrlModel import ModelTxtCtrl
 
 class LinkContextMenu(wx.Menu):

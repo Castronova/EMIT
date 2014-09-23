@@ -20,9 +20,8 @@ from images import icons
 from txtctrlModel import ModelTxtCtrl, MyTree
 
 from ContextMenu import DirectoryContextMenu, ModelContextMenu
-import utilities
 from shapely import wkt
-
+from utilities import  gui, spatial
 ###########################################################################
 ## Class directoryCtrlPanel
 ###########################################################################
@@ -217,7 +216,7 @@ class FileCtrlView(wx.Panel):
         if filepath.split('.')[-1] == 'mdl':
 
             # parse the mdl file
-            dic = utilities.parse_config_without_validation(self.sb.GetValue())
+            dic = gui.parse_config_without_validation(self.sb.GetValue())
 
             geom = []
             if type in dic:
@@ -234,7 +233,7 @@ class FileCtrlView(wx.Panel):
                         if not os.path.isfile(eset):
                             raise Exception('Could not find file: %s'%eset)
 
-                        geom,srs = utilities.read_shapefile(eset)
+                        geom,srs = spatial.read_shapefile(eset)
 
                     # otherwise it must be a wkt
                     else:

@@ -1,7 +1,6 @@
 __author__ = 'tonycastronova'
 
 import datetime as dt
-import utilities
 
 class feed_forward_wrapper(object):
     def __init__(self, config_params):
@@ -12,7 +11,6 @@ class feed_forward_wrapper(object):
 
         # set initial conditions
         self.__current_time = self.simulation_start()
-
         self.__session = None
 
 

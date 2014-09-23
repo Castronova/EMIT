@@ -5,6 +5,8 @@ import unittest
 from datetime import datetime
 import utilities
 
+from utilities import gui
+
 import matplotlib.pyplot as plt
 from descartes.patch import *
 
@@ -24,7 +26,7 @@ class test_swmm(unittest.TestCase):
         mdl = abspath(join(dirname(__file__),'../src/swmm.mdl'))
 
         # parse the configuration parameters
-        params = utilities.parse_config_without_validation(mdl)
+        params = gui.parse_config_without_validation(mdl)
 
         # initialize swmm
         swmm = swmm_wrapper.swmm(params)
@@ -40,7 +42,7 @@ class test_swmm(unittest.TestCase):
 
         # initialize swmm
         mdl = abspath(join(dirname(__file__),'../src/swmm.mdl'))
-        params = utilities.parse_config_without_validation(mdl)
+        params = gui.parse_config_without_validation(mdl)
         swmm = swmm_wrapper.swmm(params)
 
         # run the simulation
@@ -54,7 +56,7 @@ class test_swmm(unittest.TestCase):
     def test_build_swmm_geoms(self):
         # initialize swmm
         mdl = abspath(join(dirname(__file__),'../src/swmm.mdl'))
-        params = utilities.parse_config_without_validation(mdl)
+        params = gui.parse_config_without_validation(mdl)
         swmm = swmm_wrapper.swmm(params)
 
         inp =abspath(join(dirname(__file__),'../data/sim.inp'))
@@ -93,7 +95,7 @@ class test_swmm(unittest.TestCase):
 
         # initialize swmm
         mdl = abspath(join(dirname(__file__),'../src/swmm.mdl'))
-        params = utilities.parse_config_without_validation(mdl)
+        params = gui.parse_config_without_validation(mdl)
         swmm = swmm_wrapper.swmm(params)
 
         inp =abspath(join(dirname(__file__),'../data/sim.inp'))
@@ -135,7 +137,7 @@ class test_swmm(unittest.TestCase):
 
         # initialize swmm
         mdl = abspath(join(dirname(__file__),'../src/swmm.mdl'))
-        params = utilities.parse_config_without_validation(mdl)
+        params = gui.parse_config_without_validation(mdl)
         swmm = swmm_wrapper.swmm(params)
 
         inp =abspath(join(dirname(__file__),'../data/sim.inp'))
@@ -176,7 +178,7 @@ class test_swmm(unittest.TestCase):
 
         # initialize swmm
         mdl = abspath(join(dirname(__file__),'../src/swmm.mdl'))
-        params = utilities.parse_config_without_validation(mdl)
+        params = gui.parse_config_without_validation(mdl)
         swmm = swmm_wrapper.swmm(params)
 
         inp =abspath(join(dirname(__file__),'../data/sim.inp'))

@@ -2,7 +2,7 @@ __author__ = 'tonycastronova'
 
 import uuid
 import datetime
-import utilities
+from utilities import gui
 import stdlib
 from shapely.wkt import loads
 
@@ -57,7 +57,7 @@ class postgresdb():
     def set_user_preferences(self, preferences):
 
         # parse user preferences file
-        prefs = utilities.parse_config_without_validation(preferences)
+        prefs = gui.parse_config_without_validation(preferences)
 
         # create people
         for person in prefs['person']:

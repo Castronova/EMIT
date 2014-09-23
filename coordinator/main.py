@@ -9,7 +9,9 @@ sys.path.append(os.path.abspath(os.path.join(os.path.abspath(__file__),'../../..
 
 import sys, getopt
 from coordinator import help as h
-from utilities import *
+from utilities.gui import *
+from utilities.mdl import *
+
 import math
 import networkx as net
 import threading

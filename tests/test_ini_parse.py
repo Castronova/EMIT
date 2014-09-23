@@ -3,13 +3,12 @@ __author__ = 'tonycastronova'
 import ConfigParser
 import os, sys
 import unittest
-import utilities
-
+from utilities import gui
 
 class test_ini_parse(unittest.TestCase):
 
     def setUp(self):
-        self.cparser = ConfigParser.ConfigParser(None, utilities.multidict)
+        self.cparser = ConfigParser.ConfigParser(None, gui.multidict)
         self.config = os.path.realpath('./configuration.ini')
 
 
@@ -69,5 +68,5 @@ class test_ini_parse(unittest.TestCase):
         return config_params
 
     def test_config_validate(self):
-        test = utilities.validate_config_ini(self.config)
+        test = gui.validate_config_ini(self.config)
         self.assertTrue(test)

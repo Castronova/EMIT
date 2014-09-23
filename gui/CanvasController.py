@@ -8,7 +8,7 @@ import math
 #from GUIControl import GUIBase
 import textwrap as tw
 ver = 'local'
-import utilities
+from utilities import gui
 
 import sys
 sys.path.append("..")
@@ -599,7 +599,7 @@ class CanvasController:
     def AddDatabaseConnection(self, title, desc, engine, address, name, user, pwd):
 
         # build the database connection
-        connection = utilities.create_database_connections_from_args(title, desc, engine, address, name, user, pwd)
+        connection = gui.create_database_connections_from_args(title, desc, engine, address, name, user, pwd)
 
 
         if type(connection) == dict and any(connection):

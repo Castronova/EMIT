@@ -1,7 +1,6 @@
 __author__ = 'tonycastronova'
 
 import datetime as dt
-import utilities
 from ODM2.Core.services import readCore
 from ODM2.Results.services import readResults
 from shapely import wkb

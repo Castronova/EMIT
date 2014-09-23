@@ -1,6 +1,12 @@
 __author__ = 'tonycastronova'
 
+import os
 import stdlib
+from shapely import wkt
+from osgeo import ogr, osr
+import cPickle as pickle
+import shapefile
+from shapely.geometry import shape
 
 def get_input_geoms(cmd, model_id):
 
@@ -77,3 +83,64 @@ def get_coords(geometries):
             geoms.append(coord_list)
 
     return geoms
+
+def shapefile_to_shapely(filepath):
+    """
+    reads esri shapefiles into shapely geometry objects
+    :param filepath:
+    :return:
+    """
+    # read the shapefile
+    reader = shapefile.Reader(filepath)
+    fields = reader.fields[1:]
+    field_names = [field[0] for field in fields]
+    buffer = []
+    for sr in reader.shapeRecords():
+        atr = dict(zip(field_names, sr.record))
+        geom = sr.shape.__geo_interface__
+        buffer.append(dict(type="Feature", geometry=geom, properties=atr))
+
+    return shape(buffer[0]['geometry'])
+
+def get_srs_from_epsg(code):
+    """
+    returns a spatial projection. code is an integer EPSG code, e.g. 2000
+    """
+
+    # validate the EPSG code
+    dir = os.path.dirname(__file__)
+    #os.path.join(dir, '/relative/path/to/file/you/want')
+    codes = pickle.load(open(os.path.join(dir,'../data/epsg_codes.dat'),'rb'))
+    if not str(code) in codes:
+        raise Exception('Invalid EPSG code: %d'%code)
+
+    # load spatial reference
+    srs = osr.SpatialReference()
+    srs.ImportFromEPSG(int(code))
+    return srs
+
+def read_shapefile(shp):
+    """
+    returns (shapely geometry, spatial reference system)
+    """
+
+    # OnOpen the shapefile
+    driver = ogr.GetDriverByName('ESRI Shapefile')
+    dataset = driver.Open(shp)
+
+    layer = dataset.GetLayer()
+    spatialRef = layer.GetSpatialRef()
+
+    # from Geometry
+    geoms = []
+    for i in xrange(0,layer.GetFeatureCount()):
+        feature = layer.GetNextFeature()
+        geom = feature.GetGeometryRef()
+
+        # convert into shapely geometry
+        geom_wkt = geom.ExportToWkt()
+        shapely_geom = wkt.loads(geom_wkt)
+
+        geoms.append(shapely_geom)
+
+    return geoms, spatialRef

@@ -5,7 +5,8 @@ import unittest
 from db.api import postgresdb
 import odm2.api
 import datetime as dt
-import utilities as utils
+from utilities import gui, mdl
+
 from odm2.api.ODM2.Core.services import *
 
 class test_simulation_services(unittest.TestCase):
@@ -62,8 +63,8 @@ class test_simulation_services(unittest.TestCase):
 
         # build exchange items from file
         config = os.path.realpath('../../tests/configuration.ini')
-        params = utils.parse_config(config)
-        eitems = utils.build_exchange_items(params)
+        params = gui.parse_config(config)
+        eitems = mdl.build_exchange_items(params)
 
         # add some data to simulate 'output' exchange items
         vals= [(dt.datetime(2014,1,1,0,0,0) + dt.timedelta(days=i), i) for i in range(0,100)]

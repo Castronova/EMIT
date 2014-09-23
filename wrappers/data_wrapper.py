@@ -1,7 +1,6 @@
 __author__ = 'tonycastronova'
 
 import datetime as dt
-import utilities
 
 class data_wrapper(object):
     def __init__(self,name, starttime, endtime, output, description=''):

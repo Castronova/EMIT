@@ -4,7 +4,7 @@ __author__ = 'tonycastronova'
 import unittest
 from stdlib import *
 import datetime
-import utilities as utils
+from utilities import spatial
 
 class testDataValues(unittest.TestCase):
 
@@ -20,7 +20,7 @@ class testDataValues(unittest.TestCase):
         elem = Element()
         elem.set_geom_from_wkt(self.geometry)
         elem.type(ElementType.Polygon)
-        srs = utils.get_srs_from_epsg(self.srscode)
+        srs = spatial.get_srs_from_epsg(self.srscode)
         elem.srs(srs)
 
         # create datavalues object

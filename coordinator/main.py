@@ -468,6 +468,13 @@ class Coordinator(object):
         #         return 1
         # return 0
 
+    def remove_link_all(self):
+        """
+        removes the last link
+        """
+        removelinks = self.__links = {}
+
+
     def update_links(self, model, exchangeitems):
         """
         Updates the model associated with the link.  This is necessary after the run phase to update the data

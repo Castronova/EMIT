@@ -30,15 +30,15 @@ class LinkStart ( wx.Frame ):
         btnPanel = wx.Panel(panel, -1)
         vbox = wx.BoxSizer(wx.VERTICAL)
         new = wx.Button(btnPanel, wx.ID_NEW, 'Add', size=(90, 30))
-        ren = wx.Button(btnPanel, wx.ID_RESET, 'Rename', size=(90, 30))
-        dlt = wx.Button(btnPanel, wx.ID_DELETE, 'Delete', size=(90, 30))
+        ren = wx.Button(btnPanel, wx.ID_EDIT, 'Edit', size=(90, 30))
+        dlt = wx.Button(btnPanel, wx.ID_DELETE, 'Clear All', size=(90, 30))
         close = wx.Button(btnPanel, wx.ID_CLEAR, 'Close', size=(90, 30))
 
         self.Bind(wx.EVT_BUTTON, self.AddClick, id=wx.ID_NEW)
-        self.Bind(wx.EVT_BUTTON, self.OnRename, id=wx.ID_RESET)
+        self.Bind(wx.EVT_BUTTON, self.OnEdit, id=wx.ID_EDIT)
         self.Bind(wx.EVT_BUTTON, self.OnDelete, id=wx.ID_DELETE)
         self.Bind(wx.EVT_BUTTON, self.OnClear, id=wx.ID_CLEAR)
-        self.Bind(wx.EVT_LISTBOX_DCLICK, self.OnRename)
+        self.Bind(wx.EVT_LISTBOX_DCLICK, self.OnEdit)
 
         vbox.Add((-1, 20))
         vbox.Add(new)
@@ -87,7 +87,7 @@ class LinkStart ( wx.Frame ):
         if text != '':
             self.listbox.Append(text)
 
-    def OnRename(self, event):
+    def OnEdit(self, event):
         sel = self.listbox.GetSelection()
         text = self.listbox.GetString(sel)
         renamed = wx.GetTextFromUser('Rename item', 'Rename dialog', text)
@@ -97,6 +97,16 @@ class LinkStart ( wx.Frame ):
 
 
     def OnDelete(self, event):
+
+        rmlink = self.cmd.remove_link_all()
+        all = self.listbox.GetSelections()
+
+        try:
+            for i in range(0,stop=None, step=1):
+                self.listbox.Delete(i)
+        except:
+            pass
+
         sel = self.listbox.GetSelection()
         if sel != -1:
             self.listbox.Delete(sel)

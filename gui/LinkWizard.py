@@ -182,8 +182,8 @@ class wizLink(wx.wizard.Wizard):
     def _init_ctrls(self, parent):
         # generated method, don't edit
         wiz.Wizard.__init__(self, parent, id=wxID_WIZLINK,
-               title=u'Link Control')
-        self.SetToolTipString(u'Link Wizard')
+               title=u'Link Creation Wizard')
+        self.SetToolTipString(u'Add Link')
         self.SetName(u'wizLink')
 ##self.Bind(RB.EVT_RIBBONBUTTONBAR_CLICKED,  self.onPlotSelection, id=wxID_RIBBONPLOTTIMESERIES)
         self.Bind(wx.wizard.EVT_WIZARD_PAGE_CHANGED, self.on_page_changing)
@@ -229,7 +229,7 @@ class wizLink(wx.wizard.Wizard):
         self.inputid = inputid
         self.outputid = outputid
 
-        self.page1 = CreateLink(self, "Link Connection", inputitems, outputitems)
+        self.page1 = CreateLink(self, "Add Link", inputitems, outputitems)
 
         self.page2 = Spatial(self, "Spatial Adjustment")
         self.page3 = Temporal(self, "Temporal Adjustment")
@@ -244,8 +244,8 @@ class wizLink(wx.wizard.Wizard):
         self.page2.SetNext(self.page4)
 
        #
-
-        self.page4.SetPrev(self.page1)
+        self.page2.SetPrev(self.page1)
+        self.page4.SetPrev(self.page2)
         # self.page4.SetNext(self.page5)
         #
         # self.page5.SetPrev(self.page4)

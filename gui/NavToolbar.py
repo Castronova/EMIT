@@ -9,6 +9,7 @@ from wx.lib.floatcanvas import FloatCanvas
 from images import icons
 import GUIControl as GUIMode
 from wx.lib.pubsub import pub as Publisher
+from wx.lib.floatcanvas import GUIControl as GUIMode
 
 class NavCanvas(wx.Panel):
     """
@@ -30,9 +31,9 @@ class NavCanvas(wx.Panel):
         self.GuiZoomIn = GUIMode.GUIZoomIn()
         self.GuiZoomOut = GUIMode.GUIZoomOut()
         self.GuiMove = GUIMode.GUIMove()
-        self.GuiRun = GUIMode.GUIRun()
-        self.GuiLink = GUIMode.GUILink()
-        self.GuiDelete = GUIMode.GUIDelete()
+        # self.GuiRun = GUIMode.GUIRun()
+        # self.GuiLink = GUIMode.GUILink()
+        # self.GuiDelete = GUIMode.GUIDelete()
 
 
         self.Modes = [("Pointer",  self.GuiMouse,   icons.Cursor.GetBitmap()),

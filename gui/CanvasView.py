@@ -6,6 +6,7 @@ import wx
 import sys
 from NavToolbar import NavCanvas
 
+# from wx.lib.floatcanvas import NavCanvas
 
 sys.path.append("..")
 

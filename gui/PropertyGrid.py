@@ -1034,8 +1034,8 @@ some custom property classes.
 """
 
 app = wx.App(False)
-frame = SimpleFrame(None)
-frame.Show(True)
+# frame = SimpleFrame(None)
+# frame.Show(True)
 
 app.MainLoop()
 

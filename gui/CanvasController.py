@@ -732,7 +732,7 @@ class CanvasController:
             f.write(prettyxml)
 
     def loadsimulation(self, file):
-
+        #TODO: Should be part of the cmd.
         tree = et.parse(file)
 
         # get the root

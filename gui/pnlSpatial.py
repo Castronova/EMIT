@@ -27,6 +27,7 @@ class pnlSpatial ( wx.Panel ):
         # create some sizers
         sizer = wx.BoxSizer(wx.VERTICAL)
 
+
         # A button
         # self.button =wx.Button(self, label="Placeholder")
         # self.radiobutton1 = wx.RadioButton(self, wx.ID_ANY, u"Placeholder")
@@ -41,6 +42,10 @@ class pnlSpatial ( wx.Panel ):
 
         self.inputCombo = wx.ComboBox(self, wx.ID_ANY,name='input_combo',choices=[])
         self.outputCombo = wx.ComboBox(self, wx.ID_ANY,name='output_combo', choices=[])
+
+        self.inputLabel = wx.StaticText(self,wx.ID_ANY,label='Input Features: ')
+        self.outputLabel = wx.StaticText(self,wx.ID_ANY,label='Output Features: ')
+#        __init__(self, parent, id=-1, label=EmptyString, pos=DefaultPosition, size=DefaultSize, style=0, name=StaticTextNameStr)
 
 
         # self.inputCheckbox.Disable()
@@ -77,8 +82,17 @@ class pnlSpatial ( wx.Panel ):
         #sizer.Add(self.inputCheckbox, 0, wx.ALIGN_CENTER|wx.ALL)
         #sizer.Add(self.outputCheckbox, 0, wx.ALIGN_CENTER|wx.ALL)
 
-        sizer.Add(self.inputCombo, 0, wx.ALIGN_LEFT|wx.ALL)
-        sizer.Add(self.outputCombo, 0, wx.ALIGN_LEFT|wx.ALL)
+        # add inputs controls to an iosizer
+        iosizer = wx.BoxSizer(wx.HORIZONTAL)
+        iosizer.Add(self.inputLabel, 1, wx.ALIGN_LEFT|wx.ALL)
+        iosizer.Add(self.inputCombo, 1, wx.ALIGN_LEFT|wx.ALL)
+        sizer.Add(iosizer)
+
+        iosizer = wx.BoxSizer(wx.HORIZONTAL)
+        iosizer.Add(self.outputLabel, 1, wx.ALIGN_LEFT|wx.ALL)
+        iosizer.Add(self.outputCombo, 1, wx.ALIGN_LEFT|wx.ALL)
+        sizer.Add(iosizer)
+        #sizer.Add(self.outputCombo, 0, wx.ALIGN_LEFT|wx.ALL)
 
         self.SetSizer(sizer)
         #self.Fit()
@@ -116,14 +130,22 @@ class pnlSpatial ( wx.Panel ):
         return self.__output_data[var_name]
 
     def buildGradientColor(self, num, cmap='Blues'):
+        # get the color map
         c = getattr(plt.cm, cmap)
-        num_colors = num
-        return [c(1.*i/num_colors) for i in range(num_colors)]
+
+        # add two so that the median color is chosen if only one geometry
+        num += 2
+
+        # generate the color definitions
+        colors = [c(1.*i/num) for i in range(0,num)]
+
+        # omit the ends of the spectrum so that the correct number of colors is provided
+        return colors[1:-1]
 
     def setInputSeries(self):
 
         inputs = self.input_data()
-        colors = self.buildGradientColor(len(inputs),'jet')
+        colors = self.buildGradientColor(len(inputs))
         i = 0
         for geom in inputs:
             self.addSeries(geom,colors[i])
@@ -148,16 +170,27 @@ class pnlSpatial ( wx.Panel ):
         # get variable name
         var_name = event.GetString()
 
+        # reset the selections
+        self.inputCombo.SetSelection(0)
+        self.outputCombo.SetSelection(0)
+
         if parent == 'input_combo':
             data = self.get_input_geom(var_name)
-            colors = self.buildGradientColor(len(data),'Blues')
-            self.SetPlotData(geoms=data,colors=colors)
-            self.outputCombo.SetSelection(0)
+            if data is not None:
+                colors = self.buildGradientColor(len(data),'Blues')
+                self.SetPlotData(geoms=data,colors=colors)
+                self.inputCombo.SetSelection(event.GetSelection())
+            else:
+                self.inputCombo.Disable()
+
         if parent == 'output_combo':
             data = self.get_output_geom(var_name)
-            colors = self.buildGradientColor(len(data),'Reds')
-            self.SetPlotData(geoms=data,colors=colors)
-            self.inputCombo.SetSelection(0)
+            if data is not None:
+                colors = self.buildGradientColor(len(data),'Reds')
+                self.SetPlotData(geoms=data,colors=colors)
+                self.outputCombo.SetSelection(event.GetSelection())
+            else:
+                self.outputCombo.Disable()
 
         # if self.inputCheckbox.IsChecked():
         #     self.setInputSeries()

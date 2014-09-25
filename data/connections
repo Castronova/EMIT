@@ -14,7 +14,7 @@ engine = postgresql
 address = castro-server.bluezone.usu.edu
 db = ODM2
 user = postgres
-pwd = postgres
+pwd = water
 
 
 [connection]

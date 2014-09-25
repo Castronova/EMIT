@@ -137,7 +137,7 @@ class MainGui(wx.Frame):
                            Show(show=True).
                            CloseButton(True))
 
-        # self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED,self.OnSelect)
+        self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED,self.OnSelect)
 
         self.m_mgr.Update()
 
@@ -352,10 +352,9 @@ class TimeSeries(wx.Panel):
         self.SetSizer( seriesSelectorSizer )
         self.Layout()
 
-        databases = Publisher.sendMessage('GetDatabases')
-        Publisher.subscribe(self.getKnownDatabases, "getKnownDatabases")
+        #databases = Publisher.sendMessage('getDatabases')
+        Publisher.subscribe(self.getKnownDatabases, "getKnownDatabases")  # sends message to CanvasController
         Publisher.subscribe(self.connection_added_status, "connectionAddedStatus")
-
 
 
     def DbChanged(self, event):

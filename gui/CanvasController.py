@@ -607,18 +607,18 @@ class CanvasController:
             self.cmd.add_db_connection(connection)
 
             # notify that the connection was added successfully
-            Publisher.sendMessage('connectionAddedStatus',value=True,connection_string=connection[connection.keys()[0]]['connection_string'])
+            Publisher.sendMessage('connectionAddedStatus',value=True,connection_string=connection[connection.keys()[0]]['connection_string'])  # sends message to mainGui
 
             return True
         else:
             # notify that the connection was not added successfully
-            Publisher.sendMessage('connectionAddedStatus',value=False,connection_string=connection)
+            Publisher.sendMessage('connectionAddedStatus',value=False,connection_string=connection) # sends message to mainGui
 
             return False
 
     def getDatabases(self):
         knownconnections = self.cmd.get_db_connections()
-        Publisher.sendMessage('getKnownDatabases',value=knownconnections)
+        Publisher.sendMessage('getKnownDatabases',value=knownconnections)  # sends message to mainGui
 
     def MenuSelectionCb( self, event ):
         # do something

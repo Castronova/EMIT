@@ -1,4 +1,7 @@
 EMIT
 ====
 
-Utah State University Environmental Model Integration Project (EMIT)
+Environmental Model Integration Project (EMIT)
+
+### Why?
+

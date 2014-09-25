@@ -5,7 +5,7 @@ engine = postgresql
 address = castro-server.bluezone.usu.edu
 db = ODM2-Live
 user = postgres
-pwd = postgres
+pwd = water
 
 [connection]
 name = ODM2 Simulation database

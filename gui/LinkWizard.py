@@ -12,6 +12,8 @@ import pnlCreateLink
 import pnlSpatial
 import pnlTemporal
 import pnlDetails
+import pnlSummary
+import PropertyGrid
 from wx.lib.pubsub import pub as Publisher
 
 
@@ -42,7 +44,8 @@ class Details(wiz.PyWizardPage):
         title.SetFont(wx.Font(18, wx.SWISS, wx.NORMAL, wx.BOLD))
         sizer.Add(title, 10, wx.ALIGN_CENTRE|wx.ALL, 5)
         sizer.Add(wx.StaticLine(self, -1), 5, wx.EXPAND|wx.ALL, 5)
-        self.pnlDetail=pnlDetails.pnlDetails(self)
+        # self.pnlDetail=pnlSummary.pnlDetails(self)
+        self.pnlDetail=PropertyGrid.TestPanel(self)
         self.sizer.Add(self.pnlDetail, 85, wx.ALL, 5)
 
 

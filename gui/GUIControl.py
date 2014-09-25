@@ -193,7 +193,7 @@ class GUIMouse(GUIBase):
         self.Canvas._RaiseMouseEvent(event, EventType)
 
 
-class GUIMove(ZoomWithMouseWheel, GUIBase):
+class GUIMove(GUIBase):
     """
     Mode that moves the image (pans).
     It doesn't change any coordinates, it only changes what the viewport is
@@ -205,7 +205,7 @@ class GUIMove(ZoomWithMouseWheel, GUIBase):
         self.StartMove = None
         self.MidMove = None
         self.PrevMoveXY = None
-        
+
         ## timer to give a delay when moving so that buffers aren't re-built too many times.
         self.MoveTimer = wx.PyTimer(self.OnMoveTimer)
 
@@ -226,9 +226,6 @@ class GUIMove(ZoomWithMouseWheel, GUIBase):
     def OnMove(self, event):
         # Always raise the Move event.
         self.Canvas._RaiseMouseEvent(event, FloatCanvas.EVT_FC_MOTION)
-
-
-
         if event.Dragging() and event.LeftIsDown() and not self.StartMove is None:
             self.EndMove = N.array(event.GetPosition())
             self.MoveImage(event)
@@ -250,7 +247,6 @@ class GUIMove(ZoomWithMouseWheel, GUIBase):
         wh = self.Canvas.PanelSize
         xy_tl = xy1 - self.StartMove
         dc = wx.ClientDC(self.Canvas)
-        dc.BeginDrawing()
         x1,y1 = self.PrevMoveXY
         x2,y2 = xy_tl
         w,h = self.Canvas.PanelSize
@@ -298,14 +294,25 @@ class GUIMove(ZoomWithMouseWheel, GUIBase):
         dc.DrawRectangle(xb, yb, wb, hb)
         self.PrevMoveXY = xy_tl
         if self.Canvas._ForeDrawList:
-            dc.DrawBitmapPoint(self.Canvas._ForegroundBuffer,xy_tl)
+            dc.DrawBitmap(self.Canvas._ForegroundBuffer,xy_tl)
         else:
-            dc.DrawBitmapPoint(self.Canvas._Buffer,xy_tl)
-        dc.EndDrawing()
+            dc.DrawBitmap(self.Canvas._Buffer,xy_tl)
         #self.Canvas.Update()
 
-class GUIZoomIn(ZoomWithMouseWheel, GUIBase):
- 
+    def OnWheel(self, event):
+        """
+           By default, zoom in/out by a 0.1 factor per Wheel event.
+        """
+        if event.GetWheelRotation() < 0:
+            self.Canvas.Zoom(0.9)
+        else:
+            self.Canvas.Zoom(1.1)
+
+class GUIZoomIn(GUIBase):
+    """
+    Mode to zoom in.
+    """
+
     def __init__(self, canvas=None):
         GUIBase.__init__(self, canvas)
         self.StartRBBox = None
@@ -344,16 +351,14 @@ class GUIZoomIn(ZoomWithMouseWheel, GUIBase):
             wh[1] = int(wh[0] / self.Canvas.AspectRatio)
             xy_c = (xy0 + xy1) / 2
             dc = wx.ClientDC(self.Canvas)
-            dc.BeginDrawing()
             dc.SetPen(wx.Pen('WHITE', 2, wx.SHORT_DASH))
             dc.SetBrush(wx.TRANSPARENT_BRUSH)
             dc.SetLogicalFunction(wx.XOR)
             if self.PrevRBBox:
-                dc.DrawRectanglePointSize(*self.PrevRBBox)
+                dc.DrawRectangle(*self.PrevRBBox)
             self.PrevRBBox = ( xy_c - wh/2, wh )
-            dc.DrawRectanglePointSize( *self.PrevRBBox )
-            dc.EndDrawing()
-            
+            dc.DrawRectangle( *self.PrevRBBox )
+
     def UpdateScreen(self):
         """
         Update gets called if the screen has been repainted in the middle of a zoom in
@@ -365,27 +370,44 @@ class GUIZoomIn(ZoomWithMouseWheel, GUIBase):
             dc.SetPen(wx.Pen('WHITE', 2, wx.SHORT_DASH))
             dc.SetBrush(wx.TRANSPARENT_BRUSH)
             dc.SetLogicalFunction(wx.XOR)
-            dc.DrawRectanglePointSize(*self.PrevRBBox)
+            dc.DrawRectangle(*self.PrevRBBox)
 
     def OnRightDown(self, event):
         self.Canvas.Zoom(1/1.5, event.GetPosition(), centerCoords="pixel")
 
+    def OnWheel(self, event):
+        if event.GetWheelRotation() < 0:
+            self.Canvas.Zoom(0.9)
+        else:
+            self.Canvas.Zoom(1.1)
 
-class GUIZoomOut(ZoomWithMouseWheel, GUIBase):
+
+
+class GUIZoomOut(GUIBase):
+    """
+    Mode to zoom out.
+    """
 
     def __init__(self, Canvas=None):
         GUIBase.__init__(self, Canvas)
         self.Cursor = self.Cursors.MagMinusCursor
-        
+
     def OnLeftDown(self, event):
         self.Canvas.Zoom(1/1.5, event.GetPosition(), centerCoords="pixel")
 
     def OnRightDown(self, event):
         self.Canvas.Zoom(1.5, event.GetPosition(), centerCoords="pixel")
 
+    def OnWheel(self, event):
+        if event.GetWheelRotation() < 0:
+            self.Canvas.Zoom(0.9)
+        else:
+            self.Canvas.Zoom(1.1)
+
     def OnMove(self, event):
         # Always raise the Move event.
         self.Canvas._RaiseMouseEvent(event,FloatCanvas.EVT_FC_MOTION)
+
 
 
 class GUILink(GUIBase):

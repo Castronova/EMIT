@@ -671,9 +671,9 @@ class LargeImageEditor(wxpg.PyEditor):
 
 class TestPanel( wx.Panel ):
 
-    def __init__( self, parent, log ):
+    def __init__( self, parent):
         wx.Panel.__init__(self, parent, wx.ID_ANY)
-        self.log = log
+        # self.log = log
 
         self.panel = panel = wx.Panel(self, wx.ID_ANY)
         topsizer = wx.BoxSizer(wx.VERTICAL)
@@ -1034,8 +1034,8 @@ some custom property classes.
 """
 
 app = wx.App(False)
-frame = SimpleFrame(None)
-frame.Show(True)
+# frame = SimpleFrame(None)
+# frame.Show(True)
 
 app.MainLoop()
 

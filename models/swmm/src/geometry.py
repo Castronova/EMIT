@@ -33,7 +33,7 @@ def build_catchments(inp):
         return geoms
 
 
-def build_coordinates(inp):
+def build_nodes(inp):
         lines = None
         with open(inp,'r') as f:
             lines = f.readlines()
@@ -62,103 +62,69 @@ def build_coordinates(inp):
         return geoms
 
 
+
 def build_links(inp):
-        lines = None
-        with open(inp,'r') as f:
-            lines = f.readlines()
+    lines = None
+    with open(inp,'r') as f:
+        lines = f.readlines()
 
 
 
-        # get all the coordinates
-        coordinates = {}
-        cidx = find(lines, lambda x: 'COORDINATES' in x)
-        for line in lines[cidx+3:]:
-            if line.strip() == '':
-                break
-            vals = re.split(' +',line.strip())
-
-            if vals[0] in coordinates:
-                coordinates[vals[0]].append((float(vals[1]), float(vals[2])))
-            else:
-                coordinates[vals[0]] = [(float(vals[1]), float(vals[2]))]
-
-        scoords = sorted_nicely(coordinates)
-
-        # first read all the node coordinates
-        nodes = {}
-        node_order = []
-        cidx = find(lines, lambda x: 'VERTICES' in x)
-        for line in lines[cidx+3:]:
-            if line.strip() == '':
-                break
-            vals = re.split(' +',line.strip())
-
-            if vals[0] in nodes:
-                nodes[vals[0]].append((float(vals[1]), float(vals[2])))
-            else:
-                nodes[vals[0]] = [(float(vals[1]), float(vals[2]))]
-                node_order.append(vals[0])
-
-        snodes = sorted_nicely(nodes)
+    # get all the coordinates
+    nodes = {}
+    cidx = find(lines, lambda x: 'COORDINATES' in x)
+    for line in lines[cidx+3:]:
+        if line.strip() == '':
+            break
+        vals = re.split(' +',line.strip())
 
 
+        nodes[vals[0]] = (float(vals[1]), float(vals[2]))
+
+    #scoords = sorted_nicely(nodes)
+
+    # read all the vertices
+    vertices = {k:[v] for k,v in nodes.iteritems()}
+    cidx = find(lines, lambda x: 'VERTICES' in x)
+    for line in lines[cidx+3:]:
+        if line.strip() == '':
+            break
+        vals = re.split(' +',line.strip())
 
 
-        for i in range(1, len(scoords)-1):
+        if vals[0] in vertices:
+            vertices[vals[0]].append((float(vals[1]), float(vals[2])))
+        else:
+            # get start node
+            start_node = nodes[vals[0]]
 
-            # set first value as previous node
-
-            coordinates[scoords[i]].insert(0,coordinates[scoords[i-1]][-1])
-
-            if scoords[i] in nodes:
-                coords = nodes[scoords[i]]
-
-                # insert middle coords
-                for c in reversed(coords):
-                    coordinates[scoords[i]].insert(1,c)
+            vertices[vals[0]] = [start_node, (float(vals[1]), float(vals[2]))]
 
 
+    # add conduits
+    cidx = find(lines, lambda x: 'CONDUITS' in x)
+    for line in lines[cidx+4:]:
+        if line.strip() == '':
+            break
+        vals = re.split(' +',line.strip())
+
+        node_id = vals[0]
+        inlet_id = vals[1]
+        outlet_id = vals[2]
+
+        inlet_node = nodes[inlet_id]
+        outlet_node= nodes[outlet_id]
+
+        # add inlet node coordinate to the outlet node list
+        vertices[inlet_id].append(outlet_node)
 
 
-        geoms = []
-        for name,coords in coordinates.iteritems():
-            if len(coords) > 1:
-                geoms.append((name,LineString(coords)))
+    geoms = []
+    for i,coords in vertices.iteritems():
+        if len(coords) > 1:
+            geoms.append((i,LineString(coords)))
 
-        return geoms
-
-
-
-def connect_coordinates(inp):
-        lines = None
-        with open(inp,'r') as f:
-            lines = f.readlines()
-
-
-
-        # get all the coordinates
-        coordinates = []
-        cidx = find(lines, lambda x: 'COORDINATES' in x)
-        for line in lines[cidx+3:]:
-            if line.strip() == '':
-                break
-            vals = re.split(' +',line.strip())
-
-
-            coordinates.append((float(vals[1]), float(vals[2])))
-
-
-        geoms = []
-        for i in range(0,len(coordinates)-1):
-
-            # calculate the distance between the points to make sure they are next to each other
-            dist = Point(coordinates[i]).distance(Point(coordinates[i+1]))
-
-            if dist < 100:
-                geoms.append(LineString([coordinates[i],coordinates[i+1]]))
-
-
-        return geoms
+    return geoms
 
 
 def find(lst, predicate):

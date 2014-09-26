@@ -228,7 +228,7 @@ class swmm(feed_forward_wrapper):
         streams = swmm_geom.build_links(input_file)
 
         # build nodes
-        nodes = swmm_geom.build_coordinates(input_file)
+        nodes = swmm_geom.build_nodes(input_file)
 
 
         # store the geoms by their type

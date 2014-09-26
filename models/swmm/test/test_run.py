@@ -3,15 +3,11 @@ __author__ = 'tonycastronova'
 from os.path import *
 import unittest
 from datetime import datetime
-import utilities
-
 from utilities import gui
-
 import matplotlib.pyplot as plt
 from descartes.patch import *
-
-from examples.swmm.src import geometry
-from examples.swmm.src import swmm_wrapper
+from models.swmm.src import geometry
+from models.swmm.src import swmm_wrapper
 
 
 # from ..src.parse_swmm import *
@@ -19,6 +15,10 @@ from examples.swmm.src import swmm_wrapper
 import time
 
 class test_swmm(unittest.TestCase):
+
+    def setUp(self):
+
+        self._inp =abspath(join(dirname(__file__),'../data/simulation.inp'))
 
     def test_init(self):
 
@@ -59,7 +59,7 @@ class test_swmm(unittest.TestCase):
         params = gui.parse_config_without_validation(mdl)
         swmm = swmm_wrapper.swmm(params)
 
-        inp =abspath(join(dirname(__file__),'../data/sim.inp'))
+        inp =abspath(join(dirname(__file__),'../data/simulation.inp'))
 
         # build link geometries
         link_geoms = swmm.build_swmm_geoms(inp,'vertices')
@@ -98,7 +98,7 @@ class test_swmm(unittest.TestCase):
         params = gui.parse_config_without_validation(mdl)
         swmm = swmm_wrapper.swmm(params)
 
-        inp =abspath(join(dirname(__file__),'../data/sim.inp'))
+        inp =abspath(join(dirname(__file__),'../data/simulation.inp'))
 
         # build link geometries
         geoms = geometry.build_catchments(inp)
@@ -140,13 +140,13 @@ class test_swmm(unittest.TestCase):
         params = gui.parse_config_without_validation(mdl)
         swmm = swmm_wrapper.swmm(params)
 
-        inp =abspath(join(dirname(__file__),'../data/sim.inp'))
+        inp =abspath(join(dirname(__file__),'../data/simulation.inp'))
 
         # build link geometries
         geoms = geometry.build_coordinates(inp)
 
 
-        plt.ion()
+        # plt.ion()
 
         fig = plt.figure(1, figsize=(5,5), dpi=180)
         ax = fig.add_subplot(111)
@@ -167,11 +167,11 @@ class test_swmm(unittest.TestCase):
 
             ax.axis('auto')
 
-            plt.draw()
+        plt.draw()
 
 
-
-        time.sleep(2)
+        plt.show()
+        #time.sleep(2)
 
 
     def test_build_links(self):
@@ -181,7 +181,7 @@ class test_swmm(unittest.TestCase):
         params = gui.parse_config_without_validation(mdl)
         swmm = swmm_wrapper.swmm(params)
 
-        inp =abspath(join(dirname(__file__),'../data/sim.inp'))
+        inp =abspath(join(dirname(__file__),'../data/simulation.inp'))
 
         # build link geometries
         #geoms = geometry.build_links(inp)
@@ -190,7 +190,7 @@ class test_swmm(unittest.TestCase):
         #geoms.extend(geometry.build_coordinates(inp))
 
 
-        plt.ion()
+        # plt.ion()
 
         fig = plt.figure(1, figsize=(5,5), dpi=180)
         ax = fig.add_subplot(111)
@@ -210,19 +210,49 @@ class test_swmm(unittest.TestCase):
 
 
             ax.axis('auto')
-            plt.draw()
+        plt.draw()
 
-        plt.ioff()
+        # plt.ioff()
+        plt.show()
+
+    def test_draw_links(self):
+
+        links = geometry.build_links(self._inp)
+
+        self.draw_geoms(links)
+
+    def draw_geoms(self, geoms):
+
+
+        fig = plt.figure(1, figsize=(5,5), dpi=180)
+        ax = fig.add_subplot(111)
+
+        cmap = plt.cm.Blues
+        num_colors = len(geoms)
+        colors = [cmap(1.*i/num_colors) for i in range(num_colors)]
+
+
+        i = 0
+        for id,geom in geoms:
+
+            patch = PolygonPatch(geom.buffer(2),facecolor=colors[i])
+            ax.add_patch(patch)
+
+            i += 1
+
+            ax.axis('auto')
+        plt.draw()
+
         plt.show()
 
 
-    def test_get_output(self):
-        o =abspath(join(dirname(__file__),'../data/sim.out'))
-
-
-
-        # get variables
-        vars = listvariables(o)
-
-        for k, v in vars.iteritems():
-            print k,v
+    # def test_get_output(self):
+    #     o =abspath(join(dirname(__file__),'../data/simulation.out'))
+    #
+    #
+    #
+    #     # get variables
+    #     vars = listvariables(o)
+    #
+    #     for k, v in vars.iteritems():
+    #         print k,v

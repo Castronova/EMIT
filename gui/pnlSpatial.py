@@ -177,8 +177,8 @@ class pnlSpatial ( wx.Panel ):
         if parent == 'input_combo':
             data = self.get_input_geom(var_name)
             if data is not None:
-                colors = self.buildGradientColor(len(data),'Blues')
-                self.SetPlotData(geoms=data,colors=colors)
+                colors = self.buildGradientColor(len(data['data']),'Blues')
+                self.SetPlotData(data,colors=colors)
                 self.inputCombo.SetSelection(event.GetSelection())
             else:
                 self.inputCombo.Disable()
@@ -186,8 +186,8 @@ class pnlSpatial ( wx.Panel ):
         if parent == 'output_combo':
             data = self.get_output_geom(var_name)
             if data is not None:
-                colors = self.buildGradientColor(len(data),'Reds')
-                self.SetPlotData(geoms=data,colors=colors)
+                colors = self.buildGradientColor(len(data['data']),'Reds')
+                self.SetPlotData(data,colors=colors)
                 self.outputCombo.SetSelection(event.GetSelection())
             else:
                 self.outputCombo.Disable()
@@ -199,13 +199,22 @@ class pnlSpatial ( wx.Panel ):
 
         self.canvas.draw()
 
-    def SetPlotData(self, geoms, colors):
+    def SetPlotData(self, data, colors):
 
+        geoms = data['data']
+        type = data['type']
         i = 0
-        for g in geoms:
-            x,y = zip(*g)
-            self.ax.plot(x,y,color=colors[i])
-            i += 1
+
+        if type == 'Point':
+            tuple_geoms = [g[0] for g in geoms]
+            x,y = zip(*tuple_geoms)
+            self.ax.scatter(x,y,color=colors)
+        else:
+
+            for g in geoms:
+                x,y = zip(*g)
+                self.ax.plot(x,y,color=colors[i])
+                i += 1
 
         self.ax.grid()
         self.ax.axis('auto')

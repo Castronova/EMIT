@@ -264,6 +264,8 @@ class PyObjectPropertyValue:
 
 
 class PyObjectProperty(wxpg.PyProperty):
+
+
     """\
     Another simple example. This time our value is a PyObject.
 
@@ -823,6 +825,11 @@ class TestPanel( wx.Panel ):
         sizer.Add(panel, 1, wx.EXPAND)
         self.SetSizer(sizer)
         self.SetAutoLayout(True)
+
+    # g=[]
+    # l = []
+    # for i in range(10):
+    #     l.append(PyObjectProperty(g))
 
     def OnPropGridChange(self, event):
         p = event.GetProperty()

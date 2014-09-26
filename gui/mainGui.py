@@ -362,14 +362,14 @@ class TimeSeries(wx.Panel):
         self.OLVRefresh(event)
 
 
+
         # # get the name of the selected database
         # selected_db = self.m_choice3.GetStringSelection()
         #
         # # set the selected choice
         # self.__selected_choice_idx = self.m_choice3.GetSelection()
         #
-        # # set the current database in canvas controller
-        # Publisher.sendMessage('SetCurrentDb',value=selected_db)
+        #
         #
         # for key, db in self._databases.iteritems():
         #
@@ -520,6 +520,9 @@ class TimeSeries(wx.Panel):
 
                 # set the data objects in the olv control
                 self.m_olvSeries.SetObjects(data)
+
+                # set the current database in canvas controller
+                Publisher.sendMessage('SetCurrentDb',value=selected_db)  # sends to CanvasController.getCurrentDbSession
 
                 self.__logger.info ('Database "%s" refreshed'%self.m_choice3.GetStringSelection())
                 # exit

@@ -989,7 +989,11 @@ class FileDrop(wx.FileDropTarget):
             # generate a unique model id
             #id = uuid.uuid4().hex[:8]
 
-            inst = odm2_data.odm2(resultid=name, session=self.controller.getCurrentDbSession())
+            # get the current database connection dictionary
+            session = self.controller.getCurrentDbSession()
+
+            # create odm2 instance
+            inst = odm2_data.odm2(resultid=name, session=session)
 
             from coordinator import main
             # create a model instance

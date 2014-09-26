@@ -54,6 +54,7 @@ class odm2(object):
         # build exchange item object
         item = stdlib.ExchangeItem(id=id, name=name, desc=desc, geometry=[geometry], unit=unit, variable=variable,type=type )
 
+
         # set global parameters
         self.__id = id
         self.__name = name
@@ -100,12 +101,7 @@ class odm2(object):
         """
             ini configuration file
         """
-        # if self.__outputs is None:
-        #     ei = utilities.build_exchange_items(self.__params)
-        #     self.__outputs = [i for i in ei if i.get_type() == 'output' ]
         return self.__output
-
-        #raise NotImplementedError('This is an abstract method that must be implemented!')
 
     def simulation_start(self):
         return self.__start

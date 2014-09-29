@@ -14,6 +14,11 @@ import logging
 from ContextMenu import GeneralContextMenu
 import threading
 
+#Save Features
+import xml.etree.ElementTree as et
+from xml.dom import minidom
+import datatypes
+
 
 class MainGui(wx.Frame):
     def __init__(self, parent, cmd):
@@ -224,7 +229,7 @@ class MainGui(wx.Frame):
 
         # else: proceed asking to the user the new file to open
 
-        openFileDialog = wx.FileDialog(self, "Open XYZ file", "", "",
+        openFileDialog = wx.FileDialog(self, "Open SIM file", "", "",
                                        "Simulation Files (*.sim)|*.sim", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
 
         if openFileDialog.ShowModal() == wx.ID_CANCEL:
@@ -233,17 +238,19 @@ class MainGui(wx.Frame):
         # proceed loading the file chosen by the user
         # this can be done with e.g. wxPython input streams:
         input_stream = (openFileDialog.GetPath())
-        data = wx.FileDataObject()
-        data.AddFile(input_stream)
-
-        obj = event.GetSelection()
-        data = wx.FileDataObject()
-
-        dropSource = wx.DropSource(openFileDialog)
-        dropSource.SetData(data)
-        x = 0
-        y = 0
-        dropSource.DoDragDrop()
+        Publisher.sendMessage('SetLoadPath',file=input_stream) #send message to canvascontroller
+        #
+        # data = wx.FileDataObject()
+        # data.AddFile(input_stream)
+        #
+        # obj = event.GetSelection()
+        # data = wx.FileDataObject()
+        #
+        # dropSource = wx.DropSource(openFileDialog)
+        # dropSource.SetData(data)
+        # x = 0
+        # y = 0
+        # dropSource.DoDragDrop()
 
         # if not input_stream.IsOk():
         #
@@ -255,20 +262,11 @@ class MainGui(wx.Frame):
         save = wx.FileDialog(self.Canvas.GetTopLevelParent(), "Save Configuration","","",
                              "Simulation Files (*.sim)|*.sim", wx.FD_SAVE  | wx.FD_OVERWRITE_PROMPT)
 
-        from ContextMenu import GeneralContextMenu
-        if save.ShowModal() == wx.ID_CANCEL:
-            return     # the user changed idea...
+        if save.ShowModal() == wx.ID_OK:
+            self.save_path = save.GetPath() + ".sim"
 
-        # save the current contents in the file
-        # this can be done with e.g. wxPython output streams:
-        output_stream = save.GetPath()
-        CanvasController.SaveSimulation(output_stream)
+        Publisher.sendMessage('SetSavePath',path=save.GetPath()) #send message to canvascontroller
 
-        # if save.ShowModal() != wx.ID_CANCEL:
-        #     path = save.GetPath()
-        #
-        # CanvasController.SaveSimulation(path)
-        # self.parent.SaveSimulation(path)
 
     def onDirectory(self, event):
         ToolboxPane = self.m_mgr.GetPane(self.Toolbox)

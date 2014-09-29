@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<Simulation>
+  <Model id="f8619" mdl="C:\Users\Mario\Documents\Projects\EMIT\gui\../tests\data\multiplier.mdl" name="Multiplier" x="189.0" y="7.0"/>
+  <Model id="48906" mdl="C:\Users\Mario\Documents\Projects\EMIT\gui\../tests\data\randomizer.mdl" name="Random Number Generator" x="-225.0" y="0.0"/>
+  <Link from_id="48906" from_item="random_number" from_item_id="77331" from_name="Random Number Generator" to_id="f8619" to_item="some_value" to_item_id="570b2" to_name="Multiplier"/>
+</Simulation>

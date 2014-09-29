@@ -96,6 +96,8 @@ class CanvasController:
         Publisher.subscribe(self.AddDatabaseConnection, "DatabaseConnection")
         Publisher.subscribe(self.getDatabases, "getDatabases")
         Publisher.subscribe(self.getCurrentDbSession, "SetCurrentDb")
+        Publisher.subscribe(self.SaveSimulation, "SetSavePath")
+        Publisher.subscribe(self.loadsimulation, "SetLoadPath")
 
     def OnMove(self, event):
         """

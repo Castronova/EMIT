@@ -136,6 +136,14 @@ class feed_forward_wrapper(object):
 
         raise Exception('Could not find output: %s' + outputname)
 
+    def set_output_by_name(self, outputname, value):
+        outputs = self.outputs()
+
+        for output in outputs:
+            if output.name() == outputname:
+                output = value
+
+
 
     def set_geom_values(self,variablename,geometry,datavalues):
 

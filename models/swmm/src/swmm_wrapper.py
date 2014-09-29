@@ -85,8 +85,10 @@ class swmm(feed_forward_wrapper):
 
     def run(self,inputs):
 
+        # setup input file for simulation
+        self.setup_model(inputs)
+
         # todo: use input rainfall to write inp file
-        self.set_rainfall_input(inputs)
 
 
         # run the simulation
@@ -98,14 +100,22 @@ class swmm(feed_forward_wrapper):
         vars = ps.listvariables(self.out)
 
         links = ps.listdetail(self.out,'link')
+        nodes = ps.listdetail(self.out,'node')
+        catchments = ps.listdetail(self.out,'subcatchment')
+
         #flow = ps.getdata(out,'link:Flow_rate')
 
         #for l in links:
         #    print '%s, %s, %s, %s, %s, %s'%\
         #          (l['Name'],l['Type'],l['Inv_offset'],l['Inv_offset'],l['Max_depth'],l['Length'])
 
-        items = ['link,'+L['Name']+',1' for L in links]
-        data = ps.getdata(self.out,items)
+        #link_= ps.getdata(self.out,items)
+        node_head = ps.getdata(self.out, ['node,'+N['Name']+',1' for N in nodes])
+        node_flow = ps.getdata(self.out, ['node,'+N['Name']+',4' for N in nodes])
+        link_frate = ps.getdata(self.out, ['link,'+L['Name']+',0' for L in links])
+        link_depth = ps.getdata(self.out, ['link,'+L['Name']+',1' for L in links])
+
+        #catchment_data =
         #['link,1,1']
 
 
@@ -115,9 +125,9 @@ class swmm(feed_forward_wrapper):
         # set the output results to each geometry
         for geom in stage.geometries():
             id = geom.id()
-            geom.datavalues().set_timeseries(data[id])
+            geom.datavalues().set_timeseries(node_head[id])
 
-
+            self.outputs()
 
         return 1
 
@@ -290,23 +300,71 @@ class swmm(feed_forward_wrapper):
 
         return geoms
 
-    def set_rainfall_input(self, inputs):
-
-        # get the time series associated with the input exchange item
-        geom, eitem = inputs.items()[0]
-        data = eitem.values()[0]
-        d, v = data.get_dates_values()
-        dates = list(d)
-        values = list(v)
+    def setup_model(self, inputs):
 
         # open the input file (original)
         sim = open(self.sim_input,'r')
         in_lines = sim.readlines()
 
+        # set the simulation start and end times.
+        st = self.simulation_start()
+        et = self.simulation_end()
+        cidx = self.find(in_lines, lambda x: 'OPTIONS' in x)
+        i = cidx+1
+        swmm_opts = {}
+        for line in in_lines[cidx+1:]:
+            if line.strip() == '':
+                break
+            vals = re.split(' +',line.strip())
+            swmm_opts[vals[0]] = vals[1]
+            i += 1
+
+        swmm_opts['START_DATE'] = st.strftime('%m/%d/%Y')
+        swmm_opts['START_TIME'] = st.strftime('%H:%M:%S')
+        swmm_opts['END_DATE'] = et.strftime('%m/%d/%Y')
+        swmm_opts['END_TIME'] = et.strftime('%H:%M:%S')
+        swmm_opts['REPORT_START_DATE'] = st.strftime('%m/%d/%Y')
+        swmm_opts['REPORT_START_TIME'] = st.strftime('%H:%M:%S')
+
+        for j in range(cidx+1,i):
+            k,v = swmm_opts.popitem()
+            in_lines[j] = "%s\t%s\n" % (k,v)
+
+
+        # Format rainfall input
+        for geom, dict in inputs.iteritems():
+            if 'Rainfall' in dict:
+                in_lines = self.set_rainfall_input(in_lines,dict['Rainfall'])
+
         # write simulation specific input file
         f = open(self.inp,'w')
         for line in in_lines:
             f.write(line)
+        f.close()
+
+    def set_rainfall_input(self, in_lines, precip):
+
+        # get the time series associated with the input exchange item
+        #geom, eitem = inputs.items()[0]
+        #data = eitem.values()[0]
+        d, v = precip.get_dates_values()
+        dates = list(d)
+        values = list(v)
+
+        # map the rain gages to the catchments
+        cidx = self.find(in_lines, lambda x: 'SUBCATCHMENTS' in x) + 4
+        i = 0
+        for line in in_lines[cidx:]:
+            if line.strip() == '':
+                break
+            vals = re.split(' +',line.strip())
+            vals[1] = 'rain_gage_data'
+            vals.append('\n')
+            in_lines[cidx + i]  = '\t'.join(vals)
+
+            i += 1
+
+
 
         # timeseries values must be relative to the start of the swmm simulation
         offset = (self.simulation_start() - dates[0]).total_seconds()
@@ -314,23 +372,21 @@ class swmm(feed_forward_wrapper):
             dates[i] -= datetime.timedelta(seconds=offset)
 
         # add a raingage
-        f.write('\n[RAINGAGES]\n')
-        f.write(';;;\n')
-        f.write(';;Name           Type      Intrvl Catch  Source\n')
-        f.write(';;-------------- --------- ------ ------ ----------\n')
-        f.write('rain_gage_data  CUMULATIVE 0:01   1.0    TIMESERIES precipitation\n')
+        in_lines.append('\n[RAINGAGES]\n')
+        in_lines.append(';;;\n')
+        in_lines.append(';;Name           Type      Intrvl Catch  Source\n')
+        in_lines.append(';;-------------- --------- ------ ------ ----------\n')
+        in_lines.append('rain_gage_data  CUMULATIVE 0:01   1.0    TIMESERIES precipitation\n')
 
         # write the rainfall data
-        f.write('\n[TIMESERIES\n')
-        f.write(';;Name           Date       Time       Value   \n')
-        f.write(';;-------------- ---------- ---------- ----------\n')
+        in_lines.append('\n[TIMESERIES\n')
+        in_lines.append(';;Name           Date       Time       Value   \n')
+        in_lines.append(';;-------------- ---------- ---------- ----------\n')
         for i in xrange(0, len(dates)):
-            f.write('precipitation\t%s\t%s\t%2.3f\n' %(dates[i].strftime('%m/%d/%Y'), dates[i].strftime('%H:%M'),values[i]))
+            in_lines.append('precipitation\t%s\t%s\t%2.3f\n' %(dates[i].strftime('%m/%d/%Y'), dates[i].strftime('%H:%M'),values[i]))
 
+        return in_lines
 
-        f.close()
-
-        print 'here'
 
     def find(self, lst, predicate):
         return (i for i, j in enumerate(lst) if predicate(j)).next()

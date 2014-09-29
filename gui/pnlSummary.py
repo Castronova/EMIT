@@ -48,12 +48,16 @@ import wx.propgrid as wxpg
 
 class TestPanel( wx.Panel ):
 
-    def __init__( self, prnt):
+    def __init__( self, prnt, outputitems, inputitems ):
         wx.Panel.__init__(self, id=wxID_PNLTEMPORAL, name=u'pnlIntro', parent=prnt,
               pos=wx.Point(571, 262), size=wx.Size(439, 357),
               style=wx.TAB_TRAVERSAL)
+
         self.SetClientSize(wx.Size(423, 319))
+
         # self.log = log
+        self.inputitems = inputitems
+        self.outputitems = outputitems
 
         self.panel = panel = wx.Panel(self, size=wx.Size(500,500))
         topsizer = wx.BoxSizer(wx.VERTICAL)
@@ -74,16 +78,10 @@ class TestPanel( wx.Panel ):
         # pg.Bind( wxpg.EVT_PG_RIGHT_CLICK, self.OnPropGridRightClick )
 
 
-        #
-        # Let's use some simple custom editor
-        #
         # NOTE: Editor must be registered *before* adding a property that
         # uses it.
 
-
-        #
         # Add properties
-        #
 
         pg.AddPage( "Link Details" )
 
@@ -136,22 +134,15 @@ class TestPanel( wx.Panel ):
 
     def OnPropGridChange(self, event):
         p = event.GetProperty()
-        if p:
-            self.log.write('%s changed to "%s"\n' % (p.GetName(),p.GetValueAsString()))
 
     def OnPropGridSelect(self, event):
         p = event.GetProperty()
-        if p:
-            self.log.write('%s selected\n' % (event.GetProperty().GetName()))
-        else:
-            self.log.write('Nothing selected\n')
 
     def OnReserved(self, event):
         pass
 
     def OnPropGridPageChange(self, event):
         index = self.pg.GetSelectedPage()
-        self.log.write('Page Changed to \'%s\'\n' % (self.pg.GetPageName(index)))
 
 #---------------------------------------------------------------------------
 

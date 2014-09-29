@@ -45,7 +45,7 @@ class Details(wiz.PyWizardPage):
         sizer.Add(title, 10, wx.ALIGN_CENTRE|wx.ALL, 5)
         sizer.Add(wx.StaticLine(self, -1), 5, wx.EXPAND|wx.ALL, 5)
         # self.pnlDetail=pnlSummary.pnlDetails(self)
-        self.pnlDetail=PropertyGrid.TestPanel(self)
+        self.pnlDetail=pnlSummary.TestPanel(self)
         self.sizer.Add(self.pnlDetail, 85, wx.ALL, 5)
 
 

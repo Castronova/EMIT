@@ -122,7 +122,6 @@ class ModelTxtCtrl ( wx.Frame ):
 
         if self.shst.IsChecked():
 
-
             pass
 
         else:

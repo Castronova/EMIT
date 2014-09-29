@@ -30,8 +30,8 @@ class LinkStart ( wx.Frame ):
         btnPanel = wx.Panel(panel, -1)
         vbox = wx.BoxSizer(wx.VERTICAL)
         new = wx.Button(btnPanel, wx.ID_NEW, 'Add', size=(90, 30))
-        ren = wx.Button(btnPanel, wx.ID_EDIT, 'Edit', size=(90, 30))
-        dlt = wx.Button(btnPanel, wx.ID_DELETE, 'Clear All', size=(90, 30))
+        # ren = wx.Button(btnPanel, wx.ID_EDIT, 'Edit', size=(90, 30))
+        dlt = wx.Button(btnPanel, wx.ID_DELETE, 'Remove', size=(90, 30))
         close = wx.Button(btnPanel, wx.ID_CLEAR, 'Close', size=(90, 30))
 
         self.Bind(wx.EVT_BUTTON, self.AddClick, id=wx.ID_NEW)
@@ -42,7 +42,7 @@ class LinkStart ( wx.Frame ):
 
         vbox.Add((-1, 20))
         vbox.Add(new)
-        vbox.Add(ren, 0, wx.TOP, 5)
+        # vbox.Add(ren, 0, wx.TOP, 5)
         vbox.Add(dlt, 0, wx.TOP, 5)
         vbox.Add(close, 0, wx.TOP, 5)
 

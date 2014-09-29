@@ -94,7 +94,6 @@ class MainGui(wx.Frame):
 
         self.m_mgr.AddPane(self.bnb,
                            aui.AuiPaneInfo().
-                           Caption('Output').
                            Center().
                            Name("Console").
                            Position(1).
@@ -268,7 +267,7 @@ class MainGui(wx.Frame):
             save.Destroy()
 
 
-        Publisher.sendMessage('SetSavePath',path=save.GetPath()) #send message to canvascontroller
+        Publisher.sendMessage('SetSavePath',path=save.GetPath()) #send message to canvascontroller.SaveSimulation
 
 
     def onDirectory(self, event):

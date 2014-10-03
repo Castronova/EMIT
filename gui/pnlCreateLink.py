@@ -49,7 +49,7 @@ class pnlCreateLink ( wx.Panel ):
 
         # deactivate Next button
         self.activateLinkButton()
-
+        print outputitems, inputitems
 
         self.outputs.Populate(outputitems)
         self.inputs.Populate(inputitems)

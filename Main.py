@@ -12,14 +12,14 @@ import wx
 import wx.xrc
 import wx.aui
 
-import log
-from CanvasView import Canvas
-from DirectoryView import DirectoryCtrlView
+import gui.log as log
+#from gui.CanvasView import Canvas
+#from DirectoryView import DirectoryCtrlView
 
 import coordinator.main as cmd
-from mainGui import  MainGui
-from CanvasController import CanvasController
-from CanvasView import Canvas
+from gui.mainGui import  MainGui
+from gui.CanvasController import CanvasController
+#from gui.CanvasView import Canvas
 
 
 # ##########################################################################

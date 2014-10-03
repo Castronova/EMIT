@@ -257,6 +257,7 @@ class pnlSpatialMapping ( wx.Panel ):
 
         # put up a figure
         self.figure = plt.figure()
+        plt.savefig('something.png', bbox_inches='tight')
         self.input = self.figure.add_subplot(1,3,1)
         self.mapping = self.figure.add_subplot(1,3,2)
         self.output = self.figure.add_subplot(1,3,3)

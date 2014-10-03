@@ -59,6 +59,9 @@ class TestPanel( wx.Panel ):
         self.inputitems = inputitems
         self.outputitems = outputitems
 
+        self.input = [item.name() for item in inputitems]
+        self.output = [item.name() for item in outputitems]
+
         self.panel = panel = wx.Panel(self, size=wx.Size(500,500))
         topsizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -85,15 +88,19 @@ class TestPanel( wx.Panel ):
 
         pg.AddPage( "Link Details" )
 
-        pg.Append( wxpg.PropertyCategory("Basic Properties") )
-        pg.Append( wxpg.StringProperty("String",value="Some Text") )
-        pg.Append( wxpg.IntProperty("Int",value=100) )
-        pg.Append( wxpg.FloatProperty("Float",value=100.0) )
-        pg.Append( wxpg.BoolProperty("Bool",value=True) )
-        pg.Append( wxpg.BoolProperty("Bool_with_Checkbox",value=True) )
-        pg.SetPropertyAttribute("Bool_with_Checkbox", "UseCheckbox", True)
+        # Fill using dictionary
+        pg.SetPropertyValues( self.input)
 
-        # pg.Append( wxpg.PropertyCategory("2 - More Properties") )
+        pg.Append( wxpg.PropertyCategory("Properties Input Item") )
+        # pg.Append( wxpg.Pro)
+        # pg.Append( wxpg.StringProperty("String",value=self.input) )
+        # pg.Append( wxpg.IntProperty("Int",value=100) )
+        # pg.Append( wxpg.FloatProperty("Float",value=100.0) )
+        # pg.Append( wxpg.BoolProperty("Bool",value=True) )
+        # pg.Append( wxpg.BoolProperty("Bool_with_Checkbox",value=True) )
+        # pg.SetPropertyAttribute("Bool_with_Checkbox", "UseCheckbox", True)
+
+        pg.Append( wxpg.PropertyCategory("Properties Output Item") )
         # pg.Append( wxpg.LongStringProperty("LongString",
         #     value="This is a\\nmulti-line string\\nwith\\ttabs\\nmixed\\tin."))
         # pg.Append( wxpg.DirProperty("Dir",value="C:\\Windows") )

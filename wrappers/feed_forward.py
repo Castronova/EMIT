@@ -6,8 +6,8 @@ class feed_forward_wrapper(object):
     def __init__(self, config_params):
         self.__params = config_params
 
-        self.__outputs = None
-        self.__inputs = None
+        self.__outputs = {}
+        self.__inputs = {}
 
         # set initial conditions
         self.__current_time = self.simulation_start()
@@ -39,7 +39,7 @@ class feed_forward_wrapper(object):
         return (int(self.__params['time_step'][0]['value']),self.__params['time_step'][0]['unit_type_cv'])
         #raise NotImplementedError('This is an abstract method that must be implemented!')
 
-    def outputs(self, value = None):
+    def outputs(self, value = None, name = None):
         # """
         #     ini configuration file
         # """
@@ -50,13 +50,20 @@ class feed_forward_wrapper(object):
         #
         # #raise NotImplementedError('This is an abstract method that must be implemented!')
 
+        # setter
         if value is not None:
-            self.__outputs = value
+            if name is None:
+                for eitem in value:
+                    self.__outputs[eitem.name()] = eitem
+            else:
+                self.__outputs[name] = value
+
+        # getter
         return self.__outputs
 
 
 
-    def inputs(self, value = None):
+    def inputs(self, value = None, name = None):
 
         # todo: utilities should have a config parsing function that can be used to populate inputs and outputs
 
@@ -65,9 +72,21 @@ class feed_forward_wrapper(object):
         # """
         # raise NotImplementedError('This is an abstract method that must be implemented!')
 
+        # if value is not None:
+        #     self.__inputs = value
+        # return self.__inputs
+
+        # setter
         if value is not None:
-            self.__inputs = value
+            if name is None:
+                for eitem in value:
+                    self.__inputs[eitem.name()] = eitem
+            else:
+                self.__inputs[name] = value
+
+        # getter
         return self.__inputs
+
 
     def simulation_start(self):
         """
@@ -130,11 +149,17 @@ class feed_forward_wrapper(object):
 
         outputs = self.outputs()
 
-        for output in outputs:
-            if output.name() == outputname:
-                return output
+        if outputs.has_key(outputname):
+            return outputs[outputname]
+        else:
+            print 'Could not find output: %s' + outputname
+            return None
 
-        raise Exception('Could not find output: %s' + outputname)
+        # for output in outputs:
+        #     if output.name() == outputname:
+        #         return output
+
+        #raise Exception('Could not find output: %s' + outputname)
 
     def set_output_by_name(self, outputname, value):
         outputs = self.outputs()

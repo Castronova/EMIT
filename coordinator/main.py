@@ -257,8 +257,8 @@ class Coordinator(object):
                 # iei = [item for item in ei if item.get_type() == 'input']
                 # oei = [item for item in ei if item.get_type() == 'output']
 
-                iei = model_inst.inputs()
-                oei = model_inst.outputs()
+                iei = model_inst.inputs().values()
+                oei = model_inst.outputs().values()
 
                 # generate a unique model id
                 if id is None:

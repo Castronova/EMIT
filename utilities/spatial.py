@@ -110,10 +110,14 @@ def shapefile_to_shapely(filepath):
 
     return shape(buffer[0]['geometry'])
 
-def get_srs_from_epsg(code):
+def get_srs_from_epsg(code=None):
     """
     returns a spatial projection. code is an integer EPSG code, e.g. 2000
     """
+
+    if code is None:
+        # set default srs
+        code = '4269'
 
     # validate the EPSG code
     dir = os.path.dirname(__file__)

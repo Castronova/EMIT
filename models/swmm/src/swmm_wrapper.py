@@ -11,8 +11,10 @@ from shapely.geometry import *
 from stdlib import Geometry, DataValues, ExchangeItem, ExchangeItemType
 import parse_swmm as ps
 from wrappers.feed_forward import feed_forward_wrapper
-from utilities import mdl
+from utilities import mdl, spatial
 import geometry as swmm_geom
+
+
 
 """
 NOTES:
@@ -25,9 +27,10 @@ class swmm(feed_forward_wrapper):
     def __init__(self,config_params):
         super(swmm,self).__init__(config_params)
 
+
         reldatadir = config_params['data'][0]['directory']
         self.__datadir = join(dirname(realpath(__file__)),reldatadir)
-
+        self.config_params = config_params
 
         #--- get input and output directories ---
         cwd = abspath(dirname(__file__))
@@ -127,13 +130,13 @@ class swmm(feed_forward_wrapper):
             id = geom.id()
             geom.datavalues().set_timeseries(node_head[id])
 
-            self.outputs()
+        self.outputs(name='Hydraulic_head', value=stage)
 
         return 1
 
 
     def save(self):
-        return self.outputs()
+        return [self.get_output_by_name(outputname='Hydraulic_head')]
 
 
 
@@ -149,6 +152,13 @@ class swmm(feed_forward_wrapper):
                    'link' : ['Froude_number','Capacity'],
                    'node' : []
         }
+
+        # get spatial reference system (use default if none is provided in config)
+        srs = spatial.get_srs_from_epsg(code=None)
+        if self.config_params.has_key('spatial'):
+            if self.config_params['spatial'].has_key('srs'):
+                srs = spatial.get_srs_from_epsg(self.config_params['spatial']['srs'])
+
 
         # build outputs
         output_items = []
@@ -166,7 +176,7 @@ class swmm(feed_forward_wrapper):
                     dv = DataValues()
                     elem = Geometry(geom=geom,id=i)
                     elem.type(geom.geom_type)
-                    elem.srs(None)
+                    elem.srs(srs)
                     elem.datavalues(dv)
                     elementset.append(elem)
 
@@ -200,7 +210,7 @@ class swmm(feed_forward_wrapper):
                     dv = DataValues()
                     elem = Geometry(geom=geom,id=id_inc)
                     elem.type(geom.geom_type)
-                    elem.srs(None)
+                    elem.srs(srs)
                     elem.datavalues(dv)
                     elementset.append(elem)
                     id_inc += 1

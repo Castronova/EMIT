@@ -31,7 +31,7 @@ import logging
 ######################################################################
 
 class Details(wiz.PyWizardPage):
-    def __init__(self, parent, title):
+    def __init__(self, parent, title, inputitems, outputitems):
         """Constructor"""
         wiz.PyWizardPage.__init__(self, parent)
         self.next = self.prev = None
@@ -45,7 +45,7 @@ class Details(wiz.PyWizardPage):
         sizer.Add(title, 10, wx.ALIGN_CENTRE|wx.ALL, 5)
         sizer.Add(wx.StaticLine(self, -1), 5, wx.EXPAND|wx.ALL, 5)
         # self.pnlDetail=pnlSummary.pnlDetails(self)
-        self.pnlDetail=PropertyGrid.TestPanel(self)
+        self.pnlDetail=pnlSummary.TestPanel(self, inputitems, outputitems)
         self.sizer.Add(self.pnlDetail, 85, wx.ALL, 5)
 
 
@@ -236,7 +236,7 @@ class wizLink(wx.wizard.Wizard):
 
         self.page2 = Spatial(self, "Spatial Adjustment")
         self.page3 = Temporal(self, "Temporal Adjustment")
-        self.page4 = Details(self, "Link Details")
+        self.page4 = Details(self, "Link Details", inputitems, outputitems)
         #self.page5 = SummaryPage(self, "Summary", service_man)
 
         self.FitToPage(self.page1)

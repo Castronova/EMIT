@@ -181,14 +181,15 @@ class ToolboxPanel(wx.Panel):
 
     def ShowDetails(self):
 
+        item = self.tree.GetSelection()
+        key = self.tree.GetItemText(item)
+
+        filepath = self.filepath.get(key)
+        print filepath
         # create the details view
         view = ModelTxtCtrl(self,spatial=False)
-        # view2 = self.tree
-        #
-        # view2.GetSelections()
 
-        # load the file contents
-        view.PopulateEdit(self.tree.GetSelection())
+        view.PopulateEdit(filepath)
 
 
         # load the geometry data
@@ -197,8 +198,8 @@ class ToolboxPanel(wx.Panel):
 
         # show the details view
         #listview = MyTree(self)
-        view.PopulateEdit(self.tree.GetSelection())
-        view.PopulateDetails(self.tree.GetSelection())
+        view.PopulateEdit(filepath)
+        view.PopulateDetails(filepath)
 
         #listview.PopulateDetails(self.sb.GetValue())
         view.Show()

@@ -94,7 +94,6 @@ class MainGui(wx.Frame):
 
         self.m_mgr.AddPane(self.bnb,
                            aui.AuiPaneInfo().
-                           Caption('Output').
                            Center().
                            Name("Console").
                            Position(1).
@@ -264,8 +263,11 @@ class MainGui(wx.Frame):
 
         if save.ShowModal() == wx.ID_OK:
             self.save_path = save.GetPath() + ".sim"
+        else:
+            save.Destroy()
 
-        Publisher.sendMessage('SetSavePath',path=save.GetPath()) #send message to canvascontroller
+
+        Publisher.sendMessage('SetSavePath',path=save.GetPath()) #send message to canvascontroller.SaveSimulation
 
 
     def onDirectory(self, event):

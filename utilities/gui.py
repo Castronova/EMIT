@@ -6,7 +6,8 @@ import ConfigParser
 import datetime
 import cPickle as pickle
 import imp
-from ODMconnection import dbconnection
+from dbapi.ODMconnection import  dbconnection
+# from ODMconnection import dbconnection
 import uuid
 
 class multidict(dict):

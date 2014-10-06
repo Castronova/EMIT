@@ -1,8 +1,8 @@
 __author__ = 'tonycastronova'
 
 import datetime as dt
-from ODM2.Core.services import readCore
-from ODM2.Results.services import readResults
+from api.ODM2.Core.services import readCore
+from api.ODM2.Results.services import readResults
 from shapely import wkb
 import stdlib, uuid
 

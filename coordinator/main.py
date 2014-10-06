@@ -15,10 +15,11 @@ from utilities.mdl import *
 import math
 import networkx as net
 import threading
-from ODM2.Simulation.services import readSimulation
-from ODM2.Simulation.services import createSimulation
-from ODM2.Core.services import readCore
-from db.api import postgresdb
+from api.ODM2.Simulation.services import readSimulation
+from api.ODM2.Simulation.services import createSimulation
+from api.ODM2.Core.services import readCore
+# from ODM2.Core.services import readCore
+from db.dbapi import postgresdb
 import wrappers
 import time
 

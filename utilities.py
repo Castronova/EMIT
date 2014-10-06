@@ -14,7 +14,7 @@ from stdlib import Variable, Unit
 #from odm2.src.api import dbconnection
 from ODMconnection import dbconnection
 
-from db.api import postgresdb
+from db.dbapi import postgresdb
 import uuid
 
 import shapefile

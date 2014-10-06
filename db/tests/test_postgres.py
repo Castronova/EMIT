@@ -2,7 +2,7 @@ __author__ = 'tonycastronova'
 
 import os
 import unittest
-from db.api import postgresdb
+from db.dbapi import postgresdb
 import odm2.api
 import datetime as dt
 from utilities import gui, mdl

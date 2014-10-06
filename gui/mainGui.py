@@ -9,7 +9,7 @@ from wx.lib.pubsub import pub as Publisher
 from CanvasController import CanvasController
 import wx.lib.agw.aui as aui
 import objectListViewDatabase as olv
-from ODM2.Core.services import *
+from api.ODM2.Core.services import *
 import logging
 from ContextMenu import GeneralContextMenu
 import threading
@@ -499,7 +499,7 @@ class TimeSeries(wx.Panel):
 
                 # query the database and get basic series info
 
-                from db import api as dbapi
+                from db import dbapi as dbapi
                 from gui.objectListViewDatabase import Database
 
                 u = dbapi.utils(db['session'])

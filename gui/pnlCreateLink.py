@@ -55,6 +55,9 @@ class pnlCreateLink ( wx.Panel ):
         # self.input_text  = wx.StaticText(self,id=wxID_PNLCREATELINK, label = "Outputs", pos=wx.Point(225,0),size=wx.Size(210,10))
         PanelSizer.AddSpacer((0,20), 0, wx.EXPAND, 5)
 
+
+        ## This is the Property Grid related code
+
         self.pgout = pgout = wxpg.PropertyGridManager(self, size = wx.Size(210, 200),
                         style=wxpg.PG_SPLITTER_AUTO_CENTER |
                               wxpg.PG_AUTO_SORT |
@@ -66,12 +69,6 @@ class pnlCreateLink ( wx.Panel ):
         pgout.Bind( wxpg.EVT_PG_PAGE_CHANGED, self.OnPropGridPageChangepgout )
         pgout.Bind( wxpg.EVT_PG_SELECTED, self.OnPropGridSelect )
         # pg.Bind( wxpg.EVT_PG_RIGHT_CLICK, self.OnPropGridRightClick )
-
-
-        # NOTE: Editor must be registered *before* adding a property that
-        # uses it.
-
-        # Add properties
 
         pgout.AddPage( "Output Details" )
 
@@ -91,12 +88,6 @@ class pnlCreateLink ( wx.Panel ):
         pgin.Bind( wxpg.EVT_PG_PAGE_CHANGED, self.OnPropGridPageChangepgout )
         pgin.Bind( wxpg.EVT_PG_SELECTED, self.OnPropGridSelect )
         # pg.Bind( wxpg.EVT_PG_RIGHT_CLICK, self.OnPropGridRightClick )
-
-
-        # NOTE: Editor must be registered *before* adding a property that
-        # uses it.
-
-        # Add properties
 
         pgin.AddPage( "Input Details" )
 
@@ -129,13 +120,6 @@ class pnlCreateLink ( wx.Panel ):
         self.outputs.Bind(wx.EVT_LEFT_UP,self.OutputClick)
         self.inputs.Bind(wx.EVT_LEFT_UP,self.InputClick)
 
-
-    # def OnLeftUp(self, event):
-    #
-    #     item, location = self.HitTest(event.GetPositionTuple())
-    #
-    #     data = self.GetPyData(item)
-    #     if data is not None: print data
 
 
     def OnPropGridPageChangepgout(self, event):

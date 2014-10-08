@@ -6,6 +6,8 @@ import wx.xrc
 import wx
 import sys
 from wx.lib.pubsub import pub as Publisher
+import wx.propgrid as wxpg
+
 
 [wxID_PNLCREATELINK, wxID_PNLSPATIAL, wxID_PNLTEMPORAL,
  wxID_PNLDETAILS,
@@ -29,23 +31,83 @@ class pnlCreateLink ( wx.Panel ):
         self.output = [item.name() for item in outputitems]
 
 
-        bSizer1 = wx.BoxSizer( wx.VERTICAL )
+
+        PanelSizer = wx.BoxSizer( wx.VERTICAL )
         bSizer6 = wx.BoxSizer( wx.HORIZONTAL )
-        bSizer1.Add( bSizer6, 1, wx.EXPAND, 5 )
+        PanelSizer.Add( bSizer6, 1, wx.EXPAND, 5 )
         bSizer5 = wx.BoxSizer( wx.HORIZONTAL )
 
+
         self.outputs = MyTree(id=wxID_PNLCREATELINK,
-               parent=self, pos=wx.Point(0, 0),
-              size=wx.Size(210, 200), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT)
+               parent=self, pos=wx.Point(0, 25),
+              size=wx.Size(210, 100), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT)
 
         self.inputs = MyTree(id=wxID_PNLCREATELINK,
-               parent=self, pos=wx.Point(220, 0),
-              size=wx.Size(210, 200), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT)
+               parent=self, pos=wx.Point(220, 25),
+              size=wx.Size(210, 100), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT)
 
-        #self.output_text = wx.StaticText(self,id=wxID_PNLCREATELINK,pos=wx.Point(0,210),size=wx.Size(210,10))
-        #self.input_text  = wx.StaticText(self,id=wxID_PNLCREATELINK,pos=wx.Point(210,200),size=wx.Size(210,10))
+        bSizer6.Add(self.outputs)
+        bSizer6.Add(self.inputs)
+        self.Description_text = wx.StaticText(self, label =
+                                "Select which output and input parameters that you wish to couple",
+                                              pos=wx.Point(0,135))
+        # self.output_text = wx.StaticText(self,id=wxID_PNLCREATELINK, label = "Inputs", pos=wx.Point(0,0),size=wx.Size(210,10))
+        # self.input_text  = wx.StaticText(self,id=wxID_PNLCREATELINK, label = "Outputs", pos=wx.Point(225,0),size=wx.Size(210,10))
+        PanelSizer.AddSpacer((0,20), 0, wx.EXPAND, 5)
 
-        bSizer1.Add( bSizer5, 1, wx.EXPAND, 5 )
+        self.pgout = pgout = wxpg.PropertyGridManager(self, size = wx.Size(210, 200),
+                        style=wxpg.PG_SPLITTER_AUTO_CENTER |
+                              wxpg.PG_AUTO_SORT |
+                              wxpg.PG_TOOLBAR)
+
+        pgout.SetExtraStyle(wxpg.PG_EX_HELP_AS_TOOLTIPS)
+
+        pgout.Bind( wxpg.EVT_PG_CHANGED, self.OnPropGridChange )
+        pgout.Bind( wxpg.EVT_PG_PAGE_CHANGED, self.OnPropGridPageChangepgout )
+        pgout.Bind( wxpg.EVT_PG_SELECTED, self.OnPropGridSelect )
+        # pg.Bind( wxpg.EVT_PG_RIGHT_CLICK, self.OnPropGridRightClick )
+
+
+        # NOTE: Editor must be registered *before* adding a property that
+        # uses it.
+
+        # Add properties
+
+        pgout.AddPage( "Output Details" )
+
+        # Fill using dictionary
+        pgout.SetPropertyValues( self.input)
+
+        pgout.Append( wxpg.PropertyCategory("Properties Output Item") )
+
+        self.pgin = pgin = wxpg.PropertyGridManager(self, size = wx.Size(210, 200),
+                        style=wxpg.PG_SPLITTER_AUTO_CENTER |
+                              wxpg.PG_AUTO_SORT |
+                              wxpg.PG_TOOLBAR)
+
+        pgin.SetExtraStyle(wxpg.PG_EX_HELP_AS_TOOLTIPS)
+
+        pgin.Bind( wxpg.EVT_PG_CHANGED, self.OnPropGridChange )
+        pgin.Bind( wxpg.EVT_PG_PAGE_CHANGED, self.OnPropGridPageChangepgout )
+        pgin.Bind( wxpg.EVT_PG_SELECTED, self.OnPropGridSelect )
+        # pg.Bind( wxpg.EVT_PG_RIGHT_CLICK, self.OnPropGridRightClick )
+
+
+        # NOTE: Editor must be registered *before* adding a property that
+        # uses it.
+
+        # Add properties
+
+        pgin.AddPage( "Input Details" )
+
+        # Fill using dictionary
+        pgin.SetPropertyValues( self.input)
+
+        pgin.Append( wxpg.PropertyCategory("Properties Input Item") )
+
+        bSizer5.Add(self.pgout)
+        bSizer5.Add(self.pgin)
+        PanelSizer.Add( bSizer5, 1, wx.EXPAND, 5 )
 
         # deactivate Next button
         self.activateLinkButton()
@@ -61,7 +123,7 @@ class pnlCreateLink ( wx.Panel ):
         #for i in outputitems:
         #    self.m_listCtrl2.InsertStringItem(sys.maxint, i.name())
 
-        self.SetSizer( bSizer1 )
+        self.SetSizer( PanelSizer )
         self.Layout()
 
         self.outputs.Bind(wx.EVT_LEFT_UP,self.OutputClick)
@@ -74,6 +136,19 @@ class pnlCreateLink ( wx.Panel ):
     #
     #     data = self.GetPyData(item)
     #     if data is not None: print data
+
+
+    def OnPropGridPageChangepgout(self, event):
+            index = self.pgout.GetSelectedPage()
+
+    def OnPropGridPageChangepgin(self, event):
+            index = self.pgin.GetSelectedPage()
+
+    def OnPropGridChange(self, event):
+        p = event.GetProperty()
+
+    def OnPropGridSelect(self, event):
+        p = event.GetProperty()
 
     def OutputClick(self, event):
 
@@ -247,20 +322,18 @@ class MyTree(wx.TreeCtrl):
             item = self.AppendItem(root,exchangeitem.name())
             self.SetItemPyData(item, exchangeitem.name())
 
-            variable = self.AppendItem(item, 'Variable')
-            self.SetItemPyData(variable, exchangeitem.name())
-            vname = self.AppendItem(variable, 'Name: %s' % exchangeitem.variable().VariableNameCV())
-            self.SetItemPyData(vname, exchangeitem.name())
-            vdef = self.AppendItem(variable, 'Def: %s' % exchangeitem.variable().VariableDefinition())
-            self.SetItemPyData(vdef, exchangeitem.name())
-
-            unit = self.AppendItem(item, 'Unit')
-            self.SetItemPyData(unit, exchangeitem.name())
-            uname = self.AppendItem(unit, 'Name: %s' % exchangeitem.unit().UnitName())
-            self.SetItemPyData(uname, exchangeitem.name())
-            uabbv = self.AppendItem(unit,'Abbv: %s' % exchangeitem.unit().UnitAbbreviation())
-            self.SetItemPyData(uabbv, exchangeitem.name())
-            utype = self.AppendItem(unit,'Type: %s' % exchangeitem.unit().UnitTypeCV())
-            self.SetItemPyData(utype, exchangeitem.name())
-
-
+            # variable = self.AppendItem(item, 'Variable')
+            # self.SetItemPyData(variable, exchangeitem.name())
+            # vname = self.AppendItem(variable, 'Name: %s' % exchangeitem.variable().VariableNameCV())
+            # self.SetItemPyData(vname, exchangeitem.name())
+            # vdef = self.AppendItem(variable, 'Def: %s' % exchangeitem.variable().VariableDefinition())
+            # self.SetItemPyData(vdef, exchangeitem.name())
+            #
+            # unit = self.AppendItem(item, 'Unit')
+            # self.SetItemPyData(unit, exchangeitem.name())
+            # uname = self.AppendItem(unit, 'Name: %s' % exchangeitem.unit().UnitName())
+            # self.SetItemPyData(uname, exchangeitem.name())
+            # uabbv = self.AppendItem(unit,'Abbv: %s' % exchangeitem.unit().UnitAbbreviation())
+            # self.SetItemPyData(uabbv, exchangeitem.name())
+            # utype = self.AppendItem(unit,'Type: %s' % exchangeitem.unit().UnitTypeCV())
+            # self.SetItemPyData(utype, exchangeitem.name())

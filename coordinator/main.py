@@ -804,6 +804,8 @@ class Coordinator(object):
 
         # parse from file
         if len(args) == 1:
+            # curdir = os.path.dirname(__file__)
+            # abspath = os.path.abspath(os.path.join(curdir, args[0]))
             abspath = os.path.abspath(os.path.join(os.getcwd(),args[0]))
             if os.path.isfile(abspath):
                 try:

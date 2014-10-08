@@ -7,6 +7,8 @@ from ObjectListView import ObjectListView as OLV
 from frmMatPlotLib import MatplotFrame
 import os
 from wx.lib.pubsub import pub as Publisher
+from api.ODM2.Results.services import readResults
+from api.ODM2.Core.services import readCore
 
 ########################################################################
 class Database(object):
@@ -134,12 +136,12 @@ class OlvSeries(FastObjectListView):
 
     def getData(self,resultID):
 
-        from ODM2.Results.services import readResults
+
         session = self.getDbSession()
         readres = readResults(session)
         results = readres.getTimeSeriesValuesByResultId(resultId=int(resultID))
 
-        from ODM2.Core.services import readCore
+
         core = readCore(session)
         obj = core.getResultByID(resultID=int(resultID))
 

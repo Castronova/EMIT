@@ -2,7 +2,9 @@ __author__ = 'Mario'
 
 import wx
 import wx.xrc
-
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 import wx
 
 [wxID_PNLCREATELINK, wxID_PNLSPATIAL, wxID_PNLTEMPORAL,
@@ -227,7 +229,7 @@ class pnlTemporal ( wx.Panel ):
         self.ax.margins(0.1)
 
 
-        self.SetSizer( bSizer6 )
+
         self.Layout()
 
     def __del__( self ):

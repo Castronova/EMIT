@@ -34,6 +34,9 @@ from xml.dom import minidom
 
 import datatypes
 from DirectoryView import DirectoryCtrlView as DCV
+from api.ODM2.Core.services import readCore
+from api.ODM2.Results.services import readResults
+from api.ODM2.Core.services import readCore
 
 class CanvasController:
     def __init__(self, cmd, Canvas):
@@ -902,29 +905,29 @@ class FileDrop(wx.FileDropTarget):
                     #models, links, link_objs = self.cmd.load_simulation(filenames[0])
                     self.controller.loadsimulation(filenames[0])
 
-                # array = N.zeros((3,3))
-                # index_order = [(1,1),(0,0),(2,2),(2,0),(2,2),(0,1),(1,0),(1,2),(2,1)]
-                # # draw boxes for each model
-                # offset = 0
-                # for model in list(models):
-                #     # get the name and id of the model
-                #     name = model.get_name()
-                #     modelid = model.get_id()
-                #
-                #     newx = random.randrange(-1,2)*offset + x
-                #     newy = random.randrange(-1,2)*offset + y
-                #
-                #     self.controller.createBox(name=name, id=modelid, xCoord=newx, yCoord=newy)
-                #     self.window.Canvas.Draw()
-                #     offset=200
+                    # array = N.zeros((3,3))
+                    # index_order = [(1,1),(0,0),(2,2),(2,0),(2,2),(0,1),(1,0),(1,2),(2,1)]
+                    # # draw boxes for each model
+                    # offset = 0
+                    # for model in list(models):
+                    #     # get the name and id of the model
+                    #     name = model.get_name()
+                    #     modelid = model.get_id()
+                    #
+                    #     newx = random.randrange(-1,2)*offset + x
+                    #     newy = random.randrange(-1,2)*offset + y
+                    #
+                    #     self.controller.createBox(name=name, id=modelid, xCoord=newx, yCoord=newy)
+                    #     self.window.Canvas.Draw()
+                    #     offset=200
 
-                # draw the link line
+                    # draw the link line
 
-                # for link in list(link_objs):
-                #
-                #     R1 = self.controller.models.keys()[self.controller.models.values().index(link[0])]
-                #     R2 = self.controller.models.keys()[self.controller.models.values().index(link[2])]
-                #     self.controller.createLine(R1,R2)
+                    # for link in list(link_objs):
+                    #
+                    #     R1 = self.controller.models.keys()[self.controller.models.values().index(link[0])]
+                    #     R2 = self.controller.models.keys()[self.controller.models.values().index(link[2])]
+                    #     self.controller.createLine(R1,R2)
 
             except Exception, e:
                 print '> Could not load the model. Please verify that the model file exists.'
@@ -1003,12 +1006,12 @@ class FileDrop(wx.FileDropTarget):
             from coordinator import main
             # create a model instance
             thisModel = main.Model(id=inst.id(),
-                              name=inst.name(),
-                              instance=inst,
-                              desc=inst.description(),
-                              input_exchange_items= [],
-                              output_exchange_items=  [inst.outputs()],
-                              params=None)
+                                   name=inst.name(),
+                                   instance=inst,
+                                   desc=inst.description(),
+                                   input_exchange_items= [],
+                                   output_exchange_items=  [inst.outputs()],
+                                   params=None)
 
 
             # save the result id
@@ -1025,7 +1028,7 @@ class FileDrop(wx.FileDropTarget):
             thisModel.type(datatypes.ModelTypes.Data)
 
 
-             # save the model
+            # save the model
             self.cmd.Models(thisModel)
 
             #self.cmd.__models[name] = thisModel
@@ -1040,7 +1043,6 @@ class FileDrop(wx.FileDropTarget):
 
         session = self.getDbSession()
 
-        from ODM2.Core.services import readCore
         core = readCore(session)
         obj = core.getResultByID(resultID=int(resultID))
 
@@ -1050,12 +1052,11 @@ class FileDrop(wx.FileDropTarget):
 
     def getData(self,resultID):
 
-        from ODM2.Results.services import readResults
+
         session = self.getDbSession()
         readres = readResults(session)
         results = readres.getTimeSeriesValuesByResultId(resultId=int(resultID))
 
-        from ODM2.Core.services import readCore
         core = readCore(session)
         obj = core.getResultByID(resultID=int(resultID))
 

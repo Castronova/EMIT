@@ -97,6 +97,17 @@ class ToolboxPanel(wx.Panel):
                         fullpath = join(root, filename)
 
                         txt =  filename.split('.mdl')[0]
+
+                        mdl_parser = ConfigParser.ConfigParser(None, multidict)
+                        mdl_parser.read(fullpath)
+                        mdls = mdl_parser.sections()
+                        for s in mdls:
+                            section = s.split('^')[0]
+                            if section == 'general':
+                                # options = cparser.options(s)
+                                txt = mdl_parser.get(s,'name')
+
+
                         child = self.tree.AppendItem(cat, txt)
                         self.filepath[txt] = fullpath
 

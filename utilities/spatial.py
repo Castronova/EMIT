@@ -20,7 +20,7 @@ def get_input_geoms(cmd, model_id):
     input_geoms = {}
 
     if inputs is not None:
-        for iei in inputs:
+        for iei in inputs.values():
             input_geoms[iei.name()] = {}
             input_geoms[iei.name()]['data'] = get_coords(iei.geometries())
             # hack: assumes all geoms will be the same type
@@ -42,7 +42,7 @@ def get_output_geoms(cmd, model_id):
     output_geoms = {}
 
     if outputs is not None:
-        for oei in outputs:
+        for oei in outputs.values():
             output_geoms[oei.name()] = {}
             output_geoms[oei.name()]['data'] = get_coords(oei.geometries())
             # hack: assumes all geoms will be the same type

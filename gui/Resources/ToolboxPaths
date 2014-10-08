@@ -3,4 +3,4 @@ path = ../tests
 
 
 [Hydrology Models]
-path = ../models/swmm
+path = ../models

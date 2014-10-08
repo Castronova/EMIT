@@ -6,7 +6,7 @@ __author__ = 'Mario'
 import os
 import sys
 
-sys.path.append(os.path.abspath(os.path.join(os.path.abspath(__file__),'../../../odm2/src')))
+#sys.path.append(os.path.abspath(os.path.join(os.path.abspath(__file__),'../../odm2/src')))
 
 import wx
 import wx.xrc
@@ -41,7 +41,8 @@ if __name__ == '__main__':
     connections_txt = os.path.abspath(os.path.join(currentdir,'./data/connections'))
 
     cmd.connect_to_db([connections_txt])
-    cmd.set_default_database()
+    if not cmd.get_default_db():
+        cmd.set_default_database()
 
 
 

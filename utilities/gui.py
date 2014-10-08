@@ -326,6 +326,9 @@ def create_database_connections_from_file(ini):
                                      'args': d}
 
             print '> Connected to : %s [%s]'%(connection_string,db_id)
+
+
+
         else:
             print 'Could not establish a connection with the database'
             #return None
@@ -334,7 +337,7 @@ def create_database_connections_from_file(ini):
 
     return db_connections
 
-def get_ts_from_link(dbapi, dbactions, links, target_model):
+def get_ts_from_link(dbapi, db_sessions, dbactions, links, target_model):
     """
     queries the data
     :param session: database session where the data is stored
@@ -352,8 +355,13 @@ def get_ts_from_link(dbapi, dbactions, links, target_model):
     mapping = {}
     timeseries = {}
     tname = target_model.name()
+
+
     for id,link_inst in links.iteritems():
         f,t = link_inst.get_link()
+
+        dbapi = db_sessions[f[0].get_id()]
+
         if t[0].get_name() == tname:
             mapping[t[1].name()] = f[1].name()
             #print '>  %s -> %s'%(f[1].name(), t[1].name())

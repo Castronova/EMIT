@@ -130,7 +130,7 @@ class postgresdb():
 
         return affiliations
 
-    def create_input_dataset(self,resultids,type,code="",title="",abstract=""):
+    def create_input_dataset(self,connection, resultids,type,code="",title="",abstract=""):
 
         # always create a new dataset for each model
         dataset = self._corewrite.createDataSet(type,code,title,abstract)
@@ -158,6 +158,7 @@ class postgresdb():
         affiliation = self.set_user_preferences(preferences_path)
 
         # get the timestep unit id
+        #todo: This is not returning a timestepunit!!!  This may need to be added to the database
         timestepunit = self._coreread.getUnitByName(timestepunittype)
 
         # create method
@@ -338,8 +339,8 @@ class postgresdb():
         actionid, session, actiontype = dbactions[simulationName]
 
         # initialize the session
-        self._coreread = readCore(session)
-        self._resread = readResults(session)
+        #self._coreread = readCore(session)
+        #self._resread = readResults(session)
 
         # get the simulation results
         if actiontype == 'action':

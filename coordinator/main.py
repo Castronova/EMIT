@@ -4,7 +4,7 @@ __author__ = 'tonycastronova'
 import os
 import sys
 
-sys.path.append(os.path.abspath(os.path.join(os.path.abspath(__file__),'../../../odm2/src')))
+#sys.path.append(os.path.abspath(os.path.join(os.path.abspath(__file__),'../../../odm2/src')))
 
 
 import sys, getopt
@@ -573,7 +573,11 @@ class Coordinator(object):
         #reader = readSimulation(self.get_default_db()['connection_string'])
         #writer = createSimulation(self.get_default_db()['connection_string'])
 
-        simulation_dbapi = postgresdb(self.get_default_db()['session'])
+
+        # store db sessions
+        db_sessions = {}
+
+
 
         
         # todo: determine unresolved exchange items (utilities)
@@ -590,10 +594,28 @@ class Coordinator(object):
         for i in range(0, len(exec_order)):
             print '> %d.) %s'%(i+1,self.get_model_by_id(exec_order[i]).get_name())
 
+
+        # store model db sessions
+        for modelid in exec_order:
+            session = self.get_model_by_id(modelid).get_instance().session()
+            if session is None:
+                session = self.get_default_db()['session']
+
+            # todo: this should be stored in the model instance
+            # model_obj = self.get_model_by_id(modelid)
+            # model_inst = model_obj.get_instance()
+            # model_inst.session
+
+
+            # todo: need to consider other databases too!
+            db_sessions[modelid] = postgresdb(session)
+
         # loop through models and execute run
         for modelid in exec_order:
 
-
+            # get the database session
+            #simulation_dbapi = postgresdb(self.get_default_db()['session'])
+            simulation_dbapi = db_sessions[modelid]
 
             st = time.time()
 
@@ -602,8 +624,8 @@ class Coordinator(object):
             model_inst = model_obj.get_instance()
 
             # set the default session if it hasn't been specified otherwise
-            if model_inst.session() is None:
-                model_inst.session(self.get_default_db()['session'])
+            #if model_inst.session() is None:
+            #    model_inst.session(self.get_default_db()['session'])
 
             print '> '
             print '> ------------------'+len(model_inst.name())*'-'
@@ -612,7 +634,9 @@ class Coordinator(object):
 
             #  retrieve inputs from database
             sys.stdout.write('> [1 of 4] Retrieving input data... ')
-            input_data =  get_ts_from_link(simulation_dbapi,self._dbresults, self.__links, model_inst)
+
+            # todo: pass db_sessions instead of simulation_dbapi
+            input_data =  get_ts_from_link(simulation_dbapi,db_sessions, self._dbresults, self.__links, model_inst)
             sys.stdout.write('done\n')
 
             sys.stdout.write('> [2 of 4] Performing calculation... ')
@@ -812,8 +836,18 @@ class Coordinator(object):
                     connections = create_database_connections_from_file(args[0])
                     #self.set_default_database()
 
-
                     self._db = connections
+
+
+                    # set the default connection
+                    for id,conn in connections.iteritems():
+                        if 'default' in conn['args']:
+                            if conn['args']['default']:
+                                self.set_default_database(db_id=id)
+                                break
+                    if not self.get_default_db():
+                        self.set_default_database()
+
                     return True
                 except Exception,e:
                     print e
@@ -891,7 +925,7 @@ class Coordinator(object):
 
 
         # get all result entries
-        from odm2.api.ODM2.Core.services import *
+        from api.odm2.api.ODM2.Core.services import *
         self._coreread = readCore(self._db[db_id]['session'])
 
         results = self._coreread.getAllResult()

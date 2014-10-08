@@ -15,7 +15,7 @@ address = castro-server.bluezone.usu.edu
 db = ODM2
 user = postgres
 pwd = water
-
+default=true
 
 [connection]
 name = ODM2 MySQL Observation database

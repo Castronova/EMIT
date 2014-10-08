@@ -244,11 +244,13 @@ class wizLink(wx.wizard.Wizard):
 
         # Set the initial order of the pages
         self.page1.SetNext(self.page2)
-        self.page2.SetNext(self.page4)
+        self.page2.SetNext(self.page3)
+        self.page3.SetNext(self.page4)
 
        #
         self.page2.SetPrev(self.page1)
-        self.page4.SetPrev(self.page2)
+        self.page3.SetPrev(self.page2)
+        self.page4.SetPrev(self.page3)
         # self.page4.SetNext(self.page5)
         #
         # self.page5.SetPrev(self.page4)

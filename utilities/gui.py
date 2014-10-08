@@ -6,7 +6,7 @@ import ConfigParser
 import datetime
 import cPickle as pickle
 import imp
-from dbapi.ODMconnection import  dbconnection
+from api.ODMconnection import  dbconnection
 # from ODMconnection import dbconnection
 import uuid
 

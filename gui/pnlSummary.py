@@ -86,12 +86,12 @@ class TestPanel( wx.Panel ):
 
         # Add properties
 
-        pg.AddPage( "Link Details" )
+        self.pg.AddPage( "Link Details" )
 
         # Fill using dictionary
-        pg.SetPropertyValues( self.input)
+        self.pg.SetPropertyValues( self.input)
 
-        pg.Append( wxpg.PropertyCategory("Properties Input Item") )
+
         # pg.Append( wxpg.Pro)
         # pg.Append( wxpg.StringProperty("String",value=self.input) )
         # pg.Append( wxpg.IntProperty("Int",value=100) )
@@ -100,7 +100,6 @@ class TestPanel( wx.Panel ):
         # pg.Append( wxpg.BoolProperty("Bool_with_Checkbox",value=True) )
         # pg.SetPropertyAttribute("Bool_with_Checkbox", "UseCheckbox", True)
 
-        pg.Append( wxpg.PropertyCategory("Properties Output Item") )
         # pg.Append( wxpg.LongStringProperty("LongString",
         #     value="This is a\\nmulti-line string\\nwith\\ttabs\\nmixed\\tin."))
         # pg.Append( wxpg.DirProperty("Dir",value="C:\\Windows") )
@@ -134,10 +133,27 @@ class TestPanel( wx.Panel ):
         self.SetSizer(sizer)
         self.SetAutoLayout(True)
 
+        self.PropGridPopulate(outputitems, inputitems)
     # g=[]
     # l = []
     # for i in range(10):
     #     l.append(PyObjectProperty(g))
+
+    def PropGridPopulate(self, outputitems, inputitems):
+        self.pg.Append( wxpg.PropertyCategory("Properties Input Item") )
+        self.pg.Append( wxpg.StringProperty("InputName",value=inputitems[0].variable().VariableNameCV() ))
+        self.pg.Append( wxpg.StringProperty("InputVarDef",value=inputitems[0].variable().VariableDefinition() ))
+        self.pg.Append( wxpg.StringProperty("InputUnitName", value=inputitems[0].unit()._Unit__unitName))
+        self.pg.Append( wxpg.StringProperty("InputUnitAbbreviation", value=inputitems[0].unit()._Unit__unitAbbreviation))
+        self.pg.Append( wxpg.StringProperty("InputUnitType", value=inputitems[0].unit()._Unit__unitTypeCV))
+
+
+        self.pg.Append( wxpg.PropertyCategory("Properties Output Item") )
+        self.pg.Append( wxpg.StringProperty("OutputName",value=outputitems[0].variable().VariableNameCV() ))
+        self.pg.Append( wxpg.StringProperty("OutputVarDef",value=outputitems[0].variable().VariableDefinition() ))
+        self.pg.Append( wxpg.StringProperty("OutputUnitName", value=outputitems[0].unit()._Unit__unitName))
+        self.pg.Append( wxpg.StringProperty("OutputUnitAbbreviation", value=outputitems[0].unit()._Unit__unitAbbreviation))
+        self.pg.Append( wxpg.StringProperty("OutputUnitType", value=outputitems[0].unit()._Unit__unitTypeCV))
 
     def OnPropGridChange(self, event):
         p = event.GetProperty()

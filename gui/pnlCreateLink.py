@@ -63,38 +63,43 @@ class pnlCreateLink ( wx.Panel ):
                               wxpg.PG_AUTO_SORT |
                               wxpg.PG_TOOLBAR)
 
-        pgout.SetExtraStyle(wxpg.PG_EX_HELP_AS_TOOLTIPS)
-
-        pgout.Bind( wxpg.EVT_PG_CHANGED, self.OnPropGridChange )
-        pgout.Bind( wxpg.EVT_PG_PAGE_CHANGED, self.OnPropGridPageChangepgout )
-        pgout.Bind( wxpg.EVT_PG_SELECTED, self.OnPropGridSelect )
-        # pg.Bind( wxpg.EVT_PG_RIGHT_CLICK, self.OnPropGridRightClick )
-
-        pgout.AddPage( "Output Details" )
-
-        # Fill using dictionary
-        pgout.SetPropertyValues( self.input)
-
-        pgout.Append( wxpg.PropertyCategory("Properties Output Item") )
-
         self.pgin = pgin = wxpg.PropertyGridManager(self, size = wx.Size(210, 200),
                         style=wxpg.PG_SPLITTER_AUTO_CENTER |
                               wxpg.PG_AUTO_SORT |
                               wxpg.PG_TOOLBAR)
 
+        pgout.SetExtraStyle(wxpg.PG_EX_HELP_AS_TOOLTIPS)
         pgin.SetExtraStyle(wxpg.PG_EX_HELP_AS_TOOLTIPS)
 
+        pgout.Bind( wxpg.EVT_PG_CHANGED, self.OnPropGridChange )
+        pgout.Bind( wxpg.EVT_PG_PAGE_CHANGED, self.OnPropGridPageChangepgout )
+        pgout.Bind( wxpg.EVT_PG_SELECTED, self.OnPropGridSelect )
         pgin.Bind( wxpg.EVT_PG_CHANGED, self.OnPropGridChange )
         pgin.Bind( wxpg.EVT_PG_PAGE_CHANGED, self.OnPropGridPageChangepgout )
         pgin.Bind( wxpg.EVT_PG_SELECTED, self.OnPropGridSelect )
-        # pg.Bind( wxpg.EVT_PG_RIGHT_CLICK, self.OnPropGridRightClick )
 
+        pgout.AddPage( "Output Details" )
         pgin.AddPage( "Input Details" )
 
         # Fill using dictionary
+        pgout.SetPropertyValues( self.input)
         pgin.SetPropertyValues( self.input)
+        self.pgout.Append( wxpg.PropertyCategory("Properties Output Item") )
+        self.pgin.Append( wxpg.PropertyCategory("Properties Input Item") )
 
-        pgin.Append( wxpg.PropertyCategory("Properties Input Item") )
+        self.PopulateOutputPropertyGrid(outputitems)
+        self.PopulateInputPropertyGrid(inputitems)
+
+
+
+
+
+
+        # Fill using dictionary
+
+
+        # pgin.Append( wxpg.StringProperty("String",value=self.input) )
+
 
         bSizer5.Add(self.pgout)
         bSizer5.Add(self.pgin)
@@ -120,7 +125,49 @@ class pnlCreateLink ( wx.Panel ):
         self.outputs.Bind(wx.EVT_LEFT_UP,self.OutputClick)
         self.inputs.Bind(wx.EVT_LEFT_UP,self.InputClick)
 
+    def PopulateInputPropertyGrid(self, exchangeitems):
+        # for exchangeitem in exchangeitems:
+        self.pgin.Append( wxpg.PropertyCategory("Input Variable") )
+        self.pgin.Append( wxpg.StringProperty("InName",value=exchangeitems[0].variable().VariableNameCV() ))
+            # item = self.AppendItem(root,exchangeitem.name())
+            # self.SetItemPyData(item, exchangeitem.name())
+            # variable = self.AppendItem(item, 'Variable')
+            # self.SetItemPyData(variable, exchangeitem.name())
+            # vname = self.AppendItem(variable, 'Name: %s' % exchangeitem.variable().VariableNameCV())
+            # self.SetItemPyData(vname, exchangeitem.name())
+            # vdef = self.AppendItem(variable, 'Def: %s' % exchangeitem.variable().VariableDefinition())
+            # self.SetItemPyData(vdef, exchangeitem.name())
+            #
+            # unit = self.AppendItem(item, 'Unit')
+            # self.SetItemPyData(unit, exchangeitem.name())
+            # uname = self.AppendItem(unit, 'Name: %s' % exchangeitem.unit().UnitName())
+            # self.SetItemPyData(uname, exchangeitem.name())
+            # uabbv = self.AppendItem(unit,'Abbv: %s' % exchangeitem.unit().UnitAbbreviation())
+            # self.SetItemPyData(uabbv, exchangeitem.name())
+            # utype = self.AppendItem(unit,'Type: %s' % exchangeitem.unit().UnitTypeCV())
+            # self.SetItemPyData(utype, exchangeitem.name())
 
+    def PopulateOutputPropertyGrid(self, exchangeitems):
+        # for exchangeitem in exchangeitems:
+        self.pgout.Append( wxpg.PropertyCategory("Output Variable") )
+        self.pgout.Append( wxpg.StringProperty("OutName",value=exchangeitems[0].variable().VariableNameCV() ))
+            # item = self.AppendItem(root,exchangeitem.name())
+            # self.SetItemPyData(item, exchangeitem.name())
+            # variable = self.AppendItem(item, 'Variable')
+            # self.SetItemPyData(variable, exchangeitem.name())
+            # vname = self.AppendItem(variable, 'Name: %s' % exchangeitem.variable().VariableNameCV())
+            # self.SetItemPyData(vname, exchangeitem.name())
+            # vdef = self.AppendItem(variable, 'Def: %s' % exchangeitem.variable().VariableDefinition())
+            # self.SetItemPyData(vdef, exchangeitem.name())
+            #
+            # unit = self.AppendItem(item, 'Unit')
+            # self.SetItemPyData(unit, exchangeitem.name())
+            # uname = self.AppendItem(unit, 'Name: %s' % exchangeitem.unit().UnitName())
+            # self.SetItemPyData(uname, exchangeitem.name())
+            # uabbv = self.AppendItem(unit,'Abbv: %s' % exchangeitem.unit().UnitAbbreviation())
+            # self.SetItemPyData(uabbv, exchangeitem.name())
+            # utype = self.AppendItem(unit,'Type: %s' % exchangeitem.unit().UnitTypeCV())
+            # self.SetItemPyData(utype, exchangeitem.name())
 
     def OnPropGridPageChangepgout(self, event):
             index = self.pgout.GetSelectedPage()

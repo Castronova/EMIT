@@ -52,7 +52,7 @@ class MainGui(wx.Frame):
         self.m_mgr = aui.AuiManager()
         self.m_mgr.SetManagedWindow(self.pnlDocking)
 
-        # self.m_mgr.SetFlags(aui.AUI_MGR_DEFAULT)
+        #self.m_mgr.SetFlags(aui.AUI_MGR_DEFAULT)
         # self.output = wx.TextCtrl(self, -1, size=(100,100), style=wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
         self.Canvas = Canvas(self.pnlDocking)
         self.Directory = DirectoryCtrlView(self.pnlDocking)
@@ -196,6 +196,7 @@ class MainGui(wx.Frame):
     def onClose(self, event):
         dlg = wx.MessageDialog(None, 'Are you sure you want to exit?', 'Question',
                                wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
+
         if dlg.ShowModal() !=wx.ID_NO:
             windowsRemaining = len(wx.GetTopLevelWindows())
             if windowsRemaining > 0:
@@ -214,7 +215,7 @@ class MainGui(wx.Frame):
                             item.Destroy()
                         item.Close()
             self.Destroy()
-        wx.GetApp().ExitMainLoop()
+            wx.GetApp().ExitMainLoop()
 
 
     def LoadConfiguration(self,event):

@@ -47,6 +47,7 @@ if __name__ == '__main__':
 
     frame = MainGui(None,cmd)
     frame.Show(True)
-    app.SetTopWindow(frame)
+    #app.SetTopWindow(frame)
     CanvasController(cmd, frame.Canvas)
     app.MainLoop()
+

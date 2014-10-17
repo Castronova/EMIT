@@ -127,7 +127,7 @@ class OlvSeries(FastObjectListView):
         PlotFrame.Show()
 
     def getDbSession(self):
-        selected_db = self.Parent.m_choice3.GetStringSelection()
+        selected_db = self.Parent.connection_combobox.GetStringSelection()
         for key, db in self.Parent._databases.iteritems():
             # get the database session associated with the selected name
             if db['name'] == selected_db:

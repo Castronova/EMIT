@@ -322,30 +322,32 @@ class TimeSeries(wx.Panel):
         self.__logger = logging.getLogger('root')
 
 
-        m_choice3Choices = []
-        self.m_choice3 = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.Size(200, 23), m_choice3Choices, 0)
+        connection_choices = []
+        self.connection_combobox = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.Size(200, 23), connection_choices, 0)
         self.__selected_choice_idx = 0
-        self.m_choice3.SetSelection( self.__selected_choice_idx)
+        self.connection_combobox.SetSelection( self.__selected_choice_idx)
 
-        self.addRefreshButton = wx.Button(self, wx.ID_ANY, u"Refresh", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.connection_refresh_button = wx.Button(self, wx.ID_ANY, u"Refresh", wx.DefaultPosition, wx.DefaultSize, 0)
         self.addConnectionButton = wx.Button( self, wx.ID_ANY, u"Add Connection", wx.DefaultPosition, wx.DefaultSize, 0 )
         self.m_olvSeries = olv.OlvSeries(self, pos = wx.DefaultPosition, size = wx.DefaultSize, id = wx.ID_ANY, style=wx.LC_REPORT|wx.SUNKEN_BORDER  )
 
         # Bindings
         self.addConnectionButton.Bind(wx.EVT_LEFT_DOWN, self.AddConnection)
-        self.addRefreshButton.Bind(wx.EVT_LEFT_DOWN, self.OLVRefresh)
-        self.m_choice3.Bind(wx.EVT_CHOICE,self.DbChanged)
+        self.addConnectionButton.Bind(wx.EVT_MOUSEWHEEL, self.AddConnection_MouseWheel)
+
+        self.connection_refresh_button.Bind(wx.EVT_LEFT_DOWN, self.OLVRefresh)
+        self.connection_combobox.Bind(wx.EVT_CHOICE,self.DbChanged)
+
 
         # Sizers
         seriesSelectorSizer = wx.BoxSizer( wx.VERTICAL )
         buttonSizer = wx.BoxSizer( wx.HORIZONTAL )
         buttonSizer.SetMinSize( wx.Size( -1,45 ) )
 
-
-        buttonSizer.Add( self.m_choice3, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+        buttonSizer.Add( self.connection_combobox, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
         buttonSizer.Add( self.addConnectionButton, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
         buttonSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
-        buttonSizer.Add( self.addRefreshButton, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+        buttonSizer.Add( self.connection_refresh_button, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
         seriesSelectorSizer.Add( buttonSizer, 0, wx.ALL|wx.EXPAND, 5 )
         seriesSelectorSizer.Add( self.m_olvSeries, 1, wx.ALL|wx.EXPAND, 5 )
 
@@ -358,57 +360,9 @@ class TimeSeries(wx.Panel):
 
 
     def DbChanged(self, event):
-
         self.OLVRefresh(event)
 
 
-
-        # # get the name of the selected database
-        # selected_db = self.m_choice3.GetStringSelection()
-        #
-        # # set the selected choice
-        # self.__selected_choice_idx = self.m_choice3.GetSelection()
-        #
-        #
-        #
-        # for key, db in self._databases.iteritems():
-        #
-        #     # get the database session associated with the selected name
-        #     if db['name'] == selected_db:
-        #
-        #
-        #         # query the database and get basic series info
-        #
-        #         core_connection = readCore(db['session'])
-        #
-        #         from db import api as dbapi
-        #         from gui.objectListViewDatabase import Database
-        #
-        #         u = dbapi.utils(db['session'])
-        #         series = u.getAllSeries()
-        #         #all_results = core_connection.getAllResult()
-        #
-        #         # loop through all of the returned data
-        #         data = []
-        #         for s in series:
-        #             resultid = s.ResultID
-        #             variable = s.VariableObj.VariableCode
-        #             unit = s.UnitObj.UnitsName
-        #             date_created = s.FeatureActionObj.ActionObj.BeginDateTime
-        #             data_type = s.FeatureActionObj.ActionObj.ActionTypeCV
-        #             featurecode = s.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode
-        #             org = s.FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName
-        #
-        #             data.extend([Database(resultid,featurecode,variable,unit,data_type,org,date_created)])
-        #
-        #         # set the data objects in the olv control
-        #         self.m_olvSeries.SetObjects(data)
-        #
-        #
-        #         # exit
-        #         break
-        #
-        # return
 
     def getKnownDatabases(self, value = None):
         if value is None:
@@ -418,10 +372,10 @@ class TimeSeries(wx.Panel):
             choices = ['---']
             for k,v in self._databases.iteritems():
                 choices.append(self._databases[k]['name'])
-            self.m_choice3.SetItems(choices)
+            self.connection_combobox.SetItems(choices)
 
             # set the selected choice
-            self.m_choice3.SetSelection( self.__selected_choice_idx)
+            self.connection_combobox.SetSelection( self.__selected_choice_idx)
 
 
 
@@ -431,7 +385,13 @@ class TimeSeries(wx.Panel):
             self._conection_string = connection_string
         return self._connection_added
 
-
+    def AddConnection_MouseWheel(self, event):
+        '''
+        This is intentionally empty to disable mouse scrolling in the AddConnection combobox
+        :param event: EVT_MOUSEWHEEL
+        :return: None
+        '''
+        pass
 
     def AddConnection(self, event):
 
@@ -487,10 +447,10 @@ class TimeSeries(wx.Panel):
     def refresh_database(self):
 
         # get the name of the selected database
-        selected_db = self.m_choice3.GetStringSelection()
+        selected_db = self.connection_combobox.GetStringSelection()
 
         #set the selected choice
-        self.__selected_choice_idx = self.m_choice3.GetSelection()
+        self.__selected_choice_idx = self.connection_combobox.GetSelection()
 
         for key, db in self._databases.iteritems():
 
@@ -524,7 +484,7 @@ class TimeSeries(wx.Panel):
                 # set the current database in canvas controller
                 Publisher.sendMessage('SetCurrentDb',value=selected_db)  # sends to CanvasController.getCurrentDbSession
 
-                self.__logger.info ('Database "%s" refreshed'%self.m_choice3.GetStringSelection())
+                self.__logger.info ('Database "%s" refreshed'%self.connection_combobox.GetStringSelection())
                 # exit
                 break
 

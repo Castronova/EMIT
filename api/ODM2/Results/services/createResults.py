@@ -57,9 +57,9 @@ class createResults(serviceBase):
 
 
         try:
-            values = Timeseriesresultvalue()
-            for i in range(len(datavalues)):
 
+            for i in range(len(datavalues)):
+                values = Timeseriesresultvalue()
                 values.ResultID = resultid
                 values.CensorCodeCV = censorcodecv
                 values.QualityCodeCV = qualitycodecv

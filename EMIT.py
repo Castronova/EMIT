@@ -26,7 +26,6 @@ from gui.CanvasController import CanvasController
 # # Class MainFrame
 # ##########################################################################
 
-
 if __name__ == '__main__':
 
     # setup logger
@@ -34,7 +33,6 @@ if __name__ == '__main__':
 
     # create and instance of the coordinator engine
     cmd = cmd.Coordinator()
-
 
     # connect to databases and set default
     currentdir = os.path.dirname(os.path.abspath(__file__))
@@ -44,14 +42,11 @@ if __name__ == '__main__':
     if not cmd.get_default_db():
         cmd.set_default_database()
 
-
-
-
     wx.Log.SetLogLevel(0)
     app = wx.App(False)
+
     frame = MainGui(None,cmd)
     frame.Show(True)
-
+    app.SetTopWindow(frame)
     CanvasController(cmd, frame.Canvas)
-
     app.MainLoop()

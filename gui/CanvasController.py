@@ -41,16 +41,16 @@ from api.ODM2.Core.services import readCore
 class CanvasController:
     def __init__(self, cmd, Canvas):
         self.Canvas = Canvas
-        self.FloatCanvas = self.Canvas.Canvas
-        self.cmd = cmd
+        #self.FloatCanvas = self.Canvas.Canvas
+        #self.cmd = cmd
 
         self.UnBindAllMouseEvents()
 
         self.MoveObject = None
         self.Moving = False
 
-        self.initBindings()
-        self.initSubscribers()
+        #self.initBindings()
+        #self.initSubscribers()
 
         defaultCursor = wx.StockCursor(wx.CURSOR_DEFAULT)
         defaultCursor.Name = 'default'
@@ -58,8 +58,8 @@ class CanvasController:
 
         self.Canvas.ZoomToFit(Event=None)
 
-        dt = FileDrop(self, self.Canvas, self.cmd)
-        self.Canvas.SetDropTarget(dt)
+        #dt = FileDrop(self, self.Canvas, self.cmd)
+        #self.Canvas.SetDropTarget(dt)
 
         self.linkRects = []
         self.links = {}
@@ -69,7 +69,7 @@ class CanvasController:
         self.link_clicks = 0
 
 
-        self._currentDbSession = self.cmd.get_default_db()
+        #self._currentDbSession = self.cmd.get_default_db()
 
     def UnBindAllMouseEvents(self):
         ## Here is how you unbind FloatCanvas mouse events

@@ -22,8 +22,6 @@ import datatypes
 
 class MainGui(wx.Frame):
     def __init__(self, parent, cmd):
-
-
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title="Environmental Model Integration Project", pos=wx.DefaultPosition,
                           size=wx.Size(1200, 750), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
 
@@ -33,7 +31,7 @@ class MainGui(wx.Frame):
         # save cmd object in pnlDocking so that children can access it
         self.pnlDocking.__setattr__('cmd',cmd)
 
-        # self.Bind(wx.EVT_CLOSE, self.onClose)
+        self.Bind(wx.EVT_CLOSE, self.onClose)
         self.initMenu()
         self.initAUIManager()
         self._init_sizers()
@@ -53,10 +51,9 @@ class MainGui(wx.Frame):
 
         self.m_mgr = aui.AuiManager()
         self.m_mgr.SetManagedWindow(self.pnlDocking)
+
         # self.m_mgr.SetFlags(aui.AUI_MGR_DEFAULT)
-
         # self.output = wx.TextCtrl(self, -1, size=(100,100), style=wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
-
         self.Canvas = Canvas(self.pnlDocking)
         self.Directory = DirectoryCtrlView(self.pnlDocking)
         self.Toolbox = ToolboxPanel(self.pnlDocking)
@@ -64,8 +61,8 @@ class MainGui(wx.Frame):
 
 
         self.bnb = wx.Notebook(self.pnlDocking)
-
         output = consoleOutput(self.bnb)
+
         # seriesoutput = OutputTimeSeries(self.bnb)
         seriesselector = TimeSeries(self.bnb)
 
@@ -76,7 +73,6 @@ class MainGui(wx.Frame):
         self.bnb.GetPage(0).SetLabel("Console")
         self.bnb.GetPage(1).SetLabel("Remote Time Series")
         # self.bnb.GetPage(2).SetLabel("Output Time Series")
-
 
         self.m_mgr.AddPane(self.Canvas,
                            aui.AuiPaneInfo().
@@ -145,6 +141,8 @@ class MainGui(wx.Frame):
 
         self.m_mgr.Update()
 
+
+
     def OnSelect(self,event):
 
         try:
@@ -198,9 +196,7 @@ class MainGui(wx.Frame):
     def onClose(self, event):
         dlg = wx.MessageDialog(None, 'Are you sure you want to exit?', 'Question',
                                wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
-
         if dlg.ShowModal() !=wx.ID_NO:
-
             windowsRemaining = len(wx.GetTopLevelWindows())
             if windowsRemaining > 0:
                 import wx.lib.agw.aui.framemanager as aui
@@ -218,6 +214,8 @@ class MainGui(wx.Frame):
                             item.Destroy()
                         item.Close()
             self.Destroy()
+        wx.GetApp().ExitMainLoop()
+
 
     def LoadConfiguration(self,event):
 
@@ -517,8 +515,8 @@ class consoleOutput(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
 
+
         # Add a panel so it looks the correct on all platforms
-        panel = wx.Panel(self, wx.ID_ANY)
         log = wx.TextCtrl(self, -1, size=(100,100),
                           style = wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
 
@@ -529,10 +527,11 @@ class consoleOutput(wx.Panel):
         # # Add widgets to a sizer
         sizer = wx.BoxSizer()
         sizer.Add(log, 1, wx.ALL|wx.EXPAND, 5)
-        panel.SetSizer(sizer)
+        self.SetSizer(sizer)
 
 
         self.SetSizerAndFit(sizer)
+
 
 class RedirectText(object):
     def __init__(self,aWxTextCtrl):

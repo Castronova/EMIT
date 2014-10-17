@@ -20,6 +20,7 @@ from api.ODM2.Core.model import *
 # from odm2.api.ODM2.Simulation.services import *
 # from odm2.api.ODM2.Core.model import *
 #
+import time
 
 def results_to_dict(cursor):
 
@@ -192,9 +193,36 @@ class postgresdb():
                                                 dsabstract=description)
 
 
+
+        tsvalues = []
+
         # loop over output exchange items
         for exchangeitem in output_exchange_items:
 
+            # create variable
+            # TODO: This is not correct!
+            # todo: implement variable vType
+            variable = self._coreread.getVariableByCode(exchangeitem.variable().VariableNameCV())
+            if not variable: variable = self._corewrite.createVariable(code=exchangeitem.variable().VariableNameCV(),
+                                                                       name=exchangeitem.variable().VariableDefinition(),
+                                                                       vType='unknown',
+                                                                       nodv=-999)
+
+            # create unit
+            unit = self._coreread.getUnitByName(exchangeitem.unit().UnitName())
+            if not unit: unit = self._corewrite.createUnit(type=exchangeitem.unit().UnitTypeCV(),
+                                                           abbrev=exchangeitem.unit().UnitAbbreviation(),
+                                                           name=exchangeitem.unit().UnitName())
+
+            # create spatial reference
+            refcode = "%s:%s" %(exchangeitem.geometries()[0].srs().GetAttrValue("AUTHORITY", 0),exchangeitem.geometries()[0].srs().GetAttrValue("AUTHORITY", 1))
+            spatialref = self._sfread.getSpatialReferenceByCode(refcode)
+            if not spatialref: spatialref = self._sfwrite.createSpatialReference(srsCode=refcode,
+                                                                                 srsName=exchangeitem.geometries()[0].srs().GetAttrValue("GEOGCS", 0),
+                                                                                 srsDescription="%s|%s|%s"%(exchangeitem.geometries()[0].srs().GetAttrValue("PROJCS", 0),exchangeitem.geometries()[0].srs().GetAttrValue("GEOGCS", 0),exchangeitem.geometries()[0].srs().GetAttrValue("DATUM", 0)))
+
+
+            st = time.time()
             # loop over geometries
             for geometry in exchangeitem.geometries():
 
@@ -220,29 +248,8 @@ class postgresdb():
                 featureaction = self._corewrite.createFeatureAction(samplingfeatureid=samplingfeature.SamplingFeatureID,
                                                                     actionid=action.ActionID)
 
-                # create variable
-                # TODO: This is not correct!
-                # todo: implement variable vType
-                variable = self._coreread.getVariableByCode(exchangeitem.variable().VariableNameCV())
-                if not variable: variable = self._corewrite.createVariable(code=exchangeitem.variable().VariableNameCV(),
-                                                                           name=exchangeitem.variable().VariableDefinition(),
-                                                                           vType='unknown',
-                                                                           nodv=-999)
-
-                # create unit
-                unit = self._coreread.getUnitByName(exchangeitem.unit().UnitName())
-                if not unit: unit = self._corewrite.createUnit(type=exchangeitem.unit().UnitTypeCV(),
-                                                               abbrev=exchangeitem.unit().UnitAbbreviation(),
-                                                               name=exchangeitem.unit().UnitName())
 
 
-
-                # create spatial reference
-                refcode = "%s:%s" %(exchangeitem.geometries()[0].srs().GetAttrValue("AUTHORITY", 0),exchangeitem.geometries()[0].srs().GetAttrValue("AUTHORITY", 1))
-                spatialref = self._sfread.getSpatialReferenceByCode(refcode)
-                if not spatialref: spatialref = self._sfwrite.createSpatialReference(srsCode=refcode,
-                                                                                     srsName=exchangeitem.geometries()[0].srs().GetAttrValue("GEOGCS", 0),
-                                                                                     srsDescription="%s|%s|%s"%(exchangeitem.geometries()[0].srs().GetAttrValue("PROJCS", 0),exchangeitem.geometries()[0].srs().GetAttrValue("GEOGCS", 0),exchangeitem.geometries()[0].srs().GetAttrValue("DATUM", 0)))
 
 
 
@@ -268,16 +275,37 @@ class postgresdb():
                 # todo: get timezone based on geometry, use this to determine utc offset
                 # todo: implement censorcodecv
                 # todo: implement qualitycodecv
-                timeseriesresultvalues = self._reswrite.createTimeSeriesResultValues(resultid=timeseriesresult.ResultID,
-                                                                                     datavalues=values,
-                                                                                     datetimes=dates,
-                                                                                     datetimeoffsets=[-6 for i in range(len(dates))],
-                                                                                     censorcodecv='nc',
-                                                                                     qualitycodecv='unknown',
-                                                                                     timeaggregationinterval=timestepvalue,
-                                                                                     timeaggregationunit=timestepunit.UnitsID)
+                # timeseriesresultvalues = self._reswrite.createTimeSeriesResultValues(resultid=timeseriesresult.ResultID,
+                #                                                                      datavalues=values,
+                #                                                                      datetimes=dates,
+                #                                                                      datetimeoffsets=[-6 for i in range(len(dates))],
+                #                                                                      censorcodecv='nc',
+                #                                                                      qualitycodecv='unknown',
+                #                                                                      timeaggregationinterval=timestepvalue,
+                #                                                                      timeaggregationunit=timestepunit.UnitsID)
 
 
+                st = time.time()
+                for i in xrange(len(values)):
+                    tsrv = Timeseriesresultvalue()
+                    tsrv.ResultID = timeseriesresult.ResultID
+                    tsrv.CensorCodeCV = 'nc'
+                    tsrv.QualityCodeCV = 'unknown'
+                    tsrv.TimeAggregationInterval = timestepvalue
+                    tsrv.TimeAggregationIntervalUnitsID = timestepunit.UnitsID
+                    tsrv.DataValue = values[i]
+                    tsrv.ValueDateTime = dates[i]
+                    tsrv.ValueDateTimeUTCOffset = -6
+                    tsvalues.append(tsrv)
+                print '\nBuilding TSRV: %3.5f sec' % (time.time() - st)
+
+        print '\nBuilding All Exchange Item TSRV:  %3.5f sec' % (time.time() - st)
+
+        st = time.time()
+        # insert ts values
+        self._reswrite.createAllTimeSeriesResultValues(tsrv = tsvalues)
+
+        print '%3.5f sec' % (time.time() - st)
 
         # # loop over input exchange items
         # for exchangeitem in input_exchange_items:

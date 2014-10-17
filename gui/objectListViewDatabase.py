@@ -9,6 +9,7 @@ import os
 from wx.lib.pubsub import pub as Publisher
 from api.ODM2.Results.services import readResults
 from api.ODM2.Core.services import readCore
+from wx.lib.pubsub import pub as Publisher
 
 ########################################################################
 class Database(object):
@@ -34,10 +35,6 @@ class OlvSeries(FastObjectListView):
     #----------------------------------------------------------------------
     def __init__(self, *args, **kwargs ):
         FastObjectListView.__init__(self, *args, **kwargs)
-        # self.products = [Database("1","Main Lake1", "19",
-        #                           "Chlorophyll a", "micrograms per liter",
-        #                           "day", "1992-05-07 11:45:00", "1996-01-02 00:00:00"),
-        #                  ]
 
         self.initialSeries = [Database("","", "",
                                   "", "",
@@ -47,14 +44,16 @@ class OlvSeries(FastObjectListView):
         Publisher.subscribe(self.olvrefresh, "olvrefresh")
 
         self.setSeries()
-        # self.Bind(wx.EVT_LIST_BEGIN_DRAG, self.onDrag)
-        self.Bind(wx.EVT_LIST_BEGIN_DRAG, self.onDrag)
-
-        # Allow the cell values to be edited when double-clicked
-        # self.cellEditMode = FastObjectListView.CELLEDIT_SINGLECLICK
         self.useAlternateBackColors = True
         self.oddRowsBackColor = wx.Colour(191, 217, 217)
-        self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.onDoubleClick)
+        self.Bind(wx.EVT_LIST_BEGIN_DRAG, self.onDrag)
+        self.Bind(wx.EVT_LEFT_DCLICK, self.onDoubleClick)
+        self.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.LaunchContext)
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListItemSelect)
+
+        self.__list_obj = None
+        self.__list_id = None
+
 
 
     #----------------------------------------------------------------------
@@ -74,44 +73,38 @@ class OlvSeries(FastObjectListView):
 
         self.SetObjects(self.initialSeries)
 
+    def LaunchContext(self, event):
+
+
+        self.PopupMenu(ContextMenu(self,
+                                   list_obj=event.GetEventObject(),
+                                   list_id=event.GetIndex()), event.GetPosition())
+
+    def OnListItemSelect(self, event):
+
+        self.__list_obj = event.GetEventObject()
+        self.__list_id = event.GetIndex()
+
     def onDrag(self, event):
         data = wx.FileDataObject()
         obj = event.GetEventObject()
         id = event.GetIndex()
 
-        resultID = obj.GetItem(id,0).GetText()
-
-        #x,y = self.getData(resultID)
-
         filename = obj.GetItem(id).GetText()
         dataname = str(filename)
-
-        #  # pickle the lines list
-        # import cPickle
-        # e = cPickle.dumps({'event':event,'resultid':resultID}, 1)
-        # data = wx.CustomDataObject("d")
-        # data.SetData(e)
-        #
-        #
-        # data = wx.CustomDataObject("DoodleLines")
-
         data.AddFile(dataname)
-        # data = wx.DataObject()
-        # data.SetData(event)
-        #data.AddFile(self)
 
         dropSource = wx.DropSource(obj)
         dropSource.SetData(data)
         result = dropSource.DoDragDrop()
 
-        print filename
 
     def onDoubleClick(self, event):
 
         # get row associated with the event
         data = wx.FileDataObject()
-        obj = event.GetEventObject()
-        id = event.GetIndex()
+        obj = self.__list_obj
+        id = self.__list_id
         resultID = obj.GetItem(id,0).GetText()
 
         # get data for this row
@@ -155,14 +148,84 @@ class OlvSeries(FastObjectListView):
 
         return dates,values,obj
 
-
-
     def olvrefresh(self):
         self.RepopulateList()
         self.Refresh()
         #print "Series Selector Refreshed"
 
 
+class ContextMenu(wx.Menu):
+
+    def __init__(self, parent, list_obj, list_id):
+        super(ContextMenu, self).__init__()
+
+        #self.cmd = parent.cmd
+        self.parent = parent
+
+        # mmi = wx.MenuItem(self, wx.NewId(), 'Add Model')
+        # self.AppendItem(mmi)
+
+        mmi = wx.MenuItem(self, wx.NewId(), 'Add')
+        self.AppendItem(mmi)
+        self.Bind(wx.EVT_MENU, self.OnAdd, mmi)
+
+        mmi = wx.MenuItem(self, wx.NewId(), 'Plot')
+        self.AppendItem(mmi)
+        #self.Bind(wx.EVT_MENU, self.OnClickRun, mmi)
+
+        mmi = wx.MenuItem(self, wx.NewId(), 'Delete')
+        self.AppendItem(mmi)
+        #self.Bind(wx.EVT_MENU, self.OnClickClear, mmi)
+
+        # this is the list event from the right click
+        self.__list_obj = list_obj
+        self.__list_id = list_id
+
+    def OnAdd(self, event):
+
+        obj = self.__list_obj
+        id = self.__list_id
+        filename = obj.GetItem(id).GetText()
+
+        # notify that the connection was not added successfully
+        Publisher.sendMessage('AddModel',filepath=filename, x = 0, y = 0) # sends message to CanvasController
+
+        print filename
+
+
+
+    # def OnClickRun(self, e):
+    #
+    #     self.parent.run()
+    #
+    # def OnClickClear(self, e):
+    #     dlg = wx.MessageDialog(None, 'Are you sure you would like to clear configuration?', 'Question', wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
+    #
+    #     if dlg.ShowModal() !=wx.ID_NO:
+    #         self.parent.clear()
+    #
+    #     # elif dlg.ShowModal() !=wx.ID_NO:
+    #     #     self.parent.clear()
+    #
+    # def SaveConfiguration(self,e):
+    #
+    #     save = wx.FileDialog(self.parent.Canvas.GetTopLevelParent(), "Save Configuration","","",
+    #                          "Simulation Files (*.sim)|*.sim", wx.FD_SAVE  | wx.FD_OVERWRITE_PROMPT)
+    #
+    #     if save.ShowModal() != wx.ID_OK:
+    #         path = save.GetPath()
+    #         self.parent.SaveSimulation(path)
+    #
+    # def OnMinimize(self, e):
+    #     self.parent.Iconize()
+    #
+    # def OnClose(self, e):
+    #     self.parent.Close()
+    #
+    # def Warn(parent, message, caption = 'Warning!'):
+    #     dlg = wx.MessageDialog(parent, message, caption, wx.OK | wx.ICON_WARNING)
+    #     dlg.ShowModal()
+    #     dlg.Destroy()
 
 ########################################################################
 ###                      For Unittest Use                            ###

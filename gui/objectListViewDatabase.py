@@ -56,7 +56,7 @@ class OlvSeries(FastObjectListView):
 
 
         # subscribers
-        Publisher.subscribe(self.PlotData,'PlotData')
+        # Publisher.subscribe(self.PlotData,'PlotData')
 
     #----------------------------------------------------------------------
     def setSeries(self, data=None):
@@ -101,25 +101,25 @@ class OlvSeries(FastObjectListView):
         result = dropSource.DoDragDrop()
 
 
-    def PlotData(self, obj, id):
-
-        # get row associated with the event
-        #data = wx.FileDataObject()
-        #obj = self.__list_obj
-        #id = self.__list_id
-        resultID = obj.GetItem(id,0).GetText()
-
-        # get data for this row
-        x,y, resobj = self.getData(resultID)
-
-        # get metadata
-        xlabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
-        title = '%s' % (resobj.VariableObj.VariableCode)
-
-
-        # plot the data
-        PlotFrame = MatplotFrame(self.Parent, x, y, title, xlabel)
-        PlotFrame.Show()
+    # def PlotData(self, obj, id):
+    #
+    #     # get row associated with the event
+    #     #data = wx.FileDataObject()
+    #     #obj = self.__list_obj
+    #     #id = self.__list_id
+    #     resultID = obj.GetItem(id,0).GetText()
+    #
+    #     # get data for this row
+    #     x,y, resobj = self.getData(resultID)
+    #
+    #     # get metadata
+    #     xlabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
+    #     title = '%s' % (resobj.VariableObj.VariableCode)
+    #
+    #
+    #     # plot the data
+    #     PlotFrame = MatplotFrame(self.Parent, x, y, title, xlabel)
+    #     PlotFrame.Show()
 
     def getDbSession(self):
         selected_db = self.Parent.connection_combobox.GetStringSelection()
@@ -129,26 +129,7 @@ class OlvSeries(FastObjectListView):
                 return db['session']
         return None
 
-    def getData(self,resultID):
 
-
-        session = self.getDbSession()
-        readres = readResults(session)
-        results = readres.getTimeSeriesValuesByResultId(resultId=int(resultID))
-
-
-        core = readCore(session)
-        obj = core.getResultByID(resultID=int(resultID))
-
-        dates = []
-        values = []
-        for val in results:
-            dates.append(val.ValueDateTime)
-            values.append(val.DataValue)
-
-        #session.close()
-
-        return dates,values,obj
 
     def olvrefresh(self):
         self.RepopulateList()
@@ -194,14 +175,92 @@ class ContextMenu(wx.Menu):
         print filename
 
 
+    def getData(self,resultID):
+
+
+        session = self.parent.getDbSession()
+        readres = readResults(session)
+        results = readres.getTimeSeriesValuesByResultId(resultId=int(resultID))
+
+
+        core = readCore(session)
+        obj = core.getResultByID(resultID=int(resultID))
+
+        dates = []
+        values = []
+        for val in results:
+            dates.append(val.ValueDateTime)
+            values.append(val.DataValue)
+
+        #session.close()
+
+        return dates,values,obj
 
     def OnPlot(self, event):
 
+        # item = listctrl.GetFirstSelected()
+        # while item != -1:
+        #         # do something with the item
+        #         item = listctrl.GetNextSelected(item)
+
+
         obj = self.__list_obj
-        id = self.__list_id
+        # id = self.__list_id
 
-        Publisher.sendMessage('PlotData',obj=obj, id=id) # sends message to ObjectListView PlotData function
+        # create a plot frame
+        PlotFrame = None
+        xlabel = None
+        title = None
+        variable = None
+        units = None
+        warning = None
+        x_series = []
+        y_series = []
+        labels = []
+        id = self.parent.GetFirstSelected()
+        while id != -1:
+            # get the result
+            resultID = obj.GetItem(id,0).GetText()
 
+            # get data for this row
+            x,y, resobj = self.getData(resultID)
+
+
+
+            if PlotFrame is None:
+                # set metadata based on first series
+                xlabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
+                title = '%s' % (resobj.VariableObj.VariableCode)
+
+                # save the variable and units to validate future time series
+                variable = resobj.VariableObj.VariableCode
+                units = resobj.UnitObj.UnitsName
+
+                PlotFrame = MatplotFrame(self.Parent, title, xlabel)
+
+            if resobj.VariableObj.VariableCode == variable and resobj.UnitObj.UnitsName == units:
+                # store the x and Y data
+                x_series.append(x)
+                y_series.append(y)
+                labels.append(resultID)
+
+                # PlotFrame.add_series(x,y)
+            elif warning is None:
+                warning = 'Multiple Variables/Units were selected.  I currently don\'t support plotting heterogeneous time series. ' +\
+                          'Some of the selected time series will not be shown :( '
+
+            # get the next selected item
+            id = obj.GetNextSelected(id)
+
+
+        if warning:
+            dlg = wx.MessageDialog(self.parent, warning, '', wx.OK | wx.ICON_WARNING)
+            dlg.ShowModal()
+            dlg.Destroy()
+
+        # plot the data
+        PlotFrame.plot_multiple_series(xlist=x_series, ylist=y_series, labels=labels)
+        PlotFrame.Show()
 
 
         #self.parent.run()

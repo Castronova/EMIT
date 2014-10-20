@@ -199,7 +199,7 @@ class ToolboxPanel(wx.Panel):
         # create the details view
         view = ModelTxtCtrl(self)
 
-        view.PopulateEdit(filepath)
+        view.PopulateSummary(filepath)
 
 
         # load the geometry data
@@ -207,9 +207,9 @@ class ToolboxPanel(wx.Panel):
         # view.PopulateSpatial(self.read_geoms(self.sb.GetValue(),'output'),'output')
 
         # show the details view
-        #listview = MyTree(self)
-        view.PopulateEdit(filepath)
-        view.PopulateDetails(filepath)
+
+        # view.PopulateEdit(filepath)
+        # view.PopulateDetails(filepath)
 
         #listview.PopulateDetails(self.sb.GetValue())
         view.Show()

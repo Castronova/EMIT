@@ -34,12 +34,6 @@ class ModelTxtCtrl ( wx.Frame ):
         #Define Objects
 
         # intialize the notebook
-        self.propertyGrid = wxpg.PropertyGrid(self, id = wx.ID_ANY, pos = wx.Point(0,0),
-                                                     style= wxpg.PG_SPLITTER_AUTO_CENTER |
-                                                                  wxpg.PG_AUTO_SORT |
-                                                                  wxpg.PG_PROP_READONLY)
-        self.propertyGrid.Append(wxpg.StringProperty("Hello"))
-        self.propertyGrid.SetExtraStyle(wxpg.PG_EX_HELP_AS_TOOLTIPS)
         # self.propertyGrid.SetPropertyValues( self.input)
 
 
@@ -48,13 +42,20 @@ class ModelTxtCtrl ( wx.Frame ):
         # make the detail view
         self.treectrlView = wx.Panel( self.txtNotebook, wx.ID_ANY, wx.DefaultPosition,
                                       wx.DefaultSize, wx.TAB_TRAVERSAL )
-        self.DetailTree = MyTree( self.treectrlView, id=wx.ID_ANY,
-                pos=wx.Point(0, 0),
-              size=wx.Size(423, 319), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT )
+        # self.DetailTree = MyTree( self.treectrlView, id=wx.ID_ANY,
+        #         pos=wx.Point(0, 0),
+        #       size=wx.Size(423, 319), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT )
         self.txtNotebook.AddPage( self.treectrlView, u"Model Details", True )
         self.treectrlView.SetSizer( treectrlSizer )
-        treectrlSizer.Add( self.propertyGrid, 0, wx.ALL, 5 )
 
+        # Initialize the Property Grid
+        self.propertyGrid = wxpg.PropertyGrid(self, id = wx.ID_ANY, pos = wx.Point(0,0), size=wx.Size(423, 319),
+                                                     style= wxpg.PG_SPLITTER_AUTO_CENTER |
+                                                                  wxpg.PG_AUTO_SORT |
+                                                                  wxpg.PG_PROP_READONLY)
+        self.propertyGrid.Append(wxpg.StringProperty("Hello"))
+        self.propertyGrid.SetExtraStyle(wxpg.PG_EX_HELP_AS_TOOLTIPS)
+        # treectrlSizer.Add( self.propertyGrid, 0, wx.ALL, 5 )
         # make the spatial view
         if spatial:
             self.matplotView = pnlSpatial( self.txtNotebook )
@@ -189,16 +190,21 @@ class ModelTxtCtrl ( wx.Frame ):
             if isinstance (d[section], list):
                 items = d[section]
                 for item in items:
-                    p = g
                     while len(item.keys()) > 0:
                         if 'variable_name_cv' in item:
                             var = item.pop('variable_name_cv')
-                            p = self.propertyGrid.Append( wxpg.StringProperty(str(item), value=var))
+                            try:
+                                self.propertyGrid.Append( wxpg.StringProperty(str(item), value=var))
+                            except:
+                                pass
                         i = item.popitem()
 
                         if i[0] != 'type':
                             k =  i[0]
-                            self.propertyGrid.Append( wxpg.StringProperty(k, i[1]))
+                            try:
+                                self.propertyGrid.Append( wxpg.StringProperty(k, i[1]))
+                            except:
+                                pass
             # else:
             #      self.propertyGrid.Append( wxpg.StringProperty(d[section]))
 

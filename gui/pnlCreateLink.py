@@ -60,13 +60,13 @@ class pnlCreateLink ( wx.Panel ):
 
         self.pgout = pgout = wxpg.PropertyGridManager(self, size = wx.Size(210, 200),
                         style=wxpg.PG_SPLITTER_AUTO_CENTER |
-                              wxpg.PG_AUTO_SORT |
-                              wxpg.PG_TOOLBAR)
+                              wxpg.PG_AUTO_SORT)
 
         self.pgin = pgin = wxpg.PropertyGridManager(self, size = wx.Size(210, 200),
                         style=wxpg.PG_SPLITTER_AUTO_CENTER |
-                              wxpg.PG_AUTO_SORT |
-                              wxpg.PG_TOOLBAR)
+                              wxpg.PG_AUTO_SORT)
+
+
 
         pgout.SetExtraStyle(wxpg.PG_EX_HELP_AS_TOOLTIPS)
         pgin.SetExtraStyle(wxpg.PG_EX_HELP_AS_TOOLTIPS)

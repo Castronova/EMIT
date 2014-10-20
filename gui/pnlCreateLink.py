@@ -84,8 +84,7 @@ class pnlCreateLink ( wx.Panel ):
         # Fill using dictionary
         pgout.SetPropertyValues( self.output)
         pgin.SetPropertyValues( self.input)
-        # self.pgout.Append( wxpg.PropertyCategory("Properties Output Item") )
-        # self.pgin.Append( wxpg.PropertyCategory("Properties Input Item") )
+
 
         self.nout = 0
         self.nin  = 0

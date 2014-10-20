@@ -70,21 +70,6 @@ class TestPanel( wx.Panel ):
         # Fill using dictionary
         self.pg.SetPropertyValues( self.input)
 
-        # pg.Append( wxpg.Pro)
-        # pg.Append( wxpg.StringProperty("String",value=self.input) )
-        # pg.Append( wxpg.IntProperty("Int",value=100) )
-        # pg.Append( wxpg.FloatProperty("Float",value=100.0) )
-        # pg.Append( wxpg.BoolProperty("Bool",value=True) )
-        # pg.Append( wxpg.BoolProperty("Bool_with_Checkbox",value=True) )
-        # pg.SetPropertyAttribute("Bool_with_Checkbox", "UseCheckbox", True)
-
-        # pg.Append( wxpg.LongStringProperty("LongString",
-        #     value="This is a\\nmulti-line string\\nwith\\ttabs\\nmixed\\tin."))
-        # pg.Append( wxpg.DirProperty("Dir",value="C:\\Windows") )
-        # pg.Append( wxpg.FileProperty("File",value="C:\\Windows\\system.ini") )
-        # pg.Append( wxpg.ArrayStringProperty("ArrayString",value=['A','B','C']) )
-
-
         topsizer.Add(pg, 1, wx.EXPAND)
 
         rowsizer = wx.BoxSizer(wx.HORIZONTAL)

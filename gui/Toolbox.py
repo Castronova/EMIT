@@ -9,7 +9,7 @@ from os.path import *
 import fnmatch
 import wx.lib.customtreectrl as CT
 import utilities
-
+from txtctrlModel import ModelTxtCtrl
 from PropertyGrid import pnlProperty
 
 class ToolboxPanel(wx.Panel):
@@ -197,7 +197,7 @@ class ToolboxPanel(wx.Panel):
         filepath = self.filepath.get(key)
         print filepath
         # create the details view
-        view = pnlProperty(self)
+        view = ModelTxtCtrl(self)
 
         view.PopulateEdit(filepath)
 

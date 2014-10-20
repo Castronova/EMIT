@@ -68,7 +68,6 @@ class pnlCreateLink ( wx.Panel ):
 
 
 
-        pgout.SetExtraStyle(wxpg.PG_EX_HELP_AS_TOOLTIPS)
         pgin.SetExtraStyle(wxpg.PG_EX_HELP_AS_TOOLTIPS)
 
         pgout.Bind( wxpg.EVT_PG_CHANGED, self.OnPropGridChange )

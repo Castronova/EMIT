@@ -1,14 +1,11 @@
 __author__ = 'Mario'
 
-import os
-import wx
-
-
 import wx
 import wx.xrc
 from pnlSpatial import pnlSpatial
 from pnlDetails import pnlDetails
 from utilities import gui
+import wx.propgrid as wxpg
 
 from wx.lib.pubsub import pub as Publisher
 
@@ -37,10 +34,16 @@ class ModelTxtCtrl ( wx.Frame ):
         #Define Objects
 
         # intialize the notebook
+        self.propertyGrid = wxpg.PropertyGrid(self, id = wx.ID_ANY, pos = wx.Point(0,0),
+                                                     style= wxpg.PG_SPLITTER_AUTO_CENTER |
+                                                                  wxpg.PG_AUTO_SORT |
+                                                                  wxpg.PG_PROP_READONLY)
+        self.propertyGrid.Append(wxpg.StringProperty("Hello"))
+        self.propertyGrid.SetExtraStyle(wxpg.PG_EX_HELP_AS_TOOLTIPS)
+        # self.propertyGrid.SetPropertyValues( self.input)
+
+
         self.txtNotebook = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
-
-
-
 
         # make the detail view
         self.treectrlView = wx.Panel( self.txtNotebook, wx.ID_ANY, wx.DefaultPosition,
@@ -50,7 +53,7 @@ class ModelTxtCtrl ( wx.Frame ):
               size=wx.Size(423, 319), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT )
         self.txtNotebook.AddPage( self.treectrlView, u"Model Details", True )
         self.treectrlView.SetSizer( treectrlSizer )
-        treectrlSizer.Add( self.DetailTree, 0, wx.ALL, 5 )
+        treectrlSizer.Add( self.propertyGrid, 0, wx.ALL, 5 )
 
         # make the spatial view
         if spatial:
@@ -95,6 +98,7 @@ class ModelTxtCtrl ( wx.Frame ):
 
         self.Centre( wx.BOTH )
         # self.InitMenu()
+
 
 
     def InitMenu(self):
@@ -171,6 +175,33 @@ class ModelTxtCtrl ( wx.Frame ):
         #
         #     # todo: extend support for multiple inputs/outputs
         #     return
+    def PopulateSummary(self, fileExtension):
+
+        d = gui.parse_config_without_validation(fileExtension)
+
+        # self.propertyGrid.AddPage( "Detailed Summary" )
+
+        sections = sorted(d.keys())
+
+        for section in sections:
+            g = self.propertyGrid.Append( wxpg.PropertyCategory(section))
+
+            if isinstance (d[section], list):
+                items = d[section]
+                for item in items:
+                    p = g
+                    while len(item.keys()) > 0:
+                        if 'variable_name_cv' in item:
+                            var = item.pop('variable_name_cv')
+                            p = self.propertyGrid.Append( wxpg.StringProperty(str(item), value=var))
+                        i = item.popitem()
+
+                        if i[0] != 'type':
+                            k =  i[0]
+                            self.propertyGrid.Append( wxpg.StringProperty(k, i[1]))
+            # else:
+            #      self.propertyGrid.Append( wxpg.StringProperty(d[section]))
+
 
     def PopulateDetails(self, fileExtension):
 

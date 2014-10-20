@@ -7,7 +7,7 @@ import wx.propgrid as wxpg
 
 [wxID_PNLPROPERTY] = [wx.NewId() for _init_ctrls in range(1)]
 
-class pnlSpatial ( wx.Panel ):
+class pnlProperty ( wx.Panel ):
 
     def __init__( self, prnt):
         wx.Panel.__init__(self, id=wxID_PNLPROPERTY, name=u'pnlIntro', parent=prnt,

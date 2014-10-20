@@ -3,7 +3,6 @@ import wx
 import wx.gizmos as gizmos
 from images import icons
 from ContextMenu import TreeContextMenu, TreeItemContextMenu
-from txtctrlModel import ModelTxtCtrl
 import ConfigParser
 import os
 from os.path import *
@@ -11,7 +10,7 @@ import fnmatch
 import wx.lib.customtreectrl as CT
 import utilities
 
-from txtctrlModel import ModelTxtCtrl
+from PropertyGrid import pnlProperty
 
 class ToolboxPanel(wx.Panel):
     def __init__(self, parent):
@@ -35,6 +34,14 @@ class ToolboxPanel(wx.Panel):
         #                                 | wx.TR_FULL_ROW_HIGHLIGHT
         #                            )
 
+
+        ini = join(dirname(abspath(__file__)), 'Resources/ToolboxPaths')
+        config_params = {}
+        cparser = ConfigParser.ConfigParser(None, multidict)
+        cparser.read(ini)
+        sections = cparser.sections()
+        modelpaths = {}
+
         self.tree = CT.CustomTreeCtrl(self, -1, style=wx.TR_DEFAULT_STYLE )
         self.tree.SetBackgroundColour((255,255,255))
         isz = (16,16)
@@ -46,14 +53,6 @@ class ToolboxPanel(wx.Panel):
 
         self.tree.SetImageList(il)
         self.il = il
-
-        ini = join(dirname(abspath(__file__)), 'Resources/ToolboxPaths')
-        config_params = {}
-        cparser = ConfigParser.ConfigParser(None, multidict)
-        cparser.read(ini)
-        sections = cparser.sections()
-        modelpaths = {}
-
         self.items = {}
         self.filepath = {}
 
@@ -198,7 +197,7 @@ class ToolboxPanel(wx.Panel):
         filepath = self.filepath.get(key)
         print filepath
         # create the details view
-        view = ModelTxtCtrl(self,spatial=False)
+        view = pnlProperty(self)
 
         view.PopulateEdit(filepath)
 

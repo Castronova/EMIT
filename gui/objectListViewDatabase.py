@@ -47,7 +47,7 @@ class OlvSeries(FastObjectListView):
         self.useAlternateBackColors = True
         self.oddRowsBackColor = wx.Colour(191, 217, 217)
         self.Bind(wx.EVT_LIST_BEGIN_DRAG, self.onDrag)
-        self.Bind(wx.EVT_LEFT_DCLICK, self.onDoubleClick)
+        #self.Bind(wx.EVT_LEFT_DCLICK, self.onDoubleClick)
         self.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.LaunchContext)
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListItemSelect)
 
@@ -55,6 +55,8 @@ class OlvSeries(FastObjectListView):
         self.__list_id = None
 
 
+        # subscribers
+        Publisher.subscribe(self.PlotData,'PlotData')
 
     #----------------------------------------------------------------------
     def setSeries(self, data=None):
@@ -99,12 +101,12 @@ class OlvSeries(FastObjectListView):
         result = dropSource.DoDragDrop()
 
 
-    def onDoubleClick(self, event):
+    def PlotData(self, obj, id):
 
         # get row associated with the event
-        data = wx.FileDataObject()
-        obj = self.__list_obj
-        id = self.__list_id
+        #data = wx.FileDataObject()
+        #obj = self.__list_obj
+        #id = self.__list_id
         resultID = obj.GetItem(id,0).GetText()
 
         # get data for this row
@@ -171,7 +173,7 @@ class ContextMenu(wx.Menu):
 
         mmi = wx.MenuItem(self, wx.NewId(), 'Plot')
         self.AppendItem(mmi)
-        #self.Bind(wx.EVT_MENU, self.OnClickRun, mmi)
+        self.Bind(wx.EVT_MENU, self.OnPlot, mmi)
 
         mmi = wx.MenuItem(self, wx.NewId(), 'Delete')
         self.AppendItem(mmi)
@@ -187,16 +189,22 @@ class ContextMenu(wx.Menu):
         id = self.__list_id
         filename = obj.GetItem(id).GetText()
 
-        # notify that the connection was not added successfully
         Publisher.sendMessage('AddModel',filepath=filename, x = 0, y = 0) # sends message to CanvasController
 
         print filename
 
 
 
-    # def OnClickRun(self, e):
-    #
-    #     self.parent.run()
+    def OnPlot(self, event):
+
+        obj = self.__list_obj
+        id = self.__list_id
+
+        Publisher.sendMessage('PlotData',obj=obj, id=id) # sends message to ObjectListView PlotData function
+
+
+
+        #self.parent.run()
     #
     # def OnClickClear(self, e):
     #     dlg = wx.MessageDialog(None, 'Are you sure you would like to clear configuration?', 'Question', wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)

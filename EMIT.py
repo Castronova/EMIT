@@ -4,22 +4,17 @@ __author__ = 'Mario'
 
 
 import os
-import sys
-
-#sys.path.append(os.path.abspath(os.path.join(os.path.abspath(__file__),'../../odm2/src')))
 
 import wx
 import wx.xrc
 import wx.aui
 
 import gui.log as log
-#from gui.CanvasView import Canvas
-#from DirectoryView import DirectoryCtrlView
-
-import coordinator.main as cmd
+from coordinator import main as cmd
 from gui.mainGui import  MainGui
 from gui.CanvasController import CanvasController
-#from gui.CanvasView import Canvas
+
+#sys.path.append(os.path.abspath(os.path.join(os.path.abspath(__file__),'../../odm2/src')))
 
 
 # ##########################################################################

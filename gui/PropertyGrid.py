@@ -5,50 +5,17 @@ import wx
 _ = wx.GetTranslation
 import wx.propgrid as wxpg
 
+[wxID_PNLPROPERTY] = [wx.NewId() for _init_ctrls in range(1)]
 
-############################################################################
-#
-# TEST RELATED CODE AND VARIABLES
-#
-############################################################################
+class pnlSpatial ( wx.Panel ):
 
-default_object_content2 = """\
-object.title = "Object Title"
-object.index = 1
-object.PI = %f
-object.wxpython_rules = True
-"""%(math.pi)
+    def __init__( self, prnt):
+        wx.Panel.__init__(self, id=wxID_PNLPROPERTY, name=u'pnlIntro', parent=prnt,
+              pos=wx.Point(571, 262), size=wx.Size(10, 10),
+              style=wx.TAB_TRAVERSAL)
+        self.SetClientSize(wx.Size(10, 10))
 
-default_object_content1 = """\
-
-#
-# Note that the results of autofill will appear on the second page.
-
-#
-# Set number of iterations appropriately to test performance
-iterations = 100
-
-#
-# Test result for 100,000 iterations on Athlon XP 2000+:
-#
-# Time spent per property: 0.054ms
-# Memory allocated per property: ~350 bytes (includes Python object)
-#
-
-for i in range(0,iterations):
-    setattr(object,'title%i'%i,"Object Title")
-    setattr(object,'index%i'%i,1)
-    setattr(object,'PI%i'%i,3.14)
-    setattr(object,'wxpython_rules%i'%i,True)
-"""
-
-
-############################################################################
-#
-# CUSTOM PROPERTY SAMPLES
-#
-############################################################################
-
+        self.parent = prnt
 
 class ValueObject:
     def __init__(self):

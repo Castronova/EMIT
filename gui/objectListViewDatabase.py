@@ -158,7 +158,7 @@ class ContextMenu(wx.Menu):
 
         mmi = wx.MenuItem(self, wx.NewId(), 'Delete')
         self.AppendItem(mmi)
-        #self.Bind(wx.EVT_MENU, self.OnClickClear, mmi)
+        self.Bind(wx.EVT_MENU, self.OnDelete, mmi)
 
         # this is the list event from the right click
         self.__list_obj = list_obj
@@ -259,40 +259,13 @@ class ContextMenu(wx.Menu):
             dlg.Destroy()
 
         # plot the data
-        PlotFrame.plot_multiple_series(xlist=x_series, ylist=y_series, labels=labels)
+        PlotFrame.plot(xlist=x_series, ylist=y_series, labels=labels)
         PlotFrame.Show()
 
-
-        #self.parent.run()
-    #
-    # def OnClickClear(self, e):
-    #     dlg = wx.MessageDialog(None, 'Are you sure you would like to clear configuration?', 'Question', wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
-    #
-    #     if dlg.ShowModal() !=wx.ID_NO:
-    #         self.parent.clear()
-    #
-    #     # elif dlg.ShowModal() !=wx.ID_NO:
-    #     #     self.parent.clear()
-    #
-    # def SaveConfiguration(self,e):
-    #
-    #     save = wx.FileDialog(self.parent.Canvas.GetTopLevelParent(), "Save Configuration","","",
-    #                          "Simulation Files (*.sim)|*.sim", wx.FD_SAVE  | wx.FD_OVERWRITE_PROMPT)
-    #
-    #     if save.ShowModal() != wx.ID_OK:
-    #         path = save.GetPath()
-    #         self.parent.SaveSimulation(path)
-    #
-    # def OnMinimize(self, e):
-    #     self.parent.Iconize()
-    #
-    # def OnClose(self, e):
-    #     self.parent.Close()
-    #
-    # def Warn(parent, message, caption = 'Warning!'):
-    #     dlg = wx.MessageDialog(parent, message, caption, wx.OK | wx.ICON_WARNING)
-    #     dlg.ShowModal()
-    #     dlg.Destroy()
+    def OnDelete(self,event):
+        dlg = wx.MessageDialog(self.parent, 'Unfortunately, delete has not been implemented yet.', '', wx.OK | wx.ICON_WARNING)
+        dlg.ShowModal()
+        dlg.Destroy()
 
 ########################################################################
 ###                      For Unittest Use                            ###

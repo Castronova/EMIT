@@ -1,7 +1,7 @@
 __author__ = 'Mario'
 
 import wx
-import wx.xrc
+#import wx.xrc
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas

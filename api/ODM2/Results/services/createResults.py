@@ -57,9 +57,9 @@ class createResults(serviceBase):
 
 
         try:
-            values = Timeseriesresultvalue()
-            for i in range(len(datavalues)):
 
+            for i in range(len(datavalues)):
+                values = Timeseriesresultvalue()
                 values.ResultID = resultid
                 values.CensorCodeCV = censorcodecv
                 values.QualityCodeCV = qualitycodecv
@@ -71,6 +71,17 @@ class createResults(serviceBase):
                 self._session.add(values)
             self._session.commit()
             return values
+        except Exception, e:
+            print e
+            return None
+
+    def createAllTimeSeriesResultValues(self, tsrv):
+
+        try:
+            self._session.add_all(tsrv)
+            self._session.commit()
+            return 1
+
         except Exception, e:
             print e
             return None

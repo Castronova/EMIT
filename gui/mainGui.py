@@ -22,8 +22,6 @@ import datatypes
 
 class MainGui(wx.Frame):
     def __init__(self, parent, cmd):
-
-
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title="Environmental Model Integration Project", pos=wx.DefaultPosition,
                           size=wx.Size(1200, 750), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
 
@@ -33,7 +31,7 @@ class MainGui(wx.Frame):
         # save cmd object in pnlDocking so that children can access it
         self.pnlDocking.__setattr__('cmd',cmd)
 
-        # self.Bind(wx.EVT_CLOSE, self.onClose)
+        self.Bind(wx.EVT_CLOSE, self.onClose)
         self.initMenu()
         self.initAUIManager()
         self._init_sizers()
@@ -53,10 +51,9 @@ class MainGui(wx.Frame):
 
         self.m_mgr = aui.AuiManager()
         self.m_mgr.SetManagedWindow(self.pnlDocking)
-        # self.m_mgr.SetFlags(aui.AUI_MGR_DEFAULT)
 
+        #self.m_mgr.SetFlags(aui.AUI_MGR_DEFAULT)
         # self.output = wx.TextCtrl(self, -1, size=(100,100), style=wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
-
         self.Canvas = Canvas(self.pnlDocking)
         self.Directory = DirectoryCtrlView(self.pnlDocking)
         self.Toolbox = ToolboxPanel(self.pnlDocking)
@@ -64,8 +61,8 @@ class MainGui(wx.Frame):
 
 
         self.bnb = wx.Notebook(self.pnlDocking)
-
         output = consoleOutput(self.bnb)
+
         # seriesoutput = OutputTimeSeries(self.bnb)
         seriesselector = TimeSeries(self.bnb)
 
@@ -76,7 +73,6 @@ class MainGui(wx.Frame):
         self.bnb.GetPage(0).SetLabel("Console")
         self.bnb.GetPage(1).SetLabel("Remote Time Series")
         # self.bnb.GetPage(2).SetLabel("Output Time Series")
-
 
         self.m_mgr.AddPane(self.Canvas,
                            aui.AuiPaneInfo().
@@ -145,6 +141,8 @@ class MainGui(wx.Frame):
 
         self.m_mgr.Update()
 
+
+
     def OnSelect(self,event):
 
         try:
@@ -200,7 +198,6 @@ class MainGui(wx.Frame):
                                wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
 
         if dlg.ShowModal() !=wx.ID_NO:
-
             windowsRemaining = len(wx.GetTopLevelWindows())
             if windowsRemaining > 0:
                 import wx.lib.agw.aui.framemanager as aui
@@ -218,6 +215,8 @@ class MainGui(wx.Frame):
                             item.Destroy()
                         item.Close()
             self.Destroy()
+            wx.GetApp().ExitMainLoop()
+
 
     def LoadConfiguration(self,event):
 
@@ -322,30 +321,32 @@ class TimeSeries(wx.Panel):
         self.__logger = logging.getLogger('root')
 
 
-        m_choice3Choices = []
-        self.m_choice3 = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.Size(200, 23), m_choice3Choices, 0)
+        connection_choices = []
+        self.connection_combobox = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.Size(200, 23), connection_choices, 0)
         self.__selected_choice_idx = 0
-        self.m_choice3.SetSelection( self.__selected_choice_idx)
+        self.connection_combobox.SetSelection( self.__selected_choice_idx)
 
-        self.addRefreshButton = wx.Button(self, wx.ID_ANY, u"Refresh", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.connection_refresh_button = wx.Button(self, wx.ID_ANY, u"Refresh", wx.DefaultPosition, wx.DefaultSize, 0)
         self.addConnectionButton = wx.Button( self, wx.ID_ANY, u"Add Connection", wx.DefaultPosition, wx.DefaultSize, 0 )
         self.m_olvSeries = olv.OlvSeries(self, pos = wx.DefaultPosition, size = wx.DefaultSize, id = wx.ID_ANY, style=wx.LC_REPORT|wx.SUNKEN_BORDER  )
 
         # Bindings
         self.addConnectionButton.Bind(wx.EVT_LEFT_DOWN, self.AddConnection)
-        self.addRefreshButton.Bind(wx.EVT_LEFT_DOWN, self.OLVRefresh)
-        self.m_choice3.Bind(wx.EVT_CHOICE,self.DbChanged)
+        self.addConnectionButton.Bind(wx.EVT_MOUSEWHEEL, self.AddConnection_MouseWheel)
+
+        self.connection_refresh_button.Bind(wx.EVT_LEFT_DOWN, self.OLVRefresh)
+        self.connection_combobox.Bind(wx.EVT_CHOICE,self.DbChanged)
+
 
         # Sizers
         seriesSelectorSizer = wx.BoxSizer( wx.VERTICAL )
         buttonSizer = wx.BoxSizer( wx.HORIZONTAL )
         buttonSizer.SetMinSize( wx.Size( -1,45 ) )
 
-
-        buttonSizer.Add( self.m_choice3, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+        buttonSizer.Add( self.connection_combobox, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
         buttonSizer.Add( self.addConnectionButton, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
         buttonSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
-        buttonSizer.Add( self.addRefreshButton, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+        buttonSizer.Add( self.connection_refresh_button, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
         seriesSelectorSizer.Add( buttonSizer, 0, wx.ALL|wx.EXPAND, 5 )
         seriesSelectorSizer.Add( self.m_olvSeries, 1, wx.ALL|wx.EXPAND, 5 )
 
@@ -358,57 +359,9 @@ class TimeSeries(wx.Panel):
 
 
     def DbChanged(self, event):
-
         self.OLVRefresh(event)
 
 
-
-        # # get the name of the selected database
-        # selected_db = self.m_choice3.GetStringSelection()
-        #
-        # # set the selected choice
-        # self.__selected_choice_idx = self.m_choice3.GetSelection()
-        #
-        #
-        #
-        # for key, db in self._databases.iteritems():
-        #
-        #     # get the database session associated with the selected name
-        #     if db['name'] == selected_db:
-        #
-        #
-        #         # query the database and get basic series info
-        #
-        #         core_connection = readCore(db['session'])
-        #
-        #         from db import api as dbapi
-        #         from gui.objectListViewDatabase import Database
-        #
-        #         u = dbapi.utils(db['session'])
-        #         series = u.getAllSeries()
-        #         #all_results = core_connection.getAllResult()
-        #
-        #         # loop through all of the returned data
-        #         data = []
-        #         for s in series:
-        #             resultid = s.ResultID
-        #             variable = s.VariableObj.VariableCode
-        #             unit = s.UnitObj.UnitsName
-        #             date_created = s.FeatureActionObj.ActionObj.BeginDateTime
-        #             data_type = s.FeatureActionObj.ActionObj.ActionTypeCV
-        #             featurecode = s.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode
-        #             org = s.FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName
-        #
-        #             data.extend([Database(resultid,featurecode,variable,unit,data_type,org,date_created)])
-        #
-        #         # set the data objects in the olv control
-        #         self.m_olvSeries.SetObjects(data)
-        #
-        #
-        #         # exit
-        #         break
-        #
-        # return
 
     def getKnownDatabases(self, value = None):
         if value is None:
@@ -418,10 +371,10 @@ class TimeSeries(wx.Panel):
             choices = ['---']
             for k,v in self._databases.iteritems():
                 choices.append(self._databases[k]['name'])
-            self.m_choice3.SetItems(choices)
+            self.connection_combobox.SetItems(choices)
 
             # set the selected choice
-            self.m_choice3.SetSelection( self.__selected_choice_idx)
+            self.connection_combobox.SetSelection( self.__selected_choice_idx)
 
 
 
@@ -431,7 +384,13 @@ class TimeSeries(wx.Panel):
             self._conection_string = connection_string
         return self._connection_added
 
-
+    def AddConnection_MouseWheel(self, event):
+        '''
+        This is intentionally empty to disable mouse scrolling in the AddConnection combobox
+        :param event: EVT_MOUSEWHEEL
+        :return: None
+        '''
+        pass
 
     def AddConnection(self, event):
 
@@ -487,10 +446,10 @@ class TimeSeries(wx.Panel):
     def refresh_database(self):
 
         # get the name of the selected database
-        selected_db = self.m_choice3.GetStringSelection()
+        selected_db = self.connection_combobox.GetStringSelection()
 
         #set the selected choice
-        self.__selected_choice_idx = self.m_choice3.GetSelection()
+        self.__selected_choice_idx = self.connection_combobox.GetSelection()
 
         for key, db in self._databases.iteritems():
 
@@ -524,7 +483,7 @@ class TimeSeries(wx.Panel):
                 # set the current database in canvas controller
                 Publisher.sendMessage('SetCurrentDb',value=selected_db)  # sends to CanvasController.getCurrentDbSession
 
-                self.__logger.info ('Database "%s" refreshed'%self.m_choice3.GetStringSelection())
+                self.__logger.info ('Database "%s" refreshed'%self.connection_combobox.GetStringSelection())
                 # exit
                 break
 
@@ -557,8 +516,8 @@ class consoleOutput(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
 
+
         # Add a panel so it looks the correct on all platforms
-        panel = wx.Panel(self, wx.ID_ANY)
         log = wx.TextCtrl(self, -1, size=(100,100),
                           style = wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
 
@@ -569,10 +528,11 @@ class consoleOutput(wx.Panel):
         # # Add widgets to a sizer
         sizer = wx.BoxSizer()
         sizer.Add(log, 1, wx.ALL|wx.EXPAND, 5)
-        panel.SetSizer(sizer)
+        self.SetSizer(sizer)
 
 
         self.SetSizerAndFit(sizer)
+
 
 class RedirectText(object):
     def __init__(self,aWxTextCtrl):

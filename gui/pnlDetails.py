@@ -1,12 +1,12 @@
 __author__ = 'Mario'
 
 import wx
-import wx.xrc
+#import wx.xrc
 
 import wx
-from wx.lib.floatcanvas.FloatCanvas import FloatCanvas as Canvas
+#from wx.lib.floatcanvas.FloatCanvas import FloatCanvas as Canvas
 #from wx.lib.floatcanvas.NavCanvas import NavCanvas as Canvas
-from wx.lib.pubsub import pub as Publisher
+#from wx.lib.pubsub import pub as Publisher
 
 [wxID_PNLCREATELINK, wxID_PNLSPATIAL, wxID_PNLTEMPORAL,
  wxID_PNLDETAILS, wxID_PNLSUMMARYTREESUMMARY,

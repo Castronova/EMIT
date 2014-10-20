@@ -104,6 +104,7 @@ class CanvasController:
         Publisher.subscribe(self.getCurrentDbSession, "SetCurrentDb")
         Publisher.subscribe(self.SaveSimulation, "SetSavePath")
         Publisher.subscribe(self.loadsimulation, "SetLoadPath")
+        Publisher.subscribe(self.addModel, "AddModel")  # subscribes to object list view
 
     def OnMove(self, event):
         """
@@ -851,8 +852,85 @@ class CanvasController:
         #self.Canvas.Draw()
 
 
+    def addModel(self, filepath, x, y):
+        """
+        Adds a model to the canvas using x,y.  This is useful if adding by file click/dialog
+        :param filename:  filename / path
+        :param x: x location
+        :param y: y location
+        :return: None
+        """
+
+        # controller = self
+        # window = self.Canvas
+        # cmd = self.cmd)
+
+        x0 = self.Canvas.MinWidth / 2.
+        y0 = self.Canvas.MinHeight / 2.
+
+        originx, originy = self.Canvas.Canvas.PixelToWorld((0,0))
+        x = x0 +originx
+        y = originy - y0
+
+        name, ext = os.path.splitext(filepath)
+
+        if ext == '.mdl' or ext =='.sim':
+            try:
+                if ext == '.mdl':
+                    # load the model
+                    dtype = datatypes.ModelTypes.FeedForward
+                    model = self.cmd.add_model(dtype,attrib={'mdl':filepath})
+                    name = model.get_name()
+                    modelid = model.get_id()
+                    self.createBox(name=name, id=modelid, xCoord=x, yCoord=y)
+
+                else:
+                    # load the simulation
+                    self.loadsimulation(filepath)
+
+            except Exception, e:
+                print '> Could not load the model. Please verify that the model file exists.'
+                print '> %s' % e
+        else:
+            # # -- must be a data object --
+
+            # get the current database connection dictionary
+            session = self.getCurrentDbSession()
+
+            # create odm2 instance
+            inst = odm2_data.odm2(resultid=name, session=session)
+
+            from coordinator import main
+            # create a model instance
+            thisModel = main.Model(id=inst.id(),
+                                   name=inst.name(),
+                                   instance=inst,
+                                   desc=inst.description(),
+                                   input_exchange_items= [],
+                                   output_exchange_items=  [inst.outputs()],
+                                   params=None)
 
 
+            # save the result id
+            att = {'resultid':name}
+
+            # save the database connection
+            dbs = self.cmd.get_db_connections()
+            for id, dic in dbs.iteritems():
+                if dic['session'] == self.getCurrentDbSession():
+                    att['databaseid'] = id
+                    thisModel.attrib(att)
+                    break
+
+            thisModel.type(datatypes.ModelTypes.Data)
+
+
+            # save the model
+            self.cmd.Models(thisModel)
+
+            # draw a box for this model
+            self.createBox(name=inst.name(), id=inst.id(), xCoord=x, yCoord=y, color='#FFFF99')
+            self.Canvas.Canvas.Draw()
 
 class FileDrop(wx.FileDropTarget):
     def __init__(self, controller, window, cmd):

@@ -185,7 +185,11 @@ class ModelTxtCtrl ( wx.Frame ):
         sections = sorted(d.keys())
 
         for section in sections:
-            g = self.PropertyGrid.Append( wxpg.PropertyCategory(section))
+
+            try:
+                g = self.PropertyGrid.Append( wxpg.PropertyCategory(section))
+            except:
+                pass
 
             if isinstance (d[section], list):
                 items = d[section]
@@ -200,22 +204,6 @@ class ModelTxtCtrl ( wx.Frame ):
                             except:
                                 pass
 
-                        # if 'variable_name_cv' in item:
-                        #     var = item.pop('variable_name_cv')
-                        #     try:
-                        #         self.PropertyGrid.Append( wxpg.StringProperty(str(item), value=var))
-                        #     except:
-                        #         pass
-                        # i = item.popitem()
-
-                        # if i[0] != 'type':
-                        #     k =  i[0]
-                        #     try:
-                        #         self.PropertyGrid.Append( wxpg.StringProperty(k, i[1]))
-                        #     except:
-                        #         pass
-            # else:
-            #      self.propertyGrid.Append( wxpg.StringProperty(d[section]))
 
     def PopulateDetails(self, fileExtension):
 

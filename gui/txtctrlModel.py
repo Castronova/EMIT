@@ -34,8 +34,6 @@ class ModelTxtCtrl ( wx.Frame ):
         #Define Objects
 
         # intialize the notebook
-        # self.propertyGrid.SetPropertyValues( self.input)
-
 
         self.txtNotebook = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
 
@@ -48,13 +46,7 @@ class ModelTxtCtrl ( wx.Frame ):
         self.txtNotebook.AddPage( self.treectrlView, u"Model Details", True )
         self.treectrlView.SetSizer( treectrlSizer )
 
-        # Initialize the Property Grid
-        self.propertyGrid = wxpg.PropertyGrid(self, id = wx.ID_ANY, pos = wx.Point(0,0), size=wx.Size(423, 319),
-                                                     style= wxpg.PG_SPLITTER_AUTO_CENTER |
-                                                                  wxpg.PG_AUTO_SORT |
-                                                                  wxpg.PG_PROP_READONLY)
-        self.propertyGrid.Append(wxpg.StringProperty("Hello"))
-        self.propertyGrid.SetExtraStyle(wxpg.PG_EX_HELP_AS_TOOLTIPS)
+
         # treectrlSizer.Add( self.propertyGrid, 0, wx.ALL, 5 )
         # make the spatial view
         if spatial:

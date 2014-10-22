@@ -2,6 +2,7 @@
 import sys, time, math, os, os.path
 
 import wx
+from utilities import gui
 _ = wx.GetTranslation
 import wx.propgrid as wxpg
 
@@ -11,11 +12,48 @@ class pnlProperty ( wx.Panel ):
 
     def __init__( self, prnt):
         wx.Panel.__init__(self, id=wxID_PNLPROPERTY, name=u'pnlIntro', parent=prnt,
-              pos=wx.Point(571, 262), size=wx.Size(10, 10),
-              style=wx.TAB_TRAVERSAL)
-        self.SetClientSize(wx.Size(10, 10))
-
+                          pos=wx.Point(571, 262), size=wx.Size(10, 10),
+                          style=wx.TAB_TRAVERSAL)
         self.parent = prnt
+        self.SetClientSize(wx.Size(10, 10))
+        # Initialize the Property Grid
+        self.propertyGrid = wxpg.PropertyGrid(self, id = wx.ID_ANY, pos = wx.Point(0,0), size=wx.Size(423, 319),
+                                              style= wxpg.PG_SPLITTER_AUTO_CENTER |
+                                                     wxpg.PG_AUTO_SORT |
+                                                     wxpg.PG_PROP_READONLY)
+        self.propertyGrid.Append(wxpg.StringProperty("Hello"))
+        self.propertyGrid.SetExtraStyle(wxpg.PG_EX_HELP_AS_TOOLTIPS)
+
+    def PopulateSummary(self, fileExtension):
+        d = gui.parse_config_without_validation(fileExtension)
+
+        # self.propertyGrid.AddPage( "Detailed Summary" )
+
+        sections = sorted(d.keys())
+
+        for section in sections:
+            g = self.propertyGrid.Append( wxpg.PropertyCategory(section))
+
+            if isinstance (d[section], list):
+                items = d[section]
+                for item in items:
+                    while len(item.keys()) > 0:
+                        if 'variable_name_cv' in item:
+                            var = item.pop('variable_name_cv')
+                            try:
+                                self.propertyGrid.Append( wxpg.StringProperty(str(item), value=var))
+                            except:
+                                pass
+                        i = item.popitem()
+
+                        if i[0] != 'type':
+                            k =  i[0]
+                            try:
+                                self.propertyGrid.Append( wxpg.StringProperty(k, i[1]))
+                            except:
+                                pass
+
+
 
 class ValueObject:
     def __init__(self):
@@ -889,17 +927,7 @@ class TestPanel( wx.Panel ):
             traceback.print_exc()
 
     def OnAutoFill(self,event):
-        try:
-            dlg = MemoDialog(self,"Enter Content for Object Used for AutoFill",default_object_content1)
-            if dlg.ShowModal() == wx.ID_OK:
-                sandbox = {'object':ValueObject(),'wx':wx}
-                exec dlg.tc.GetValue() in sandbox
-                t_start = time.time()
-                self.pg.AutoFill(sandbox['object'])
-                t_end = time.time()
-                self.log.write('AutoFill finished in %.0fms\n' %
-                               ((t_end-t_start)*1000.0))
-        except:
+
             import traceback
             traceback.print_exc()
 

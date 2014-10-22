@@ -88,8 +88,6 @@ class pnlCreateLink ( wx.Panel ):
         self.nout = 0
         self.nin  = 0
 
-        self.PopulateOutputPropertyGrid(outputitems, self.nout)
-        self.PopulateInputPropertyGrid(inputitems, self.nin)
 
 
         bSizer5.Add(self.pgout)
@@ -98,8 +96,13 @@ class pnlCreateLink ( wx.Panel ):
 
         # deactivate Next button
         self.activateLinkButton()
-        print outputitems, inputitems
+        # print outputitems, inputitems
 
+        # self.outputs.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.PopulateOutputPropertyGrid(outputitems, self.nout))
+        # self.inputs.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.PopulateOutputPropertyGrid(inputitems, self.nout))
+
+        self.PopulateOutputPropertyGrid(outputitems, self.nout)
+        self.PopulateInputPropertyGrid(inputitems, self.nin)
         self.outputs.Populate(outputitems)
         self.inputs.Populate(inputitems)
 
@@ -113,7 +116,7 @@ class pnlCreateLink ( wx.Panel ):
 
     def PopulateInputPropertyGrid(self, exchangeitems, n):
         # for exchangeitem in exchangeitems:
-        self.pgin.Append( wxpg.PropertyCategory("Input Variable") )
+        self.pgin.Append( wxpg.PropertyCategory("Variable Information") )
         self.pgin.Append( wxpg.StringProperty("Name",value=exchangeitems[n].variable().VariableNameCV() ))
         self.pgin.Append( wxpg.StringProperty("VarDef",value=exchangeitems[n].variable().VariableDefinition() ))
 
@@ -125,7 +128,7 @@ class pnlCreateLink ( wx.Panel ):
 
     def PopulateOutputPropertyGrid(self, exchangeitems, n):
         # for exchangeitem in exchangeitems:
-        self.pgout.Append( wxpg.PropertyCategory("Output Variable") )
+        self.pgout.Append( wxpg.PropertyCategory("Variable Information") )
         self.pgout.Append( wxpg.StringProperty("Name",value=exchangeitems[n].variable().VariableNameCV() ))
         self.pgout.Append( wxpg.StringProperty("VarDef",value=exchangeitems[n].variable().VariableDefinition() ))
 

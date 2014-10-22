@@ -197,8 +197,12 @@ class ToolboxPanel(wx.Panel):
         filepath = self.filepath.get(key)
         print filepath
         # create the details view
-        view = ModelTxtCtrl(self)
+        # property = pnlProperty(self)
+        # property.PopulateSummary(filepath)
 
+        view = ModelTxtCtrl(self)
+        view.PopulateDetails(filepath)
+        view.PopulateEdit(filepath)
         view.PopulateSummary(filepath)
 
 

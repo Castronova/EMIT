@@ -17,41 +17,45 @@ class pnlProperty ( wx.Panel ):
         self.parent = prnt
         self.SetClientSize(wx.Size(10, 10))
         # Initialize the Property Grid
-        self.propertyGrid = wxpg.PropertyGrid(self, id = wx.ID_ANY, pos = wx.Point(0,0), size=wx.Size(423, 319),
+        self.propertyGrid = wxpg.PropertyGridManager(self, id = wx.ID_ANY, pos = wx.Point(0,0), size=wx.Size(423, 319),
                                               style= wxpg.PG_SPLITTER_AUTO_CENTER |
                                                      wxpg.PG_AUTO_SORT |
                                                      wxpg.PG_PROP_READONLY)
         self.propertyGrid.Append(wxpg.StringProperty("Hello"))
         self.propertyGrid.SetExtraStyle(wxpg.PG_EX_HELP_AS_TOOLTIPS)
 
+        # self.PopulateSummary(fileExtension)
+
     def PopulateSummary(self, fileExtension):
         d = gui.parse_config_without_validation(fileExtension)
 
-        # self.propertyGrid.AddPage( "Detailed Summary" )
+        self.propertyGrid.AddPage( "Detailed Summary" )
 
         sections = sorted(d.keys())
 
         for section in sections:
-            g = self.propertyGrid.Append( wxpg.PropertyCategory(section))
+            self.propertyGrid.Append( wxpg.PropertyCategory(section))
 
-            if isinstance (d[section], list):
-                items = d[section]
-                for item in items:
-                    while len(item.keys()) > 0:
-                        if 'variable_name_cv' in item:
-                            var = item.pop('variable_name_cv')
-                            try:
-                                self.propertyGrid.Append( wxpg.StringProperty(str(item), value=var))
-                            except:
-                                pass
-                        i = item.popitem()
+            # if isinstance (d[section], list):
+            #     items = d[section]
+            #     for item in items:
+            #         while len(item.keys()) > 0:
+            #             if 'variable_name_cv' in item:
+            #                 var = item.pop('variable_name_cv')
+            #                 try:
+            #                     self.propertyGrid.Append( wxpg.StringProperty(str(item), value=var))
+            #                 except:
+            #                     pass
+            #             i = item.popitem()
+            #
+            #             if i[0] != 'type':
+            #                 k =  i[0]
+            #                 try:
+            #                     self.propertyGrid.Append( wxpg.StringProperty(k, i[1]))
+            #                 except:
+            #                     pass
 
-                        if i[0] != 'type':
-                            k =  i[0]
-                            try:
-                                self.propertyGrid.Append( wxpg.StringProperty(k, i[1]))
-                            except:
-                                pass
+
 
 
 

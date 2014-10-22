@@ -4,6 +4,7 @@ import wx
 import wx.xrc
 from pnlSpatial import pnlSpatial
 from pnlDetails import pnlDetails
+from PropertyGrid import pnlProperty
 from utilities import gui
 import wx.propgrid as wxpg
 
@@ -30,8 +31,9 @@ class ModelTxtCtrl ( wx.Frame ):
         treectrlSizer = wx.BoxSizer( wx.VERTICAL )
 
 
-
+        ##############################################################################################
         #Define Objects
+        ##############################################################################################
 
         # intialize the notebook
 
@@ -40,11 +42,18 @@ class ModelTxtCtrl ( wx.Frame ):
         # make the detail view
         self.treectrlView = wx.Panel( self.txtNotebook, wx.ID_ANY, wx.DefaultPosition,
                                       wx.DefaultSize, wx.TAB_TRAVERSAL )
-        # self.DetailTree = MyTree( self.treectrlView, id=wx.ID_ANY,
-        #         pos=wx.Point(0, 0),
-        #       size=wx.Size(423, 319), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT )
-        self.txtNotebook.AddPage( self.treectrlView, u"Model Details", True )
+        self.DetailTree = MyTree( self.treectrlView, id=wx.ID_ANY,
+                pos=wx.Point(0, 0),
+              size=wx.Size(423, 319), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT )
+
+        # self.txtNotebook.AddPage( self.treectrlView, u"Model Details", False )
         self.treectrlView.SetSizer( treectrlSizer )
+
+
+        self.PropertyGrid = MyPropertyGrid( self.txtNotebook, id=wx.ID_ANY,
+                pos=wx.Point(0, 0),
+              size=wx.Size(423, 319))
+        self.txtNotebook.AddPage( self.PropertyGrid, u"Properties2", True)
 
 
         # treectrlSizer.Add( self.propertyGrid, 0, wx.ALL, 5 )
@@ -177,7 +186,7 @@ class ModelTxtCtrl ( wx.Frame ):
         sections = sorted(d.keys())
 
         for section in sections:
-            g = self.propertyGrid.Append( wxpg.PropertyCategory(section))
+            g = self.PropertyGrid.Append( wxpg.PropertyCategory(section))
 
             if isinstance (d[section], list):
                 items = d[section]
@@ -186,7 +195,7 @@ class ModelTxtCtrl ( wx.Frame ):
                         if 'variable_name_cv' in item:
                             var = item.pop('variable_name_cv')
                             try:
-                                self.propertyGrid.Append( wxpg.StringProperty(str(item), value=var))
+                                self.PropertyGrid.Append( wxpg.StringProperty(str(item), value=var))
                             except:
                                 pass
                         i = item.popitem()
@@ -194,7 +203,7 @@ class ModelTxtCtrl ( wx.Frame ):
                         if i[0] != 'type':
                             k =  i[0]
                             try:
-                                self.propertyGrid.Append( wxpg.StringProperty(k, i[1]))
+                                self.PropertyGrid.Append( wxpg.StringProperty(k, i[1]))
                             except:
                                 pass
             # else:
@@ -268,3 +277,10 @@ class MyTree(wx.TreeCtrl):
 
         data = self.GetPyData(item)
         if data is not None: print data
+
+class MyPropertyGrid(wx.propgrid.PropertyGrid):
+
+    def __init__(self,*args, **kwargs):
+
+        wxpg.PropertyGrid.__init__(self,*args, **kwargs)
+

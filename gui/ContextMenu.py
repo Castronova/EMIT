@@ -96,7 +96,7 @@ class ModelContextMenu(wx.Menu):
         # view.PopulateEdit(self.sb.GetValue())
 
         mdl_path= self.cmd.get_model_by_id(self.model_obj.ID)._Model__attrib['mdl']
-        view.PopulateDetails(mdl_path)
+        view.PopulateSummary(mdl_path)
 
         # listview.PopulateDetails(self.sb.GetValue())
         view.Show()

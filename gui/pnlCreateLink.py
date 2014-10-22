@@ -2,7 +2,6 @@ __author__ = 'Mario'
 
 import wx
 #import wx.xrc
-
 import wx
 import sys
 from wx.lib.pubsub import pub as Publisher
@@ -67,7 +66,6 @@ class pnlCreateLink ( wx.Panel ):
                               wxpg.PG_AUTO_SORT)
 
 
-
         pgin.SetExtraStyle(wxpg.PG_EX_HELP_AS_TOOLTIPS)
 
         pgout.Bind( wxpg.EVT_PG_CHANGED, self.OnPropGridChange )
@@ -100,7 +98,7 @@ class pnlCreateLink ( wx.Panel ):
 
         # self.outputs.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.PopulateOutputPropertyGrid(outputitems, self.nout))
         # self.inputs.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.PopulateOutputPropertyGrid(inputitems, self.nout))
-
+        #
         self.PopulateOutputPropertyGrid(outputitems, self.nout)
         self.PopulateInputPropertyGrid(inputitems, self.nin)
         self.outputs.Populate(outputitems)
@@ -217,6 +215,7 @@ class pnlCreateLink ( wx.Panel ):
             #self.set_link(0,self.inputitems[event.GetIndex()])
             self.set_link(1,item)
             self.activateLinkButton()
+
 
     def InputDeselect(self, event):
 

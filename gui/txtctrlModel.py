@@ -53,7 +53,7 @@ class ModelTxtCtrl ( wx.Frame ):
         self.PropertyGrid = MyPropertyGrid( self.txtNotebook, id=wx.ID_ANY,
                 pos=wx.Point(0, 0),
               size=wx.Size(423, 319))
-        self.txtNotebook.AddPage( self.PropertyGrid, u"Properties2", True)
+        self.txtNotebook.AddPage( self.PropertyGrid, u"Properties", True)
 
 
         # treectrlSizer.Add( self.propertyGrid, 0, wx.ALL, 5 )
@@ -123,7 +123,6 @@ class ModelTxtCtrl ( wx.Frame ):
         self.Centre()
         self.Show(True)
 
-
     def ToggleStatusBar(self, e):
 
         if self.shst.IsChecked():
@@ -147,7 +146,6 @@ class ModelTxtCtrl ( wx.Frame ):
         self.SetTitle("Editor")
         # Later - could be enhanced to include a "changed" flag whenever
         # the text is actually changed, could also be altered on "save" ...
-
 
     def PopulateSpatial(self, coordlist, type):
         if type == 'input':
@@ -177,6 +175,7 @@ class ModelTxtCtrl ( wx.Frame ):
         #
         #     # todo: extend support for multiple inputs/outputs
         #     return
+
     def PopulateSummary(self, fileExtension):
 
         d = gui.parse_config_without_validation(fileExtension)
@@ -192,23 +191,31 @@ class ModelTxtCtrl ( wx.Frame ):
                 items = d[section]
                 for item in items:
                     while len(item.keys()) > 0:
-                        if 'variable_name_cv' in item:
-                            var = item.pop('variable_name_cv')
-                            try:
-                                self.PropertyGrid.Append( wxpg.StringProperty(str(item), value=var))
-                            except:
-                                pass
-                        i = item.popitem()
 
-                        if i[0] != 'type':
-                            k =  i[0]
+                        for keyitem in item.keys():
+                            # while len(item.keys()) > 0 :
+                            var = item.pop(keyitem)
                             try:
-                                self.PropertyGrid.Append( wxpg.StringProperty(k, i[1]))
+                                self.PropertyGrid.Append( wxpg.StringProperty(str(keyitem), value=str(var)))
                             except:
                                 pass
+
+                        # if 'variable_name_cv' in item:
+                        #     var = item.pop('variable_name_cv')
+                        #     try:
+                        #         self.PropertyGrid.Append( wxpg.StringProperty(str(item), value=var))
+                        #     except:
+                        #         pass
+                        # i = item.popitem()
+
+                        # if i[0] != 'type':
+                        #     k =  i[0]
+                        #     try:
+                        #         self.PropertyGrid.Append( wxpg.StringProperty(k, i[1]))
+                        #     except:
+                        #         pass
             # else:
             #      self.propertyGrid.Append( wxpg.StringProperty(d[section]))
-
 
     def PopulateDetails(self, fileExtension):
 
@@ -247,7 +254,6 @@ class ModelTxtCtrl ( wx.Frame ):
                             self.DetailTree.AppendItem(k, i[1])
             else:
                 self.DetailTree.AppendItem(g,d[section])
-
 
     def OnSave(self, event):
         Publisher.subscribe(self.OnSave, 'textsavepath')

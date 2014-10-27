@@ -32,27 +32,30 @@ class pnlCreateLink ( wx.Panel ):
 
 
         PanelSizer = wx.BoxSizer( wx.VERTICAL )
+        PanelSizer.AddSpacer( ( 0, 75), 0, wx.EXPAND, 5 )
         bSizer6 = wx.BoxSizer( wx.HORIZONTAL )
         PanelSizer.Add( bSizer6, 1, wx.EXPAND, 5 )
         bSizer5 = wx.BoxSizer( wx.HORIZONTAL )
 
 
         self.outputs = MyTree(id=wxID_PNLCREATELINK,
-               parent=self, pos=wx.Point(0, 25),
-              size=wx.Size(210, 100), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT)
+               parent=self, pos=wx.Point(0, 145),
+              size=wx.Size(210, 80), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT)
 
         self.inputs = MyTree(id=wxID_PNLCREATELINK,
-               parent=self, pos=wx.Point(220, 25),
-              size=wx.Size(210, 100), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT)
+               parent=self, pos=wx.Point(220, 145),
+              size=wx.Size(210, 80), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT)
+        # self.panelSizer = PanelSizer.AddSpacer( ( 20, 0), 0, wx.EXPAND, 5 )
 
         bSizer6.Add(self.outputs)
+        bSizer6.AddSpacer( ( 20, 0), 0, wx.EXPAND, 5 )
         bSizer6.Add(self.inputs)
         self.Description_text = wx.StaticText(self, label =
                                 "Select which output and input parameters that you wish to couple",
-                                              pos=wx.Point(0,135))
+                                              pos=wx.Point(0,15))
         # self.output_text = wx.StaticText(self,id=wxID_PNLCREATELINK, label = "Inputs", pos=wx.Point(0,0),size=wx.Size(210,10))
         # self.input_text  = wx.StaticText(self,id=wxID_PNLCREATELINK, label = "Outputs", pos=wx.Point(225,0),size=wx.Size(210,10))
-        PanelSizer.AddSpacer((0,20), 0, wx.EXPAND, 5)
+        # PanelSizer.AddSpacer((0,20), 0, wx.EXPAND, 5)
 
 
         ## This is the Property Grid related code
@@ -89,6 +92,7 @@ class pnlCreateLink ( wx.Panel ):
 
 
         bSizer5.Add(self.pgout)
+        bSizer5.AddSpacer( ( 20, 0), 0, wx.EXPAND, 5 )
         bSizer5.Add(self.pgin)
         PanelSizer.Add( bSizer5, 1, wx.EXPAND, 5 )
 
@@ -104,7 +108,8 @@ class pnlCreateLink ( wx.Panel ):
         self.outputs.Populate(outputitems)
         self.inputs.Populate(inputitems)
 
-
+        Publisher.subscribe(self.PopulateOutputPropertyGrid, "inputitemname")
+        Publisher.subscribe(self.PopulateInputPropertyGrid, "outputitemname")
 
         self.SetSizer( PanelSizer )
         self.Layout()
@@ -112,28 +117,28 @@ class pnlCreateLink ( wx.Panel ):
         self.outputs.Bind(wx.EVT_LEFT_UP,self.OutputClick)
         self.inputs.Bind(wx.EVT_LEFT_UP,self.InputClick)
 
-    def PopulateInputPropertyGrid(self, exchangeitems, n):
+    def PopulateInputPropertyGrid(self, exchangeitems, nin):
         # for exchangeitem in exchangeitems:
         self.pgin.Append( wxpg.PropertyCategory("Variable Information") )
-        self.pgin.Append( wxpg.StringProperty("Name",value=exchangeitems[n].variable().VariableNameCV() ))
-        self.pgin.Append( wxpg.StringProperty("VarDef",value=exchangeitems[n].variable().VariableDefinition() ))
+        self.pgin.Append( wxpg.StringProperty("Name",value=exchangeitems[nin].variable().VariableNameCV() ))
+        self.pgin.Append( wxpg.StringProperty("VarDef",value=exchangeitems[nin].variable().VariableDefinition() ))
 
         self.pgin.Append( wxpg.PropertyCategory("Units"))
-        self.pgin.Append( wxpg.StringProperty("UnitName", value=exchangeitems[n].unit()._Unit__unitName))
-        self.pgin.Append( wxpg.StringProperty("UnitAbbreviation", value=exchangeitems[n].unit()._Unit__unitAbbreviation))
-        self.pgin.Append( wxpg.StringProperty("UnitType", value=exchangeitems[n].unit()._Unit__unitTypeCV))
+        self.pgin.Append( wxpg.StringProperty("UnitName", value=exchangeitems[nin].unit()._Unit__unitName))
+        self.pgin.Append( wxpg.StringProperty("UnitAbbreviation", value=exchangeitems[nin].unit()._Unit__unitAbbreviation))
+        self.pgin.Append( wxpg.StringProperty("UnitType", value=exchangeitems[nin].unit()._Unit__unitTypeCV))
 
 
-    def PopulateOutputPropertyGrid(self, exchangeitems, n):
+    def PopulateOutputPropertyGrid(self, exchangeitems, nout):
         # for exchangeitem in exchangeitems:
         self.pgout.Append( wxpg.PropertyCategory("Variable Information") )
-        self.pgout.Append( wxpg.StringProperty("Name",value=exchangeitems[n].variable().VariableNameCV() ))
-        self.pgout.Append( wxpg.StringProperty("VarDef",value=exchangeitems[n].variable().VariableDefinition() ))
+        self.pgout.Append( wxpg.StringProperty("Name",value=exchangeitems[nout].variable().VariableNameCV() ))
+        self.pgout.Append( wxpg.StringProperty("VarDef",value=exchangeitems[nout].variable().VariableDefinition() ))
 
         self.pgout.Append( wxpg.PropertyCategory("Units"))
-        self.pgout.Append( wxpg.StringProperty("UnitName", value=exchangeitems[n].unit()._Unit__unitName))
-        self.pgout.Append( wxpg.StringProperty("UnitAbbreviation", value=exchangeitems[n].unit()._Unit__unitAbbreviation))
-        self.pgout.Append( wxpg.StringProperty("UnitType", value=exchangeitems[n].unit()._Unit__unitTypeCV))
+        self.pgout.Append( wxpg.StringProperty("UnitName", value=exchangeitems[nout].unit()._Unit__unitName))
+        self.pgout.Append( wxpg.StringProperty("UnitAbbreviation", value=exchangeitems[nout].unit()._Unit__unitAbbreviation))
+        self.pgout.Append( wxpg.StringProperty("UnitType", value=exchangeitems[nout].unit()._Unit__unitTypeCV))
 
 
     def OnPropGridPageChangepgout(self, event):
@@ -166,7 +171,7 @@ class pnlCreateLink ( wx.Panel ):
 
             #self.output_text.SetLabel(data)
 
-            self.OutputSelect(data)
+            self.OutputSelect(self.output ,data)
 
             if data is not None:
                 print data
@@ -187,7 +192,7 @@ class pnlCreateLink ( wx.Panel ):
 
             #self.input_text.SetLabel(data)
 
-            self.InputSelect(data)
+            self.InputSelect(self.input, data)
 
             if data is not None:
                 print data
@@ -204,13 +209,15 @@ class pnlCreateLink ( wx.Panel ):
             #self.SaveButton.Disable()
             Publisher.sendMessage("deactivateNextButton")
 
-    def InputSelect(self, input_item_name):
+    def InputSelect(self, exchangeitems, input_item_name):
 
         #self.selectedinput = self.inputitems[event.GetIndex()]
         #self.selectedinput = event.Text
 
         item = self.GetExchangeItemByName(self.inputitems, input_item_name)
         self.nin = item._ExchangeItem__name
+        # self.PopulateInputPropertyGrid(exchangeitems, nin=self.nin)
+        # Publisher.sendMessage('inputitemname', nin=self.nin)
         if item is not None:
             #self.set_link(0,self.inputitems[event.GetIndex()])
             self.set_link(1,item)
@@ -224,12 +231,14 @@ class pnlCreateLink ( wx.Panel ):
         self.set_link(0, None)
         self.activateLinkButton()
 
-    def OutputSelect(self, output_item_name):
+    def OutputSelect(self, exchangeitems, output_item_name):
 
         #self.selectedoutput = self.outputitems[event.GetIndex()]
 
         item = self.GetExchangeItemByName(self.outputitems, output_item_name)
         self.nout = item._ExchangeItem__name
+        # self.PopulateOutputPropertyGrid(exchangeitems, nout=self.nout)
+        # Publisher.sendMessage('outputitemname', nout=self.nout)
         if item is not None:
             #self.set_link(1,self.outputitems[event.GetIndex()])
             self.set_link(0,item)

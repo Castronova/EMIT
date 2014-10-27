@@ -244,15 +244,24 @@ class ModelTxtCtrl ( wx.Frame ):
                 self.DetailTree.AppendItem(g,d[section])
 
     def OnSave(self, event):
-        Publisher.subscribe(self.OnSave, 'textsavepath')
-        # Grab the content to be saved
-        itcontains = self.TextDisplay.GetValue().encode('utf-8').strip()
 
-        # Open the file for write, write, close
+        dlg = wx.MessageDialog(None, 'Are you sure you would like to overwrite?', 'Question', wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
 
-        filehandle=open((self.current_file),'w')
-        filehandle.write(itcontains)
-        filehandle.close()
+        if dlg.ShowModal() !=wx.ID_NO:
+            Publisher.subscribe(self.OnSave, 'textsavepath')
+            # Grab the content to be saved
+            itcontains = self.TextDisplay.GetValue().encode('utf-8').strip()
+
+            # Open the file for write, write, close
+
+            filehandle=open((self.current_file),'w')
+            filehandle.write(itcontains)
+            filehandle.close()
+
+            self.Close()
+
+        else:
+            pass
 
 
 class MyTree(wx.TreeCtrl):

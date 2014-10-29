@@ -166,31 +166,38 @@ class pnlSpatial ( wx.Panel ):
 
         # get parent control
         parent = event.GetEventObject().Name
+        parentin = self.inputCombo.GetValue()
+        parentout = self.outputCombo.GetValue()
 
         # get variable name
         var_name = event.GetString()
 
         # reset the selections
-        self.inputCombo.SetSelection(0)
-        self.outputCombo.SetSelection(0)
+        # self.inputCombo.SetSelection(0)
+        # self.outputCombo.SetSelection(0)
 
-        if parent == 'input_combo':
-            data = self.get_input_geom(var_name)
-            if data is not None:
-                colors = self.buildGradientColor(len(data['data']),'Blues')
-                self.SetPlotData(data,colors=colors)
+        # if parent == 'input_combo':
+        try:
+            datain = self.get_input_geom(parentin)
+            if datain is not None:
+                colors = self.buildGradientColor(len(datain['data']),'Blues')
+                self.SetPlotDataIn(datain,colors=colors)
                 self.inputCombo.SetSelection(event.GetSelection())
             else:
                 self.inputCombo.Disable()
-
-        if parent == 'output_combo':
-            data = self.get_output_geom(var_name)
-            if data is not None:
-                colors = self.buildGradientColor(len(data['data']),'Reds')
-                self.SetPlotData(data,colors=colors)
+        except:
+            pass
+        # if parent == 'output_combo':
+        try:
+            dataout = self.get_output_geom(parentout)
+            if dataout is not None:
+                colors = self.buildGradientColor(len(dataout['data']),'Reds')
+                self.SetPlotDataOut(dataout,colors=colors)
                 self.outputCombo.SetSelection(event.GetSelection())
             else:
                 self.outputCombo.Disable()
+        except:
+            pass
 
         # if self.inputCheckbox.IsChecked():
         #     self.setInputSeries()
@@ -199,19 +206,75 @@ class pnlSpatial ( wx.Panel ):
 
         self.canvas.draw()
 
-    def SetPlotData(self, data, colors):
+    def SetPlotDataIn(self, datain, colors):
 
-        geoms = data['data']
-        type = data['type']
+        geomsin = datain['data']
+        typein = datain['type']
+        # geomsout = dataout['data']
+        # typeout = dataout['type']
         i = 0
 
-        if type == 'Point':
-            tuple_geoms = [g[0] for g in geoms]
-            x,y = zip(*tuple_geoms)
+        # self.ax.scatterin.cla()
+        # self.ax.plotin.cla()
+
+        try:
+            self.ax.scatter.cla()
+        except:
+            pass
+
+        try:
+            self.ax.plot.cla()
+        except:
+            pass
+
+        if typein == 'Point':
+            tuple_geomsin = [g[0] for g in geomsin]
+            x,y = zip(*tuple_geomsin)
+            self.ax.scatter(x,y,color=colors)
+
+        # if typeout == 'Point':
+        #     tuple_geomsout = [g[0] for g in geomsout]
+        #     x,y = zip(*tuple_geomsout)
+        #     self.ax.scatter(x,y,color=colors)
+        else:
+
+            for g in geomsin:
+                x,y = zip(*g)
+                self.ax.plot(x,y,color=colors[i])
+                i += 1
+
+            # for g in geomsout:
+            #     x,y = zip(*g)
+            #     self.ax.plot(x,y,color=colors[i])
+            #     i += 1
+
+        self.ax.grid()
+        self.ax.axis('auto')
+        self.ax.margins(0.1)
+
+    def SetPlotDataOut(self, dataout, colors):
+
+        geomsout = dataout['data']
+        typeout = dataout['type']
+        i = 0
+
+        try:
+            self.ax.scatter.cla()
+        except:
+            pass
+
+        try:
+            self.ax.plot.cla()
+        except:
+            pass
+
+        if typeout == 'Point':
+            tuple_geomsout = [g[0] for g in geomsout]
+            x,y = zip(*tuple_geomsout)
             self.ax.scatter(x,y,color=colors)
         else:
 
-            for g in geoms:
+            for g in geomsout:
                 x,y = zip(*g)
                 self.ax.plot(x,y,color=colors[i])
                 i += 1

@@ -185,11 +185,13 @@ class ModelTxtCtrl ( wx.Frame ):
         sections = sorted(d.keys())
 
         for section in sections:
-
-            try:
-                g = self.PropertyGrid.Append( wxpg.PropertyCategory(section))
-            except:
+            if section is 'basedir':
                 pass
+            else:
+                try:
+                    g = self.PropertyGrid.Append( wxpg.PropertyCategory(section))
+                except:
+                    pass
 
             if isinstance (d[section], list):
                 items = d[section]
@@ -218,6 +220,7 @@ class ModelTxtCtrl ( wx.Frame ):
 
         for section in sections:
             # add this item as a group
+
             g = self.DetailTree.AppendItem(root, section)
 
             # all all sub elements

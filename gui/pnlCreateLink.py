@@ -289,31 +289,7 @@ class MyTree(wx.TreeCtrl):
     def __init__(self, parent, id, pos, size, style):
 
         wx.TreeCtrl.__init__(self, parent, id, pos, size, style)
-        # self.root = self.AddRoot('Series')
-        # self.m1 = self.AppendItem(self.root, 'Output Model')
-        # self.model = self.AppendItem(self.root, 'Input Model')
-        # self.v = self.AppendItem(self.root, 'Variable')
-        #
-        # self.sc=self.AppendItem(self.m1, 'ID: ')
-        # #tmpId = self.AppendItem(self.treeRoot, str(i))
-        # #key = self.makeNewKey()
-        # #self.items[key] = ['node', i]
-        # self.SetItemPyData(self.sc, 'value')
-        #
-        #
-        # self.sn=self.AppendItem(self.m1, 'Name: ')
-        #
-        # self.sc=self.AppendItem(self.model, 'ID: ')
-        # self.sn=self.AppendItem(self.model, 'Name: ')
-        #
-        # self.vc=self.AppendItem(self.v, 'ID: ')
-        # self.vn=self.AppendItem(self.v, 'Name: ')
-        # self.vu=self.AppendItem(self.v, 'Units: ')
-        # self.vvt=self.AppendItem(self.v, 'Value Type: ')
-        # self.vts=self.AppendItem(self.v, 'Time Support: ')
-        # self.vtu=self.AppendItem(self.v, 'Time Units: ')
-        # self.vdt=self.AppendItem(self.v, 'Data Type: ')
-        #
+
         self.Bind(wx.EVT_LEFT_UP,self.OnLeftUp)
 
     def OnLeftUp(self, event):

@@ -264,13 +264,13 @@ class TreeItemContextMenu(wx.Menu):
         self.AppendItem(mmi)
         self.Bind(wx.EVT_MENU, self.OnViewDetails, mmi)
 
-        mmi = wx.MenuItem(self, wx.NewId(), 'Expand All')
-        self.AppendItem(mmi)
-        self.Bind(wx.EVT_MENU, self.OnExpandAll, mmi)
-
-        mmi = wx.MenuItem(self, wx.NewId(), 'Collapse All')
-        self.AppendItem(mmi)
-        self.Bind(wx.EVT_MENU, self.OnCollapseAll, mmi)
+        # mmi = wx.MenuItem(self, wx.NewId(), 'Expand All')
+        # self.AppendItem(mmi)
+        # self.Bind(wx.EVT_MENU, self.OnExpandAll, mmi)
+        #
+        # mmi = wx.MenuItem(self, wx.NewId(), 'Collapse All')
+        # self.AppendItem(mmi)
+        # self.Bind(wx.EVT_MENU, self.OnCollapseAll, mmi)
 
     def OnViewDetails(self, e):
 

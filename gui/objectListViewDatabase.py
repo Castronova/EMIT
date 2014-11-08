@@ -29,6 +29,18 @@ class Database(object):
         self.org = org
         self.date_created = date_created
 
+class DataRecord():
+
+    def __init__(self,name_value_tuple_list):
+        """
+            e.g. [(resultid,10),(date,11/7/14)]
+        """
+        # for n in dir():
+        #     if n[0]!='_' and n != 'self' and n != 'name_value_tuple_list':
+        #         delattr(DataRecord, n)
+
+        for var, val in name_value_tuple_list:
+            setattr(DataRecord, var, val)
 
 ########################################################################
 class OlvSeries(FastObjectListView):
@@ -43,7 +55,7 @@ class OlvSeries(FastObjectListView):
 
         Publisher.subscribe(self.olvrefresh, "olvrefresh")
 
-        self.setSeries()
+        #self.setSeries()
         self.useAlternateBackColors = True
         self.oddRowsBackColor = wx.Colour(191, 217, 217)
         self.Bind(wx.EVT_LIST_BEGIN_DRAG, self.onDrag)
@@ -59,21 +71,43 @@ class OlvSeries(FastObjectListView):
         # Publisher.subscribe(self.PlotData,'PlotData')
 
     #----------------------------------------------------------------------
-    def setSeries(self, data=None):
-        # keys = ["ResultID","Sitename", "Sitecode", "VariableName", "VariableUnit", "Time",
-        #           "BeginDateTime", "EndDateTime"]
-        #
-        # values = ["resultid","sitename", "sitecode", "variablename", "variableunit", "Time", "begintime", "endtime"]
-        #
+    # def setSeries(self, data=None):
+    #     # keys = ["ResultID","Sitename", "Sitecode", "VariableName", "VariableUnit", "Time",
+    #     #           "BeginDateTime", "EndDateTime"]
+    #     #
+    #     # values = ["resultid","sitename", "sitecode", "variablename", "variableunit", "Time", "begintime", "endtime"]
+    #     #
+    #
+    #     keys = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
+    #     values = ["resultid", "featurecode", "variable", "unit", "data_type", "org", "date_created"]
+    #     seriesColumns = [ ColumnDefn(key, align = "left", minimumWidth=150, valueGetter=value)
+    #                         for key, value in OrderedDict(zip(keys, values)).iteritems()]
+    #
+    #     self.SetColumns(seriesColumns)
+    #
+    #     self.SetObjects(self.initialSeries)
 
-        keys = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
-        values = ["resultid", "featurecode", "variable", "unit", "data_type", "org", "date_created"]
-        seriesColumns = [ ColumnDefn(key, align = "left", minimumWidth=150, valueGetter=value)
-                            for key, value in OrderedDict(zip(keys, values)).iteritems()]
+    def DefineColumns(self, cols):
+
+        #cols = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
+
+        variable_names = [col.lower().replace(' ','_') for col in cols]
+
+        seriesColumns = [ ColumnDefn(col, align = "left", minimumWidth=150, valueGetter=col.lower().replace(' ','_'))
+                            for col in cols]
+
 
         self.SetColumns(seriesColumns)
 
+        initial_values  = ["" for col in cols]
+
+        d = {key: value for (key, value) in zip(variable_names,["" for c in variable_names])}
+        record_object = type('DataRecord', (object,), d)
+
+        self.initialSeries = [record_object]
+
         self.SetObjects(self.initialSeries)
+
 
     def LaunchContext(self, event):
 
@@ -100,27 +134,6 @@ class OlvSeries(FastObjectListView):
         dropSource.SetData(data)
         result = dropSource.DoDragDrop()
 
-
-    # def PlotData(self, obj, id):
-    #
-    #     # get row associated with the event
-    #     #data = wx.FileDataObject()
-    #     #obj = self.__list_obj
-    #     #id = self.__list_id
-    #     resultID = obj.GetItem(id,0).GetText()
-    #
-    #     # get data for this row
-    #     x,y, resobj = self.getData(resultID)
-    #
-    #     # get metadata
-    #     xlabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
-    #     title = '%s' % (resobj.VariableObj.VariableCode)
-    #
-    #
-    #     # plot the data
-    #     PlotFrame = MatplotFrame(self.Parent, x, y, title, xlabel)
-    #     PlotFrame.Show()
-
     def getDbSession(self):
         selected_db = self.Parent.connection_combobox.GetStringSelection()
         for key, db in self.Parent._databases.iteritems():
@@ -129,12 +142,9 @@ class OlvSeries(FastObjectListView):
                 return db['session']
         return None
 
-
-
     def olvrefresh(self):
         self.RepopulateList()
         self.Refresh()
-        #print "Series Selector Refreshed"
 
 
 class ContextMenu(wx.Menu):
@@ -142,11 +152,7 @@ class ContextMenu(wx.Menu):
     def __init__(self, parent, list_obj, list_id):
         super(ContextMenu, self).__init__()
 
-        #self.cmd = parent.cmd
         self.parent = parent
-
-        # mmi = wx.MenuItem(self, wx.NewId(), 'Add Model')
-        # self.AppendItem(mmi)
 
         mmi = wx.MenuItem(self, wx.NewId(), 'Add')
         self.AppendItem(mmi)
@@ -267,37 +273,37 @@ class ContextMenu(wx.Menu):
         dlg.ShowModal()
         dlg.Destroy()
 
-########################################################################
-###                      For Unittest Use                            ###
-########################################################################
-class MainFrame(wx.Frame):
-    #----------------------------------------------------------------------
-    def __init__(self):
-        wx.Frame.__init__(self, parent=None, id=wx.ID_ANY,
-                          title="ObjectListView Demo", size=(800,600))
-        panel = OlvSeries(self)
-
-########################################################################
-class GenApp(wx.App):
-
-    #----------------------------------------------------------------------
-    def __init__(self, redirect=False, filename=None):
-        wx.App.__init__(self, redirect, filename)
-
-    #----------------------------------------------------------------------
-    def OnInit(self):
-        # create frame here
-        frame = MainFrame()
-        frame.Show()
-        return True
-
-#----------------------------------------------------------------------
-def main():
-    """
-    Run the demo
-    """
-    app = GenApp()
-    app.MainLoop()
-
-if __name__ == "__main__":
-    main()
+# ########################################################################
+# ###                      For Unittest Use                            ###
+# ########################################################################
+# class MainFrame(wx.Frame):
+#     #----------------------------------------------------------------------
+#     def __init__(self):
+#         wx.Frame.__init__(self, parent=None, id=wx.ID_ANY,
+#                           title="ObjectListView Demo", size=(800,600))
+#         panel = OlvSeries(self)
+#
+# ########################################################################
+# class GenApp(wx.App):
+#
+#     #----------------------------------------------------------------------
+#     def __init__(self, redirect=False, filename=None):
+#         wx.App.__init__(self, redirect, filename)
+#
+#     #----------------------------------------------------------------------
+#     def OnInit(self):
+#         # create frame here
+#         frame = MainFrame()
+#         frame.Show()
+#         return True
+#
+# #----------------------------------------------------------------------
+# def main():
+#     """
+#     Run the demo
+#     """
+#     app = GenApp()
+#     app.MainLoop()
+#
+# if __name__ == "__main__":
+#     main()

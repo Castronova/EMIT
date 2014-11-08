@@ -414,7 +414,7 @@ class postgresdb():
 from api.ODM2 import serviceBase
 from api.ODM2.Core.model import *
 from api.ODM2.Results.model import *
-
+from api.ODM2.Simulation.model import *
 
 class utils(serviceBase):
 
@@ -436,7 +436,22 @@ class utils(serviceBase):
 
 
 
+    def getAllSimulations(self):
+        """
+        General select statement for retrieving many simulations.  This is intended to be used for populating gui tables
+        :return:
+        """
 
+        try:
+            res = self._session.query(Simulation, Model, Action, Person). \
+                join(Model). \
+                join(Action).\
+                join(Actionby). \
+                join(Affiliation).\
+                join(Person).all()
+            return res
+        except Exception, e:
+            print e
 
 
 

@@ -13,6 +13,7 @@ from api.ODM2.Core.services import *
 import logging
 from ContextMenu import GeneralContextMenu
 import threading
+from db import dbapi as dbapi
 
 #Save Features
 import xml.etree.ElementTree as et
@@ -65,14 +66,19 @@ class MainGui(wx.Frame):
 
         # seriesoutput = OutputTimeSeries(self.bnb)
         seriesselector = TimeSeries(self.bnb)
+        seriesoutput = SimulationDataTable(self.bnb)
 
         self.bnb.AddPage(output, "Console")
         self.bnb.AddPage(seriesselector, "Remote Time Series")
+        self.bnb.AddPage(seriesoutput, "Simulation Results")
         # self.bnb.AddPage(seriesoutput, "Output Time Series")
 
         self.bnb.GetPage(0).SetLabel("Console")
-        self.bnb.GetPage(1).SetLabel("Remote Time Series")
+        self.bnb.GetPage(1).SetLabel("Time Series")
         # self.bnb.GetPage(2).SetLabel("Output Time Series")
+
+        self.bnb.GetPage(2).SetLabel("Simulation Results")
+
 
         self.m_mgr.AddPane(self.Canvas,
                            aui.AuiPaneInfo().
@@ -141,15 +147,15 @@ class MainGui(wx.Frame):
 
         self.m_mgr.Update()
 
-
-
     def OnSelect(self,event):
 
         try:
             selected_page = self.bnb.GetPage(event.GetSelection())
 
-            if selected_page.Label == 'Remote Time Series':
+            # update databases in a generic way
+            if 'getKnownDatabases' in dir(selected_page):
                 selected_page.getKnownDatabases()
+
         except: pass
 
     def initMenu(self):
@@ -217,7 +223,6 @@ class MainGui(wx.Frame):
             self.Destroy()
             wx.GetApp().ExitMainLoop()
 
-
     def LoadConfiguration(self,event):
 
 
@@ -267,7 +272,6 @@ class MainGui(wx.Frame):
 
 
         Publisher.sendMessage('SetSavePath',path=save.GetPath()) #send message to canvascontroller.SaveSimulation
-
 
     def onDirectory(self, event):
         ToolboxPane = self.m_mgr.GetPane(self.Toolbox)
@@ -329,6 +333,8 @@ class TimeSeries(wx.Panel):
         self.connection_refresh_button = wx.Button(self, wx.ID_ANY, u"Refresh", wx.DefaultPosition, wx.DefaultSize, 0)
         self.addConnectionButton = wx.Button( self, wx.ID_ANY, u"Add Connection", wx.DefaultPosition, wx.DefaultSize, 0 )
         self.m_olvSeries = olv.OlvSeries(self, pos = wx.DefaultPosition, size = wx.DefaultSize, id = wx.ID_ANY, style=wx.LC_REPORT|wx.SUNKEN_BORDER  )
+        self.table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
+        self.m_olvSeries.DefineColumns(self.table_columns)
 
         # Bindings
         self.addConnectionButton.Bind(wx.EVT_LEFT_DOWN, self.AddConnection)
@@ -361,8 +367,6 @@ class TimeSeries(wx.Panel):
     def DbChanged(self, event):
         self.OLVRefresh(event)
 
-
-
     def getKnownDatabases(self, value = None):
         if value is None:
             Publisher.sendMessage('getDatabases')
@@ -375,8 +379,6 @@ class TimeSeries(wx.Panel):
 
             # set the selected choice
             self.connection_combobox.SetSelection( self.__selected_choice_idx)
-
-
 
     def connection_added_status(self,value=None,connection_string=''):
         if value is not None:
@@ -442,7 +444,6 @@ class TimeSeries(wx.Panel):
 
                     wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
 
-
     def refresh_database(self):
 
         # get the name of the selected database
@@ -464,18 +465,49 @@ class TimeSeries(wx.Panel):
                 u = dbapi.utils(db['session'])
                 series = u.getAllSeries()
 
-                # loop through all of the returned data
-                data = []
-                for s in series:
-                    resultid = s.ResultID
-                    variable = s.VariableObj.VariableCode
-                    unit = s.UnitObj.UnitsName
-                    date_created = s.FeatureActionObj.ActionObj.BeginDateTime
-                    data_type = s.FeatureActionObj.ActionObj.ActionTypeCV
-                    featurecode = s.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode
-                    org = s.FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName
+                if series is None:
+                    d = {key: value for (key, value) in
+                         zip([col.lower().replace(' ','_') for col in self.table_columns],["" for c in self.table_columns])}
+                    record_object = type('DataRecord', (object,), d)
+                    data = [record_object]
+                else:
 
-                    data.extend([Database(resultid,featurecode,variable,unit,data_type,org,date_created)])
+                    # loop through all of the returned data
+                    data = []
+                    for s in series:
+                        d = {
+                            'resultid' : s.ResultID,
+                            'variable' : s.VariableObj.VariableCode,
+                            'unit' : s.UnitObj.UnitsName,
+                            'date_created' : s.FeatureActionObj.ActionObj.BeginDateTime,
+                            'type' : s.FeatureActionObj.ActionObj.ActionTypeCV,
+                            'featurecode' : s.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode,
+                            'organization' : s.FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName
+                        }
+
+                        record_object = type('DataRecord', (object,), d)
+                        data.extend([record_object])
+
+                        # resultid = s.ResultID
+                        # variable = s.VariableObj.VariableCode
+                        # unit = s.UnitObj.UnitsName
+                        # date_created = s.FeatureActionObj.ActionObj.BeginDateTime
+                        # type = s.FeatureActionObj.ActionObj.ActionTypeCV
+                        # featurecode = s.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode
+                        # organization = s.FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName
+                        #
+                        #data.extend([Database(resultid,featurecode,variable,unit,data_type,org,date_created)])
+                        #table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
+
+                        # record =olv.DataRecord([('resultid',resultid),
+                        #                      ('variable',variable),
+                        #                      ('unit',unit),
+                        #                      ('date_created',date_created),
+                        #                      ('type',type),
+                        #                      ('featurecode',featurecode),
+                        #                      ('organization',organization)])
+                        #
+                        # data.extend([record])
 
                 # set the data objects in the olv control
                 self.m_olvSeries.SetObjects(data)
@@ -483,7 +515,7 @@ class TimeSeries(wx.Panel):
                 # set the current database in canvas controller
                 Publisher.sendMessage('SetCurrentDb',value=selected_db)  # sends to CanvasController.getCurrentDbSession
 
-                self.__logger.info ('Database "%s" refreshed'%self.connection_combobox.GetStringSelection())
+                #self.__logger.info ('Database "%s" refreshed'%self.connection_combobox.GetStringSelection())
                 # exit
                 break
 
@@ -497,20 +529,282 @@ class TimeSeries(wx.Panel):
         # refresh the object list view
         #Publisher.sendMessage("olvrefresh")
 
-class OutputTimeSeries(wx.Panel):
+class DataSeries(wx.Panel):
+    """
+
+    """
+
+    def __init__( self, parent ):
+        wx.Panel.__init__ ( self, parent, id = wx.ID_ANY, pos = wx.DefaultPosition, size = wx.Size( 500,500 ), style = wx.TAB_TRAVERSAL )
+
+        self._databases = {}
+        self._connection_added = True
+
+        connection_choices = []
+        self.connection_combobox = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.Size(200, 23), connection_choices, 0)
+        self.__selected_choice_idx = 0
+        self.connection_combobox.SetSelection( self.__selected_choice_idx)
+
+        self.connection_refresh_button = wx.Button(self, wx.ID_ANY, u"Refresh", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.addConnectionButton = wx.Button( self, wx.ID_ANY, u"Add Connection", wx.DefaultPosition, wx.DefaultSize, 0 )
+
+        self.table = olv.OlvSeries(self, pos = wx.DefaultPosition, size = wx.DefaultSize, id = wx.ID_ANY, style=wx.LC_REPORT|wx.SUNKEN_BORDER  )
+        #table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
+        #self.m_olvSeries.DefineColumns(table_columns)
+
+        # Bindings
+        self.addConnectionButton.Bind(wx.EVT_LEFT_DOWN, self.AddConnection)
+        self.addConnectionButton.Bind(wx.EVT_MOUSEWHEEL, self.AddConnection_MouseWheel)
+
+        self.connection_refresh_button.Bind(wx.EVT_LEFT_DOWN, self.database_refresh)
+        self.connection_combobox.Bind(wx.EVT_CHOICE,self.DbChanged)
+
+
+        # Sizers
+        seriesSelectorSizer = wx.BoxSizer( wx.VERTICAL )
+        buttonSizer = wx.BoxSizer( wx.HORIZONTAL )
+        buttonSizer.SetMinSize( wx.Size( -1,45 ) )
+
+        buttonSizer.Add( self.connection_combobox, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+        buttonSizer.Add( self.addConnectionButton, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+        buttonSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+        buttonSizer.Add( self.connection_refresh_button, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+        seriesSelectorSizer.Add( buttonSizer, 0, wx.ALL|wx.EXPAND, 5 )
+        seriesSelectorSizer.Add( self.table, 1, wx.ALL|wx.EXPAND, 5 )
+
+        self.SetSizer( seriesSelectorSizer )
+        self.Layout()
+
+        #databases = Publisher.sendMessage('getDatabases')
+        Publisher.subscribe(self.getKnownDatabases, "getKnownDatabases")  # sends message to CanvasController
+        Publisher.subscribe(self.connection_added_status, "connectionAddedStatus")
+
+
+    def DbChanged(self, event):
+        self.database_refresh(event)
+
+    def getKnownDatabases(self, value = None):
+        if value is None:
+            Publisher.sendMessage('getDatabases')
+        else:
+            self._databases = value
+            choices = ['---']
+            for k,v in self._databases.iteritems():
+                choices.append(self._databases[k]['name'])
+            self.connection_combobox.SetItems(choices)
+
+            # set the selected choice
+            self.connection_combobox.SetSelection( self.__selected_choice_idx)
+
+    def connection_added_status(self,value=None,connection_string=''):
+        if value is not None:
+            self._connection_added = value
+            self._conection_string = connection_string
+        return self._connection_added
+
+    def AddConnection_MouseWheel(self, event):
+        '''
+        This is intentionally empty to disable mouse scrolling in the AddConnection combobox
+        :param event: EVT_MOUSEWHEEL
+        :return: None
+        '''
+        pass
+
+    def AddConnection(self, event):
+
+        params = []
+
+        while 1:
+            dlg = AddConnectionDialog(self, -1, "Sample Dialog", size=(350, 200),
+                             style=wx.DEFAULT_DIALOG_STYLE,
+                             )
+            dlg.CenterOnScreen()
+
+            if params:
+                dlg.set_values(title=params[0],
+                                  desc = params[1],
+                                  engine = params[2],
+                                  address = params[3],
+                                  name = params[4],
+                                  user = params[5],
+                                  pwd = params[6])
+
+            # this does not return until the dialog is closed.
+            val = dlg.ShowModal()
+
+
+            if val == 5101:
+                # cancel is selected
+                return
+            elif val == 5100:
+                params = dlg.getConnectionParams()
+
+                dlg.Destroy()
+
+
+
+                # create the database connection
+                Publisher.sendMessage('DatabaseConnection',
+                                      title=params[0],
+                                      desc = params[1],
+                                      engine = params[2],
+                                      address = params[3],
+                                      name = params[4],
+                                      user = params[5],
+                                      pwd = params[6])
+
+                if self.connection_added_status():
+                    Publisher.sendMessage('getDatabases')
+                    return
+                else:
+
+                    wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
+
+    def load_data(self):
+        raise Exception('Abstract method. Must be overridden!')
+
+    def database_refresh(self, event):
+
+        thr = threading.Thread(target=self.load_data, args=(), kwargs={})
+        thr.start()
+
+
+class SimulationDataTable(DataSeries):
     def __init__(self, parent):
-        wx.Panel.__init__(self, parent)
+        #wx.Panel.__init__(self, parent)
 
-        panel = wx.Panel(self, wx.ID_ANY)
-        log = wx.TextCtrl(self, -1, size=(100,100),
-                          style = wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
+        super(SimulationDataTable, self ).__init__(parent)
 
-        sizer = wx.BoxSizer()
-        sizer.Add(log, 1, wx.ALL|wx.EXPAND, 5)
-        panel.SetSizer(sizer)
+        self.table_columns = ["Simulation ID", "Simulation Name", "Model Name", "Simulation Start", "Simulation End", "Date Created","Owner"]
+        #table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
+        self.table.DefineColumns(self.table_columns)
 
 
-        self.SetSizerAndFit(sizer)
+
+
+    def load_data(self):
+
+        # get the name of the selected database
+        selected_db = self.connection_combobox.GetStringSelection()
+
+        #set the selected choice
+        self.__selected_choice_idx = self.connection_combobox.GetSelection()
+
+        for key, db in self._databases.iteritems():
+
+            # get the database session associated with the selected name
+            if db['name'] == selected_db:
+
+                # query the database and get basic series info
+
+
+
+                u = dbapi.utils(db['session'])
+                #simulations = u.getAllSeries()
+                simulations = u.getAllSimulations()
+
+
+                sim_ids = []
+                if simulations is None:
+                    d = {key: value for (key, value) in
+                         zip([col.lower().replace(' ','_') for col in self.table_columns],["" for c in self.table_columns])}
+                    record_object = type('DataRecord', (object,), d)
+                    data = [record_object]
+                else:
+                    data = []
+
+                    # loop through all of the returned data
+
+                    for s in simulations:
+
+                        simulation_id = s.Simulation.SimulationID
+
+                        # only add if the simulation id doesn't already exist in sim_ids
+                        if simulation_id not in sim_ids:
+                            sim_ids.append(simulation_id)
+
+                            d = {
+                                'simulation_id' : s.Simulation.SimulationID,
+                                'simulation_name' : s.Simulation.SimulationName,
+                                'model_name' : s.Model.ModelName,
+                                'date_created' : s.Action.BeginDateTime,
+                                'owner' : s.Person.PersonLastName,
+                                'simulation_start' : s.Simulation.SimulationStartDateTime,
+                                'simulation_end' : s.Simulation.SimulationEndDateTime,
+                            }
+
+                            record_object = type('DataRecord', (object,), d)
+                            data.extend([record_object])
+
+                            # simulation_id = str(s.Simulation.SimulationID)
+                            # simulation_name = s.Simulation.SimulationName
+                            # model_name = s.Model.ModelName
+                            # date_created = s.Action.BeginDateTime
+                            # owner = s.Person.PersonLastName
+                            # simulation_start = s.Simulation.SimulationStartDateTime
+                            # simulation_end = s.Simulation.SimulationEndDateTime
+
+                            #self.datarecord.simulation_id = simulation_id
+
+
+                            #["ID", "SimulationName", "ModelName", "SimulationStart", "SimulationEnd", "DateCreated","Owner"]
+                            # record =olv.DataRecord([('simulation_id',simulation_id),
+                            #                      ('simulation_name',simulation_name),
+                            #                      ('model_name',model_name),
+                            #                      ('date_created',date_created),
+                            #                      ('owner',owner),
+                            #                      ('simulation_start',simulation_start),
+                            #                      ('simulation_end',simulation_end)])
+
+                            #data.extend([self.datarecord])
+
+
+                # set the data objects in the olv control
+                self.table.SetObjects(data)
+
+                # set the current database in canvas controller
+                #Publisher.sendMessage('SetCurrentDb',value=selected_db)  # sends to CanvasController.getCurrentDbSession
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class consoleOutput(wx.Panel):
     def __init__(self, parent):
@@ -532,7 +826,6 @@ class consoleOutput(wx.Panel):
 
 
         self.SetSizerAndFit(sizer)
-
 
 class RedirectText(object):
     def __init__(self,aWxTextCtrl):

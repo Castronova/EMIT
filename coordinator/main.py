@@ -478,7 +478,6 @@ class Coordinator(object):
         """
         removelinks = self.__links = {}
 
-
     def update_links(self, model, exchangeitems):
         """
         Updates the model associated with the link.  This is necessary after the run phase to update the data

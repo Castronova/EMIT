@@ -184,23 +184,23 @@ class ContextMenu(wx.Menu):
     def getData(self,resultID):
 
 
+
         session = self.parent.getDbSession()
-        readres = readResults(session)
-        results = readres.getTimeSeriesValuesByResultId(resultId=int(resultID))
+        if session is not None:
+            readres = readResults(session)
+            results = readres.getTimeSeriesValuesByResultId(resultId=int(resultID))
 
 
-        core = readCore(session)
-        obj = core.getResultByID(resultID=int(resultID))
+            core = readCore(session)
+            obj = core.getResultByID(resultID=int(resultID))
 
-        dates = []
-        values = []
-        for val in results:
-            dates.append(val.ValueDateTime)
-            values.append(val.DataValue)
+            dates = []
+            values = []
+            for val in results:
+                dates.append(val.ValueDateTime)
+                values.append(val.DataValue)
 
-        #session.close()
-
-        return dates,values,obj
+            return dates,values,obj
 
     def OnPlot(self, event):
 

@@ -430,7 +430,8 @@ class utils(serviceBase):
                 join(Unit). \
                 join(Featureaction). \
                 join(Action). \
-                join(Timeseriesresultvalue, Timeseriesresultvalue.ResultID == Result.ResultID). \
+                join(Timeseriesresultvalue, Timeseriesresultvalue.ResultID == Result.ResultID).\
+                filter(Action.ActionTypeCV != 'Simulation').\
                 all()
 
 

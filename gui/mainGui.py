@@ -69,15 +69,15 @@ class MainGui(wx.Frame):
         seriesoutput = SimulationDataTable(self.bnb)
 
         self.bnb.AddPage(output, "Console")
-        self.bnb.AddPage(seriesselector, "Remote Time Series")
-        self.bnb.AddPage(seriesoutput, "Simulation Results")
+        self.bnb.AddPage(seriesselector, "Time Series")
+        self.bnb.AddPage(seriesoutput, "Simulations")
         # self.bnb.AddPage(seriesoutput, "Output Time Series")
 
         self.bnb.GetPage(0).SetLabel("Console")
         self.bnb.GetPage(1).SetLabel("Time Series")
         # self.bnb.GetPage(2).SetLabel("Output Time Series")
 
-        self.bnb.GetPage(2).SetLabel("Simulation Results")
+        self.bnb.GetPage(2).SetLabel("Simulations")
 
 
         self.m_mgr.AddPane(self.Canvas,
@@ -152,9 +152,11 @@ class MainGui(wx.Frame):
         try:
             selected_page = self.bnb.GetPage(event.GetSelection())
 
+
             # update databases in a generic way
-            if 'getKnownDatabases' in dir(selected_page):
-                selected_page.getKnownDatabases()
+            if len(selected_page.connection_combobox.GetItems()) == 0:
+            # if 'getKnownDatabases' in dir(selected_page):
+                 selected_page.getKnownDatabases()
 
         except: pass
 
@@ -364,6 +366,7 @@ class TimeSeries(wx.Panel):
         Publisher.subscribe(self.connection_added_status, "connectionAddedStatus")
 
 
+
     def DbChanged(self, event):
         self.OLVRefresh(event)
 
@@ -542,15 +545,13 @@ class DataSeries(wx.Panel):
 
         connection_choices = []
         self.connection_combobox = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.Size(200, 23), connection_choices, 0)
-        self.__selected_choice_idx = 0
-        self.connection_combobox.SetSelection( self.__selected_choice_idx)
+        #self.__selected_choice_idx = 0
+        self.connection_combobox.SetSelection(0)
 
         self.connection_refresh_button = wx.Button(self, wx.ID_ANY, u"Refresh", wx.DefaultPosition, wx.DefaultSize, 0)
         self.addConnectionButton = wx.Button( self, wx.ID_ANY, u"Add Connection", wx.DefaultPosition, wx.DefaultSize, 0 )
 
         self.table = olv.OlvSeries(self, pos = wx.DefaultPosition, size = wx.DefaultSize, id = wx.ID_ANY, style=wx.LC_REPORT|wx.SUNKEN_BORDER  )
-        #table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
-        #self.m_olvSeries.DefineColumns(table_columns)
 
         # Bindings
         self.addConnectionButton.Bind(wx.EVT_LEFT_DOWN, self.AddConnection)
@@ -579,6 +580,8 @@ class DataSeries(wx.Panel):
         Publisher.subscribe(self.getKnownDatabases, "getKnownDatabases")  # sends message to CanvasController
         Publisher.subscribe(self.connection_added_status, "connectionAddedStatus")
 
+        # initialize databases
+        self.getKnownDatabases()
 
     def DbChanged(self, event):
         self.database_refresh(event)
@@ -679,7 +682,7 @@ class SimulationDataTable(DataSeries):
         #table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
         self.table.DefineColumns(self.table_columns)
 
-
+        self.__selected_choice_idx = 0
 
 
     def load_data(self):
@@ -736,34 +739,11 @@ class SimulationDataTable(DataSeries):
                             record_object = type('DataRecord', (object,), d)
                             data.extend([record_object])
 
-                            # simulation_id = str(s.Simulation.SimulationID)
-                            # simulation_name = s.Simulation.SimulationName
-                            # model_name = s.Model.ModelName
-                            # date_created = s.Action.BeginDateTime
-                            # owner = s.Person.PersonLastName
-                            # simulation_start = s.Simulation.SimulationStartDateTime
-                            # simulation_end = s.Simulation.SimulationEndDateTime
-
-                            #self.datarecord.simulation_id = simulation_id
-
-
-                            #["ID", "SimulationName", "ModelName", "SimulationStart", "SimulationEnd", "DateCreated","Owner"]
-                            # record =olv.DataRecord([('simulation_id',simulation_id),
-                            #                      ('simulation_name',simulation_name),
-                            #                      ('model_name',model_name),
-                            #                      ('date_created',date_created),
-                            #                      ('owner',owner),
-                            #                      ('simulation_start',simulation_start),
-                            #                      ('simulation_end',simulation_end)])
-
-                            #data.extend([self.datarecord])
-
-
                 # set the data objects in the olv control
                 self.table.SetObjects(data)
 
                 # set the current database in canvas controller
-                #Publisher.sendMessage('SetCurrentDb',value=selected_db)  # sends to CanvasController.getCurrentDbSession
+                Publisher.sendMessage('SetCurrentDb',value=selected_db)  # sends to CanvasController.getCurrentDbSession
 
 
 

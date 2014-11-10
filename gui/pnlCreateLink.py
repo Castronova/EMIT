@@ -60,30 +60,30 @@ class pnlCreateLink ( wx.Panel ):
 
         ## This is the Property Grid related code
 
-        self.pgout = pgout = wxpg.PropertyGridManager(self, size = wx.Size(210, 200),
+        self.pgout  = wxpg.PropertyGridManager(self, size = wx.Size(210, 200),
                         style=wxpg.PG_SPLITTER_AUTO_CENTER |
                               wxpg.PG_AUTO_SORT)
 
-        self.pgin = pgin = wxpg.PropertyGridManager(self, size = wx.Size(210, 200),
+        self.pgin  = wxpg.PropertyGridManager(self, size = wx.Size(210, 200),
                         style=wxpg.PG_SPLITTER_AUTO_CENTER |
                               wxpg.PG_AUTO_SORT)
 
 
-        pgin.SetExtraStyle(wxpg.PG_EX_HELP_AS_TOOLTIPS)
+        self.pgin.SetExtraStyle(wxpg.PG_EX_HELP_AS_TOOLTIPS)
 
-        pgout.Bind( wxpg.EVT_PG_CHANGED, self.OnPropGridChange )
-        pgout.Bind( wxpg.EVT_PG_PAGE_CHANGED, self.OnPropGridPageChangepgout )
-        pgout.Bind( wxpg.EVT_PG_SELECTED, self.OnPropGridSelect )
-        pgin.Bind( wxpg.EVT_PG_CHANGED, self.OnPropGridChange )
-        pgin.Bind( wxpg.EVT_PG_PAGE_CHANGED, self.OnPropGridPageChangepgout )
-        pgin.Bind( wxpg.EVT_PG_SELECTED, self.OnPropGridSelect )
+        self.pgout.Bind( wxpg.EVT_PG_CHANGED, self.OnPropGridChange )
+        self.pgout.Bind( wxpg.EVT_PG_PAGE_CHANGED, self.OnPropGridPageChangepgout )
+        self.pgout.Bind( wxpg.EVT_PG_SELECTED, self.OnPropGridSelect )
+        self.pgin.Bind( wxpg.EVT_PG_CHANGED, self.OnPropGridChange )
+        self.pgin.Bind( wxpg.EVT_PG_PAGE_CHANGED, self.OnPropGridPageChangepgout )
+        self.pgin.Bind( wxpg.EVT_PG_SELECTED, self.OnPropGridSelect )
 
-        pgout.AddPage( "Output Details" )
-        pgin.AddPage( "Input Details" )
+        self.pgout.AddPage( "Output Details" )
+        self.pgin.AddPage( "Input Details" )
 
         # Fill using dictionary
-        pgout.SetPropertyValues( self.output)
-        pgin.SetPropertyValues( self.input)
+        self.pgout.SetPropertyValues( self.output)
+        self.pgin.SetPropertyValues( self.input)
 
 
         self.nout = 0
@@ -215,8 +215,12 @@ class pnlCreateLink ( wx.Panel ):
         #self.selectedinput = event.Text
 
         item = self.GetExchangeItemByName(self.inputitems, input_item_name)
-        self.nin = item._ExchangeItem__name
-        # self.PopulateInputPropertyGrid(exchangeitems, nin=self.nin)
+        nin = item._ExchangeItem__name
+
+        #self.PopulateInputPropertyGrid(exchangeitems, nin=self.nin)
+        self.pgin.GetPropertyByName("UnitName").SetValue(nin)
+        self.pgin.GetPropertyByName("Name").SetValue(nin)
+
         # Publisher.sendMessage('inputitemname', nin=self.nin)
         if item is not None:
             #self.set_link(0,self.inputitems[event.GetIndex()])
@@ -236,7 +240,11 @@ class pnlCreateLink ( wx.Panel ):
         #self.selectedoutput = self.outputitems[event.GetIndex()]
 
         item = self.GetExchangeItemByName(self.outputitems, output_item_name)
-        self.nout = item._ExchangeItem__name
+        nout = item._ExchangeItem__name
+
+        self.pgin.GetPropertyByName("UnitName").SetValue(nout)
+        self.pgin.GetPropertyByName("Name").SetValue(nout)
+
         # self.PopulateOutputPropertyGrid(exchangeitems, nout=self.nout)
         # Publisher.sendMessage('outputitemname', nout=self.nout)
         if item is not None:

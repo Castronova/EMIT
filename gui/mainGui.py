@@ -14,6 +14,13 @@ import logging
 from ContextMenu import GeneralContextMenu
 import threading
 from db import dbapi as dbapi
+from objectListViewDatabase import ContextMenu
+from frmMatPlotLib import MatplotFrame
+from api.ODM2.Simulation.services import readSimulation
+from api.ODM2.Results.services import readResults
+
+
+
 
 #Save Features
 import xml.etree.ElementTree as et
@@ -366,6 +373,9 @@ class TimeSeries(wx.Panel):
         Publisher.subscribe(self.connection_added_status, "connectionAddedStatus")
 
 
+        # build custom context menu
+        menu = TimeSeriesContextMenu(self.m_olvSeries)
+        self.m_olvSeries.setContextMenu(menu)
 
     def DbChanged(self, event):
         self.OLVRefresh(event)
@@ -545,7 +555,7 @@ class DataSeries(wx.Panel):
 
         connection_choices = []
         self.connection_combobox = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.Size(200, 23), connection_choices, 0)
-        #self.__selected_choice_idx = 0
+        self.__selected_choice_idx = 0
         self.connection_combobox.SetSelection(0)
 
         self.connection_refresh_button = wx.Button(self, wx.ID_ANY, u"Refresh", wx.DefaultPosition, wx.DefaultSize, 0)
@@ -671,7 +681,6 @@ class DataSeries(wx.Panel):
         thr = threading.Thread(target=self.load_data, args=(), kwargs={})
         thr.start()
 
-
 class SimulationDataTable(DataSeries):
     def __init__(self, parent):
         #wx.Panel.__init__(self, parent)
@@ -684,6 +693,9 @@ class SimulationDataTable(DataSeries):
 
         self.__selected_choice_idx = 0
 
+        # build custom context menu
+        menu = SimulationContextMenu(self.table)
+        self.table.setContextMenu(menu)
 
     def load_data(self):
 
@@ -746,8 +758,119 @@ class SimulationDataTable(DataSeries):
                 Publisher.sendMessage('SetCurrentDb',value=selected_db)  # sends to CanvasController.getCurrentDbSession
 
 
+class TimeSeriesContextMenu(ContextMenu):
+    def __init__(self, parent):
+        super(TimeSeriesContextMenu, self).__init__(parent)
 
 
+class SimulationContextMenu(ContextMenu):
+    def __init__(self, parent):
+        super(SimulationContextMenu, self).__init__(parent)
+
+    def getData(self,simulationID):
+
+        session = self.parent.getDbSession()
+        if session is not None:
+
+
+            readsim = readSimulation(session)
+            core = readCore(session)
+            readres = readResults(session)
+            results = readsim.getResultsBySimulationID(simulationID)
+
+            res = {}
+            for r in results:
+
+                variable_name = r.VariableObj.VariableCode
+                result_values = readres.getTimeSeriesValuesByResultId(int(r.ResultID))
+
+                dates = []
+                values = []
+                for val in result_values:
+                    dates.append(val.ValueDateTime)
+                    values.append(val.DataValue)
+
+
+                # save data series based on variable
+                if variable_name in res:
+                    res[variable_name].append([dates,values,r])
+                else:
+                    res[variable_name] = [[dates,values,r]]
+
+
+
+            return res
+
+    def OnPlot(self, event):
+        print 'overriding plot!'
+
+        obj, id = self.Selected()
+        #obj = self.__list_obj
+
+        # create a plot frame
+        PlotFrame = None
+        xlabel = None
+        title = None
+        variable = None
+        units = None
+        warning = None
+        x_series = []
+        y_series = []
+        labels = []
+        id = self.parent.GetFirstSelected()
+        while id != -1:
+            # get the result
+            simulationID = obj.GetItem(id,0).GetText()
+
+            # get resultid from simulation id
+
+            # get data for this row
+            # x,y, resobj = self.getData(simulationID)
+            results = self.getData(simulationID)
+
+
+
+            if PlotFrame is None:
+
+                # todo: plot more than just this first variable
+                key = results.keys()[0]
+
+
+                resobj = results[key][0][2]
+                # set metadata based on first series
+                xlabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
+                title = '%s' % (resobj.VariableObj.VariableCode)
+
+                # save the variable and units to validate future time series
+                variable = resobj.VariableObj.VariableCode
+                units = resobj.UnitObj.UnitsName
+
+                PlotFrame = MatplotFrame(self.Parent, title, xlabel)
+
+                for x,y,resobj in results[key]:
+                    # store the x and Y data
+                    x_series.append(x)
+                    y_series.append(y)
+                    labels.append(int(resobj.ResultID))
+
+
+                # PlotFrame.add_series(x,y)
+
+            elif warning is None:
+                warning = 'Multiple Variables/Units were selected.  I currently don\'t support plotting heterogeneous time series. ' +\
+                          'Some of the selected time series will not be shown :( '
+
+            # get the next selected item
+            id = obj.GetNextSelected(id)
+
+        if warning:
+            dlg = wx.MessageDialog(self.parent, warning, '', wx.OK | wx.ICON_WARNING)
+            dlg.ShowModal()
+            dlg.Destroy()
+
+        # plot the data
+        PlotFrame.plot(xlist=x_series, ylist=y_series, labels=labels)
+        PlotFrame.Show()
 
 
 

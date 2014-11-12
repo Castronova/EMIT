@@ -7,25 +7,91 @@ from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg as NavToolbar
 from matplotlib.figure import Figure
 import wx
+import wx.lib.mixins.listctrl as listmix
+import matplotlib.lines as mlines
+import matplotlib.patches as mpatches
+from PIL import Image, ImageDraw
+import sys
+from wx.lib.pubsub import pub as Publisher
 
 [wxID_PNLCREATELINK, wxID_PNLSPATIAL, wxID_PNLTEMPORAL,
  wxID_PNLDETAILS,
 ] = [wx.NewId() for _init_ctrls in range(4)]
 
 
+class LegendListCtrl(wx.ListCtrl, listmix.CheckListCtrlMixin, listmix.ListCtrlAutoWidthMixin):
+    def __init__(self, *args, **kwargs):
+        wx.ListCtrl.__init__(self, *args, **kwargs)
+        listmix.CheckListCtrlMixin.__init__(self)
+        listmix.ListCtrlAutoWidthMixin.__init__(self)
+        self.setResizeColumn(3)
+
+    def OnCheckItem(self, index, flag):
+        print 'Something Selected!'
+
+        Publisher.sendMessage('SeriesChecked') # sends message to MatplotFrame
+
+
+class LegendListCtrlPanel(wx.Panel, listmix.CheckListCtrlMixin):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent, -1, style=wx.WANTS_CHARS)
+
+        tID = wx.NewId()
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+
+        self.list = LegendListCtrl(self, tID,
+                                 style=wx.LC_REPORT
+                                 #| wx.BORDER_SUNKEN
+                                 | wx.BORDER_NONE
+                                 | wx.LC_EDIT_LABELS
+                                 | wx.LC_SORT_ASCENDING
+                                 #| wx.LC_NO_HEADER
+                                 #| wx.LC_VRULES
+                                 #| wx.LC_HRULES
+                                 #| wx.LC_SINGLE_SEL
+                                 )
+
+
+    def PopulateList(self, series_ids ):
+        if 1:
+            # for normal, simple columns, you can add them like this:
+            self.list.InsertColumn(0, "Series ID")
+
+        for series_id in series_ids:
+            self.list.Append([series_id])
+
+        self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
+
+        # select the first element
+        self.list.CheckItem(0)
+
 class PlotEnum():
     point = 'POINT',
     line = 'LINE',
     bar = 'BAR'
 
+
+
 class MatplotFrame(wx.Frame):
-    def __init__(self, parent, title='', xlabel=''):
+    def __init__(self, parent, title='', xlabel='', selector=True):
+
+        self.__selector = selector
+        self.__image_list = None
+        if self.__selector:
+            # increase the panel width to fit the selector
+            width = 750
+            height = 500
+        else:
+            width = 700
+            height = 500
+
         wx.Frame.__init__(self, parent, id = wx.ID_ANY, title = wx.EmptyString,
-                          pos = wx.DefaultPosition, size = wx.Size( 700,500 ),
+                          pos = wx.DefaultPosition, size = wx.Size( width,height ),
                           style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
 
         Sizer = wx.BoxSizer(wx.VERTICAL)
-
+        HSizer= wx.BoxSizer(wx.HORIZONTAL)
         self.parent = parent
 
         # set the color map
@@ -33,8 +99,17 @@ class MatplotFrame(wx.Frame):
 
         # create an instance of the figure
         self.spatialPanel = pnlSpatial(self, title, xlabel, self.cmap)
+        HSizer.Add(self.spatialPanel, 1, wx.ALL | wx.EXPAND |wx.GROW, 0)
 
-        Sizer.Add( self.spatialPanel, 1, wx.ALL | wx.EXPAND |wx.GROW, 0)
+        if self.__selector:
+
+            self.legend = LegendListCtrlPanel(self)
+
+            HSizer.Add(self.legend, 1, wx.ALL | wx.EXPAND |wx.GROW, 0)
+
+        Sizer.Add(HSizer)
+
+
 
         self.SetSizer(Sizer)
         self.Layout()
@@ -56,6 +131,9 @@ class MatplotFrame(wx.Frame):
         self.xdata = []
         self.ydata = []
         self.label = []
+
+
+        Publisher.subscribe(self.update_plot, "SeriesChecked")  # subscribes LegendListControl
 
     def build_menu(self):
         # create menu bar
@@ -267,10 +345,72 @@ class MatplotFrame(wx.Frame):
 
         return colors, attrib
 
+    def update_plot(self):
+        print 'update plot!'
+
     def plot(self, xlist, ylist, labels, cmap=plt.cm.jet):
 
         # plot time series
         #self.f1 = self.spatialPanel.plot_multiple(xlist, ylist, labels, cmap)
+
+        #from images import icons
+
+
+        if self.__selector:
+
+            self.legend.PopulateList(labels)
+
+            # il = wx.ImageList(22, 22)
+            # b = icons.GearSim.GetBitmap()
+            # idx = il.Add(b)
+
+
+
+        #     for item in labels:
+        #         #img = Image.new("RGB", (300,300), "#FFFFFF")
+        #         #draw = ImageDraw.Draw(img)
+        #         #draw.line((0, 0) + img.size, fill=128)
+        #         #draw.line((0, img.size[1], img.size[0], 0), fill=128)
+        #         #bitmap = self.CreateThumb(img)
+        #
+        #         pass
+        #
+        #     self.legend.SetImageList(il,wx.IMAGE_LIST_SMALL)
+        #
+        #     i = 0
+        #     for item in labels:
+        #         # InsertImageStringItem(index, label, imageindex)
+        #         # index = self.legend.InsertImageStringItem(sys.maxint, 'label', idx)
+        #         #
+        #         # # SetStringItem(self, index, col, label, imageId)
+        #         # self.legend.SetStringItem(index, 0, 'test')
+        #         #
+        #         # # SetItemData(self, item, data)
+        #         # self.legend.SetItemData(index, 0)
+        #
+        #         self.legend.Append([item])
+        #         i += 1
+        #
+        #         # self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
+        #         # self.list.SetColumnWidth(1, wx.LIST_AUTOSIZE)
+        #         # self.list.SetColumnWidth(2, 100)
+        #
+        #         #del draw
+        #         #red_patch = mpatches.Patch(color='red', label='The red data')
+        #         #x = red_patch.draw()
+        #
+        #         # todo: set image list
+        #         # self.__image_list.Add(bitmap)
+        #
+        #         # self.legend.Append([' ', item])
+        #     #
+        #
+        # #self.legend.SetColumnWidth(0, wx.LIST_AUTOSIZE)
+        # #self.legend.SetColumnWidth(1, wx.LIST_AUTOSIZE)
+        # #self.legend.SetColumnWidth(2, 100)
+        #
+        # self.legend.Arrange()
+
         self.figure = self.plot_initial(xlist, ylist, labels, cmap)
 
         self.axis = self.figure.axes[0]
@@ -278,6 +418,18 @@ class MatplotFrame(wx.Frame):
         # build legend
         handles, labels = self.axis.get_legend_handles_labels()
         self.axis.legend(handles, labels, title="Result ID", bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+    def CreateThumb(self, pilImage):
+        #pilImage = Image.open(pathin)
+        size = (16, 16)
+        pilImage.thumbnail(size)#, Image.ANTIALIAS)
+        image = wx.EmptyImage(pilImage.size[0],pilImage.size[1])
+        image.SetData(pilImage.convert("RGB").tostring())
+        #image.setAlphaData(pil.convert("RGBA").tostring()[3::4]
+
+        ## use the wx.Image or convert it to wx.Bitmap
+        bitmap = wx.BitmapFromImage(image)
+        return bitmap
 
     def plot_initial(self, xlist, ylist, labels, cmap):
 

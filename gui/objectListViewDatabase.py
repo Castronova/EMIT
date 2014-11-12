@@ -66,7 +66,7 @@ class OlvSeries(FastObjectListView):
         self.__list_obj = None
         self.__list_id = None
 
-
+        self.__context_menu = None
         # subscribers
         # Publisher.subscribe(self.PlotData,'PlotData')
 
@@ -111,10 +111,15 @@ class OlvSeries(FastObjectListView):
 
     def LaunchContext(self, event):
 
+        if self.__context_menu is not None:
+            self.__context_menu.Selected(event.GetEventObject(), event.GetIndex())
+            self.PopupMenu(self.__context_menu, event.GetPosition())
+            # self.PopupMenu(ContextMenu(self,
+            #                            list_obj=event.GetEventObject(),
+            #                            list_id=event.GetIndex()), event.GetPosition())
 
-        self.PopupMenu(ContextMenu(self,
-                                   list_obj=event.GetEventObject(),
-                                   list_id=event.GetIndex()), event.GetPosition())
+    def setContextMenu(self, value):
+        self.__context_menu = value
 
     def OnListItemSelect(self, event):
 
@@ -149,7 +154,7 @@ class OlvSeries(FastObjectListView):
 
 class ContextMenu(wx.Menu):
 
-    def __init__(self, parent, list_obj, list_id):
+    def __init__(self, parent):
         super(ContextMenu, self).__init__()
 
         self.parent = parent
@@ -167,8 +172,17 @@ class ContextMenu(wx.Menu):
         self.Bind(wx.EVT_MENU, self.OnDelete, mmi)
 
         # this is the list event from the right click
-        self.__list_obj = list_obj
-        self.__list_id = list_id
+        self.__list_obj = None
+        self.__list_id = None
+
+    def Selected(self, list_obj=None, list_id=None):
+        if list_id is not None and list_obj is not None:
+            self.__list_obj = list_obj
+            self.__list_id = list_id
+        return self.__list_obj, self.__list_id
+
+
+
 
     def OnAdd(self, event):
 
@@ -179,7 +193,6 @@ class ContextMenu(wx.Menu):
         Publisher.sendMessage('AddModel',filepath=filename, x = 0, y = 0) # sends message to CanvasController
 
         print filename
-
 
     def getData(self,resultID):
 
@@ -204,14 +217,7 @@ class ContextMenu(wx.Menu):
 
     def OnPlot(self, event):
 
-        # item = listctrl.GetFirstSelected()
-        # while item != -1:
-        #         # do something with the item
-        #         item = listctrl.GetNextSelected(item)
-
-
         obj = self.__list_obj
-        # id = self.__list_id
 
         # create a plot frame
         PlotFrame = None
@@ -230,8 +236,6 @@ class ContextMenu(wx.Menu):
 
             # get data for this row
             x,y, resobj = self.getData(resultID)
-
-
 
             if PlotFrame is None:
                 # set metadata based on first series
@@ -258,7 +262,6 @@ class ContextMenu(wx.Menu):
             # get the next selected item
             id = obj.GetNextSelected(id)
 
-
         if warning:
             dlg = wx.MessageDialog(self.parent, warning, '', wx.OK | wx.ICON_WARNING)
             dlg.ShowModal()
@@ -273,37 +276,3 @@ class ContextMenu(wx.Menu):
         dlg.ShowModal()
         dlg.Destroy()
 
-# ########################################################################
-# ###                      For Unittest Use                            ###
-# ########################################################################
-# class MainFrame(wx.Frame):
-#     #----------------------------------------------------------------------
-#     def __init__(self):
-#         wx.Frame.__init__(self, parent=None, id=wx.ID_ANY,
-#                           title="ObjectListView Demo", size=(800,600))
-#         panel = OlvSeries(self)
-#
-# ########################################################################
-# class GenApp(wx.App):
-#
-#     #----------------------------------------------------------------------
-#     def __init__(self, redirect=False, filename=None):
-#         wx.App.__init__(self, redirect, filename)
-#
-#     #----------------------------------------------------------------------
-#     def OnInit(self):
-#         # create frame here
-#         frame = MainFrame()
-#         frame.Show()
-#         return True
-#
-# #----------------------------------------------------------------------
-# def main():
-#     """
-#     Run the demo
-#     """
-#     app = GenApp()
-#     app.MainLoop()
-#
-# if __name__ == "__main__":
-#     main()

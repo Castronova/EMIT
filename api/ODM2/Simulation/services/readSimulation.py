@@ -56,6 +56,12 @@ class readSimulation(serviceBase):
 
     def getResultsBySimulationID(self,simulationID):
         try:
-            return self._session.query(Result).filter(Simulation.SimulationID == simulationID).all()
+            return self._session.query(Result).\
+                                join(Featureaction).\
+                                join(Action).\
+                                join(Simulation).\
+                                filter(Simulation.SimulationID == simulationID).all()
+
+            # return self._session.query(Result).filter(Simulation.SimulationID == simulationID).all()
         except:
             return None

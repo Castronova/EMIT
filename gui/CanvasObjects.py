@@ -48,8 +48,6 @@ from numpy import meshgrid, linspace
         # draw_rounded_rectangle(self.Canvas,(500,301), width=250, height=150)
 
 
-
-
         #
         #
         # # zoom to bounding box

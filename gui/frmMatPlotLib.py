@@ -13,11 +13,15 @@ import matplotlib.patches as mpatches
 from PIL import Image, ImageDraw
 import sys
 from wx.lib.pubsub import pub as Publisher
+from ObjectListView import FastObjectListView, ColumnDefn
+import wx.lib.newevent
+import copy
 
 [wxID_PNLCREATELINK, wxID_PNLSPATIAL, wxID_PNLTEMPORAL,
  wxID_PNLDETAILS,
 ] = [wx.NewId() for _init_ctrls in range(4)]
 
+OvlCheckEvent, EVT_OVL_CHECK_EVENT = wx.lib.newevent.NewEvent()
 
 class LegendListCtrl(wx.ListCtrl, listmix.CheckListCtrlMixin, listmix.ListCtrlAutoWidthMixin):
     def __init__(self, *args, **kwargs):
@@ -71,7 +75,73 @@ class PlotEnum():
     line = 'LINE',
     bar = 'BAR'
 
+class Data(object):
+    def __init__(self, resultid, symbology=''):
+        self.resultid = resultid
+        self.symbology = symbology
 
+
+class LegendOvl(FastObjectListView):
+    #----------------------------------------------------------------------
+    def __init__(self, *args, **kwargs ):
+        FastObjectListView.__init__(self, *args, **kwargs)
+
+        self.initialSeries = [Data("","")]
+
+        #self.setSeries()
+        #self.useAlternateBackColors = True
+        self.evenRowsBackColor = wx.Colour(255,255,255)
+        self.oddRowsBackColor = wx.Colour(255,255,255)
+        #self.oddRowsBackColor = wx.Colour(191, 217, 217)
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListItemSelect)
+        self.__list_obj = None
+        self.__list_id = None
+
+    def OnListItemSelect(self, event):
+
+        self.__list_obj = event.GetEventObject()
+        self.__list_id = event.GetIndex()
+
+    def SetCheckState(self, modelObject, state):
+        """
+        This is the same code, just added the event inside
+        """
+        #print "SetCheckState called!"
+
+        if self.checkStateColumn is None:
+            return None
+        else:
+            r = self.checkStateColumn.SetCheckState(modelObject, state)
+
+            # Just added the event here ===================================
+            e = OvlCheckEvent(object=modelObject, value=state)
+            wx.PostEvent(self, e)
+            # =============================================================
+
+            return r
+
+    def _HandleLeftDownOnImage(self, rowIndex, subItemIndex):
+        """
+        This is the same code, just added the event inside
+        """
+        #print "_HandleLeftDownOnImage called!", rowIndex, " ", subItemIndex
+
+        column = self.columns[subItemIndex]
+        if not column.HasCheckState():
+            return
+
+        self._PossibleFinishCellEdit()
+        modelObject = self.GetObjectAt(rowIndex)
+        #print "modelObject", modelObject, " column", column
+        if modelObject is not None:
+            column.SetCheckState(modelObject, not column.GetCheckState(modelObject))
+
+            # Just added the event here ===================================
+            e = OvlCheckEvent(object=modelObject, value=column.GetCheckState(modelObject))
+            wx.PostEvent(self, e)
+            # =============================================================
+
+            self.RefreshIndex(rowIndex, modelObject)
 
 class MatplotFrame(wx.Frame):
     def __init__(self, parent, title='', xlabel='', selector=True):
@@ -80,7 +150,7 @@ class MatplotFrame(wx.Frame):
         self.__image_list = None
         if self.__selector:
             # increase the panel width to fit the selector
-            width = 750
+            width = 800
             height = 500
         else:
             width = 700
@@ -103,9 +173,27 @@ class MatplotFrame(wx.Frame):
 
         if self.__selector:
 
-            self.legend = LegendListCtrlPanel(self)
+            self.legend = LegendOvl(self, wx.ID_ANY, style=wx.LC_REPORT | wx.SUNKEN_BORDER)
+            self.legend.SetColumns([
+            ColumnDefn("ResultID", "left", 50, "resultid"),
+            ColumnDefn("Symbology", "left", 80, "symbology", imageGetter=self.getSymbology),
+            ])
+
+            self.legend.SetObjects([])
+
+
+            self.legend.CreateCheckStateColumn()
+            self.legend.Bind(EVT_OVL_CHECK_EVENT, self.HandleCheckbox)
+
+            #self.legend = LegendListCtrlPanel(self)
 
             HSizer.Add(self.legend, 1, wx.ALL | wx.EXPAND |wx.GROW, 0)
+
+            # store the base-level legend info to reset the legend later
+            self.base_legend_small_imagemap = self.legend.smallImageList.nameToImageIndexMap
+            self.base_legend_large_imagemap = self.legend.normalImageList.nameToImageIndexMap
+            self.base_legend_small_image_list = self.legend.smallImageList.imageList
+            self.base_legend_large_image_list = self.legend.normalImageList.imageList
 
         Sizer.Add(HSizer)
 
@@ -131,9 +219,24 @@ class MatplotFrame(wx.Frame):
         self.xdata = []
         self.ydata = []
         self.label = []
-
+        self.cmap = None
+        self.legend_colors = []
+        self.__checked_indices = [0]
 
         Publisher.subscribe(self.update_plot, "SeriesChecked")  # subscribes LegendListControl
+
+    def getSymbology(self, value):
+        #print value.resultid
+        return value.resultid
+
+    def HandleCheckbox(self, e):
+
+        # if e.value:
+        #     print 'Item: %s Checked' % e.object.resultid
+        # else:
+        #     print 'Item: %s UnChecked' % e.object.resultid
+
+        self.update_plot()
 
     def build_menu(self):
         # create menu bar
@@ -173,145 +276,31 @@ class MatplotFrame(wx.Frame):
 
     def OnPlotPoint(self,event):
 
-        # redraw as point plot
-        if self.__plot_type != PlotEnum.point:
-            self.__plot_type = PlotEnum.point
-
-            # redraw as point plot
-            colors,attrib = self.rip_data_from_axis()
-            labels = self.label
-            xlist = self.xdata
-            ylist = self.ydata
-
-            self.axis.cla()
-
-            i = 0
-            xbuffer = (99999999,-99999999)
-            ybuffer = (99999999,-99999999)
-            for x,y in zip(xlist,ylist):
-
-                # buffer the date range so that all values appear within the plot (i.e. not on the edges)
-                xbuffer = self.bufferData(xbuffer,x, 0.1)
-                ybuffer = self.bufferData(ybuffer,y,0.1)
-
-                self.axis.plot_date(x, y, label = labels[i], linestyle='.', color = colors[i])
-                #self.axis.xaxis_date()
-
-                i += 1
-
-            # set axis min and max using the buffer
-            self.axis.set_xlim(xbuffer)
-            self.axis.set_ylim(ybuffer)
-            self.axis.grid()
-            self.figure.autofmt_xdate()
-
-            # build legend
-            handles, labels = self.axis.get_legend_handles_labels()
-            self.axis.legend(handles, labels, title="Result ID", bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-
-            for attribute in attrib:
-                eval(attribute)
-
-            self.figure.canvas.draw()
+        self.__plot_type = PlotEnum.point
+        self.build_legend()
+        self.plot_initial(type=PlotEnum.point)
 
     def OnPlotLine(self,event):
-
-        # redraw as line plot
-        if self.__plot_type != PlotEnum.line:
-            self.__plot_type = PlotEnum.line
-
-            colors,attrib = self.rip_data_from_axis()
-            labels = self.label
-            xlist = self.xdata
-            ylist = self.ydata
-
-            self.axis.cla()
-
-            i = 0
-            xbuffer = (99999999,-99999999)
-            ybuffer = (99999999,-99999999)
-            for x,y in zip(xlist,ylist):
-
-                # buffer the date range so that all values appear within the plot (i.e. not on the edges)
-                xbuffer = self.bufferData(xbuffer,x, 0.1)
-                ybuffer = self.bufferData(ybuffer,y,0.1)
-
-                self.axis.plot(x, y, label = labels[i], linestyle='-',linewidth=1.5, color = colors[i])
-                self.axis.xaxis_date()
-
-                i += 1
-
-            # set axis min and max using the buffer
-            self.axis.set_xlim(xbuffer)
-            self.axis.set_ylim(ybuffer)
-            self.axis.grid()
-            self.figure.autofmt_xdate()
-
-            # build legend
-            handles, labels = self.axis.get_legend_handles_labels()
-            self.axis.legend(handles, labels, title="Result ID", bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-
-            for attribute in attrib:
-                eval(attribute)
-
-
-            self.figure.canvas.draw()
+        self.__plot_type = PlotEnum.line
+        self.build_legend()
+        self.plot_initial(type=PlotEnum.line)
 
     def OnPlotBar(self,event):
-        if self.__plot_type != PlotEnum.bar:
-            self.__plot_type = PlotEnum.bar
 
-            # redraw as bar plot
-            colors,attrib = self.rip_data_from_axis()
+        # get the series that are 'checked' in the legend
+        #checked_items = self.legend.GetCheckedObjects()
 
-            labels = self.label
-            xlist = self.xdata
-            ylist = self.ydata
+        # if len(checked_items) > 1:
+        #         warning = 'Bar plots are not currently supported for multiple time series. :( '
+        #         dlg = wx.MessageDialog(self.parent , warning, '', wx.OK | wx.ICON_WARNING)
+        #         dlg.ShowModal()
+        #         dlg.Destroy()
+        #         return
 
-            if len(xlist) > 1:
-                warning = 'Bar plots are not currently supported for multiple time series. :( '
-                dlg = wx.MessageDialog(self.parent , warning, '', wx.OK | wx.ICON_WARNING)
-                dlg.ShowModal()
-                dlg.Destroy()
-                return
-
-            self.axis.cla()
-
-            i = 0
-            xbuffer = (99999999,-99999999)
-            ybuffer = (99999999,-99999999)
-            for x,y in zip(xlist,ylist):
-
-
-                # buffer the date range so that all values appear within the plot (i.e. not on the edges)
-                xbuffer = self.bufferData(xbuffer,x, 0.1)
-                ybuffer = self.bufferData(ybuffer,y,0.1)
-
-                # calculate the column width (90% of the difference btwn successive measurements)
-                column_width = min(x[1:-1] - x[0:-2])*.9
-
-                # adjust the x values such that they are center aligned on their original x value
-                offset_x = [val - .5*column_width for val in x]
-
-                self.axis.bar(offset_x, y, label = labels[i], color = colors[i], width=column_width)
-                self.axis.xaxis_date()
-
-                i += 1
-
-            # set axis min and max using the buffer
-            self.axis.set_xlim(xbuffer)
-            self.axis.set_ylim(ybuffer)
-            self.axis.grid()
-            self.figure.autofmt_xdate()
-
-            # build legend
-            handles, labels = self.axis.get_legend_handles_labels()
-            self.axis.legend(handles, labels, title="Result ID", bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-
-            for attribute in attrib:
-                eval(attribute)
-
-            self.figure.canvas.draw()
+        # else:
+        self.__plot_type = PlotEnum.bar
+        self.build_legend()
+        self.plot_initial(type=PlotEnum.bar)
 
     def rip_data_from_axis(self):
         # xlist = []
@@ -337,81 +326,124 @@ class MatplotFrame(wx.Frame):
 
 
         # get the cmap
-        cmap = self.cmap()
+        cmap = self.cmap
 
         # generate series colors
         num_colors = len(self.xdata)
-        colors = [cmap(1.*i/num_colors) for i in range(num_colors)]
+        #colors = [cmap(1.*i/num_colors) for i in range(num_colors)]
 
-        return colors, attrib
+        return attrib
 
     def update_plot(self):
-        print 'update plot!'
+
+        # update the checked items list
+        self.__checked_indices = [self.legend.GetObjects().index(item) for item in self.legend.GetCheckedObjects()]
+
+
+        self.plot_initial(self.__plot_type)
+
+        #print 'update plot!'
+
+    def create_legend_thumbnail(self):
+
+        type = self.__plot_type
+        i = 0
+
+        if type == PlotEnum.point:
+            for item in self.label:
+                img = Image.new("RGB", (100,100), "#FFFFFF")
+                draw = ImageDraw.Draw(img)
+
+                draw.ellipse((25, 25, 75, 75), fill = self.legend_colors[i]) # fill=(255, 0, 0))
+                large = self.CreateThumb(img,(32,32))
+                small = self.CreateThumb(img,(16,16))
+
+                self.legend.AddNamedImages(str(item), small, large)
+                i+=1
+        if type == PlotEnum.line:
+            for item in self.label:
+                img = Image.new("RGB", (100,100), "#FFFFFF")
+                draw = ImageDraw.Draw(img)
+
+                draw.line((0,50,100,50), width = 20, fill = self.legend_colors[i])
+                large = self.CreateThumb(img,(32,32))
+                small = self.CreateThumb(img,(16,16))
+
+                self.legend.AddNamedImages(str(item), small, large)
+                i+=1
+        if type == PlotEnum.bar:
+            for item in self.label:
+                img = Image.new("RGB", (100,100), "#FFFFFF")
+                draw = ImageDraw.Draw(img)
+
+                draw.line((50,0,50,100), width = 40, fill = self.legend_colors[i])
+                large = self.CreateThumb(img,(32,32))
+                small = self.CreateThumb(img,(16,16))
+
+                self.legend.AddNamedImages(str(item), small, large)
+                i+=1
+
+    def clear_legend(self):
+
+        # reset all images from image lists
+        self.legend.smallImageList.imageList = self.base_legend_small_image_list
+        self.legend.normalImageList.imageList = self.base_legend_large_image_list
+        self.legend.smallImageList.nameToImageIndexMap = self.base_legend_small_imagemap
+        self.legend.normalImageList.nameToImageIndexMap = self.base_legend_large_imagemap
+
+    def build_legend(self):
+
+        #self.legend.ClearAll()
+        self.clear_legend()
+
+        data = []
+        for l in self.label:
+            data.append(Data(str(l),''))
+
+        self.legend.SetObjects(data)
+
+        self.create_legend_thumbnail()
+
+
+        # check the first item
+        # checked_items = self.legend.GetCheckedObjects()
+        # if len(checked_items) == 0:
+        #     self.legend.ToggleCheck(self.legend.GetObjects()[0])
+        for item in self.__checked_indices:
+            self.legend.ToggleCheck(self.legend.GetObjects()[item])
 
     def plot(self, xlist, ylist, labels, cmap=plt.cm.jet):
 
-        # plot time series
-        #self.f1 = self.spatialPanel.plot_multiple(xlist, ylist, labels, cmap)
+        # this is the entry point for plotting
 
-        #from images import icons
+
+
+        # save the xlist, ylist, and labels globally
+        self.xdata = [date2num(x) for x in xlist]
+        self.ydata = ylist
+        self.label = [str(l) for l in labels]
+
+        # build color map
+        num_colors = len(self.xdata)
+        self.cmap = [cmap(1.*i/num_colors) for i in range(num_colors)]
+        for i in range(num_colors):
+            color = list(cmap(1.*i/num_colors))
+            self.legend_colors.append((int( color[0] * 255), int(color[1] * 255), int(color[2] * 255), int(color[3] * 100)))
+
 
 
         if self.__selector:
 
-            self.legend.PopulateList(labels)
+            # rebuild the figure legend
+            self.build_legend()
 
-            # il = wx.ImageList(22, 22)
-            # b = icons.GearSim.GetBitmap()
-            # idx = il.Add(b)
+            # initial plotting of the data
+            #self.figure = self.plot_initial()
 
 
 
-        #     for item in labels:
-        #         #img = Image.new("RGB", (300,300), "#FFFFFF")
-        #         #draw = ImageDraw.Draw(img)
-        #         #draw.line((0, 0) + img.size, fill=128)
-        #         #draw.line((0, img.size[1], img.size[0], 0), fill=128)
-        #         #bitmap = self.CreateThumb(img)
-        #
-        #         pass
-        #
-        #     self.legend.SetImageList(il,wx.IMAGE_LIST_SMALL)
-        #
-        #     i = 0
-        #     for item in labels:
-        #         # InsertImageStringItem(index, label, imageindex)
-        #         # index = self.legend.InsertImageStringItem(sys.maxint, 'label', idx)
-        #         #
-        #         # # SetStringItem(self, index, col, label, imageId)
-        #         # self.legend.SetStringItem(index, 0, 'test')
-        #         #
-        #         # # SetItemData(self, item, data)
-        #         # self.legend.SetItemData(index, 0)
-        #
-        #         self.legend.Append([item])
-        #         i += 1
-        #
-        #         # self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
-        #         # self.list.SetColumnWidth(1, wx.LIST_AUTOSIZE)
-        #         # self.list.SetColumnWidth(2, 100)
-        #
-        #         #del draw
-        #         #red_patch = mpatches.Patch(color='red', label='The red data')
-        #         #x = red_patch.draw()
-        #
-        #         # todo: set image list
-        #         # self.__image_list.Add(bitmap)
-        #
-        #         # self.legend.Append([' ', item])
-        #     #
-        #
-        # #self.legend.SetColumnWidth(0, wx.LIST_AUTOSIZE)
-        # #self.legend.SetColumnWidth(1, wx.LIST_AUTOSIZE)
-        # #self.legend.SetColumnWidth(2, 100)
-        #
-        # self.legend.Arrange()
-
-        self.figure = self.plot_initial(xlist, ylist, labels, cmap)
+        else:
+            self.figure = self.plot_initial()
 
         self.axis = self.figure.axes[0]
 
@@ -419,9 +451,9 @@ class MatplotFrame(wx.Frame):
         handles, labels = self.axis.get_legend_handles_labels()
         self.axis.legend(handles, labels, title="Result ID", bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 
-    def CreateThumb(self, pilImage):
+    def CreateThumb(self, pilImage, size):
         #pilImage = Image.open(pathin)
-        size = (16, 16)
+        #size = (16, 16)
         pilImage.thumbnail(size)#, Image.ANTIALIAS)
         image = wx.EmptyImage(pilImage.size[0],pilImage.size[1])
         image.SetData(pilImage.convert("RGB").tostring())
@@ -431,50 +463,71 @@ class MatplotFrame(wx.Frame):
         bitmap = wx.BitmapFromImage(image)
         return bitmap
 
-    def plot_initial(self, xlist, ylist, labels, cmap):
+    def plot_initial(self, type=PlotEnum.point):
+
+        # get the series that are 'checked' in the legend
+        checked_items = self.legend.GetCheckedObjects()
+
+        self.axis.cla()
+        # clear the plot and return if no series are checked
+        if len(checked_items) != 0:
 
 
-        # build color map
-        num_colors = len(xlist)
-        colors = [cmap(1.*i/num_colors) for i in range(num_colors)]
+            plt_xdata = []
+            plt_ydata = []
+            plt_labels = []
+            plt_colors = []
 
-        i = 0
-        xbuffer = (99999999,-99999999)
-        ybuffer = (99999999,-99999999)
-        for x_dates,y in zip(xlist,ylist):
+            # get xlist, ylist, labels, and colors for only the checked items
+            for item in checked_items:
+                index = self.label.index(item.resultid)
+                plt_xdata.append(self.xdata[index])
+                plt_ydata.append(self.ydata[index])
+                plt_labels.append(self.label[index])
+                plt_colors.append(self.cmap[index])
 
-            x = date2num(x_dates)
+            if type == PlotEnum.point:
+                for x,y,label,color in zip(plt_xdata,plt_ydata,plt_labels,plt_colors):
+                    self.axis.plot(x, y, label = label, linestyle='None', marker='o', color = color)
 
-            # buffer the date range so that all values appear within the plot (i.e. not on the edges)
-            xbuffer = self.bufferData(xbuffer,x, 0.1)
-            ybuffer = self.bufferData(ybuffer,y,0.1)
+            if type == PlotEnum.line:
+                for x,y,label,color in zip(plt_xdata,plt_ydata,plt_labels,plt_colors):
+                    self.axis.plot(x, y, label = label, linestyle='-',linewidth=1.5, color = color)
 
-            self.axis.plot_date(x, y, label = labels[i], linestyle='.', color = colors[i])
-            # self.axis.xaxis_date()
+            if type == PlotEnum.bar:
+                i = 0
+                for x,y,label,color in zip(plt_xdata,plt_ydata,plt_labels,plt_colors):
+                    # calculate the column width (90% of the difference btwn successive measurements)
+                    column_width = min(x[1:-1] - x[0:-2])*.9
+                    column_width /= len(plt_labels)
+                    # adjust the x values such that they are center aligned on their original x value
+                    offset_x = [val - .5*column_width*len(plt_labels)+(i*.5*column_width) for val in x]
+                    self.axis.bar(offset_x, y, label = label, color = color, width=column_width)
+                    i+=1
 
-            # store the x and y data for this session
-            self.xdata.append(x)
-            self.ydata.append(y)
-            self.label.append(labels[i])
+            self.axis.xaxis_date()
 
-            i += 1
 
-        # set axis min and max using the buffer
-        self.axis.set_xlim(xbuffer)
-        self.axis.set_ylim(ybuffer)
-        #self.axis.set_xlim(left=min(x)-date_buffer, right=max(x)+date_buffer)
-        self.axis.grid()
-        self.figure.autofmt_xdate()
+            # buffer the axis so that values appear within the plot (i.e. not on the edges)
+            xbuffer = self.bufferData(plt_xdata, 0.2)
+            ybuffer = self.bufferData(plt_ydata,0.21)
 
-        # build legend
-        handles, labels = self.axis.get_legend_handles_labels()
-        self.axis.legend(handles, labels, title="Result ID", bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+            # set axis min and max using the buffer
+            self.axis.set_xlim(xbuffer)
+            self.axis.set_ylim(ybuffer)
+            self.axis.grid()
+            self.figure.autofmt_xdate()
 
-        #self.figure.canvas.draw()
+            # build legend
+            #handles, labels = self.axis.get_legend_handles_labels()
+            #self.axis.legend(handles, labels, title="Result ID", bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+        # redraw the figure
+        self.figure.canvas.draw()
 
         return self.figure
 
-    def bufferData(self, current, data_range, buffer=0.1):
+    def bufferData(self, datalist, buffer=0.1):
         '''
         calculates a data buffer for the timeseries such that all data will appear on plot (i.e. not along border)
         :param current: (min, max) tuple
@@ -483,11 +536,21 @@ class MatplotFrame(wx.Frame):
         :return: returns (min, max) adjusted tuple
         '''
 
-        dr = max(data_range) - min(data_range)
-        upper = max(data_range) + dr*buffer
-        lower = min(data_range) - dr*buffer
+        upper_limit = -9999999999
+        lower_limit =  9999999999
 
-        return (min(current[0],lower), max(current[1], upper))
+        for data in datalist:
+
+            dr = max(data) - min(data)
+            upper = max(data) + dr*buffer
+            lower = min(data) - dr*buffer
+
+            if upper > upper_limit:
+                upper_limit = upper
+            if lower < lower_limit:
+                lower_limit = lower
+
+        return (lower_limit, upper_limit)
 
 
 class pnlSpatial ( wx.Panel ):

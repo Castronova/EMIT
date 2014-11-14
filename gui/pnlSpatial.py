@@ -97,6 +97,9 @@ class pnlSpatial ( wx.Panel ):
         self.SetSizer(sizer)
         #self.Fit()
 
+        self.outtext = plt.figtext(0.12, 0.96, " ", fontsize='large', color='r', ha ='left')
+        self.intext = plt.figtext(0.9, 0.96, " ",fontsize='large', color='b', ha ='right')
+
 
 
     def log(self, fmt, *args):
@@ -213,6 +216,7 @@ class pnlSpatial ( wx.Panel ):
         # geomsout = dataout['data']
         # typeout = dataout['type']
         i = 0
+        # plt.figtext.clear()
 
         # self.ax.scatterin.cla()
         # self.ax.plotin.cla()
@@ -248,6 +252,12 @@ class pnlSpatial ( wx.Panel ):
             #     self.ax.plot(x,y,color=colors[i])
             #     i += 1
 
+
+        self.outtext.set_text(self.outputCombo.GetValue())
+        # plt.figtext(0.53, 0.96, "Case B", fontsize='large', color='b', ha ='left')
+        # plt.figtext(0.50, 0.96, ' vs ', fontsize='large', color='k', ha ='center')
+
+        # self.ax.suptitle(str.join(self.inputCombo.GetValue(), self.outputCombo.GetValue()), fontsize = 14)
         self.ax.grid()
         self.ax.axis('auto')
         self.ax.margins(0.1)
@@ -257,6 +267,7 @@ class pnlSpatial ( wx.Panel ):
         geomsout = dataout['data']
         typeout = dataout['type']
         i = 0
+        # plt.figtext.clear()
 
         try:
             self.ax.scatter.cla()
@@ -278,6 +289,11 @@ class pnlSpatial ( wx.Panel ):
                 x,y = zip(*g)
                 self.ax.plot(x,y,color=colors[i])
                 i += 1
+
+        # plt.figtext(0.47, 0.96, "Case C", fontsize='large', color='r', ha ='right')
+
+        self.intext.set_text(self.inputCombo.GetValue())
+        # plt.figtext(0.50, 0.96, ' vs ', fontsize='large', color='k', ha ='center')
 
         self.ax.grid()
         self.ax.axis('auto')

@@ -59,7 +59,7 @@ class NavCanvas(wx.Panel):
 
         # default to first mode
         #self.ToolBar.ToggleTool(self.PointerTool.GetId(), True)
-        # self.Canvas.SetMode(self.Modes[0][1])
+        self.Canvas.SetMode(self.Modes[0][1])
 
     def BuildToolbar(self):
         """
@@ -80,7 +80,7 @@ class NavCanvas(wx.Panel):
             tool = tb.AddRadioTool(wx.ID_ANY, shortHelp=Mode[0], bitmap=Mode[2])
             # self.Bind(wx.EVT_TOOL, self.SetMode, tool)
             # self.Bind(wx.EVT_TOOL, self.SetClear, tool)
-            # self.ModesDict[tool.GetId()]=Mode[1]
+            self.ModesDict[tool.GetId()]=Mode[1]
             #self.ZoomOutTool = tb.AddRadioTool(wx.ID_ANY, bitmap=Resources.getMagMinusBitmap(), shortHelp = "Zoom Out")
             #self.Bind(wx.EVT_TOOL, lambda evt : self.SetMode(Mode=self.GUIZoomOut), self.ZoomOutTool)
 
@@ -101,12 +101,10 @@ class NavCanvas(wx.Panel):
         self.ZoomButton.Hide()
         self.ZoomButton.Show()
 
-    def SetRun(self, event):
-        Publisher.sendMessage("run")
 
-
-    # def SetMode(self, event):
-    #     Mode = self.ModesDict[event.GetId()]
+    def SetMode(self, event):
+        Mode = self.ModesDict[event.GetId()]
+        self.Canvas.SetMode(Mode)
     #
     #     if Mode == self.GuiRun:
     #         Publisher.sendMessage("run")

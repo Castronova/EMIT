@@ -69,10 +69,11 @@ class DirectoryListCtrl(wx.ListCtrl):
 
         return self.home
 
+
     def refreshList(self,cwd):
 
         self.getcurrentdirectory(cwd)
-        print cwd
+        print '> ', cwd
 
         j = 1
         self.InsertStringItem(0, '..')

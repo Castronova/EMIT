@@ -3,6 +3,7 @@ __author__ = 'tonycastronova'
 
 from wrappers import feed_forward
 import stdlib
+from utilities import mdl
 
 class multiply(feed_forward.feed_forward_wrapper):
 
@@ -14,6 +15,14 @@ class multiply(feed_forward.feed_forward_wrapper):
         """
 
         super(multiply,self).__init__(config_params)
+
+
+        # build inputs and outputs
+        io = mdl.build_exchange_items_from_config(config_params)
+
+        # set inputs and outputs
+        self.inputs(value=io['input'])
+        self.outputs(value=io['output'])
 
 
     def run(self,inputs):

@@ -6,6 +6,7 @@ import wx
 import sys
 from NavToolbar import NavCanvas
 
+# from wx.lib.floatcanvas import NavCanvas
 
 sys.path.append("..")
 
@@ -39,7 +40,6 @@ class ClearCanvas(NavCanvas):
             self.onRightDown()
 
     def onRightDown(self, event):
-        print "Right Click"
         self.Canvas.ClearAll()
         self.Canvas.Draw()
 

@@ -2,7 +2,7 @@ __author__ = 'tonycastronova'
 
 import unittest
 #from db_api import postgresdb, mssql
-import utilities
+from utilities import gui
 from odm2.api.ODM2 import *
 import odm2.api.ODM2.Results.services.read as results
 from coordinator import main
@@ -12,7 +12,7 @@ class test_db_api(unittest.TestCase):
     def setUp(self):
 
         # create connections
-        self.connections = utilities.create_database_connections_from_file('/Users/tonycastronova/Documents/projects/iUtah/EMIT/data/connections')
+        self.connections = gui.create_database_connections_from_file('/Users/tonycastronova/Documents/projects/iUtah/EMIT/data/connections')
 
 
     def tearDown(self):

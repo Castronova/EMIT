@@ -57,3 +57,21 @@ tests/data/sample gis/sample_points_nad83.shp.ed.lock
 tests/data/sample gis/sample_points_nad83.shp.WIN-BJU8D315IVD.3904.1000.sr.lock
 tests/data/sample gis/sample_poly_nad83.shp.ed.lock
 tests/data/sample gis/sample_poly_nad83.shp.WIN-BJU8D315IVD.3904.1000.sr.lock
+examples/swmm/data/1be64.inp
+examples/swmm/data/1be64.out
+examples/swmm/data/1be64.rpt
+examples/swmm/data/65c18.inp
+examples/swmm/data/65c18.out
+examples/swmm/data/65c18.rpt
+examples/swmm/data/75bdf.inp
+examples/swmm/data/75bdf.out
+examples/swmm/data/75bdf.rpt
+examples/swmm/data/95985.inp
+examples/swmm/data/95985.out
+examples/swmm/data/95985.rpt
+examples/swmm/data/b4518.inp
+examples/swmm/data/b4518.out
+examples/swmm/data/b4518.rpt
+examples/swmm/data/insert_simulations_camel_case.sql
+examples/swmm/data/rainfall_data.xlsx
+examples/swmm/src/swmm_model.sim

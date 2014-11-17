@@ -2,23 +2,33 @@ __author__ = 'tonycastronova'
 
 import os
 import unittest
-from db.api import postgresdb
-import odm2.api
+from db.dbapi import postgresdb
+from db.dbapi import utils
+
+import api
 import datetime as dt
-import utilities as utils
-from odm2.api.ODM2.Core.services import *
+from utilities import gui, mdl
+
+from api.ODM2.Core.services import *
 
 class test_simulation_services(unittest.TestCase):
 
 
     def setUp(self):
+
         engine = 'postgresql'
-        address = 'localhost'
-        db = 'odm2CamelCase'
-        user = 'tonycastronova'
+        address = 'castro-server.bluezone.usu.edu'
+        db = 'ODM2'
+        user = 'postgres'
         pwd = 'water'
-        dbconn = odm2.api.dbconnection()
-        self.connection_string = dbconn.createConnection(engine,address,db,user,pwd)
+
+        # engine = 'postgresql'
+        # address = 'localhost'
+        # db = 'odm2CamelCase'
+        # user = 'tonycastronova'
+        # pwd = 'water'
+        dbconn = api.dbconnection()
+        self.session = dbconn.createConnection(engine,address,db,user,pwd)
         self.prefs = '/Users/tonycastronova/Documents/projects/iUtah/EMIT/data/preferences'
 
 
@@ -26,28 +36,28 @@ class test_simulation_services(unittest.TestCase):
     #    self.session.close()
 
     def test_set_user_preferences(self):
-        papi = postgresdb(self.connection_string)
+        papi = postgresdb(self.session)
 
         papi.set_user_preferences(self.prefs)
 
     def test_get_person(self):
 
 
-        read = readCore(self.connection_string)
+        read = readCore(self.session)
 
         person = read.getPersonByName('Tony','Castronova')
 
         print person
 
     def test_insert_ts_results(self):
-        papi = postgresdb(self.connection_string)
+        papi = postgresdb(self.session)
 
         papi.insert_result_ts()
 
         pass
 
     def test_create_simulation(self):
-        papi = postgresdb(self.connection_string)
+        papi = postgresdb(self.session)
 
         model_code = 'swat'
         sim_name = 'TonySwatSimulation'
@@ -62,8 +72,8 @@ class test_simulation_services(unittest.TestCase):
 
         # build exchange items from file
         config = os.path.realpath('../../tests/configuration.ini')
-        params = utils.parse_config(config)
-        eitems = utils.build_exchange_items(params)
+        params = gui.parse_config(config)
+        eitems = mdl.build_exchange_items_from_config(params)
 
         # add some data to simulate 'output' exchange items
         vals= [(dt.datetime(2014,1,1,0,0,0) + dt.timedelta(days=i), i) for i in range(0,100)]
@@ -85,12 +95,9 @@ class test_simulation_services(unittest.TestCase):
 
         print 'Successfully inserted Simulation: %d'%sim.SimulationID
 
-
-
-
     def test_create_dataset(self):
 
-        papi = postgresdb(self.connection_string)
+        papi = postgresdb(self.session)
 
         #resultids = []
 
@@ -123,11 +130,27 @@ class test_simulation_services(unittest.TestCase):
     def test_get_simulation_creator(self):
         simulations = self.conn.getSimulationsByCreator('tony','castronova')
 
-
-
-
     def test_get_simulation_inputs(self):
         pass
 
     def test_get_simulation_outputs(self):
         pass
+
+    def test_get_all_simulations(self):
+
+        db_utils = utils(self.session)
+
+        simulations = db_utils.getAllSimulations()
+
+        print 'Found %d simulations. ' % len(simulations)
+        print 'Here is some info about the latest record: '
+
+        print '>  Simulation ID:\t\t',simulations[-1].Simulation.SimulationID
+        print '>  Simulation Name:\t\t',simulations[-1].Simulation.SimulationName
+        print '>  Simulation Start:\t',simulations[-1].Simulation.SimulationStartDateTime
+        print '>  Simulation End:\t\t',simulations[-1].Simulation.SimulationEndDateTime
+        print '>  Model Name:\t\t\t',simulations[-1].Model.ModelName
+        print '>  Date Created:\t\t',simulations[-1].Action.BeginDateTime
+        print '>  Owner:\t\t\t\t',simulations[-1].Person.PersonLastName
+
+

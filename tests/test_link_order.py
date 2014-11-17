@@ -33,12 +33,12 @@ class test_link_order(unittest.TestCase):
     def test_basic(self):
         """
 
-        m1 -> m2 -> m3 -> m4 -> m5 -> m6
+        m1 -> model -> m3 -> m4 -> m5 -> m6
         """
 
         # add some edges to simulate links
-        self.g.add_edge('m1','m2')
-        self.g.add_edge('m2','m3')
+        self.g.add_edge('m1','model')
+        self.g.add_edge('model','m3')
         self.g.add_edge('m3','m4')
         self.g.add_edge('m4','m5')
         self.g.add_edge('m5','m6')
@@ -51,12 +51,12 @@ class test_link_order(unittest.TestCase):
 
     def test_simple_tree(self):
         """
-              m1 -> m2
+              m1 -> model
                         -> m3
         m6 -> m5 -> m4
         """
-        self.g.add_edge('m1','m2')
-        self.g.add_edge('m2','m3')
+        self.g.add_edge('m1','model')
+        self.g.add_edge('model','m3')
 
         self.g.add_edge('m6','m5')
         self.g.add_edge('m5','m4')
@@ -65,7 +65,7 @@ class test_link_order(unittest.TestCase):
 
         order = n.topological_sort(self.g)
 
-        self.assertTrue(order.index('m1') < order.index('m2'))
+        self.assertTrue(order.index('m1') < order.index('model'))
         self.assertTrue(order.index('m6') < order.index('m5'))
         self.assertTrue(order.index('m5') < order.index('m4'))
         self.assertTrue(order.index('m3') == 5)
@@ -77,14 +77,14 @@ class test_link_order(unittest.TestCase):
         m6 -> m5 -> m4 \
         ^               \
         |                -> m3
-         <- |m1| -> m2 /
+         <- |m1| -> model /
 
         """
 
-        self.g.add_edge('m1','m2')
+        self.g.add_edge('m1','model')
         self.g.add_edge('m1','m6')
 
-        self.g.add_edge('m2','m3')
+        self.g.add_edge('model','m3')
         self.g.add_edge('m6','m5')
         self.g.add_edge('m5','m4')
         self.g.add_edge('m4','m3')
@@ -98,14 +98,14 @@ class test_link_order(unittest.TestCase):
 
     def test_bidirectional(self):
         """
-         m1 <-> m2 -> m3
+         m1 <-> model -> m3
 
         """
 
 
-        self.g.add_edge('m1','m2')
-        self.g.add_edge('m2','m3')
-        self.g.add_edge('m3','m2')
+        self.g.add_edge('m1','model')
+        self.g.add_edge('model','m3')
+        self.g.add_edge('m3','model')
         self.g.add_edge('m3','m4')
 
         # remove any models that done have links

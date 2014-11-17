@@ -5,9 +5,11 @@ A Panel that includes the FloatCanvas and Navigation controls
 """
 
 import wx
-from wx.lib.floatcanvas import Resources, FloatCanvas
+from wx.lib.floatcanvas import FloatCanvas
 from images import icons
 import GUIControl as GUIMode
+from wx.lib.pubsub import pub as Publisher
+# from wx.lib.floatcanvas import GUIControl as GUIMode
 
 class NavCanvas(wx.Panel):
     """
@@ -19,30 +21,29 @@ class NavCanvas(wx.Panel):
     """
 
     def __init__(self,
-                   parent,
-                   id = wx.ID_ANY,
-                   size = wx.DefaultSize,
-                   **kwargs): # The rest just get passed into FloatCanvas
+                 parent,
+                 id = wx.ID_ANY,
+                 size = wx.DefaultSize,
+                 **kwargs): # The rest just get passed into FloatCanvas
         wx.Panel.__init__(self, parent, id, size=size)
 
         self.GuiMouse = GUIMode.GUIMouse()
         self.GuiZoomIn = GUIMode.GUIZoomIn()
         self.GuiZoomOut = GUIMode.GUIZoomOut()
         self.GuiMove = GUIMode.GUIMove()
-        self.GuiRun = GUIMode.GUIRun()
+        # self.GuiRun = GUIMode.GUIRun()
         self.GuiLink = GUIMode.GUILink()
-        self.GuiDelete = GUIMode.GUIDelete()
+        # self.GuiDelete = GUIMode.GUIDelete()
 
 
-        self.Modes = [("Pointer",  self.GuiMouse,   Resources.getPointerBitmap()),
-                      ("Zoom In",  self.GuiZoomIn,  Resources.getMagPlusBitmap()),
-                      ("Zoom Out", self.GuiZoomOut, Resources.getMagMinusBitmap()),
-                      ("Pan",      self.GuiMove,    Resources.getHandBitmap()),
-                      ("Add Link", self.GuiLink, icons.add_link.GetBitmap()),
-                      ("Run Model", self.GuiRun, icons.Run.GetBitmap()),
-                      ("Clear", self.GuiDelete, icons.Trash.GetBitmap())
-                      ]
-
+        self.Modes = [("Pointer",  self.GuiMouse,   icons.Cursor.GetBitmap()),
+                      ("Zoom In",  self.GuiZoomIn,  icons.Zoom_In.GetBitmap()),
+                      ("Zoom Out", self.GuiZoomOut, icons.Zoom_Out.GetBitmap()),
+                      ("Pan",      self.GuiMove,    icons.Move.GetBitmap())
+                      # ("Add Link", self.GuiLink, icons.add_link.GetBitmap()),
+                      # ("Run Model", self.GuiRun, icons.Run.GetBitmap()),
+                      # ("Clear", self.GuiDelete, icons.Trash.GetBitmap())
+        ]
         self.BuildToolbar()
         ## Create the vertical sizer for the toolbar and Panel
         box = wx.BoxSizer(wx.VERTICAL)
@@ -51,11 +52,14 @@ class NavCanvas(wx.Panel):
         self.Canvas = FloatCanvas.FloatCanvas(self, **kwargs)
         box.Add(self.Canvas, 1, wx.GROW)
 
+        # self.output = wx.TextCtrl(self, -1, size=(100,100), style=wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
+        # box.Add(self.output, 0, wx.GROW)
+
         self.SetSizerAndFit(box)
 
         # default to first mode
         #self.ToolBar.ToggleTool(self.PointerTool.GetId(), True)
-        self.Canvas.SetMode(self.Modes[0][1])
+        # self.Canvas.SetMode(self.Modes[0][1])
 
     def BuildToolbar(self):
         """
@@ -75,9 +79,10 @@ class NavCanvas(wx.Panel):
         for Mode in Modes:
             tool = tb.AddRadioTool(wx.ID_ANY, shortHelp=Mode[0], bitmap=Mode[2])
             self.Bind(wx.EVT_TOOL, self.SetMode, tool)
+            # self.Bind(wx.EVT_TOOL, self.SetClear, tool)
             self.ModesDict[tool.GetId()]=Mode[1]
-        #self.ZoomOutTool = tb.AddRadioTool(wx.ID_ANY, bitmap=Resources.getMagMinusBitmap(), shortHelp = "Zoom Out")
-        #self.Bind(wx.EVT_TOOL, lambda evt : self.SetMode(Mode=self.GUIZoomOut), self.ZoomOutTool)
+            #self.ZoomOutTool = tb.AddRadioTool(wx.ID_ANY, bitmap=Resources.getMagMinusBitmap(), shortHelp = "Zoom Out")
+            #self.Bind(wx.EVT_TOOL, lambda evt : self.SetMode(Mode=self.GUIZoomOut), self.ZoomOutTool)
 
     def AddToolbarZoomButton(self, tb):
         tb.AddSeparator()
@@ -96,9 +101,18 @@ class NavCanvas(wx.Panel):
         self.ZoomButton.Hide()
         self.ZoomButton.Show()
 
+    def SetRun(self, event):
+        Publisher.sendMessage("run")
+
+
     def SetMode(self, event):
         Mode = self.ModesDict[event.GetId()]
-        self.Canvas.SetMode(Mode)
+
+        if Mode == self.GuiRun:
+            Publisher.sendMessage("run")
+
+        if Mode == self.GuiDelete:
+            Publisher.sendMessage("clear")
 
     def ZoomToFit(self,Event):
         self.Canvas.ZoomToBB()

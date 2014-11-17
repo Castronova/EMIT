@@ -4,7 +4,7 @@ __author__ = 'tonycastronova'
 import unittest
 from stdlib import *
 import datetime
-import utilities as utils
+from utilities import spatial
 from advanced_geometry import *
 
 class testGeometry(unittest.TestCase):
@@ -29,7 +29,7 @@ class testGeometry(unittest.TestCase):
                 geom = Geometry()
                 geom.set_geom_from_wkt(g)
                 geom.type(ElementType.Point)
-                geom.srs(utils.get_srs_from_epsg(self.srscode))
+                geom.srs(spatial.get_srs_from_epsg(self.srscode))
                 geom.datavalues(dv)
                 pt_geoms.append(geom)
 

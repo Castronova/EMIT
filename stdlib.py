@@ -10,7 +10,7 @@ Standard classes
 from shapely.wkt import loads
 import datetime
 import uuid
-import utilities
+# import utilities
 
 class ElementType():
     Point = 'Point'
@@ -46,9 +46,9 @@ class Variable(object):
 
     def VariableDefinition(self,value=None):
         if value is None:
-            return self.__variableNameDefinition
+            return self.__variableDefinition
         else:
-            self.__variableNameDefinition = value
+            self.__variableDefinition = value
 
 class Unit(object):
     """
@@ -203,9 +203,10 @@ class Geometry(object):
         # TODO: use enum
         self.__type = None
 
-        if self.__srs is None:
-            # set default srs
-            self.__srs = utilities.get_srs_from_epsg('4269')
+        # todo: fix.  this is causing a circular dependency btwn utilities and stdlib
+        # if self.__srs is None:
+        #     # set default srs
+        #     self.__srs = utilities.get_srs_from_epsg('4269')
 
     def id(self):
         return self.__id
@@ -270,9 +271,9 @@ class ExchangeItem(object):
         self.__saved = False
         self.__seriesID = None
 
-        # determine start and end times
-        for geom in self.__geoms:
-            self.__calculate_start_and_end_times(geom.datavalues())
+        # # determine start and end times
+        # for geom in self.__geoms:
+        #     self.__calculate_start_and_end_times(geom.datavalues())
 
     def getStartTime(self):
         return min(g.datavalues().start() for g in self.__geoms)

@@ -1,7 +1,10 @@
 __author__ = 'Mario'
 
-from ..Main import SimpleFrame
 import wx
+
+from ..Main import SimpleFrame
+
+
 class TestFrame():
 
     def setup(self):

@@ -48,8 +48,6 @@ from numpy import meshgrid, linspace
         # draw_rounded_rectangle(self.Canvas,(500,301), width=250, height=150)
 
 
-
-
         #
         #
         # # zoom to bounding box
@@ -98,6 +96,7 @@ def build_arrow(pts,arrow_length=3):
     # determine the slope of this line segment
     m = (y2-y1) / (x2-x1)
     M = -1./m
+
 
     # determine y intercept
     b = y2 - M*x2

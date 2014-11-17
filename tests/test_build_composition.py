@@ -4,7 +4,7 @@ import unittest
 
 from stdlib import *
 from coordinator import main
-import utilities
+from utilities import gui
 
 class test_build_composition(unittest.TestCase):
 
@@ -173,7 +173,7 @@ class test_build_composition(unittest.TestCase):
         self.sim.set_default_database('ODM2 Simulation database')
 
         # get timeseries
-        utilities.get_ts_from_link(self.sim.get_default_db(), self.sim.get_links_by_model(id1),self.sim.get_model_by_id(id1))
+        gui.get_ts_from_link(self.sim.get_default_db(), self.sim.get_links_by_model(id1),self.sim.get_model_by_id(id1))
 
 
     def test_run(self):

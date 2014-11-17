@@ -4,6 +4,7 @@ import os
 import unittest
 from stdlib import *
 import utilities as utils
+from utilities import mdl, spatial, gui
 import datetime
 from shapely.wkt import loads
 
@@ -24,10 +25,10 @@ class testExchangeItem(unittest.TestCase):
         item = self.item
 
         # -- Create Unit --#
-        unit = utils.create_unit('cubic meters per second')
+        unit = mdl.create_unit('cubic meters per second')
 
         # -- Create Variable --#
-        variable = utils.create_variable('streamflow')
+        variable = mdl.create_variable('streamflow')
 
         # create dataset 1
         vals1 = [(datetime.datetime(2014,1,1,12,0,0) + datetime.timedelta(days=i), i) for i in range(0,100)]
@@ -36,7 +37,7 @@ class testExchangeItem(unittest.TestCase):
         geom = Geometry()
         geom.set_geom_from_wkt(geometry1)
         geom.type(ElementType.Polygon)
-        geom.srs(utils.get_srs_from_epsg(self.srscode))
+        geom.srs(spatial.get_srs_from_epsg(self.srscode))
         geom.datavalues(dv1)
         item.add_geometry(geom)
 
@@ -47,7 +48,7 @@ class testExchangeItem(unittest.TestCase):
         geom = Geometry()
         geom.set_geom_from_wkt(geometry2)
         geom.type(ElementType.Polygon)
-        geom.srs(utils.get_srs_from_epsg(self.srscode))
+        geom.srs(spatial.get_srs_from_epsg(self.srscode))
         geom.datavalues(dv2)
         item.add_geometry(geom)
 
@@ -66,7 +67,7 @@ class testExchangeItem(unittest.TestCase):
         geom = Geometry()
         geom.set_geom_from_wkt(geometry1)
         geom.type(ElementType.Polygon)
-        geom.srs(utils.get_srs_from_epsg(self.srscode))
+        geom.srs(spatial.get_srs_from_epsg(self.srscode))
         geom.datavalues(dv1)
         item.add_geometry(geom)
 
@@ -77,7 +78,7 @@ class testExchangeItem(unittest.TestCase):
         geom = Geometry()
         geom.set_geom_from_wkt(geometry2)
         geom.type(ElementType.Polygon)
-        geom.srs(utils.get_srs_from_epsg(self.srscode))
+        geom.srs(spatial.get_srs_from_epsg(self.srscode))
         geom.datavalues(dv2)
         item.add_geometry(geom)
 
@@ -102,7 +103,7 @@ class testExchangeItem(unittest.TestCase):
         geom.set_geom_from_wkt(geometry1)
         geom.type(ElementType.Polygon)
         geom.srs(utils.get_srs_from_epsg(self.srscode))
-        geom.datavalues(dv1)
+        geom.spatial(dv1)
         geoms.append(geom)
 
         vals2 = [(datetime.datetime(2014,1,1,12,0,0) + datetime.timedelta(days=i), i) for i in range(0,100)]
@@ -111,7 +112,7 @@ class testExchangeItem(unittest.TestCase):
         geom = Geometry()
         geom.set_geom_from_wkt(geometry2)
         geom.type(ElementType.Polygon)
-        geom.srs(utils.get_srs_from_epsg(self.srscode))
+        geom.srs(spatial.get_srs_from_epsg(self.srscode))
         geom.datavalues(dv2)
         geoms.append(geom)
 
@@ -137,7 +138,7 @@ class testExchangeItem(unittest.TestCase):
         geom = Geometry()
         geom.set_geom_from_wkt(geometry)
         geom.type(ElementType.Polygon)
-        geom.srs(utils.get_srs_from_epsg(self.srscode))
+        geom.srs(spatial.get_srs_from_epsg(self.srscode))
         geom.datavalues(dv)
         item.add_geometry(geom)
 
@@ -151,7 +152,7 @@ class testExchangeItem(unittest.TestCase):
 
         config = os.path.realpath('./configuration.ini')
 
-        params = utils.parse_config(config)
-        eitems = utils.build_exchange_items(params)
+        params = gui.parse_config(config)
+        eitems = mdl.build_exchange_items_from_config(params)
 
         print 'done'

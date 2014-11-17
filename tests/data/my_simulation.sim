@@ -1,6 +1,6 @@
-# Auto-generated simulation loading document
-# simulation name: My Test Simulation
-
-add /Users/tonycastronova/Documents/projects/iUtah/EMIT/tests/data/randomizer.mdl
-add /Users/tonycastronova/Documents/projects/iUtah/EMIT/tests/data/multiplier.mdl
-link M1 OUTPUT1 M2 INPUT1
+<?xml version="1.0" ?>
+<Simulation>
+  <Model id="d46dd" mdl="C:\Users\Mario\Documents\Projects\EMIT\tests\data\randomizer.mdl" name="Random Number Generator" x="-270.0" y="14.0"/>
+  <Model id="7ac00" mdl="C:\Users\Mario\Documents\Projects\EMIT\tests\data\multiplier.mdl" name="Multiplier" x="212.0" y="79.0"/>
+  <Link from_id="d46dd" from_item="random_number" from_item_id="e3e55" from_name="Random Number Generator" to_id="7ac00" to_item="some_value" to_item_id="2c808" to_name="Multiplier"/>
+</Simulation>

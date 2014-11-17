@@ -1,20 +1,22 @@
 __author__ = 'tonycastronova'
 
 import datetime as dt
-import utilities
 
 class feed_forward_wrapper(object):
     def __init__(self, config_params):
         self.__params = config_params
 
-        self.__outputs = None
-        self.__inputs = None
+        self.__outputs = {}
+        self.__inputs = {}
 
         # set initial conditions
         self.__current_time = self.simulation_start()
+        self.__session = None
 
-    def data_directory(self):
-        raise NotImplementedError('This is an abstract method that must be implemented!')
+
+
+    # def data_directory(self):
+    #     raise NotImplementedError('This is an abstract method that must be implemented!')
 
     def save(self):
         raise NotImplementedError('This is an abstract method that must be implemented!')
@@ -22,8 +24,13 @@ class feed_forward_wrapper(object):
     def run(self,inputs):
         raise NotImplementedError('This is an abstract method that must be implemented!')
 
-    def initialize(self):
-        raise NotImplementedError('This is an abstract method that must be implemented!')
+    # def initialize(self):
+    #     raise NotImplementedError('This is an abstract method that must be implemented!')
+
+    def session(self, value = None):
+        if value is not None:
+            self.__session = value
+        return self.__session
 
     def time_step(self):
         """
@@ -32,22 +39,54 @@ class feed_forward_wrapper(object):
         return (int(self.__params['time_step'][0]['value']),self.__params['time_step'][0]['unit_type_cv'])
         #raise NotImplementedError('This is an abstract method that must be implemented!')
 
-    def outputs(self):
-        """
-            ini configuration file
-        """
-        if self.__outputs is None:
-            ei = utilities.build_exchange_items(self.__params)
-            self.__outputs = [i for i in ei if i.get_type() == 'output' ]
+    def outputs(self, value = None, name = None):
+        # """
+        #     ini configuration file
+        # """
+        # if self.__outputs is None:
+        #     ei = utilities.build_exchange_items(self.__params)
+        #     self.__outputs = [i for i in ei if i.get_type() == 'output' ]
+        # return self.__outputs
+        #
+        # #raise NotImplementedError('This is an abstract method that must be implemented!')
+
+        # setter
+        if value is not None:
+            if name is None:
+                for eitem in value:
+                    self.__outputs[eitem.name()] = eitem
+            else:
+                self.__outputs[name] = value
+
+        # getter
         return self.__outputs
 
-        #raise NotImplementedError('This is an abstract method that must be implemented!')
 
-    def inputs(self):
-        """
-            ini configuration file
-        """
-        raise NotImplementedError('This is an abstract method that must be implemented!')
+
+    def inputs(self, value = None, name = None):
+
+        # todo: utilities should have a config parsing function that can be used to populate inputs and outputs
+
+        # """
+        #     ini configuration file
+        # """
+        # raise NotImplementedError('This is an abstract method that must be implemented!')
+
+        # if value is not None:
+        #     self.__inputs = value
+        # return self.__inputs
+
+        # setter
+        if value is not None:
+            if name is None:
+                for eitem in value:
+                    self.__inputs[eitem.name()] = eitem
+            else:
+                self.__inputs[name] = value
+
+        # getter
+        return self.__inputs
+
 
     def simulation_start(self):
         """
@@ -110,11 +149,25 @@ class feed_forward_wrapper(object):
 
         outputs = self.outputs()
 
+        if outputs.has_key(outputname):
+            return outputs[outputname]
+        else:
+            print 'Could not find output: %s' + outputname
+            return None
+
+        # for output in outputs:
+        #     if output.name() == outputname:
+        #         return output
+
+        #raise Exception('Could not find output: %s' + outputname)
+
+    def set_output_by_name(self, outputname, value):
+        outputs = self.outputs()
+
         for output in outputs:
             if output.name() == outputname:
-                return output
+                output = value
 
-        raise Exception('Could not find output: %s' + outputname)
 
 
     def set_geom_values(self,variablename,geometry,datavalues):
@@ -128,8 +181,6 @@ class feed_forward_wrapper(object):
                 return
         raise Exception ('Error setting data for variable: %s' % variablename)
 
-
-
     def get_input_by_name(self,inputname):
 
         inputs = self.inputs()
@@ -139,3 +190,4 @@ class feed_forward_wrapper(object):
                 return input
 
         raise Exception('Could not find input: %s' + inputname)
+

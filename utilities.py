@@ -11,10 +11,10 @@ from shapely.geometry import mapping, shape
 from osgeo import ogr, osr
 import imp
 from stdlib import Variable, Unit
-from odm2.api.ODMconnection import dbconnection, SessionFactory
-import odm2.api
+#from odm2.src.api import dbconnection
+from ODMconnection import dbconnection
 
-from db.api import postgresdb
+from db.dbapi import postgresdb
 import uuid
 
 import shapefile
@@ -102,8 +102,9 @@ def validate_config_ini(ini_path):
                         raise ValueError("Incorrect data format, should be "+getattr(ini_types, option))
                 else:
                     # validate data type
-                    if not isinstance(val,type(getattr(ini_types, option))):
-                            raise Exception(option+' is not of type '+getattr(ini_types, option))
+
+                    #if not isinstance(val,type(getattr(ini_types, option))):
+                    #        raise Exception(option+' is not of type '+getattr(ini_types, option))
 
                     if not ignorecv:
                         # check variable cv (i.e. lookup table)
@@ -283,7 +284,7 @@ def read_shapefile(shp):
     returns (shapely geometry, spatial reference system)
     """
 
-    # open the shapefile
+    # OnOpen the shapefile
     driver = ogr.GetDriverByName('ESRI Shapefile')
     dataset = driver.Open(shp)
 
@@ -392,7 +393,8 @@ def build_exchange_items(params):
 
         # increment item id
         itemid += 1
-        id = iotype.upper()+str(itemid)
+        #id = iotype.upper()+str(itemid)
+        id = uuid.uuid4().hex[:5]
 
         # create exchange item
         ei = stlib.ExchangeItem(id,
@@ -410,6 +412,51 @@ def build_exchange_items(params):
         exchange_items.append(ei)
 
     return exchange_items
+
+def create_database_connections_from_args(title, desc, engine, address, db, user, pwd):
+
+
+    d = {'name':title,
+         'desc':desc ,
+         'engine':engine,
+         'address':address,
+         'db': db,
+         'user': user,
+         'pwd': pwd}
+
+    # database connections dictionary
+    db_connections = {}
+
+    # build database connection
+
+    #dbconn = odm2.api.dbconnection()
+    session = dbconnection.createConnection(engine,address,db,user,pwd)
+
+
+    # add connection string to dictionary (for backup/debugging)
+    # d['connection_string'] = connection_string
+
+    # create a session
+    if session:
+
+        # get the connection string
+        connection_string = session.engine.url
+
+        # save this session in the db_connections object
+        db_id = uuid.uuid4().hex[:5]
+        d['id'] = db_id
+        db_connections[db_id] = {'name':d['name'],
+                                 'session': session,
+                                 'connection_string':connection_string,
+                                 'description':d['desc'],
+                                 'args': d}
+
+        print '> Connected to : %s [%s]'%(connection_string,db_id)
+    else:
+        print 'Could not establish a connection with the database'
+        return None
+
+    return db_connections
 
 def load_model(config_params):
     """
@@ -449,8 +496,6 @@ def create_database_connections_from_file(ini):
 
     # create a session for each database connection in the ini file
     for s in sections:
-        # get the section key (minus the random number)
-        #section = s.split('^')[0]
 
         # put ini args into a dictionary
         options = cparser.options(s)
@@ -459,20 +504,23 @@ def create_database_connections_from_file(ini):
             d[option] = cparser.get(s,option)
 
         # build database connection
+        #dbconn = odm2.api.dbconnection()
+        session = dbconnection.createConnection(d['engine'],d['address'],d['db'],d['user'],d['pwd'])
 
-        dbconn = odm2.api.dbconnection()
-        connection_string = dbconn.createConnection(d['engine'],d['address'],d['db'],d['user'],d['pwd'])
+        if session:
+            # adjusting timeout
+            session.engine.pool._timeout = 30
 
+            connection_string = session.engine.url
 
-        # add connection string to dictionary (for backup/debugging)
-        d['connection_string'] = connection_string
+            # add connection string to dictionary (for backup/debugging)
+            d['connection_string'] = connection_string
 
-        # create a session
-        try:
-            session = SessionFactory(connection_string,False).getSession()
 
             # save this session in the db_connections object
             db_id = uuid.uuid4().hex[:5]
+            d['id'] = db_id
+
             db_connections[db_id] = {'name':d['name'],
                                      'session': session,
                                      'connection_string':connection_string,
@@ -480,16 +528,15 @@ def create_database_connections_from_file(ini):
                                      'args': d}
 
             print '> Connected to : %s [%s]'%(connection_string,db_id)
-        except Exception, e:
-            print e
-            session = None
-            print 'Could not establish a connection with the database: '+connection_string
+        else:
+            print 'Could not establish a connection with the database'
+            #return None
 
 
 
     return db_connections
 
-def get_ts_from_link(connection_string, dbactions, links, target_model):
+def get_ts_from_link(dbapi, dbactions, links, target_model):
     """
     queries the data
     :param session: database session where the data is stored
@@ -498,7 +545,6 @@ def get_ts_from_link(connection_string, dbactions, links, target_model):
     :return:
     """
 
-    simulation_dbapi = postgresdb(connection_string)
 
 
     #if session is None:
@@ -507,7 +553,7 @@ def get_ts_from_link(connection_string, dbactions, links, target_model):
 
     mapping = {}
     timeseries = {}
-    tname = target_model.get_name()
+    tname = target_model.name()
     for id,link_inst in links.iteritems():
         f,t = link_inst.get_link()
         if t[0].get_name() == tname:
@@ -520,18 +566,23 @@ def get_ts_from_link(connection_string, dbactions, links, target_model):
             to_var = t[1].variable()
             to_item = t[1]
             name = f[0].get_name()
-            start = f[1].getStartTime()
-            end = f[1].getEndTime()
+            # start = f[1].getStartTime()
+            # end = f[1].getEndTime()
 
-            model = f[0]
-            actionid = dbactions[model.get_name()]
+            start = t[0].get_instance().simulation_start()
+            end = t[0].get_instance().simulation_end()
+
+            #model = f[0]
+
+            #actionid, type = dbactions[model.get_name()]
 
             # query timeseries data from db
-            ts = simulation_dbapi.get_simulation_results(name,actionid,from_var.VariableNameCV(),from_unit.UnitName(),to_var.VariableNameCV(), start,end)
+            ts = dbapi.get_simulation_results(name,dbactions,from_var.VariableNameCV(),from_unit.UnitName(),to_var.VariableNameCV(), start,end)
 
             # store the timeseries based on exchange item
             #timeseries[f[1].name()] = ts
             timeseries.update(ts)
+
 
     return timeseries
 

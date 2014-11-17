@@ -1,0 +1,34 @@
+[software]
+filepath  = ./swmm_wrapper.py
+classname = swmm
+
+[model]
+code = SWMM_Win
+name = Storm Water Management Model
+description = The EPA Storm Water Management Model (SWMM) is a dynamic rainfall-runoff simulation model used for single event or long-term (continuous) simulation of runoff quantity and quality from primarily urban areas.
+
+[general]
+name = SWMM_Win
+description = The EPA Storm Water Management Model (SWMM) is a dynamic rainfall-runoff simulation model used for single event or long-term (continuous) simulation of runoff quantity and quality from primarily urban areas.
+simulation_start = 09/23/2011 00:00:00
+simulation_end = 09/23/2011 01:15:00
+
+[time_step]
+unit_type_cv = minute
+value = 5
+
+[output]
+variable_name_cv = Hydraulic_head
+unit_type_cv = meter
+
+[input]
+variable_name_cv = rainfall
+unit_type_cv = international inch
+
+[data]
+directory = ../data
+input = simulation.inp
+
+
+[options]
+ignorecv = 1

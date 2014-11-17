@@ -38,9 +38,9 @@ class Example(wx.Dialog):
     def __init__(self, *args, **kwargs):
 
 
-        self.InitUI()
+        self.InitMenu()
 
-    def InitUI(self):
+    def InitMenu(self):
 
         menubar = wx.MenuBar()
         help = wx.Menu()

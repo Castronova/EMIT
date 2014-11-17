@@ -32,7 +32,7 @@ class NavCanvas(wx.Panel):
         self.GuiZoomOut = GUIMode.GUIZoomOut()
         self.GuiMove = GUIMode.GUIMove()
         # self.GuiRun = GUIMode.GUIRun()
-        self.GuiLink = GUIMode.GUILink()
+        # self.GuiLink = GUIMode.GUILink()
         # self.GuiDelete = GUIMode.GUIDelete()
 
 
@@ -78,9 +78,9 @@ class NavCanvas(wx.Panel):
         self.ModesDict = {}
         for Mode in Modes:
             tool = tb.AddRadioTool(wx.ID_ANY, shortHelp=Mode[0], bitmap=Mode[2])
-            self.Bind(wx.EVT_TOOL, self.SetMode, tool)
+            # self.Bind(wx.EVT_TOOL, self.SetMode, tool)
             # self.Bind(wx.EVT_TOOL, self.SetClear, tool)
-            self.ModesDict[tool.GetId()]=Mode[1]
+            # self.ModesDict[tool.GetId()]=Mode[1]
             #self.ZoomOutTool = tb.AddRadioTool(wx.ID_ANY, bitmap=Resources.getMagMinusBitmap(), shortHelp = "Zoom Out")
             #self.Bind(wx.EVT_TOOL, lambda evt : self.SetMode(Mode=self.GUIZoomOut), self.ZoomOutTool)
 
@@ -105,14 +105,14 @@ class NavCanvas(wx.Panel):
         Publisher.sendMessage("run")
 
 
-    def SetMode(self, event):
-        Mode = self.ModesDict[event.GetId()]
-
-        if Mode == self.GuiRun:
-            Publisher.sendMessage("run")
-
-        if Mode == self.GuiDelete:
-            Publisher.sendMessage("clear")
+    # def SetMode(self, event):
+    #     Mode = self.ModesDict[event.GetId()]
+    #
+    #     if Mode == self.GuiRun:
+    #         Publisher.sendMessage("run")
+    #
+    #     if Mode == self.GuiDelete:
+    #         Publisher.sendMessage("clear")
 
     def ZoomToFit(self,Event):
         self.Canvas.ZoomToBB()

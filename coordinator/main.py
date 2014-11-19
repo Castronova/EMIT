@@ -20,11 +20,19 @@ from api.ODM2.Simulation.services import createSimulation
 from api.ODM2.Core.services import readCore
 # from ODM2.Core.services import readCore
 from db.dbapi import postgresdb
-import wrappers
+#import wrappers
 import time
 
 from wrappers import odm2_data
+from wrappers import feed_forward
+from wrappers import time_step
+
+
 import datatypes
+
+import run
+import inspect
+
 
 """
 Purpose: This file contains the logic used to run coupled model simulations
@@ -186,6 +194,12 @@ class Coordinator(object):
         self.__links = {}
         self.__models = {}
 
+    def DbResults(self,key=None, value = None):
+        if key is not None:
+            if key not in self._dbresults.keys():
+                self._dbresults[key] = value
+        return self._dbresults
+
     def Models(self, model=None):
         if model is not None:
             self.__models[model.get_name()] = model
@@ -235,7 +249,7 @@ class Coordinator(object):
         thisModel = None
 
 
-        if type == datatypes.ModelTypes.FeedForward:
+        if type == datatypes.ModelTypes.FeedForward or type == datatypes.ModelTypes.TimeStep:
 
             ini_path = attrib['mdl']
 
@@ -268,9 +282,9 @@ class Coordinator(object):
 
                 # create a model instance
                 thisModel = Model(id= id,
-                                  name=name,
+                                  name=model_inst.name(),
                                   instance=model_inst,
-                                  desc=params['general'][0]['description'],    #todo: get this from the feed forward wrapper b/c it may not exist in mdl!!!
+                                  desc=model_inst.description(),
                                   input_exchange_items= iei,
                                   output_exchange_items= oei,
                                   params=params)
@@ -567,119 +581,134 @@ class Coordinator(object):
         coordinates the simulation effort
         """
 
-        # get the read and write database connections
+        # determine if the simulation is feed-forward or time-step
+        models = self.Models()
+        types = []
+        for model in models.itervalues() :
+            types.extend(inspect.getmro(model.get_instance().__class__))
 
-        #reader = readSimulation(self.get_default_db()['connection_string'])
-        #writer = createSimulation(self.get_default_db()['connection_string'])
+        #inspect.getmro(models['SWMM'].get_instance().__class__)
+        #types = [type(model.get_instance()) for model in models.itervalues()]
 
+        # make sure that feed forward and time-step models are not mixed together
+        if (feed_forward.feed_forward_wrapper in types) and (time_step.time_step_wrapper in types):
+            sys.stdout.write('> Simulation Terminated. - Cannot mix feed-forward and time-step models! ')
+            return
 
-        # store db sessions
-        db_sessions = {}
+        else:
+            if feed_forward.feed_forward_wrapper in types:
+                run.run_feed_forward(self)
+            elif time_step.time_step_wrapper in types:
+                run.run_time_step(self)
 
-
-
-        
-        # todo: determine unresolved exchange items (utilities)
-
-
-        sim_st = time.time()
-
-        activethreads = []
-
-        # determine execution order
-        sys.stdout.write('> Determining execution order... ')
-        exec_order = self.determine_execution_order()
-        sys.stdout.write('done\n')
-        for i in range(0, len(exec_order)):
-            print '> %d.) %s'%(i+1,self.get_model_by_id(exec_order[i]).get_name())
+        return
 
 
-        # store model db sessions
-        for modelid in exec_order:
-            session = self.get_model_by_id(modelid).get_instance().session()
-            if session is None:
-                session = self.get_default_db()['session']
-
-            # todo: this should be stored in the model instance
-            # model_obj = self.get_model_by_id(modelid)
-            # model_inst = model_obj.get_instance()
-            # model_inst.session
-
-
-            # todo: need to consider other databases too!
-            db_sessions[modelid] = postgresdb(session)
-
-        # loop through models and execute run
-        for modelid in exec_order:
-
-            # get the database session
-            #simulation_dbapi = postgresdb(self.get_default_db()['session'])
-            simulation_dbapi = db_sessions[modelid]
-
-            st = time.time()
-
-            # get the current model instance
-            model_obj = self.get_model_by_id(modelid)
-            model_inst = model_obj.get_instance()
-
-            # set the default session if it hasn't been specified otherwise
-            #if model_inst.session() is None:
-            #    model_inst.session(self.get_default_db()['session'])
-
-            print '> '
-            print '> ------------------'+len(model_inst.name())*'-'
-            print '> Executing module: %s ' % model_inst.name()
-            print '> ------------------'+len(model_inst.name())*'-'
-
-            #  retrieve inputs from database
-            sys.stdout.write('> [1 of 4] Retrieving input data... ')
-
-            # todo: pass db_sessions instead of simulation_dbapi
-            input_data =  get_ts_from_link(simulation_dbapi,db_sessions, self._dbresults, self.__links, model_inst)
-            sys.stdout.write('done\n')
-
-            sys.stdout.write('> [2 of 4] Performing calculation... ')
-            # pass these inputs ts to the models' run function
-            model_inst.run(input_data)
-            sys.stdout.write('done\n')
-
-            # save these results
-            sys.stdout.write('> [3 of 4] Saving calculations to database... ')
-            exchangeitems = model_inst.save()
-
-
-            # only insert data if its not already in a database
-            if type(model_inst) != wrappers.odm2_data.odm2:
-
-                #  set these input data as exchange items in stdlib or wrapper class
-                simulation = simulation_dbapi.create_simulation(preferences_path=self.preferences,
-                                               config_params=model_obj.get_config_params(),
-                                               output_exchange_items=exchangeitems,
-                                               )
-
-                sys.stdout.write('done\n')
-
-                # store the database action associated with this simulation
-                self._dbresults[model_inst.name()] = (simulation.ActionID,model_inst.session(),'action')
-
-            else:
-                self._dbresults[model_inst.name()] = (model_inst.resultid(), model_inst.session(), 'result')
-
-            # update links
-            sys.stdout.write('> [4 of 4] Updating links... ')
-            self.update_links(model_inst,exchangeitems)
-            sys.stdout.write('done\n')
-
-            print '> module simulation completed in %3.2f seconds' % (time.time() - st)
-
-
-        print '> '
-        print '> ------------------------------------------'
-        print '>           Simulation Summary '
-        print '> ------------------------------------------'
-        print '> Completed without error :)'
-        print '> Simulation duration: %3.2f seconds' % (time.time()-sim_st)
-        print '> ------------------------------------------'
+        # # store db sessions
+        # db_sessions = {}
+        #
+        #
+        # # todo: determine unresolved exchange items (utilities)
+        #
+        #
+        # sim_st = time.time()
+        #
+        # activethreads = []
+        #
+        # # determine execution order
+        # sys.stdout.write('> Determining execution order... ')
+        # exec_order = self.determine_execution_order()
+        # sys.stdout.write('done\n')
+        # for i in range(0, len(exec_order)):
+        #     print '> %d.) %s'%(i+1,self.get_model_by_id(exec_order[i]).get_name())
+        #
+        #
+        # # store model db sessions
+        # for modelid in exec_order:
+        #     session = self.get_model_by_id(modelid).get_instance().session()
+        #     if session is None:
+        #         session = self.get_default_db()['session']
+        #
+        #     # todo: this should be stored in the model instance
+        #     # model_obj = self.get_model_by_id(modelid)
+        #     # model_inst = model_obj.get_instance()
+        #     # model_inst.session
+        #
+        #
+        #     # todo: need to consider other databases too!
+        #     db_sessions[modelid] = postgresdb(session)
+        #
+        # # loop through models and execute run
+        # for modelid in exec_order:
+        #
+        #     # get the database session
+        #     #simulation_dbapi = postgresdb(self.get_default_db()['session'])
+        #     simulation_dbapi = db_sessions[modelid]
+        #
+        #     st = time.time()
+        #
+        #     # get the current model instance
+        #     model_obj = self.get_model_by_id(modelid)
+        #     model_inst = model_obj.get_instance()
+        #
+        #     # set the default session if it hasn't been specified otherwise
+        #     #if model_inst.session() is None:
+        #     #    model_inst.session(self.get_default_db()['session'])
+        #
+        #     print '> '
+        #     print '> ------------------'+len(model_inst.name())*'-'
+        #     print '> Executing module: %s ' % model_inst.name()
+        #     print '> ------------------'+len(model_inst.name())*'-'
+        #
+        #     #  retrieve inputs from database
+        #     sys.stdout.write('> [1 of 4] Retrieving input data... ')
+        #
+        #     # todo: pass db_sessions instead of simulation_dbapi
+        #     input_data =  get_ts_from_link(simulation_dbapi,db_sessions, self._dbresults, self.__links, model_inst)
+        #     sys.stdout.write('done\n')
+        #
+        #     sys.stdout.write('> [2 of 4] Performing calculation... ')
+        #     # pass these inputs ts to the models' run function
+        #     model_inst.run(input_data)
+        #     sys.stdout.write('done\n')
+        #
+        #     # save these results
+        #     sys.stdout.write('> [3 of 4] Saving calculations to database... ')
+        #     exchangeitems = model_inst.save()
+        #
+        #
+        #     # only insert data if its not already in a database
+        #     if type(model_inst) != wrappers.odm2_data.odm2:
+        #
+        #         #  set these input data as exchange items in stdlib or wrapper class
+        #         simulation = simulation_dbapi.create_simulation(preferences_path=self.preferences,
+        #                                        config_params=model_obj.get_config_params(),
+        #                                        output_exchange_items=exchangeitems,
+        #                                        )
+        #
+        #         sys.stdout.write('done\n')
+        #
+        #         # store the database action associated with this simulation
+        #         self._dbresults[model_inst.name()] = (simulation.ActionID,model_inst.session(),'action')
+        #
+        #     else:
+        #         self._dbresults[model_inst.name()] = (model_inst.resultid(), model_inst.session(), 'result')
+        #
+        #     # update links
+        #     sys.stdout.write('> [4 of 4] Updating links... ')
+        #     self.update_links(model_inst,exchangeitems)
+        #     sys.stdout.write('done\n')
+        #
+        #     print '> module simulation completed in %3.2f seconds' % (time.time() - st)
+        #
+        #
+        # print '> '
+        # print '> ------------------------------------------'
+        # print '>           Simulation Summary '
+        # print '> ------------------------------------------'
+        # print '> Completed without error :)'
+        # print '> Simulation duration: %3.2f seconds' % (time.time()-sim_st)
+        # print '> ------------------------------------------'
 
     def get_configuration_details(self,arg):
 

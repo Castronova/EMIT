@@ -276,10 +276,11 @@ def load_model(config_params):
     module = imp.load_source(filename, abspath)
     model_class = getattr(module, classname)
 
-    # todo: Initialize model?
+    # Initialize the component
     instance = model_class(config_params)
 
-    return (config_params['general'][0]['name'], instance)
+    #return (config_params['general'][0]['name'], instance)
+    return (instance.name(), instance)
 
 def create_database_connections_from_file(ini):
 
@@ -391,6 +392,36 @@ def get_ts_from_link(dbapi, db_sessions, dbactions, links, target_model):
 
 
     return timeseries
+
+def get_data_from_link(links, target_model):
+
+    mapping = {}
+    inputs = []
+
+
+    for id,link_inst in links.iteritems():
+        f,t = link_inst.get_link()
+
+
+        if t[0].get_name() == target_model.name():
+        #    mapping[t[1].name()] = f[1].name()
+
+            # get output exchange item
+            from_unit = f[1].unit()
+            from_var = f[1].variable()
+            to_var = t[1].variable()
+            to_item = t[1]
+
+            from_item = f[0].get_name()
+            to_item = t[0].get_name()
+
+            start = t[0].get_instance().simulation_start()
+            end = t[0].get_instance().simulation_end()
+
+            inputs.append((from_item,  from_var))
+
+
+    return inputs
 
 def save_model_results():
     pass

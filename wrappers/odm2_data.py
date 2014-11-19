@@ -74,6 +74,8 @@ class odm2(object):
 
     def run(self,inputs):
         pass
+    def run_timestep(self,inputs,time):
+        pass
 
     def session(self):
         return self.__session
@@ -143,6 +145,7 @@ class odm2(object):
 
 
     def get_output_by_name(self,outputname):
+        return [self.__output]
         #
         # outputs = self.outputs()
         #
@@ -151,7 +154,7 @@ class odm2(object):
         #         return output
         #
         # raise Exception('Could not find output: %s' + outputname)
-        raise NotImplementedError('This is an abstract method that must be implemented!')
+        #raise NotImplementedError('This is an abstract method that must be implemented!')
 
     def set_geom_values(self,variablename,geometry,datavalues):
         #

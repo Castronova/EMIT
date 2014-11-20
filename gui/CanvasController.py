@@ -1081,6 +1081,8 @@ class FileDrop(wx.FileDropTarget):
             # create odm2 instance
             inst = odm2_data.odm2(resultid=name, session=session)
 
+            oei = inst.outputs().values()
+
             from coordinator import main
             # create a model instance
             thisModel = main.Model(id=inst.id(),
@@ -1088,7 +1090,7 @@ class FileDrop(wx.FileDropTarget):
                                    instance=inst,
                                    desc=inst.description(),
                                    input_exchange_items= [],
-                                   output_exchange_items=  [inst.outputs()],
+                                   output_exchange_items=  oei,
                                    params=None)
 
 

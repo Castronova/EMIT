@@ -60,7 +60,7 @@ class odm2(object):
         self.__name = name
         self.__start=start
         self.__end=end
-        self.__output=item
+        self.__output={self.__name: item}
         self.__desc=obj.VariableObj.VariableDefinition
         self.__current_time = self.simulation_start()
         #self.__actionid = obj.FeatureActionObj.ActionObj.ActionID
@@ -70,7 +70,8 @@ class odm2(object):
         self.__session = session
 
     def save(self):
-        return [self.__output]
+        return [self.get_output_by_name(outputname=self.name())]
+        #return [self.__output]
 
     def run(self,inputs):
         pass
@@ -104,6 +105,9 @@ class odm2(object):
             ini configuration file
         """
         return self.__output
+
+    def inputs(self):
+        return {}
 
     def simulation_start(self):
         return self.__start
@@ -145,7 +149,15 @@ class odm2(object):
 
 
     def get_output_by_name(self,outputname):
-        return [self.__output]
+        outputs = self.outputs()
+
+        if outputs.has_key(outputname):
+            return outputs[outputname]
+        else:
+            print 'Could not find output: %s' + outputname
+            return None
+
+        #return [self.__output]
         #
         # outputs = self.outputs()
         #

@@ -182,24 +182,26 @@ class pnlSpatial ( wx.Panel ):
 
         # if parent == 'input_combo':
         try:
-            datain = self.get_input_geom(parentin)
-            if datain is not None:
-                colors = self.buildGradientColor(len(datain['data']),'Blues')
-                self.SetPlotDataIn(datain,colors=colors)
-                self.inputCombo.SetSelection(event.GetSelection())
-            else:
-                self.inputCombo.Disable()
+            if parentin != '':
+                datain = self.get_input_geom(parentin)
+                if datain is not None:
+                    colors = self.buildGradientColor(len(datain['data']),'Blues')
+                    self.SetPlotDataIn(datain,colors=colors)
+                    self.inputCombo.SetSelection(event.GetSelection())
+                else:
+                    self.inputCombo.Disable()
         except:
             pass
         # if parent == 'output_combo':
         try:
-            dataout = self.get_output_geom(parentout)
-            if dataout is not None:
-                colors = self.buildGradientColor(len(dataout['data']),'Reds')
-                self.SetPlotDataOut(dataout,colors=colors)
-                self.outputCombo.SetSelection(event.GetSelection())
-            else:
-                self.outputCombo.Disable()
+            if parentout != '':
+                dataout = self.get_output_geom(parentout)
+                if dataout is not None:
+                    colors = self.buildGradientColor(len(dataout['data']),'Reds')
+                    self.SetPlotDataOut(dataout,colors=colors)
+                    self.outputCombo.SetSelection(event.GetSelection())
+                else:
+                    self.outputCombo.Disable()
         except:
             pass
 

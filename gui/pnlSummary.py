@@ -72,10 +72,10 @@ class TestPanel( wx.Panel ):
 
         topsizer.Add(pg, 1, wx.EXPAND)
 
-        rowsizer = wx.BoxSizer(wx.HORIZONTAL)
-        but = wx.Button(panel,-1,"SetPropertyValues")
-        but.Bind( wx.EVT_BUTTON, self.OnReserved )
-        rowsizer.Add(but,1)
+        #rowsizer = wx.BoxSizer(wx.HORIZONTAL)
+        #but = wx.Button(panel,-1,"SetPropertyValues")
+        #but.Bind( wx.EVT_BUTTON, self.OnReserved )
+        #rowsizer.Add(but,1)
 
         panel.SetSizer(topsizer)
         topsizer.SetSizeHints(panel)
@@ -114,8 +114,8 @@ class TestPanel( wx.Panel ):
     def OnPropGridSelect(self, event):
         p = event.GetProperty()
 
-    def OnReserved(self, event):
-        pass
+    #def OnReserved(self, event):
+    #    pass
 
     def OnPropGridPageChange(self, event):
         index = self.pg.GetSelectedPage()

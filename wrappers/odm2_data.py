@@ -39,6 +39,7 @@ class odm2(object):
         # todo: this assumes single geometry! fix
         shape = wkb.loads(str(obj.FeatureActionObj.SamplingFeatureObj.FeatureGeometry.data))
         geometry = stdlib.Geometry(geom=shape,srs=None,elev=None,datavalues=data)
+        geometry.type(shape.geom_type)
 
         # build variable
         variable = stdlib.Variable()

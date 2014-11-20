@@ -244,8 +244,8 @@ class pnlCreateLink ( wx.Panel ):
         item = self.GetExchangeItemByName(self.outputitems, output_item_name)
         nout = item._ExchangeItem__name
 
-        self.pgin.GetPropertyByName("UnitName").SetValue(nout)
-        self.pgin.GetPropertyByName("Name").SetValue(nout)
+        self.pgout.GetPropertyByName("UnitName").SetValue(nout)
+        self.pgout.GetPropertyByName("Name").SetValue(nout)
 
         # self.PopulateOutputPropertyGrid(exchangeitems, nout=self.nout)
         # Publisher.sendMessage('outputitemname', nout=self.nout)

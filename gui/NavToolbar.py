@@ -23,16 +23,17 @@ class NavCanvas(wx.Panel):
     def __init__(self,
                  parent,
                  id = wx.ID_ANY,
-                 size = wx.DefaultSize,
+                 size = wx.Size(1000,0),
                  **kwargs): # The rest just get passed into FloatCanvas
-        wx.Panel.__init__(self, parent, id, size=size)
+        wx.Panel.__init__(self, parent, id, size=wx.Size(1000,1))
+        pass
 
         self.GuiMouse = GUIMode.GUIMouse()
         self.GuiZoomIn = GUIMode.GUIZoomIn()
         self.GuiZoomOut = GUIMode.GUIZoomOut()
         self.GuiMove = GUIMode.GUIMove()
         # self.GuiRun = GUIMode.GUIRun()
-        # self.GuiLink = GUIMode.GUILink()
+        self.GuiLink = GUIMode.GUILink()
         # self.GuiDelete = GUIMode.GUIDelete()
 
 
@@ -59,7 +60,7 @@ class NavCanvas(wx.Panel):
 
         # default to first mode
         #self.ToolBar.ToggleTool(self.PointerTool.GetId(), True)
-        self.Canvas.SetMode(self.Modes[0][1])
+        # self.Canvas.SetMode(self.Modes[0][1])
 
     def BuildToolbar(self):
         """
@@ -68,7 +69,7 @@ class NavCanvas(wx.Panel):
         tb = wx.ToolBar(self)
         self.ToolBar = tb
         tb.SetToolBitmapSize((24,24))
-        self.AddToolbarModeButtons(tb, self.Modes)
+        # self.AddToolbarModeButtons(tb, self.Modes)
         #self.AddToolbarZoomButton(tb)
         tb.Realize()
         ## fixme: remove this when the bug is fixed!
@@ -101,10 +102,12 @@ class NavCanvas(wx.Panel):
         self.ZoomButton.Hide()
         self.ZoomButton.Show()
 
+    def SetRun(self, event):
+        Publisher.sendMessage("run")
 
-    def SetMode(self, event):
-        Mode = self.ModesDict[event.GetId()]
-        self.Canvas.SetMode(Mode)
+
+    # def SetMode(self, event):
+    #     Mode = self.ModesDict[event.GetId()]
     #
     #     if Mode == self.GuiRun:
     #         Publisher.sendMessage("run")

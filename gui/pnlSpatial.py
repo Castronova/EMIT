@@ -97,8 +97,8 @@ class pnlSpatial ( wx.Panel ):
         self.SetSizer(sizer)
         #self.Fit()
 
-        self.outtext = plt.figtext(0.12, 0.96, " ", fontsize='large', color='r', ha ='left')
-        self.intext = plt.figtext(0.9, 0.96, " ",fontsize='large', color='b', ha ='right')
+        self.outtext = plt.figtext(0.12, 0.92, " ", fontsize='large', color='r', ha ='left')
+        self.intext = plt.figtext(0.9, 0.92, " ",fontsize='large', color='b', ha ='right')
 
 
 
@@ -166,6 +166,7 @@ class pnlSpatial ( wx.Panel ):
     def UpdatePlot(self,event):
 
         self.ax.cla()
+        # self.figure.Close()
 
         # get parent control
         parent = event.GetEventObject().Name

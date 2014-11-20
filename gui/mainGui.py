@@ -802,8 +802,10 @@ class SimulationContextMenu(ContextMenu):
             return res
 
     def OnPlot(self, event):
+        print 'overriding plot!'
 
         obj, id = self.Selected()
+        #obj = self.__list_obj
 
         # create a plot frame
         PlotFrame = None

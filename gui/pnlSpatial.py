@@ -97,8 +97,8 @@ class pnlSpatial ( wx.Panel ):
         self.SetSizer(sizer)
         #self.Fit()
 
-        self.outtext = plt.figtext(0.12, 0.92, " ", fontsize='large', color='r', ha ='left')
-        self.intext = plt.figtext(0.9, 0.92, " ",fontsize='large', color='b', ha ='right')
+        self.intext = plt.figtext(0.12, 0.92, " ", fontsize='large', color='b', ha ='left')
+        self.outtext = plt.figtext(0.9, 0.92, " ",fontsize='large', color='r', ha ='right')
 
 
 
@@ -203,6 +203,11 @@ class pnlSpatial ( wx.Panel ):
         except:
             pass
 
+
+        # self.set_titles('input','output')
+        self.set_titles(self.inputCombo.GetValue(),
+                        self.outputCombo.GetValue())
+
         # if self.inputCheckbox.IsChecked():
         #     self.setInputSeries()
         # if self.outputCheckbox.IsChecked():
@@ -253,8 +258,10 @@ class pnlSpatial ( wx.Panel ):
             #     self.ax.plot(x,y,color=colors[i])
             #     i += 1
 
-
-        self.outtext.set_text(self.outputCombo.GetValue())
+        # if self.outputCombo.GetValue() == '':
+        #     self.outtext.set_text('- none selected -')
+        # else:
+        #     self.outtext.set_text(self.outputCombo.GetValue())
         # plt.figtext(0.53, 0.96, "Case B", fontsize='large', color='b', ha ='left')
         # plt.figtext(0.50, 0.96, ' vs ', fontsize='large', color='k', ha ='center')
 
@@ -263,6 +270,9 @@ class pnlSpatial ( wx.Panel ):
         self.ax.axis('auto')
         self.ax.margins(0.1)
 
+    def set_titles(self, input, output):
+        self.outtext.set_text(output)
+        self.intext.set_text(input)
     def SetPlotDataOut(self, dataout, colors):
 
         geomsout = dataout['data']
@@ -293,7 +303,11 @@ class pnlSpatial ( wx.Panel ):
 
         # plt.figtext(0.47, 0.96, "Case C", fontsize='large', color='r', ha ='right')
 
-        self.intext.set_text(self.inputCombo.GetValue())
+        # if self.inputCombo.GetValue() == '':
+        #     self.intext.set_text('- none selected -')
+        # else:
+        #     self.intext.set_text(self.inputCombo.GetValue())
+        #self.outtext.set_text('-')
         # plt.figtext(0.50, 0.96, ' vs ', fontsize='large', color='k', ha ='center')
 
         self.ax.grid()

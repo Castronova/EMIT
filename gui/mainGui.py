@@ -235,9 +235,9 @@ class MainGui(wx.Frame):
     def LoadConfiguration(self,event):
 
 
-        if wx.MessageBox("This will overlay on the current configuration.", "Please confirm",
-                         wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
-            return
+        #if wx.MessageBox("This will overlay on the current configuration.", "Please confirm",
+        #                 wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
+        #    return
 
         # else: proceed asking to the user the new file to open
 

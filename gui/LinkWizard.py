@@ -15,7 +15,7 @@ import pnlDetails
 import pnlSummary
 import PropertyGrid
 from wx.lib.pubsub import pub as Publisher
-
+from utilities.gui import *
 
 
 [wxID_WIZLINK, wxID_PNLCREATELINK, wxID_PNLSPATIAL, wxID_PNLTEMPORAL,
@@ -45,6 +45,9 @@ class Details(wiz.PyWizardPage):
         sizer.Add(title, 10, wx.ALIGN_CENTRE|wx.ALL, 5)
         sizer.Add(wx.StaticLine(self, -1), 5, wx.EXPAND|wx.ALL, 5)
         # self.pnlDetail=pnlSummary.pnlDetails(self)
+
+        #from_model = parent.cmd.
+
         self.pnlDetail=pnlSummary.TestPanel(self, inputitems, outputitems)
         self.sizer.Add(self.pnlDetail, 85, wx.ALL, 5)
 
@@ -124,7 +127,7 @@ class Spatial(wiz.PyWizardPage):
 #######################################################################
 
 class CreateLink(wiz.PyWizardPage):
-    def __init__(self, parent, title, inputitems, outputitems):
+    def __init__(self, parent, title, from_model_name, to_model_name, inputitems, outputitems):
         """Constructor"""
         wiz.PyWizardPage.__init__(self, parent)
         self.next = self.prev = None
@@ -136,7 +139,7 @@ class CreateLink(wiz.PyWizardPage):
         title.SetFont(wx.Font(18, wx.SWISS, wx.NORMAL, wx.BOLD))
         sizer.Add(title, 10, wx.ALIGN_CENTRE|wx.ALL, 5)
         sizer.Add(wx.StaticLine(self, -1), 5, wx.EXPAND|wx.ALL, 5)
-        self.pnlIntroduction=pnlCreateLink.pnlCreateLink(self, inputitems, outputitems)
+        self.pnlIntroduction=pnlCreateLink.pnlCreateLink(self, from_model_name, to_model_name, inputitems, outputitems)
         self.sizer.Add(self.pnlIntroduction, 85, wx.ALL, 5)
 
 
@@ -232,7 +235,9 @@ class wizLink(wx.wizard.Wizard):
         self.inputid = inputid
         self.outputid = outputid
 
-        self.page1 = CreateLink(self, "Add Link", inputitems, outputitems)
+        input_model_name = cmd.get_model_by_id(inputid).get_name()
+        output_model_name = cmd.get_model_by_id(outputid).get_name()
+        self.page1 = CreateLink(self, "Add Link", output_model_name, input_model_name, inputitems, outputitems)
 
         self.page2 = Spatial(self, "Spatial Adjustment")
         self.page3 = Temporal(self, "Temporal Adjustment")

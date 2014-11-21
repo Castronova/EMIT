@@ -80,7 +80,6 @@ def run_feed_forward(obj):
         sys.stdout.write('> [3 of 4] Saving calculations to database... ')
         exchangeitems = model_inst.save()
 
-
         # only insert data if its not already in a database
         if type(model_inst) != odm2_data.odm2:
 
@@ -90,7 +89,6 @@ def run_feed_forward(obj):
                                            output_exchange_items=exchangeitems,
                                            )
 
-            sys.stdout.write('done\n')
 
             # store the database action associated with this simulation
             obj.DbResults(key=model_inst.name(), value = (simulation.ActionID,model_inst.session(),'action'))
@@ -99,6 +97,7 @@ def run_feed_forward(obj):
         else:
             #obj._dbresults[model_inst.name()] = (model_inst.resultid(), model_inst.session(), 'result')
             obj.DbResults(key=model_inst.name(), value = (model_inst.resultid(), model_inst.session(), 'result'))
+        sys.stdout.write('done\n')
 
         # update links
         sys.stdout.write('> [4 of 4] Updating links... ')

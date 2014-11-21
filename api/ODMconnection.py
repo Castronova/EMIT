@@ -52,7 +52,7 @@ class dbconnection():
             elif 'postgresql' in connection_string:
                 s.psql_test_Session().execute('Select "VariableNameCV" From "ODM2Core"."Variables" Limit 1')
         except Exception as e:
-            print "session was crap ", e.message
+            print "session failed to connect ", e.message
             return False
         return True
 

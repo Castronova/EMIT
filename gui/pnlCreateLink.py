@@ -205,8 +205,8 @@ class pnlCreateLink ( wx.Panel ):
 
             self.OutputSelect(self.output ,data)
 
-            if data is not None:
-                print data
+            #if data is not None:
+            #    print data
 
     def InputClick(self, event):
 
@@ -226,8 +226,8 @@ class pnlCreateLink ( wx.Panel ):
 
             self.InputSelect(self.input, data)
 
-            if data is not None:
-                print data
+            #if data is not None:
+            #    print data
 
     def activateLinkButton(self):
 
@@ -348,7 +348,7 @@ class MyTree(wx.TreeCtrl):
         item, location = self.HitTest(event.GetPositionTuple())
 
         data = self.GetPyData(item)
-        if data is not None: print data
+        #if data is not None: print data
 
     def Populate(self, exchangeitems):
 

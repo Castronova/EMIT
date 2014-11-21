@@ -153,11 +153,11 @@ class ToolboxPanel(wx.Panel):
         # item = self.tree.GetItemText(evt.GetItem())
         item = self.tree.GetSelection()
 
-        for i in self.items.keys():
-            if i == item:
-                print self.items[i]
-                break
-        pass
+        # for i in self.items.keys():
+        #     if i == item:
+        #         print self.items[i]
+        #         break
+        #pass
 
     def onDrag(self, event):
         data = wx.FileDataObject()

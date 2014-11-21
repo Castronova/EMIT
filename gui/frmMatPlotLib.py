@@ -31,7 +31,7 @@ class LegendListCtrl(wx.ListCtrl, listmix.CheckListCtrlMixin, listmix.ListCtrlAu
         self.setResizeColumn(3)
 
     def OnCheckItem(self, index, flag):
-        print 'Something Selected!'
+        #print 'Something Selected!'
 
         Publisher.sendMessage('SeriesChecked') # sends message to MatplotFrame
 

@@ -66,45 +66,54 @@ def run_feed_forward(obj):
 
         #  retrieve inputs from database
         sys.stdout.write('> [1 of 4] Retrieving input data... ')
+        sys.__stdout__.flush()
 
         # todo: pass db_sessions instead of simulation_dbapi
         input_data =  get_ts_from_link(simulation_dbapi,db_sessions, obj.DbResults(), obj.Links(), model_inst)
         sys.stdout.write('done\n')
+        sys.__stdout__.flush()
 
         sys.stdout.write('> [2 of 4] Performing calculation... ')
+        sys.__stdout__.flush()
         # pass these inputs ts to the models' run function
         model_inst.run(input_data)
         sys.stdout.write('done\n')
+        sys.__stdout__.flush()
 
         # save these results
         sys.stdout.write('> [3 of 4] Saving calculations to database... ')
+        sys.__stdout__.flush()
         exchangeitems = model_inst.save()
 
         # only insert data if its not already in a database
         if type(model_inst) != odm2_data.odm2:
-
-            #  set these input data as exchange items in stdlib or wrapper class
-            simulation = simulation_dbapi.create_simulation(preferences_path=obj.preferences,
-                                           config_params=model_obj.get_config_params(),
-                                           output_exchange_items=exchangeitems,
-                                           )
-
-
-            # store the database action associated with this simulation
-            obj.DbResults(key=model_inst.name(), value = (simulation.ActionID,model_inst.session(),'action'))
-            #obj._dbresults[model_inst.name()] = (simulation.ActionID,model_inst.session(),'action')
+            pass
+            # todo: not saving result b/c it is to slow over wireless!
+            # #  set these input data as exchange items in stdlib or wrapper class
+            # simulation = simulation_dbapi.create_simulation(preferences_path=obj.preferences,
+            #                                config_params=model_obj.get_config_params(),
+            #                                output_exchange_items=exchangeitems,
+            #                                )
+            #
+            #
+            # # store the database action associated with this simulation
+            # obj.DbResults(key=model_inst.name(), value = (simulation.ActionID,model_inst.session(),'action'))
 
         else:
-            #obj._dbresults[model_inst.name()] = (model_inst.resultid(), model_inst.session(), 'result')
             obj.DbResults(key=model_inst.name(), value = (model_inst.resultid(), model_inst.session(), 'result'))
+
         sys.stdout.write('done\n')
+        sys.__stdout__.flush()
 
         # update links
         sys.stdout.write('> [4 of 4] Updating links... ')
+        sys.__stdout__.flush()
         obj.update_links(model_inst,exchangeitems)
         sys.stdout.write('done\n')
+        sys.__stdout__.flush()
 
-        print '> module simulation completed in %3.2f seconds' % (time.time() - st)
+        sys.stdout.write('> module simulation completed in %3.2f seconds' % (time.time() - st))
+        sys.__stdout__.flush()
 
 
     print '> '

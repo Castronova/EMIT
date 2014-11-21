@@ -33,9 +33,6 @@ if __name__ == '__main__':
     currentdir = os.path.dirname(os.path.abspath(__file__))
     connections_txt = os.path.abspath(os.path.join(currentdir,'./data/connections'))
 
-    cmd.connect_to_db([connections_txt])
-    if not cmd.get_default_db():
-        cmd.set_default_database()
 
     wx.Log.SetLogLevel(0)
     app = wx.App(False)
@@ -44,5 +41,11 @@ if __name__ == '__main__':
     frame.Show(True)
     #app.SetTopWindow(frame)
     CanvasController(cmd, frame.Canvas)
+
+    cmd.connect_to_db([connections_txt])
+    if not cmd.get_default_db():
+        cmd.set_default_database()
+
+
     app.MainLoop()
 

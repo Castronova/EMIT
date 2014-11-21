@@ -262,7 +262,7 @@ class Coordinator(object):
 
                 # make sure this model doesnt already exist
                 if name in self.__models:
-                    print 'Model named '+name+' already exists in configuration'
+                    print '> Model named '+name+' already exists in configuration'
                     return None
 
                 # build exchange items
@@ -378,8 +378,8 @@ class Coordinator(object):
         To = self.get_model_by_id(to_id)
         try:
 
-            if self.get_model_by_id(from_id) is None: raise Exception(from_id+' does not exist in configuration')
-            if self.get_model_by_id(to_id) is None: raise Exception(to_id+' does not exist in configuration')
+            if self.get_model_by_id(from_id) is None: raise Exception('> '+from_id+' does not exist in configuration')
+            if self.get_model_by_id(to_id) is None: raise Exception('> ' + to_id+' does not exist in configuration')
         except Exception, e:
             print e
             return None

@@ -282,7 +282,7 @@ class MyTree(wx.TreeCtrl):
         item, location = self.HitTest(event.GetPositionTuple())
 
         data = self.GetPyData(item)
-        if data is not None: print data
+        #if data is not None: print data
 
 class MyPropertyGrid(wx.propgrid.PropertyGrid):
 

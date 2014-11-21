@@ -274,14 +274,14 @@ class wizLink(wx.wizard.Wizard):
 
             #self.text3.SetValue(self.text2.GetValue())
         if event.Page == self.page4:
-            print 'here'
+            #print 'here'
 
             input = self.page1.pnlIntroduction.pgin
             output = self.page1.pnlIntroduction.pgout
 
             self.page4.pnlDetail.PropGridPopulate(input, output)
 
-            print self.page1
+            #print self.page1
 
         if event.Page == self.page3:
 

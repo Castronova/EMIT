@@ -83,7 +83,7 @@ class swmm(feed_forward_wrapper):
         # stage.add_geometry(elements)
 
 
-        print 'done with initialize'
+        #print 'done with initialize'
 
 
     def run(self,inputs):

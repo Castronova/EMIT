@@ -40,9 +40,17 @@ class MainGui(wx.Frame):
         self.pnlDocking.__setattr__('cmd',cmd)
 
         self.Bind(wx.EVT_CLOSE, self.onClose)
+
+        self.notebook_pages = {}
+
         self.initMenu()
         self.initAUIManager()
         self._init_sizers()
+
+        Publisher.subscribe(self.OnPageChange,'ChangePage')
+
+
+
 
     def _init_sizers(self):
         # generated method, don't edit
@@ -54,6 +62,11 @@ class MainGui(wx.Frame):
         # generated method, don't edit
         #parent.AddWindow(self._ribbon, 0, wx.EXPAND)
         parent.AddWindow(self.pnlDocking, 85, flag=wx.ALL | wx.EXPAND)
+
+    def OnPageChange(self, page):
+
+        index = self.notebook_pages[page]
+        self.bnb.SetSelection(index)
 
     def initAUIManager(self):
 
@@ -79,6 +92,11 @@ class MainGui(wx.Frame):
         self.bnb.AddPage(seriesselector, "Time Series")
         self.bnb.AddPage(seriesoutput, "Simulations")
         # self.bnb.AddPage(seriesoutput, "Output Time Series")
+
+        # add these to the notebook pages dictionary so that they can be looked up later
+        self.notebook_pages['Console'] = 0
+        self.notebook_pages['Time Series'] = 1
+        self.notebook_pages['Simulations'] = 2
 
         self.bnb.GetPage(0).SetLabel("Console")
         self.bnb.GetPage(1).SetLabel("Time Series")

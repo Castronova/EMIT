@@ -6,6 +6,8 @@ __author__ = 'tonycastronova'
 import wx
 from txtctrlModel import ModelTxtCtrl
 
+from wx.lib.pubsub import pub as Publisher
+
 class LinkContextMenu(wx.Menu):
 
     def __init__(self, parent, e):
@@ -162,6 +164,10 @@ class GeneralContextMenu(wx.Menu):
 
     def OnClickRun(self, e):
 
+        # switch focus of the notebook tabs
+        Publisher.sendMessage('ChangePage', page='Console')  # sends message to mainGui.py
+
+        # run the simulation
         self.parent.run()
 
     def OnClickClear(self, e):

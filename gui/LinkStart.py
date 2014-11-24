@@ -71,7 +71,7 @@ class LinkStart ( wx.Frame ):
         self.Destroy()
 
     def PopulateLinks(self):
-
+        self.listbox.Clear()
         links = self.cmd.get_links_btwn_models(self.from_model.get_id(), self.to_model.get_id())
 
         for l in links:

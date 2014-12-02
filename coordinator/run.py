@@ -6,6 +6,10 @@ import sys
 from utilities.gui import *
 from utilities.mdl import *
 from wrappers import odm2_data
+from transform.time import *
+from transform.space import *
+
+
 
 def run_feed_forward(obj):
     # store db sessions
@@ -69,7 +73,7 @@ def run_feed_forward(obj):
         sys.__stdout__.flush()
 
         # todo: pass db_sessions instead of simulation_dbapi
-        input_data =  get_ts_from_link(simulation_dbapi,db_sessions, obj.DbResults(), obj.Links(), model_inst)
+        input_data =  get_ts_from_database_link(simulation_dbapi,db_sessions, obj.DbResults(), obj.Links(), model_inst)
         sys.stdout.write('done\n')
         sys.__stdout__.flush()
 
@@ -140,8 +144,22 @@ def run_time_step(obj):
         print '> %d.) %s'%(i+1,obj.get_model_by_id(exec_order[i]).get_name())
 
 
-    # store model db sessions
+    links = {}
+    spatial_maps = {}
     for modelid in exec_order:
+        # get links
+        l = obj.get_from_links_by_model(modelid)
+        links[modelid] = l
+
+        for link in l:
+            # build spatial maps
+            source = link[0][1]
+            target = link[1][1]
+            spatial = spatial_closest_object()
+            key = generate_link_key(link)
+            spatial_maps[key] = spatial.transform(source.get_all_datasets().keys(), target.get_all_datasets().keys())
+
+        # store model db sessions
         session = obj.get_model_by_id(modelid).get_instance().session()
         if session is None:
             session = obj.get_default_db()['session']
@@ -163,10 +181,9 @@ def run_time_step(obj):
 
         # todo: data is not being returned here!
         # get inputs from link
-        input_data =  get_data_from_link(obj.Links(), model_inst)
-
+        #input_data =  get_data_from_link(obj.Links(), model_inst)
+        input_data = model_inst.inputs()
         output = model_inst.run_timestep(input_data, current_time)
-
 
         # pass these inputs ts to the models' run function
         #model_inst.run(input_data)
@@ -175,20 +192,43 @@ def run_time_step(obj):
         # get all outputs
         output_exchange_items = model_inst.outputs()
 
-        if type(output_exchange_items) != type([]):
-            output_exchange_items = [model_inst.outputs()]
-        if type(model_inst) == odm2_data.odm2:
+        print '> Mapping outputs to inputs...'
+        st = time.time()
+        for source, target, linkid in links[modelid]:
+            target_model  = target[0]
 
-            # get the value for the current time
-            #utput_exchange_items
+            # get the auto generated key for this link
+            link_key = generate_link_key(obj.get_link_by_id(linkid).get_link())
 
-            # todo: interpolate data at to the target timestep
-            # todo: use source_time and target_time
-            #data = output_exchange_items.get_all_datasets().values()[0].timeseries()
-            pass
+            # get the target interpolation time based on the current time of the target model
+            target_time = target_model.get_instance().current_time()
+
+            # get all the datasets of the output exchange item.  These will be used to temporally map the data
+            datasets = output_exchange_items[model_inst.name()].get_all_datasets()
+
+            # Temporal data mapping
+            mapped = {}
+            for geom, datavalues in datasets.iteritems():
+
+                # get the dates and values from the geometry
+                dates,values = datavalues.get_dates_values()
+
+                # temporal mapping
+                temporal = temporal_nearest_neighbor()
+                mapped_dates,mapped_values = temporal.transform(dates,values,target_time)
+
+                # save the temporally mapped data by output geometry
+                mapped[geom] = (zip(mapped_dates,mapped_values))
+
+
+            # update links
+            obj.update_link(linkid, mapped, spatial_maps[link_key])
+
+
+
 
         # update output data in links
-        obj.update_links(model_inst,output_exchange_items)
+        #obj.update_links(model_inst,output_exchange_items)
 
         # save these results
         # sys.stdout.write('> [3 of 4] Saving calculations to database... ')

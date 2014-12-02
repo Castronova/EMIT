@@ -244,6 +244,10 @@ class Geometry(object):
         else:
             self.__datavalues = value
 
+    def get_data(self):
+
+        self.__datavalues.get_dates_values()
+
 class ExchangeItem(object):
     def __init__ (self,id,name=None,desc=None, geometry=[],unit=None,variable=None,type=ExchangeItemType.Input):
         self.__name = name
@@ -331,6 +335,12 @@ class ExchangeItem(object):
         # for datavalues in self.__dataset:
         #     dict[datavalues.element] = datavalues.values()
         # return dict
+
+    def get_geoms_and_timeseries(self):
+        geom_dict = {}
+        for geom in self.__geoms:
+            geom_dict[geom] = geom.datavalues().get_dates_values()
+        return geom_dict
 
     def get_timeseries_by_geom(self,geom):
         # """

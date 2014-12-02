@@ -434,6 +434,26 @@ class Coordinator(object):
         else:
             print '>  Could Not Create Link :('
 
+    def get_from_links_by_model(self, model_id):
+
+        """
+        returns only the links where the corresponding linkable component is the FROM item.
+        This is useful for determining where data will pass (direction)
+        """
+
+        links = []
+        for linkid, link in self.__links.iteritems():
+            # get the from/to link info
+            From, To = link.get_link()
+
+            if From[0].get_id() == model_id:
+                links.append([From, To, linkid])
+
+        #if len(links) == 0:
+        #    print '>  Could not find any links associated with model id: '+str(model_id)
+
+        return links
+
     def get_links_by_model(self,model_id):
         """
         returns all the links corresponding with a linkable component
@@ -444,7 +464,7 @@ class Coordinator(object):
             From, To = link.get_link()
 
             if  From[0].get_id() == model_id or To[0].get_id() == model_id:
-                links.append([From, To])
+                links.append([From, To, linkid])
 
         if len(links) == 0:
             print '>  Could not find any links associated with model id: '+str(model_id)
@@ -493,6 +513,44 @@ class Coordinator(object):
         removes the last link
         """
         removelinks = self.__links = {}
+
+    def update_link(self, link_id, from_geom_dict, from_to_spatial_map):
+        """
+        Updates a specific link.
+        values stored on the link object
+        :param model:
+        :return:
+        """
+
+        # todo: start here
+
+        # get the link corresponding to input to - from exchange items
+
+        # set the to exchange item = input mapped item
+
+        f,t = self.__links[link_id].get_link()
+
+        t_item = t[1]
+        f_item = f[1]
+
+        # loop through each of the from geoms
+        f_geoms = f_item.geometries()
+        for t_geom in t_item.geometries():
+
+            # get this list index of the to-geom
+            f_geom ,t_geom= [g for g in from_to_spatial_map if g[1] == t_geom][0]
+
+            # update the datavalues with the mapped dates and values
+
+            t_geom.datavalues().set_timeseries(from_geom_dict[f_geom])
+
+            #dv = in_geom.datavalues()
+
+            # get the output data corresponding to this
+            # f_geom[f_geom.index(out_geom)
+
+            #pass
+
 
     def update_links(self, model, exchangeitems):
         """

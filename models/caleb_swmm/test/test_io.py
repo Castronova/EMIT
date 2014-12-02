@@ -9,6 +9,9 @@ class test_swmm(unittest.TestCase):
 
 
     def test_get_output(self):
+
+        pass
+
 #        o =abspath(join(dirname(__file__),'../data/sim.out'))
 
 

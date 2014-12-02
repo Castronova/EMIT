@@ -8,10 +8,10 @@ from shapely.geometry import LineString, MultiPoint, Point, Polygon
 # TODO!  These should utilize database queries, see test_spatial.py.  Also, they should take actionID as input?
 
 # adapted from https://github.com/ojdo/python-tools.git
-class nearest_neighbor(space_base):
+class spatial_nearest_neighbor(space_base.Space):
 
     def __init__(self):
-        super(nearest_neighbor,self).init()
+        super(spatial_nearest_neighbor,self).__init__()
         self.__params = {'max_distance':10}
 
     def name(self):
@@ -56,14 +56,38 @@ class nearest_neighbor(space_base):
         if name in self.__params.keys():
             self.__params[name] = value
 
-def nearest_neighbor_a(others, point, max_distance):
-    """Find nearest point among others up to a maximum distance.
 
-    Args:
-        others: a list of Points or a MultiPoint
-        point: a Point
-        max_distance: maximum distance to search for the nearest neighbor
 
-    Returns:
-        A shapely Point if one is within max_distance, None otherwise
-    """
+class spatial_closest_object(space_base.Space):
+
+    def __init__(self):
+            super(spatial_closest_object,self).__init__()
+
+    def name(self):
+        return 'Nearest Neighbor - Point to Polygon'
+
+    def transform(self, ingeoms, outgeoms):
+        """Find the nearest geometry among a list, measured from fixed point.
+
+        Args:
+            outgeoms: a list of shapely geometry objects
+            ingeoms: list of shapely Points
+
+        Returns:
+            dictionary of mapped geometries: {ingeom:outgeom,...}
+        """
+
+        # isolate the shapely geometries
+        points = [geom.geom() for geom in ingeoms]
+        polygons = [geom.geom() for geom in outgeoms]
+
+        mapped = []
+
+        i = 0
+        for polygon in polygons:
+            min_dist, min_index = min((polygon.distance(geom), k) for (k, geom) in enumerate(points))
+
+            mapped.append([ingeoms[min_index], outgeoms[i]])
+
+            i += 1
+        return mapped

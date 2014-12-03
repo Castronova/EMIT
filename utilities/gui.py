@@ -338,7 +338,16 @@ def create_database_connections_from_file(ini):
 
     return db_connections
 
-def get_ts_from_link(dbapi, db_sessions, dbactions, links, target_model):
+def generate_link_key(link):
+    """
+    Generates a dictionary key based on link input modelid,exchangeid and output modelid, exchangeid
+    :param link: link object
+    :return: unique string key
+    """
+
+    return '_'.join([link[0][0].get_name(),link[0][1].name(),link[1][0].get_name(),link[1][1].name()])
+
+def get_ts_from_database_link(dbapi, db_sessions, dbactions, links, target_model):
     """
     queries the data
     :param session: database session where the data is stored
@@ -393,35 +402,35 @@ def get_ts_from_link(dbapi, db_sessions, dbactions, links, target_model):
 
     return timeseries
 
-def get_data_from_link(links, target_model):
-
-    mapping = {}
-    inputs = []
-
-
-    for id,link_inst in links.iteritems():
-        f,t = link_inst.get_link()
-
-
-        if t[0].get_name() == target_model.name():
-        #    mapping[t[1].name()] = f[1].name()
-
-            # get output exchange item
-            from_unit = f[1].unit()
-            from_var = f[1].variable()
-            to_var = t[1].variable()
-            to_item = t[1]
-
-            from_item = f[0].get_name()
-            to_item = t[0].get_name()
-
-            start = t[0].get_instance().simulation_start()
-            end = t[0].get_instance().simulation_end()
-
-            inputs.append((from_item,  from_var))
-
-
-    return inputs
+# def get_ts_from_link(links, target_model):
+#
+#     mapping = {}
+#     inputs = []
+#
+#
+#     for id,link_inst in links.iteritems():
+#         f,t = link_inst.get_link()
+#
+#
+#         if t[0].get_name() == target_model.name():
+#         #    mapping[t[1].name()] = f[1].name()
+#
+#             # get output exchange item
+#             from_unit = f[1].unit()
+#             from_var = f[1].variable()
+#             to_var = t[1].variable()
+#             to_item = t[1]
+#
+#             from_item = f[0].get_name()
+#             to_item = t[0].get_name()
+#
+#             start = t[0].get_instance().simulation_start()
+#             end = t[0].get_instance().simulation_end()
+#
+#             inputs.append((from_item,  from_var))
+#
+#
+#     return inputs
 
 def save_model_results():
     pass

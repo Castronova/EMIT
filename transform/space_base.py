@@ -1,7 +1,7 @@
 __author__ = 'tonycastronova'
 
 
-class Space():
+class Space(object):
     def __init__(self):
         pass
 

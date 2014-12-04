@@ -1,6 +1,7 @@
 __author__ = 'tonycastronova'
 
 import datetime as dt
+from utilities.status import Status
 
 class time_step_wrapper(object):
 
@@ -17,8 +18,11 @@ class time_step_wrapper(object):
         self.__end_time = None
         self.__name = None
         self.__description = None
+        self.__ts_value = None
+        self.__ts_units = None
 
         self.__current_time = self.simulation_start()
+        self.__status = Status.Loaded
 
         try:
             self.name(value=self.__params['model'][0]['code'])
@@ -41,12 +45,16 @@ class time_step_wrapper(object):
             self.__session = value
         return self.__session
 
-    def get_time_step(self):
+    def time_step(self, value):
         """
-            ini configuration file
+        sets the simulation timestep
+        :param value: timestep as a datetime object
+        :return: timestep
         """
-        return (int(self.__params['time_step'][0]['value']),self.__params['time_step'][0]['unit_type_cv'])
-        #raise NotImplementedError('This is an abstract method that must be implemented!')
+
+        if value is not None:
+            self.__timestep = value
+        return self.__timestep
 
     def outputs(self, value = None, name = None):
 
@@ -126,19 +134,23 @@ class time_step_wrapper(object):
             self.__current_time = self.simulation_start()
         return self.__current_time
 
-    def increment_time(self, time):
+    def increment_time(self, step=None):
+        """
+        increments time
+        :param step: the simulation timestep as a datetime object
+        :return:  current time
+        """
 
-        value,unit = self.get_time_step()
+        if step is not None:
 
-        if unit == 'millisecond': time += dt.timedelta(milliseconds=value)
-        elif unit == 'second': time +=  dt.timedelta(seconds =value)
-        elif unit == 'minute': time +=  dt.timedelta(minutes=value)
-        elif unit == 'hour': time +=  dt.timedelta(hours=value)
-        elif unit == 'day': time +=  dt.timedelta(days=value)
-        else:
-            raise Exception('Unknown unit: %s'%unit)
+            # adjust the current time
+            self.__current_time = self.current_time() + step
 
-        return time
+            if self.current_time() > self.simulation_end():
+                self.status(Status.Finished)
+
+            return self.current_time()
+
 
 
     def get_output_by_name(self,outputname=None):
@@ -181,3 +193,8 @@ class time_step_wrapper(object):
 
         raise Exception('Could not find input: %s' + inputname)
 
+
+    def status(self, value=None):
+        if value is not None:
+            self.__status = value
+        return self.__status

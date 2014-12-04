@@ -342,6 +342,13 @@ class ExchangeItem(object):
             geom_dict[geom] = geom.datavalues().get_dates_values()
         return geom_dict
 
+    def get_timeseries_by_id(self, geom_id):
+
+        for geom in self.__geoms:
+            if geom.id() == geom_id:
+                return geom.datavalues().get_dates_values()
+
+
     def get_timeseries_by_geom(self,geom):
         # """
         # geom = the geom of the desired timeseries

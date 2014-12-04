@@ -5,7 +5,7 @@ from api.ODM2.Core.services import readCore
 from api.ODM2.Results.services import readResults
 from shapely import wkb
 import stdlib, uuid
-
+from utilities.status import Status
 
 class odm2(object):
     def __init__(self,resultid, session):
@@ -70,14 +70,20 @@ class odm2(object):
 
         self.__session = session
 
+        self.__status = Status.Loaded
+
     def save(self):
         return [self.get_output_by_name(outputname=self.name())]
         #return [self.__output]
 
     def run(self,inputs):
-        pass
+        # set the status to finished
+        self.status(Status.Finished)
+
     def run_timestep(self,inputs,time):
-        pass
+        # set the status to finished
+        self.status(Status.Finished)
+
 
     def session(self):
         return self.__session
@@ -127,6 +133,7 @@ class odm2(object):
         return self.__current_time
 
     def increment_time(self, time):
+
 
         value,unit = self.time_step()
 
@@ -180,3 +187,8 @@ class odm2(object):
         #         return
         # raise Exception ('Error setting data for variable: %s' % variablename)
         raise NotImplementedError('This is an abstract method that must be implemented!')
+
+    def status(self, value=None):
+        if value is not None:
+            self.__status = value
+        return self.__status

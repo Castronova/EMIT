@@ -15,7 +15,7 @@ from utilities import mdl, spatial
 
 #import parse_swmm as ps
 import geometry as swmm_geom
-
+from structures import *
 
 
 class swmm(time_step_wrapper):
@@ -33,14 +33,15 @@ class swmm(time_step_wrapper):
         #self.exe = join(cwd,'swmm5')
         self.sim_input = join(self.__datadir,config_params['data'][0]['input'])
 
-
-
         # generate random names for inp, rpt, and out
         self.swmm_file_name = config_params['data'][0]['input'].split('.')[0]
         self.__inp = join(self.__datadir,self.swmm_file_name+'.inp')
         self.__rpt = join(self.__datadir,self.swmm_file_name+'.rpt')
         self.__out = join(self.__datadir,self.swmm_file_name+'.out')
         self.__console = open(join(self.__datadir,'console.out'),'w')
+
+        # store swmm geometry list to lookup geoms later on
+        self.__geom_lookup = {}
 
         #--- read input file and build geometries ---
         geoms = self.build_geometries()
@@ -57,11 +58,55 @@ class swmm(time_step_wrapper):
         # get start and end times
         self.set_start_end_from_swmm()
 
+        # todo: start here.  How can I get the timestep value from SWMM?
+        # set timestep
+        self.__begin_c_time = c_double( self.__swmmLib.swmm_getDateTime(c_char_p('begin'))).value
+        self.__end_c_time = c_double( self.__swmmLib.swmm_getDateTime(c_char_p('end'))).value
+
+        #self.time_step(1,'second')
+
         print 'done with initialize'
 
 
-    def run(self,inputs):
-        pass
+    def run_timestep(self,inputs, current_time):
+
+        # get rainfall from inputs
+        rainfall_item = inputs['Rainfall']
+        rainfall_data = rainfall_item.get_geoms_and_timeseries()
+
+        self.__swmmLib.getObjectTypeCount.restype = c_int
+        subcatchment_count = self.__swmmLib.getObjectTypeCount(SWMM_Types.SUBCATCH)
+        self.__swmmLib.getSubcatch.restype = POINTER(TSubcatch)
+        self.__swmmLib.setSubcatch.argtypes = [POINTER(TSubcatch), c_char_p]
+        step = c_double()
+
+        # loop through all of the subcatchments and apply inputs
+        for i in range(0,subcatchment_count):
+
+            # get the subcatchment
+            sub = self.__swmmLib.getSubcatch(c_int(i))
+
+            # get the subcatchment and geometry ids
+            sub_id = sub.contents.ID
+            geom_id = self.__geom_lookup[sub_id].id()
+
+            # get the date and value from inputs, based on geom_id
+            date, value = rainfall_item.get_timeseries_by_id(geom_id)
+
+            # set the rainfall value
+            sub.contents.rainfall = value[0]
+
+            # apply the rainfall
+            self.__swmmLib.setSubcatch(sub,c_char_p('rainfall'))
+
+        error = self.__swmmLib.swmm_step(byref(step))
+
+        # todo: increment time!
+        elapsed = self.__begin_c_time + step.value
+        new_time = self.decode_datetime(elapsed)
+        increment = new_time - self.current_time()
+        self.increment_time(increment)
+
 
         # # setup input file for simulation
         # self.setup_model(inputs)
@@ -146,6 +191,9 @@ class swmm(time_step_wrapper):
                     elem.datavalues(dv)
                     elementset.append(elem)
 
+                    # save the geometry for lookup later
+                    self.__geom_lookup[i] = elem
+
 
                 # create exchange item
                 ei = ExchangeItem(id,
@@ -181,6 +229,8 @@ class swmm(time_step_wrapper):
                     elementset.append(elem)
                     id_inc += 1
 
+                    # save the geometry for lookup later
+                    self.__geom_lookup[i] = elem
 
                 # create exchange item
                 ei = ExchangeItem(id,
@@ -209,6 +259,7 @@ class swmm(time_step_wrapper):
 
         # build catchments
         catchments = swmm_geom.build_catchments(input_file)
+
 
         # build rivers
         streams = swmm_geom.build_links(input_file)
@@ -366,6 +417,19 @@ class swmm(time_step_wrapper):
 
     def find(self, lst, predicate):
         return (i for i, j in enumerate(lst) if predicate(j)).next()
+
+
+    def decode_datetime(self, time):
+        year = c_int(0)
+        month = c_int(0)
+        day = c_int(0)
+        hour = c_int(0)
+        minute = c_int(0)
+        second = c_int(0)
+
+        self.__swmmLib.datetime_decodeDateTime(c_double(time), byref(year), byref(month), byref(day), byref(hour), byref(minute), byref(second))
+
+        return datetime(year.value,month.value,day.value,hour.value,minute.value,second.value)
 
 
     def set_start_end_from_swmm(self):

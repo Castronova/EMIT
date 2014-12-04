@@ -62,6 +62,13 @@ class LinkStart ( wx.Frame ):
 
         self.Centre( wx.BOTH )
 
+        self.Bind(wx.EVT_CHAR_HOOK, self.OnKeyEsc)
+
+    def OnKeyEsc(self, event):
+        keyCode = event.GetKeyCode()
+        if keyCode == wx.WXK_ESCAPE:
+            self.Close()
+
     def AddClick(self, event):
         linkwiz = LinkWizard.wizLink(self.FloatCanvas, self.from_model.get_id(), self.to_model.get_id(), self.output, self.input, self.cmd)
 
@@ -71,7 +78,7 @@ class LinkStart ( wx.Frame ):
         self.Destroy()
 
     def PopulateLinks(self):
-
+        self.listbox.Clear()
         links = self.cmd.get_links_btwn_models(self.from_model.get_id(), self.to_model.get_id())
 
         for l in links:

@@ -194,6 +194,7 @@ class wizLink(wx.wizard.Wizard):
 ##self.Bind(RB.EVT_RIBBONBUTTONBAR_CLICKED,  self.onPlotSelection, id=wxID_RIBBONPLOTTIMESERIES)
         self.Bind(wx.wizard.EVT_WIZARD_PAGE_CHANGED, self.on_page_changing)
         self.Bind(wx.wizard.EVT_WIZARD_FINISHED, self.on_wizard_finished)
+        self.Bind(wx.wizard.EVT_WIZARD_CANCEL, self.on_wizard_cancel)
 
         self.initSubscribers()
 
@@ -294,9 +295,10 @@ class wizLink(wx.wizard.Wizard):
         # else:
         #     self.is_changing_series = True
 
+    def on_wizard_cancel(self, event):
+        self.Destroy()
 
     def on_wizard_finished(self, event):
-
 
         #--- create link objects ---
 
@@ -307,86 +309,4 @@ class wizLink(wx.wizard.Wizard):
 
         self.cmd.add_link(self.outputid, link[0].name(),
                           self.inputid, link[1].name())
-
-
-        self.Close()
-        event.Skip()
-
-
-
-
-        # Site, Variable, Method, Source, QCL= self.get_metadata()
-        # #if qcl exits use its its
-        # closeSuccessful = False
-        # if QCL.id == 0:
-        #     val = wx.MessageBox("You are overwriting an level 0 dataset, which is usually reserved for raw data.\n"
-        #                         "Are you sure you want to save?",
-        #                         'Are you Sure?',
-        #                         wx.YES_NO | wx.ICON_QUESTION)
-        #     if val == 2:
-        #         #logger.debug("user selected yes to save a level 0 dataset")
-        #         val_2 = wx.MessageBox("This action cannot be undone.\nAre you sure, you are sure?\n",
-        #                               'Are you REALLY sure?',
-        #                               wx.YES_NO | wx.ICON_QUESTION)
-        #         if val_2 ==2:
-        #             closeSuccessful =True
-        #
-        # else:
-        #     closeSuccessful = True
-        #
-        #
-        #
-        #
-        # #if QCL.code == 0:
-        # #     #TODO MessageBox "you are overwriting an level 0 dataset, which is usually reserved for raw data
-        # #     #  are you sure you want to save?"
-        # #     val = wx.MessageBox('Are you Sure?', "you are overwriting an level 0 dataset, which is usually reserved"
-        # #                                               " for raw data are you sure you want to save?",  wx.YES_NO | wx.ICON_INFORMATION)
-        # #
-        # #     if val == wx.OK:
-        # #         #TODO Message Box "this action cannot be changed are you sure, you are sure you want to save?"
-        # #         val2 = wx.MessageBox('Are you Sure?',"this action cannot be changed are you sure, you are sure "
-        # #                                                  "you want to save?",  wx.YES_NO | wx.ICON_INFORMATION)
-        # #         if val2 != wx.OK:
-        # #closeSuccessful = False
-        # #             break
-        # #     else: closeSuccessful = False
-        #
-        #
-        # if closeSuccessful:
-        #     if self.series_service.qcl_exists(QCL):
-        #         if QCL==self.currSeries.quality_control_level:
-        #             QCL=None
-        #         else:
-        #             QCL = self.record_service.get_qcl(QCL)
-        #     else:
-        #         QCL=self.record_service.create_qcl(QCL.code, QCL.definition, QCL.explanation)
-        #
-        #     #if variable exists use its id
-        #     if self.series_service.variable_exists(Variable):
-        #         if Variable==self.currSeries.variable:
-        #             Variable= None
-        #         else:
-        #             Variable = self.record_service.get_variable(Variable)
-        #     else:
-        #         Variable=self.record_service.create_variable(Variable)
-        #     #if method exists use its id
-        #     if self.series_service.method_exists(Method):
-        #         if Method==self.currSeries.method:
-        #             Method=None
-        #         else:
-        #             Method = self.record_service.get_method(Method)
-        #     else:
-        #         Method=self.record_service.create_method(Method)
-        #
-        #     # initiate either "Save as" or "Save"
-        #     if self.page1.pnlIntroduction.rbSave.GetValue():
-        #         result = self.record_service.save(Variable, Method, QCL, False)
-        #     else:
-        #         result = self.record_service.save(Variable, Method, QCL, True)
-        #
-        #     if not result:
-        #         wx.MessageBox("Save was unsuccessful", "Error!", wx.ICON_ERROR | wx.ICON_EXCLAMATION)
-        #     else:
-        #         Publisher.sendMessage("refreshSeries")
 

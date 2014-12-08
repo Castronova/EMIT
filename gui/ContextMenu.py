@@ -222,42 +222,6 @@ class DirectoryContextMenu(wx.Menu):
     def OnClose(self, e):
         self.parent.Close()
 
-class TreeContextMenu(wx.Menu):
-
-    def __init__(self, parent, e):
-        super(TreeContextMenu, self).__init__()
-
-        self.cmd = parent.cmd
-        self.arrow_obj = e
-        self.parent = parent
-
-        # mmi = wx.MenuItem(self, wx.NewId(), 'View Details')
-        # self.AppendItem(mmi)
-        # self.Bind(wx.EVT_MENU, self.OnViewDetails, mmi)
-
-        mmi = wx.MenuItem(self, wx.NewId(), 'Expand All')
-        self.AppendItem(mmi)
-        self.Bind(wx.EVT_MENU, self.OnExpandAll, mmi)
-
-        mmi = wx.MenuItem(self, wx.NewId(), 'Collapse All')
-        self.AppendItem(mmi)
-        self.Bind(wx.EVT_MENU, self.OnCollapseAll, mmi)
-
-    def OnViewDetails(self, e):
-       # self.parent.ArrowClicked(self.arrow_obj)
-        self.parent.ShowDetails()
-
-    def OnExpandAll(self, e):
-        self.parent.OnExpandAll()
-
-    def OnCollapseAll(self, e):
-        self.parent.OnCollapseAll()
-
-    def OnMinimize(self, e):
-        self.parent.Iconize()
-
-    def OnClose(self, e):
-        self.parent.Close()
 
 class TreeItemContextMenu(wx.Menu):
 

@@ -2,7 +2,7 @@ __author__ = 'Mario'
 import wx
 import wx.gizmos as gizmos
 from images import icons
-from ContextMenu import TreeContextMenu, TreeItemContextMenu
+from ContextMenu import TreeItemContextMenu
 import ConfigParser
 import os
 from os.path import *
@@ -121,19 +121,10 @@ class ToolboxPanel(wx.Panel):
         self.tree.ExpandAll()
 
         # self.tree.GetMainWindow().Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
-        self.tree.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
         self.tree.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnActivate)
         self.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnItemContextMenu)
         # self.Bind(wx.EVT_TREE_ITEM_MENU, self.OnItemContextMenu)
         self.Bind(wx.EVT_TREE_BEGIN_DRAG, self.onDrag)
-
-    def OnContextMenu(self, evt):
-
-        # save the currently selected item
-        self.SetCurrentlySelected(evt)
-
-        # launch the context menu
-        self.tree.PopupMenu(TreeContextMenu(self,evt))
 
     def OnItemContextMenu(self, evt):
 

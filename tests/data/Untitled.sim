@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
 <Simulation>
-  <DataModel databaseid="a6322" id="74de87b9" name="cumulative_precipitation" resultid="5" x="49.0" y="-24.0"/>
-  <DbConnection address="castro-server.bluezone.usu.edu" connection_string="postgresql+psycopg2://postgres:water@castro-server.bluezone.usu.edu/ODM2-Live" databaseid="a6322" db="ODM2-Live" desc="PostgreSQL database with hydrology simulations" engine="postgresql" name="ODM2 Simulation database - Live" pwd="water" user="postgres"/>
+  <Model id="31e80" mdl="C:\Users\Mario\Documents\Projects\EMIT\gui\../tests\data\multiplier.mdl" name="Multiplier" x="24.0" y="40.0"/>
+  <Model id="0c130" mdl="C:\Users\Mario\Documents\Projects\EMIT\gui\../tests\data\randomizer.mdl" name="Random Number Generator" x="-306.0" y="49.0"/>
 </Simulation>

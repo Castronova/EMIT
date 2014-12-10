@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <Simulation>
-  <Model id="d46dd" mdl="C:\Users\Mario\Documents\Projects\EMIT\tests\data\randomizer.mdl" name="Random Number Generator" x="-270.0" y="14.0"/>
-  <Model id="7ac00" mdl="C:\Users\Mario\Documents\Projects\EMIT\tests\data\multiplier.mdl" name="Multiplier" x="212.0" y="79.0"/>
-  <Link from_id="d46dd" from_item="random_number" from_item_id="e3e55" from_name="Random Number Generator" to_id="7ac00" to_item="some_value" to_item_id="2c808" to_name="Multiplier"/>
+  <DataModel databaseid="02ac5" id="8c779e9a" name="cumulative_precipitation" resultid="55" x="-277.0" y="-99.0"/>
+  <Model id="69833" mdl="C:\Users\Mario\Documents\Projects\EMIT\gui\../tests\data\randomizer.mdl" name="Random Number Generator" x="289.0" y="-23.0"/>
+  <Model id="c6580" mdl="C:\Users\Mario\Documents\Projects\EMIT\gui\../models\swmm\src\swmm.mdl" name="SWMM" x="-124.0" y="53.0"/>
+  <DbConnection address="castro-server.bluezone.usu.edu" connection_string="postgresql+psycopg2://postgres:water@castro-server.bluezone.usu.edu/ODM2" databaseid="02ac5" db="ODM2" desc="PostgreSQL database with hydrology simulations" engine="postgresql" name="ODM2 Simulation database" pwd="water" user="postgres"/>
 </Simulation>

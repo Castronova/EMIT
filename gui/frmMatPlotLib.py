@@ -144,7 +144,7 @@ class LegendOvl(FastObjectListView):
             self.RefreshIndex(rowIndex, modelObject)
 
 class MatplotFrame(wx.Frame):
-    def __init__(self, parent, title='', xlabel='', selector=True):
+    def __init__(self, parent, title='', xlabel='', ylabel='', selector=True):
 
         self.__selector = selector
         self.__image_list = None
@@ -222,6 +222,9 @@ class MatplotFrame(wx.Frame):
         self.cmap = None
         self.legend_colors = []
         self.__checked_indices = [0]
+        self.__x_label = xlabel
+        self.__y_label = ylabel
+        self.__title = title
 
         Publisher.subscribe(self.update_plot, "SeriesChecked")  # subscribes LegendListControl
 
@@ -451,6 +454,7 @@ class MatplotFrame(wx.Frame):
         handles, labels = self.axis.get_legend_handles_labels()
         self.axis.legend(handles, labels, title="Result ID", bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 
+
     def CreateThumb(self, pilImage, size):
         #pilImage = Image.open(pathin)
         #size = (16, 16)
@@ -518,6 +522,10 @@ class MatplotFrame(wx.Frame):
             self.axis.grid()
             self.figure.autofmt_xdate()
 
+            self.axis.set_ylabel(self.__y_label)
+            self.axis.set_xlabel(self.__x_label)
+            self.axis.set_title = self.__title
+
             # build legend
             #handles, labels = self.axis.get_legend_handles_labels()
             #self.axis.legend(handles, labels, title="Result ID", bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
@@ -581,7 +589,7 @@ class pnlSpatial ( wx.Panel ):
         self.toolbar = NavToolbar(self.canvas)
         self.figure.tight_layout()
         plt.subplots_adjust(
-            right=.75, bottom = .15
+            top=.9, left=.1, right=.9, bottom = .15
         )
         #self.figure.tight_layout()
 

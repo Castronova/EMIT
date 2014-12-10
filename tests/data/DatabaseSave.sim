@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<Simulation>
+  <Model id="4fd6f" mdl="C:\Users\Mario\Documents\Projects\EMIT\gui\../tests\data\multiplier.mdl" name="Multiplier" x="-310.0" y="53.0"/>
+  <DataModel databaseid="152bd" id="3c495ca1" name="multipliedValue" resultid="70" x="3.0" y="-65.0"/>
+  <DbConnection address="castro-server.bluezone.usu.edu" connection_string="postgresql+psycopg2://postgres:water@castro-server.bluezone.usu.edu/ODM2" databaseid="152bd" db="ODM2" desc="PostgreSQL database with hydrology simulations" engine="postgresql" name="ODM2 Simulation database" pwd="water" user="postgres"/>
+</Simulation>

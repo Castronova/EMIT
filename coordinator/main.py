@@ -310,7 +310,7 @@ class Coordinator(object):
                               instance=inst,
                               desc=inst.description(),
                               input_exchange_items= [],
-                              output_exchange_items=  [oei],
+                              output_exchange_items=  oei,
                               params=None)
 
 

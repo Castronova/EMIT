@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<Simulation>
+  <Model id="804d2" mdl="C:\Users\Mario\Documents\Projects\EMIT\gui\../models\swmm\src\swmm.mdl" name="SWMM" x="-257.0" y="107.0"/>
+  <DataModel databaseid="abd9a" id="2627d29c" name="cumulative_precipitation" resultid="55" x="-55.0" y="-81.0"/>
+  <DbConnection address="castro-server.bluezone.usu.edu" connection_string="postgresql+psycopg2://postgres:water@castro-server.bluezone.usu.edu/ODM2" databaseid="abd9a" db="ODM2" desc="PostgreSQL database with hydrology simulations" engine="postgresql" name="ODM2 Simulation database" pwd="water" user="postgres"/>
+</Simulation>

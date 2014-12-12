@@ -1,6 +1,8 @@
 <?xml version="1.0" ?>
 <Simulation>
-  <Model id="4fd6f" mdl="C:\Users\Mario\Documents\Projects\EMIT\gui\../tests\data\multiplier.mdl" name="Multiplier" x="-310.0" y="53.0"/>
-  <DataModel databaseid="152bd" id="3c495ca1" name="multipliedValue" resultid="70" x="3.0" y="-65.0"/>
-  <DbConnection address="castro-server.bluezone.usu.edu" connection_string="postgresql+psycopg2://postgres:water@castro-server.bluezone.usu.edu/ODM2" databaseid="152bd" db="ODM2" desc="PostgreSQL database with hydrology simulations" engine="postgresql" name="ODM2 Simulation database" pwd="water" user="postgres"/>
+  <DataModel databaseid="dc246" id="92a026c9" name="cumulative_precipitation" resultid="5" x="51.0" y="116.0"/>
+  <Model id="647d3" mdl="C:\Users\Mario\Documents\Projects\EMIT\gui\../tests\data\randomizer.mdl" name="Random Number Generator" x="-334.0" y="46.0"/>
+  <Model id="232ec" mdl="C:\Users\Mario\Documents\Projects\EMIT\gui\../tests\data\multiplier.mdl" name="Multiplier" x="112.0" y="-72.0"/>
+  <Link from_id="92a026c9" from_item="cumulative_precipitation" from_item_id="92a026c9" from_name="cumulative_precipitation" to_id="232ec" to_item="some_value" to_item_id="7ada8" to_name="Multiplier"/>
+  <DbConnection address="castro-server.bluezone.usu.edu" connection_string="postgresql+psycopg2://postgres:water@castro-server.bluezone.usu.edu/ODM2-Live" databaseid="dc246" db="ODM2-Live" desc="PostgreSQL database with hydrology simulations" engine="postgresql" name="ODM2 Simulation database - Live" pwd="water" user="postgres"/>
 </Simulation>

@@ -22,7 +22,6 @@ class ExchangeItemType():
     Input = 'input'
     Output = 'output'
 
-
 class Variable(object):
     """
     Defines the variable object
@@ -348,7 +347,6 @@ class ExchangeItem(object):
             if geom.id() == geom_id:
                 return geom.datavalues().get_dates_values()
 
-
     def get_timeseries_by_geom(self,geom):
         # """
         # geom = the geom of the desired timeseries
@@ -400,7 +398,6 @@ class ExchangeItem(object):
         self.__geoms = []
         self.StartTime = datetime.datetime(2999,1,1,1,0,0)
         self.EndTime = datetime.datetime(1900,1,1,1,0,0)
-
 
     def set_dataset(self,value):
         # self.__dataset = value

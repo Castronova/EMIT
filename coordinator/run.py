@@ -210,7 +210,7 @@ def run_time_step(obj):
 
             # time the model until it reaches or surpasses all target times (requested time)
             current_time = model_inst.current_time()
-            while current_time < max(target_times):
+            while current_time <= max(target_times):
 
                 # update simulation status
                 simulation_status[modelid] = model_inst.status()

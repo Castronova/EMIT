@@ -840,6 +840,8 @@ class SimulationContextMenu(ContextMenu):
             # get the result
             simulationID = obj.GetItem(id,0).GetText()
 
+            name = obj.GetItem(id,1).GetText()
+
             # get resultid from simulation id
 
             # get data for this row
@@ -856,14 +858,15 @@ class SimulationContextMenu(ContextMenu):
 
                 resobj = results[key][0][2]
                 # set metadata based on first series
-                xlabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
+                ylabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
                 title = '%s' % (resobj.VariableObj.VariableCode)
 
                 # save the variable and units to validate future time series
-                variable = resobj.VariableObj.VariableCode
+                variable = resobj.VariableObj.VariableNameCV
                 units = resobj.UnitObj.UnitsName
+                title = '%s: %s [%s]' % (name, variable,units)
 
-                PlotFrame = MatplotFrame(self.Parent, title, xlabel)
+                PlotFrame = MatplotFrame(self.Parent, ylabel=ylabel, title=title)
 
                 for x,y,resobj in results[key]:
                     # store the x and Y data

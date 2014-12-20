@@ -1,16 +1,16 @@
 __author__ = 'Mario'
 import wx
-import wx.gizmos as gizmos
+import os
 from images import icons
 from ContextMenu import TreeItemContextMenu
 import ConfigParser
-import os
 from os.path import *
 import fnmatch
 import wx.lib.customtreectrl as CT
 import utilities
 from txtctrlModel import ModelTxtCtrl
-from PropertyGrid import pnlProperty
+from wx.lib.pubsub import pub as Publisher
+import random
 
 class ToolboxPanel(wx.Panel):
     def __init__(self, parent):
@@ -125,6 +125,7 @@ class ToolboxPanel(wx.Panel):
         self.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnItemContextMenu)
         # self.Bind(wx.EVT_TREE_ITEM_MENU, self.OnItemContextMenu)
         self.Bind(wx.EVT_TREE_BEGIN_DRAG, self.onDrag)
+        self.tree.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.onDoubleClick)
 
     def OnItemContextMenu(self, evt):
 
@@ -149,6 +150,21 @@ class ToolboxPanel(wx.Panel):
         #         print self.items[i]
         #         break
         #pass
+
+    def onDoubleClick(self, event):
+        id = event.GetItem()
+        filename = id.GetText()
+        fullpath = self.filepath[filename]
+        filenames = []
+        filenames.append(fullpath)
+
+        # Generate Random Coordinates
+        x = random.randint(250,600)
+        y = random.randint(150, 350)
+
+        # Send the filepath to the FileDrop class in CanvasController
+        Publisher.sendMessage('toolboxclick', x = x, y = y, filenames = filenames)
+
 
     def onDrag(self, event):
         data = wx.FileDataObject()

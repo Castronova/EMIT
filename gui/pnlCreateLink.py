@@ -6,6 +6,7 @@ import wx
 import sys
 from wx.lib.pubsub import pub as Publisher
 import wx.propgrid as wxpg
+import warnings
 
 
 [wxID_PNLCREATELINK, wxID_PNLSPATIAL, wxID_PNLTEMPORAL,
@@ -94,9 +95,10 @@ class pnlCreateLink ( wx.Panel ):
         self.pgin.AddPage( "Input Details" )
 
         # Fill using dictionary
-        self.pgout.SetPropertyValues( self.output)
-        self.pgin.SetPropertyValues( self.input)
-
+        # TODO: This is causing error messages, SetPropertyValues is for dictionaries
+        # TODO: Maybe make self.output a dictionary instead of a list
+        # self.pgout.SetPropertyValues( self.output)
+        # self.pgin.SetPropertyValues( self.input)
 
         self.nout = 0
         self.nin  = 0
@@ -151,6 +153,7 @@ class pnlCreateLink ( wx.Panel ):
 
     def PopulateInputPropertyGrid(self, exchangeitems, nin):
         # for exchangeitem in exchangeitems:
+        warnings.filterwarnings("ignore")
         if len(exchangeitems) > 0:
             self.pgin.Append( wxpg.PropertyCategory("1. Variable") )
             self.pgin.Append( wxpg.StringProperty("Name",value=exchangeitems[nin].variable().VariableNameCV() ))
@@ -160,9 +163,11 @@ class pnlCreateLink ( wx.Panel ):
             self.pgin.Append( wxpg.StringProperty("Code", value=exchangeitems[nin].unit()._Unit__unitName))
             self.pgin.Append( wxpg.StringProperty("Abbreviation", value=exchangeitems[nin].unit()._Unit__unitAbbreviation))
             self.pgin.Append( wxpg.StringProperty("Type", value=exchangeitems[nin].unit()._Unit__unitTypeCV))
+        warnings.resetwarnings()
 
     def PopulateOutputPropertyGrid(self, exchangeitems, nout):
         # for exchangeitem in exchangeitems:
+        warnings.filterwarnings("ignore")
         if len(exchangeitems) > 0:
             self.pgout.Append( wxpg.PropertyCategory("1. Variable") )
             self.pgout.Append( wxpg.StringProperty("Name",value=exchangeitems[nout].variable().VariableNameCV() ))
@@ -172,6 +177,7 @@ class pnlCreateLink ( wx.Panel ):
             self.pgout.Append( wxpg.StringProperty("Code", value=exchangeitems[nout].unit()._Unit__unitName))
             self.pgout.Append( wxpg.StringProperty("Abbreviation", value=exchangeitems[nout].unit()._Unit__unitAbbreviation))
             self.pgout.Append( wxpg.StringProperty("Type", value=exchangeitems[nout].unit()._Unit__unitTypeCV))
+        warnings.resetwarnings()
 
     def OnPropGridPageChangepgout(self, event):
             index = self.pgout.GetSelectedPage()
@@ -242,7 +248,7 @@ class pnlCreateLink ( wx.Panel ):
             Publisher.sendMessage("deactivateNextButton")
 
     def InputSelect(self, exchangeitems, input_item_name):
-
+        warnings.filterwarnings("ignore")
         #self.selectedinput = self.inputitems[event.GetIndex()]
         #self.selectedinput = event.Text
 
@@ -264,6 +270,10 @@ class pnlCreateLink ( wx.Panel ):
             #self.set_link(0,self.inputitems[event.GetIndex()])
             self.set_link(1,item)
             self.activateLinkButton()
+        warnings.resetwarnings()
+    # with warnings.catch_warnings():
+    #     warnings.simplefilter('ignore')
+
 
     def InputDeselect(self, event):
 
@@ -273,7 +283,7 @@ class pnlCreateLink ( wx.Panel ):
         self.activateLinkButton()
 
     def OutputSelect(self, exchangeitems, output_item_name):
-
+        warnings.filterwarnings("ignore")
         #self.selectedoutput = self.outputitems[event.GetIndex()]
 
         item = self.GetExchangeItemByName(self.outputitems, output_item_name)
@@ -294,6 +304,10 @@ class pnlCreateLink ( wx.Panel ):
             #self.set_link(1,self.outputitems[event.GetIndex()])
             self.set_link(0,item)
             self.activateLinkButton()
+
+        warnings.resetwarnings()
+    # with warnings.catch_warnings():
+    #     warnings.simplefilter('ignore')
 
     def OutputDeselect(self, event):
 

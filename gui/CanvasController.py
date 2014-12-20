@@ -237,11 +237,6 @@ class CanvasController:
 
             # define the font
             font = wx.Font(16, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
-            # print "font", font.GetPixelSize()
-            #
-            # textwidth =len(max(wrappedtext))*font.GetPixelSize()[1]
-            # textheight = len(wrappedtext)*font.GetPixelSize()[1]
-            # location = (x - .25*textwidth,y+.5*textheight)
 
             label = self.FloatCanvas.AddScaledTextBox(unicode(name), (x,y), #(x+1, y+h/2),
                                         Color = "Black",  Size = FontSize, Width= w-10, Position = "cc", Alignment = "center",
@@ -301,7 +296,8 @@ class CanvasController:
 
         # set the shape type so that we can identify it later
         arrow_shape.type = CanvasObjects.ShapeType.ArrowHead
-        self.FloatCanvas.AddObject(arrow_shape)
+        arrow_draw = self.FloatCanvas.AddObject(arrow_shape)
+        arrow_draw.PutInBackground()
 
         # bind the arrow to left click
         arrow_shape.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
@@ -450,9 +446,9 @@ class CanvasController:
                 self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != CanvasObjects.ShapeType.Link]
                 #self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Line]
 
-                # remove any arrowheads from the _ForeDrawList
+                # remove any arrowheads from the two FloatCanvas DrawLists
                 self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if obj.type != CanvasObjects.ShapeType.ArrowHead]
-                #self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if type(obj) != FC.Polygon]
+                self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != CanvasObjects.ShapeType.ArrowHead]
 
                 # redraw links
                 for link in self.links.keys():
@@ -643,6 +639,7 @@ class CanvasController:
         # clear links and model in gui
         self.links.clear()
         self.models.clear()
+        self.FloatCanvas.ClearAll()
 
         self.RedrawConfiguration()
 
@@ -938,6 +935,14 @@ class FileDrop(wx.FileDropTarget):
         self.controller = controller
         self.window = window
         self.cmd = cmd
+        Publisher.subscribe(self.OnDropFiles, 'toolboxclick')
+
+    def RandomCoordinateGeneration(self, filepath):
+        filenames = filepath
+        x = 0
+        y = 0
+
+        self.OnDropFiles(x,y,filenames)
 
     def OnDropFiles(self, x, y, filenames):
         #print "filename: {2} x: {0} y: {1}".format(x,y, filenames)

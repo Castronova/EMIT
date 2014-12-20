@@ -68,7 +68,9 @@ class TestPanel( wx.Panel ):
         self.pg.AddPage( "Link Details" )
 
         # Fill using dictionary
-        self.pg.SetPropertyValues( self.input)
+        
+        # TODO: This code below is commented out and needs a workaround to suppress errors
+        # self.pg.SetPropertyValues( self.input)
 
         topsizer.Add(pg, 1, wx.EXPAND)
 

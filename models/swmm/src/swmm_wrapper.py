@@ -180,6 +180,7 @@ class swmm(feed_forward_wrapper):
                     elem.datavalues(dv)
                     elementset.append(elem)
 
+                id = uuid.uuid4().hex[:5]
 
                 # create exchange item
                 ei = ExchangeItem(id,

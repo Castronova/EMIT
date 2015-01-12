@@ -17,11 +17,10 @@
 		<Model1_path path = "C:\Users\Mario\Documents\Projects\EMIT\gui\../models\swmm\src\swmm.mdl"/>
 		<Model1_name name = "SWMM"/>
 		<Model1_coordinates x = "-247.0" y = "107.0"/>
-		<y = "107.0"/>
 	</Model1>
 
 	<DataModel>
-		<databaseid = "abd9a"/>
+		<DatabaseID databaseid = "abd9a"/>
 		<id = "2627d29c"/>
 		<name = "cumulative_precipitation"/>
 		<resultid = "55"/>
@@ -29,4 +28,20 @@
 		<y = "-81.0"/>
 	</DataModel>
 
+    <Models>
+        <Model>
+            <id> 267 </id>
+
+        </Model>
+
+        <Model>
+        <id> 267 </id>
+
+    </Model>
+
+    </Models>
+
+
+    <Model id="123" something="23452"> something </Model>
 </Simulation>
+

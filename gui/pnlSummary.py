@@ -96,18 +96,18 @@ class TestPanel( wx.Panel ):
     def PropGridPopulate(self, input, output,):
 
         self.pg.Append( wxpg.PropertyCategory("Input Item") )
-        self.pg.Append( wxpg.StringProperty("Variable Name (input)",value=input.GetPropertyByName("Name").GetValue() ))
-        self.pg.Append( wxpg.StringProperty("Variable Definition (input)",value=input.GetPropertyByName("Definition").GetValue()))
-        self.pg.Append( wxpg.StringProperty("Unit Code (input)", value=input.GetPropertyByName("Code").GetValue()))
-        self.pg.Append( wxpg.StringProperty("Unit Abbreviation (input)", value=input.GetPropertyByName("Abbreviation").GetValue()))
-        self.pg.Append( wxpg.StringProperty("Unit Type (input)", value=input.GetPropertyByName("Type").GetValue()))
+        self.pg.Append( wxpg.StringProperty("Variable Name (input)",value=input.GetPropertyByName("Name").GetValue() or 'undefined' ))
+        self.pg.Append( wxpg.StringProperty("Variable Definition (input)",value=input.GetPropertyByName("Definition").GetValue() or 'undefined'))
+        self.pg.Append( wxpg.StringProperty("Unit Code (input)", value=input.GetPropertyByName("Code").GetValue() or 'undefined'))
+        self.pg.Append( wxpg.StringProperty("Unit Abbreviation (input)", value=input.GetPropertyByName("Abbreviation").GetValue() or 'undefined'))
+        self.pg.Append( wxpg.StringProperty("Unit Type (input)", value=input.GetPropertyByName("Type").GetValue() or 'undefined'))
 
         self.pg.Append( wxpg.PropertyCategory("Output Item") )
-        self.pg.Append( wxpg.StringProperty("Variable Name (output)",value=output.GetPropertyByName("Name").GetValue() ))
-        self.pg.Append( wxpg.StringProperty("Variable Definition (output)",value=output.GetPropertyByName("Definition").GetValue() ))
-        self.pg.Append( wxpg.StringProperty("Unit Code (output)", value=output.GetPropertyByName("Code").GetValue() ))
-        self.pg.Append( wxpg.StringProperty("Unit Abbreviation (output)", value=output.GetPropertyByName("Abbreviation").GetValue() ))
-        self.pg.Append( wxpg.StringProperty("Unit Type (output)", value=output.GetPropertyByName("Type").GetValue() ))
+        self.pg.Append( wxpg.StringProperty("Variable Name (output)",value=output.GetPropertyByName("Name").GetValue()  or 'undefined' ))
+        self.pg.Append( wxpg.StringProperty("Variable Definition (output)",value=output.GetPropertyByName("Definition").GetValue() or 'undefined'))
+        self.pg.Append( wxpg.StringProperty("Unit Code (output)", value=output.GetPropertyByName("Code").GetValue()  or 'undefined' ))
+        self.pg.Append( wxpg.StringProperty("Unit Abbreviation (output)", value=output.GetPropertyByName("Abbreviation").GetValue()  or 'undefined'))
+        self.pg.Append( wxpg.StringProperty("Unit Type (output)", value=output.GetPropertyByName("Type").GetValue()  or 'undefined'))
 
 
     def OnPropGridChange(self, event):

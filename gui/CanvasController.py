@@ -153,7 +153,11 @@ class CanvasController:
 
     def run(self):
 
-        self.cmd.run_simulation()
+        try:
+            self.cmd.run_simulation()
+        except Exception as e:
+            wx.MessageBox(e.args[0], 'Error',wx.OK | wx.ICON_ERROR)
+
 
     def getCurrentDbSession(self, value = None):
         if value is not None:

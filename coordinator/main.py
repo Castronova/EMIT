@@ -641,28 +641,31 @@ class Coordinator(object):
         coordinates the simulation effort
         """
 
-        # determine if the simulation is feed-forward or time-step
-        models = self.Models()
-        types = []
-        for model in models.itervalues() :
-            types.extend(inspect.getmro(model.get_instance().__class__))
+        try:
+            # determine if the simulation is feed-forward or time-step
+            models = self.Models()
+            types = []
+            for model in models.itervalues() :
+                types.extend(inspect.getmro(model.get_instance().__class__))
 
-        #inspect.getmro(models['SWMM'].get_instance().__class__)
-        #types = [type(model.get_instance()) for model in models.itervalues()]
+            #inspect.getmro(models['SWMM'].get_instance().__class__)
+            #types = [type(model.get_instance()) for model in models.itervalues()]
 
-        # make sure that feed forward and time-step models are not mixed together
-        if (feed_forward.feed_forward_wrapper in types) and (time_step.time_step_wrapper in types):
-            sys.stdout.write('> Simulation Terminated. - Cannot mix feed-forward and time-step models! ')
+            # make sure that feed forward and time-step models are not mixed together
+            if (feed_forward.feed_forward_wrapper in types) and (time_step.time_step_wrapper in types):
+                sys.stdout.write('> Simulation Terminated. - Cannot mix feed-forward and time-step models! ')
+                return
+
+            else:
+                if feed_forward.feed_forward_wrapper in types:
+                    run.run_feed_forward(self)
+                elif time_step.time_step_wrapper in types:
+                    run.run_time_step(self)
+
             return
 
-        else:
-            if feed_forward.feed_forward_wrapper in types:
-                run.run_feed_forward(self)
-            elif time_step.time_step_wrapper in types:
-                run.run_time_step(self)
-
-        return
-
+        except Exception as e:
+            raise Exception(e.args[0])
 
         # # store db sessions
         # db_sessions = {}

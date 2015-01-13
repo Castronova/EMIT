@@ -74,7 +74,12 @@ def run_feed_forward(obj):
         sys.__stdout__.flush()
 
         # todo: pass db_sessions instead of simulation_dbapi
-        input_data =  get_ts_from_database_link(simulation_dbapi,db_sessions, obj.DbResults(), obj.Links(), model_inst)
+        try:
+            input_data =  get_ts_from_database_link(simulation_dbapi,db_sessions, obj.DbResults(), obj.Links(), model_inst)
+        except Exception as e:
+            raise Exception (e)
+
+
         sys.stdout.write('done\n')
         sys.__stdout__.flush()
 

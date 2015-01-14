@@ -45,3 +45,30 @@
     <Model id="123" something="23452"> something </Model>
 </Simulation>
 
+<Simulation>
+
+    <Connection>
+        <connection_address>castro-server.bluezone.usu.edu</connection_address>
+        <connection_pwd>water</connection_pwd>
+        <connection_user>postgres</connection_user>
+        <connection_string>postgresql+psycopg2://postgres:water@castro-server.bluezone.usu.edu/ODM2</connection_string>
+        <connection_databaseid>abd9a</connection_databaseid>
+    </Connection>
+
+    <Model name = "SWMM">
+        <Model1_ID>804d2</Model1_ID>
+        <Model1_path>C:\Users\Mario\Documents\Projects\EMIT\gui\../models\swmm\src\swmm.mdl</Model1_path>
+        <Model1_name>SWMM</Model1_name>
+        <Model1_xcoordinates>-247.0</Model1_xcoordinates>
+        <Model1_ycoordinates>107.0</Model1_ycoordinates>
+    </Model>
+
+    <DataModel name = "cumulative_precipitation">
+        <DatabaseID>abd9a</DatabaseID>
+        <id>2627d29c</id>
+        <name>cumulative_precipitation</name>
+        <resultid>55</resultid>
+        <x>-55.0</x>
+        <y>-81.0</y>
+    </DataModel>
+</Simulation>

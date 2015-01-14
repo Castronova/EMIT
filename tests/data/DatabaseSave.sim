@@ -1,8 +1,39 @@
 <?xml version="1.0" ?>
 <Simulation>
-  <DataModel databaseid="dc246" id="92a026c9" name="cumulative_precipitation" resultid="5" x="51.0" y="116.0"/>
-  <Model id="647d3" mdl="C:\Users\Mario\Documents\Projects\EMIT\gui\../tests\data\randomizer.mdl" name="Random Number Generator" x="-334.0" y="46.0"/>
-  <Model id="232ec" mdl="C:\Users\Mario\Documents\Projects\EMIT\gui\../tests\data\multiplier.mdl" name="Multiplier" x="112.0" y="-72.0"/>
-  <Link from_id="92a026c9" from_item="cumulative_precipitation" from_item_id="92a026c9" from_name="cumulative_precipitation" to_id="232ec" to_item="some_value" to_item_id="7ada8" to_name="Multiplier"/>
-  <DbConnection address="castro-server.bluezone.usu.edu" connection_string="postgresql+psycopg2://postgres:water@castro-server.bluezone.usu.edu/ODM2-Live" databaseid="dc246" db="ODM2-Live" desc="PostgreSQL database with hydrology simulations" engine="postgresql" name="ODM2 Simulation database - Live" pwd="water" user="postgres"/>
+  <Model>
+    <name>SWMM</name>
+    <id>4bed4</id>
+    <xcoordinate>129.0</xcoordinate>
+    <ycoordinate>7.0</ycoordinate>
+    <path>C:\Users\Mario\Documents\Projects\EMIT\gui\../models\swmm\src\swmm.mdl</path>
+  </Model>
+  <DataModel>
+    <name>cumulative_precipitation</name>
+    <id>6fb7a94a</id>
+    <xcoordinate>-376.0</xcoordinate>
+    <ycoordinate>44.0</ycoordinate>
+    <databaseid>bc9a3</databaseid>
+    <resultid>55</resultid>
+  </DataModel>
+  <Link>
+    <from_name>cumulative_precipitation</from_name>
+    <from_id>6fb7a94a</from_id>
+    <from_item>cumulative_precipitation</from_item>
+    <from_item_id>6fb7a94a</from_item_id>
+    <to_name>SWMM</to_name>
+    <to_id>4bed4</to_id>
+    <to_item>Rainfall</to_item>
+    <to_item_id>51584</to_item_id>
+  </Link>
+  <DbConnection>
+    <name>ODM2 Simulation database</name>
+    <address>castro-server.bluezone.usu.edu</address>
+    <pwd>water</pwd>
+    <desc>PostgreSQL database with hydrology simulations</desc>
+    <engine>postgresql</engine>
+    <db>ODM2</db>
+    <user>postgres</user>
+    <databseid>bc9a3</databseid>
+    <connection_string>postgresql+psycopg2://postgres:water@castro-server.bluezone.usu.edu/ODM2</connection_string>
+  </DbConnection>
 </Simulation>

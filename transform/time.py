@@ -23,10 +23,6 @@ class temporal_nearest_neighbor(time_base.Time):
 
         for target_date in target_dates:
 
-            # make sure that the target_date is within the dates list
-            if (target_date < min(dates)) or (target_date > max(dates)) :
-
-                return None, None
 
                 #raise Exception('> [ERROR]: Nearest neighbor time interpolation requires that the target date be between the first and last source dates!')
 
@@ -34,8 +30,14 @@ class temporal_nearest_neighbor(time_base.Time):
             # get the closest date
             closest = sorted(dates, key=lambda d: abs(target_date - d))[0]
 
-            mapped_dates.append(closest)
-            mapped_values.append(values[dates.index(closest)])
+             # make sure that the target_date is within the dates list
+            if (target_date < min(dates)) or (target_date > max(dates)) :
+                mapped_dates.append(closest)
+                mapped_values.append(None)
+
+            else:
+                mapped_dates.append(closest)
+                mapped_values.append(values[dates.index(closest)])
 
         # return the closest date and its corresponding value
         return mapped_dates, mapped_values

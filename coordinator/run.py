@@ -196,7 +196,7 @@ def run_time_step(obj):
     # run simulation until all models reach a FINISHED state
     while not all(stat == Status.Finished for stat in simulation_status.values()):
 
-       # print ''
+        print ''
 
         # loop through models and execute run
         for modelid in exec_order:
@@ -225,7 +225,7 @@ def run_time_step(obj):
             current_time = model_inst.current_time()
             while current_time <= max(target_times):
 
-               # print '> %s | ' % (datetime.datetime.strftime(current_time,"%m-%d-%Y %H:%M:%S")),
+                print '> %s | ' % (datetime.datetime.strftime(current_time,"%m-%d-%Y %H:%M:%S")),
 
                 # update simulation status
                 simulation_status[modelid] = model_inst.status()
@@ -281,8 +281,13 @@ def run_time_step(obj):
                         # save the temporally mapped data by output geometry
                         mapped[geom] = (zip(mapped_dates,mapped_values))
 
+
                 # update links
+                #if len(mapped.values()) > 0:
                 obj.update_link(linkid, mapped, spatial_maps[link_key])
+                #else:
+                #    obj.update_link(linkid, None, None)
+                        # reset geometry values to None
 
 
 

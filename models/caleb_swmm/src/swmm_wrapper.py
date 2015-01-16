@@ -3,7 +3,7 @@ __author__ = 'tonycastronova'
 from os.path import *
 import uuid
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from ctypes import *
 
 
@@ -96,15 +96,18 @@ class swmm(time_step_wrapper):
             date, value = rainfall_item.get_timeseries_by_id(geom_id)
 
             # set the rainfall value
-            if value:
-                sub.contents.rainfall = value[0]
+            if value[0]: sub.contents.rainfall = value[0]
+            else: sub.contents.rainfall = c_double(0.0)
 
-                # apply the rainfall
-                self.__swmmLib.setSubcatch(sub,c_char_p('rainfall'))
-
+                #(None, )
 
 
-        #print self.__swmmLib.getSubcatch(c_int(0)).contents.newRunoff
+            # apply the rainfall
+            self.__swmmLib.setSubcatch(sub,c_char_p('rainfall'))
+
+
+
+        print self.__swmmLib.getSubcatch(c_int(0)).contents.newRunoff
 
 
         error = self.__swmmLib.swmm_step(byref(step))
@@ -113,44 +116,11 @@ class swmm(time_step_wrapper):
         elapsed = self.__begin_c_time + step.value
         new_time = self.decode_datetime(elapsed)
         increment = new_time - self.current_time()
+
+        if increment.total_seconds() < 0:  # i.e. simulation has completed
+            # force the increment to step beyond the simulation end time
+            increment = timedelta(0,5)
         self.increment_time(increment)
-
-
-        # # setup input file for simulation
-        # self.setup_model(inputs)
-        #
-        # # todo: use input rainfall to write inp file
-        #
-        #
-        # # run the simulation
-        # subprocess.call([self.exe,self.inp,self.rpt,self.out], stdout=self.console)
-        #
-        # # set exchange item results from output file
-        # l = ps.list(self.out)
-        #
-        # vars = ps.listvariables(self.out)
-        #
-        # links = ps.listdetail(self.out,'link')
-        # nodes = ps.listdetail(self.out,'node')
-        # catchments = ps.listdetail(self.out,'subcatchment')
-        #
-        # #link_= ps.getdata(self.out,items)
-        # node_head = ps.getdata(self.out, ['node,'+N['Name']+',1' for N in nodes])
-        # node_flow = ps.getdata(self.out, ['node,'+N['Name']+',4' for N in nodes])
-        # link_frate = ps.getdata(self.out, ['link,'+L['Name']+',0' for L in links])
-        # link_depth = ps.getdata(self.out, ['link,'+L['Name']+',1' for L in links])
-        #
-        # # get the stage output exchange item
-        # stage = self.get_output_by_name('Hydraulic_head')
-        #
-        # # set the output results to each geometry
-        # for geom in stage.geometries():
-        #     id = geom.id()
-        #     geom.datavalues().set_timeseries(node_head[id])
-        #
-        # self.outputs(name='Hydraulic_head', value=stage)
-        #
-        # return 1
 
 
     def save(self):

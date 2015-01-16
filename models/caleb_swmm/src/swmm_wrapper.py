@@ -90,14 +90,22 @@ class swmm(time_step_wrapper):
             sub_id = sub.contents.ID
             geom_id = self.__geom_lookup[sub_id].id()
 
+            # APPLY RAINFALL
+
             # get the date and value from inputs, based on geom_id
             date, value = rainfall_item.get_timeseries_by_id(geom_id)
 
             # set the rainfall value
-            sub.contents.rainfall = value[0]
+            if value:
+                sub.contents.rainfall = value[0]
 
-            # apply the rainfall
-            self.__swmmLib.setSubcatch(sub,c_char_p('rainfall'))
+                # apply the rainfall
+                self.__swmmLib.setSubcatch(sub,c_char_p('rainfall'))
+
+
+
+        #print self.__swmmLib.getSubcatch(c_int(0)).contents.newRunoff
+
 
         error = self.__swmmLib.swmm_step(byref(step))
 

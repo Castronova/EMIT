@@ -538,6 +538,7 @@ class Coordinator(object):
         for t_geom in t_item.geometries():
 
             # get this list index of the to-geom
+            # TODO:  This is probably very inefficient
             f_geom ,t_geom= [g for g in from_to_spatial_map if g[1] == t_geom][0]
 
             # update the datavalues with the mapped dates and values

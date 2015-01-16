@@ -25,7 +25,10 @@ class temporal_nearest_neighbor(time_base.Time):
 
             # make sure that the target_date is within the dates list
             if (target_date < min(dates)) or (target_date > max(dates)) :
-                raise Exception('> [ERROR]: Nearest neighbor time interpolation requires that the target date be between the first and last source dates!')
+
+                return None, None
+
+                #raise Exception('> [ERROR]: Nearest neighbor time interpolation requires that the target date be between the first and last source dates!')
 
 
             # get the closest date

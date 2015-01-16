@@ -196,6 +196,7 @@ def run_time_step(obj):
     # run simulation until all models reach a FINISHED state
     while not all(stat == Status.Finished for stat in simulation_status.values()):
 
+       # print ''
 
         # loop through models and execute run
         for modelid in exec_order:
@@ -206,10 +207,17 @@ def run_time_step(obj):
 
             # get the target simulation times from the model links (including its own endtime)
             target_times = []
-            for source, target, linkid in links[modelid]:
-                target_model  = target[0]
-                target_times.append(target_model.get_instance().current_time())
-            target_times.append(model_inst.simulation_end())
+
+            if len(links[modelid]) > 0:
+                # add the target current time
+                for source, target, linkid in links[modelid]:
+                    target_model  = target[0]
+                    target_times.append(target_model.get_instance().current_time())
+            else:
+                # add the current time for the source model (this will force the model to step only once)
+                target_times.append(model_inst.current_time())
+
+            #target_times.append(model_inst.simulation_end())
 
 
 
@@ -217,13 +225,14 @@ def run_time_step(obj):
             current_time = model_inst.current_time()
             while current_time <= max(target_times):
 
+               # print '> %s | ' % (datetime.datetime.strftime(current_time,"%m-%d-%Y %H:%M:%S")),
+
                 # update simulation status
                 simulation_status[modelid] = model_inst.status()
                 if model_inst.status() != Status.Running:
                     # exit without calling run_timestep
                     break
 
-                print '> %s : %s' % (model_inst.name(), datetime.datetime.strftime(current_time,"%m-%d-%Y %H:%M:%S"))
 
                 # get model input data
                 input_data = model_inst.inputs()
@@ -235,12 +244,17 @@ def run_time_step(obj):
                 current_time = model_inst.current_time()
 
 
+
             # get all outputs
             output_exchange_items = model_inst.outputs()
 
 
-            print '> Mapping outputs to inputs...'
+
             for source, target, linkid in links[modelid]:
+
+
+
+
                 target_model  = target[0]
 
                 # get the auto generated key for this link
@@ -263,8 +277,9 @@ def run_time_step(obj):
                     temporal = temporal_nearest_neighbor()
                     mapped_dates,mapped_values = temporal.transform(dates,values,target_time)
 
-                    # save the temporally mapped data by output geometry
-                    mapped[geom] = (zip(mapped_dates,mapped_values))
+                    if mapped_dates is not None:
+                        # save the temporally mapped data by output geometry
+                        mapped[geom] = (zip(mapped_dates,mapped_values))
 
                 # update links
                 obj.update_link(linkid, mapped, spatial_maps[link_key])

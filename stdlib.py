@@ -168,7 +168,7 @@ class DataValues(object):
         if self.__timeseries:
             return zip(*self.__timeseries)
         else:
-            return None
+            return None, None
 
     def earliest_date(self):
         return self.__start
@@ -343,6 +343,7 @@ class ExchangeItem(object):
 
     def get_timeseries_by_id(self, geom_id):
 
+        # TODO: loop using integers to speed this up
         for geom in self.__geoms:
             if geom.id() == geom_id:
                 return geom.datavalues().get_dates_values()

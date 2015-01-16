@@ -1,7 +1,10 @@
 <?xml version="1.0" ?>
 <Simulation>
-  <DataModel databaseid="02ac5" id="8c779e9a" name="cumulative_precipitation" resultid="55" x="-277.0" y="-99.0"/>
-  <Model id="69833" mdl="C:\Users\Mario\Documents\Projects\EMIT\gui\../tests\data\randomizer.mdl" name="Random Number Generator" x="289.0" y="-23.0"/>
-  <Model id="c6580" mdl="C:\Users\Mario\Documents\Projects\EMIT\gui\../models\swmm\src\swmm.mdl" name="SWMM" x="-124.0" y="53.0"/>
-  <DbConnection address="castro-server.bluezone.usu.edu" connection_string="postgresql+psycopg2://postgres:water@castro-server.bluezone.usu.edu/ODM2" databaseid="02ac5" db="ODM2" desc="PostgreSQL database with hydrology simulations" engine="postgresql" name="ODM2 Simulation database" pwd="water" user="postgres"/>
+  <Model>
+    <name>SWMM</name>
+    <id>b8603</id>
+    <xcoordinate>101.0</xcoordinate>
+    <ycoordinate>-124.0</ycoordinate>
+    <path>C:\Users\Mario\Documents\Projects\EMIT\gui\../models\swmm\src\swmm.mdl</path>
+  </Model>
 </Simulation>

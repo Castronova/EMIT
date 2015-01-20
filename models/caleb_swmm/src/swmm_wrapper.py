@@ -295,50 +295,6 @@ class swmm(time_step_wrapper):
             f.write(line)
         f.close()
 
-    def set_rainfall_input(self, in_lines, precip):
-
-        # get the time series associated with the input exchange item
-        #geom, eitem = inputs.items()[0]
-        #data = eitem.values()[0]
-        d, v = precip.get_dates_values()
-        dates = list(d)
-        values = list(v)
-
-        # map the rain gages to the catchments
-        cidx = self.find(in_lines, lambda x: 'SUBCATCHMENTS' in x) + 4
-        i = 0
-        for line in in_lines[cidx:]:
-            if line.strip() == '':
-                break
-            vals = re.split(' +',line.strip())
-            vals[1] = 'rain_gage_data'
-            vals.append('\n')
-            in_lines[cidx + i]  = '\t'.join(vals)
-
-            i += 1
-
-
-
-        # timeseries values must be relative to the start of the swmm simulation
-        offset = (self.simulation_start() - dates[0]).total_seconds()
-        for i in xrange(0, len(dates)):
-            dates[i] -= datetime.timedelta(seconds=offset)
-
-        # add a raingage
-        in_lines.append('\n[RAINGAGES]\n')
-        in_lines.append(';;;\n')
-        in_lines.append(';;Name           Type      Intrvl Catch  Source\n')
-        in_lines.append(';;-------------- --------- ------ ------ ----------\n')
-        in_lines.append('rain_gage_data  CUMULATIVE 0:01   1.0    TIMESERIES precipitation\n')
-
-        # write the rainfall data
-        in_lines.append('\n[TIMESERIES\n')
-        in_lines.append(';;Name           Date       Time       Value   \n')
-        in_lines.append(';;-------------- ---------- ---------- ----------\n')
-        for i in xrange(0, len(dates)):
-            in_lines.append('precipitation\t%s\t%s\t%2.3f\n' %(dates[i].strftime('%m/%d/%Y'), dates[i].strftime('%H:%M'),values[i]))
-
-        return in_lines
 
 
     def find(self, lst, predicate):

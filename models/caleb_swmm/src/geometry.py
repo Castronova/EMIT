@@ -5,65 +5,65 @@ from shapely.geometry import *
 
 
 def build_catchments(inp):
-        lines = None
-        with open(inp,'r') as f:
-            lines = f.readlines()
+    geoms = {}
+    lines = None
+    with open(inp,'r') as f:
+        lines = f.readlines()
 
 
-        # first read all the node coordinates
-        nodes = {}
-        node_order = []
-        cidx = find(lines, lambda x: 'Polygons' in x)
-        for line in lines[cidx+3:]:
-            if line.strip() == '':
-                break
-            vals = re.split(' +',line.strip())
+    # first read all the node coordinates
+    nodes = {}
+    node_order = []
+    cidx = find(lines, lambda x: 'Polygons' in x)
+    for line in lines[cidx+3:]:
+        if line.strip() == '':
+            break
+        vals = re.split(' +',line.strip())
 
-            if vals[0] in nodes:
-                nodes[vals[0]].append((float(vals[1]), float(vals[2])))
-            else:
-                nodes[vals[0]] = [(float(vals[1]), float(vals[2]))]
-                node_order.append(vals[0])
+        if vals[0] in nodes:
+            nodes[vals[0]].append((float(vals[1]), float(vals[2])))
+        else:
+            nodes[vals[0]] = [(float(vals[1]), float(vals[2]))]
+            node_order.append(vals[0])
 
+    for name,coords in nodes.iteritems():
+        geoms[name] = {'geometry': Polygon(coords)}
 
-        geoms = []
-        for name,coords in nodes.iteritems():
-            geoms.append((name,Polygon(coords)))
-
-        return geoms
+    return geoms
 
 
 def build_nodes(inp):
-        lines = None
-        with open(inp,'r') as f:
-            lines = f.readlines()
+    geoms = {}
+    lines = None
+    with open(inp,'r') as f:
+        lines = f.readlines()
 
 
-        # first read all the node coordinates
-        nodes = {}
-        node_order = []
-        cidx = find(lines, lambda x: 'COORDINATES' in x)
-        for line in lines[cidx+3:]:
-            if line.strip() == '':
-                break
-            vals = re.split(' +',line.strip())
+    # first read all the node coordinates
+    nodes = {}
+    node_order = []
+    cidx = find(lines, lambda x: 'COORDINATES' in x)
+    for line in lines[cidx+3:]:
+        if line.strip() == '':
+            break
+        vals = re.split(' +',line.strip())
 
-            if vals[0] in nodes:
-                nodes[vals[0]].append((float(vals[1]), float(vals[2])))
-            else:
-                nodes[vals[0]] = [(float(vals[1]), float(vals[2]))]
-                node_order.append(vals[0])
+        if vals[0] in nodes:
+            nodes[vals[0]].append((float(vals[1]), float(vals[2])))
+        else:
+            nodes[vals[0]] = [(float(vals[1]), float(vals[2]))]
+            node_order.append(vals[0])
 
 
-        geoms = []
-        for name,coords in nodes.iteritems():
-            geoms.append((name,Point(coords)))
+    for name,coords in nodes.iteritems():
+        geoms[name] = {'geometry':Point(coords)}
 
-        return geoms
+    return geoms
 
 
 
 def build_links(inp):
+    geoms = {}
     lines = None
     with open(inp,'r') as f:
         lines = f.readlines()
@@ -116,14 +116,19 @@ def build_links(inp):
             inlet_node = nodes[inlet_id]
             outlet_node= nodes[outlet_id]
 
+            # create the link geometry
+            g = LineString([inlet_node, outlet_node])
+
+            geoms[node_id] = {'geometry':g , 'inlet':inlet_id, 'outlet':outlet_id}
+
             # add inlet node coordinate to the outlet node list
-            vertices[inlet_id].append(outlet_node)
+            #vertices[inlet_id].append(outlet_node)
 
 
-    geoms = []
-    for i,coords in vertices.iteritems():
-        if len(coords) > 1:
-            geoms.append((i,LineString(coords)))
+
+    # for i,coords in vertices.iteritems():
+    #     if len(coords) > 1:
+    #         geoms.append((i,LineString(coords)))
 
     return geoms
 

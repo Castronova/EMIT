@@ -124,7 +124,7 @@ class swmm(time_step_wrapper):
 
 
     def save(self):
-        pass
+        return self.outputs()
         #return [self.get_output_by_name(outputname='Hydraulic_head')]
 
 
@@ -250,58 +250,6 @@ class swmm(time_step_wrapper):
         geoms['subcatchment'] = catchments
         geoms['link'] = streams
         geoms['node'] = nodes
-
-        return geoms
-
-    def build_swmm_geoms(self,inp,type):
-        lines = None
-        with open(inp,'r') as f:
-            lines = f.readlines()
-
-
-        # first read all the node coordinates
-        nodes = {}
-        node_order = []
-        cidx = self.find(lines, lambda x: 'COORDINATES' in x)
-        for line in lines[cidx+3:]:
-            if line.strip() == '':
-                break
-            vals = re.split(' +',line.strip())
-            nodes[vals[0]] = (float(vals[1]), float(vals[2]))
-            node_order.append(vals[0])
-
-
-        idx = self.find(lines, lambda x: type.upper() in x)
-        geoms = []
-        links = {}
-        prev_id = None
-        # build line objects
-        if type == 'vertices':
-            for line in lines[idx+3:]:
-                if line.strip() == '':
-                    break
-
-                vals = re.split(' +',line.strip())
-                name = vals[0]
-                x = float(vals[1])
-                y = float(vals[2])
-
-                if name != prev_id:
-                    # save endnode for previous id
-                    if prev_id is not None:
-                        links[prev_id].append(nodes[node_order[node_order.index(prev_id)]])
-
-                    # save the startnode for the current id
-                    links[name] = [nodes[node_order[node_order.index(name)-1]]]
-                    prev_id = name
-
-                # save each of the coordinates in the link
-                links[name].append((x,y))
-
-        for link,coords in links.iteritems():
-            geoms.append((link,LineString(coords)))
-
-
 
         return geoms
 

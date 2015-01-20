@@ -73,10 +73,9 @@ class swmm(time_step_wrapper):
     def run_timestep(self,inputs, current_time):
 
         # get catchment-level inputs
-        rainfall_item = inputs['Rainfall']
-        rainfall_data = rainfall_item.get_geoms_and_timeseries()
-        # evaporation = inputs['Evaporation'].get_geoms_and_timeseries()
-        # snow = inputs['Snow_depth'].get_geoms_and_timeseries()
+        rainfall_data = inputs['Rainfall'].get_geoms_and_timeseries()
+        evaporation = inputs['Evaporation'].get_geoms_and_timeseries()
+        snow = inputs['Snow_depth'].get_geoms_and_timeseries()
 
         # get streamflow input
         flow_rate = inputs['Flow_rate'].get_geoms_and_timeseries()
@@ -108,12 +107,14 @@ class swmm(time_step_wrapper):
 
         # check to see which inputs will be applied
         apply_rainfall = True if len([v for g in rainfall_data.keys() for v in rainfall_data[g] if v is not None]) > 0 else False
+        apply_evaporation = True if len([v for g in evaporation.keys() for v in evaporation[g] if v is not None]) > 0 else False
+        apply_snow = True if len([v for g in snow.keys() for v in snow[g] if v is not None]) > 0 else False
 
         # loop through all of the subcatchments and apply inputs
         for i in range(0,subcatchment_count):
 
             # todo: check all possible catchment inputs
-            if not apply_rainfall:
+            if not (apply_rainfall or apply_evaporation or apply_snow):
                 break
 
             # get the subcatchment
@@ -127,16 +128,26 @@ class swmm(time_step_wrapper):
             if apply_rainfall:
 
                 # get the date and value from inputs, based on geom_id
-                date, value = rainfall_item.get_timeseries_by_id(geom_id)
+                date, value = inputs['Rainfall'].get_timeseries_by_id(geom_id)
 
                 # set the rainfall value
                 if value[0]: sub.contents.rainfall = value[0]
                 else: sub.contents.rainfall = c_double(0.0)
 
 
+            if apply_evaporation:
+                # todo: implement this
+                pass
 
-            # apply the rainfall
+            if apply_snow:
+                # todo: implement this
+                pass
+
+
+            # apply all inputs
             self.__swmmLib.setSubcatch(sub,c_char_p('rainfall'))
+            self.__swmmLib.setSubcatch(sub,c_char_p('evapLoss'))
+            self.__swmmLib.setSubcatch(sub,c_char_p('newSnowDepth'))
 
 
         # ------------
@@ -169,7 +180,7 @@ class swmm(time_step_wrapper):
             if apply_flowrate:
 
                 # get the date and value from inputs, based on geom_id
-                date, value = flow_rate.get_timeseries_by_id(geom_id)
+                date, value = inputs['Flow_rate'].get_timeseries_by_id(geom_id)
 
                 # apply flowrate at outlets
                 if value[0]:

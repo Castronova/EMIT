@@ -255,48 +255,6 @@ class swmm(time_step_wrapper):
 
         return geoms
 
-    # def setup_model(self, inputs):
-    #
-    #     # open the input file (original)
-    #     sim = open(self.sim_input,'r')
-    #     in_lines = sim.readlines()
-    #
-    #     # set the simulation start and end times.
-    #     st = self.simulation_start()
-    #     et = self.simulation_end()
-    #     cidx = self.find(in_lines, lambda x: 'OPTIONS' in x)
-    #     i = cidx+1
-    #     swmm_opts = {}
-    #     for line in in_lines[cidx+1:]:
-    #         if line.strip() == '':
-    #             break
-    #         vals = re.split(' +',line.strip())
-    #         swmm_opts[vals[0]] = vals[1]
-    #         i += 1
-    #
-    #     swmm_opts['START_DATE'] = st.strftime('%m/%d/%Y')
-    #     swmm_opts['START_TIME'] = st.strftime('%H:%M:%S')
-    #     swmm_opts['END_DATE'] = et.strftime('%m/%d/%Y')
-    #     swmm_opts['END_TIME'] = et.strftime('%H:%M:%S')
-    #     swmm_opts['REPORT_START_DATE'] = st.strftime('%m/%d/%Y')
-    #     swmm_opts['REPORT_START_TIME'] = st.strftime('%H:%M:%S')
-    #
-    #     for j in range(cidx+1,i):
-    #         k,v = swmm_opts.popitem()
-    #         in_lines[j] = "%s\t%s\n" % (k,v)
-    #
-    #
-    #     # Format rainfall input
-    #     for geom, dict in inputs.iteritems():
-    #         if 'Rainfall' in dict:
-    #             in_lines = self.set_rainfall_input(in_lines,dict['Rainfall'])
-    #
-    #     # write simulation specific input file
-    #     f = open(self.inp,'w')
-    #     for line in in_lines:
-    #         f.write(line)
-    #     f.close()
-
 
 
     def find(self, lst, predicate):

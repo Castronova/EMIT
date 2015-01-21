@@ -2,6 +2,10 @@ __author__ = 'tonycastronova'
 
 import time_base
 
+
+
+
+
 class temporal_nearest_neighbor(time_base.Time):
 
     def __init__(self):
@@ -42,3 +46,6 @@ class temporal_nearest_neighbor(time_base.Time):
         # return the closest date and its corresponding value
         return mapped_dates, mapped_values
 
+
+class TemporalInterpolation():
+    NearestNeighbor = temporal_nearest_neighbor()

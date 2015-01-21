@@ -54,11 +54,25 @@ class Link(object):
 
         self.__id = id
 
+        self.__spatial_interpolation = None
+        self.__temporal_interpolation = None
+
     def get_link(self):
         return [self.__from_lc,self.__from_item], [self.__to_lc,self.__to_item]
 
     def get_id(self):
         return self.__id
+
+    def spatial_interpolation(self, value=None):
+        if value is not None:
+            self.__spatial_interpolation = value
+        return self.__spatial_interpolation
+
+    def temporal_interpolation(self, value=None):
+        if value is not None:
+            self.__temporal_interpolation = value
+        return self.__spatial_interpolation
+
 
 class Model(object):
     """
@@ -397,7 +411,7 @@ class Coordinator(object):
             link = Link(id,From,To,oi,ii)
             self.__links[id] = link
 
-            return id
+            return link
         else:
             print '>  Could Not Create Link :('
 
@@ -430,7 +444,7 @@ class Coordinator(object):
             link = Link(id,From,To,oi,ii)
             self.__links[id] = link
 
-            return id
+            return link
         else:
             print '>  Could Not Create Link :('
 

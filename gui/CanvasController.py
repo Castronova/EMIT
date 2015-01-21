@@ -806,6 +806,11 @@ class CanvasController:
 
     def loadsimulation(self, file):
         #TODO: Should be part of the cmd.
+        ########### NEW CODE #############
+        tree = et.parse(file)
+
+        ########### END CODE #############
+
         tree = et.parse(file)
 
         # get the root

@@ -172,7 +172,8 @@ def run_time_step(obj):
             #spatial_maps[key] = spatial.transform(source.get_all_datasets().keys(), target.get_all_datasets().keys())
 
             spatial_interp = link.spatial_interpolation()
-            spatial_maps[key] = spatial_interp.transform(source.get_all_datasets().keys(),
+            if spatial_interp:
+                spatial_maps[key] = spatial_interp.transform(source.get_all_datasets().keys(),
                                                          target.get_all_datasets().keys())
 
         # set model status to RUNNING
@@ -276,6 +277,8 @@ def run_time_step(obj):
                 #target_model  = target[0]
                 target_model = link.target_component()
 
+                source_item_name = link.source_exchange_item().name()
+
                 # get the auto generated key for this link
                 #link_key = generate_link_key(obj.get_link_by_id(linkid).get_link())
                 link_key = generate_link_key(link)
@@ -284,7 +287,8 @@ def run_time_step(obj):
                 target_time = target_model.get_instance().current_time()
 
                 # get all the datasets of the output exchange item.  These will be used to temporally map the data
-                datasets = output_exchange_items[model_inst.name()].get_all_datasets()
+                #datasets = output_exchange_items[model_inst.name()].get_all_datasets()
+                datasets = output_exchange_items[source_item_name].get_all_datasets()
 
                 # Temporal data mapping
                 mapped = {}
@@ -295,7 +299,8 @@ def run_time_step(obj):
 
                     # temporal mapping
                     temporal = temporal_nearest_neighbor()
-                    mapped_dates,mapped_values = temporal.transform(dates,values,target_time)
+                    if temporal:
+                        mapped_dates,mapped_values = temporal.transform(dates,values,target_time)
 
                     if mapped_dates is not None:
                         # save the temporally mapped data by output geometry

@@ -77,8 +77,13 @@ class swmm(time_step_wrapper):
         evaporation = inputs['Evaporation'].get_geoms_and_timeseries()
         snow = inputs['Snow_depth'].get_geoms_and_timeseries()
 
-        # get streamflow input
+
+        # get link inputs
         flow_rate = inputs['Flow_rate'].get_geoms_and_timeseries()
+
+        # get node inputs
+        stage = inputs['Hydraulic_head'].get_geoms_and_timeseries()
+
 
         self.__swmmLib.getObjectTypeCount.restype = c_int
         subcatchment_count = self.__swmmLib.getObjectTypeCount(SWMM_Types.SUBCATCH)
@@ -186,6 +191,12 @@ class swmm(time_step_wrapper):
                 if value[0]:
                     node = self.__swmmLib.getNodeById(c_char_p(out_node_id))
                     node.contents.inflow = value[0]
+
+        # ------------
+        # Node Inputs
+        # ------------
+        apply_stage = True if len([v for g in stage.keys() for v in stage[g] if v is not None]) > 0 else False
+
 
 
         # for debugging only

@@ -1,10 +1,10 @@
 <?xml version="1.0" ?>
 <Simulation>
   <Model>
-    <name>SWMM</name>
-    <id>b8603</id>
-    <xcoordinate>101.0</xcoordinate>
-    <ycoordinate>-124.0</ycoordinate>
-    <path>C:\Users\Mario\Documents\Projects\EMIT\gui\../models\swmm\src\swmm.mdl</path>
+    <name>Random Number Generator</name>
+    <id>56707</id>
+    <xcoordinate>-90.0</xcoordinate>
+    <ycoordinate>29.0</ycoordinate>
+    <path>C:\Users\Mario\Documents\Projects\EMIT\gui\../tests\data\randomizer.mdl</path>
   </Model>
 </Simulation>

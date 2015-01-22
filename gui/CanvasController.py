@@ -812,6 +812,12 @@ class CanvasController:
         # get the root
         root = tree.getroot()
 
+        # items = [modelelement, datamodelelement, linkelement, DbConnection]
+
+        elementtag = [i.tag for i in root._children]
+        elementlist = [i for i in root._children]
+
+
         # make sure the required database connections are loaded
         connections = self.cmd.get_db_connections()
         conn_ids = {}
@@ -821,21 +827,21 @@ class CanvasController:
         databaselist = [x for x in elementslist if x.tag == 'DbConnection']
 
         # for db_conn in databaselist:
-        for child in root:
+        for child in root._children:
             if child.tag == 'DbConnection':
-                for db_conn in child:
+                connection_string = child._children[8].text
 
-                    database_exists = False
-                    # db_elements = db_conn.getchildren()
+                database_exists = False
+                # db_elements = db_conn.getchildren()
 
-                    for id, dic in connections.iteritems():
-                        if str(dic['args']['connection_string']) == db_conn.attrib['connection_string']:
-                            #dic['args']['id'] = db_conn.attrib['id']
-                            database_exists = True
+                for id, dic in connections.iteritems():
+                    if str(dic['args']['connection_string']) == connection_string:
+                        #dic['args']['id'] = db_conn.attrib['id']
+                        database_exists = True
 
-                            # map the connection ids
-                            conn_ids[db_conn.attrib['databaseid']] = dic['args']['id']
-                            break
+                        # map the connection ids
+                        conn_ids[db_conn.attrib['databaseid']] = dic['args']['id']
+                        break
 
                     # if database doesn't exist, then connect to it
                     if not database_exists:
@@ -865,7 +871,7 @@ class CanvasController:
 
         # loop through each model and load it
         # for model in root.iter('Model'):
-        for child in root:
+        for child in root._children:
             if child.tag == 'Model':
                 element = []
                 for items in child:
@@ -875,14 +881,14 @@ class CanvasController:
                 dtype = datatypes.ModelTypes.FeedForward
 
                 # load the model
-                #self.cmd.add_model(model.attrib['mdl'], id=model.attrib['id'],type=dtype)
-                self.cmd.add_model(type=dtype, id=element[1], attrib=element[1])
+                # self.cmd.add_model(model.attrib['mdl'], id=model.attrib['id'],type=dtype)
+                self.cmd.add_model(attrib=element[4], type=dtype, id=element[1])
 
                 # draw the box
                 name = element[0]
                 modelid = element[1]
 
-                x = float(int(element[2]))
+                x = float(element[2])
                 y = float(element[3])
 
                 self.createBox(name=name, id=modelid, xCoord=x, yCoord=y)

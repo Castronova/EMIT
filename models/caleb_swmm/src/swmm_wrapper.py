@@ -3,7 +3,7 @@ __author__ = 'tonycastronova'
 from os.path import *
 import uuid
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from ctypes import *
 
 
@@ -40,8 +40,10 @@ class swmm(time_step_wrapper):
         self.__out = join(self.__datadir,self.swmm_file_name+'.out')
         self.__console = open(join(self.__datadir,'console.out'),'w')
 
-        # store swmm geometry list to lookup geoms later on
-        self.__geom_lookup = {}
+
+        self.__geom_lookup = {}     # for mapping between swmm geometry ids and exchange item ids
+        self.__geom_atts = {}       # for storing geomerty attributes (e.g. to and from nodes)
+
 
         #--- read input file and build geometries ---
         geoms = self.build_geometries()
@@ -70,18 +72,50 @@ class swmm(time_step_wrapper):
 
     def run_timestep(self,inputs, current_time):
 
-        # get rainfall from inputs
-        rainfall_item = inputs['Rainfall']
-        rainfall_data = rainfall_item.get_geoms_and_timeseries()
+        # get catchment-level inputs
+        rainfall_data = inputs['Rainfall'].get_geoms_and_timeseries()
+        evaporation = inputs['Evaporation'].get_geoms_and_timeseries()
+        snow = inputs['Snow_depth'].get_geoms_and_timeseries()
+
+        # get streamflow input
+        flow_rate = inputs['Flow_rate'].get_geoms_and_timeseries()
 
         self.__swmmLib.getObjectTypeCount.restype = c_int
         subcatchment_count = self.__swmmLib.getObjectTypeCount(SWMM_Types.SUBCATCH)
         self.__swmmLib.getSubcatch.restype = POINTER(TSubcatch)
         self.__swmmLib.setSubcatch.argtypes = [POINTER(TSubcatch), c_char_p]
+
+
+        link_count = self.__swmmLib.getObjectTypeCount(SWMM_Types.LINK)
+        self.__swmmLib.getLink.restype = POINTER(TLink)
+        self.__swmmLib.setLink.argtypes = [POINTER(TLink), c_char_p]
+
+        node_count = self.__swmmLib.getObjectTypeCount(SWMM_Types.NODE)
+        self.__swmmLib.getNode.restype = POINTER(TNode)
+        self.__swmmLib.setNode.argtypes = [POINTER(TNode), c_char_p]
+        self.__swmmLib.getNodeById.restype = POINTER(TNode)
+        self.__swmmLib.getNodeById.argtypes = [c_char_p]
+
+
         step = c_double()
+
+
+
+        # ----------------
+        # Catchment Inputs
+        # ----------------
+
+        # check to see which inputs will be applied
+        apply_rainfall = True if len([v for g in rainfall_data.keys() for v in rainfall_data[g] if v is not None]) > 0 else False
+        apply_evaporation = True if len([v for g in evaporation.keys() for v in evaporation[g] if v is not None]) > 0 else False
+        apply_snow = True if len([v for g in snow.keys() for v in snow[g] if v is not None]) > 0 else False
 
         # loop through all of the subcatchments and apply inputs
         for i in range(0,subcatchment_count):
+
+            # todo: check all possible catchment inputs
+            if not (apply_rainfall or apply_evaporation or apply_snow):
+                break
 
             # get the subcatchment
             sub = self.__swmmLib.getSubcatch(c_int(i))
@@ -90,66 +124,90 @@ class swmm(time_step_wrapper):
             sub_id = sub.contents.ID
             geom_id = self.__geom_lookup[sub_id].id()
 
-            # get the date and value from inputs, based on geom_id
-            date, value = rainfall_item.get_timeseries_by_id(geom_id)
+            # APPLY RAINFALL if values are given (i.e. not all None)
+            if apply_rainfall:
 
-            # set the rainfall value
-            sub.contents.rainfall = value[0]
+                # get the date and value from inputs, based on geom_id
+                date, value = inputs['Rainfall'].get_timeseries_by_id(geom_id)
 
-            # apply the rainfall
+                # set the rainfall value
+                if value[0]: sub.contents.rainfall = value[0]
+                else: sub.contents.rainfall = c_double(0.0)
+
+
+            if apply_evaporation:
+                # todo: implement this
+                pass
+
+            if apply_snow:
+                # todo: implement this
+                pass
+
+
+            # apply all inputs
             self.__swmmLib.setSubcatch(sub,c_char_p('rainfall'))
+            self.__swmmLib.setSubcatch(sub,c_char_p('evapLoss'))
+            self.__swmmLib.setSubcatch(sub,c_char_p('newSnowDepth'))
 
+
+        # ------------
+        # Link Inputs
+        # ------------
+
+        # check to see which inputs will be applied
+        apply_flowrate = True if len([v for g in flow_rate.keys() for v in flow_rate[g] if v is not None]) > 0 else False
+
+        # loop through the links and apply inputs
+        for i in range(0, link_count):
+
+            # todo: check all possible link inputs
+            if not apply_flowrate:
+                break
+
+            # get the current link
+            l = self.__swmmLib.getLink(c_int(i))
+
+            # get the geom id
+            link_id = l.contents.ID
+            geom_id = self.__geom_lookup[link_id].id()
+            att = self.__geom_atts[link_id]
+
+            # get input and output node ids
+            in_node_id = att['inlet']
+            out_node_id = att['outlet']
+
+            # APPLY STREAMFLOW if values are given (i.e. not all None)
+            if apply_flowrate:
+
+                # get the date and value from inputs, based on geom_id
+                date, value = inputs['Flow_rate'].get_timeseries_by_id(geom_id)
+
+                # apply flowrate at outlets
+                if value[0]:
+                    node = self.__swmmLib.getNodeById(c_char_p(out_node_id))
+                    node.contents.inflow = value[0]
+
+
+        # for debugging only
+        print self.__swmmLib.getSubcatch(c_int(0)).contents.newRunoff
+
+        # step the SWMM simulation
         error = self.__swmmLib.swmm_step(byref(step))
 
-        # todo: increment time!
+        # track the new time within the SWMM wrapper
         elapsed = self.__begin_c_time + step.value
         new_time = self.decode_datetime(elapsed)
         increment = new_time - self.current_time()
+
+        if increment.total_seconds() < 0:  # i.e. simulation has completed
+            # force the increment to step beyond the simulation end time
+            increment = timedelta(0,5)
         self.increment_time(increment)
 
 
-        # # setup input file for simulation
-        # self.setup_model(inputs)
-        #
-        # # todo: use input rainfall to write inp file
-        #
-        #
-        # # run the simulation
-        # subprocess.call([self.exe,self.inp,self.rpt,self.out], stdout=self.console)
-        #
-        # # set exchange item results from output file
-        # l = ps.list(self.out)
-        #
-        # vars = ps.listvariables(self.out)
-        #
-        # links = ps.listdetail(self.out,'link')
-        # nodes = ps.listdetail(self.out,'node')
-        # catchments = ps.listdetail(self.out,'subcatchment')
-        #
-        # #link_= ps.getdata(self.out,items)
-        # node_head = ps.getdata(self.out, ['node,'+N['Name']+',1' for N in nodes])
-        # node_flow = ps.getdata(self.out, ['node,'+N['Name']+',4' for N in nodes])
-        # link_frate = ps.getdata(self.out, ['link,'+L['Name']+',0' for L in links])
-        # link_depth = ps.getdata(self.out, ['link,'+L['Name']+',1' for L in links])
-        #
-        # # get the stage output exchange item
-        # stage = self.get_output_by_name('Hydraulic_head')
-        #
-        # # set the output results to each geometry
-        # for geom in stage.geometries():
-        #     id = geom.id()
-        #     geom.datavalues().set_timeseries(node_head[id])
-        #
-        # self.outputs(name='Hydraulic_head', value=stage)
-        #
-        # return 1
-
-
     def save(self):
-        pass
+        return self.outputs()
         #return [self.get_output_by_name(outputname='Hydraulic_head')]
-
-
 
     def build_swmm_inputs_and_outputs(self, geoms):
 
@@ -160,8 +218,8 @@ class swmm(time_step_wrapper):
         }
 
         inputs = {'subcatchment' : ['Evaporation','Rainfall','Snow_depth'],
-                   'link' : ['Froude_number','Capacity'],
-                   'node' : []
+                   'link' : ['Froude_number','Capacity','Flow_rate','Flow_velocity'],
+                   'node' : ['Lateral_inflow','Hydraulic_head']
         }
 
         # get spatial reference system (use default if none is provided in config)
@@ -183,7 +241,8 @@ class swmm(time_step_wrapper):
                 # build elementset
                 geometries = geoms[key]
                 elementset = []
-                for i, geom in geometries:
+                for i, v in geometries.iteritems():
+                    geom = v['geometry']
                     dv = DataValues()
                     elem = Geometry(geom=geom,id=i)
                     elem.type(geom.geom_type)
@@ -220,7 +279,8 @@ class swmm(time_step_wrapper):
                 id_inc = 0
                 geometries = geoms[key]
                 elementset = []
-                for i, geom in geometries:
+                for i, v in geometries.iteritems():
+                    geom = v['geometry']
                     dv = DataValues()
                     elem = Geometry(geom=geom,id=id_inc)
                     elem.type(geom.geom_type)
@@ -260,7 +320,6 @@ class swmm(time_step_wrapper):
         # build catchments
         catchments = swmm_geom.build_catchments(input_file)
 
-
         # build rivers
         streams = swmm_geom.build_links(input_file)
 
@@ -273,146 +332,14 @@ class swmm(time_step_wrapper):
         geoms['link'] = streams
         geoms['node'] = nodes
 
-        return geoms
 
-    def build_swmm_geoms(self,inp,type):
-        lines = None
-        with open(inp,'r') as f:
-            lines = f.readlines()
-
-
-        # first read all the node coordinates
-        nodes = {}
-        node_order = []
-        cidx = self.find(lines, lambda x: 'COORDINATES' in x)
-        for line in lines[cidx+3:]:
-            if line.strip() == '':
-                break
-            vals = re.split(' +',line.strip())
-            nodes[vals[0]] = (float(vals[1]), float(vals[2]))
-            node_order.append(vals[0])
-
-
-        idx = self.find(lines, lambda x: type.upper() in x)
-        geoms = []
-        links = {}
-        prev_id = None
-        # build line objects
-        if type == 'vertices':
-            for line in lines[idx+3:]:
-                if line.strip() == '':
-                    break
-
-                vals = re.split(' +',line.strip())
-                name = vals[0]
-                x = float(vals[1])
-                y = float(vals[2])
-
-                if name != prev_id:
-                    # save endnode for previous id
-                    if prev_id is not None:
-                        links[prev_id].append(nodes[node_order[node_order.index(prev_id)]])
-
-                    # save the startnode for the current id
-                    links[name] = [nodes[node_order[node_order.index(name)-1]]]
-                    prev_id = name
-
-                # save each of the coordinates in the link
-                links[name].append((x,y))
-
-        for link,coords in links.iteritems():
-            geoms.append((link,LineString(coords)))
-
+        # populate geometry attributes lookup table
+        for k,v in dict(catchments.items() + streams.items() + nodes.items()).iteritems():
+            self.__geom_atts[k] = v
 
 
         return geoms
 
-    def setup_model(self, inputs):
-
-        # open the input file (original)
-        sim = open(self.sim_input,'r')
-        in_lines = sim.readlines()
-
-        # set the simulation start and end times.
-        st = self.simulation_start()
-        et = self.simulation_end()
-        cidx = self.find(in_lines, lambda x: 'OPTIONS' in x)
-        i = cidx+1
-        swmm_opts = {}
-        for line in in_lines[cidx+1:]:
-            if line.strip() == '':
-                break
-            vals = re.split(' +',line.strip())
-            swmm_opts[vals[0]] = vals[1]
-            i += 1
-
-        swmm_opts['START_DATE'] = st.strftime('%m/%d/%Y')
-        swmm_opts['START_TIME'] = st.strftime('%H:%M:%S')
-        swmm_opts['END_DATE'] = et.strftime('%m/%d/%Y')
-        swmm_opts['END_TIME'] = et.strftime('%H:%M:%S')
-        swmm_opts['REPORT_START_DATE'] = st.strftime('%m/%d/%Y')
-        swmm_opts['REPORT_START_TIME'] = st.strftime('%H:%M:%S')
-
-        for j in range(cidx+1,i):
-            k,v = swmm_opts.popitem()
-            in_lines[j] = "%s\t%s\n" % (k,v)
-
-
-        # Format rainfall input
-        for geom, dict in inputs.iteritems():
-            if 'Rainfall' in dict:
-                in_lines = self.set_rainfall_input(in_lines,dict['Rainfall'])
-
-        # write simulation specific input file
-        f = open(self.inp,'w')
-        for line in in_lines:
-            f.write(line)
-        f.close()
-
-    def set_rainfall_input(self, in_lines, precip):
-
-        # get the time series associated with the input exchange item
-        #geom, eitem = inputs.items()[0]
-        #data = eitem.values()[0]
-        d, v = precip.get_dates_values()
-        dates = list(d)
-        values = list(v)
-
-        # map the rain gages to the catchments
-        cidx = self.find(in_lines, lambda x: 'SUBCATCHMENTS' in x) + 4
-        i = 0
-        for line in in_lines[cidx:]:
-            if line.strip() == '':
-                break
-            vals = re.split(' +',line.strip())
-            vals[1] = 'rain_gage_data'
-            vals.append('\n')
-            in_lines[cidx + i]  = '\t'.join(vals)
-
-            i += 1
-
-
-
-        # timeseries values must be relative to the start of the swmm simulation
-        offset = (self.simulation_start() - dates[0]).total_seconds()
-        for i in xrange(0, len(dates)):
-            dates[i] -= datetime.timedelta(seconds=offset)
-
-        # add a raingage
-        in_lines.append('\n[RAINGAGES]\n')
-        in_lines.append(';;;\n')
-        in_lines.append(';;Name           Type      Intrvl Catch  Source\n')
-        in_lines.append(';;-------------- --------- ------ ------ ----------\n')
-        in_lines.append('rain_gage_data  CUMULATIVE 0:01   1.0    TIMESERIES precipitation\n')
-
-        # write the rainfall data
-        in_lines.append('\n[TIMESERIES\n')
-        in_lines.append(';;Name           Date       Time       Value   \n')
-        in_lines.append(';;-------------- ---------- ---------- ----------\n')
-        for i in xrange(0, len(dates)):
-            in_lines.append('precipitation\t%s\t%s\t%2.3f\n' %(dates[i].strftime('%m/%d/%Y'), dates[i].strftime('%H:%M'),values[i]))
-
-        return in_lines
 
 
     def find(self, lst, predicate):

@@ -158,7 +158,6 @@ class CanvasController:
         except Exception as e:
             wx.MessageBox(e.args[0], 'Error',wx.OK | wx.ICON_ERROR)
 
-
     def getCurrentDbSession(self, value = None):
         if value is not None:
             dbs = self.cmd.get_db_connections()
@@ -807,6 +806,11 @@ class CanvasController:
 
     def loadsimulation(self, file):
         #TODO: Should be part of the cmd.
+        ########### NEW CODE #############
+        tree = et.parse(file)
+
+        ########### END CODE #############
+
         tree = et.parse(file)
 
         # get the root
@@ -942,7 +946,6 @@ class CanvasController:
 
                 self.FloatCanvas.Draw()
                 #self.Canvas.Draw()
-
 
     def addModel(self, filepath, x, y):
         """

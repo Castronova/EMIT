@@ -5,6 +5,9 @@ from shapely.geometry import LineString, MultiPoint, Point, Polygon
 
 
 
+
+
+
 # TODO!  These should utilize database queries, see test_spatial.py.  Also, they should take actionID as input?
 
 # adapted from https://github.com/ojdo/python-tools.git
@@ -91,3 +94,9 @@ class spatial_closest_object(space_base.Space):
 
             i += 1
         return mapped
+
+
+
+class SpatialInterpolation():
+    NearestNeighbor = spatial_nearest_neighbor()
+    NearestObject = spatial_closest_object()

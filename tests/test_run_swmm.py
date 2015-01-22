@@ -47,7 +47,7 @@ class test_run_swmm(unittest.TestCase):
         # set the default database for the simulation
         self.sim.set_default_database(db_id)
 
-    def test_run(self):
+    def test_swmm_rainfall_coupling(self):
 
 
         # add swmm component
@@ -94,6 +94,93 @@ class test_run_swmm(unittest.TestCase):
         self.assertTrue(self.sim.get_model_by_id(swmm.get_id()) is not None )
         self.assertTrue(self.sim.get_model_by_id(timeseries.id()) is not None )
         self.assertTrue(self.sim.get_links_btwn_models(timeseries.id(),swmm.get_id())[0] is not None )
+
+
+        print 'Starting Simulation'
+        st = time.time()
+        # begin execution
+        self.sim.run_simulation()
+        print 'Simulation Complete \n Elapsed time = %3.2f seconds'%(time.time() - st)
+
+    def test_swmm_swmm_rainfall_coupling(self):
+
+
+        # add swmm1 component
+        swmm1_path = r'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_1/src/swmm_time-step.mdl'
+        swmm1 = self.sim.add_model(type=datatypes.ModelTypes.TimeStep, attrib={'mdl':swmm1_path})
+        swmm1_name = swmm1.get_name()
+
+        # add swmm1 component
+        swmm2_path = r'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_2/src/swmm_time-step.mdl'
+        swmm2 = self.sim.add_model(type=datatypes.ModelTypes.TimeStep, attrib={'mdl':swmm2_path})
+        swmm2_name = swmm2.get_name()
+
+        # create odm2 instance
+        series_id = 21  # incremental rainfall
+        timeseries = odm2_data.odm2(resultid=series_id, session=self.session)
+
+        # create a timeseries model instance for the rainfall
+        oei = timeseries.outputs().values()
+        thisModel = main.Model(id=timeseries.id(),
+                               name=timeseries.name(),
+                               instance=timeseries,
+                               desc=timeseries.description(),
+                               input_exchange_items= [],
+                               output_exchange_items=  oei,
+                               params=None)
+
+        thisModel.type(datatypes.ModelTypes.Data)
+
+        # save the model
+        self.sim.Models(thisModel)
+
+
+        # add link between rainfall and swmm 1
+        link1 = self.sim.add_link_by_name(from_id=timeseries.id(),
+                                  from_item_name='rainfall',
+                                  to_id=swmm1.get_id(),
+                                  to_item_name='Rainfall')
+
+        # add link between rainfall and swmm 2
+        link2 = self.sim.add_link_by_name(from_id=timeseries.id(),
+                                  from_item_name='rainfall',
+                                  to_id=swmm2.get_id(),
+                                  to_item_name='Rainfall')
+
+        # add link between swmm 1 and swmm 2 (streamflow)
+        link3 = self.sim.add_link_by_name(from_id=swmm1.get_id(),
+                                  from_item_name='Flow_rate',
+                                  to_id=swmm2.get_id(),
+                                  to_item_name='Flow_rate')
+
+        # add link between swmm 2 and swmm 1 (stage)
+        link4 = self.sim.add_link_by_name(from_id=swmm2.get_id(),
+                                  from_item_name='Hydraulic_head',
+                                  to_id=swmm1.get_id(),
+                                  to_item_name='Hydraulic_head')
+
+
+        # set link tranformations
+        from transform.space import *
+        from transform.time import *
+        link1.spatial_interpolation(SpatialInterpolation.NearestObject)
+        link1.temporal_interpolation(TemporalInterpolation.NearestNeighbor)
+
+        link2.spatial_interpolation(SpatialInterpolation.NearestObject)
+        link2.temporal_interpolation(TemporalInterpolation.NearestNeighbor)
+
+        link3.spatial_interpolation(None)
+        link3.temporal_interpolation(None)
+
+        link4.spatial_interpolation(None)
+        link4.temporal_interpolation(None)
+
+
+
+        # some assertions to make sure models loaded correctly
+        #self.assertTrue(self.sim.get_model_by_id(swmm.get_id()) is not None )
+        #self.assertTrue(self.sim.get_model_by_id(timeseries.id()) is not None )
+        #self.assertTrue(self.sim.get_links_btwn_models(timeseries.id(),swmm.get_id())[0] is not None )
 
 
         print 'Starting Simulation'

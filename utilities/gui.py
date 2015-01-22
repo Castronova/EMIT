@@ -345,7 +345,12 @@ def generate_link_key(link):
     :return: unique string key
     """
 
-    return '_'.join([link[0][0].get_name(),link[0][1].name(),link[1][0].get_name(),link[1][1].name()])
+    return '_'.join([ link.source_component().get_name(),
+                      link.source_exchange_item().name(),
+                      link.target_component().get_name(),
+                      link.target_exchange_item().name()])
+
+    #return '_'.join([link[0][0].get_name(),link[0][1].name(),link[1][0].get_name(),link[1][1].name()])
 
 def get_ts_from_database_link(dbapi, db_sessions, dbactions, links, target_model):
     """

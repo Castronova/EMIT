@@ -57,8 +57,27 @@ class Link(object):
         self.__spatial_interpolation = None
         self.__temporal_interpolation = None
 
+    # todo: this should be replaced by accessors for each of the from_lc,to_lc,from_item,to_item
     def get_link(self):
+        print '\n> [Deprecated] This function has been deprecated...do not use! '
+        print '> [Deprecated] main.py -> get_link()'
+        for caller in inspect.stack():
+            if 'EMIT' in caller[1]:
+                print '> [Deprecated Call Stack] ',caller[1],caller[3],caller[2]
+
         return [self.__from_lc,self.__from_item], [self.__to_lc,self.__to_item]
+
+    def source_exchange_item(self):
+        return self.__from_item
+
+    def target_exchange_item(self):
+        return self.__to_item
+
+    def source_component(self):
+        return self.__from_lc
+
+    def target_component(self):
+        return self.__to_lc
 
     def get_id(self):
         return self.__id
@@ -455,13 +474,17 @@ class Coordinator(object):
         This is useful for determining where data will pass (direction)
         """
 
-        links = []
+        links = {}
         for linkid, link in self.__links.iteritems():
             # get the from/to link info
-            From, To = link.get_link()
+            #From, To = link.get_link()
 
-            if From[0].get_id() == model_id:
-                links.append([From, To, linkid])
+            if link.source_component().get_id() == model_id:
+                links[linkid] = link
+
+            # todo: this should return the link object NOT some list
+            #if From[0].get_id() == model_id:
+            #    links.append([From, To, linkid])
 
         #if len(links) == 0:
         #    print '>  Could not find any links associated with model id: '+str(model_id)
@@ -472,28 +495,37 @@ class Coordinator(object):
         """
         returns all the links corresponding with a linkable component
         """
-        links = []
+        links = {}
         for linkid, link in self.__links.iteritems():
             # get the from/to link info
-            From, To = link.get_link()
+            #From, To = link.get_link()
 
-            if  From[0].get_id() == model_id or To[0].get_id() == model_id:
-                links.append([From, To, linkid])
+            links[linkid] = link
+
+            #if  From[0].get_id() == model_id or To[0].get_id() == model_id:
+            #    links.append([From, To, linkid])
 
         if len(links) == 0:
             print '>  Could not find any links associated with model id: '+str(model_id)
 
+        # todo: this should return a dict of link objects, NOT some random list
         return links
 
     def get_links_btwn_models(self, from_model, to_model):
 
         links = []
         for linkid, link in self.__links.iteritems():
-            # get the from/to link info
-            From, To = link.get_link()
+            # Replaced with the code below b/c get_link() is deprecated
+            # # get the from/to link info
+            # From, To = link.get_link()
+            #
+            # if  From[0].get_id() == from_model and To[0].get_id() == to_model:
+            #     #links.append([From, To])
+            #     links.append(link)
 
-            if  From[0].get_id() == from_model and To[0].get_id() == to_model:
-                #links.append([From, To])
+            source_id = link.source_component().get_id()
+            target_id = link.target_component().get_id()
+            if source_id == from_model and target_id == to_model:
                 links.append(link)
 
         return links
@@ -542,10 +574,15 @@ class Coordinator(object):
 
         # set the to exchange item = input mapped item
 
-        f,t = self.__links[link_id].get_link()
+        # This has been replaced with the three lines below b/c get_link() is deprecated
+        # f,t = self.__links[link_id].get_link()
+        #
+        # t_item = t[1]
+        # f_item = f[1]
 
-        t_item = t[1]
-        f_item = f[1]
+        link = self.__links[link_id]
+        t_item = link.target_exchange_item()
+        f_item = link.source_exchange_item()
 
         # loop through each of the from geoms
         f_geoms = f_item.geometries()
@@ -607,9 +644,16 @@ class Coordinator(object):
 
         # create links between these nodes
         for id, link in self.__links.iteritems():
-            f, t = link.get_link()
-            from_node = f[0].get_id()
-            to_node = t[0].get_id()
+
+            # replaced with the two lines below b/c get_link has been deprecated
+            #f, t = link.get_link()
+            #from_node = f[0].get_id()
+            #to_node = t[0].get_id()
+
+            from_node = link.source_component().get_id()
+            to_node = link.target_component().get_id()
+
+
             g.add_edge(from_node, to_node)
 
         # determine cycles

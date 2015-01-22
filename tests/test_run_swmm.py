@@ -83,6 +83,12 @@ class test_run_swmm(unittest.TestCase):
                                   to_id=swmm.get_id(),
                                   to_item_name='Rainfall')
 
+        from transform.space import *
+        from transform.time import *
+        link.spatial_interpolation(SpatialInterpolation.NearestObject)
+        link.temporal_interpolation(TemporalInterpolation.NearestNeighbor)
+
+
 
         # some assertions to make sure models loaded correctly
         self.assertTrue(self.sim.get_model_by_id(swmm.get_id()) is not None )

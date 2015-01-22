@@ -284,7 +284,7 @@ class Coordinator(object):
 
         if type == datatypes.ModelTypes.FeedForward or type == datatypes.ModelTypes.TimeStep:
 
-            ini_path = attrib
+            ini_path = attrib['mdl']
 
             # parse the model configuration parameters
             params = parse_config(ini_path)

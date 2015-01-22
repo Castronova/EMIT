@@ -96,7 +96,35 @@ class spatial_closest_object(space_base.Space):
         return mapped
 
 
+class spatial_exact_match(space_base.Space):
+    def __init__(self):
+        super(spatial_exact_match,self).__init__()
+
+    def name(self):
+        return 'Exact Match'
+
+    def transform(self, ingeoms, outgeoms):
+
+        # create container for mapped geometries
+        mapped_geoms = []
+
+        igeoms = [i.geom() for i in ingeoms]
+        ogeoms = [o.geom() for o in outgeoms]
+
+        for i in range(0, len(igeoms)):
+            igeom = igeoms[i]
+            for o in ogeoms:
+                if igeom.equals(o):
+                    idx = ogeoms.index(o)
+                    mapped_geoms.append((ingeoms[i],outgeoms[idx]))
+                    ogeoms.pop(idx)
+                    break
+
+
+        return mapped_geoms
+
 
 class SpatialInterpolation():
     NearestNeighbor = spatial_nearest_neighbor()
     NearestObject = spatial_closest_object()
+    ExactMatch = spatial_exact_match()

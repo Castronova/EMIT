@@ -169,11 +169,11 @@ class test_run_swmm(unittest.TestCase):
         link2.spatial_interpolation(SpatialInterpolation.NearestObject)
         link2.temporal_interpolation(TemporalInterpolation.NearestNeighbor)
 
-        link3.spatial_interpolation(None)
-        link3.temporal_interpolation(None)
+        link3.spatial_interpolation(SpatialInterpolation.ExactMatch)
+        link3.temporal_interpolation(TemporalInterpolation.NearestNeighbor)
 
-        link4.spatial_interpolation(None)
-        link4.temporal_interpolation(None)
+        link4.spatial_interpolation(SpatialInterpolation.ExactMatch)
+        link4.temporal_interpolation(TemporalInterpolation.NearestNeighbor)
 
 
 

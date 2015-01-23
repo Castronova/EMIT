@@ -1,16 +1,16 @@
 __author__ = 'Mario'
 import wx
-import wx.gizmos as gizmos
-from images import icons
-from ContextMenu import TreeContextMenu, TreeItemContextMenu
-import ConfigParser
 import os
+from images import icons
+from ContextMenu import TreeItemContextMenu
+import ConfigParser
 from os.path import *
 import fnmatch
 import wx.lib.customtreectrl as CT
 import utilities
 from txtctrlModel import ModelTxtCtrl
-from PropertyGrid import pnlProperty
+from wx.lib.pubsub import pub as Publisher
+import random
 
 class ToolboxPanel(wx.Panel):
     def __init__(self, parent):
@@ -121,19 +121,11 @@ class ToolboxPanel(wx.Panel):
         self.tree.ExpandAll()
 
         # self.tree.GetMainWindow().Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
-        self.tree.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
         self.tree.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnActivate)
         self.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnItemContextMenu)
         # self.Bind(wx.EVT_TREE_ITEM_MENU, self.OnItemContextMenu)
         self.Bind(wx.EVT_TREE_BEGIN_DRAG, self.onDrag)
-
-    def OnContextMenu(self, evt):
-
-        # save the currently selected item
-        self.SetCurrentlySelected(evt)
-
-        # launch the context menu
-        self.tree.PopupMenu(TreeContextMenu(self,evt))
+        self.tree.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.onDoubleClick)
 
     def OnItemContextMenu(self, evt):
 
@@ -153,11 +145,26 @@ class ToolboxPanel(wx.Panel):
         # item = self.tree.GetItemText(evt.GetItem())
         item = self.tree.GetSelection()
 
-        for i in self.items.keys():
-            if i == item:
-                print self.items[i]
-                break
-        pass
+        # for i in self.items.keys():
+        #     if i == item:
+        #         print self.items[i]
+        #         break
+        #pass
+
+    def onDoubleClick(self, event):
+        id = event.GetItem()
+        filename = id.GetText()
+        fullpath = self.filepath[filename]
+        filenames = []
+        filenames.append(fullpath)
+
+        # Generate Random Coordinates
+        x = random.randint(250,600)
+        y = random.randint(150, 350)
+
+        # Send the filepath to the FileDrop class in CanvasController
+        Publisher.sendMessage('toolboxclick', x = x, y = y, filenames = filenames)
+
 
     def onDrag(self, event):
         data = wx.FileDataObject()

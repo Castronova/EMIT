@@ -6,6 +6,7 @@ import wx
 import sys
 from wx.lib.pubsub import pub as Publisher
 import wx.propgrid as wxpg
+import warnings
 
 
 [wxID_PNLCREATELINK, wxID_PNLSPATIAL, wxID_PNLTEMPORAL,
@@ -14,7 +15,7 @@ import wx.propgrid as wxpg
 
 class pnlCreateLink ( wx.Panel ):
 
-    def __init__( self, prnt, outputitems,inputitems ):
+    def __init__( self, prnt, from_model_name, to_model_name, outputitems,inputitems ):
         wx.Panel.__init__(self, id=wxID_PNLCREATELINK, name=u'pnlIntro', parent=prnt,
               pos=wx.Point(571, 262), size=wx.Size(439, 357),
               style=wx.TAB_TRAVERSAL)
@@ -32,7 +33,7 @@ class pnlCreateLink ( wx.Panel ):
 
 
         PanelSizer = wx.BoxSizer( wx.VERTICAL )
-        PanelSizer.AddSpacer( ( 0, 75), 0, wx.EXPAND, 5 )
+        PanelSizer.AddSpacer( ( 0, 90), 0, wx.EXPAND, 5 )
         bSizer6 = wx.BoxSizer( wx.HORIZONTAL )
         PanelSizer.Add( bSizer6, 1, wx.EXPAND, 5 )
         bSizer5 = wx.BoxSizer( wx.HORIZONTAL )
@@ -40,21 +41,31 @@ class pnlCreateLink ( wx.Panel ):
 
         self.outputs = MyTree(id=wxID_PNLCREATELINK,
                parent=self, pos=wx.Point(5, 60),
-              size=wx.Size(210, 80), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT)
+              size=wx.Size(210, 100), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT)
 
         self.inputs = MyTree(id=wxID_PNLCREATELINK,
                parent=self, pos=wx.Point(215, 60),
-              size=wx.Size(210, 80), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT)
+              size=wx.Size(210, 100), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT)
         # self.panelSizer = PanelSizer.AddSpacer( ( 20, 0), 0, wx.EXPAND, 5 )
 
         bSizer6.Add(self.outputs)
         bSizer6.AddSpacer( ( 20, 0), 0, wx.EXPAND, 5 )
         bSizer6.Add(self.inputs)
-        self.Description_text = wx.StaticText(self, label =
-                                "Select which output and input parameters that you wish to couple",
-                                              pos=wx.Point(0,15))
-        self.output_text = wx.StaticText(self, label = "Output Variable", pos=wx.Point(0,40))
-        self.input_text = wx.StaticText(self, label = "Input Variable", pos=wx.Point(236,40))
+
+
+        #self.Description_text = wx.StaticText(self, label =
+        #                        "Select which output and input parameters that you wish to couple",
+        #                                      pos=wx.Point(0,15))
+
+        font = wx.Font(14, wx.DEFAULT, wx.NORMAL, wx.BOLD)
+        from_label = wx.StaticText(self, label = from_model_name, pos=wx.Point(0,20))
+        from_label.SetFont(font)
+        wx.StaticText(self, label = "Output Variables", pos=wx.Point(0,43))
+
+        to_label = wx.StaticText(self, label = to_model_name, pos=wx.Point(236,20))
+        to_label.SetFont(font)
+        wx.StaticText(self, label = "Input Variables", pos=wx.Point(236,43))
+
         # self.output_text = wx.StaticText(self,id=wxID_PNLCREATELINK, label = "Inputs", pos=wx.Point(0,0),size=wx.Size(210,10))
         # self.input_text  = wx.StaticText(self,id=wxID_PNLCREATELINK, label = "Outputs", pos=wx.Point(225,0),size=wx.Size(210,10))
         # PanelSizer.AddSpacer((0,20), 0, wx.EXPAND, 5)
@@ -62,11 +73,11 @@ class pnlCreateLink ( wx.Panel ):
 
         ## This is the Property Grid related code
 
-        self.pgout  = wxpg.PropertyGridManager(self, size = wx.Size(210, 310),
+        self.pgout  = wxpg.PropertyGridManager(self, size = wx.Size(210, 130),
                         style=wxpg.PG_SPLITTER_AUTO_CENTER |
                               wxpg.PG_AUTO_SORT)
 
-        self.pgin  = wxpg.PropertyGridManager(self, size = wx.Size(210, 310),
+        self.pgin  = wxpg.PropertyGridManager(self, size = wx.Size(210, 130),
                         style=wxpg.PG_SPLITTER_AUTO_CENTER |
                               wxpg.PG_AUTO_SORT)
 
@@ -84,19 +95,18 @@ class pnlCreateLink ( wx.Panel ):
         self.pgin.AddPage( "Input Details" )
 
         # Fill using dictionary
-        self.pgout.SetPropertyValues( self.output)
-        self.pgin.SetPropertyValues( self.input)
-
+        # TODO: This is causing error messages, SetPropertyValues is for dictionaries
+        # TODO: Maybe make self.output a dictionary instead of a list
+        # self.pgout.SetPropertyValues( self.output)
+        # self.pgin.SetPropertyValues( self.input)
 
         self.nout = 0
         self.nin  = 0
 
-
-
         bSizer5.Add(self.pgout)
         bSizer5.AddSpacer( ( 20, 0), 0, wx.EXPAND, 5 )
         bSizer5.Add(self.pgin)
-        PanelSizer.Add( bSizer5, 1, wx.EXPAND, 5 )
+        PanelSizer.Add(bSizer5, 1, wx.EXPAND, 5 )
 
         # deactivate Next button
         self.activateLinkButton()
@@ -105,8 +115,10 @@ class pnlCreateLink ( wx.Panel ):
         # self.outputs.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.PopulateOutputPropertyGrid(outputitems, self.nout))
         # self.inputs.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.PopulateOutputPropertyGrid(inputitems, self.nout))
         #
-        self.PopulateOutputPropertyGrid(outputitems, self.nout)
-        self.PopulateInputPropertyGrid(inputitems, self.nin)
+        #self.PopulateOutputPropertyGrid(outputitems, self.nout)
+        #self.PopulateInputPropertyGrid(inputitems, self.nin)
+        self.PopulateInitialPropertyGrid()
+
         self.outputs.Populate(outputitems)
         self.inputs.Populate(inputitems)
 
@@ -119,29 +131,53 @@ class pnlCreateLink ( wx.Panel ):
         self.outputs.Bind(wx.EVT_LEFT_UP,self.OutputClick)
         self.inputs.Bind(wx.EVT_LEFT_UP,self.InputClick)
 
+    def PopulateInitialPropertyGrid(self):
+
+        self.pgin.Append( wxpg.PropertyCategory("1. Variable") )
+        self.pgin.Append( wxpg.StringProperty("Name",value='' ))
+        self.pgin.Append( wxpg.StringProperty("Definition",value='' ))
+
+        self.pgin.Append( wxpg.PropertyCategory("2. Unit"))
+        self.pgin.Append( wxpg.StringProperty("Code", value=''))
+        self.pgin.Append( wxpg.StringProperty("Abbreviation", value=''))
+        self.pgin.Append( wxpg.StringProperty("Type", value=''))
+
+        self.pgout.Append( wxpg.PropertyCategory("1. Variable") )
+        self.pgout.Append( wxpg.StringProperty("Name",value=''))
+        self.pgout.Append( wxpg.StringProperty("Definition",value='' ))
+
+        self.pgout.Append( wxpg.PropertyCategory("2. Unit"))
+        self.pgout.Append( wxpg.StringProperty("Code", value=''))
+        self.pgout.Append( wxpg.StringProperty("Abbreviation", value=''))
+        self.pgout.Append( wxpg.StringProperty("Type", value=''))
+
     def PopulateInputPropertyGrid(self, exchangeitems, nin):
         # for exchangeitem in exchangeitems:
-        self.pgin.Append( wxpg.PropertyCategory("1. Variable Information") )
-        self.pgin.Append( wxpg.StringProperty("Name",value=exchangeitems[nin].variable().VariableNameCV() ))
-        self.pgin.Append( wxpg.StringProperty("VarDef",value=exchangeitems[nin].variable().VariableDefinition() ))
+        warnings.filterwarnings("ignore")
+        if len(exchangeitems) > 0:
+            self.pgin.Append( wxpg.PropertyCategory("1. Variable") )
+            self.pgin.Append( wxpg.StringProperty("Name",value=exchangeitems[nin].variable().VariableNameCV() ))
+            self.pgin.Append( wxpg.StringProperty("Definition",value=exchangeitems[nin].variable().VariableDefinition() ))
 
-        self.pgin.Append( wxpg.PropertyCategory("2. Units"))
-        self.pgin.Append( wxpg.StringProperty("UnitName", value=exchangeitems[nin].unit()._Unit__unitName))
-        self.pgin.Append( wxpg.StringProperty("UnitAbbreviation", value=exchangeitems[nin].unit()._Unit__unitAbbreviation))
-        self.pgin.Append( wxpg.StringProperty("UnitType", value=exchangeitems[nin].unit()._Unit__unitTypeCV))
-
+            self.pgin.Append( wxpg.PropertyCategory("2. Unit"))
+            self.pgin.Append( wxpg.StringProperty("Code", value=exchangeitems[nin].unit()._Unit__unitName))
+            self.pgin.Append( wxpg.StringProperty("Abbreviation", value=exchangeitems[nin].unit()._Unit__unitAbbreviation))
+            self.pgin.Append( wxpg.StringProperty("Type", value=exchangeitems[nin].unit()._Unit__unitTypeCV))
+        warnings.resetwarnings()
 
     def PopulateOutputPropertyGrid(self, exchangeitems, nout):
         # for exchangeitem in exchangeitems:
-        self.pgout.Append( wxpg.PropertyCategory("1. Variable Information") )
-        self.pgout.Append( wxpg.StringProperty("Name",value=exchangeitems[nout].variable().VariableNameCV() ))
-        self.pgout.Append( wxpg.StringProperty("VarDef",value=exchangeitems[nout].variable().VariableDefinition() ))
+        warnings.filterwarnings("ignore")
+        if len(exchangeitems) > 0:
+            self.pgout.Append( wxpg.PropertyCategory("1. Variable") )
+            self.pgout.Append( wxpg.StringProperty("Name",value=exchangeitems[nout].variable().VariableNameCV() ))
+            self.pgout.Append( wxpg.StringProperty("Definition",value=exchangeitems[nout].variable().VariableDefinition() ))
 
-        self.pgout.Append( wxpg.PropertyCategory("2. Units"))
-        self.pgout.Append( wxpg.StringProperty("UnitName", value=exchangeitems[nout].unit()._Unit__unitName))
-        self.pgout.Append( wxpg.StringProperty("UnitAbbreviation", value=exchangeitems[nout].unit()._Unit__unitAbbreviation))
-        self.pgout.Append( wxpg.StringProperty("UnitType", value=exchangeitems[nout].unit()._Unit__unitTypeCV))
-
+            self.pgout.Append( wxpg.PropertyCategory("2. Unit"))
+            self.pgout.Append( wxpg.StringProperty("Code", value=exchangeitems[nout].unit()._Unit__unitName))
+            self.pgout.Append( wxpg.StringProperty("Abbreviation", value=exchangeitems[nout].unit()._Unit__unitAbbreviation))
+            self.pgout.Append( wxpg.StringProperty("Type", value=exchangeitems[nout].unit()._Unit__unitTypeCV))
+        warnings.resetwarnings()
 
     def OnPropGridPageChangepgout(self, event):
             index = self.pgout.GetSelectedPage()
@@ -175,8 +211,8 @@ class pnlCreateLink ( wx.Panel ):
 
             self.OutputSelect(self.output ,data)
 
-            if data is not None:
-                print data
+            #if data is not None:
+            #    print data
 
     def InputClick(self, event):
 
@@ -196,8 +232,8 @@ class pnlCreateLink ( wx.Panel ):
 
             self.InputSelect(self.input, data)
 
-            if data is not None:
-                print data
+            #if data is not None:
+            #    print data
 
     def activateLinkButton(self):
 
@@ -212,7 +248,7 @@ class pnlCreateLink ( wx.Panel ):
             Publisher.sendMessage("deactivateNextButton")
 
     def InputSelect(self, exchangeitems, input_item_name):
-
+        warnings.filterwarnings("ignore")
         #self.selectedinput = self.inputitems[event.GetIndex()]
         #self.selectedinput = event.Text
 
@@ -220,14 +256,23 @@ class pnlCreateLink ( wx.Panel ):
         nin = item._ExchangeItem__name
 
         #self.PopulateInputPropertyGrid(exchangeitems, nin=self.nin)
-        self.pgin.GetPropertyByName("UnitName").SetValue(nin)
-        self.pgin.GetPropertyByName("Name").SetValue(nin)
+
+        # Variable
+        self.pgin.GetPropertyByName("Name").SetValue(item.variable().VariableNameCV())
+        self.pgin.GetPropertyByName("Definition").SetValue(item.variable().VariableDefinition())
+        # Unit
+        self.pgin.GetPropertyByName("Code").SetValue(item.unit().UnitName())
+        self.pgin.GetPropertyByName("Abbreviation").SetValue(item.unit().UnitAbbreviation())
+        self.pgin.GetPropertyByName("Type").SetValue(item.unit().UnitTypeCV())
 
         # Publisher.sendMessage('inputitemname', nin=self.nin)
         if item is not None:
             #self.set_link(0,self.inputitems[event.GetIndex()])
             self.set_link(1,item)
             self.activateLinkButton()
+        warnings.resetwarnings()
+    # with warnings.catch_warnings():
+    #     warnings.simplefilter('ignore')
 
 
     def InputDeselect(self, event):
@@ -238,14 +283,20 @@ class pnlCreateLink ( wx.Panel ):
         self.activateLinkButton()
 
     def OutputSelect(self, exchangeitems, output_item_name):
-
+        warnings.filterwarnings("ignore")
         #self.selectedoutput = self.outputitems[event.GetIndex()]
 
         item = self.GetExchangeItemByName(self.outputitems, output_item_name)
         nout = item._ExchangeItem__name
 
-        self.pgout.GetPropertyByName("UnitName").SetValue(nout)
-        self.pgout.GetPropertyByName("Name").SetValue(nout)
+
+        # Variable
+        self.pgout.GetPropertyByName("Name").SetValue(item.variable().VariableNameCV())
+        self.pgout.GetPropertyByName("Definition").SetValue(item.variable().VariableDefinition())
+        # Unit
+        self.pgout.GetPropertyByName("Code").SetValue(item.unit().UnitName())
+        self.pgout.GetPropertyByName("Abbreviation").SetValue(item.unit().UnitAbbreviation())
+        self.pgout.GetPropertyByName("Type").SetValue(item.unit().UnitTypeCV())
 
         # self.PopulateOutputPropertyGrid(exchangeitems, nout=self.nout)
         # Publisher.sendMessage('outputitemname', nout=self.nout)
@@ -253,6 +304,10 @@ class pnlCreateLink ( wx.Panel ):
             #self.set_link(1,self.outputitems[event.GetIndex()])
             self.set_link(0,item)
             self.activateLinkButton()
+
+        warnings.resetwarnings()
+    # with warnings.catch_warnings():
+    #     warnings.simplefilter('ignore')
 
     def OutputDeselect(self, event):
 
@@ -307,7 +362,7 @@ class MyTree(wx.TreeCtrl):
         item, location = self.HitTest(event.GetPositionTuple())
 
         data = self.GetPyData(item)
-        if data is not None: print data
+        #if data is not None: print data
 
     def Populate(self, exchangeitems):
 

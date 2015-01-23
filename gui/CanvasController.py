@@ -153,7 +153,10 @@ class CanvasController:
 
     def run(self):
 
-        self.cmd.run_simulation()
+        try:
+            self.cmd.run_simulation()
+        except Exception as e:
+            wx.MessageBox(e.args[0], 'Error',wx.OK | wx.ICON_ERROR)
 
     def getCurrentDbSession(self, value = None):
         if value is not None:
@@ -237,11 +240,6 @@ class CanvasController:
 
             # define the font
             font = wx.Font(16, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
-            # print "font", font.GetPixelSize()
-            #
-            # textwidth =len(max(wrappedtext))*font.GetPixelSize()[1]
-            # textheight = len(wrappedtext)*font.GetPixelSize()[1]
-            # location = (x - .25*textwidth,y+.5*textheight)
 
             label = self.FloatCanvas.AddScaledTextBox(unicode(name), (x,y), #(x+1, y+h/2),
                                         Color = "Black",  Size = FontSize, Width= w-10, Position = "cc", Alignment = "center",
@@ -301,7 +299,8 @@ class CanvasController:
 
         # set the shape type so that we can identify it later
         arrow_shape.type = CanvasObjects.ShapeType.ArrowHead
-        self.FloatCanvas.AddObject(arrow_shape)
+        arrow_draw = self.FloatCanvas.AddObject(arrow_shape)
+        arrow_draw.PutInBackground()
 
         # bind the arrow to left click
         arrow_shape.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
@@ -319,7 +318,7 @@ class CanvasController:
         self.Canvas.Canvas.Draw()
 
     def ObjectHit(self, object):
-        print "Hit Object(CanvasController)", object.Name
+        #print "Hit Object(CanvasController)", object.Name
         #self.FloatCanvas.Bind(FC.EVT_FC_RIGHT_DOWN( list, -1, self.RightClickCb ))
         cur = self.getCursor()
 
@@ -450,9 +449,9 @@ class CanvasController:
                 self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != CanvasObjects.ShapeType.Link]
                 #self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Line]
 
-                # remove any arrowheads from the _ForeDrawList
+                # remove any arrowheads from the two FloatCanvas DrawLists
                 self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if obj.type != CanvasObjects.ShapeType.ArrowHead]
-                #self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if type(obj) != FC.Polygon]
+                self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != CanvasObjects.ShapeType.ArrowHead]
 
                 # redraw links
                 for link in self.links.keys():
@@ -643,6 +642,7 @@ class CanvasController:
         # clear links and model in gui
         self.links.clear()
         self.models.clear()
+        self.FloatCanvas.ClearAll()
 
         self.RedrawConfiguration()
 
@@ -673,12 +673,40 @@ class CanvasController:
 
             if model.type() == datatypes.ModelTypes.FeedForward:
                 attributes['mdl'] = model.params_path()
-                et.SubElement(tree,'Model',attributes)
+                modelelement = et.SubElement(tree,'Model')
+
+                modelnameelement = et.SubElement(modelelement, "name")
+                modelnameelement.text = attributes['name']
+                modelidelement = et.SubElement(modelelement, "id")
+                modelidelement.text = attributes['id']
+                modelxelement = et.SubElement(modelelement, "xcoordinate")
+                modelxelement.text = attributes['x']
+                modelyelement = et.SubElement(modelelement, "ycoordinate")
+                modelyelement.text = attributes['y']
+                modelpathelement = et.SubElement(modelelement, "path")
+                modelpathelement.text = model.params_path()
+
+
 
             elif model.type() == datatypes.ModelTypes.Data:
                 attributes['databaseid'] = model.attrib()['databaseid']
                 attributes['resultid'] = model.attrib()['resultid']
-                et.SubElement(tree,'DataModel',attributes)
+                # et.SubElement(tree,'DataModel',attributes)
+                dataelement = et.SubElement(tree,'DataModel')
+
+                datamodelnameelement = et.SubElement(dataelement, "name")
+                datamodelnameelement.text = attributes['name']
+                datamodelidelement = et.SubElement(dataelement, "id")
+                datamodelidelement.text = attributes['id']
+                datamodelxelement = et.SubElement(dataelement, "xcoordinate")
+                datamodelxelement.text = attributes['x']
+                datamodelyelement = et.SubElement(dataelement, "ycoordinate")
+                datamodelyelement.text = attributes['y']
+                datamodelidelement = et.SubElement(dataelement, "databaseid")
+                datamodelidelement.text = attributes['databaseid']
+                datamodelresultidelement = et.SubElement(dataelement, "resultid")
+                datamodelresultidelement.text = attributes['resultid']
+
 
                 # save this db id
                 if model.attrib()['databaseid'] not in db_ids:
@@ -691,24 +719,43 @@ class CanvasController:
 
         # add links to the xml tree
         for link in links:
+            L = self.cmd.get_link_by_id(link)
+
             attributes = {}
 
-            from_model, from_item = link[0]
-            to_model, to_item = link[1]
+            # from_model, from_item = link[0]
+            # to_model, to_item = link[1]
 
 
-            attributes['from_name'] = from_model.get_name()
-            attributes['from_id'] = from_model.get_id()
-            attributes['from_item'] = from_item.name()
-            attributes['from_item_id'] = from_item.get_id()
+            attributes['from_name'] = L._Link__from_lc._Model__name
+            attributes['from_id'] = L._Link__from_lc._Model__id
+            attributes['from_item'] = L._Link__from_item._ExchangeItem__name
+            attributes['from_item_id'] = L._Link__from_item._ExchangeItem__id
 
-            attributes['to_name'] = to_model.get_name()
-            attributes['to_id'] = to_model.get_id()
-            attributes['to_item'] = to_item.name()
-            attributes['to_item_id'] = to_item.get_id()
+            attributes['to_name'] = L._Link__to_lc._Model__name
+            attributes['to_id'] = L._Link__to_lc._Model__id
+            attributes['to_item'] = L._Link__to_item._ExchangeItem__name
+            attributes['to_item_id'] = L._Link__to_item._ExchangeItem__id
 
-            et.SubElement(tree,'Link',attributes)
+            linkelement = et.SubElement(tree,'Link')
 
+            linkfromnameelement = et.SubElement(linkelement, "from_name")
+            linkfromnameelement.text = attributes['from_name']
+            linkfromidelement = et.SubElement(linkelement, "from_id")
+            linkfromidelement.text = attributes['from_id']
+            linkfromitemelement = et.SubElement(linkelement, "from_item")
+            linkfromitemelement.text = attributes['from_item']
+            linkfromitemidelement = et.SubElement(linkelement, "from_item_id")
+            linkfromitemidelement.text = attributes['from_item_id']
+
+            linktonameelement = et.SubElement(linkelement, "to_name")
+            linktonameelement.text = attributes['to_name']
+            linktoidelement = et.SubElement(linkelement, "to_id")
+            linktoidelement.text = attributes['to_id']
+            linktoitemelement = et.SubElement(linkelement, "to_item")
+            linktoitemelement.text = attributes['to_item']
+            linktoitemidelement = et.SubElement(linkelement, "to_item_id")
+            linktoitemidelement.text = attributes['to_item_id']
 
         # save required databases
         for db_id in db_ids:
@@ -720,15 +767,34 @@ class CanvasController:
 
             if db_conn:
                 attributes['name'] = db_conn['name']
+                attributes['address'] = db_conn['address']
+                attributes['pwd'] = db_conn['pwd']
                 attributes['desc'] = db_conn['desc']
                 attributes['engine'] = db_conn['engine']
-                attributes['address'] = db_conn['address']
                 attributes['db'] = db_conn['db']
                 attributes['user'] = db_conn['user']
-                attributes['pwd'] = db_conn['pwd']
                 attributes['databaseid'] = db_conn['id']
                 attributes['connection_string'] = str(db_conn['connection_string'])
-                et.SubElement(tree,'DbConnection',attributes)
+                connectionelement = et.SubElement(tree,'DbConnection')
+
+                connectionnameelement = et.SubElement(connectionelement, "name")
+                connectionnameelement.text = attributes['name']
+                connectionaddresselement = et.SubElement(connectionelement, "address")
+                connectionaddresselement.text =attributes['address']
+                connectionpwdelement = et.SubElement(connectionelement, "pwd")
+                connectionpwdelement.text = attributes['pwd']
+                connectiondescelement = et.SubElement(connectionelement, "desc")
+                connectiondescelement.text = attributes['desc']
+                connectionengineelement = et.SubElement(connectionelement, "engine")
+                connectionengineelement.text = attributes['engine']
+                connectiondbelement = et.SubElement(connectionelement, "db")
+                connectiondbelement.text = attributes['db']
+                connectionuserelement = et.SubElement(connectionelement, "user")
+                connectionuserelement.text = attributes['user']
+                connectiondatabaseidelement = et.SubElement(connectionelement, "databseid")
+                connectiondatabaseidelement.text = attributes['databaseid']
+                connectionconnectionstringelement = et.SubElement(connectionelement, "connection_string")
+                connectionconnectionstringelement.text = attributes['connection_string']
 
 
         # format the xml nicely
@@ -742,115 +808,169 @@ class CanvasController:
 
     def loadsimulation(self, file):
         #TODO: Should be part of the cmd.
+        ########### NEW CODE #############
+        tree = et.parse(file)
+
+        ########### END CODE #############
+
         tree = et.parse(file)
 
         # get the root
         root = tree.getroot()
 
+        # items = [modelelement, datamodelelement, linkelement, DbConnection]
+
+        elementtag = [i.tag for i in root._children]
+        elementlist = [i for i in root._children]
+
+
         # make sure the required database connections are loaded
         connections = self.cmd.get_db_connections()
         conn_ids = {}
-        for db_conn in root.iter('DbConnection'):
-
-            database_exists = False
-            for id, dic in connections.iteritems():
-                if str(dic['args']['connection_string']) == db_conn.attrib['connection_string']:
-                    #dic['args']['id'] = db_conn.attrib['id']
-                    database_exists = True
-
-                    # map the connection ids
-                    conn_ids[db_conn.attrib['databaseid']] = dic['args']['id']
-                    break
-
-            # if database doesn't exist, then connect to it
-            if not database_exists:
-                connect = wx.MessageBox('This database connection does not currently exist.  Click OK to connect.', 'Info', wx.OK | wx.ICON_ERROR)
+        elementslist = root.getchildren()
 
 
-                if connect.ShowModal() != wx.OK:
+        databaselist = [x for x in elementslist if x.tag == 'DbConnection']
 
-                    # attempt to connect to the database
-                    title=dic['args']['name'],
-                    desc = dic['args']['desc'],
-                    engine = dic['args']['engine'],
-                    address = dic['args']['address'],
-                    name = dic['args']['db'],
-                    user = dic['args']['user'],
-                    pwd = dic['args']['pwd']
+        # for db_conn in databaselist:
+        for child in root._children:
+            if child.tag == 'DbConnection':
+                taglist = []
+                textlist = []
+                for data in child:
+                    textlist.append(data.text)
+                    taglist.append(data.tag)
 
-                    if not self.AddDatabaseConnection(title,desc,engine,address,name,user, pwd):
-                        wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
-                        return
+                attrib = dict(zip(taglist,textlist))
 
-                    # map the connection id
-                    conn_ids[db_conn.attrib['id']] = db_conn.attrib['id']
+                connection_string = attrib['connection_string']
 
-                else: return
+                database_exists = False
+                # db_elements = db_conn.getchildren()
+
+                for id, dic in connections.iteritems():
+                    if str(dic['args']['connection_string']) == connection_string:
+                        #dic['args']['id'] = db_conn.attrib['id']
+                        database_exists = True
+
+                        # map the connection ids
+                        conn_ids[attrib['databaseid']] = dic['args']['id']
+                        break
+
+                    # if database doesn't exist, then connect to it
+                    if not database_exists:
+                        connect = wx.MessageBox('This database connection does not currently exist.  Click OK to connect.', 'Info', wx.OK | wx.ICON_ERROR)
+
+
+                        if connect.ShowModal() != wx.OK:
+
+                            # attempt to connect to the database
+                            title=dic['args']['name'],
+                            desc = dic['args']['desc'],
+                            engine = dic['args']['engine'],
+                            address = dic['args']['address'],
+                            name = dic['args']['db'],
+                            user = dic['args']['user'],
+                            pwd = dic['args']['pwd']
+
+                            if not self.AddDatabaseConnection(title,desc,engine,address,name,user, pwd):
+                                wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
+                                return
+
+                            # map the connection id
+                            conn_ids[attrib['id']] = attrib['id']
+
+                        else: return
 
 
         # loop through each model and load it
-        for model in root.iter('Model'):
+        # for model in root.iter('Model'):
+        for child in root._children:
+            if child.tag == 'Model':
+                taglist = []
+                textlist = []
+                for data in child:
+                    textlist.append(data.text)
+                    taglist.append(data.tag)
 
-            # get the data type
-            dtype = datatypes.ModelTypes.FeedForward
+                attrib = dict(zip(taglist,textlist))
+                # get the data type
+                dtype = datatypes.ModelTypes.FeedForward
 
-            # load the model
-            #self.cmd.add_model(model.attrib['mdl'], id=model.attrib['id'],type=dtype)
-            self.cmd.add_model(dtype,id=model.attrib['id'], attrib=model.attrib)
+                # load the model
+                # self.cmd.add_model(model.attrib['mdl'], id=model.attrib['id'],type=dtype)
+                self.cmd.add_model(attrib={'mdl': attrib['path']}, type=dtype, id=attrib['id'])
 
-            # draw the box
-            name = model.attrib['name']
-            modelid = model.attrib['id']
+                # draw the box
+                name = attrib['name']
+                modelid = attrib['id']
 
-            x = float(model.attrib['x'])
-            y = float(model.attrib['y'])
+                x = float(attrib['xcoordinate'])
+                y = float(attrib['ycoordinate'])
 
-            self.createBox(name=name, id=modelid, xCoord=x, yCoord=y)
+                self.createBox(name=name, id=modelid, xCoord=x, yCoord=y)
 
-        for data in root.iter('DataModel'):
+        # for data in root.iter('DataModel'):
+        for child in root._children:
+            if child.tag == 'DataModel':
+                taglist = []
+                textlist = []
+                for data in child:
+                    textlist.append(data.text)
+                    taglist.append(data.tag)
 
-            # get the data type
-            dtype = datatypes.ModelTypes.Data
+                attrib = dict(zip(taglist,textlist))
 
-            resultid = data.attrib['resultid']
-            databaseid = data.attrib['databaseid']
-            mappedid = conn_ids[databaseid]
+                # get the data type
+                dtype = datatypes.ModelTypes.Data
 
-            #model = self.cmd.add_data_model(resultid,mappedid,id=data.attrib['id'],type=dtype)
-            data.attrib['databaseid'] = mappedid
-            model = self.cmd.add_model(dtype,id=data.attrib['id'], attrib=data.attrib)
+                resultid = attrib['resultid']
+                databaseid = attrib['databaseid']
+                mappedid = conn_ids[databaseid]
 
-            x = float(data.attrib['x'])
-            y = float(data.attrib['y'])
+                #model = self.cmd.add_data_model(resultid,mappedid,id=data.attrib['id'],type=dtype)
+                attrib['databaseid'] = mappedid
+                model = self.cmd.add_model(dtype,id=attrib['id'], attrib=attrib)
 
-
-            self.createBox(name=model.get_name(), id=model.get_id(), xCoord=x, yCoord=y, color='#FFFF99')
-
-        for link in root.iter('Link'):
-
-            R1 = None
-            R2 = None
-            for R, id in self.models.iteritems():
-                if id == link.attrib['from_id']:
-                    R1 = R
-                elif id == link.attrib['to_id']:
-                    R2 = R
-
-            if R1 is None or R2 is None:
-                raise Exception('Could not find Model identifer in loaded models')
-
-            # add the link object
-            self.cmd.add_link_by_name(  link.attrib['from_id'], link.attrib['from_item'],
-                                link.attrib['to_id'], link.attrib['to_item'])
-
-            # this draws the line
-            self.createLine(R1,R2)
+                x = float(data.attrib['xcoordinate'])
+                y = float(data.attrib['ycoordinate'])
 
 
+                self.createBox(name=model.get_name(), id=model.get_id(), xCoord=x, yCoord=y, color='#FFFF99')
 
-        self.FloatCanvas.Draw()
-        #self.Canvas.Draw()
+        # for link in root.iter('Link'):
+        for child in root._children:
+            if child.tag == 'Link':
+                # for link in child:
+                taglist = []
+                textlist = []
+                for items in child:
+                    textlist.append(items.text)
+                    taglist.append(items.tag)
 
+                attrib = dict(zip(taglist, textlist))
+                R1 = None
+                R2 = None
+                for R, id in self.models.iteritems():
+                    if id == attrib['from_id']:
+                        R1 = R
+                    elif id == attrib['to_id']:
+                        R2 = R
+
+                if R1 is None or R2 is None:
+                    raise Exception('Could not find Model identifer in loaded models')
+
+                # add the link object
+                self.cmd.add_link_by_name(  attrib['from_id'], attrib['from_item'],
+                                    attrib['to_id'], attrib['to_item'])
+
+                # this draws the line
+                self.createLine(R1,R2)
+
+
+
+            self.FloatCanvas.Draw()
+            #self.Canvas.Draw()
 
     def addModel(self, filepath, x, y):
         """
@@ -938,6 +1058,14 @@ class FileDrop(wx.FileDropTarget):
         self.controller = controller
         self.window = window
         self.cmd = cmd
+        Publisher.subscribe(self.OnDropFiles, 'toolboxclick')
+
+    def RandomCoordinateGeneration(self, filepath):
+        filenames = filepath
+        x = 0
+        y = 0
+
+        self.OnDropFiles(x,y,filenames)
 
     def OnDropFiles(self, x, y, filenames):
         #print "filename: {2} x: {0} y: {1}".format(x,y, filenames)
@@ -1081,6 +1209,8 @@ class FileDrop(wx.FileDropTarget):
             # create odm2 instance
             inst = odm2_data.odm2(resultid=name, session=session)
 
+            oei = inst.outputs().values()
+
             from coordinator import main
             # create a model instance
             thisModel = main.Model(id=inst.id(),
@@ -1088,7 +1218,7 @@ class FileDrop(wx.FileDropTarget):
                                    instance=inst,
                                    desc=inst.description(),
                                    input_exchange_items= [],
-                                   output_exchange_items=  [inst.outputs()],
+                                   output_exchange_items=  oei,
                                    params=None)
 
 

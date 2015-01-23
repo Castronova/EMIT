@@ -285,7 +285,7 @@ class postgresdb():
                 #                                                                      timeaggregationunit=timestepunit.UnitsID)
 
 
-                st = time.time()
+                #st = time.time()
                 for i in xrange(len(values)):
                     tsrv = Timeseriesresultvalue()
                     tsrv.ResultID = timeseriesresult.ResultID
@@ -297,15 +297,15 @@ class postgresdb():
                     tsrv.ValueDateTime = dates[i]
                     tsrv.ValueDateTimeUTCOffset = -6
                     tsvalues.append(tsrv)
-                print '\nBuilding TSRV: %3.5f sec' % (time.time() - st)
+                #print '\nBuilding TSRV: %3.5f sec' % (time.time() - st)
 
-        print '\nBuilding All Exchange Item TSRV:  %3.5f sec' % (time.time() - st)
+        #print '\nBuilding All Exchange Item TSRV:  %3.5f sec' % (time.time() - st)
 
-        st = time.time()
+        #st = time.time()
         # insert ts values
         self._reswrite.createAllTimeSeriesResultValues(tsrv = tsvalues)
 
-        print '%3.5f sec' % (time.time() - st)
+        #print '%3.5f sec' % (time.time() - st)
 
         # # loop over input exchange items
         # for exchangeitem in input_exchange_items:

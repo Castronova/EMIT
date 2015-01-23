@@ -25,13 +25,7 @@ class MyFrame2(wx.Frame):
                         title = wx.EmptyString, pos = wx.DefaultPosition,
                         size = wx.Size( 900,600 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
         draw = Canvas(self )
-        '''
-        canvas = NavCanvas.NavCanvas(id=wx.ID_ANY,parent=self,
-                          ProjectionFun = None,
-                          Debug = 0,
-                          BackgroundColor = "White",
-                          )
-        '''
+
 class ClearCanvas(NavCanvas):
     def __init__(self):
         def __init__(self, *args, **kwargs):

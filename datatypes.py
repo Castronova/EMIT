@@ -24,3 +24,4 @@ class ModelTypes():
     FeedForward = 'FEEDFORWARD'
     Data = 'DATA'
     Undefined = 'UNDEFINED'
+    TimeStep = 'TIMESTEP'

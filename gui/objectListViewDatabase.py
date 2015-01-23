@@ -192,7 +192,7 @@ class ContextMenu(wx.Menu):
 
         Publisher.sendMessage('AddModel',filepath=filename, x = 0, y = 0) # sends message to CanvasController
 
-        print filename
+        #print filename
 
     def getData(self,resultID):
 

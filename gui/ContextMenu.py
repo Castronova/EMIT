@@ -6,6 +6,8 @@ __author__ = 'tonycastronova'
 import wx
 from txtctrlModel import ModelTxtCtrl
 
+from wx.lib.pubsub import pub as Publisher
+
 class LinkContextMenu(wx.Menu):
 
     def __init__(self, parent, e):
@@ -95,8 +97,10 @@ class ModelContextMenu(wx.Menu):
         # # listview = MyTree(self)
         # view.PopulateEdit(self.sb.GetValue())
 
-        mdl_path= self.cmd.get_model_by_id(self.model_obj.ID)._Model__attrib['mdl']
-        view.PopulateSummary(mdl_path)
+        atts = self.cmd.get_model_by_id(self.model_obj.ID)._Model__attrib
+        if 'mdl' in atts.keys():
+            mdl_path= self.cmd.get_model_by_id(self.model_obj.ID)._Model__attrib['mdl']
+            view.PopulateSummary(mdl_path)
 
         # listview.PopulateDetails(self.sb.GetValue())
         view.Show()
@@ -160,6 +164,10 @@ class GeneralContextMenu(wx.Menu):
 
     def OnClickRun(self, e):
 
+        # switch focus of the notebook tabs
+        Publisher.sendMessage('ChangePage', page='Console')  # sends message to mainGui.py
+
+        # run the simulation
         self.parent.run()
 
     def OnClickClear(self, e):
@@ -214,42 +222,6 @@ class DirectoryContextMenu(wx.Menu):
     def OnClose(self, e):
         self.parent.Close()
 
-class TreeContextMenu(wx.Menu):
-
-    def __init__(self, parent, e):
-        super(TreeContextMenu, self).__init__()
-
-        self.cmd = parent.cmd
-        self.arrow_obj = e
-        self.parent = parent
-
-        # mmi = wx.MenuItem(self, wx.NewId(), 'View Details')
-        # self.AppendItem(mmi)
-        # self.Bind(wx.EVT_MENU, self.OnViewDetails, mmi)
-
-        mmi = wx.MenuItem(self, wx.NewId(), 'Expand All')
-        self.AppendItem(mmi)
-        self.Bind(wx.EVT_MENU, self.OnExpandAll, mmi)
-
-        mmi = wx.MenuItem(self, wx.NewId(), 'Collapse All')
-        self.AppendItem(mmi)
-        self.Bind(wx.EVT_MENU, self.OnCollapseAll, mmi)
-
-    def OnViewDetails(self, e):
-       # self.parent.ArrowClicked(self.arrow_obj)
-        self.parent.ShowDetails()
-
-    def OnExpandAll(self, e):
-        self.parent.OnExpandAll()
-
-    def OnCollapseAll(self, e):
-        self.parent.OnCollapseAll()
-
-    def OnMinimize(self, e):
-        self.parent.Iconize()
-
-    def OnClose(self, e):
-        self.parent.Close()
 
 class TreeItemContextMenu(wx.Menu):
 

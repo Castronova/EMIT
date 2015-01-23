@@ -22,7 +22,6 @@ class ExchangeItemType():
     Input = 'input'
     Output = 'output'
 
-
 class Variable(object):
     """
     Defines the variable object
@@ -169,7 +168,7 @@ class DataValues(object):
         if self.__timeseries:
             return zip(*self.__timeseries)
         else:
-            return None
+            return None, None
 
     def earliest_date(self):
         return self.__start
@@ -243,6 +242,10 @@ class Geometry(object):
             return self.__datavalues
         else:
             self.__datavalues = value
+
+    def get_data(self):
+
+        self.__datavalues.get_dates_values()
 
 class ExchangeItem(object):
     def __init__ (self,id,name=None,desc=None, geometry=[],unit=None,variable=None,type=ExchangeItemType.Input):
@@ -332,6 +335,19 @@ class ExchangeItem(object):
         #     dict[datavalues.element] = datavalues.values()
         # return dict
 
+    def get_geoms_and_timeseries(self):
+        geom_dict = {}
+        for geom in self.__geoms:
+            geom_dict[geom] = geom.datavalues().get_dates_values()
+        return geom_dict
+
+    def get_timeseries_by_id(self, geom_id):
+
+        # TODO: loop using integers to speed this up
+        for geom in self.__geoms:
+            if geom.id() == geom_id:
+                return geom.datavalues().get_dates_values()
+
     def get_timeseries_by_geom(self,geom):
         # """
         # geom = the geom of the desired timeseries
@@ -383,7 +399,6 @@ class ExchangeItem(object):
         self.__geoms = []
         self.StartTime = datetime.datetime(2999,1,1,1,0,0)
         self.EndTime = datetime.datetime(1900,1,1,1,0,0)
-
 
     def set_dataset(self,value):
         # self.__dataset = value

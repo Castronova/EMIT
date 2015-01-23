@@ -40,9 +40,17 @@ class MainGui(wx.Frame):
         self.pnlDocking.__setattr__('cmd',cmd)
 
         self.Bind(wx.EVT_CLOSE, self.onClose)
+
+        self.notebook_pages = {}
+
         self.initMenu()
         self.initAUIManager()
         self._init_sizers()
+
+        Publisher.subscribe(self.OnPageChange,'ChangePage')
+
+
+
 
     def _init_sizers(self):
         # generated method, don't edit
@@ -54,6 +62,11 @@ class MainGui(wx.Frame):
         # generated method, don't edit
         #parent.AddWindow(self._ribbon, 0, wx.EXPAND)
         parent.AddWindow(self.pnlDocking, 85, flag=wx.ALL | wx.EXPAND)
+
+    def OnPageChange(self, page):
+
+        index = self.notebook_pages[page]
+        self.bnb.SetSelection(index)
 
     def initAUIManager(self):
 
@@ -79,6 +92,11 @@ class MainGui(wx.Frame):
         self.bnb.AddPage(seriesselector, "Time Series")
         self.bnb.AddPage(seriesoutput, "Simulations")
         # self.bnb.AddPage(seriesoutput, "Output Time Series")
+
+        # add these to the notebook pages dictionary so that they can be looked up later
+        self.notebook_pages['Console'] = 0
+        self.notebook_pages['Time Series'] = 1
+        self.notebook_pages['Simulations'] = 2
 
         self.bnb.GetPage(0).SetLabel("Console")
         self.bnb.GetPage(1).SetLabel("Time Series")
@@ -235,9 +253,9 @@ class MainGui(wx.Frame):
     def LoadConfiguration(self,event):
 
 
-        if wx.MessageBox("This will overlay on the current configuration.", "Please confirm",
-                         wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
-            return
+        #if wx.MessageBox("This will overlay on the current configuration.", "Please confirm",
+        #                 wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
+        #    return
 
         # else: proceed asking to the user the new file to open
 
@@ -802,7 +820,7 @@ class SimulationContextMenu(ContextMenu):
             return res
 
     def OnPlot(self, event):
-        print 'overriding plot!'
+        #print 'overriding plot!'
 
         obj, id = self.Selected()
         #obj = self.__list_obj
@@ -822,6 +840,8 @@ class SimulationContextMenu(ContextMenu):
             # get the result
             simulationID = obj.GetItem(id,0).GetText()
 
+            name = obj.GetItem(id,1).GetText()
+
             # get resultid from simulation id
 
             # get data for this row
@@ -838,14 +858,15 @@ class SimulationContextMenu(ContextMenu):
 
                 resobj = results[key][0][2]
                 # set metadata based on first series
-                xlabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
+                ylabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
                 title = '%s' % (resobj.VariableObj.VariableCode)
 
                 # save the variable and units to validate future time series
-                variable = resobj.VariableObj.VariableCode
+                variable = resobj.VariableObj.VariableNameCV
                 units = resobj.UnitObj.UnitsName
+                title = '%s: %s [%s]' % (name, variable,units)
 
-                PlotFrame = MatplotFrame(self.Parent, title, xlabel)
+                PlotFrame = MatplotFrame(self.Parent, ylabel=ylabel, title=title)
 
                 for x,y,resobj in results[key]:
                     # store the x and Y data

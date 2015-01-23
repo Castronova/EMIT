@@ -23,9 +23,10 @@ class NavCanvas(wx.Panel):
     def __init__(self,
                  parent,
                  id = wx.ID_ANY,
-                 size = wx.Size(1000,0),
+
+                 size = wx.Size(0,0),
                  **kwargs): # The rest just get passed into FloatCanvas
-        wx.Panel.__init__(self, parent, id, size=wx.Size(1000,1))
+        wx.Panel.__init__(self, parent, id, size=wx.Size(0,0))
         pass
 
         self.GuiMouse = GUIMode.GUIMouse()
@@ -45,10 +46,10 @@ class NavCanvas(wx.Panel):
                       # ("Run Model", self.GuiRun, icons.Run.GetBitmap()),
                       # ("Clear", self.GuiDelete, icons.Trash.GetBitmap())
         ]
-        self.BuildToolbar()
+        # self.BuildToolbar()
         ## Create the vertical sizer for the toolbar and Panel
         box = wx.BoxSizer(wx.VERTICAL)
-        box.Add(self.ToolBar, 0, wx.ALL | wx.ALIGN_LEFT | wx.GROW, 4)
+        # box.Add(self.ToolBar, 0, wx.ALL | wx.ALIGN_LEFT | wx.GROW, 4)
 
         self.Canvas = FloatCanvas.FloatCanvas(self, **kwargs)
         box.Add(self.Canvas, 1, wx.GROW)
@@ -71,6 +72,7 @@ class NavCanvas(wx.Panel):
         tb.SetToolBitmapSize((24,24))
         # self.AddToolbarModeButtons(tb, self.Modes)
         #self.AddToolbarZoomButton(tb)
+        # self.AddToolbarZoomButtons(tb)
         tb.Realize()
         ## fixme: remove this when the bug is fixed!
         #wx.CallAfter(self.HideShowHack) # this required on wxPython 2.8.3 on OS-X
@@ -92,6 +94,17 @@ class NavCanvas(wx.Panel):
         tb.AddControl(self.ZoomButton)
         self.ZoomButton.Bind(wx.EVT_BUTTON, self.ZoomToFit)
 
+    def AddToolbarZoomButtons(self, tb):
+        tb.AddSeparator()
+
+        self.ZoomInButton = tb.AddSimpleTool(1, icons.Zoom_In.GetBitmap(), 'New', '')
+        self.ZoomOutButton = tb.AddSimpleTool(2, icons.Zoom_Out.GetBitmap(), 'New', '')
+
+        # self.ZoomInButton.Bind(wx.EVT_BUTTON, self.ZoomIn)
+        # self.ZoomOutButton.Bind(wx.EVT_BUTTON, self.ZoomOut)
+
+        self.Bind(wx.EVT_TOOL, self.ZoomIn, id=1)
+        self.Bind(wx.EVT_TOOL, self.ZoomOut, id=2)
 
     def HideShowHack(self):
         ##fixme: remove this when the bug is fixed!
@@ -104,7 +117,6 @@ class NavCanvas(wx.Panel):
 
     def SetRun(self, event):
         Publisher.sendMessage("run")
-
 
     # def SetMode(self, event):
     #     Mode = self.ModesDict[event.GetId()]
@@ -119,3 +131,8 @@ class NavCanvas(wx.Panel):
         self.Canvas.ZoomToBB()
         self.Canvas.SetFocus() # Otherwise the focus stays on the Button, and wheel events are lost.
 
+    def ZoomIn(self, Event):
+        self.Canvas.Zoom(1.1)
+
+    def ZoomOut(self, Event):
+        self.Canvas.Zoom(.9)

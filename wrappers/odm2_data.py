@@ -5,7 +5,7 @@ from api.ODM2.Core.services import readCore
 from api.ODM2.Results.services import readResults
 from shapely import wkb
 import stdlib, uuid
-
+from utilities.status import Status
 
 class odm2(object):
     def __init__(self,resultid, session):
@@ -39,6 +39,7 @@ class odm2(object):
         # todo: this assumes single geometry! fix
         shape = wkb.loads(str(obj.FeatureActionObj.SamplingFeatureObj.FeatureGeometry.data))
         geometry = stdlib.Geometry(geom=shape,srs=None,elev=None,datavalues=data)
+        geometry.type(shape.geom_type)
 
         # build variable
         variable = stdlib.Variable()
@@ -60,7 +61,7 @@ class odm2(object):
         self.__name = name
         self.__start=start
         self.__end=end
-        self.__output=item
+        self.__output={self.__name: item}
         self.__desc=obj.VariableObj.VariableDefinition
         self.__current_time = self.simulation_start()
         #self.__actionid = obj.FeatureActionObj.ActionObj.ActionID
@@ -69,11 +70,20 @@ class odm2(object):
 
         self.__session = session
 
+        self.__status = Status.Loaded
+
     def save(self):
-        return [self.__output]
+        return [self.get_output_by_name(outputname=self.name())]
+        #return [self.__output]
 
     def run(self,inputs):
-        pass
+        # set the status to finished
+        self.status(Status.Finished)
+
+    def run_timestep(self,inputs,time):
+        # set the status to finished
+        self.status(Status.Finished)
+
 
     def session(self):
         return self.__session
@@ -103,6 +113,9 @@ class odm2(object):
         """
         return self.__output
 
+    def inputs(self):
+        return {}
+
     def simulation_start(self):
         return self.__start
 
@@ -120,6 +133,7 @@ class odm2(object):
         return self.__current_time
 
     def increment_time(self, time):
+
 
         value,unit = self.time_step()
 
@@ -143,6 +157,15 @@ class odm2(object):
 
 
     def get_output_by_name(self,outputname):
+        outputs = self.outputs()
+
+        if outputs.has_key(outputname):
+            return outputs[outputname]
+        else:
+            print 'Could not find output: %s' + outputname
+            return None
+
+        #return [self.__output]
         #
         # outputs = self.outputs()
         #
@@ -151,7 +174,7 @@ class odm2(object):
         #         return output
         #
         # raise Exception('Could not find output: %s' + outputname)
-        raise NotImplementedError('This is an abstract method that must be implemented!')
+        #raise NotImplementedError('This is an abstract method that must be implemented!')
 
     def set_geom_values(self,variablename,geometry,datavalues):
         #
@@ -164,3 +187,8 @@ class odm2(object):
         #         return
         # raise Exception ('Error setting data for variable: %s' % variablename)
         raise NotImplementedError('This is an abstract method that must be implemented!')
+
+    def status(self, value=None):
+        if value is not None:
+            self.__status = value
+        return self.__status

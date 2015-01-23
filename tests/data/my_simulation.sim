@@ -1,10 +1,10 @@
 <?xml version="1.0" ?>
 <Simulation>
   <Model>
-    <name>Random Number Generator</name>
-    <id>56707</id>
-    <xcoordinate>-90.0</xcoordinate>
-    <ycoordinate>29.0</ycoordinate>
-    <path>C:\Users\Mario\Documents\Projects\EMIT\gui\../tests\data\randomizer.mdl</path>
+    <name>Multiplier</name>
+    <id>deef0</id>
+    <xcoordinate>-184.0</xcoordinate>
+    <ycoordinate>-47.0</ycoordinate>
+    <path>C:\Users\Mario\Documents\Projects\EMIT\gui\../tests\data\multiplier.mdl</path>
   </Model>
 </Simulation>

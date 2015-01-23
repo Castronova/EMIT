@@ -1,6 +1,10 @@
 <?xml version="1.0" ?>
 <Simulation>
-  <Model id="ad015" mdl="C:\Users\Mario\Documents\GitHub\EMIT\gui\../tests\data\randomizer.mdl" name="Random Number Generator" x="-361.0" y="137.0"/>
-  <Model id="f7e97" mdl="C:\Users\Mario\Documents\GitHub\EMIT\gui\../tests\data\multiplier.mdl" name="Multiplier" x="245.0" y="116.0"/>
-  <Model id="47976" mdl="C:\Users\Mario\Documents\GitHub\EMIT\gui\../models\swmm\src\swmm.mdl" name="SWMM" x="-36.0" y="-52.0"/>
+  <Model>
+    <name>Random Number Generator</name>
+    <id>4e446</id>
+    <xcoordinate>-150.0</xcoordinate>
+    <ycoordinate>-10.0</ycoordinate>
+    <path>C:\Users\Mario\Documents\Projects\EMIT\gui\../tests\data\randomizer.mdl</path>
+  </Model>
 </Simulation>

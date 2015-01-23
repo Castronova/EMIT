@@ -719,21 +719,23 @@ class CanvasController:
 
         # add links to the xml tree
         for link in links:
+            L = self.cmd.get_link_by_id(link)
+
             attributes = {}
 
-            from_model, from_item = link[0]
-            to_model, to_item = link[1]
+            # from_model, from_item = link[0]
+            # to_model, to_item = link[1]
 
 
-            attributes['from_name'] = from_model.get_name()
-            attributes['from_id'] = from_model.get_id()
-            attributes['from_item'] = from_item.name()
-            attributes['from_item_id'] = from_item.get_id()
+            attributes['from_name'] = L._Link__from_lc._Model__name
+            attributes['from_id'] = L._Link__from_lc._Model__id
+            attributes['from_item'] = L._Link__from_item._ExchangeItem__name
+            attributes['from_item_id'] = L._Link__from_item._ExchangeItem__id
 
-            attributes['to_name'] = to_model.get_name()
-            attributes['to_id'] = to_model.get_id()
-            attributes['to_item'] = to_item.name()
-            attributes['to_item_id'] = to_item.get_id()
+            attributes['to_name'] = L._Link__to_lc._Model__name
+            attributes['to_id'] = L._Link__to_lc._Model__id
+            attributes['to_item'] = L._Link__to_item._ExchangeItem__name
+            attributes['to_item_id'] = L._Link__to_item._ExchangeItem__id
 
             linkelement = et.SubElement(tree,'Link')
 
@@ -833,7 +835,15 @@ class CanvasController:
         # for db_conn in databaselist:
         for child in root._children:
             if child.tag == 'DbConnection':
-                connection_string = child._children[8].text
+                taglist = []
+                textlist = []
+                for data in child:
+                    textlist.append(data.text)
+                    taglist.append(data.tag)
+
+                attrib = dict(zip(taglist,textlist))
+
+                connection_string = attrib['connection_string']
 
                 database_exists = False
                 # db_elements = db_conn.getchildren()
@@ -844,7 +854,7 @@ class CanvasController:
                         database_exists = True
 
                         # map the connection ids
-                        conn_ids[db_conn.attrib['databaseid']] = dic['args']['id']
+                        conn_ids[attrib['databaseid']] = dic['args']['id']
                         break
 
                     # if database doesn't exist, then connect to it
@@ -868,7 +878,7 @@ class CanvasController:
                                 return
 
                             # map the connection id
-                            conn_ids[db_conn.attrib['id']] = db_conn.attrib['id']
+                            conn_ids[attrib['id']] = attrib['id']
 
                         else: return
 
@@ -877,75 +887,90 @@ class CanvasController:
         # for model in root.iter('Model'):
         for child in root._children:
             if child.tag == 'Model':
-                element = []
-                for items in child:
-                    element.append(items.text)
+                taglist = []
+                textlist = []
+                for data in child:
+                    textlist.append(data.text)
+                    taglist.append(data.tag)
 
+                attrib = dict(zip(taglist,textlist))
                 # get the data type
                 dtype = datatypes.ModelTypes.FeedForward
 
                 # load the model
                 # self.cmd.add_model(model.attrib['mdl'], id=model.attrib['id'],type=dtype)
-                self.cmd.add_model(attrib=element[4], type=dtype, id=element[1])
+                self.cmd.add_model(attrib={'mdl': attrib['path']}, type=dtype, id=attrib['id'])
 
                 # draw the box
-                name = element[0]
-                modelid = element[1]
+                name = attrib['name']
+                modelid = attrib['id']
 
-                x = float(element[2])
-                y = float(element[3])
+                x = float(attrib['xcoordinate'])
+                y = float(attrib['ycoordinate'])
 
                 self.createBox(name=name, id=modelid, xCoord=x, yCoord=y)
 
         # for data in root.iter('DataModel'):
-        for child in root:
+        for child in root._children:
             if child.tag == 'DataModel':
+                taglist = []
+                textlist = []
                 for data in child:
+                    textlist.append(data.text)
+                    taglist.append(data.tag)
 
-                    # get the data type
-                    dtype = datatypes.ModelTypes.Data
+                attrib = dict(zip(taglist,textlist))
 
-                    resultid = data.attrib['resultid']
-                    databaseid = data.attrib['databaseid']
-                    mappedid = conn_ids[databaseid]
+                # get the data type
+                dtype = datatypes.ModelTypes.Data
 
-                    #model = self.cmd.add_data_model(resultid,mappedid,id=data.attrib['id'],type=dtype)
-                    data.attrib['databaseid'] = mappedid
-                    model = self.cmd.add_model(dtype,id=data.attrib['id'], attrib=data.attrib)
+                resultid = attrib['resultid']
+                databaseid = attrib['databaseid']
+                mappedid = conn_ids[databaseid]
 
-                    x = float(data.attrib['xcoordinate'])
-                    y = float(data.attrib['ycoordinate'])
+                #model = self.cmd.add_data_model(resultid,mappedid,id=data.attrib['id'],type=dtype)
+                attrib['databaseid'] = mappedid
+                model = self.cmd.add_model(dtype,id=attrib['id'], attrib=attrib)
+
+                x = float(data.attrib['xcoordinate'])
+                y = float(data.attrib['ycoordinate'])
 
 
-                    self.createBox(name=model.get_name(), id=model.get_id(), xCoord=x, yCoord=y, color='#FFFF99')
+                self.createBox(name=model.get_name(), id=model.get_id(), xCoord=x, yCoord=y, color='#FFFF99')
 
         # for link in root.iter('Link'):
-        for child in root:
+        for child in root._children:
             if child.tag == 'Link':
-                for link in child:
+                # for link in child:
+                taglist = []
+                textlist = []
+                for items in child:
+                    textlist.append(items.text)
+                    taglist.append(items.tag)
 
-                    R1 = None
-                    R2 = None
-                    for R, id in self.models.iteritems():
-                        if id == link.attrib['from_id']:
-                            R1 = R
-                        elif id == link.attrib['to_id']:
-                            R2 = R
+                attrib = dict(zip(taglist, textlist))
+                R1 = None
+                R2 = None
+                for R, id in self.models.iteritems():
+                    if id == attrib['from_id']:
+                        R1 = R
+                    elif id == attrib['to_id']:
+                        R2 = R
 
-                    if R1 is None or R2 is None:
-                        raise Exception('Could not find Model identifer in loaded models')
+                if R1 is None or R2 is None:
+                    raise Exception('Could not find Model identifer in loaded models')
 
-                    # add the link object
-                    self.cmd.add_link_by_name(  link.attrib['from_id'], link.attrib['from_item'],
-                                        link.attrib['to_id'], link.attrib['to_item'])
+                # add the link object
+                self.cmd.add_link_by_name(  attrib['from_id'], attrib['from_item'],
+                                    attrib['to_id'], attrib['to_item'])
 
-                    # this draws the line
-                    self.createLine(R1,R2)
+                # this draws the line
+                self.createLine(R1,R2)
 
 
 
-                self.FloatCanvas.Draw()
-                #self.Canvas.Draw()
+            self.FloatCanvas.Draw()
+            #self.Canvas.Draw()
 
     def addModel(self, filepath, x, y):
         """

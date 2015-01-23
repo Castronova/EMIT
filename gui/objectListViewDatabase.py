@@ -246,7 +246,7 @@ class ContextMenu(wx.Menu):
                 variable = resobj.VariableObj.VariableCode
                 units = resobj.UnitObj.UnitsName
 
-                PlotFrame = MatplotFrame(self.Parent, title, xlabel)
+                PlotFrame = MatplotFrame(self.Parent, title, ylabel=xlabel)
 
             if resobj.VariableObj.VariableCode == variable and resobj.UnitObj.UnitsName == units:
                 # store the x and Y data

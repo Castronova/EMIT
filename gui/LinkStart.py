@@ -82,8 +82,12 @@ class LinkStart ( wx.Frame ):
         links = self.cmd.get_links_btwn_models(self.from_model.get_id(), self.to_model.get_id())
 
         for l in links:
-            link = l.get_link()
-            text = "%s : %s --> %s : %s"%(link[0][0].get_name(),link[0][1].name(),link[1][0].get_name(),link[1][1].name())
+            # link = l.get_link()
+
+            text = "%s : %s --> %s : %s"%(l.source_component().get_name(),
+                                          l.source_exchange_item().get_name(),
+                                          l.target_component().get_name(),
+                                          l.target_exchange_item().get_name())
 
             #text = 'This is overflowing'
             self.listbox.Append(text)

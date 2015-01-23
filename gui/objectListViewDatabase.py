@@ -59,7 +59,7 @@ class OlvSeries(FastObjectListView):
         self.useAlternateBackColors = True
         self.oddRowsBackColor = wx.Colour(191, 217, 217)
         self.Bind(wx.EVT_LIST_BEGIN_DRAG, self.onDrag)
-        #self.Bind(wx.EVT_LEFT_DCLICK, self.onDoubleClick)
+        self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.onDoubleClick)
         self.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.LaunchContext)
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListItemSelect)
 
@@ -138,6 +138,13 @@ class OlvSeries(FastObjectListView):
         dropSource = wx.DropSource(obj)
         dropSource.SetData(data)
         result = dropSource.DoDragDrop()
+
+    def onDoubleClick(self, event):
+        id = event.GetIndex()
+        obj = event.GetEventObject()
+        filename = obj.GetItem(id).GetText()
+
+        Publisher.sendMessage('AddModel',filepath=filename, x = 0, y = 0) # sends message to CanvasController
 
     def getDbSession(self):
         selected_db = self.Parent.connection_combobox.GetStringSelection()

@@ -1020,6 +1020,11 @@ class CanvasController:
             # create odm2 instance
             inst = odm2_data.odm2(resultid=name, session=session)
 
+            # make sure that output handles cases where a dictionary element is passed in
+            output = inst.outputs()
+            if isinstance(output, dict):
+                output = output.values()[0]
+
             from coordinator import main
             # create a model instance
             thisModel = main.Model(id=inst.id(),
@@ -1027,7 +1032,7 @@ class CanvasController:
                                    instance=inst,
                                    desc=inst.description(),
                                    input_exchange_items= [],
-                                   output_exchange_items=  [inst.outputs()],
+                                   output_exchange_items=[output],
                                    params=None)
 
 
@@ -1193,8 +1198,6 @@ class FileDrop(wx.FileDropTarget):
             #
             # # build exchange item object
             # item = stdlib.ExchangeItem(id=id, name=name, desc=desc, geometry=[geometry], unit=unit, variable=variable,type=type )
-
-
 
             # create an instance of data wrapper
             #dwrapper_inst = odm2_data.odm2(resultid=name, session=self.controller.getCurrentDbSession())

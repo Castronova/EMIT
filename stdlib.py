@@ -348,6 +348,19 @@ class ExchangeItem(object):
             if geom.id() == geom_id:
                 return geom.datavalues().get_dates_values()
 
+    def set_timeseries_by_id(self, geom_id, timeseries):
+        '''
+        sets the timeseries for a geometry using the geometry id
+        :param geom_id: id of the geometry
+        :param timeseries: zip([dates],[values])
+        :return: None
+        '''
+
+        for geom in self.__geoms:
+            if geom.id() == geom_id:
+                geom.datavalues().set_timeseries(timeseries)
+                return
+
     def get_timeseries_by_geom(self,geom):
         # """
         # geom = the geom of the desired timeseries

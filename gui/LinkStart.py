@@ -85,9 +85,9 @@ class LinkStart ( wx.Frame ):
             # link = l.get_link()
 
             text = "%s : %s --> %s : %s"%(l.source_component().get_name(),
-                                          l.source_exchange_item().get_name(),
+                                          l.source_exchange_item().get_id(),
                                           l.target_component().get_name(),
-                                          l.target_exchange_item().get_name())
+                                          l.target_exchange_item().get_id())
 
             #text = 'This is overflowing'
             self.listbox.Append(text)

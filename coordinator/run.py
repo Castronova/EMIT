@@ -299,7 +299,7 @@ def run_time_step(obj):
 
                     # temporal mapping
                     temporal = temporal_nearest_neighbor()
-                    if temporal:
+                    if temporal and values:
                         mapped_dates,mapped_values = temporal.transform(dates,values,target_time)
 
                     if mapped_dates is not None:

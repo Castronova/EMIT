@@ -199,11 +199,28 @@ class swmm(time_step_wrapper):
 
 
 
-        # for debugging only
-        print self.__swmmLib.getSubcatch(c_int(0)).contents.newRunoff
+
 
         # step the SWMM simulation
         error = self.__swmmLib.swmm_step(byref(step))
+
+
+
+        for i in range(0, link_count):
+            l = self.__swmmLib.getLink(c_int(i))
+
+            # get the geom id
+            link_id = l.contents.ID
+            # geom_id = self.__geom_lookup[link_id].id()
+
+            #date, value = self.outputs()['Flow_rate'].get_timeseries_by_id(link_id)
+            flow = self.__swmmLib.getLink(c_int(i)).contents.newFlow
+            date = self.current_time()
+            self.outputs()['Flow_rate'].set_timeseries_by_id(link_id,zip([date],[flow]))
+
+
+        # for debugging only
+        print self.__swmmLib.getSubcatch(c_int(0)).contents.newRunoff
 
         # track the new time within the SWMM wrapper
         elapsed = self.__begin_c_time + step.value
@@ -217,6 +234,21 @@ class swmm(time_step_wrapper):
 
 
     def save(self):
+
+        link_count = self.__swmmLib.getObjectTypeCount(SWMM_Types.LINK)
+        self.__swmmLib.getLink.restype = POINTER(TLink)
+
+        node_count = self.__swmmLib.getObjectTypeCount(SWMM_Types.NODE)
+        self.__swmmLib.getNode.restype = POINTER(TNode)
+        self.__swmmLib.getNodeById.restype = POINTER(TNode)
+        self.__swmmLib.getNodeById.argtypes = [c_char_p]
+
+        # get variables that operate on links
+        for i in range(0, link_count):
+            flow = self.__swmmLib.getLink(c_int(i)).contents.newFlow
+
+
+
         return self.outputs()
         #return [self.get_output_by_name(outputname='Hydraulic_head')]
 

@@ -284,11 +284,6 @@ class Coordinator(object):
 
         if type == datatypes.ModelTypes.FeedForward or type == datatypes.ModelTypes.TimeStep:
 
-            # try:
-            #     ini_path = attrib
-            # except:
-            #     ini_path = attrib['mdl']
-
             ini_path = attrib['mdl']
 
             # parse the model configuration parameters
@@ -302,13 +297,6 @@ class Coordinator(object):
                 if name in self.__models:
                     print '> Model named '+name+' already exists in configuration'
                     return None
-
-                # build exchange items
-                # ei = build_exchange_items_from_config(params)
-                #
-                # # organize input and output items
-                # iei = [item for item in ei if item.get_type() == 'input']
-                # oei = [item for item in ei if item.get_type() == 'output']
 
                 iei = model_inst.inputs().values()
                 oei = model_inst.outputs().values()
@@ -428,7 +416,6 @@ class Coordinator(object):
 
         if ii is not None and oi is not None:
             # generate a unique model id
-            #id = 'L'+str(self.get_new_id())
             id = 'L'+uuid.uuid4().hex[:5]
 
             # create link
@@ -482,17 +469,9 @@ class Coordinator(object):
         links = {}
         for linkid, link in self.__links.iteritems():
             # get the from/to link info
-            #From, To = link.get_link()
 
             if link.source_component().get_id() == model_id:
                 links[linkid] = link
-
-            # todo: this should return the link object NOT some list
-            #if From[0].get_id() == model_id:
-            #    links.append([From, To, linkid])
-
-        #if len(links) == 0:
-        #    print '>  Could not find any links associated with model id: '+str(model_id)
 
         return links
 
@@ -502,13 +481,8 @@ class Coordinator(object):
         """
         links = {}
         for linkid, link in self.__links.iteritems():
-            # get the from/to link info
-            #From, To = link.get_link()
-
             links[linkid] = link
 
-            #if  From[0].get_id() == model_id or To[0].get_id() == model_id:
-            #    links.append([From, To, linkid])
 
         if len(links) == 0:
             print '>  Could not find any links associated with model id: '+str(model_id)
@@ -520,14 +494,6 @@ class Coordinator(object):
 
         links = []
         for linkid, link in self.__links.iteritems():
-            # Replaced with the code below b/c get_link() is deprecated
-            # # get the from/to link info
-            # From, To = link.get_link()
-            #
-            # if  From[0].get_id() == from_model and To[0].get_id() == to_model:
-            #     #links.append([From, To])
-            #     links.append(link)
-
             source_id = link.source_component().get_id()
             target_id = link.target_component().get_id()
             if source_id == from_model and target_id == to_model:
@@ -572,18 +538,6 @@ class Coordinator(object):
         :param model:
         :return:
         """
-
-        # todo: start here
-
-        # get the link corresponding to input to - from exchange items
-
-        # set the to exchange item = input mapped item
-
-        # This has been replaced with the three lines below b/c get_link() is deprecated
-        # f,t = self.__links[link_id].get_link()
-        #
-        # t_item = t[1]
-        # f_item = f[1]
 
         link = self.__links[link_id]
         t_item = link.target_exchange_item()
@@ -710,9 +664,6 @@ class Coordinator(object):
             for model in models.itervalues() :
                 types.extend(inspect.getmro(model.get_instance().__class__))
 
-            #inspect.getmro(models['SWMM'].get_instance().__class__)
-            #types = [type(model.get_instance()) for model in models.itervalues()]
-
             # make sure that feed forward and time-step models are not mixed together
             if (feed_forward.feed_forward_wrapper in types) and (time_step.time_step_wrapper in types):
                 sys.stdout.write('> Simulation Terminated. - Cannot mix feed-forward and time-step models! ')
@@ -729,111 +680,6 @@ class Coordinator(object):
         except Exception as e:
             raise Exception(e.args[0])
 
-        # # store db sessions
-        # db_sessions = {}
-        #
-        #
-        # # todo: determine unresolved exchange items (utilities)
-        #
-        #
-        # sim_st = time.time()
-        #
-        # activethreads = []
-        #
-        # # determine execution order
-        # sys.stdout.write('> Determining execution order... ')
-        # exec_order = self.determine_execution_order()
-        # sys.stdout.write('done\n')
-        # for i in range(0, len(exec_order)):
-        #     print '> %d.) %s'%(i+1,self.get_model_by_id(exec_order[i]).get_name())
-        #
-        #
-        # # store model db sessions
-        # for modelid in exec_order:
-        #     session = self.get_model_by_id(modelid).get_instance().session()
-        #     if session is None:
-        #         session = self.get_default_db()['session']
-        #
-        #     # todo: this should be stored in the model instance
-        #     # model_obj = self.get_model_by_id(modelid)
-        #     # model_inst = model_obj.get_instance()
-        #     # model_inst.session
-        #
-        #
-        #     # todo: need to consider other databases too!
-        #     db_sessions[modelid] = postgresdb(session)
-        #
-        # # loop through models and execute run
-        # for modelid in exec_order:
-        #
-        #     # get the database session
-        #     #simulation_dbapi = postgresdb(self.get_default_db()['session'])
-        #     simulation_dbapi = db_sessions[modelid]
-        #
-        #     st = time.time()
-        #
-        #     # get the current model instance
-        #     model_obj = self.get_model_by_id(modelid)
-        #     model_inst = model_obj.get_instance()
-        #
-        #     # set the default session if it hasn't been specified otherwise
-        #     #if model_inst.session() is None:
-        #     #    model_inst.session(self.get_default_db()['session'])
-        #
-        #     print '> '
-        #     print '> ------------------'+len(model_inst.name())*'-'
-        #     print '> Executing module: %s ' % model_inst.name()
-        #     print '> ------------------'+len(model_inst.name())*'-'
-        #
-        #     #  retrieve inputs from database
-        #     sys.stdout.write('> [1 of 4] Retrieving input data... ')
-        #
-        #     # todo: pass db_sessions instead of simulation_dbapi
-        #     input_data =  get_ts_from_link(simulation_dbapi,db_sessions, self._dbresults, self.__links, model_inst)
-        #     sys.stdout.write('done\n')
-        #
-        #     sys.stdout.write('> [2 of 4] Performing calculation... ')
-        #     # pass these inputs ts to the models' run function
-        #     model_inst.run(input_data)
-        #     sys.stdout.write('done\n')
-        #
-        #     # save these results
-        #     sys.stdout.write('> [3 of 4] Saving calculations to database... ')
-        #     exchangeitems = model_inst.save()
-        #
-        #
-        #     # only insert data if its not already in a database
-        #     if type(model_inst) != wrappers.odm2_data.odm2:
-        #
-        #         #  set these input data as exchange items in stdlib or wrapper class
-        #         simulation = simulation_dbapi.create_simulation(preferences_path=self.preferences,
-        #                                        config_params=model_obj.get_config_params(),
-        #                                        output_exchange_items=exchangeitems,
-        #                                        )
-        #
-        #         sys.stdout.write('done\n')
-        #
-        #         # store the database action associated with this simulation
-        #         self._dbresults[model_inst.name()] = (simulation.ActionID,model_inst.session(),'action')
-        #
-        #     else:
-        #         self._dbresults[model_inst.name()] = (model_inst.resultid(), model_inst.session(), 'result')
-        #
-        #     # update links
-        #     sys.stdout.write('> [4 of 4] Updating links... ')
-        #     self.update_links(model_inst,exchangeitems)
-        #     sys.stdout.write('done\n')
-        #
-        #     print '> module simulation completed in %3.2f seconds' % (time.time() - st)
-        #
-        #
-        # print '> '
-        # print '> ------------------------------------------'
-        # print '>           Simulation Summary '
-        # print '> ------------------------------------------'
-        # print '> Completed without error :)'
-        # print '> Simulation duration: %3.2f seconds' % (time.time()-sim_st)
-        # print '> ------------------------------------------'
 
     def get_configuration_details(self,arg):
 

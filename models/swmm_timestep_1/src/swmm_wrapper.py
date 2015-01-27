@@ -29,8 +29,6 @@ class swmm(time_step_wrapper):
         self.config_params = config_params
 
         #--- get input and output directories ---
-        #cwd = abspath(dirname(__file__))
-        #self.exe = join(cwd,'swmm5')
         self.sim_input = join(self.__datadir,config_params['data'][0]['input'])
 
         # generate random names for inp, rpt, and out
@@ -62,7 +60,6 @@ class swmm(time_step_wrapper):
         # get start and end times
         self.set_start_end_from_swmm()
 
-        # todo: start here.  How can I get the timestep value from SWMM?
         # set timestep
         self.__begin_c_time = c_double( self.__swmmLib.swmm_getDateTime(c_char_p('begin'))).value
         self.__end_c_time = c_double( self.__swmmLib.swmm_getDateTime(c_char_p('end'))).value

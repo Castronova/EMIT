@@ -161,9 +161,6 @@ class DataValues(object):
         self.__timeseries = value
         self.update_start_end_times()
 
-    #def element(self):
-    #    return self.__element
-
     def get_dates_values(self):
         if self.__timeseries:
             return zip(*self.__timeseries)

@@ -16,10 +16,6 @@ class temporal_nearest_neighbor(time_base.Time):
 
     def transform(self, dates, values, target_dates):
 
-        # # make sure that more than one date is provided
-        # if len(dates) < 2:
-        #     raise Exception('> [ERROR]: Nearest neighbor time interpolation requires at least 2 input (source) dates!')
-
         mapped_dates = []
         mapped_values = []
         if type(target_dates) != []:
@@ -27,16 +23,8 @@ class temporal_nearest_neighbor(time_base.Time):
 
         for target_date in target_dates:
 
-
             # get the closest date
             closest = sorted(dates, key=lambda d: abs(target_date - d))[0]
-
-             # make sure that the target_date is within the dates list
-            # if (target_date < min(dates)) or (target_date > max(dates)) :
-            #     mapped_dates.append(closest)
-            #     mapped_values.append(None)
-
-            # else:
 
             mapped_dates.append(closest)
             mapped_values.append(values[dates.index(closest)])

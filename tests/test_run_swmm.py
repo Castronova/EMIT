@@ -153,11 +153,11 @@ class test_run_swmm(unittest.TestCase):
                                   to_id=swmm2.get_id(),
                                   to_item_name='Flow_rate')
 
-        # add link between swmm 2 and swmm 1 (stage)
-        link4 = self.sim.add_link_by_name(from_id=swmm2.get_id(),
-                                  from_item_name='Hydraulic_head',
-                                  to_id=swmm1.get_id(),
-                                  to_item_name='Hydraulic_head')
+        # # add link between swmm 2 and swmm 1 (stage)
+        # link4 = self.sim.add_link_by_name(from_id=swmm2.get_id(),
+        #                           from_item_name='Hydraulic_head',
+        #                           to_id=swmm1.get_id(),
+        #                           to_item_name='Hydraulic_head')
 
 
         # set link tranformations
@@ -172,8 +172,8 @@ class test_run_swmm(unittest.TestCase):
         link3.spatial_interpolation(SpatialInterpolation.ExactMatch)
         link3.temporal_interpolation(TemporalInterpolation.NearestNeighbor)
 
-        link4.spatial_interpolation(SpatialInterpolation.ExactMatch)
-        link4.temporal_interpolation(TemporalInterpolation.NearestNeighbor)
+        # link4.spatial_interpolation(SpatialInterpolation.ExactMatch)
+        # link4.temporal_interpolation(TemporalInterpolation.NearestNeighbor)
 
 
 

@@ -67,7 +67,7 @@ class swmm(time_step_wrapper):
 
         #self.time_step(1,'second')
 
-        print 'done with initialize'
+        print '> [PRE-RUN] %s : Component initialization complete. ' % self.name()
 
 
     def run_timestep(self,inputs, current_time):
@@ -162,7 +162,7 @@ class swmm(time_step_wrapper):
         # check to see which inputs will be applied
         apply_flowrate = True if len([v for g in flow_rate.keys() for v in flow_rate[g] if v is not None]) > 0 else False
 
-        # loop through the links and apply inputs
+        # loop through the swmm links and apply inputs
         for i in range(0, link_count):
 
             # todo: check all possible link inputs
@@ -174,23 +174,29 @@ class swmm(time_step_wrapper):
 
             # get the geom id
             link_id = l.contents.ID
-            geom_id = self.__geom_lookup[link_id].id()
-            att = self.__geom_atts[link_id]
+            if link_id in self.__geom_lookup:
+                geom_id = self.__geom_lookup[link_id].id()
 
-            # get input and output node ids
-            in_node_id = att['inlet']
-            out_node_id = att['outlet']
+                att = self.__geom_atts[link_id]
 
-            # APPLY STREAMFLOW if values are given (i.e. not all None)
-            if apply_flowrate:
+                # get input and output node ids
+                in_node_id = att['inlet']
+                out_node_id = att['outlet']
 
-                # get the date and value from inputs, based on geom_id
-                date, value = inputs['Flow_rate'].get_timeseries_by_id(geom_id)
 
-                # apply flowrate at outlets
-                if value[0]:
-                    node = self.__swmmLib.getNodeById(c_char_p(out_node_id))
-                    node.contents.inflow = value[0]
+                # APPLY STREAMFLOW if values are given (i.e. not all None)
+                if apply_flowrate:
+
+                    # get the date and value from inputs, based on geom_id
+                    date, value = inputs['Flow_rate'].get_timeseries_by_id(geom_id)
+
+                    # apply flowrate at outlets
+                    if date and value[0] is not None:
+                        node = self.__swmmLib.getNodeById(c_char_p(out_node_id))
+                        node.contents.inflow = value[0]
+
+                        # set flow rate in the engine
+                        self.__swmmLib.setNode(node,c_char_p('Flow_rate'))
 
         # ------------
         # Node Inputs
@@ -203,7 +209,6 @@ class swmm(time_step_wrapper):
 
         # step the SWMM simulation
         error = self.__swmmLib.swmm_step(byref(step))
-
 
 
         for i in range(0, link_count):
@@ -219,9 +224,6 @@ class swmm(time_step_wrapper):
             self.outputs()['Flow_rate'].set_timeseries_by_id(link_id,zip([date],[flow]))
 
 
-        # for debugging only
-        print self.__swmmLib.getSubcatch(c_int(0)).contents.newRunoff
-
         # track the new time within the SWMM wrapper
         elapsed = self.__begin_c_time + step.value
         new_time = self.decode_datetime(elapsed)
@@ -234,6 +236,8 @@ class swmm(time_step_wrapper):
 
 
     def save(self):
+
+        # todo: get data from swmm library and return it
 
         link_count = self.__swmmLib.getObjectTypeCount(SWMM_Types.LINK)
         self.__swmmLib.getLink.restype = POINTER(TLink)

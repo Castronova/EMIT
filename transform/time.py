@@ -32,13 +32,14 @@ class temporal_nearest_neighbor(time_base.Time):
             closest = sorted(dates, key=lambda d: abs(target_date - d))[0]
 
              # make sure that the target_date is within the dates list
-            if (target_date < min(dates)) or (target_date > max(dates)) :
-                mapped_dates.append(closest)
-                mapped_values.append(None)
+            # if (target_date < min(dates)) or (target_date > max(dates)) :
+            #     mapped_dates.append(closest)
+            #     mapped_values.append(None)
 
-            else:
-                mapped_dates.append(closest)
-                mapped_values.append(values[dates.index(closest)])
+            # else:
+
+            mapped_dates.append(closest)
+            mapped_values.append(values[dates.index(closest)])
 
         # return the closest date and its corresponding value
         return mapped_dates, mapped_values

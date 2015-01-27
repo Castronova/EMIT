@@ -595,18 +595,16 @@ class Coordinator(object):
 
             # get this list index of the to-geom
             # TODO:  This is probably very inefficient
-            f_geom ,t_geom= [g for g in from_to_spatial_map if g[1] == t_geom][0]
+            mapped = [g for g in from_to_spatial_map if g[1] == t_geom]
 
-            # update the datavalues with the mapped dates and values
+            # if mapping was found
+            if len(mapped) > 0:
 
-            t_geom.datavalues().set_timeseries(from_geom_dict[f_geom])
+                f_geom ,t_geom= mapped[0]
 
-            #dv = in_geom.datavalues()
+                # update the datavalues with the mapped dates and values
+                t_geom.datavalues().set_timeseries(from_geom_dict[f_geom])
 
-            # get the output data corresponding to this
-            # f_geom[f_geom.index(out_geom)
-
-            #pass
 
 
     def update_links(self, model, exchangeitems):

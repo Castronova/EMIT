@@ -1,6 +1,7 @@
 [software]
 filepath  = ./swmm_wrapper.py
 classname = swmm
+library = ./libSWMMQOpenMI_2.dylib
 
 [model]
 code = SWMM-time-step-2

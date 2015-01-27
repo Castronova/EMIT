@@ -10,6 +10,12 @@ from api.ODMconnection import  dbconnection
 from wrappers import odm2_data
 from coordinator import main
 import time
+from ctypes import *
+from transform.space import *
+from transform.time import *
+from models.caleb_swmm.src.structures import *
+import Queue
+import threading
 
 class test_run_swmm(unittest.TestCase):
 
@@ -47,6 +53,67 @@ class test_run_swmm(unittest.TestCase):
         # set the default database for the simulation
         self.sim.set_default_database(db_id)
 
+        self.queue = Queue.Queue()
+
+
+
+    def test_dll_loading(self):
+
+
+
+
+        dll1 = r'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_1/data/libSWMMQOpenMI_1.dylib'
+        i1 =   r'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_1/data/Logan.inp'
+        r1 =   r'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_1/data/Logan.rpt'
+        o1 =   r'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_1/data/Logan.out'
+
+        dll2 = r'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_2/data/libSWMMQOpenMI_2.dylib'
+        i2 =   r'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_2/data/Logan.inp'
+        r2 =   r'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_2/data/Logan.rpt'
+        o2 =   r'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_2/data/Logan.out'
+
+
+        lib1 = cdll.LoadLibrary(dll1)
+        lib2 = cdll.LoadLibrary(dll2)
+
+        lib2.getSubcatch.restype = POINTER(TSubcatch)
+        lib2.setSubcatch.argtypes = [POINTER(TSubcatch), c_char_p]
+
+
+        print 'Open SWMM 1   : %s' % ('Success' if not lib1.swmm_open(i1,r1,o1) else 'Fail')
+        print 'Start SWMM 1  : %s' % ('Success' if not lib1.swmm_start(True) else 'Fail')
+
+        print 'Open SWMM 2   : %s' % ('Success' if not lib2.swmm_open(i2,r2,o2) else 'Fail')
+        print 'Start SWMM 2  : %s' % ('Success' if not lib2.swmm_start(True) else 'Fail')
+
+        lib1.getSubcatch.restype = POINTER(TSubcatch)
+        lib1.setSubcatch.argtypes = [POINTER(TSubcatch), c_char_p]
+        count = lib1.getObjectTypeCount(SWMM_Types.SUBCATCH)
+
+        # set some rainfall
+        for i in range(0,count):
+            sub = lib1.getSubcatch(c_int(i))
+            sub.contents.rainfall = c_double(2.0)
+            lib1.setSubcatch(sub,c_char_p('rainfall'))
+
+
+        step1 = c_double()
+        print 'Step SWMM 1   : %s' % ('Success' if not lib1.swmm_step(byref(step1)) else 'Fail')
+
+
+        print lib1.getSubcatch(c_int(0)).contents.newRunoff
+        print lib2.getSubcatch(c_int(0)).contents.newRunoff
+
+        step2 = c_double()
+        print 'Step SWMM 2   : %s' % ('Success' if not lib2.swmm_step(byref(step2)) else 'Fail')
+
+        print 'End SWMM 1    : %s' % ('Success' if not lib1.swmm_end() else 'Fail')
+        print 'Report SWMM 1 : %s' % ('Success' if not lib1.swmm_report() else 'Fail')
+        print 'Close SWMM 1  : %s' % ('Success' if not lib1.swmm_close() else 'Fail')
+
+        print 'Step SWMM 2   : %s' % ('Success' if not lib2.swmm_step(byref(step2)) else 'Fail')
+
+
     def test_swmm_rainfall_coupling(self):
 
 
@@ -83,8 +150,6 @@ class test_run_swmm(unittest.TestCase):
                                   to_id=swmm.get_id(),
                                   to_item_name='Rainfall')
 
-        from transform.space import *
-        from transform.time import *
         link.spatial_interpolation(SpatialInterpolation.NearestObject)
         link.temporal_interpolation(TemporalInterpolation.NearestNeighbor)
 
@@ -148,9 +213,9 @@ class test_run_swmm(unittest.TestCase):
                                   to_item_name='Rainfall')
 
         # add link between swmm 1 and swmm 2 (streamflow)
-        link3 = self.sim.add_link_by_name(from_id=swmm1.get_id(),
+        link3 = self.sim.add_link_by_name(from_id=swmm2.get_id(),
                                   from_item_name='Flow_rate',
-                                  to_id=swmm2.get_id(),
+                                  to_id=swmm1.get_id(),
                                   to_item_name='Flow_rate')
 
         # # add link between swmm 2 and swmm 1 (stage)
@@ -161,8 +226,7 @@ class test_run_swmm(unittest.TestCase):
 
 
         # set link tranformations
-        from transform.space import *
-        from transform.time import *
+
         link1.spatial_interpolation(SpatialInterpolation.NearestObject)
         link1.temporal_interpolation(TemporalInterpolation.NearestNeighbor)
 

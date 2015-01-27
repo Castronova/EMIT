@@ -51,7 +51,9 @@ class swmm(time_step_wrapper):
 
         # create instance of the SWMM C model
         # todo: get this from the config_params
-        self.__swmmLib = CDLL(join(self.__datadir,'libSWMMQOpenMI.dylib'))
+        lib = config_params['software'][0]['library']
+        #self.__swmmLib = CDLL(join(self.__datadir,lib))
+        self.__swmmLib = cdll.LoadLibrary(join(self.__datadir,lib))
 
         # open input file
         error = self.__swmmLib.swmm_open(self.__inp,self.__rpt,self.__out)
@@ -237,20 +239,25 @@ class swmm(time_step_wrapper):
 
     def save(self):
 
-        # todo: get data from swmm library and return it
+        self.__swmmLib.swmm_end()
 
-        link_count = self.__swmmLib.getObjectTypeCount(SWMM_Types.LINK)
-        self.__swmmLib.getLink.restype = POINTER(TLink)
+        self.__swmmLib.swmm_report()
 
-        node_count = self.__swmmLib.getObjectTypeCount(SWMM_Types.NODE)
-        self.__swmmLib.getNode.restype = POINTER(TNode)
-        self.__swmmLib.getNodeById.restype = POINTER(TNode)
-        self.__swmmLib.getNodeById.argtypes = [c_char_p]
+        # # todo: get data from swmm library and return it
+        #
+        # link_count = self.__swmmLib.getObjectTypeCount(SWMM_Types.LINK)
+        # self.__swmmLib.getLink.restype = POINTER(TLink)
+        #
+        # node_count = self.__swmmLib.getObjectTypeCount(SWMM_Types.NODE)
+        # self.__swmmLib.getNode.restype = POINTER(TNode)
+        # self.__swmmLib.getNodeById.restype = POINTER(TNode)
+        # self.__swmmLib.getNodeById.argtypes = [c_char_p]
+        #
+        # # get variables that operate on links
+        # for i in range(0, link_count):
+        #     flow = self.__swmmLib.getLink(c_int(i)).contents.newFlow
 
-        # get variables that operate on links
-        for i in range(0, link_count):
-            flow = self.__swmmLib.getLink(c_int(i)).contents.newFlow
-
+        self.__swmmLib.swmm_close()
 
 
         return self.outputs()

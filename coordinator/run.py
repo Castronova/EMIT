@@ -236,7 +236,6 @@ def run_time_step(obj):
                 # add the current time for the source model (this will force the model to step only once)
                 target_times.append(model_inst.current_time())
 
-            #target_times.append(model_inst.simulation_end())
 
 
 
@@ -244,17 +243,22 @@ def run_time_step(obj):
             current_time = model_inst.current_time()
             while current_time <= max(target_times):
 
-                print '> %s | ' % (datetime.datetime.strftime(current_time,"%m-%d-%Y %H:%M:%S")),
+
 
                 # update simulation status
+
                 simulation_status[modelid] = model_inst.status()
                 if model_inst.status() != Status.Running:
                     # exit without calling run_timestep
+                    sys.stdout.write('> %s | %s \n' % (model_inst.name(),model_inst.status()))
                     break
 
 
                 # get model input data
                 input_data = model_inst.inputs()
+
+
+                sys.stdout.write('> %s  ' % (datetime.datetime.strftime(current_time,"%m-%d-%Y %H:%M:%S")))
 
                 # run model timestep
                 model_inst.run_timestep(input_data, current_time)
@@ -262,7 +266,7 @@ def run_time_step(obj):
                 # get the new current time
                 current_time = model_inst.current_time()
 
-
+                sys.stdout.write(' -> %s | %s | %s \n' % (datetime.datetime.strftime(current_time,"%m-%d-%Y %H:%M:%S"),model_inst.name(),model_inst.status()))
 
             # get all outputs
             output_exchange_items = model_inst.outputs()
@@ -302,14 +306,15 @@ def run_time_step(obj):
                     if temporal and values:
                         mapped_dates,mapped_values = temporal.transform(dates,values,target_time)
 
-                    if mapped_dates is not None:
-                        # save the temporally mapped data by output geometry
-                        mapped[geom] = (zip(mapped_dates,mapped_values))
+                        if mapped_dates is not None:
+                            # save the temporally mapped data by output geometry
+                            mapped[geom] = (zip(mapped_dates,mapped_values))
 
 
                 # update links
                 #if len(mapped.values()) > 0:
-                obj.update_link(linkid, mapped, spatial_maps[link_key])
+                if len(mapped.keys()) > 0:
+                    obj.update_link(linkid, mapped, spatial_maps[link_key])
                 #else:
                 #    obj.update_link(linkid, None, None)
                         # reset geometry values to None

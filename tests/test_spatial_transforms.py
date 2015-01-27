@@ -8,15 +8,27 @@ import unittest
 import utilities
 from shapely.wkt import loads
 
-from ODMconnection import dbconnection
+#from ODMconnection import dbconnection
 
-from ODMconnection import SessionFactory
+from api import dbconnection
+
+#from ODMconnection import SessionFactory
+
 from api.ODM2.Core.model import *
 from sqlalchemy import func
 
 import matplotlib.pyplot as plt
 from scipy.spatial import Voronoi, voronoi_plot_2d
 import numpy as np
+
+from numpy import random as random
+
+
+from shapely.geometry import Point
+from transform.space import SpatialInterpolation
+from stdlib import Geometry
+from copy import copy
+import time
 
 ##################################################################
 ##############           !     NOTE     !           ##############
@@ -35,11 +47,10 @@ class testSpatial(unittest.TestCase):
         db = 'odm2CamelCase'
         user = 'tonycastronova'
         pwd = 'water'
-        dbconn = dbconnection()
-        connection = dbconn.createConnection(engine,address,db,user,pwd)
 
-#        self._session_factory = SessionFactory(connection_string, False)
-        self._session = connection.getSession()
+        dbconn = dbconnection()
+        self.session = dbconn.createConnection(engine,address,db,user,pwd)
+
 
 
 
@@ -443,6 +454,42 @@ class testSpatial(unittest.TestCase):
         # plt.colorbar()
 
         plt.show()
+
+
+    def test_spatial_exact_match(self):
+
+
+
+        # create a bunch of random points
+        x = random.randint(1000,size=5000)
+        y = random.randint(1000,size=5000)
+
+        in_geoms = []
+        for i in xrange(0, len(x)):
+            pt = Point(x[i],y[i])
+            geometry_object = Geometry(geom=pt)
+            in_geoms.append(geometry_object)
+
+        out_geoms = copy(in_geoms)
+        random.shuffle(out_geoms)
+
+        self.assertTrue(in_geoms[i] != out_geoms[i])
+        self.assertTrue(in_geoms[i] in out_geoms)
+
+
+        interpolation = SpatialInterpolation.ExactMatch
+        self.assertTrue(interpolation.name() == 'Exact Match')
+        st = time.time()
+        mapped = interpolation.transform(in_geoms,out_geoms)
+        print '%s seconds' %(time.time() - st)
+
+        self.assertTrue('None' not in mapped)
+
+
+
+
+
+
 
 
 # backup of database pts

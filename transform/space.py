@@ -59,8 +59,6 @@ class spatial_nearest_neighbor(space_base.Space):
         if name in self.__params.keys():
             self.__params[name] = value
 
-
-
 class spatial_closest_object(space_base.Space):
 
     def __init__(self):
@@ -95,7 +93,6 @@ class spatial_closest_object(space_base.Space):
             i += 1
         return mapped
 
-
 class spatial_exact_match(space_base.Space):
     def __init__(self):
         super(spatial_exact_match,self).__init__()
@@ -108,20 +105,17 @@ class spatial_exact_match(space_base.Space):
         # create container for mapped geometries
         mapped_geoms = []
 
-        igeoms = [i.geom() for i in ingeoms]
-        ogeoms = [o.geom() for o in outgeoms]
+        igeoms = [i.geom().to_wkt() for i in ingeoms]
+        ogeoms = [o.geom().to_wkt() for o in outgeoms]
 
-        for i in range(0, len(igeoms)):
-            igeom = igeoms[i]
-            for o in ogeoms:
-                if igeom.equals(o):
-                    idx = ogeoms.index(o)
-                    mapped_geoms.append((ingeoms[i],outgeoms[idx]))
-                    ogeoms.pop(idx)
-                    break
-
+        for i in igeoms:
+            if i in ogeoms:
+                idx = ogeoms.index(i)
+                mapped_geoms.append((i,ogeoms[idx]))
 
         return mapped_geoms
+
+
 
 
 class SpatialInterpolation():

@@ -319,7 +319,16 @@ def run_time_step(obj):
                 #    obj.update_link(linkid, None, None)
                         # reset geometry values to None
 
+    for modelid in exec_order:
 
+        # get the current model instance
+        model_obj = obj.get_model_by_id(modelid)
+        model_inst = model_obj.get_instance()
+
+        # save results
+        model_inst.save()
+
+        # todo: save outputs to database!
 
     print '> '
     print '> ------------------------------------------'

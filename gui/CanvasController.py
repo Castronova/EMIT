@@ -324,20 +324,7 @@ class CanvasController:
 
         if cur.Name == 'link':
             self.linkRects.append(object)
-        # if cur.Name == 'link':
-        #     if len(self.linkRects)  > 0:
-        #         self.linkRects.append(object)
-        #         self.createLine(self.linkRects[0], self.linkRects[1])
-        #
-        #         # reset linkrects object
-        #         self.linkRects=[]
-        #
-        #         # change the mouse cursor
-        #
-        #         #self.Canvas.SetMode(self.Modes[0][1])
-        #
-        #     else:
-        #         self.linkRects.append(object)
+
 
         # populate model view
         if cur.Name == 'default':
@@ -352,6 +339,12 @@ class CanvasController:
             obj = self.cmd.get_model_by_id(obj_id)
 
             # format the model parameters for printing
+
+            #text = '\n'.join([k for k in params.keys()])
+
+            #text = '||a||b||\n||test||test||\n||test||test||'
+
+            #md = "###Heading\n---\n```\nsome code\n```"
 
             try:
                 params = obj.get_config_params()
@@ -371,12 +364,6 @@ class CanvasController:
 
                     text += '###%s  \n%s  \n'%(title,table)
                 except: pass
-
-            #text = '\n'.join([k for k in params.keys()])
-
-            #text = '||a||b||\n||test||test||\n||test||test||'
-
-            #md = "###Heading\n---\n```\nsome code\n```"
             html = markdown2.markdown(text, extras=["wiki-tables"])
 
             #css = "<style>h3 a{font-weight:100;color: gold;text-decoration: none;}</style>"
@@ -385,8 +372,6 @@ class CanvasController:
                     "table {border-collapse: collapse;width:100%}" \
                     "table td, table th {border: 1px solid #e6f1f5;}" \
                     "h3 {color: #66A3E0}</style>"
-
-
 
 
             # set the model params as text

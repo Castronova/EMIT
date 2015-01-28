@@ -206,7 +206,9 @@ class MainGui(wx.Frame):
         self.m_viewMenu = wx.Menu()
         ShowAll = self.m_viewMenu.Append(wx.NewId(), '&Toolbox\tCtrl+A', 'Show all associated files', wx.ITEM_RADIO)
         ShowDir = self.m_viewMenu.Append(wx.NewId(), '&Directory\tCtrl+D', 'Shows file directory', wx.ITEM_RADIO)
-        MinimizeConsole = self.m_viewMenu.Append(wx.NewId(), '&Console Toggle', 'Minimizes the Console', wx.ITEM_CHECK)
+        separator = self.m_viewMenu.Append(wx.NewId(), 'separate', 'separate', wx.ITEM_SEPARATOR)
+        MinimizeConsole = self.m_viewMenu.Append(wx.NewId(), '&Console Off', 'Minimizes the Console', wx.ITEM_CHECK)
+        defaultview = self.m_viewMenu.Append(wx.NewId(), '&Default View', 'Returns the view to the default (inital) state', wx.ITEM_NORMAL)
         self.m_menubar.Append(self.m_viewMenu, "&View")
 
         self.SetMenuBar(self.m_menubar)
@@ -220,6 +222,7 @@ class MainGui(wx.Frame):
         self.Bind(wx.EVT_MENU, self.onDirectory, ShowDir)
         self.Bind(wx.EVT_MENU, self.onAllFiles, ShowAll)
         self.Bind(wx.EVT_MENU, self.onConsole, MinimizeConsole)
+        self.Bind(wx.EVT_MENU, self.defaultview, defaultview)
 
     def _postStart(self):
         ## Starts stuff after program has initiated
@@ -328,6 +331,28 @@ class MainGui(wx.Frame):
             ConsolePane.Hide()
             Toggle = 0
         self.m_mgr.Update()
+        pass
+
+    def defaultview(self, event):
+        self.onAllFiles(event)
+        ConsolePane = self.m_mgr.GetPane(self.bnb)
+        ConsolePane.Show(show=True)
+        # self.m_mgr.ClosePane(self.bnb)
+        # self.m_mgr.AddPane(self.bnb,
+        #                    aui.AuiPaneInfo().
+        #                    Center().
+        #                    Name("Console").
+        #                    Position(1).
+        #                    CloseButton(False).
+        #                    MaximizeButton(True)
+        #                    .Movable()
+        #                    .MinimizeButton(True).
+        #                    PinButton(True).
+        #                    Resizable().
+        #                    Floatable().
+        #                    MinSize(wx.Size(1200, 200)))
+        self.m_mgr.Update()
+
         pass
 
 class ModelView(wx.Panel):

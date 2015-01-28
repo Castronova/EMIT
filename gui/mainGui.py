@@ -206,6 +206,7 @@ class MainGui(wx.Frame):
         self.m_viewMenu = wx.Menu()
         ShowAll = self.m_viewMenu.Append(wx.NewId(), '&Toolbox\tCtrl+A', 'Show all associated files', wx.ITEM_RADIO)
         ShowDir = self.m_viewMenu.Append(wx.NewId(), '&Directory\tCtrl+D', 'Shows file directory', wx.ITEM_RADIO)
+        MinimizeConsole = self.m_viewMenu.Append(wx.NewId(), '&Console Toggle', 'Minimizes the Console', wx.ITEM_CHECK)
         self.m_menubar.Append(self.m_viewMenu, "&View")
 
         self.SetMenuBar(self.m_menubar)
@@ -218,6 +219,7 @@ class MainGui(wx.Frame):
         self.Bind(wx.EVT_MENU, self.onClose, exit)
         self.Bind(wx.EVT_MENU, self.onDirectory, ShowDir)
         self.Bind(wx.EVT_MENU, self.onAllFiles, ShowAll)
+        self.Bind(wx.EVT_MENU, self.onConsole, MinimizeConsole)
 
     def _postStart(self):
         ## Starts stuff after program has initiated
@@ -313,6 +315,18 @@ class MainGui(wx.Frame):
         DirectoryPane.Hide()
         ToolboxPane = self.m_mgr.GetPane(self.Toolbox)
         ToolboxPane.Show(show=True)
+        self.m_mgr.Update()
+        pass
+
+    def onConsole(self, event):
+        ConsolePane = self.m_mgr.GetPane(self.bnb)
+        Toggle = 1
+        if event.Selection == 0:
+            ConsolePane.Show(show=True)
+            Toggle = 1
+        if event.Selection == 1:
+            ConsolePane.Hide()
+            Toggle = 0
         self.m_mgr.Update()
         pass
 

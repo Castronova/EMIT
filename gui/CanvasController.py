@@ -1042,6 +1042,10 @@ class CanvasController:
             self.createBox(name=inst.name(), id=inst.id(), xCoord=x, yCoord=y, color='#FFFF99')
             self.Canvas.Canvas.Draw()
 
+    def addModelDialog(self):
+        dial = wx.MessageDialog(None, 'Added a Model', 'Info', wx.OK)
+        dial.ShowModal()
+
 class FileDrop(wx.FileDropTarget):
     def __init__(self, controller, window, cmd):
         wx.FileDropTarget.__init__(self)

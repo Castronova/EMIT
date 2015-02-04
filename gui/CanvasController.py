@@ -118,26 +118,6 @@ class CanvasController:
             self.MoveObject = self.StartObject + dxy
             dc.DrawPolygon(self.MoveObject)
 
-    def RemoveLink(self, link_obj):
-
-        # remove the link entry in self.links
-        link = self.links.pop(link_obj)
-
-        # remove the link from the cmd
-        from_id = link[0].ID
-        to_id = link[1].ID
-
-        # get the link id
-        links = self.cmd.get_links_btwn_models(from_id,to_id)
-
-        # remove all links
-        for link in links:
-            linkid = link.get_id()
-            self.cmd.remove_link_by_id(linkid)
-
-        # redraw the canvas
-        self.RedrawConfiguration()
-
     def createBox(self, xCoord, yCoord, id=None, name=None, color='#A2CAF5'):
 
         if name:
@@ -253,6 +233,141 @@ class CanvasController:
 
         self.Canvas.Canvas.Draw()
 
+    def addModel(self, filepath, x, y):
+        """
+        Adds a model to the canvas using x,y.  This is useful if adding by file click/dialog
+        :param filename:  filename / path
+        :param x: x location
+        :param y: y location
+        :return: None
+        """
+
+        # controller = self
+        # window = self.Canvas
+        # cmd = self.cmd)
+
+        x0 = self.Canvas.MinWidth / 2.
+        y0 = self.Canvas.MinHeight / 2.
+
+        originx, originy = self.Canvas.Canvas.PixelToWorld((0,0))
+        x = x0 +originx
+        y = originy - y0
+
+        name, ext = os.path.splitext(filepath)
+
+        if ext == '.mdl' or ext =='.sim':
+            try:
+                if ext == '.mdl':
+                    # load the model
+                    dtype = datatypes.ModelTypes.FeedForward
+                    model = self.cmd.add_model(dtype,attrib={'mdl':filepath})
+                    name = model.get_name()
+                    modelid = model.get_id()
+                    self.createBox(name=name, id=modelid, xCoord=x, yCoord=y)
+
+                else:
+                    # load the simulation
+                    self.loadsimulation(filepath)
+
+            except Exception, e:
+                print '> Could not load the model. Please verify that the model file exists.'
+                print '> %s' % e
+        else:
+            # # -- must be a data object --
+
+            # get the current database connection dictionary
+            session = self.getCurrentDbSession()
+
+            # create odm2 instance
+            inst = odm2_data.odm2(resultid=name, session=session)
+
+            # make sure that output handles cases where a dictionary element is passed in
+            output = inst.outputs()
+            if isinstance(output, dict):
+                output = output.values()[0]
+
+            from coordinator import main
+            # create a model instance
+            thisModel = main.Model(id=inst.id(),
+                                   name=inst.name(),
+                                   instance=inst,
+                                   desc=inst.description(),
+                                   input_exchange_items= [],
+                                   output_exchange_items=[output],
+                                   params=None)
+
+
+            # save the result id
+            att = {'resultid':name}
+
+            # save the database connection
+            dbs = self.cmd.get_db_connections()
+            for id, dic in dbs.iteritems():
+                if dic['session'] == self.getCurrentDbSession():
+                    att['databaseid'] = id
+                    thisModel.attrib(att)
+                    break
+
+            thisModel.type(datatypes.ModelTypes.Data)
+
+
+            # save the model
+            self.cmd.Models(thisModel)
+
+            # draw a box for this model
+            self.createBox(name=inst.name(), id=inst.id(), xCoord=x, yCoord=y, color='#FFFF99')
+            self.Canvas.Canvas.Draw()
+
+    def RemoveLink(self, link_obj):
+
+        # remove the link entry in self.links
+        link = self.links.pop(link_obj)
+
+        # remove the link from the cmd
+        from_id = link[0].ID
+        to_id = link[1].ID
+
+        # get the link id
+        links = self.cmd.get_links_btwn_models(from_id,to_id)
+
+        # remove all links
+        for link in links:
+            linkid = link.get_id()
+            self.cmd.remove_link_by_id(linkid)
+
+        # redraw the canvas
+        self.RedrawConfiguration()
+
+    def RemoveModel(self, model_obj):
+
+
+        # remove the model from the canvas
+        removed_model = self.models.pop(model_obj)
+
+        updated_links = {}
+        for k,v in self.links.iteritems():
+            if model_obj not in v:
+                updated_links[k] = v
+        self.links = updated_links
+
+        # remove the model from the cmd engine
+        self.cmd.remove_model_by_id(model_obj.ID)
+
+        # redraw the canvas
+        self.RedrawConfiguration()
+
+    def clear(self, link_obj=None, model_obj=None):
+
+        # clear links and models in cmd
+        self.cmd.clear_all()
+
+        # clear links and model in gui
+        self.links.clear()
+        self.models.clear()
+        self.FloatCanvas.ClearAll()
+
+        self.RedrawConfiguration()
+
     def ObjectHit(self, object):
         cur = self.getCursor()
 
@@ -329,61 +444,6 @@ class CanvasController:
             self.MoveObject = None
             self.MovingObject = object
 
-    def RedrawConfiguration(self):
-        # clear lines from drawlist
-        self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != CanvasObjects.ShapeType.Link]
-        #self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Line]
-
-        # remove any arrowheads from the _ForeDrawList
-        self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if obj.type != CanvasObjects.ShapeType.ArrowHead]
-        #self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if type(obj) != FC.Polygon]
-
-        # remove any models
-        i = 0
-        modelids = [model.ID for model in self.models]
-        modellabels = [model.Name for model in self.models]
-        self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList
-                                          if (obj.type == CanvasObjects.ShapeType.Model and obj.ID in modelids)
-                                          or (obj.type == CanvasObjects.ShapeType.Label and obj.String in modellabels)]
-
-        # redraw links
-        for link in self.links.keys():
-            r1,r2 = self.links[link]
-            self.createLine(r1,r2)
-
-        self.FloatCanvas.Draw(True)
-
-    def OnLeftUp(self, event):
-        if self.Moving:
-            self.Moving = False
-            if self.MoveObject is not None:
-                dxy = event.GetPosition() - self.StartPoint
-                (x,y) = self.FloatCanvas.ScalePixelToWorld(dxy)
-                self.MovingObject.Move((x,y))
-                self.MovingObject.Text.Move((x, y))
-
-
-                # clear lines from drawlist
-                self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != CanvasObjects.ShapeType.Link]
-                #self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Line]
-
-                # remove any arrowheads from the two FloatCanvas DrawLists
-                self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if obj.type != CanvasObjects.ShapeType.ArrowHead]
-                self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != CanvasObjects.ShapeType.ArrowHead]
-
-                # redraw links
-                for link in self.links.keys():
-                    r1,r2 = self.links[link]
-                    self.createLine(r1,r2)
-
-            self.FloatCanvas.Draw(True)
-
-
-        # count clicks
-        cur = self.getCursor()
-        if cur.Name == 'link':
-            self.AddinkCursorClick()
-
     def AddinkCursorClick(self):
         self.link_clicks += 1
 
@@ -451,23 +511,60 @@ class CanvasController:
         self.frame.PopupMenu( menu, event.GetPoint() )
         menu.Destroy() # destroy to avoid mem leak
 
-    def RemoveModel(self, model_obj):
+    def RedrawConfiguration(self):
+        # clear lines from drawlist
+        self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != CanvasObjects.ShapeType.Link]
+        #self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Line]
+
+        # remove any arrowheads from the _ForeDrawList
+        self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if obj.type != CanvasObjects.ShapeType.ArrowHead]
+        #self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if type(obj) != FC.Polygon]
+
+        # remove any models
+        i = 0
+        modelids = [model.ID for model in self.models]
+        modellabels = [model.Name for model in self.models]
+        self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList
+                                          if (obj.type == CanvasObjects.ShapeType.Model and obj.ID in modelids)
+                                          or (obj.type == CanvasObjects.ShapeType.Label and obj.String in modellabels)]
+
+        # redraw links
+        for link in self.links.keys():
+            r1,r2 = self.links[link]
+            self.createLine(r1,r2)
+
+        self.FloatCanvas.Draw(True)
+
+    def OnLeftUp(self, event):
+        if self.Moving:
+            self.Moving = False
+            if self.MoveObject is not None:
+                dxy = event.GetPosition() - self.StartPoint
+                (x,y) = self.FloatCanvas.ScalePixelToWorld(dxy)
+                self.MovingObject.Move((x,y))
+                self.MovingObject.Text.Move((x, y))
 
 
-        # remove the model from the canvas
-        removed_model = self.models.pop(model_obj)
+                # clear lines from drawlist
+                self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != CanvasObjects.ShapeType.Link]
+                #self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Line]
 
-        updated_links = {}
-        for k,v in self.links.iteritems():
-            if model_obj not in v:
-                updated_links[k] = v
-        self.links = updated_links
+                # remove any arrowheads from the two FloatCanvas DrawLists
+                self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if obj.type != CanvasObjects.ShapeType.ArrowHead]
+                self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != CanvasObjects.ShapeType.ArrowHead]
 
-        # remove the model from the cmd engine
-        self.cmd.remove_model_by_id(model_obj.ID)
+                # redraw links
+                for link in self.links.keys():
+                    r1,r2 = self.links[link]
+                    self.createLine(r1,r2)
 
-        # redraw the canvas
-        self.RedrawConfiguration()
+            self.FloatCanvas.Draw(True)
+
+
+        # count clicks
+        cur = self.getCursor()
+        if cur.Name == 'link':
+            self.AddinkCursorClick()
 
     def getCurrentDbSession(self, value = None):
         if value is not None:
@@ -501,24 +598,6 @@ class CanvasController:
     def getDatabases(self):
         knownconnections = self.cmd.get_db_connections()
         Publisher.sendMessage('getKnownDatabases',value=knownconnections)  # sends message to mainGui
-
-    def MenuSelectionCb( self, event ):
-        # TODO: Fix the menu selection
-        operation = menu_title_by_id[ event.GetId() ]
-        #target    = self.list_item_clicked
-        print '> Perform "%(operation)s" on "%(target)s."' % vars()
-
-    def clear(self, link_obj=None, model_obj=None):
-
-        # clear links and models in cmd
-        self.cmd.clear_all()
-
-        # clear links and model in gui
-        self.links.clear()
-        self.models.clear()
-        self.FloatCanvas.ClearAll()
-
-        self.RedrawConfiguration()
 
     def DetailView(self):
         # DCV.ShowDetails()
@@ -846,91 +925,6 @@ class CanvasController:
             self.FloatCanvas.Draw()
             #self.Canvas.Draw()
 
-    def addModel(self, filepath, x, y):
-        """
-        Adds a model to the canvas using x,y.  This is useful if adding by file click/dialog
-        :param filename:  filename / path
-        :param x: x location
-        :param y: y location
-        :return: None
-        """
-
-        # controller = self
-        # window = self.Canvas
-        # cmd = self.cmd)
-
-        x0 = self.Canvas.MinWidth / 2.
-        y0 = self.Canvas.MinHeight / 2.
-
-        originx, originy = self.Canvas.Canvas.PixelToWorld((0,0))
-        x = x0 +originx
-        y = originy - y0
-
-        name, ext = os.path.splitext(filepath)
-
-        if ext == '.mdl' or ext =='.sim':
-            try:
-                if ext == '.mdl':
-                    # load the model
-                    dtype = datatypes.ModelTypes.FeedForward
-                    model = self.cmd.add_model(dtype,attrib={'mdl':filepath})
-                    name = model.get_name()
-                    modelid = model.get_id()
-                    self.createBox(name=name, id=modelid, xCoord=x, yCoord=y)
-
-                else:
-                    # load the simulation
-                    self.loadsimulation(filepath)
-
-            except Exception, e:
-                print '> Could not load the model. Please verify that the model file exists.'
-                print '> %s' % e
-        else:
-            # # -- must be a data object --
-
-            # get the current database connection dictionary
-            session = self.getCurrentDbSession()
-
-            # create odm2 instance
-            inst = odm2_data.odm2(resultid=name, session=session)
-
-            # make sure that output handles cases where a dictionary element is passed in
-            output = inst.outputs()
-            if isinstance(output, dict):
-                output = output.values()[0]
-
-            from coordinator import main
-            # create a model instance
-            thisModel = main.Model(id=inst.id(),
-                                   name=inst.name(),
-                                   instance=inst,
-                                   desc=inst.description(),
-                                   input_exchange_items= [],
-                                   output_exchange_items=[output],
-                                   params=None)
-
-
-            # save the result id
-            att = {'resultid':name}
-
-            # save the database connection
-            dbs = self.cmd.get_db_connections()
-            for id, dic in dbs.iteritems():
-                if dic['session'] == self.getCurrentDbSession():
-                    att['databaseid'] = id
-                    thisModel.attrib(att)
-                    break
-
-            thisModel.type(datatypes.ModelTypes.Data)
-
-
-            # save the model
-            self.cmd.Models(thisModel)
-
-            # draw a box for this model
-            self.createBox(name=inst.name(), id=inst.id(), xCoord=x, yCoord=y, color='#FFFF99')
-            self.Canvas.Canvas.Draw()
-
     def addModelDialog(self):
         # Note that we need to make sure this passes in information from the model
         # Need to know if we are planning on using this feature or something else.
@@ -966,6 +960,12 @@ class CanvasController:
 
         #self.Canvas.ClearAll()
         #self.Canvas.Draw()
+
+    def MenuSelectionCb( self, event ):
+        # TODO: Fix the menu selection
+        operation = menu_title_by_id[ event.GetId() ]
+        #target    = self.list_item_clicked
+        print '> Perform "%(operation)s" on "%(target)s."' % vars()
 
     def run(self):
 

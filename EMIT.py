@@ -33,7 +33,8 @@ if __name__ == '__main__':
     currentdir = os.path.dirname(os.path.abspath(__file__))
     connections_txt = os.path.abspath(os.path.join(currentdir,'./data/connections'))
 
-
+    # We are terminating dependency logging errors, We may want this in the future but it
+    # tends to add clutter to our console.
     wx.Log.SetLogLevel(0)
     app = wx.App(False)
 

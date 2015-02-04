@@ -16,16 +16,13 @@ for x in sys.path:
     print x
 
 from wx.lib.floatcanvas import FloatCanvas as FC
-from wx.lib.floatcanvas.Utilities import BBox
 from wx.lib.floatcanvas.NavCanvas import NavCanvas
 from wx.lib.pubsub import pub as Publisher
 import numpy as N
 import os
 import math
 import markdown2
-from LinkDialogueBox import LinkBox
 import CanvasObjects
-import LinkWizard
 from LinkStart import LinkStart
 from ContextMenu import LinkContextMenu, ModelContextMenu, GeneralContextMenu
 from wrappers import odm2_data
@@ -33,8 +30,6 @@ import xml.etree.ElementTree as et
 from xml.dom import minidom
 
 import datatypes
-from DirectoryView import DirectoryCtrlView as DCV
-from api.ODM2.Core.services import readCore
 from api.ODM2.Results.services import readResults
 from api.ODM2.Core.services import readCore
 
@@ -44,6 +39,7 @@ class CanvasController:
         self.FloatCanvas = self.Canvas.Canvas
         self.cmd = cmd
 
+        # This is just to ensure that we are starting without interference from NavToolbar or drag-drop
         self.UnBindAllMouseEvents()
 
         self.MoveObject = None
@@ -68,7 +64,6 @@ class CanvasController:
 
         self.link_clicks = 0
 
-
         self._currentDbSession = self.cmd.get_default_db()
 
     def UnBindAllMouseEvents(self):
@@ -76,11 +71,9 @@ class CanvasController:
         self.Canvas.Unbind(FC.EVT_LEFT_DOWN)
         self.Canvas.Unbind(FC.EVT_LEFT_UP)
         self.Canvas.Unbind(FC.EVT_LEFT_DCLICK)
-
         self.Canvas.Unbind(FC.EVT_MIDDLE_DOWN)
         self.Canvas.Unbind(FC.EVT_MIDDLE_UP)
         self.Canvas.Unbind(FC.EVT_MIDDLE_DCLICK)
-
         self.Canvas.Unbind(FC.EVT_RIGHT_DOWN)
         self.Canvas.Unbind(FC.EVT_RIGHT_UP)
         self.Canvas.Unbind(FC.EVT_RIGHT_DCLICK)
@@ -91,7 +84,7 @@ class CanvasController:
         self.FloatCanvas.Bind(FC.EVT_MOTION, self.OnMove )
         self.FloatCanvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp )
         # self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.onRightDown)
-        self.FloatCanvas.Bind(FC.EVT_LEFT_DOWN, self.onLeftDown)
+        # self.FloatCanvas.Bind(FC.EVT_LEFT_DOWN, self.onLeftDown)
         self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.LaunchContext)
 
     def initSubscribers(self):
@@ -125,48 +118,6 @@ class CanvasController:
             self.MoveObject = self.StartObject + dxy
             dc.DrawPolygon(self.MoveObject)
 
-    def LaunchContext(self, event):
-
-        # get hit object
-        #self.GetHitObject(event, event.EventType)
-
-        # if canvas is selected
-        if type(event) == wx.lib.floatcanvas.FloatCanvas._MouseEvent:
-            self.Canvas.PopupMenu(GeneralContextMenu(self), event.GetPosition())
-
-        elif type(event) == wx.lib.floatcanvas.FloatCanvas.Polygon:
-            #if object is link
-            if event.type == "ArrowHead":
-                self.Canvas.PopupMenu(LinkContextMenu(self,event), event.HitCoordsPixel.Get())
-
-            # if object is model
-            elif event.type == 'Model':
-                self.Canvas.PopupMenu(ModelContextMenu(self,event), event.HitCoordsPixel.Get())
-
-        # # if object is neither
-        # else:
-        #     self.Canvas.PopupMenu(GeneralContextMenu(self), event.GetPosition())
-
-
-        #self.Canvas.ClearAll()
-        #self.Canvas.Draw()
-
-    def run(self):
-
-        try:
-            self.cmd.run_simulation()
-        except Exception as e:
-            wx.MessageBox(str(e.args[0]), 'Error',wx.OK | wx.ICON_ERROR)
-
-    def getCurrentDbSession(self, value = None):
-        if value is not None:
-            dbs = self.cmd.get_db_connections()
-            for db in dbs.iterkeys():
-                if dbs[db]['name'] == value:
-                    self._currentDbSession = dbs[db]['session']
-                    break
-        return self._currentDbSession
-
     def RemoveLink(self, link_obj):
 
         # remove the link entry in self.links
@@ -186,16 +137,6 @@ class CanvasController:
 
         # redraw the canvas
         self.RedrawConfiguration()
-
-    def onLeftDown(self, event):
-        pass
-
-    def setCursor(self, value=None):
-        #print "Cursor was set to value ", dir(value), value.GetHandle()
-        self._Cursor=value
-
-    def getCursor(self):
-        return self._Cursor
 
     def createBox(self, xCoord, yCoord, id=None, name=None, color='#A2CAF5'):
 
@@ -253,21 +194,16 @@ class CanvasController:
             R.Text = label
 
             print '> ', name, ' has been added to the canvas.'
-            #print dir(label), label
-            #R.Bind(FC.EVT_FC_LEFT_UP, self.OnLeftUp )
 
             R.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit)
             R.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
 
-            ### R.Bind(FC.EVT_FC_RIGHT_DOWN, self.RightClickCb )
-            #self.Canvas.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit, id=R.ID)
 
             self.models[R]=id
 
             self.FloatCanvas.Draw()
 
         else:
-            # print "Nothing Selected"
             pass
 
     def createLine(self, R1, R2):
@@ -318,8 +254,6 @@ class CanvasController:
         self.Canvas.Canvas.Draw()
 
     def ObjectHit(self, object):
-        #print "Hit Object(CanvasController)", object.Name
-        #self.FloatCanvas.Bind(FC.EVT_FC_RIGHT_DOWN( list, -1, self.RightClickCb ))
         cur = self.getCursor()
 
         if cur.Name == 'link':
@@ -412,7 +346,6 @@ class CanvasController:
                                           if (obj.type == CanvasObjects.ShapeType.Model and obj.ID in modelids)
                                           or (obj.type == CanvasObjects.ShapeType.Label and obj.String in modellabels)]
 
-
         # redraw links
         for link in self.links.keys():
             r1,r2 = self.links[link]
@@ -451,21 +384,6 @@ class CanvasController:
         if cur.Name == 'link':
             self.AddinkCursorClick()
 
-
-
-
-        #if self.link
-
-        # create link
-        #if len(self.linkRects)  > 0:
-        #         self.linkRects.append(object)
-        #         self.createLine(self.linkRects[0], self.linkRects[1])
-        #
-        #         # reset linkrects object
-        #         self.linkRects=[]
-        #
-        #         #
-
     def AddinkCursorClick(self):
         self.link_clicks += 1
 
@@ -478,16 +396,7 @@ class CanvasController:
             self.linkRects=[]
 
             #change the mouse cursor
-
-
             self.FloatCanvas.SetMode(self.Canvas.GuiMouse)
-
-
-            # e = e = wx._core.CommandEvent(10013)
-            # e.Id = -2017
-            # # self.Canvas.GuiMouse.OnLeftUp(e)
-            # #self.Canvas.
-            # self.Canvas.SetMode(e)
 
     def GetHitObject(self, event, HitEvent):
         if self.Canvas.Canvas.HitDict:
@@ -497,7 +406,6 @@ class CanvasController:
                 color = self.Canvas.Canvas.GetHitTestColor( xy )
                 if color in self.Canvas.Canvas.HitDict[ HitEvent ]:
                     Object = self.Canvas.Canvas.HitDict[ HitEvent ][color]
-                    #self.Canvas._CallHitCallback(Object, xy, HitEvent)
                     return Object
             return False
 
@@ -526,39 +434,11 @@ class CanvasController:
         outputitems = to_model.get_input_exchange_items()
 
 
-
-        # for item in eitems:
-        #     print 'Type: ', item.get_type()
-        #     print "Name: ", item.name()
-        #     print "Variable: ", item.variable().VariableNameCV()
-        #     print "Unit: ", item.unit().UnitName()
-        #     print 10*'-'
-        #
-        #
-        #
-        # for item in eitems:
-        #     print 'Type: ', item.get_type()
-        #     print "Name: ", item.name()
-        #     print "Variable: ", item.variable().VariableNameCV()
-        #     print "Unit: ", item.unit().UnitName()
-        #     print 10*'-'
-
-
         # print "The Link was clicked"
         linkstart = LinkStart(self.FloatCanvas, from_model, to_model, inputitems, outputitems, self.cmd)
         linkstart.Show()
-        #linkwiz = LinkWizard.wizLink(self.FloatCanvas, inputitems, outputitems)
-
-        # dlg = LinkBox()
-        # dlg.ShowModal()
-        # dlg.Destroy()
-        #Example()
 
     def RightClickCb( self, event ):
-        # record what was clicked
-        #self.list_item_clicked = right_click_context = event.GetText()
-
-
         # get the link object
         # get the model id's from the link
         # get the model objects from the models id's
@@ -567,7 +447,7 @@ class CanvasController:
             menu.Append( id, title )
             wx.EVT_MENU( menu, id, self.MenuSelectionCb )
 
-        ### 5. Launcher displays menu with call to PopupMenu, invoked on the source component, passing event's GetPoint. ###
+        # Launcher displays menu with call to PopupMenu, invoked on the source component, passing event's GetPoint.
         self.frame.PopupMenu( menu, event.GetPoint() )
         menu.Destroy() # destroy to avoid mem leak
 
@@ -588,6 +468,15 @@ class CanvasController:
 
         # redraw the canvas
         self.RedrawConfiguration()
+
+    def getCurrentDbSession(self, value = None):
+        if value is not None:
+            dbs = self.cmd.get_db_connections()
+            for db in dbs.iterkeys():
+                if dbs[db]['name'] == value:
+                    self._currentDbSession = dbs[db]['session']
+                    break
+        return self._currentDbSession
 
     def AddDatabaseConnection(self, title, desc, engine, address, name, user, pwd):
 
@@ -614,7 +503,7 @@ class CanvasController:
         Publisher.sendMessage('getKnownDatabases',value=knownconnections)  # sends message to mainGui
 
     def MenuSelectionCb( self, event ):
-        # do something
+        # TODO: Fix the menu selection
         operation = menu_title_by_id[ event.GetId() ]
         #target    = self.list_item_clicked
         print '> Perform "%(operation)s" on "%(target)s."' % vars()
@@ -1043,8 +932,47 @@ class CanvasController:
             self.Canvas.Canvas.Draw()
 
     def addModelDialog(self):
+        # Note that we need to make sure this passes in information from the model
+        # Need to know if we are planning on using this feature or something else.
         dial = wx.MessageDialog(None, 'Added a Model', 'Info', wx.OK)
         dial.ShowModal()
+
+    def getCursor(self):
+        return self._Cursor
+
+    def setCursor(self, value=None):
+        #print "Cursor was set to value ", dir(value), value.GetHandle()
+        self._Cursor=value
+
+    def LaunchContext(self, event):
+
+        # if canvas is selected
+        if type(event) == wx.lib.floatcanvas.FloatCanvas._MouseEvent:
+            self.Canvas.PopupMenu(GeneralContextMenu(self), event.GetPosition())
+
+        elif type(event) == wx.lib.floatcanvas.FloatCanvas.Polygon:
+            #if object is link
+            if event.type == "ArrowHead":
+                self.Canvas.PopupMenu(LinkContextMenu(self,event), event.HitCoordsPixel.Get())
+
+            # if object is model
+            elif event.type == 'Model':
+                self.Canvas.PopupMenu(ModelContextMenu(self,event), event.HitCoordsPixel.Get())
+
+        # # if object is neither
+        # else:
+        #     self.Canvas.PopupMenu(GeneralContextMenu(self), event.GetPosition())
+
+
+        #self.Canvas.ClearAll()
+        #self.Canvas.Draw()
+
+    def run(self):
+
+        try:
+            self.cmd.run_simulation()
+        except Exception as e:
+            wx.MessageBox(str(e.args[0]), 'Error',wx.OK | wx.ICON_ERROR)
 
 class FileDrop(wx.FileDropTarget):
     def __init__(self, controller, window, cmd):

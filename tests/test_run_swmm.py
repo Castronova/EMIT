@@ -63,19 +63,13 @@ class test_run_swmm(unittest.TestCase):
     def test_dll_loading(self):
 
 
-
-
-
-
-        dll1 = b'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_1/data/libSWMM_No_Globals.dylib'
+        dll1 = b'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_1/src/swmm.dylib'
         i1 =   b'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_1/data/Logan.inp'
         r1 =   b'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_1/data/Logan.rpt'
         o1 =   b'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_1/data/Logan.out'
 
 
-
-
-        dll2 = b'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_2/data/libSWMM_No_Globals.dylib'
+        dll2 = b'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_2/src/swmm.dylib'
         i2 =   b'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_2/data/Logan.inp'
         r2 =   b'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_2/data/Logan.rpt'
         o2 =   b'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_2/data/Logan.out'
@@ -174,7 +168,6 @@ class test_run_swmm(unittest.TestCase):
         lib.setAge(c_double(3))
         print lib.getAge()
         print lib2.getAge()
-
 
     def test_swmm_rainfall_coupling(self):
 

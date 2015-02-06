@@ -5,7 +5,7 @@ import uuid
 import re
 from datetime import datetime, timedelta
 from ctypes import *
-
+import os
 
 from shapely.geometry import *
 from stdlib import Geometry, DataValues, ExchangeItem, ExchangeItemType
@@ -35,7 +35,7 @@ class swmm(time_step_wrapper):
         self.__rpt = join(self.__datadir,self.swmm_file_name+'.rpt')
         self.__out = join(self.__datadir,self.swmm_file_name+'.out')
         self.__console = open(join(self.__datadir,'console.out'),'w')
-
+        self.__dll = config_params['software'][0]['library']   # relative path to dll
 
         self.__geom_lookup = {}     # for mapping between swmm geometry ids and exchange item ids
         self.__geom_atts = {}       # for storing geomerty attributes (e.g. to and from nodes)
@@ -48,7 +48,7 @@ class swmm(time_step_wrapper):
         # create instance of the SWMM C model
         # todo: get this from the config_params
         # self.__swmmLib = CDLL(join(self.__datadir,'libSWMMQOpenMI.dylib'))
-        self.__swmmLib = cdll.LoadLibrary(join(self.__datadir,'swmm.dylib'))
+        self.__swmmLib = cdll.LoadLibrary(join(os.path.dirname(__file__),self.__dll))
 
         # set input and output CTYPES (GENERAL)
         self.__swmmLib.swmm_open.restype = POINTER(c_void_p)
@@ -163,9 +163,6 @@ class swmm(time_step_wrapper):
 
 
 
-
-
-
         # ------------
         # Link Inputs
         # ------------
@@ -176,30 +173,31 @@ class swmm(time_step_wrapper):
 
 
                 # get the current link
-                l = self.__swmmLib.getLink(c_int(i))
+                l = self.__swmmLib.getLink(self.ptr, c_int(i))
 
                 # get the geom id
                 link_id = l.contents.ID
-                geom_id = self.__geom_lookup[link_id].id()
-                att = self.__geom_atts[link_id]
+                if link_id in self.__geom_lookup:
+                    geom_id = self.__geom_lookup[link_id].id()
+                    att = self.__geom_atts[link_id]
 
-                # get input and output node ids
-                in_node_id = att['inlet']
-                out_node_id = att['outlet']
+                    # get input and output node ids
+                    in_node_id = att['inlet']
+                    out_node_id = att['outlet']
 
-                # APPLY STREAMFLOW if values are given (i.e. not all None)
-                if apply_flowrate:
+                    # APPLY STREAMFLOW if values are given (i.e. not all None)
+                    if apply_flowrate:
 
-                    # get the date and value from inputs, based on geom_id
-                    date, value = inputs['Flow_rate'].get_timeseries_by_id(geom_id)
+                        # get the date and value from inputs, based on geom_id
+                        date, value = inputs['Flow_rate'].get_timeseries_by_id(geom_id)
 
-                    node = self.__swmmLib.getNodeById(self.ptr, c_char_p(out_node_id))
+                        node = self.__swmmLib.getNodeById(self.ptr, c_char_p(out_node_id))
 
-                    # apply flowrate at outlets
-                    if value[0]: node.contents.inflow = value[0]
-                    else: node.contents.inflow = c_double(0.0)
+                        # apply flowrate at outlets
+                        if value[0]: node.contents.inflow = value[0]
+                        else: node.contents.inflow = c_double(0.0)
 
-                    self.__swmmLib.setNode(self.ptr, node, c_char_p('inflow'))
+                        self.__swmmLib.setNode(self.ptr, node, c_char_p('inflow'))
 
         # ------------
         # Node Inputs
@@ -226,6 +224,22 @@ class swmm(time_step_wrapper):
             increment = timedelta(0,5)
         self.increment_time(increment)
 
+        # set link outputs
+        for i in range(0, self.link_count):
+
+            l = self.__swmmLib.getLink(self.ptr, c_int(i))
+
+            # get the geom id
+            link_id = l.contents.ID
+
+            if link_id in self.__geom_lookup:
+                geom= self.__geom_lookup[link_id]
+
+                # get new flow
+                f = self.__swmmLib.getLink(self.ptr, c_int(i)).contents.newFlow
+
+                # set geometry values
+                self.set_geom_values('Flow_rate',geom,zip([new_time],[f]))
 
     def save(self):
         return self.outputs()

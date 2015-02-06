@@ -102,17 +102,16 @@ class spatial_exact_match(space_base.Space):
 
     def transform(self, ingeoms, outgeoms):
 
-        # create container for mapped geometries
         mapped_geoms = []
 
-        igeoms = [i.geom().to_wkt() for i in ingeoms]
-        ogeoms = [o.geom().to_wkt() for o in outgeoms]
+        igeoms = [ingeoms[i].geom().to_wkt() for i in range(0, len(ingeoms))]
+        ogeoms = [outgeoms[i].geom().to_wkt() for i in range(0, len(outgeoms))]
 
-        for i in igeoms:
-            if i in ogeoms:
-                idx = ogeoms.index(i)
-                mapped_geoms.append((i,ogeoms[idx]))
-
+        for i in range(0, len(igeoms)):
+            igeom = igeoms[i]
+            if igeom in ogeoms:
+                o = ogeoms.index(igeom)
+                mapped_geoms.append((ingeoms[i], outgeoms[o]))
         return mapped_geoms
 
 

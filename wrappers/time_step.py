@@ -2,6 +2,7 @@ __author__ = 'tonycastronova'
 
 import datetime as dt
 from utilities.status import Status
+from stdlib import Geometry
 
 class time_step_wrapper(object):
 
@@ -177,10 +178,18 @@ class time_step_wrapper(object):
         item = self.get_output_by_name(variablename)
 
         geometries = item.geometries()
-        for geom in geometries:
-            if geom.geom().equals(geometry):
-                geom.datavalues().set_timeseries(datavalues)
-                return
+
+        if type(geometry) == Geometry:
+            for geom in geometries:
+                if geom.geom().equals(geometry.geom()):
+                    geom.datavalues().set_timeseries(datavalues)
+                    return
+
+        else:
+            for geom in geometries:
+                if geom.geom().equals(geometry):
+                    geom.datavalues().set_timeseries(datavalues)
+                    return
         raise Exception ('Error setting data for variable: %s' % variablename)
 
     def get_input_by_name(self,inputname):

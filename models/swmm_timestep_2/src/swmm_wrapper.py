@@ -239,7 +239,7 @@ class swmm(time_step_wrapper):
                 f = self.__swmmLib.getLink(self.ptr, c_int(i)).contents.newFlow
 
                 # set geometry values
-                self.set_geom_values('Flow_rate',geom,zip([new_time],[f]))
+                self.set_geom_values_by_hash('Flow_rate',geom,zip([new_time],[f]))
 
     def save(self):
         return self.outputs()

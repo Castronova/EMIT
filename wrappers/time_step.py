@@ -172,7 +172,7 @@ class time_step_wrapper(object):
                 output = value
 
     def set_geom_values(self,variablename,geometry,datavalues):
-
+        print '[deprecated] : this function has been replaced by time_step_wrapper.set_geom_values_by_hash'
         item = self.get_output_by_name(variablename)
 
         geometries = item.geometries()

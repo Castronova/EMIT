@@ -70,8 +70,6 @@ class time_step_wrapper(object):
         # getter
         return self.__outputs
 
-
-
     def inputs(self, value = None, name = None):
 
         # setter
@@ -184,6 +182,26 @@ class time_step_wrapper(object):
                 if geom.geom().equals(geometry.geom()):
                     geom.datavalues().set_timeseries(datavalues)
                     return
+
+        else:
+            for geom in geometries:
+                if geom.geom().equals(geometry):
+                    geom.datavalues().set_timeseries(datavalues)
+                    return
+        raise Exception ('Error setting data for variable: %s' % variablename)
+
+    def set_geom_values_by_hash(self,variablename,geometry,datavalues):
+
+        item = self.get_output_by_name(variablename)
+
+        geometries = item.geometries()
+
+        if type(geometry) == Geometry:
+
+            geom = next((x for x in geometries if x.hash() == geometry.hash()), None)
+            if geom is not None:
+                geom.datavalues().set_timeseries(datavalues)
+                return
 
         else:
             for geom in geometries:

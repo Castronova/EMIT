@@ -230,6 +230,7 @@ class test_run_swmm(unittest.TestCase):
         swmm1 = self.sim.add_model(type=datatypes.ModelTypes.TimeStep, attrib={'mdl':swmm1_path})
         swmm1_name = swmm1.get_name()
 
+
         # add swmm1 component
         swmm2_path = r'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_2/src/swmm_time-step.mdl'
         swmm2 = self.sim.add_model(type=datatypes.ModelTypes.TimeStep, attrib={'mdl':swmm2_path})
@@ -238,6 +239,11 @@ class test_run_swmm(unittest.TestCase):
         # create odm2 instance
         series_id = 21  # incremental rainfall
         timeseries = odm2_data.odm2(resultid=series_id, session=self.session)
+
+        # hard code some values for testing
+        ts = zip([datetime.datetime(2002, 1, 1, 0, 0), datetime.datetime(2002, 1, 1, 0, 30), datetime.datetime(2002, 1, 1, 1, 0)], [.5,.5,.5])
+        k = timeseries.outputs()['rainfall'].get_geoms_and_timeseries().keys()[0]
+        timeseries.outputs()['rainfall'].set_timeseries_by_id(k.id(), ts)
 
         # create a timeseries model instance for the rainfall
         oei = timeseries.outputs().values()
@@ -268,9 +274,9 @@ class test_run_swmm(unittest.TestCase):
                                   to_item_name='Rainfall')
 
         # add link between swmm 1 and swmm 2 (streamflow)
-        link3 = self.sim.add_link_by_name(from_id=swmm2.get_id(),
+        link3 = self.sim.add_link_by_name(from_id=swmm1.get_id(),
                                   from_item_name='Flow_rate',
-                                  to_id=swmm1.get_id(),
+                                  to_id=swmm2.get_id(),
                                   to_item_name='Flow_rate')
 
         # # add link between swmm 2 and swmm 1 (stage)

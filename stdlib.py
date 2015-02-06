@@ -199,6 +199,10 @@ class Geometry(object):
         self.__id = id
         self.__hash = None
 
+        if geom is not None:
+            self.build_hash(self.__geom)
+
+
         # TODO: use enum
         self.__type = None
 
@@ -221,7 +225,10 @@ class Geometry(object):
 
     def set_geom_from_wkt(self,wkt):
         self.__geom = loads(wkt)
-        self.__hash = hashlib.sha224(wkt).hexdigest()
+        self.build_hash(self.__geom)
+
+    def build_hash(self, geom):
+        self.__hash = hashlib.sha224(geom.to_wkt()).hexdigest()
 
     def srs(self,value=None):
         if value is None:

@@ -89,6 +89,12 @@ class odm2(object):
         Called before simulation run to prepare the model
         :return: READY status
         '''
+
+
+        # query the database
+        #return [self.get_output_by_name(outputname=self.name())]
+
+
         self.status(Status.Ready)
 
     def session(self):

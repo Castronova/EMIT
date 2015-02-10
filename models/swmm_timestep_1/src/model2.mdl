@@ -10,7 +10,7 @@ description = The EPA Storm Water Management Model (SWMM) is a dynamic rainfall-
 
 [data]
 directory = ../data
-input = Logan.inp
+input = Model2.inp
 
 [options]
 ignorecv = 1

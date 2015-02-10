@@ -12,6 +12,7 @@ from stdlib import Geometry, DataValues, ExchangeItem, ExchangeItemType
 from wrappers.time_step import time_step_wrapper
 from utilities import mdl, spatial
 
+import sys
 
 #import parse_swmm as ps
 import geometry as swmm_geom
@@ -120,6 +121,12 @@ class swmm(time_step_wrapper):
         has_link_input = True if True in [apply_flowrate] else False
         has_node_input = True if True in [apply_stage] else False
 
+
+        sys.stdout.write(' - - > HasRainfall = %s | HasFlow = %s | HasStage = %s\n'
+                         % (apply_rainfall,
+                            apply_flowrate,
+                            apply_stage))
+
         # ----------------
         # Catchment Inputs
         # ----------------
@@ -209,7 +216,7 @@ class swmm(time_step_wrapper):
 
 
         # for debugging only
-        print self.__swmmLib.getSubcatch(self.ptr, c_int(0)).contents.newRunoff
+        #print self.__swmmLib.getSubcatch(self.ptr, c_int(0)).contents.newRunoff
 
         # step the SWMM simulation
         error = self.__swmmLib.swmm_step(self.ptr, byref(self.__step))

@@ -46,6 +46,13 @@ class time_step_wrapper(object):
             self.__session = value
         return self.__session
 
+    def prepare(self):
+        '''
+        Called before simulation run to prepare the model
+        :return: READY status
+        '''
+        self.status(Status.Ready)
+
     def time_step(self, value):
         """
         sets the simulation timestep

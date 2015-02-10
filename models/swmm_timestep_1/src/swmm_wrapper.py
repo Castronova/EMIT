@@ -241,6 +241,18 @@ class swmm(time_step_wrapper):
                 # set geometry values
                 self.set_geom_values_by_hash('Flow_rate',geom,zip([new_time],[f]))
 
+
+        for i in range(0, self.node_count):
+            n = self.__swmmLib.getNode(self.ptr, c_int(i))
+            node_id = n.contents.ID
+            if node_id in self.__geom_lookup:
+                geom = self.__geom_lookup[node_id]
+                depth = n.contents.newDepth
+                self.set_geom_values_by_hash('Hydraulic_head',geom, zip([new_time],[depth]))
+
+
+        msg = 'Done with PTS'
+
     def save(self):
         return self.outputs()
         #return [self.get_output_by_name(outputname='Hydraulic_head')]

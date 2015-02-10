@@ -241,6 +241,7 @@ class swmm(time_step_wrapper):
                 # set geometry values
                 self.set_geom_values_by_hash('Flow_rate',geom,zip([new_time],[f]))
 
+
     def save(self):
         return self.outputs()
         #return [self.get_output_by_name(outputname='Hydraulic_head')]

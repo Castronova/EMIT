@@ -84,6 +84,12 @@ class odm2(object):
         # set the status to finished
         self.status(Status.Finished)
 
+    def prepare(self):
+        '''
+        Called before simulation run to prepare the model
+        :return: READY status
+        '''
+        self.status(Status.Ready)
 
     def session(self):
         return self.__session

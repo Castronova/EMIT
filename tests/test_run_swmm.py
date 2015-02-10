@@ -226,13 +226,14 @@ class test_run_swmm(unittest.TestCase):
 
 
         # add swmm1 component
-        swmm1_path = r'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_1/src/swmm_time-step.mdl'
+        swmm1_path = r'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_1/src/model1.mdl'
         swmm1 = self.sim.add_model(type=datatypes.ModelTypes.TimeStep, attrib={'mdl':swmm1_path})
         swmm1_name = swmm1.get_name()
 
 
         # add swmm1 component
-        swmm2_path = r'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_2/src/swmm_time-step.mdl'
+        # swmm2_path = r'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_2/src/swmm_time-step.mdl'
+        swmm2_path = r'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_1/src/model2.mdl'
         swmm2 = self.sim.add_model(type=datatypes.ModelTypes.TimeStep, attrib={'mdl':swmm2_path})
         swmm2_name = swmm2.get_name()
 
@@ -279,11 +280,11 @@ class test_run_swmm(unittest.TestCase):
                                   to_id=swmm2.get_id(),
                                   to_item_name='Flow_rate')
 
-        # # add link between swmm 2 and swmm 1 (stage)
-        # link4 = self.sim.add_link_by_name(from_id=swmm2.get_id(),
-        #                           from_item_name='Hydraulic_head',
-        #                           to_id=swmm1.get_id(),
-        #                           to_item_name='Hydraulic_head')
+        # add link between swmm 2 and swmm 1 (stage)
+        link4 = self.sim.add_link_by_name(from_id=swmm2.get_id(),
+                                  from_item_name='Hydraulic_head',
+                                  to_id=swmm1.get_id(),
+                                  to_item_name='Hydraulic_head')
 
 
         # set link tranformations
@@ -297,8 +298,8 @@ class test_run_swmm(unittest.TestCase):
         link3.spatial_interpolation(SpatialInterpolation.ExactMatch)
         link3.temporal_interpolation(TemporalInterpolation.NearestNeighbor)
 
-        # link4.spatial_interpolation(SpatialInterpolation.ExactMatch)
-        # link4.temporal_interpolation(TemporalInterpolation.NearestNeighbor)
+        link4.spatial_interpolation(SpatialInterpolation.ExactMatch)
+        link4.temporal_interpolation(TemporalInterpolation.NearestNeighbor)
 
 
 

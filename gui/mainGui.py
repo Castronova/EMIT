@@ -200,7 +200,7 @@ class MainGui(wx.Frame):
         self.m_menubar.Append(self.m_fileMenu, "&File")
 
         self.m_toolMenu = wx.Menu()
-        self.m_menubar.Append(self.m_toolMenu, "&Tools")
+        # self.m_menubar.Append(self.m_toolMenu, "&Tools")
 
 
         self.m_viewMenu = wx.Menu()

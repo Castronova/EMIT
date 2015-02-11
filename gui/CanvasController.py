@@ -52,7 +52,7 @@ class CanvasController:
         defaultCursor.Name = 'default'
         self._Cursor = defaultCursor
 
-        self.Canvas.ZoomToFit(Event=None)
+        #self.Canvas.ZoomToFit(Event=None)
 
         dt = FileDrop(self, self.Canvas, self.cmd)
         self.Canvas.SetDropTarget(dt)
@@ -121,8 +121,6 @@ class CanvasController:
     def createBox(self, xCoord, yCoord, id=None, name=None, color='#A2CAF5'):
 
         if name:
-
-
             w, h = 180, 120
             WH = (w/2, h/2)
             x,y = xCoord, yCoord
@@ -183,8 +181,6 @@ class CanvasController:
 
             self.FloatCanvas.Draw()
 
-        else:
-            pass
 
     def createLine(self, R1, R2):
         #print "creating link", R1, R2
@@ -202,7 +198,6 @@ class CanvasController:
         line = CanvasObjects.get_line_pts((x1,y1),(x2,y2),order=4, num=200)
         linegradient = CanvasObjects.get_hex_from_gradient(cmap, len(line))
         linegradient.reverse()
-        arrow = CanvasObjects.build_arrow(line, arrow_length=6)
        # print arrow
 
         for i in range(0,len(line)-1):
@@ -210,18 +205,7 @@ class CanvasController:
             l.type = CanvasObjects.ShapeType.Link
             self.FloatCanvas.AddObject(l)
 
-        # create the arrowhead object
-        arrow_shape = FC.Polygon(arrow,FillColor='Blue',InForeground=True)
-
-        # set the shape type so that we can identify it later
-        arrow_shape.type = CanvasObjects.ShapeType.ArrowHead
-        arrow_draw = self.FloatCanvas.AddObject(arrow_shape)
-        arrow_draw.PutInBackground()
-
-        # bind the arrow to left click
-        arrow_shape.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
-        arrow_shape.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
-
+        arrow_shape = self.createArrow(line)
 
         # store the link and rectangles in the self.links list
         for k,v in self.links.iteritems():
@@ -232,6 +216,25 @@ class CanvasController:
 
 
         self.Canvas.Canvas.Draw()
+
+    def createArrow(self, line):
+
+        arrow = CanvasObjects.build_arrow(line, arrow_length=6)
+
+        # create the arrowhead object
+        arrow_shape = FC.Polygon(arrow,FillColor='Blue',InForeground=True)
+
+        # set the shape type so that we can identify it later
+        arrow_shape.type = CanvasObjects.ShapeType.ArrowHead
+        self.FloatCanvas.AddObject(arrow_shape)
+        #arrow_draw = self.FloatCanvas.AddObject(arrow_shape)
+        #arrow_draw.PutInBackground()
+
+        # bind the arrow to left click
+        arrow_shape.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
+        arrow_shape.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
+
+        return arrow_shape
 
     def addModel(self, filepath, x, y):
         """

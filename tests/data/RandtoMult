@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<Simulation>
+  <Model>
+    <name>Multiplier</name>
+    <id>2b2ff</id>
+    <xcoordinate>265.0</xcoordinate>
+    <ycoordinate>-88.0</ycoordinate>
+    <path>/home/mario/Projects/EMIT/gui/../tests/data/multiplier.mdl</path>
+  </Model>
+  <Model>
+    <name>Random Number Generator</name>
+    <id>7516e</id>
+    <xcoordinate>-217.0</xcoordinate>
+    <ycoordinate>30.0</ycoordinate>
+    <path>/home/mario/Projects/EMIT/gui/../tests/data/randomizer.mdl</path>
+  </Model>
+</Simulation>

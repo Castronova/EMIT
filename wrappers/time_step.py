@@ -2,6 +2,7 @@ __author__ = 'tonycastronova'
 
 import datetime as dt
 from utilities.status import Status
+from stdlib import Geometry
 
 class time_step_wrapper(object):
 
@@ -45,6 +46,13 @@ class time_step_wrapper(object):
             self.__session = value
         return self.__session
 
+    def prepare(self):
+        '''
+        Called before simulation run to prepare the model
+        :return: READY status
+        '''
+        self.status(Status.Ready)
+
     def time_step(self, value):
         """
         sets the simulation timestep
@@ -68,8 +76,6 @@ class time_step_wrapper(object):
 
         # getter
         return self.__outputs
-
-
 
     def inputs(self, value = None, name = None):
 
@@ -173,14 +179,42 @@ class time_step_wrapper(object):
                 output = value
 
     def set_geom_values(self,variablename,geometry,datavalues):
+        print '[deprecated] : this function has been replaced by time_step_wrapper.set_geom_values_by_hash'
+        item = self.get_output_by_name(variablename)
+
+        geometries = item.geometries()
+
+        if type(geometry) == Geometry:
+            for geom in geometries:
+                if geom.geom().equals(geometry.geom()):
+                    geom.datavalues().set_timeseries(datavalues)
+                    return
+
+        else:
+            for geom in geometries:
+                if geom.geom().equals(geometry):
+                    geom.datavalues().set_timeseries(datavalues)
+                    return
+        raise Exception ('Error setting data for variable: %s' % variablename)
+
+    def set_geom_values_by_hash(self,variablename,geometry,datavalues):
 
         item = self.get_output_by_name(variablename)
 
         geometries = item.geometries()
-        for geom in geometries:
-            if geom.geom().equals(geometry):
+
+        if type(geometry) == Geometry:
+
+            geom = next((x for x in geometries if x.hash() == geometry.hash()), None)
+            if geom is not None:
                 geom.datavalues().set_timeseries(datavalues)
                 return
+
+        else:
+            for geom in geometries:
+                if geom.geom().equals(geometry):
+                    geom.datavalues().set_timeseries(datavalues)
+                    return
         raise Exception ('Error setting data for variable: %s' % variablename)
 
     def get_input_by_name(self,inputname):

@@ -4,13 +4,13 @@ classname = swmm
 library = ./swmm.dylib
 
 [model]
-code = SWMM-time-step
+code = SWMM_MODEL_2
 name = Storm Water Management Model
 description = The EPA Storm Water Management Model (SWMM) is a dynamic rainfall-runoff simulation model used for single event or long-term (continuous) simulation of runoff quantity and quality from primarily urban areas.
 
 [data]
-directory = ../Debug
-input = Logan.inp
+directory = ../data
+input = Model2.inp
 
 [options]
 ignorecv = 1

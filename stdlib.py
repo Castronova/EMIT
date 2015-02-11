@@ -10,6 +10,8 @@ Standard classes
 from shapely.wkt import loads
 import datetime
 import uuid
+import hashlib
+
 # import utilities
 
 class ElementType():
@@ -195,6 +197,11 @@ class Geometry(object):
         self.__elev = elev
         self.__datavalues = datavalues
         self.__id = id
+        self.__hash = None
+
+        if geom is not None:
+            self.build_hash(self.__geom)
+
 
         # TODO: use enum
         self.__type = None
@@ -207,6 +214,9 @@ class Geometry(object):
     def id(self):
         return self.__id
 
+    def hash(self):
+        return self.__hash
+
     def geom(self,value=None):
         if value is None:
             return self.__geom
@@ -215,6 +225,10 @@ class Geometry(object):
 
     def set_geom_from_wkt(self,wkt):
         self.__geom = loads(wkt)
+        self.build_hash(self.__geom)
+
+    def build_hash(self, geom):
+        self.__hash = hashlib.sha224(geom.to_wkt()).hexdigest()
 
     def srs(self,value=None):
         if value is None:

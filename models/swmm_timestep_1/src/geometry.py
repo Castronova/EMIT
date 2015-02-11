@@ -79,7 +79,7 @@ def build_links(inp):
         vals = re.split(' +',line.strip())
 
 
-        nodes[vals[0]] = (float(vals[1]), float(vals[2]))
+        nodes[vals[0].strip()] = (float(vals[1].strip()), float(vals[2].strip()))
 
     #scoords = sorted_nicely(nodes)
 
@@ -93,12 +93,12 @@ def build_links(inp):
 
 
         if vals[0] in vertices:
-            vertices[vals[0]].append((float(vals[1]), float(vals[2])))
+            vertices[vals[0].strip()].append((float(vals[1].strip()), float(vals[2].strip())))
         else:
             # get start node
             #start_node = nodes[vals[0]]
 
-            vertices[vals[0]] = [(float(vals[1]), float(vals[2]))]
+            vertices[vals[0].strip()] = [(float(vals[1].strip()), float(vals[2].strip()))]
 
 
     # add conduits
@@ -108,10 +108,10 @@ def build_links(inp):
             break
         vals = re.split(' +',line.strip())
 
-        if vals[0] != ';':    # skip commented lines
-            node_id = vals[0]
-            inlet_id = vals[1]
-            outlet_id = vals[2]
+        if vals[0].strip() != ';':    # skip commented lines
+            node_id = vals[0].strip()
+            inlet_id = vals[1].strip()
+            outlet_id = vals[2].strip()
 
             inlet_node = nodes[inlet_id]
             outlet_node= nodes[outlet_id]

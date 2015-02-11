@@ -548,13 +548,12 @@ class Coordinator(object):
         for t_geom in t_item.geometries():
 
             # get this list index of the to-geom
-            # TODO:  This is probably very inefficient
-            mapped = [g for g in from_to_spatial_map if g[1] == t_geom]
+            mapped = next((g for g in from_to_spatial_map if g[1] == t_geom), 0)
 
             # if mapping was found
-            if len(mapped) > 0:
+            if mapped:
 
-                f_geom ,t_geom= mapped[0]
+                f_geom ,t_geom= mapped
 
                 # update the datavalues with the mapped dates and values
                 t_geom.datavalues().set_timeseries(from_geom_dict[f_geom])

@@ -207,11 +207,20 @@ def run_time_step(obj):
         raise Exception("Invalid start and end times!\nstart:%s\nend:%s" % (str(global_simulation_start), str(global_simulation_end)))
     sys.stdout.write('done\n')
 
+    # prepare all models
+    for modelid in exec_order:
+        model_obj = obj.get_model_by_id(modelid)
+        model_inst = model_obj.get_instance()
+        if model_inst.status() != Status.Ready:
+            model_inst.prepare()
 
+    iter_count = 1
     # run simulation until all models reach a FINISHED state
     while not all(stat == Status.Finished for stat in simulation_status.values()):
 
-        print ''
+        print '\n\n------------------------'
+        print 'Execution Loop %d' % iter_count
+        print '------------------------\n'
 
         # loop through models and execute run
         for modelid in exec_order:
@@ -248,9 +257,11 @@ def run_time_step(obj):
                 # update simulation status
 
                 simulation_status[modelid] = model_inst.status()
-                if model_inst.status() != Status.Running:
+                if model_inst.status() != Status.Running and \
+                   model_inst.status() != Status.Ready:
                     # exit without calling run_timestep
-                    sys.stdout.write('> %s | %s \n' % (model_inst.name(),model_inst.status()))
+                    sys.stdout.write('> %s  ' % (datetime.datetime.strftime(current_time,"%m-%d-%Y %H:%M:%S")))
+                    sys.stdout.write('> %s | %s \n\n' % (model_inst.name(),model_inst.status()))
                     break
 
 
@@ -259,6 +270,7 @@ def run_time_step(obj):
 
 
                 sys.stdout.write('> %s  ' % (datetime.datetime.strftime(current_time,"%m-%d-%Y %H:%M:%S")))
+                sys.stdout.write('> %s | %s \n' % (model_inst.name(),model_inst.status()))
 
                 # run model timestep
                 model_inst.run_timestep(input_data, current_time)
@@ -266,7 +278,7 @@ def run_time_step(obj):
                 # get the new current time
                 current_time = model_inst.current_time()
 
-                sys.stdout.write(' -> %s | %s | %s \n' % (datetime.datetime.strftime(current_time,"%m-%d-%Y %H:%M:%S"),model_inst.name(),model_inst.status()))
+                sys.stdout.write('\n')
 
             # get all outputs
             output_exchange_items = model_inst.outputs()
@@ -318,6 +330,9 @@ def run_time_step(obj):
                 #else:
                 #    obj.update_link(linkid, None, None)
                         # reset geometry values to None
+
+
+        iter_count += 1
 
     for modelid in exec_order:
 

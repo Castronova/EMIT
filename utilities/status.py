@@ -7,4 +7,5 @@ class Status():
     Running = 'RUNNING'
     Finished = 'FINSHED'
     Error = 'ERROR'
+    Ready = 'READY'
 

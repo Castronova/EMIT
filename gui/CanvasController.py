@@ -12,8 +12,6 @@ from utilities import gui
 
 import sys
 sys.path.append("..")
-for x in sys.path:
-    print x
 
 from wx.lib.floatcanvas import FloatCanvas as FC
 from wx.lib.floatcanvas.NavCanvas import NavCanvas

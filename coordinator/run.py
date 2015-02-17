@@ -293,8 +293,7 @@ def run_time_step(obj):
 
 
             # update the outgoing links for this component
-            links = links[modelid]
-            update.update_links(obj,links,output_exchange_items,spatial_maps)
+            update.update_links(obj,links[modelid],output_exchange_items,spatial_maps)
 
 
             # ### TODO: Currently moving the update functionality into update.py

@@ -2,10 +2,6 @@
 __author__ = 'Mario'
 
 import wx
-import random
-import math
-import math
-#from GUIControl import GUIBase
 import textwrap as tw
 ver = 'local'
 from utilities import gui

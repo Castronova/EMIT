@@ -1,6 +1,5 @@
 __author__ = 'Mario'
 
-import wx
 #import wx.xrc
 
 import wx

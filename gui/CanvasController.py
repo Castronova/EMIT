@@ -2,18 +2,12 @@
 __author__ = 'Mario'
 
 import wx
-import random
-import math
-import math
-#from GUIControl import GUIBase
 import textwrap as tw
 ver = 'local'
 from utilities import gui
 
 import sys
 sys.path.append("..")
-for x in sys.path:
-    print x
 
 from wx.lib.floatcanvas import FloatCanvas as FC
 from wx.lib.floatcanvas.NavCanvas import NavCanvas

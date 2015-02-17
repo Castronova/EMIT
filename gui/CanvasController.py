@@ -679,19 +679,20 @@ class CanvasController:
 
             attributes = {}
 
-            # from_model, from_item = link[0]
-            # to_model, to_item = link[1]
+            sourceComponent = L.source_component()
+            sourceItem = L.source_exchange_item()
+            targetComponent = L.target_component()
+            targetItem = L.target_exchange_item()
 
+            attributes['from_name'] = sourceComponent.get_name()
+            attributes['from_id'] = sourceComponent.get_id()
+            attributes['from_item'] = sourceItem.name()
+            attributes['from_item_id'] = sourceItem.get_id()
 
-            attributes['from_name'] = L._Link__from_lc._Model__name
-            attributes['from_id'] = L._Link__from_lc._Model__id
-            attributes['from_item'] = L._Link__from_item._ExchangeItem__name
-            attributes['from_item_id'] = L._Link__from_item._ExchangeItem__id
-
-            attributes['to_name'] = L._Link__to_lc._Model__name
-            attributes['to_id'] = L._Link__to_lc._Model__id
-            attributes['to_item'] = L._Link__to_item._ExchangeItem__name
-            attributes['to_item_id'] = L._Link__to_item._ExchangeItem__id
+            attributes['to_name'] = targetComponent.get_name()
+            attributes['to_id'] = targetComponent.get_id()
+            attributes['to_item'] = targetItem.name()
+            attributes['to_item_id'] = targetItem.get_id()
 
             linkelement = et.SubElement(tree,'Link')
 
@@ -753,14 +754,22 @@ class CanvasController:
                 connectionconnectionstringelement.text = attributes['connection_string']
 
 
-        # format the xml nicely
-        rough_string = et.tostring(tree, 'utf-8')
-        reparsed = minidom.parseString(rough_string)
-        prettyxml = reparsed.toprettyxml(indent="  ")
+        try:
 
-        # save the xml doc
-        with open(path,'w') as f:
-            f.write(prettyxml)
+            # format the xml nicely
+            rough_string = et.tostring(tree, 'utf-8')
+            reparsed = minidom.parseString(rough_string)
+            prettyxml = reparsed.toprettyxml(indent="  ")
+
+            # save the xml doc
+            with open(path,'w') as f:
+                f.write(prettyxml)
+        except Exception, e:
+            print '> [ERROR]: An error occurred when attempting to save the project '
+            print '> [ERROR]: EXECPTION MESSAGE '
+            print e
+
+        print '> Configuration Saved Successfully! '
 
     def loadsimulation(self, file):
         #TODO: Should be part of the cmd.

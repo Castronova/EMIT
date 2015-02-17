@@ -1,4 +1,5 @@
 __author__ = 'tonycastronova'
+__author__ = 'tonycastronova'
 
 import random
 from wrappers import feed_forward

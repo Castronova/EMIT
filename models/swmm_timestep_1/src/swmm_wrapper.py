@@ -211,8 +211,23 @@ class swmm(time_step_wrapper):
         # ------------
         # todo: implement this
         if has_node_input:
-            pass
 
+            for i in range(0, self.node_count):
+                n = self.__swmmLib.getNode(self.ptr, c_int(i))
+                node_id = n.contents.ID
+                if node_id in self.__geom_lookup:
+                    geom_id = self.__geom_lookup[node_id].id()
+
+                    if apply_stage:
+
+                        # get the date and value from inputs, based on geom_id
+                        date, value = inputs['Hydraulic_head'].get_timeseries_by_id(geom_id)
+
+                        # set the rainfall valu
+                        if value:
+                            n.contents.newDepth = value[0]
+
+                            self.__swmmLib.setNode(self.ptr, n, c_char_p('newDepth'))
 
 
         # for debugging only

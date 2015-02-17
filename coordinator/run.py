@@ -9,7 +9,7 @@ from wrappers import odm2_data
 from transform.time import *
 from transform.space import *
 from utilities.status import Status
-
+import update
 
 def run_feed_forward(obj):
     # store db sessions
@@ -142,6 +142,7 @@ def run_time_step(obj):
 
     sim_st = time.time()
 
+    # todo:  move this into function
     # determine execution order
     sys.stdout.write('> [PRE-RUN] Determining execution order... ')
     exec_order = obj.determine_execution_order()
@@ -152,6 +153,8 @@ def run_time_step(obj):
     links = {}
     spatial_maps = {}
     simulation_status = {}
+
+    # todo:  move this into function
     sys.stdout.write('> [PRE-RUN] Performing spatial mapping... ')
     for modelid in exec_order:
         # get links
@@ -207,6 +210,7 @@ def run_time_step(obj):
         raise Exception("Invalid start and end times!\nstart:%s\nend:%s" % (str(global_simulation_start), str(global_simulation_end)))
     sys.stdout.write('done\n')
 
+    # todo:  move this into function
     # prepare all models
     for modelid in exec_order:
         model_obj = obj.get_model_by_id(modelid)
@@ -217,6 +221,9 @@ def run_time_step(obj):
     iter_count = 1
     # run simulation until all models reach a FINISHED state
     while not all(stat == Status.Finished for stat in simulation_status.values()):
+
+        # TODO:  This needs to be modified to operate under loop control!  For instance if the simulation reaches a point where the current model doesnt reach or exceed the target model, the loop should be broken and restart from the beginning.  This will also allow multithreading of multiple loops during a composition that might be helpful for calibrations.
+
 
         print '\n\n------------------------'
         print 'Execution Loop %d' % iter_count
@@ -285,51 +292,58 @@ def run_time_step(obj):
 
 
 
-            #for source, target, linkid in links[modelid]:
-            for linkid, link in links[modelid].iteritems():
+            # update the outgoing links for this component
+            links = links[modelid]
+            update.update_links(obj,links,output_exchange_items,spatial_maps)
 
 
-
-                #target_model  = target[0]
-                target_model = link.target_component()
-
-                source_item_name = link.source_exchange_item().name()
-
-                # get the auto generated key for this link
-                #link_key = generate_link_key(obj.get_link_by_id(linkid).get_link())
-                link_key = generate_link_key(link)
-
-                # get the target interpolation time based on the current time of the target model
-                target_time = target_model.get_instance().current_time()
-
-                # get all the datasets of the output exchange item.  These will be used to temporally map the data
-                #datasets = output_exchange_items[model_inst.name()].get_all_datasets()
-                datasets = output_exchange_items[source_item_name].get_all_datasets()
-
-                # Temporal data mapping
-                mapped = {}
-                for geom, datavalues in datasets.iteritems():
-
-                    # get the dates and values from the geometry
-                    dates,values = datavalues.get_dates_values()
-
-                    # temporal mapping
-                    temporal = temporal_nearest_neighbor()
-                    if temporal and values:
-                        mapped_dates,mapped_values = temporal.transform(dates,values,target_time)
-
-                        if mapped_dates is not None:
-                            # save the temporally mapped data by output geometry
-                            mapped[geom] = (zip(mapped_dates,mapped_values))
-
-
-                # update links
-                #if len(mapped.values()) > 0:
-                if len(mapped.keys()) > 0:
-                    obj.update_link(linkid, mapped, spatial_maps[link_key])
-                #else:
-                #    obj.update_link(linkid, None, None)
-                        # reset geometry values to None
+            # ### TODO: Currently moving the update functionality into update.py
+            #
+            # #for source, target, linkid in links[modelid]:
+            # for linkid, link in links[modelid].iteritems():
+            #
+            #
+            #
+            #     #target_model  = target[0]
+            #     target_model = link.target_component()
+            #
+            #     source_item_name = link.source_exchange_item().name()
+            #
+            #     # get the auto generated key for this link
+            #     #link_key = generate_link_key(obj.get_link_by_id(linkid).get_link())
+            #     link_key = generate_link_key(link)
+            #
+            #     # get the target interpolation time based on the current time of the target model
+            #     target_time = target_model.get_instance().current_time()
+            #
+            #     # get all the datasets of the output exchange item.  These will be used to temporally map the data
+            #     #datasets = output_exchange_items[model_inst.name()].get_all_datasets()
+            #     datasets = output_exchange_items[source_item_name].get_all_datasets()
+            #
+            #     # Temporal data mapping
+            #     mapped = {}
+            #     for geom, datavalues in datasets.iteritems():
+            #
+            #         # get the dates and values from the geometry
+            #         dates,values = datavalues.get_dates_values()
+            #
+            #         # temporal mapping
+            #         temporal = temporal_nearest_neighbor()
+            #         if temporal and values:
+            #             mapped_dates,mapped_values = temporal.transform(dates,values,target_time)
+            #
+            #             if mapped_dates is not None:
+            #                 # save the temporally mapped data by output geometry
+            #                 mapped[geom] = (zip(mapped_dates,mapped_values))
+            #
+            #
+            #     # update links
+            #     #if len(mapped.values()) > 0:
+            #     if len(mapped.keys()) > 0:
+            #         obj.update_link(linkid, mapped, spatial_maps[link_key])
+            #     #else:
+            #     #    obj.update_link(linkid, None, None)
+            #             # reset geometry values to None
 
 
         iter_count += 1

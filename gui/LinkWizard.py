@@ -3,11 +3,6 @@
 import wx
 import wx.wizard as wiz
 
-# import * from WizardPanels
-# import pnlMethod
-# import pnlQCL
-# import pnlVariable
-# import pnlSummary
 import pnlCreateLink
 import pnlSpatial
 import pnlTemporal
@@ -44,6 +39,9 @@ class Details(wiz.PyWizardPage):
         title.SetFont(wx.Font(18, wx.SWISS, wx.NORMAL, wx.BOLD))
         sizer.Add(title, 10, wx.ALIGN_CENTRE|wx.ALL, 5)
         sizer.Add(wx.StaticLine(self, -1), 5, wx.EXPAND|wx.ALL, 5)
+
+
+
         # self.pnlDetail=pnlSummary.pnlDetails(self)
 
         #from_model = parent.cmd.

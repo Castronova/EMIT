@@ -17,9 +17,9 @@ class pnlCreateLink ( wx.Panel ):
 
     def __init__( self, prnt, from_model_name, to_model_name, outputitems,inputitems ):
         wx.Panel.__init__(self, id=wxID_PNLCREATELINK, name=u'pnlIntro', parent=prnt,
-              pos=wx.Point(571, 262), size=wx.Size(439, 357),
+              pos=wx.Point(571, 262), size=wx.Size(439, 427),
               style=wx.TAB_TRAVERSAL)
-        self.SetClientSize(wx.Size(423, 319))
+        self.SetClientSize(wx.Size(423, 420))
 
 
         self.selectedinput = None
@@ -107,6 +107,15 @@ class pnlCreateLink ( wx.Panel ):
         bSizer5.AddSpacer( ( 20, 0), 0, wx.EXPAND, 5 )
         bSizer5.Add(self.pgin)
         PanelSizer.Add(bSizer5, 1, wx.EXPAND, 5 )
+
+        ComboboxTemporalChoices = ['Item1', 'Item2']
+        ComboboxSpatialChoices = ['Item1', 'Item2']
+        self.ComboboxTemporal = wx.ComboBox(self, wx.ID_ANY, u"Temporal Parameters", wx.DefaultPosition,
+                                            wx.DefaultSize, ComboboxTemporalChoices, 0)
+        self.ComboboxSpatial = wx.ComboBox(self, wx.ID_ANY, u"Spatial Parameters", wx.DefaultPosition,
+                                           wx.DefaultSize, ComboboxSpatialChoices, 0)
+        PanelSizer.Add(self.ComboboxTemporal, flag=wx.TOP|wx.EXPAND)
+        PanelSizer.Add(self.ComboboxSpatial, flag=wx.TOP|wx.EXPAND)
 
         # deactivate Next button
         self.activateLinkButton()

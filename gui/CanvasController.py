@@ -811,6 +811,9 @@ class CanvasController:
             print '> [ERROR]: An error occurred when attempting to save the project '
             print '> [ERROR]: EXECPTION MESSAGE '
             print e
+
+        print '> Configuration Saved Successfully! '
+
     def loadsimulation(self, file):
         #TODO: Should be part of the cmd.
         ########### NEW CODE #############

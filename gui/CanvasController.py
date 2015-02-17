@@ -797,15 +797,20 @@ class CanvasController:
                 connectionconnectionstringelement.text = attributes['connection_string']
 
 
-        # format the xml nicely
-        rough_string = et.tostring(tree, 'utf-8')
-        reparsed = minidom.parseString(rough_string)
-        prettyxml = reparsed.toprettyxml(indent="  ")
+        try:
 
-        # save the xml doc
-        with open(path,'w') as f:
-            f.write(prettyxml)
+            # format the xml nicely
+            rough_string = et.tostring(tree, 'utf-8')
+            reparsed = minidom.parseString(rough_string)
+            prettyxml = reparsed.toprettyxml(indent="  ")
 
+            # save the xml doc
+            with open(path,'w') as f:
+                f.write(prettyxml)
+        except Exception, e:
+            print '> [ERROR]: An error occurred when attempting to save the project '
+            print '> [ERROR]: EXECPTION MESSAGE '
+            print e
     def loadsimulation(self, file):
         #TODO: Should be part of the cmd.
         ########### NEW CODE #############

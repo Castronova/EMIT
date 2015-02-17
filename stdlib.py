@@ -259,7 +259,7 @@ class Geometry(object):
         self.__datavalues.get_dates_values()
 
 class ExchangeItem(object):
-    def __init__ (self,id,name=None,desc=None, geometry=[],unit=None,variable=None,type=ExchangeItemType.Input):
+    def __init__ (self,id=None,name=None,desc=None, geometry=[],unit=None,variable=None,type=ExchangeItemType.Input):
         self.__name = name
         self.__description = desc
 
@@ -276,7 +276,12 @@ class ExchangeItem(object):
         #self.StartTime = datetime.datetime(2999,1,1,1,0,0)
         #self.EndTime = datetime.datetime(1900,1,1,1,0,0)
 
-        self.__id = id
+        self.__id = uuid.uuid4().hex[:5]
+        if id is not None:
+            if isinstance(id, str):
+                self.__id = id
+
+
 
         self.__geoms = geometry
 

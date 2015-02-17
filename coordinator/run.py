@@ -34,8 +34,15 @@ def run_feed_forward(obj):
     # store model db sessions
     for modelid in exec_order:
         session = obj.get_model_by_id(modelid).get_instance().session()
+
         if session is None:
-            session = obj.get_default_db()['session']
+            try:        # this is necessary if no db connection exists
+                session = obj.get_default_db()['session']
+
+                # todo: need to consider other databases too!
+                db_sessions[modelid] = postgresdb(session)
+            except:
+                db_sessions[modelid] = None
 
         # todo: this should be stored in the model instance
         # model_obj = obj.get_model_by_id(modelid)
@@ -43,8 +50,8 @@ def run_feed_forward(obj):
         # model_inst.session
 
 
-        # todo: need to consider other databases too!
-        db_sessions[modelid] = postgresdb(session)
+
+
 
 
     # loop through models and execute run
@@ -110,7 +117,8 @@ def run_feed_forward(obj):
             # obj.DbResults(key=model_inst.name(), value = (simulation.ActionID,model_inst.session(),'action'))
 
         else:
-            obj.DbResults(key=model_inst.name(), value = (model_inst.resultid(), model_inst.session(), 'result'))
+            if db_sessions[modelid] is not None:
+                obj.DbResults(key=model_inst.name(), value = (model_inst.resultid(), model_inst.session(), 'result'))
 
         sys.stdout.write('done\n')
         sys.__stdout__.flush()
@@ -188,7 +196,10 @@ def run_time_step(obj):
         # store model db sessions
         session = obj.get_model_by_id(modelid).get_instance().session()
         if session is None:
-            session = obj.get_default_db()['session']
+            try:        # this is necessary if no db connection exists
+                session = obj.get_default_db()['session']
+            except:
+                pass
 
         # todo: need to consider other databases too!
         db_sessions[modelid] = postgresdb(session)
@@ -357,6 +368,9 @@ def run_time_step(obj):
         model_inst.save()
 
         # todo: save outputs to database!
+
+        # if db_sessions[modelid] is not None:
+        #       # save results
 
     print '> '
     print '> ------------------------------------------'

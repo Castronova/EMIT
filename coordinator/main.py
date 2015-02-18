@@ -23,6 +23,9 @@ from db.dbapi import postgresdb
 #import wrappers
 import time
 
+from transform import space_base
+from transform import time_base
+
 from wrappers import odm2_data
 from wrappers import feed_forward
 from wrappers import time_step
@@ -84,12 +87,14 @@ class Link(object):
 
     def spatial_interpolation(self, value=None):
         if value is not None:
-            self.__spatial_interpolation = value
+            if isinstance(value, space_base.Space):
+                self.__spatial_interpolation = value
         return self.__spatial_interpolation
 
     def temporal_interpolation(self, value=None):
         if value is not None:
-            self.__temporal_interpolation = value
+            if isinstance(value, time_base.Time):
+                self.__temporal_interpolation = value
         return self.__spatial_interpolation
 
 

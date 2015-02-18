@@ -65,7 +65,7 @@ class spatial_closest_object(space_base.Space):
             super(spatial_closest_object,self).__init__()
 
     def name(self):
-        return 'Nearest Neighbor - Point to Polygon'
+        return 'Nearest Object - Point to Polygon'
 
     def transform(self, ingeoms, outgeoms):
         """Find the nearest geometry among a list, measured from fixed point.
@@ -114,10 +114,10 @@ class spatial_exact_match(space_base.Space):
                 mapped_geoms.append((ingeoms[i], outgeoms[o]))
         return mapped_geoms
 
-
-
-
 class SpatialInterpolation():
     NearestNeighbor = spatial_nearest_neighbor()
     NearestObject = spatial_closest_object()
     ExactMatch = spatial_exact_match()
+
+    def methods(self):
+        return [self.NearestNeighbor,self.NearestObject, self.ExactMatch]

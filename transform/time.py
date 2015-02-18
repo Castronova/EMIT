@@ -37,3 +37,6 @@ class temporal_nearest_neighbor(time_base.Time):
 
 class TemporalInterpolation():
     NearestNeighbor = temporal_nearest_neighbor()
+
+    def methods(self):
+        return [self.NearestNeighbor]

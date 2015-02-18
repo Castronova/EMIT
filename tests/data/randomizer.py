@@ -22,11 +22,6 @@ class randomizer(feed_forward.feed_forward_wrapper):
         self.inputs(value=io['input'])
         self.outputs(value=io['output'])
 
-        print 100*'here\n'
-        import time
-        time.sleep(10)
-        print 'done'
-
 
     def run(self,inputs):
         """

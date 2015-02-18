@@ -303,8 +303,17 @@ class wizLink(wx.wizard.Wizard):
         # get links from page1
         link = self.page1.pnlIntroduction.links
 
-        # set these links in the cmd
+        link_info = self.page1.pnlIntroduction
 
-        self.cmd.add_link(self.outputid, link[0].name(),
+        # spatial_value = link.ComboboxSpatial.GetValue()
+        # temporal_value = link.ComboboxTemporal.GetValue()
+
+        spatial, temporal = link_info.get_spatial_and_temporal_transformations()
+        # set the link in cmd
+        l = self.cmd.add_link(self.outputid, link[0].name(),
                           self.inputid, link[1].name())
+
+        # set interpolations
+        l.spatial_interpolation(spatial)
+        l.temporal_interpolation(temporal)
 

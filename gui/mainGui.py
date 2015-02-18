@@ -90,7 +90,7 @@ class MainGui(wx.Frame):
         self.bnb.AddPage(output, "Console")
         self.bnb.AddPage(seriesselector, "Time Series")
         self.bnb.AddPage(seriesoutput, "Simulations")
-        self.bnb.AddPage(seriesoutput, "Output Time Series")
+        # self.bnb.AddPage(seriesoutput, "Output Time Series")
 
         # add these to the notebook pages dictionary so that they can be looked up later
         self.notebook_pages['Console'] = 0
@@ -977,8 +977,8 @@ class consoleOutput(wx.Panel):
         log = wx.TextCtrl(self, -1, size=(100,100),
                           style = wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
 
-        redir= RedirectText(log)
-        sys.stdout=redir
+        # redir= RedirectText(log)
+        # sys.stdout=redir
 
 
         # # Add widgets to a sizer

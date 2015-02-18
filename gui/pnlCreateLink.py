@@ -117,6 +117,8 @@ class pnlCreateLink ( wx.Panel ):
         PanelSizer.Add(self.ComboboxTemporal, flag=wx.TOP|wx.EXPAND)
         PanelSizer.Add(self.ComboboxSpatial, flag=wx.TOP|wx.EXPAND)
 
+        Do = self.ComboboxTemporal.Bind(wx.EVT_COMBOBOX, self.Test)
+
         # deactivate Next button
         self.activateLinkButton()
         # print outputitems, inputitems
@@ -139,6 +141,10 @@ class pnlCreateLink ( wx.Panel ):
 
         self.outputs.Bind(wx.EVT_LEFT_UP,self.OutputClick)
         self.inputs.Bind(wx.EVT_LEFT_UP,self.InputClick)
+
+    def Test(self, event):
+        print('Hello')
+
 
     def PopulateInitialPropertyGrid(self):
 

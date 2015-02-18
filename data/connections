@@ -2,7 +2,7 @@
 name = ODM2 Simulation database - Live
 desc = PostgreSQL database with hydrology simulations
 engine = postgresql
-address = castro-server.bluezone.usu.edu_asojnasasc
+address = castro-server.bluezone.usu.edu
 db = ODM2-Live
 user = postgres
 pwd = water

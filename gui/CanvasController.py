@@ -842,31 +842,31 @@ class CanvasController:
                         conn_ids[attrib['databaseid']] = dic['args']['id']
                         break
 
-                    # if database doesn't exist, then connect to it
-                    if not database_exists:
-                        connect = wx.MessageBox('This database connection does not currently exist.  Click OK to connect.', 'Info', wx.OK | wx.CANCEL )
+                # if database doesn't exist, then connect to it
+                if not database_exists:
+                    connect = wx.MessageBox('This database connection does not currently exist.  Click OK to connect.', 'Info', wx.OK | wx.CANCEL )
 
 
-                        if connect == wx.OK:
+                    if connect == wx.OK:
 
-                            # attempt to connect to the database
-                            title=dic['args']['name']
-                            desc = dic['args']['desc']
-                            engine = dic['args']['engine']
-                            address = dic['args']['address']
-                            name = dic['args']['db']
-                            user = dic['args']['user']
-                            pwd = dic['args']['pwd']
+                        # attempt to connect to the database
+                        title=dic['args']['name']
+                        desc = dic['args']['desc']
+                        engine = dic['args']['engine']
+                        address = dic['args']['address']
+                        name = dic['args']['db']
+                        user = dic['args']['user']
+                        pwd = dic['args']['pwd']
 
-                            if not self.AddDatabaseConnection(title,desc,engine,address,name,user, pwd):
-                                wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
-                                return
-
-                            # map the connection id
-                            conn_ids[attrib['databaseid']] = attrib['databaseid']
-
-                        else:
+                        if not self.AddDatabaseConnection(title,desc,engine,address,name,user, pwd):
+                            wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
                             return
+
+                        # map the connection id
+                        conn_ids[attrib['databaseid']] = attrib['databaseid']
+
+                    else:
+                        return
 
 
         # loop through each model and load it

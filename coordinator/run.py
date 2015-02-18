@@ -271,9 +271,7 @@ def run_time_step(obj):
         # TODO:  This needs to be modified to operate under loop control!  For instance if the simulation reaches a point where the current model doesnt reach or exceed the target model, the loop should be broken and restart from the beginning.  This will also allow multithreading of multiple loops during a composition that might be helpful for calibrations.
 
 
-        print '\n\n------------------------'
-        print 'Execution Loop %d' % iter_count
-        print '------------------------\n'
+        print '\nExecuting Loop %d' % iter_count
 
         # loop through models and execute run
         for modelid in exec_order:
@@ -314,7 +312,7 @@ def run_time_step(obj):
                    model_inst.status() != Status.Ready:
                     # exit without calling run_timestep
                     sys.stdout.write('> %s  ' % (datetime.datetime.strftime(current_time,"%m-%d-%Y %H:%M:%S")))
-                    sys.stdout.write('> %s | %s \n\n' % (model_inst.name(),model_inst.status()))
+                    sys.stdout.write('> %s | %s \n' % (model_inst.name(),model_inst.status()))
                     break
 
 
@@ -400,9 +398,23 @@ def run_time_step(obj):
         model_inst = model_obj.get_instance()
 
         # save results
-        model_inst.save()
+        items = model_inst.save()
 
         # todo: save outputs to database!
+        if len(items) > 0:
+            simulation_dbapi = db_sessions[modelid]
+            #  set these input data as exchange items in stdlib or wrapper class
+            simulation = simulation_dbapi.create_simulation(preferences_path=obj.preferences,
+                                           config_params=model_obj.get_config_params(),
+                                           output_exchange_items=items,
+                                           )
+
+            # store the database action associated with this simulation
+            #obj.DbResults(key=model_inst.name(), value = (simulation.ActionID,model_inst.session(),'action'))
+
+
+
+
 
         # if db_sessions[modelid] is not None:
         #       # save results

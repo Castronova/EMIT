@@ -100,15 +100,27 @@ class swmm(time_step_wrapper):
     def run_timestep(self,inputs, current_time):
 
         # get catchment inputs
-        rainfall_data = inputs['Rainfall'].get_geoms_and_timeseries()
-        evaporation = inputs['Evaporation'].get_geoms_and_timeseries()
-        snow = inputs['Snow_depth'].get_geoms_and_timeseries()
+        rainfall_data = []
+        if 'Rainfall' in inputs.keys():
+            rainfall_data = inputs['Rainfall'].get_geoms_and_timeseries()
+
+        evaporation = {None:[None]}
+        if 'Evaporation' in inputs.keys():
+            evaporation = inputs['Evaporation'].get_geoms_and_timeseries()
+
+        snow = {None:[None]}
+        if 'Snow_depth' in inputs.keys():
+            snow = inputs['Snow_depth'].get_geoms_and_timeseries()
 
         # get link inputs
-        flow_rate = inputs['Flow_rate'].get_geoms_and_timeseries()
+        flow_rate = {None:[None]}
+        if 'Flow_rate' in inputs.keys():
+            flow_rate = inputs['Flow_rate'].get_geoms_and_timeseries()
 
         # get node inputs
-        stage = inputs['Hydraulic_head'].get_geoms_and_timeseries()
+        stage = {None:[None]}
+        if 'Stage' in inputs.keys():
+            stage = inputs['Hydraulic_head'].get_geoms_and_timeseries()
 
         # check to see which inputs will be applied (i.e. values are provided)
         apply_rainfall = True if len([v for g in rainfall_data.keys() for v in rainfall_data[g] if v is not None]) > 0 else False
@@ -122,7 +134,7 @@ class swmm(time_step_wrapper):
         has_node_input = True if True in [apply_stage] else False
 
 
-        sys.stdout.write(' - - > HasRainfall = %s | HasFlow = %s | HasStage = %s\n'
+        sys.stdout.write(' - - > Has Rainfall = %s | Has Flow = %s | Has Stage = %s\n'
                          % (apply_rainfall,
                             apply_flowrate,
                             apply_stage))
@@ -267,29 +279,56 @@ class swmm(time_step_wrapper):
         for i in range(0, self.node_count):
             n = self.__swmmLib.getNode(self.ptr, c_int(i))
             node_id = n.contents.ID
+
             if node_id in self.__geom_lookup:
                 geom = self.__geom_lookup[node_id]
                 depth = n.contents.newDepth
-                self.set_geom_values_by_hash('Hydraulic_head',geom, zip([new_time],[depth]))
+
+                if 'OFALL' in node_id:  # save all of the data
+                    self.set_geom_values_by_hash('Hydraulic_head',geom, zip([new_time],[depth]),append=True)
+                else:
+                    self.set_geom_values_by_hash('Hydraulic_head',geom, zip([new_time],[depth]))
 
 
         msg = 'Done with PTS'
 
     def save(self):
-        return self.outputs()
+        #return self.outputs()
         #return [self.get_output_by_name(outputname='Hydraulic_head')]
+
+        # get stage
+        stage = self.get_output_by_name(outputname='Hydraulic_head')
+        ts = stage.get_geoms_and_timeseries()
+        for geom in ts.keys():
+            if 'OFALL' not in geom.id():
+                idx = stage.geometries().index(geom)
+                success = stage.geometries().pop(idx)
+
+        return [stage]
+
+
 
     def build_swmm_inputs_and_outputs(self, geoms):
 
         # define the model inputs and outputs
-        outputs = {'subcatchment':['Groundwater_outflow','Wash_off_concentration','Groundwater_elevation','Runoff_rate'],
-                   'link' : ['Flow_depth','Flow_rate','Flow_velocity'],
-                   'node' : ['Volume_stored_ponded','Lateral_inflow','Total_inflow','Depth_above_invert','Hydraulic_head','Flow_lost_flooding']
+        # outputs = {'subcatchment':['Groundwater_outflow','Wash_off_concentration','Groundwater_elevation','Runoff_rate'],
+        #            'link' : ['Flow_depth','Flow_rate','Flow_velocity'],
+        #            'node' : ['Volume_stored_ponded','Lateral_inflow','Total_inflow','Depth_above_invert','Hydraulic_head','Flow_lost_flooding']
+        # }
+        #
+        # inputs = {'subcatchment' : ['Evaporation','Rainfall','Snow_depth'],
+        #            'link' : ['Froude_number','Capacity','Flow_rate','Flow_velocity'],
+        #            'node' : ['Lateral_inflow','Hydraulic_head']
+        # }
+
+        outputs = {
+                   'link' : ['Flow_depth','Flow_rate'],
+                   'node' : ['Hydraulic_head']
         }
 
-        inputs = {'subcatchment' : ['Evaporation','Rainfall','Snow_depth'],
-                   'link' : ['Froude_number','Capacity','Flow_rate','Flow_velocity'],
-                   'node' : ['Lateral_inflow','Hydraulic_head']
+        inputs = {'subcatchment' : ['Rainfall'],
+                   'link' : ['Flow_rate'],
+                   'node' : ['Hydraulic_head']
         }
 
         # get spatial reference system (use default if none is provided in config)

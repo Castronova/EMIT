@@ -197,7 +197,7 @@ class time_step_wrapper(object):
                     return
         raise Exception ('Error setting data for variable: %s' % variablename)
 
-    def set_geom_values_by_hash(self,variablename,geometry,datavalues):
+    def set_geom_values_by_hash(self,variablename,geometry,datavalues, append=False):
 
         item = self.get_output_by_name(variablename)
 
@@ -207,7 +207,16 @@ class time_step_wrapper(object):
 
             geom = next((x for x in geometries if x.hash() == geometry.hash()), None)
             if geom is not None:
-                geom.datavalues().set_timeseries(datavalues)
+                if append:
+                    ts = geom.datavalues().timeseries()
+                    if ts is not None:
+                        ts.extend(datavalues)
+                    else:
+                        ts = datavalues
+                    geom.datavalues().set_timeseries(ts)
+                else:
+                    geom.datavalues().set_timeseries(datavalues)
+
                 return
 
         else:

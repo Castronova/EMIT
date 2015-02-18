@@ -144,6 +144,7 @@ class postgresdb():
 
     def create_simulation(self,preferences_path, config_params, output_exchange_items):
 
+        # todo:  this info should come from dictionary.  That way some fields can be populated by model wrappers
         name = config_params['general'][0]['name']
         description = config_params['general'][0]['description']
         simstart = config_params['general'][0]['simulation_start']

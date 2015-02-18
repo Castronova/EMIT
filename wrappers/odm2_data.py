@@ -73,8 +73,9 @@ class odm2(object):
         self.__status = Status.Loaded
 
     def save(self):
-        return [self.get_output_by_name(outputname=self.name())]
+        #return [self.get_output_by_name(outputname=self.name())]
         #return [self.__output]
+        return []
 
     def run(self,inputs):
         # set the status to finished

@@ -28,6 +28,8 @@ from transform.time import TemporalInterpolation
 import datatypes
 from api.ODM2.Results.services import readResults
 from api.ODM2.Core.services import readCore
+from gui.async import *
+from Queue import Queue
 
 class CanvasController:
     def __init__(self, cmd, Canvas):
@@ -230,6 +232,7 @@ class CanvasController:
         arrow_shape.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
 
         return arrow_shape
+
 
     def addModel(self, filepath, x, y):
         """
@@ -785,6 +788,12 @@ class CanvasController:
 
         print '> Configuration Saved Successfully! '
 
+    # def _loadsimulation(self, file):
+    #
+    #     thread = self.loadsimulation(file)
+    #     join = thread.result_queue.get()
+    #     print 'here'
+
     def loadsimulation(self, file):
         #TODO: Should be part of the cmd.
         ########### NEW CODE #############
@@ -916,7 +925,11 @@ class CanvasController:
 
                 #model = self.cmd.add_data_model(resultid,mappedid,id=data.attrib['id'],type=dtype)
                 attrib['databaseid'] = mappedid
+
+                # thread = self.cmd.add_model(dtype,id=attrib['id'], attrib=attrib)
+                # model = thread.result_queue.get()
                 model = self.cmd.add_model(dtype,id=attrib['id'], attrib=attrib)
+
 
                 x = float(attrib['xcoordinate'])
                 y = float(attrib['ycoordinate'])
@@ -949,7 +962,6 @@ class CanvasController:
                 # add the link object
                 l = self.cmd.add_link_by_name(  attrib['from_id'], attrib['from_item'],
                                     attrib['to_id'], attrib['to_item'])
-
 
                 # set the temporal and spatial interpolations
                 transform = child.find("./transformation")
@@ -1062,8 +1074,13 @@ class FileDrop(wx.FileDropTarget):
 
                     dtype = datatypes.ModelTypes.FeedForward
 
+
+
                     # load the model
                     #self.cmd.add_model(model.attrib['mdl'], id=model.attrib['id'],type=dtype)
+
+                    # thread = self.cmd.add_model(dtype,attrib={'mdl':filenames[0]})
+                    # model = thread.result_queue.get()
                     model = self.cmd.add_model(dtype,attrib={'mdl':filenames[0]})
 
                     # load the model (returns model instance

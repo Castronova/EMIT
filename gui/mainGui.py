@@ -27,6 +27,14 @@ import xml.etree.ElementTree as et
 from xml.dom import minidom
 import datatypes
 
+from threading import Thread
+from functools import wraps
+from itertools import cycle
+import time
+
+
+
+
 
 class MainGui(wx.Frame):
     def __init__(self, parent, cmd):
@@ -81,7 +89,8 @@ class MainGui(wx.Frame):
 
 
         self.bnb = wx.Notebook(self.pnlDocking)
-        output = consoleOutput(self.bnb)
+        output =consoleOutput(self.bnb)
+        # output.start()
 
         # seriesoutput = OutputTimeSeries(self.bnb)
         seriesselector = TimeSeries(self.bnb)
@@ -959,42 +968,79 @@ class SimulationContextMenu(ContextMenu):
 
 
 
+def runAsync(func):
+    '''Decorates a method to run in a separate thread'''
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        func_hl = Thread(target=func, args=args, kwargs=kwargs)
+        func_hl.start()
+        return func_hl
+    return wrapper
+
+
+def wxCallafter(target):
+    '''Decorates a method to be called as a wxCallafter'''
+    @wraps(target)
+    def wrapper(*args, **kwargs):
+        wx.CallAfter(target, *args, **kwargs)
+    return wrapper
 
 
 
 
-
-
-
-
+from gui.async import *
 
 class consoleOutput(wx.Panel):
+
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
+        import console
+        self.logger = logging.getLogger('wxApp')
 
 
         # Add a panel so it looks the correct on all platforms
-        log = wx.TextCtrl(self, -1, size=(100,100),
+        self.log = wx.TextCtrl(self, -1, size=(100,100),
                           style = wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
 
-        # redir= RedirectText(log)
+        # txtHandler = console.CustomConsoleHandler(log)
+        # self.logger.addHandler(txtHandler)
+
+        # redir= RedirectText(self.log)
         # sys.stdout=redir
 
 
         # # Add widgets to a sizer
         sizer = wx.BoxSizer()
-        sizer.Add(log, 1, wx.ALL|wx.EXPAND, 5)
+        sizer.Add(self.log, 1, wx.ALL|wx.EXPAND, 5)
         self.SetSizer(sizer)
 
 
         self.SetSizerAndFit(sizer)
 
+
+        # thread = threading.Thread(target=self.run,args=())
+        # thread.daemon = True
+        # thread.start()
+
+        #thread = self.run()
+
+
+    @threaded
+    def run(self):
+
+        while 1:
+            time.sleep(.5)
+            wx.CallAfter(self.log.WriteText, str(time.clock())+'\n')
+
 class RedirectText(object):
+
     def __init__(self,aWxTextCtrl):
         self.out=aWxTextCtrl
 
+
     def write(self,string):
         self.out.WriteText(string)
+        self.out.Refresh()
 
 class AddConnectionDialog(wx.Dialog):
     def __init__(

@@ -13,6 +13,8 @@ import gui.log as log
 from coordinator import main as cmd
 from gui.mainGui import  MainGui
 from gui.CanvasController import CanvasController
+import logging
+import threading
 
 #sys.path.append(os.path.abspath(os.path.join(os.path.abspath(__file__),'../../odm2/src')))
 
@@ -24,7 +26,7 @@ from gui.CanvasController import CanvasController
 if __name__ == '__main__':
 
     # setup logger
-    logger = log.setup_custom_logger('root')
+    #logger = log.setup_custom_logger('root')
 
     # create and instance of the coordinator engine
     cmd = cmd.Coordinator()
@@ -49,5 +51,25 @@ if __name__ == '__main__':
         cmd.set_default_database()
 
 
+    # from tests import non_blocking_gui
+    # f2 = non_blocking_gui.Frame()
+    # thread = threading.Thread(target=f2.run, args=())
+    # thread.setDaemon(True)
+    # thread.start()
+    # f2.Show()
+
+    # from console import consoleOutput
+    # c = consoleOutput(frame)
+
+    #thread = threading.Thread(target=c.run,args=())
+    #thread.daemon = True
+    #thread.start()
+
+    # C = console(None)
+    # C.Show(True)
+
     app.MainLoop()
+
+
+
 

@@ -17,13 +17,4 @@ user = postgres
 pwd = water
 default=true
 
-[connection]
-name = ODM2 MySQL Observation database
-desc = MySQL database with lots of observed timeseries
-engine = mysql
-address = castro-server.bluezone.usu.edu:3306
-db = ODM2
-user = mysql
-pwd = mysql
-
 

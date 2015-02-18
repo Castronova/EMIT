@@ -34,35 +34,74 @@ def run_feed_forward(obj):
     # store model db sessions
     for modelid in exec_order:
         session = obj.get_model_by_id(modelid).get_instance().session()
+
         if session is None:
-            session = obj.get_default_db()['session']
+            try:        # this is necessary if no db connection exists
+                session = obj.get_default_db()['session']
+
+                # todo: need to consider other databases too!
+                db_sessions[modelid] = postgresdb(session)
+            except:
+                db_sessions[modelid] = None
 
         # todo: this should be stored in the model instance
         # model_obj = obj.get_model_by_id(modelid)
         # model_inst = model_obj.get_instance()
         # model_inst.session
 
+    links = {}
+    spatial_maps = {}
 
-        # todo: need to consider other databases too!
-        db_sessions[modelid] = postgresdb(session)
-
-
-    # loop through models and execute run
+    # todo:  move this into function
+    sys.stdout.write('> [PRE-RUN] Performing spatial mapping... ')
     for modelid in exec_order:
+
+        # get links
+        l = obj.get_from_links_by_model(modelid)
+        links[modelid] = l
+
+        # build spatial maps
+        for linkid, link in l.iteritems():
+            source = link.source_exchange_item()
+            target = link.target_exchange_item()
+            key = generate_link_key(link)
+            spatial_interp = link.spatial_interpolation()
+            if spatial_interp:
+                spatial_maps[key] = spatial_interp.transform(source.get_all_datasets().keys(),
+                                                         target.get_all_datasets().keys())
 
         # get the database session
         #simulation_dbapi = postgresdb(obj.get_default_db()['session'])
-        simulation_dbapi = db_sessions[modelid]
+        # simulation_dbapi = db_sessions[modelid]
+
+        # store model db sessions
+        session = obj.get_model_by_id(modelid).get_instance().session()
+        if session is None:
+            try:        # this is necessary if no db connection exists
+                session = obj.get_default_db()['session']
+            except:
+                pass
+        db_sessions[modelid] = postgresdb(session)
+
+    sys.stdout.write('done\n')
+
+    # todo:  move this into function
+    # prepare all models
+    for modelid in exec_order:
+        model_obj = obj.get_model_by_id(modelid)
+        model_inst = model_obj.get_instance()
+        if model_inst.status() != Status.Ready:
+            model_inst.prepare()
+
+    # loop through models and execute run
+
+    for modelid in exec_order:
 
         st = time.time()
 
         # get the current model instance
         model_obj = obj.get_model_by_id(modelid)
         model_inst = model_obj.get_instance()
-
-        # set the default session if it hasn't been specified otherwise
-        #if model_inst.session() is None:
-        #    model_inst.session(obj.get_default_db()['session'])
 
         print '> '
         print '> ------------------'+len(model_inst.name())*'-'
@@ -74,11 +113,11 @@ def run_feed_forward(obj):
         sys.__stdout__.flush()
 
         # todo: pass db_sessions instead of simulation_dbapi
-        try:
-            input_data =  get_ts_from_database_link(simulation_dbapi,db_sessions, obj.DbResults(), obj.Links(), model_inst)
-        except Exception as e:
-            raise Exception (e)
-
+        # try:
+        #     input_data =  get_ts_from_database_link(db_sessions[modelid], db_sessions, obj.DbResults(), obj.Links(), model_inst)
+        # except Exception as e:
+        #     raise Exception (e)
+        input_data = model_inst.inputs()
 
         sys.stdout.write('done\n')
         sys.__stdout__.flush()
@@ -110,7 +149,8 @@ def run_feed_forward(obj):
             # obj.DbResults(key=model_inst.name(), value = (simulation.ActionID,model_inst.session(),'action'))
 
         else:
-            obj.DbResults(key=model_inst.name(), value = (model_inst.resultid(), model_inst.session(), 'result'))
+            if db_sessions[modelid] is not None:
+                obj.DbResults(key=model_inst.name(), value = (model_inst.resultid(), model_inst.session(), 'result'))
 
         sys.stdout.write('done\n')
         sys.__stdout__.flush()
@@ -118,7 +158,10 @@ def run_feed_forward(obj):
         # update links
         sys.stdout.write('> [4 of 4] Updating links... ')
         sys.__stdout__.flush()
-        obj.update_links(model_inst,exchangeitems)
+
+        #obj.update_links(model_inst,exchangeitems)
+        update.update_links_feed_forward(obj,links[modelid],exchangeitems,spatial_maps)
+
         sys.stdout.write('done\n')
         sys.__stdout__.flush()
 
@@ -188,7 +231,10 @@ def run_time_step(obj):
         # store model db sessions
         session = obj.get_model_by_id(modelid).get_instance().session()
         if session is None:
-            session = obj.get_default_db()['session']
+            try:        # this is necessary if no db connection exists
+                session = obj.get_default_db()['session']
+            except:
+                pass
 
         # todo: need to consider other databases too!
         db_sessions[modelid] = postgresdb(session)
@@ -357,6 +403,9 @@ def run_time_step(obj):
         model_inst.save()
 
         # todo: save outputs to database!
+
+        # if db_sessions[modelid] is not None:
+        #       # save results
 
     print '> '
     print '> ------------------------------------------'

@@ -22,10 +22,14 @@ from ContextMenu import LinkContextMenu, ModelContextMenu, GeneralContextMenu
 from wrappers import odm2_data
 import xml.etree.ElementTree as et
 from xml.dom import minidom
+from transform.space import SpatialInterpolation
+from transform.time import TemporalInterpolation
 
 import datatypes
 from api.ODM2.Results.services import readResults
 from api.ODM2.Core.services import readCore
+from gui.async import *
+from Queue import Queue
 
 class CanvasController:
     def __init__(self, cmd, Canvas):
@@ -175,7 +179,6 @@ class CanvasController:
 
             self.FloatCanvas.Draw()
 
-
     def createLine(self, R1, R2):
         #print "creating link", R1, R2
         x1,y1  = (R1.BoundingBox[0] + (R1.wh[0]/2, R1.wh[1]/2))
@@ -229,6 +232,7 @@ class CanvasController:
         arrow_shape.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
 
         return arrow_shape
+
 
     def addModel(self, filepath, x, y):
         """
@@ -688,6 +692,17 @@ class CanvasController:
             attributes['to_item'] = targetItem.name()
             attributes['to_item_id'] = targetItem.get_id()
 
+
+            if L.temporal_interpolation() is not None:
+                attributes['temporal_transformation'] = L.temporal_interpolation().name()
+            else:
+                attributes['temporal_transformation'] = "None"
+
+            if L.spatial_interpolation() is not None:
+                attributes['spatial_transformation'] = L.spatial_interpolation().name()
+            else:
+                attributes['spatial_transformation'] = "None"
+
             linkelement = et.SubElement(tree,'Link')
 
             linkfromnameelement = et.SubElement(linkelement, "from_name")
@@ -707,6 +722,14 @@ class CanvasController:
             linktoitemelement.text = attributes['to_item']
             linktoitemidelement = et.SubElement(linkelement, "to_item_id")
             linktoitemidelement.text = attributes['to_item_id']
+
+            link_transform_element = et.SubElement(linkelement, "transformation")
+            link_transform_temporal = et.SubElement(link_transform_element, "temporal")
+            link_transform_temporal.text = attributes['temporal_transformation']
+            link_transform_spatial = et.SubElement(link_transform_element, "spatial")
+            link_transform_spatial.text = attributes['spatial_transformation']
+
+
 
         # save required databases
         for db_id in db_ids:
@@ -742,7 +765,7 @@ class CanvasController:
                 connectiondbelement.text = attributes['db']
                 connectionuserelement = et.SubElement(connectionelement, "user")
                 connectionuserelement.text = attributes['user']
-                connectiondatabaseidelement = et.SubElement(connectionelement, "databseid")
+                connectiondatabaseidelement = et.SubElement(connectionelement, "databaseid")
                 connectiondatabaseidelement.text = attributes['databaseid']
                 connectionconnectionstringelement = et.SubElement(connectionelement, "connection_string")
                 connectionconnectionstringelement.text = attributes['connection_string']
@@ -764,6 +787,12 @@ class CanvasController:
             print e
 
         print '> Configuration Saved Successfully! '
+
+    # def _loadsimulation(self, file):
+    #
+    #     thread = self.loadsimulation(file)
+    #     join = thread.result_queue.get()
+    #     print 'here'
 
     def loadsimulation(self, file):
         #TODO: Should be part of the cmd.
@@ -788,9 +817,13 @@ class CanvasController:
         conn_ids = {}
         elementslist = root.getchildren()
 
+        # get all known transformations
+        space = SpatialInterpolation()
+        time = TemporalInterpolation()
+        spatial_transformations = {i.name():i for i in space.methods()}
+        temporal_transformations = {i.name():i for i in time.methods()}
 
         databaselist = [x for x in elementslist if x.tag == 'DbConnection']
-
         # for db_conn in databaselist:
         for child in root._children:
             if child.tag == 'DbConnection':
@@ -807,7 +840,9 @@ class CanvasController:
                 database_exists = False
                 # db_elements = db_conn.getchildren()
 
+
                 for id, dic in connections.iteritems():
+
                     if str(dic['args']['connection_string']) == connection_string:
                         #dic['args']['id'] = db_conn.attrib['id']
                         database_exists = True
@@ -816,30 +851,31 @@ class CanvasController:
                         conn_ids[attrib['databaseid']] = dic['args']['id']
                         break
 
-                    # if database doesn't exist, then connect to it
-                    if not database_exists:
-                        connect = wx.MessageBox('This database connection does not currently exist.  Click OK to connect.', 'Info', wx.OK | wx.ICON_ERROR)
+                # if database doesn't exist, then connect to it
+                if not database_exists:
+                    connect = wx.MessageBox('This database connection does not currently exist.  Click OK to connect.', 'Info', wx.OK | wx.CANCEL )
 
 
-                        if connect.ShowModal() != wx.OK:
+                    if connect == wx.OK:
 
-                            # attempt to connect to the database
-                            title=dic['args']['name'],
-                            desc = dic['args']['desc'],
-                            engine = dic['args']['engine'],
-                            address = dic['args']['address'],
-                            name = dic['args']['db'],
-                            user = dic['args']['user'],
-                            pwd = dic['args']['pwd']
+                        # attempt to connect to the database
+                        title=dic['args']['name']
+                        desc = dic['args']['desc']
+                        engine = dic['args']['engine']
+                        address = dic['args']['address']
+                        name = dic['args']['db']
+                        user = dic['args']['user']
+                        pwd = dic['args']['pwd']
 
-                            if not self.AddDatabaseConnection(title,desc,engine,address,name,user, pwd):
-                                wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
-                                return
+                        if not self.AddDatabaseConnection(title,desc,engine,address,name,user, pwd):
+                            wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
+                            return
 
-                            # map the connection id
-                            conn_ids[attrib['id']] = attrib['id']
+                        # map the connection id
+                        conn_ids[attrib['databaseid']] = attrib['databaseid']
 
-                        else: return
+                    else:
+                        return
 
 
         # loop through each model and load it
@@ -889,10 +925,14 @@ class CanvasController:
 
                 #model = self.cmd.add_data_model(resultid,mappedid,id=data.attrib['id'],type=dtype)
                 attrib['databaseid'] = mappedid
+
+                # thread = self.cmd.add_model(dtype,id=attrib['id'], attrib=attrib)
+                # model = thread.result_queue.get()
                 model = self.cmd.add_model(dtype,id=attrib['id'], attrib=attrib)
 
-                x = float(data.attrib['xcoordinate'])
-                y = float(data.attrib['ycoordinate'])
+
+                x = float(attrib['xcoordinate'])
+                y = float(attrib['ycoordinate'])
 
 
                 self.createBox(name=model.get_name(), id=model.get_id(), xCoord=x, yCoord=y, color='#FFFF99')
@@ -920,8 +960,20 @@ class CanvasController:
                     raise Exception('Could not find Model identifer in loaded models')
 
                 # add the link object
-                self.cmd.add_link_by_name(  attrib['from_id'], attrib['from_item'],
+                l = self.cmd.add_link_by_name(  attrib['from_id'], attrib['from_item'],
                                     attrib['to_id'], attrib['to_item'])
+
+                # set the temporal and spatial interpolations
+                transform = child.find("./transformation")
+                for transform_child in transform:
+                    if transform_child.text.upper() != 'NONE':
+                        if transform_child.tag == 'temporal':
+                            transformation = temporal_transformations[transform_child.text]
+                            l.temporal_interpolation(transformation)
+                        elif transform_child.tag == 'spatial':
+                            transformation = spatial_transformations[transform_child.text]
+                            l.spatial_interpolation(transformation)
+
 
                 # this draws the line
                 self.createLine(R1,R2)
@@ -1022,8 +1074,13 @@ class FileDrop(wx.FileDropTarget):
 
                     dtype = datatypes.ModelTypes.FeedForward
 
+
+
                     # load the model
                     #self.cmd.add_model(model.attrib['mdl'], id=model.attrib['id'],type=dtype)
+
+                    # thread = self.cmd.add_model(dtype,attrib={'mdl':filenames[0]})
+                    # model = thread.result_queue.get()
                     model = self.cmd.add_model(dtype,attrib={'mdl':filenames[0]})
 
                     # load the model (returns model instance

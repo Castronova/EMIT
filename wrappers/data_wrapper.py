@@ -65,11 +65,11 @@ class data_wrapper(object):
         # else:
         #     raise Exception('Unknown unit: %s'%unit)
 
-        if unit == 'millisecond': time += dt.timedelta(milliseconds=value)
-        elif unit == 'second': time +=  dt.timedelta(seconds =value)
-        elif unit == 'minute': time +=  dt.timedelta(minutes=value)
-        elif unit == 'hour': time +=  dt.timedelta(hours=value)
-        elif unit == 'day': time +=  dt.timedelta(days=value)
+        if unit == 'milliseconds': time += dt.timedelta(milliseconds=value)
+        elif unit == 'seconds': time +=  dt.timedelta(seconds =value)
+        elif unit == 'minutes': time +=  dt.timedelta(minutes=value)
+        elif unit == 'hours': time +=  dt.timedelta(hours=value)
+        elif unit == 'days': time +=  dt.timedelta(days=value)
         else:
             raise Exception('Unknown unit: %s'%unit)
 

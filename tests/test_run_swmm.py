@@ -43,16 +43,20 @@ class test_run_swmm(unittest.TestCase):
                                                      conn['pwd'])
         connection  = {}
         db_id = uuid.uuid4().hex[:5]
-        connection[db_id] = {'name':conn['name'],
-                                 'session': self.session,
-                                 'connection_string':self.session.engine.url,
-                                 'description':conn['desc'],
-                                 'args': conn}
 
-        self.sim.add_db_connection(value=connection)
+        try:
+            connection[db_id] = {'name':conn['name'],
+                                     'session': self.session,
+                                     'connection_string':self.session.engine.url,
+                                     'description':conn['desc'],
+                                     'args': conn}
 
-        # set the default database for the simulation
-        self.sim.set_default_database(db_id)
+            self.sim.add_db_connection(value=connection)
+
+            # set the default database for the simulation
+            self.sim.set_default_database(db_id)
+        except:
+            pass
 
         self.q = Queue()
 

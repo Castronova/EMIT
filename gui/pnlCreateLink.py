@@ -7,7 +7,8 @@ import sys
 from wx.lib.pubsub import pub as Publisher
 import wx.propgrid as wxpg
 import warnings
-
+from transform.time import *
+from transform.space import *
 
 [wxID_PNLCREATELINK, wxID_PNLSPATIAL, wxID_PNLTEMPORAL,
  wxID_PNLDETAILS,
@@ -29,6 +30,8 @@ class pnlCreateLink ( wx.Panel ):
         self.outputitems = outputitems
         self.input = [item.name() for item in inputitems]
         self.output = [item.name() for item in outputitems]
+        self.spatial_interpolation = None
+        self.temporal_interpolation = None
 
 
 
@@ -108,16 +111,34 @@ class pnlCreateLink ( wx.Panel ):
         bSizer5.Add(self.pgin)
         PanelSizer.Add(bSizer5, 1, wx.EXPAND, 5 )
 
-        ComboboxTemporalChoices = ['Item1', 'Item2']
-        ComboboxSpatialChoices = ['Item1', 'Item2']
-        self.ComboboxTemporal = wx.ComboBox(self, wx.ID_ANY, u"Temporal Parameters", wx.DefaultPosition,
-                                            wx.DefaultSize, ComboboxTemporalChoices, 0)
-        self.ComboboxSpatial = wx.ComboBox(self, wx.ID_ANY, u"Spatial Parameters", wx.DefaultPosition,
-                                           wx.DefaultSize, ComboboxSpatialChoices, 0)
-        PanelSizer.Add(self.ComboboxTemporal, flag=wx.TOP|wx.EXPAND)
-        PanelSizer.Add(self.ComboboxSpatial, flag=wx.TOP|wx.EXPAND)
+        # populate spatial and temporal interpolations
+        t = TemporalInterpolation()
+        self.temporal_transformations = {i.name():i for i in t.methods()}
+        ComboboxTemporalChoices = self.temporal_transformations.keys()
 
-        Do = self.ComboboxTemporal.Bind(wx.EVT_COMBOBOX, self.Test)
+        s = SpatialInterpolation()
+        self.spatial_transformations = {i.name():i for i in s.methods()}
+        ComboboxSpatialChoices = self.spatial_transformations.keys()
+
+
+        self.temporal_label = wx.StaticText(self, label = 'Temporal Interpolation: ')
+        self.spatial_label = wx.StaticText(self, label = 'Spatial Interpolation: ')
+        self.ComboboxTemporal = wx.ComboBox(self, wx.ID_ANY, u"No Interpolation", wx.DefaultPosition,
+                                            wx.DefaultSize, ComboboxTemporalChoices, 0)
+        self.ComboboxSpatial = wx.ComboBox(self, wx.ID_ANY, u"No Interpolation", wx.DefaultPosition,
+                                           wx.DefaultSize, ComboboxSpatialChoices, 0)
+
+        bsizer = wx.BoxSizer( wx.HORIZONTAL )
+        bsizer.Add(self.temporal_label)
+        bsizer.AddSpacer( ( 20, 0), 0, wx.EXPAND, 5 )
+        bsizer.Add(self.ComboboxTemporal)
+        PanelSizer.Add(bsizer)
+
+        bsizer = wx.BoxSizer( wx.HORIZONTAL )
+        bsizer.Add(self.spatial_label)
+        bsizer.AddSpacer( ( 20, 0), 0, wx.EXPAND, 5 )
+        bsizer.Add(self.ComboboxSpatial)
+        PanelSizer.Add(bsizer)
 
         # deactivate Next button
         self.activateLinkButton()
@@ -142,8 +163,20 @@ class pnlCreateLink ( wx.Panel ):
         self.outputs.Bind(wx.EVT_LEFT_UP,self.OutputClick)
         self.inputs.Bind(wx.EVT_LEFT_UP,self.InputClick)
 
-    def Test(self, event):
-        print('Hello')
+        self.ComboboxSpatial.Bind (wx.EVT_COMBOBOX, self.on_select_spatial)
+        self.ComboboxTemporal.Bind (wx.EVT_COMBOBOX, self.on_select_temporal)
+
+    def on_select_spatial(self, event):
+        spatial_value = self.ComboboxSpatial.GetValue()
+        self.spatial_interpolation = self.spatial_transformations[spatial_value]
+
+    def on_select_temporal(self, event):
+        temporal_value = self.ComboboxTemporal.GetValue()
+        self.temporal_interpolation = self.temporal_transformations[temporal_value]
+
+    def get_spatial_and_temporal_transformations(self):
+
+        return (self.spatial_interpolation, self.temporal_interpolation)
 
 
     def PopulateInitialPropertyGrid(self):

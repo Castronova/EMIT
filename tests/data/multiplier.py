@@ -32,45 +32,37 @@ class multiply(feed_forward.feed_forward_wrapper):
         :return: true
         """
 
+        input_data = inputs['some_value'].get_geoms_and_timeseries()
+
         # loop through each geometry
-        for geom, dataset in inputs.iteritems():
+        for geom, dataset in input_data.iteritems():
 
             time = self.current_time()
 
             ts = []
             while time <= self.simulation_end():
 
+                dates = dataset[0]
+                values = dataset[1]
 
-                # data for desired variable (e.g. 'some_value')
-                datavalues = dataset['some_value']
-                dates, values = datavalues.get_dates_values()
+                for i in range(0,len(dates)):
+                    # get value at this location / time
+                    value = values[i]
 
-                # get value at required time
-                # todo: have these values already temporally mapped, so that this isn't necessary here
-                closest_date = min(dates,key=lambda date : abs(time-date))
-                idx = dates.index(closest_date)
+                    # perform computation
+                    new_value = value**2
 
-                # get value at this location / time
-                value = values[idx]
-
-
-                # perform computation
-                new_value = value**2
-
-                # save this new value in a timeseries
-                ts.append((time,new_value))
+                    # save this new value in a timeseries
+                    ts.append((time,new_value))
 
                 # increment time
                 time = self.increment_time(time)
 
 
             # save results to this geometry as an output variable
-            self.set_geom_values('multipliedValue',geom,ts)
+            #self.set_geom_values('multipliedValue',geom,ts)
 
 
-
-
-        # # todo: some sort of automatic geometry mapping (utilites.py)
 
 
 

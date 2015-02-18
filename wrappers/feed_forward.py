@@ -1,6 +1,7 @@
 __author__ = 'tonycastronova'
 
 import datetime as dt
+from utilities.status import Status
 
 class feed_forward_wrapper(object):
     def __init__(self, config_params):
@@ -13,6 +14,7 @@ class feed_forward_wrapper(object):
         self.__current_time = self.simulation_start()
         self.__session = None
 
+        self.__status = Status.Loaded
 
 
     # def data_directory(self):
@@ -22,7 +24,7 @@ class feed_forward_wrapper(object):
         raise NotImplementedError('This is an abstract method that must be implemented!')
 
     def run(self,inputs):
-        raise NotImplementedError('This is an abstract method that must be implemented!')
+        self.status(Status.Finished)
 
     # def initialize(self):
     #     raise NotImplementedError('This is an abstract method that must be implemented!')
@@ -31,6 +33,13 @@ class feed_forward_wrapper(object):
         if value is not None:
             self.__session = value
         return self.__session
+
+    def prepare(self):
+        '''
+        Called before simulation run to prepare the model
+        :return: READY status
+        '''
+        self.status(Status.Ready)
 
     def time_step(self):
         """
@@ -134,11 +143,11 @@ class feed_forward_wrapper(object):
         # else:
         #     raise Exception('Unknown unit: %s'%unit)
 
-        if unit == 'millisecond': time += dt.timedelta(milliseconds=value)
-        elif unit == 'second': time +=  dt.timedelta(seconds =value)
-        elif unit == 'minute': time +=  dt.timedelta(minutes=value)
-        elif unit == 'hour': time +=  dt.timedelta(hours=value)
-        elif unit == 'day': time +=  dt.timedelta(days=value)
+        if unit == 'milliseconds': time += dt.timedelta(milliseconds=value)
+        elif unit == 'seconds': time +=  dt.timedelta(seconds =value)
+        elif unit == 'minutes': time +=  dt.timedelta(minutes=value)
+        elif unit == 'hours': time +=  dt.timedelta(hours=value)
+        elif unit == 'days': time +=  dt.timedelta(days=value)
         else:
             raise Exception('Unknown unit: %s'%unit)
 
@@ -191,3 +200,7 @@ class feed_forward_wrapper(object):
 
         raise Exception('Could not find input: %s' + inputname)
 
+    def status(self, value=None):
+        if value is not None:
+            self.__status = value
+        return self.__status

@@ -22,6 +22,8 @@ from ContextMenu import LinkContextMenu, ModelContextMenu, GeneralContextMenu
 from wrappers import odm2_data
 import xml.etree.ElementTree as et
 from xml.dom import minidom
+from transform.space import SpatialInterpolation
+from transform.time import TemporalInterpolation
 
 import datatypes
 from api.ODM2.Results.services import readResults
@@ -174,7 +176,6 @@ class CanvasController:
             self.models[R]=id
 
             self.FloatCanvas.Draw()
-
 
     def createLine(self, R1, R2):
         #print "creating link", R1, R2
@@ -688,6 +689,17 @@ class CanvasController:
             attributes['to_item'] = targetItem.name()
             attributes['to_item_id'] = targetItem.get_id()
 
+
+            if L.temporal_interpolation() is not None:
+                attributes['temporal_transformation'] = L.temporal_interpolation().name()
+            else:
+                attributes['temporal_transformation'] = "None"
+
+            if L.spatial_interpolation() is not None:
+                attributes['spatial_transformation'] = L.spatial_interpolation().name()
+            else:
+                attributes['spatial_transformation'] = "None"
+
             linkelement = et.SubElement(tree,'Link')
 
             linkfromnameelement = et.SubElement(linkelement, "from_name")
@@ -707,6 +719,14 @@ class CanvasController:
             linktoitemelement.text = attributes['to_item']
             linktoitemidelement = et.SubElement(linkelement, "to_item_id")
             linktoitemidelement.text = attributes['to_item_id']
+
+            link_transform_element = et.SubElement(linkelement, "transformation")
+            link_transform_temporal = et.SubElement(link_transform_element, "temporal")
+            link_transform_temporal.text = attributes['temporal_transformation']
+            link_transform_spatial = et.SubElement(link_transform_element, "spatial")
+            link_transform_spatial.text = attributes['spatial_transformation']
+
+
 
         # save required databases
         for db_id in db_ids:
@@ -788,9 +808,13 @@ class CanvasController:
         conn_ids = {}
         elementslist = root.getchildren()
 
+        # get all known transformations
+        space = SpatialInterpolation()
+        time = TemporalInterpolation()
+        spatial_transformations = {i.name():i for i in space.methods()}
+        temporal_transformations = {i.name():i for i in time.methods()}
 
         databaselist = [x for x in elementslist if x.tag == 'DbConnection']
-
         # for db_conn in databaselist:
         for child in root._children:
             if child.tag == 'DbConnection':
@@ -920,8 +944,21 @@ class CanvasController:
                     raise Exception('Could not find Model identifer in loaded models')
 
                 # add the link object
-                self.cmd.add_link_by_name(  attrib['from_id'], attrib['from_item'],
+                l = self.cmd.add_link_by_name(  attrib['from_id'], attrib['from_item'],
                                     attrib['to_id'], attrib['to_item'])
+
+
+                # set the temporal and spatial interpolations
+                transform = child.find("./transformation")
+                for transform_child in transform:
+                    if transform_child.text.upper() != 'NONE':
+                        if transform_child.tag == 'temporal':
+                            transformation = temporal_transformations[transform_child.text]
+                            l.temporal_interpolation(transformation)
+                        elif transform_child.tag == 'spatial':
+                            transformation = spatial_transformations[transform_child.text]
+                            l.spatial_interpolation(transformation)
+
 
                 # this draws the line
                 self.createLine(R1,R2)

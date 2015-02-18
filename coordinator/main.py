@@ -95,7 +95,7 @@ class Link(object):
         if value is not None:
             if isinstance(value, time_base.Time):
                 self.__temporal_interpolation = value
-        return self.__spatial_interpolation
+        return self.__temporal_interpolation
 
 
 class Model(object):

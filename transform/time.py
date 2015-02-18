@@ -18,7 +18,7 @@ class temporal_nearest_neighbor(time_base.Time):
 
         mapped_dates = []
         mapped_values = []
-        if type(target_dates) != []:
+        if not isinstance(target_dates, list):
             target_dates = [target_dates]
 
         for target_date in target_dates:

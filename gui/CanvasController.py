@@ -918,8 +918,8 @@ class CanvasController:
                 attrib['databaseid'] = mappedid
                 model = self.cmd.add_model(dtype,id=attrib['id'], attrib=attrib)
 
-                x = float(data.attrib['xcoordinate'])
-                y = float(data.attrib['ycoordinate'])
+                x = float(attrib['xcoordinate'])
+                y = float(attrib['ycoordinate'])
 
 
                 self.createBox(name=model.get_name(), id=model.get_id(), xCoord=x, yCoord=y, color='#FFFF99')

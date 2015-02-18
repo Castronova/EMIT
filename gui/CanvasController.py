@@ -762,7 +762,7 @@ class CanvasController:
                 connectiondbelement.text = attributes['db']
                 connectionuserelement = et.SubElement(connectionelement, "user")
                 connectionuserelement.text = attributes['user']
-                connectiondatabaseidelement = et.SubElement(connectionelement, "databseid")
+                connectiondatabaseidelement = et.SubElement(connectionelement, "databaseid")
                 connectiondatabaseidelement.text = attributes['databaseid']
                 connectionconnectionstringelement = et.SubElement(connectionelement, "connection_string")
                 connectionconnectionstringelement.text = attributes['connection_string']
@@ -831,7 +831,9 @@ class CanvasController:
                 database_exists = False
                 # db_elements = db_conn.getchildren()
 
+
                 for id, dic in connections.iteritems():
+
                     if str(dic['args']['connection_string']) == connection_string:
                         #dic['args']['id'] = db_conn.attrib['id']
                         database_exists = True
@@ -842,18 +844,18 @@ class CanvasController:
 
                     # if database doesn't exist, then connect to it
                     if not database_exists:
-                        connect = wx.MessageBox('This database connection does not currently exist.  Click OK to connect.', 'Info', wx.OK | wx.ICON_ERROR)
+                        connect = wx.MessageBox('This database connection does not currently exist.  Click OK to connect.', 'Info', wx.OK | wx.CANCEL )
 
 
-                        if connect.ShowModal() != wx.OK:
+                        if connect == wx.OK:
 
                             # attempt to connect to the database
-                            title=dic['args']['name'],
-                            desc = dic['args']['desc'],
-                            engine = dic['args']['engine'],
-                            address = dic['args']['address'],
-                            name = dic['args']['db'],
-                            user = dic['args']['user'],
+                            title=dic['args']['name']
+                            desc = dic['args']['desc']
+                            engine = dic['args']['engine']
+                            address = dic['args']['address']
+                            name = dic['args']['db']
+                            user = dic['args']['user']
                             pwd = dic['args']['pwd']
 
                             if not self.AddDatabaseConnection(title,desc,engine,address,name,user, pwd):
@@ -861,9 +863,10 @@ class CanvasController:
                                 return
 
                             # map the connection id
-                            conn_ids[attrib['id']] = attrib['id']
+                            conn_ids[attrib['databaseid']] = attrib['databaseid']
 
-                        else: return
+                        else:
+                            return
 
 
         # loop through each model and load it

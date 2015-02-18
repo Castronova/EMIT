@@ -2,7 +2,7 @@
 name = ODM2 Simulation database - Live
 desc = PostgreSQL database with hydrology simulations
 engine = postgresql
-address = castro-server.bluezone.usu.edu
+address = castro-server.bluezone.usu.edu_asojnasasc
 db = ODM2-Live
 user = postgres
 pwd = water
@@ -16,14 +16,5 @@ db = ODM2
 user = postgres
 pwd = water
 default=true
-
-[connection]
-name = ODM2 MySQL Observation database
-desc = MySQL database with lots of observed timeseries
-engine = mysql
-address = castro-server.bluezone.usu.edu:3306
-db = ODM2
-user = mysql
-pwd = mysql
 
 

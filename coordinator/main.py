@@ -283,7 +283,7 @@ class Coordinator(object):
         return self.__default_db
 
     # @threaded
-    def add_model(self, type, id=None, attrib=None):
+    def add_model(self, type=None, id=None, attrib=None):
         """
         stores model component objects when added to a configuration
         """

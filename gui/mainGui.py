@@ -32,9 +32,9 @@ from functools import wraps
 from itertools import cycle
 import time
 
-
-
-
+from wx.lib.newevent import NewEvent
+wxStdOut, EVT_STDDOUT= NewEvent()
+wxCreateBox, EVT_CREATE_BOX = NewEvent()
 
 class MainGui(wx.Frame):
     def __init__(self, parent, cmd):
@@ -47,7 +47,6 @@ class MainGui(wx.Frame):
         # save cmd object in pnlDocking so that children can access it
         self.pnlDocking.__setattr__('cmd',cmd)
 
-        self.Bind(wx.EVT_CLOSE, self.onClose)
 
         self.notebook_pages = {}
 
@@ -89,14 +88,15 @@ class MainGui(wx.Frame):
 
 
         self.bnb = wx.Notebook(self.pnlDocking)
-        output =consoleOutput(self.bnb)
+        self.output = consoleOutput(self.bnb)
+
         # output.start()
 
         # seriesoutput = OutputTimeSeries(self.bnb)
         seriesselector = TimeSeries(self.bnb)
         seriesoutput = SimulationDataTable(self.bnb)
 
-        self.bnb.AddPage(output, "Console")
+        self.bnb.AddPage(self.output, "Console")
         self.bnb.AddPage(seriesselector, "Time Series")
         self.bnb.AddPage(seriesoutput, "Simulations")
         # self.bnb.AddPage(seriesoutput, "Output Time Series")
@@ -226,7 +226,7 @@ class MainGui(wx.Frame):
         ## Events
         self.Bind(wx.EVT_MENU, self.SaveConfiguration, Save)
         self.Bind(wx.EVT_MENU, self.LoadConfiguration, Open)
-        self.Bind(wx.EVT_MENU, self.onClose, exit)
+        #self.Bind(wx.EVT_MENU, self.onClose, exit)
         self.Bind(wx.EVT_MENU, self.onDirectory, ShowDir)
         self.Bind(wx.EVT_MENU, self.onAllFiles, ShowAll)
         self.Bind(wx.EVT_MENU, self.onConsole, MinimizeConsole)
@@ -239,29 +239,7 @@ class MainGui(wx.Frame):
     def __del__(self):
         self.m_mgr.UnInit()
 
-    def onClose(self, event):
-        dlg = wx.MessageDialog(None, 'Are you sure you want to exit?', 'Question',
-                               wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
 
-        if dlg.ShowModal() !=wx.ID_NO:
-            windowsRemaining = len(wx.GetTopLevelWindows())
-            if windowsRemaining > 0:
-                import wx.lib.agw.aui.framemanager as aui
-                # logger.debug("Windows left to close: %d" % windowsRemaining)
-                for item in wx.GetTopLevelWindows():
-                    #logger.debug("Windows %s" % item)
-                    if not isinstance(item, self.__class__):
-                        if isinstance(item, aui.AuiFloatingFrame):
-                            item.Destroy()
-                        elif isinstance(item, aui.AuiSingleDockingGuide):
-                            item.Destroy()
-                        elif isinstance(item, aui.AuiDockingHintWindow):
-                            item.Destroy()
-                        elif isinstance(item, wx.Dialog):
-                            item.Destroy()
-                        item.Close()
-            self.Destroy()
-            wx.GetApp().ExitMainLoop()
 
     def LoadConfiguration(self,event):
 
@@ -941,33 +919,6 @@ class SimulationContextMenu(ContextMenu):
         PlotFrame.Show()
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def runAsync(func):
     '''Decorates a method to run in a separate thread'''
     @wraps(func)
@@ -988,7 +939,7 @@ def wxCallafter(target):
 
 
 
-from gui.async import *
+#from gui.async import *
 
 class consoleOutput(wx.Panel):
 
@@ -1001,12 +952,14 @@ class consoleOutput(wx.Panel):
         # Add a panel so it looks the correct on all platforms
         self.log = wx.TextCtrl(self, -1, size=(100,100),
                           style = wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
+        self.Bind(EVT_STDDOUT, self.OnUpdateOutputWindow)
+
 
         # txtHandler = console.CustomConsoleHandler(log)
         # self.logger.addHandler(txtHandler)
 
-        # redir= RedirectText(self.log)
-        # sys.stdout=redir
+        #redir = RedirectText(self.log)
+        #sys.stdout = redir
 
 
         # # Add widgets to a sizer
@@ -1024,13 +977,9 @@ class consoleOutput(wx.Panel):
 
         #thread = self.run()
 
-
-    @threaded
-    def run(self):
-
-        while 1:
-            time.sleep(.5)
-            wx.CallAfter(self.log.WriteText, str(time.clock())+'\n')
+    def OnUpdateOutputWindow(self, event):
+        value = event.text
+        self.log.AppendText(value)
 
 class RedirectText(object):
 

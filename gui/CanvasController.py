@@ -1,3 +1,5 @@
+import threading
+import time
 
 __author__ = 'Mario'
 
@@ -28,14 +30,21 @@ from transform.time import TemporalInterpolation
 import datatypes
 from api.ODM2.Results.services import readResults
 from api.ODM2.Core.services import readCore
-from gui.async import *
+from gui.async import EVT_CREATE_BOX, Dispatcher, WorkerThread
 from Queue import Queue
 
+
+
 class CanvasController:
-    def __init__(self, cmd, Canvas):
-        self.Canvas = Canvas
+    def __init__(self, cmd, frame):
+        self.Canvas = frame.Canvas
         self.FloatCanvas = self.Canvas.Canvas
         self.cmd = cmd
+        self.frame = frame
+
+        self.dispatcher = Dispatcher()
+        self.threadManager = WorkerThread(self, self.dispatcher)
+        self.threadManager.start()
 
         # This is just to ensure that we are starting without interference from NavToolbar or drag-drop
         self.UnBindAllMouseEvents()
@@ -84,6 +93,8 @@ class CanvasController:
         # self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.onRightDown)
         # self.FloatCanvas.Bind(FC.EVT_LEFT_DOWN, self.onLeftDown)
         self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.LaunchContext)
+        self.frame.Bind(wx.EVT_CLOSE, self.onClose)
+        self.frame.Bind(EVT_CREATE_BOX, self.onCreateBox)
 
     def initSubscribers(self):
         Publisher.subscribe(self.createBox, "createBox")
@@ -96,6 +107,34 @@ class CanvasController:
         Publisher.subscribe(self.SaveSimulation, "SetSavePath")
         Publisher.subscribe(self.loadsimulation, "SetLoadPath")
         Publisher.subscribe(self.addModel, "AddModel")  # subscribes to object list view
+
+    def onClose(self, event):
+        print "In close"
+        dlg = wx.MessageDialog(None, 'Are you sure you want to exit?', 'Question',
+                               wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
+
+        if dlg.ShowModal() !=wx.ID_NO:
+            self.threadManager.dispatcher.putTask(('kill', 'kill'))
+            self.threadManager.join(.5)
+            windowsRemaining = len(wx.GetTopLevelWindows())
+            if windowsRemaining > 0:
+                import wx.lib.agw.aui.framemanager as aui
+                # logger.debug("Windows left to close: %d" % windowsRemaining)
+                for item in wx.GetTopLevelWindows():
+                    #logger.debug("Windows %s" % item)
+                    if not isinstance(item, self.frame.__class__):
+                        if isinstance(item, aui.AuiFloatingFrame):
+                            item.Destroy()
+                        elif isinstance(item, aui.AuiSingleDockingGuide):
+                            item.Destroy()
+                        elif isinstance(item, aui.AuiDockingHintWindow):
+                            item.Destroy()
+                        elif isinstance(item, wx.Dialog):
+                            item.Destroy()
+                        item.Close()
+
+        self.frame.Destroy()
+        wx.GetApp().ExitMainLoop()
 
     def OnMove(self, event):
         """
@@ -115,6 +154,15 @@ class CanvasController:
                 dc.DrawPolygon(self.MoveObject)
             self.MoveObject = self.StartObject + dxy
             dc.DrawPolygon(self.MoveObject)
+
+    def onCreateBox(self, evt):
+        print "Creating box"
+        name = evt.name
+        id = evt.id
+        x = evt.xCoord
+        y = evt.yCoord
+        self.createBox(xCoord=x, yCoord=y, id=id, name=name)
+        print "finish Creating box"
 
     def createBox(self, xCoord, yCoord, id=None, name=None, color='#A2CAF5'):
 
@@ -261,7 +309,7 @@ class CanvasController:
                 if ext == '.mdl':
                     # load the model
                     dtype = datatypes.ModelTypes.FeedForward
-                    model = self.cmd.add_model(dtype,attrib={'mdl':filepath})
+                    model = self.cmd.add_model(type=dtype, attrib={'mdl':filepath})
                     name = model.get_name()
                     modelid = model.get_id()
                     self.createBox(name=name, id=modelid, xCoord=x, yCoord=y)
@@ -928,7 +976,7 @@ class CanvasController:
 
                 # thread = self.cmd.add_model(dtype,id=attrib['id'], attrib=attrib)
                 # model = thread.result_queue.get()
-                model = self.cmd.add_model(dtype,id=attrib['id'], attrib=attrib)
+                model = self.cmd.add_model(type=dtype,id=attrib['id'], attrib=attrib)
 
 
                 x = float(attrib['xcoordinate'])
@@ -1048,19 +1096,10 @@ class FileDrop(wx.FileDropTarget):
         self.OnDropFiles(x,y,filenames)
 
     def OnDropFiles(self, x, y, filenames):
-        #print "filename: {2} x: {0} y: {1}".format(x,y, filenames)
-
-        #Canvas = NC.NavCanvas(self, -1, size=wx.DefaultSize).Canvas
-        #Canvas.AddRectangle((110, 10), (100, 100), FillColor='Red')
-        #print x,y
         originx, originy = self.window.Canvas.PixelToWorld((0,0))
-        #ar = self.window.Canvas.ScreenPosition
-        #x-= ar[0]
-        x = x +originx
+
+        x = x + originx
         y = originy - y
-        #x, y = self.window.Canvas.WorldToPixel((nx,ny))
-        #print x,y
-        #x = y = 0
 
         link_objs = []
 
@@ -1068,13 +1107,22 @@ class FileDrop(wx.FileDropTarget):
         name, ext = os.path.splitext(filenames[0])
         if ext == '.mdl' or ext =='.sim':
 
-            models = None
             try:
                 if ext == '.mdl':
 
                     dtype = datatypes.ModelTypes.FeedForward
+                    kwargs = dict(x=x, y=y, type=dtype, attrib={'mdl': filenames[0]})
+                    task = ('addmodel', kwargs)
+                    self.controller.dispatcher.putTask(task)
+                    # args = dtype
+                    # attrib = {'mdl': filenames[0]}
+                    # task = (self.cmd, (args, attrib))
+                    # self.controller.dispatcher.putTask(task)
+                    #
+                    # t = threading.Thread(target=worker, args=(self.controller,))
+                    # t.start()
 
-                    model = self.cmd.add_model(dtype,attrib={'mdl':filenames[0]})
+                    # model = self.cmd.add_model(type=dtype, attrib={'mdl': filenames[0]})
 
                     # # this blocks, waiting for the result
                     # model = model_thread.result_queue.get()
@@ -1083,12 +1131,12 @@ class FileDrop(wx.FileDropTarget):
                     # ID = uuid.uuid4().hex[:5]
                     # self.controller.createBox(name='test', id=ID, xCoord=x, yCoord=y)
 
-                    name = model.get_name()
-                    modelid = model.get_id()
+                    # name = model.get_name()
+                    # modelid = model.get_id()
 
+                    # name = "test"
+                    # modelid = "-1"
 
-
-                    self.controller.createBox(name=name, id=modelid, xCoord=x, yCoord=y)
 
                 else:
                     # load the simulation

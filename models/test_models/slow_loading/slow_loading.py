@@ -9,10 +9,13 @@ class slowloading(feed_forward.feed_forward_wrapper):
     def __init__(self,config_params):
         super(slowloading, self).__init__(config_params)
 
+        print "begin loading module"
         # loop designed to cause slow initialization
         cnt = 0
         for i in range(0,50000000):
             cnt += i
+        print "Done loading module"
+
 
 
     def run(self,inputs):

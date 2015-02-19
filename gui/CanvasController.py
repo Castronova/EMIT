@@ -1074,51 +1074,26 @@ class FileDrop(wx.FileDropTarget):
 
                     dtype = datatypes.ModelTypes.FeedForward
 
-
-
-                    # load the model
-                    #self.cmd.add_model(model.attrib['mdl'], id=model.attrib['id'],type=dtype)
-
-                    # thread = self.cmd.add_model(dtype,attrib={'mdl':filenames[0]})
-                    # model = thread.result_queue.get()
                     model = self.cmd.add_model(dtype,attrib={'mdl':filenames[0]})
 
-                    # load the model (returns model instance
-                    #model = self.cmd.add_model(filenames[0],type=dtype)
+                    # # this blocks, waiting for the result
+                    # model = model_thread.result_queue.get()
+                    #
+                    # import uuid
+                    # ID = uuid.uuid4().hex[:5]
+                    # self.controller.createBox(name='test', id=ID, xCoord=x, yCoord=y)
 
                     name = model.get_name()
                     modelid = model.get_id()
+
+
 
                     self.controller.createBox(name=name, id=modelid, xCoord=x, yCoord=y)
 
                 else:
                     # load the simulation
-                    #models, links, link_objs = self.cmd.load_simulation(filenames[0])
                     self.controller.loadsimulation(filenames[0])
 
-                    # array = N.zeros((3,3))
-                    # index_order = [(1,1),(0,0),(2,2),(2,0),(2,2),(0,1),(1,0),(1,2),(2,1)]
-                    # # draw boxes for each model
-                    # offset = 0
-                    # for model in list(models):
-                    #     # get the name and id of the model
-                    #     name = model.get_name()
-                    #     modelid = model.get_id()
-                    #
-                    #     newx = random.randrange(-1,2)*offset + x
-                    #     newy = random.randrange(-1,2)*offset + y
-                    #
-                    #     self.controller.createBox(name=name, id=modelid, xCoord=newx, yCoord=newy)
-                    #     self.window.Canvas.Draw()
-                    #     offset=200
-
-                    # draw the link line
-
-                    # for link in list(link_objs):
-                    #
-                    #     R1 = self.controller.models.keys()[self.controller.models.values().index(link[0])]
-                    #     R2 = self.controller.models.keys()[self.controller.models.values().index(link[2])]
-                    #     self.controller.createLine(R1,R2)
 
             except Exception, e:
                 print '> Could not load the model. Please verify that the model file exists.'
@@ -1126,65 +1101,6 @@ class FileDrop(wx.FileDropTarget):
 
         else:
             # # -- must be a data object --
-            #
-            #
-            # # get info about the data series
-            # from ODM2.Core.services import readCore
-            # from ODM2.Results.services import readResults
-            # from shapely import wkb
-            # import stdlib, uuid
-            #
-            # # get the session
-            # session = self.controller.getCurrentDbSession()
-            #
-            # # get result object and result timeseries
-            # core = readCore(session)
-            # obj = core.getResultByID(resultID=int(name))
-            # readres = readResults(session)
-            # results = readres.getTimeSeriesValuesByResultId(resultId=int(name))
-            #
-            # # separate the date and value pairs in the timeseries
-            # dates = [date.ValueDateTime for date in results]
-            # values = [val.DataValue for val in results]
-            #
-            # # basic exchange item info
-            # id = uuid.uuid4().hex[:8]
-            # name = obj.VariableObj.VariableCode
-            # desc = obj.VariableObj.VariableDefinition
-            # #unit = obj.UnitObj.UnitsName
-            # #vari = obj.VariableObj.VariableNameCV
-            # type = stdlib.ExchangeItemType.Output
-            # start = min(dates)
-            # end = max(dates)
-            #
-            # # build datavalue object
-            # data = stdlib.DataValues(timeseries=zip(dates,values))
-            #
-            # # build geometry object
-            # # todo: this assumes single geometry! fix
-            # shape = wkb.loads(str(obj.FeatureActionObj.SamplingFeatureObj.FeatureGeometry.data))
-            # geometry = stdlib.Geometry(geom=shape,srs=None,elev=None,datavalues=data)
-            #
-            # # build variable
-            # variable = stdlib.Variable()
-            # variable.VariableDefinition(obj.VariableObj.VariableDefinition)
-            # variable.VariableNameCV(obj.VariableObj.VariableNameCV)
-            #
-            # # build unit
-            # unit = stdlib.Unit()
-            # unit.UnitAbbreviation(obj.UnitObj.UnitsAbbreviation)
-            # unit.UnitName(obj.UnitObj.UnitsName)
-            # unit.UnitTypeCV(obj.UnitObj.UnitsTypeCV)
-            #
-            # # build exchange item object
-            # item = stdlib.ExchangeItem(id=id, name=name, desc=desc, geometry=[geometry], unit=unit, variable=variable,type=type )
-
-            # create an instance of data wrapper
-            #dwrapper_inst = odm2_data.odm2(resultid=name, session=self.controller.getCurrentDbSession())
-
-
-            # generate a unique model id
-            #id = uuid.uuid4().hex[:8]
 
             # get the current database connection dictionary
             session = self.controller.getCurrentDbSession()

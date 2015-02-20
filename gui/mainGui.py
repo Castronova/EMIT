@@ -32,7 +32,9 @@ from functools import wraps
 from itertools import cycle
 import time
 
-
+from wx.lib.newevent import NewEvent
+wxStdOut, EVT_STDDOUT= NewEvent()
+wxCreateBox, EVT_CREATE_BOX = NewEvent()
 
 
 
@@ -89,14 +91,14 @@ class MainGui(wx.Frame):
 
 
         self.bnb = wx.Notebook(self.pnlDocking)
-        output =consoleOutput(self.bnb)
+        self.output =consoleOutput(self.bnb)
         # output.start()
 
         # seriesoutput = OutputTimeSeries(self.bnb)
         seriesselector = TimeSeries(self.bnb)
         seriesoutput = SimulationDataTable(self.bnb)
 
-        self.bnb.AddPage(output, "Console")
+        self.bnb.AddPage(self.output, "Console")
         self.bnb.AddPage(seriesselector, "Time Series")
         self.bnb.AddPage(seriesoutput, "Simulations")
         # self.bnb.AddPage(seriesoutput, "Output Time Series")
@@ -988,7 +990,7 @@ def wxCallafter(target):
 
 
 
-from gui.async import *
+#from gui.async import *
 
 class consoleOutput(wx.Panel):
 
@@ -1001,12 +1003,14 @@ class consoleOutput(wx.Panel):
         # Add a panel so it looks the correct on all platforms
         self.log = wx.TextCtrl(self, -1, size=(100,100),
                           style = wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
+        self.Bind(EVT_STDDOUT, self.OnUpdateOutputWindow)
+
 
         # txtHandler = console.CustomConsoleHandler(log)
         # self.logger.addHandler(txtHandler)
 
-        # redir= RedirectText(self.log)
-        # sys.stdout=redir
+        #redir = RedirectText(self.log)
+        #sys.stdout = redir
 
 
         # # Add widgets to a sizer
@@ -1024,13 +1028,9 @@ class consoleOutput(wx.Panel):
 
         #thread = self.run()
 
-
-    @threaded
-    def run(self):
-
-        while 1:
-            time.sleep(.5)
-            wx.CallAfter(self.log.WriteText, str(time.clock())+'\n')
+    def OnUpdateOutputWindow(self, event):
+        value = event.text
+        self.log.AppendText(value)
 
 class RedirectText(object):
 

@@ -6,7 +6,7 @@ from wrappers import feed_forward
 
 class slowloading(feed_forward.feed_forward_wrapper):
 
-    def __init__(self,config_params):
+    def __init__(self, config_params):
         super(slowloading, self).__init__(config_params)
 
         print "begin loading module"

@@ -229,7 +229,9 @@ class Coordinator(object):
 
         # TODO: Get this from gui dialog
         self.preferences = os.path.abspath(os.path.join(os.path.dirname(__file__),'../data/preferences'))
-        
+    def get_models(self):
+        return self.__models
+
     def clear_all(self):
         self.__links = {}
         self.__models = {}
@@ -283,10 +285,11 @@ class Coordinator(object):
         return self.__default_db
 
     # @threaded
-    def add_model(self, type=None, id=None, attrib=None):
+    def add_model(self, type=None, id=None, attrib=None, model_class=None):
         """
         stores model component objects when added to a configuration
         """
+
         thisModel = None
 
 
@@ -298,8 +301,9 @@ class Coordinator(object):
             params = parse_config(ini_path)
 
             if params is not None:
+
                 # load model
-                name,model_inst = load_model(params)
+                name, model_inst = load_model(params, model_class)
 
                 # make sure this model doesnt already exist
                 if name in self.__models:

@@ -1,14 +1,20 @@
+import logging
 import threading
 import time
+import imp
+from utilities.gui import parse_config
+from utilities.logger import LoggerTool
 
 __author__ = 'Mario'
 
 import wx
 import textwrap as tw
+
 ver = 'local'
 from utilities import gui
 
 import sys
+
 sys.path.append("..")
 
 from wx.lib.floatcanvas import FloatCanvas as FC
@@ -30,21 +36,26 @@ from transform.time import TemporalInterpolation
 import datatypes
 from api.ODM2.Results.services import readResults
 from api.ODM2.Core.services import readCore
-from gui.async import EVT_CREATE_BOX, Dispatcher, WorkerThread
-from Queue import Queue
+#from gui.async import EVT_CREATE_BOX, Dispatcher, WorkerThread
 
+tool = LoggerTool()
+logger = tool.setupLogger(__name__, __name__ + '.log', 'w', logging.DEBUG)
 
 
 class CanvasController:
-    def __init__(self, cmd, frame):
+    def __init__(self, frame, taskserver):
         self.Canvas = frame.Canvas
         self.FloatCanvas = self.Canvas.Canvas
-        self.cmd = cmd
+        self.cmd = frame.pnlDocking.cmd
         self.frame = frame
 
-        self.dispatcher = Dispatcher()
-        self.threadManager = WorkerThread(self, self.dispatcher)
-        self.threadManager.start()
+        # taskserverMP with running tasks in the background
+        self.taskserver = taskserver
+
+        # DELETEME
+        # self.dispatcher = Dispatcher()
+        # self.threadManager = WorkerThread(self, self.dispatcher)
+        # self.threadManager.start()
 
         # This is just to ensure that we are starting without interference from NavToolbar or drag-drop
         self.UnBindAllMouseEvents()
@@ -59,7 +70,7 @@ class CanvasController:
         defaultCursor.Name = 'default'
         self._Cursor = defaultCursor
 
-        #self.Canvas.ZoomToFit(Event=None)
+        # self.Canvas.ZoomToFit(Event=None)
 
         dt = FileDrop(self, self.Canvas, self.cmd)
         self.Canvas.SetDropTarget(dt)
@@ -88,13 +99,14 @@ class CanvasController:
         self.EventsAreBound = False
 
     def initBindings(self):
-        self.FloatCanvas.Bind(FC.EVT_MOTION, self.OnMove )
-        self.FloatCanvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp )
+        self.FloatCanvas.Bind(FC.EVT_MOTION, self.OnMove)
+        self.FloatCanvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp)
         # self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.onRightDown)
         # self.FloatCanvas.Bind(FC.EVT_LEFT_DOWN, self.onLeftDown)
         self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.LaunchContext)
         self.frame.Bind(wx.EVT_CLOSE, self.onClose)
-        self.frame.Bind(EVT_CREATE_BOX, self.onCreateBox)
+        # DELETEME
+        #self.frame.Bind(EVT_CREATE_BOX, self.onCreateBox)
 
     def initSubscribers(self):
         Publisher.subscribe(self.createBox, "createBox")
@@ -109,19 +121,24 @@ class CanvasController:
         Publisher.subscribe(self.addModel, "AddModel")  # subscribes to object list view
 
     def onClose(self, event):
-        print "In close"
+        # print "In close"
         dlg = wx.MessageDialog(None, 'Are you sure you want to exit?', 'Question',
                                wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
+        if dlg.ShowModal() != wx.ID_NO:
 
-        if dlg.ShowModal() !=wx.ID_NO:
-            self.threadManager.dispatcher.putTask(('kill', 'kill'))
-            self.threadManager.join(.5)
+            # Shut down processes running in background
+            if self.taskserver.numprocesses > 0 and self.taskserver.anyAlive:
+                busy = wx.BusyInfo("Closing EMIT ...", parent=self.frame)
+
+                # Terminate the processes
+                self.taskserver.processTerminate()
+
             windowsRemaining = len(wx.GetTopLevelWindows())
             if windowsRemaining > 0:
                 import wx.lib.agw.aui.framemanager as aui
                 # logger.debug("Windows left to close: %d" % windowsRemaining)
                 for item in wx.GetTopLevelWindows():
-                    #logger.debug("Windows %s" % item)
+                    # logger.debug("Windows %s" % item)
                     if not isinstance(item, self.frame.__class__):
                         if isinstance(item, aui.AuiFloatingFrame):
                             item.Destroy()
@@ -168,22 +185,22 @@ class CanvasController:
 
         if name:
             w, h = 180, 120
-            WH = (w/2, h/2)
-            x,y = xCoord, yCoord
+            WH = (w / 2, h / 2)
+            x, y = xCoord, yCoord
             FontSize = 14
-            #filename = os.path.basename(filepath)
+            # filename = os.path.basename(filepath)
 
             # get the coordinates for the rounded rectangle
-            rect_coords = CanvasObjects.build_rounded_rectangle((x,y), width=w, height=h)
+            rect_coords = CanvasObjects.build_rounded_rectangle((x, y), width=w, height=h)
 
-            R = self.FloatCanvas.AddObject(FC.Polygon(rect_coords,FillColor=color,InForeground=True))
+            R = self.FloatCanvas.AddObject(FC.Polygon(rect_coords, FillColor=color, InForeground=True))
 
             #R = self.FloatCanvas.AddRectangle((x,y), (w,h), LineWidth = 2, FillColor = "BLUE",InForeground=True)
             #R.HitFill = True
             R.ID = id
             R.Name = name
-            R.wh = (w,h)
-            R.xy = (x,y)
+            R.wh = (w, h)
+            R.xy = (x, y)
 
             # set the shape type so that we can identify it later
             R.type = CanvasObjects.ShapeType.Model
@@ -206,9 +223,11 @@ class CanvasController:
             # define the font
             font = wx.Font(16, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
 
-            label = self.FloatCanvas.AddScaledTextBox(unicode(name), (x,y), #(x+1, y+h/2),
-                                        Color = "Black",  Size = FontSize, Width= w-10, Position = "cc", Alignment = "center",
-                                        Weight=wx.BOLD, Style=wx.ITALIC, InForeground=True, Font = font, LineWidth = 0, LineColor = None)
+            label = self.FloatCanvas.AddScaledTextBox(unicode(name), (x, y),  #(x+1, y+h/2),
+                                                      Color="Black", Size=FontSize, Width=w - 10, Position="cc",
+                                                      Alignment="center",
+                                                      Weight=wx.BOLD, Style=wx.ITALIC, InForeground=True, Font=font,
+                                                      LineWidth=0, LineColor=None)
 
 
             # set the type of this object so that we can find it later
@@ -222,43 +241,42 @@ class CanvasController:
             R.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit)
             R.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
 
-
-            self.models[R]=id
+            self.models[R] = id
 
             self.FloatCanvas.Draw()
 
     def createLine(self, R1, R2):
-        #print "creating link", R1, R2
-        x1,y1  = (R1.BoundingBox[0] + (R1.wh[0]/2, R1.wh[1]/2))
-        x2,y2  = (R2.BoundingBox[0] + (R2.wh[0]/2, R2.wh[1]/2))
+        # print "creating link", R1, R2
+        x1, y1 = (R1.BoundingBox[0] + (R1.wh[0] / 2, R1.wh[1] / 2))
+        x2, y2 = (R2.BoundingBox[0] + (R2.wh[0] / 2, R2.wh[1] / 2))
 
-        length = (((x2 - x1)**2)+(y2 - y1)**2)**.5
+        length = (((x2 - x1) ** 2) + (y2 - y1) ** 2) ** .5
         dy = (y2 - y1)
         dx = (x2 - x1)
-        angle = 90- math.atan2(dy,dx) *180/math.pi
+        angle = 90 - math.atan2(dy, dx) * 180 / math.pi
 
         #print 'angle: ',angle
         from matplotlib.pyplot import cm
+
         cmap = cm.Blues
-        line = CanvasObjects.get_line_pts((x1,y1),(x2,y2),order=4, num=200)
+        line = CanvasObjects.get_line_pts((x1, y1), (x2, y2), order=4, num=200)
         linegradient = CanvasObjects.get_hex_from_gradient(cmap, len(line))
         linegradient.reverse()
-       # print arrow
+        # print arrow
 
-        for i in range(0,len(line)-1):
-            l = FC.Line((line[i],line[i+1]),LineColor=linegradient[i],LineWidth=2,InForeground=False)
+        for i in range(0, len(line) - 1):
+            l = FC.Line((line[i], line[i + 1]), LineColor=linegradient[i], LineWidth=2, InForeground=False)
             l.type = CanvasObjects.ShapeType.Link
             self.FloatCanvas.AddObject(l)
 
         arrow_shape = self.createArrow(line)
 
         # store the link and rectangles in the self.links list
-        for k,v in self.links.iteritems():
-            if v == [R1,R2]:
+        for k, v in self.links.iteritems():
+            if v == [R1, R2]:
                 self.links.pop(k)
                 break
-        self.links[arrow_shape] = [R1,R2]
-
+        self.links[arrow_shape] = [R1, R2]
 
         self.Canvas.Canvas.Draw()
 
@@ -267,12 +285,12 @@ class CanvasController:
         arrow = CanvasObjects.build_arrow(line, arrow_length=6)
 
         # create the arrowhead object
-        arrow_shape = FC.Polygon(arrow,FillColor='Blue',InForeground=True)
+        arrow_shape = FC.Polygon(arrow, FillColor='Blue', InForeground=True)
 
         # set the shape type so that we can identify it later
         arrow_shape.type = CanvasObjects.ShapeType.ArrowHead
         self.FloatCanvas.AddObject(arrow_shape)
-        #arrow_draw = self.FloatCanvas.AddObject(arrow_shape)
+        # arrow_draw = self.FloatCanvas.AddObject(arrow_shape)
         #arrow_draw.PutInBackground()
 
         # bind the arrow to left click
@@ -298,18 +316,18 @@ class CanvasController:
         x0 = self.Canvas.MinWidth / 2.
         y0 = self.Canvas.MinHeight / 2.
 
-        originx, originy = self.Canvas.Canvas.PixelToWorld((0,0))
-        x = x0 +originx
+        originx, originy = self.Canvas.Canvas.PixelToWorld((0, 0))
+        x = x0 + originx
         y = originy - y0
 
         name, ext = os.path.splitext(filepath)
 
-        if ext == '.mdl' or ext =='.sim':
+        if ext == '.mdl' or ext == '.sim':
             try:
                 if ext == '.mdl':
                     # load the model
                     dtype = datatypes.ModelTypes.FeedForward
-                    model = self.cmd.add_model(type=dtype, attrib={'mdl':filepath})
+                    model = self.cmd.add_model(type=dtype, attrib={'mdl': filepath})
                     name = model.get_name()
                     modelid = model.get_id()
                     self.createBox(name=name, id=modelid, xCoord=x, yCoord=y)
@@ -341,13 +359,13 @@ class CanvasController:
                                    name=inst.name(),
                                    instance=inst,
                                    desc=inst.description(),
-                                   input_exchange_items= [],
+                                   input_exchange_items=[],
                                    output_exchange_items=[output],
                                    params=None)
 
 
             # save the result id
-            att = {'resultid':name}
+            att = {'resultid': name}
 
             # save the database connection
             dbs = self.cmd.get_db_connections()
@@ -377,7 +395,7 @@ class CanvasController:
         to_id = link[1].ID
 
         # get the link id
-        links = self.cmd.get_links_btwn_models(from_id,to_id)
+        links = self.cmd.get_links_btwn_models(from_id, to_id)
 
         # remove all links
         for link in links:
@@ -394,7 +412,7 @@ class CanvasController:
         removed_model = self.models.pop(model_obj)
 
         updated_links = {}
-        for k,v in self.links.iteritems():
+        for k, v in self.links.iteritems():
             if model_obj not in v:
                 updated_links[k] = v
         self.links = updated_links
@@ -430,7 +448,7 @@ class CanvasController:
             mainGui = self.Canvas.GetTopLevelParent()
             mv = mainGui.Children[0].FindWindowByName('notebook').GetPage(1)
 
-            #mv = self.Canvas.GetTopLevelParent().m_mgr.GetPane(n
+            # mv = self.Canvas.GetTopLevelParent().m_mgr.GetPane(n
 
             # get the model object from cmd
             obj_id = object.ID
@@ -448,28 +466,30 @@ class CanvasController:
                 params = obj.get_config_params()
                 if params is None:
                     params = {}
-            except: params = {}
+            except:
+                params = {}
 
             text = ''
 
-            for arg,dict in params.iteritems():
+            for arg, dict in params.iteritems():
                 title = arg
 
                 try:
                     table = ''
-                    for k,v in dict[0].iteritems():
+                    for k, v in dict[0].iteritems():
                         table += '||%s||%s||\n' % (k, v)
 
-                    text += '###%s  \n%s  \n'%(title,table)
-                except: pass
+                    text += '###%s  \n%s  \n' % (title, table)
+                except:
+                    pass
             html = markdown2.markdown(text, extras=["wiki-tables"])
 
             #css = "<style>h3 a{font-weight:100;color: gold;text-decoration: none;}</style>"
             css = "<style>tr:nth-child(even) " \
-                    "{ background-color: #e6f1f5;} " \
-                    "table {border-collapse: collapse;width:100%}" \
-                    "table td, table th {border: 1px solid #e6f1f5;}" \
-                    "h3 {color: #66A3E0}</style>"
+                  "{ background-color: #e6f1f5;} " \
+                  "table {border-collapse: collapse;width:100%}" \
+                  "table td, table th {border: 1px solid #e6f1f5;}" \
+                  "h3 {color: #66A3E0}</style>"
 
 
             # set the model params as text
@@ -479,16 +499,14 @@ class CanvasController:
             except:
                 pass
 
-
-
         if not self.Moving:
             self.Moving = True
             self.StartPoint = object.HitCoordsPixel
 
             BB = object.BoundingBox
             OutlinePoints = N.array(
-            ( (BB[0, 0], BB[0, 1]), (BB[0, 0], BB[1, 1]), (BB[1, 0], BB[1, 1]), (BB[1, 0], BB[0, 1]),
-            ))
+                ( (BB[0, 0], BB[0, 1]), (BB[0, 0], BB[1, 1]), (BB[1, 0], BB[1, 1]), (BB[1, 0], BB[0, 1]),
+                ))
             self.StartObject = self.FloatCanvas.WorldToPixel(OutlinePoints)
             self.MoveObject = None
             self.MovingObject = object
@@ -502,25 +520,25 @@ class CanvasController:
 
             # reset
             self.link_clicks = 0
-            self.linkRects=[]
+            self.linkRects = []
 
-            #change the mouse cursor
+            # change the mouse cursor
             self.FloatCanvas.SetMode(self.Canvas.GuiMouse)
 
     def GetHitObject(self, event, HitEvent):
         if self.Canvas.Canvas.HitDict:
             # check if there are any objects in the dict for this event
-            if self.Canvas.Canvas.HitDict[ HitEvent ]:
+            if self.Canvas.Canvas.HitDict[HitEvent]:
                 xy = event.GetPosition()
-                color = self.Canvas.Canvas.GetHitTestColor( xy )
-                if color in self.Canvas.Canvas.HitDict[ HitEvent ]:
-                    Object = self.Canvas.Canvas.HitDict[ HitEvent ][color]
+                color = self.Canvas.Canvas.GetHitTestColor(xy)
+                if color in self.Canvas.Canvas.HitDict[HitEvent]:
+                    Object = self.Canvas.Canvas.HitDict[HitEvent][color]
                     return Object
             return False
 
-    def ArrowClicked(self,event):
+    def ArrowClicked(self, event):
 
-        #if event
+        # if event
 
         #self.Log("The Link was Clicked")
 
@@ -547,26 +565,28 @@ class CanvasController:
         linkstart = LinkStart(self.FloatCanvas, from_model, to_model, inputitems, outputitems, self.cmd)
         linkstart.Show()
 
-    def RightClickCb( self, event ):
+    def RightClickCb(self, event):
         # get the link object
         # get the model id's from the link
         # get the model objects from the models id's
         menu = wx.Menu()
-        for (id,title) in menu_title_by_id.items():
-            menu.Append( id, title )
-            wx.EVT_MENU( menu, id, self.MenuSelectionCb )
+        for (id, title) in menu_title_by_id.items():
+            menu.Append(id, title)
+            wx.EVT_MENU(menu, id, self.MenuSelectionCb)
 
         # Launcher displays menu with call to PopupMenu, invoked on the source component, passing event's GetPoint.
-        self.frame.PopupMenu( menu, event.GetPoint() )
-        menu.Destroy() # destroy to avoid mem leak
+        self.frame.PopupMenu(menu, event.GetPoint())
+        menu.Destroy()  # destroy to avoid mem leak
 
     def RedrawConfiguration(self):
         # clear lines from drawlist
-        self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != CanvasObjects.ShapeType.Link]
-        #self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Line]
+        self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if
+                                      obj.type != CanvasObjects.ShapeType.Link]
+        # self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Line]
 
         # remove any arrowheads from the _ForeDrawList
-        self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if obj.type != CanvasObjects.ShapeType.ArrowHead]
+        self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if
+                                          obj.type != CanvasObjects.ShapeType.ArrowHead]
         #self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if type(obj) != FC.Polygon]
 
         # remove any models
@@ -579,8 +599,8 @@ class CanvasController:
 
         # redraw links
         for link in self.links.keys():
-            r1,r2 = self.links[link]
-            self.createLine(r1,r2)
+            r1, r2 = self.links[link]
+            self.createLine(r1, r2)
 
         self.FloatCanvas.Draw(True)
 
@@ -589,23 +609,26 @@ class CanvasController:
             self.Moving = False
             if self.MoveObject is not None:
                 dxy = event.GetPosition() - self.StartPoint
-                (x,y) = self.FloatCanvas.ScalePixelToWorld(dxy)
-                self.MovingObject.Move((x,y))
+                (x, y) = self.FloatCanvas.ScalePixelToWorld(dxy)
+                self.MovingObject.Move((x, y))
                 self.MovingObject.Text.Move((x, y))
 
 
                 # clear lines from drawlist
-                self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != CanvasObjects.ShapeType.Link]
-                #self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Line]
+                self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if
+                                              obj.type != CanvasObjects.ShapeType.Link]
+                # self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Line]
 
                 # remove any arrowheads from the two FloatCanvas DrawLists
-                self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if obj.type != CanvasObjects.ShapeType.ArrowHead]
-                self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != CanvasObjects.ShapeType.ArrowHead]
+                self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if
+                                                  obj.type != CanvasObjects.ShapeType.ArrowHead]
+                self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if
+                                              obj.type != CanvasObjects.ShapeType.ArrowHead]
 
                 # redraw links
                 for link in self.links.keys():
-                    r1,r2 = self.links[link]
-                    self.createLine(r1,r2)
+                    r1, r2 = self.links[link]
+                    self.createLine(r1, r2)
 
             self.FloatCanvas.Draw(True)
 
@@ -615,7 +638,7 @@ class CanvasController:
         if cur.Name == 'link':
             self.AddinkCursorClick()
 
-    def getCurrentDbSession(self, value = None):
+    def getCurrentDbSession(self, value=None):
         if value is not None:
             dbs = self.cmd.get_db_connections()
             for db in dbs.iterkeys():
@@ -629,24 +652,26 @@ class CanvasController:
         # build the database connection
         connection = gui.create_database_connections_from_args(title, desc, engine, address, name, user, pwd)
 
-
         if type(connection) == dict and any(connection):
             # store the connection
             self.cmd.add_db_connection(connection)
 
             # notify that the connection was added successfully
-            Publisher.sendMessage('connectionAddedStatus',value=True,connection_string=connection[connection.keys()[0]]['connection_string'])  # sends message to mainGui
+            Publisher.sendMessage('connectionAddedStatus', value=True,
+                                  connection_string=connection[connection.keys()[0]][
+                                      'connection_string'])  # sends message to mainGui
 
             return True
         else:
             # notify that the connection was not added successfully
-            Publisher.sendMessage('connectionAddedStatus',value=False,connection_string=connection) # sends message to mainGui
+            Publisher.sendMessage('connectionAddedStatus', value=False,
+                                  connection_string=connection)  # sends message to mainGui
 
             return False
 
     def getDatabases(self):
         knownconnections = self.cmd.get_db_connections()
-        Publisher.sendMessage('getKnownDatabases',value=knownconnections)  # sends message to mainGui
+        Publisher.sendMessage('getKnownDatabases', value=knownconnections)  # sends message to mainGui
 
     def DetailView(self):
         # DCV.ShowDetails()
@@ -675,7 +700,7 @@ class CanvasController:
 
             if model.type() == datatypes.ModelTypes.FeedForward:
                 attributes['mdl'] = model.params_path()
-                modelelement = et.SubElement(tree,'Model')
+                modelelement = et.SubElement(tree, 'Model')
 
                 modelnameelement = et.SubElement(modelelement, "name")
                 modelnameelement.text = attributes['name']
@@ -694,7 +719,7 @@ class CanvasController:
                 attributes['databaseid'] = model.attrib()['databaseid']
                 attributes['resultid'] = model.attrib()['resultid']
                 # et.SubElement(tree,'DataModel',attributes)
-                dataelement = et.SubElement(tree,'DataModel')
+                dataelement = et.SubElement(tree, 'DataModel')
 
                 datamodelnameelement = et.SubElement(dataelement, "name")
                 datamodelnameelement.text = attributes['name']
@@ -740,7 +765,6 @@ class CanvasController:
             attributes['to_item'] = targetItem.name()
             attributes['to_item_id'] = targetItem.get_id()
 
-
             if L.temporal_interpolation() is not None:
                 attributes['temporal_transformation'] = L.temporal_interpolation().name()
             else:
@@ -751,7 +775,7 @@ class CanvasController:
             else:
                 attributes['spatial_transformation'] = "None"
 
-            linkelement = et.SubElement(tree,'Link')
+            linkelement = et.SubElement(tree, 'Link')
 
             linkfromnameelement = et.SubElement(linkelement, "from_name")
             linkfromnameelement.text = attributes['from_name']
@@ -797,12 +821,12 @@ class CanvasController:
                 attributes['user'] = db_conn['user']
                 attributes['databaseid'] = db_conn['id']
                 attributes['connection_string'] = str(db_conn['connection_string'])
-                connectionelement = et.SubElement(tree,'DbConnection')
+                connectionelement = et.SubElement(tree, 'DbConnection')
 
                 connectionnameelement = et.SubElement(connectionelement, "name")
                 connectionnameelement.text = attributes['name']
                 connectionaddresselement = et.SubElement(connectionelement, "address")
-                connectionaddresselement.text =attributes['address']
+                connectionaddresselement.text = attributes['address']
                 connectionpwdelement = et.SubElement(connectionelement, "pwd")
                 connectionpwdelement.text = attributes['pwd']
                 connectiondescelement = et.SubElement(connectionelement, "desc")
@@ -818,7 +842,6 @@ class CanvasController:
                 connectionconnectionstringelement = et.SubElement(connectionelement, "connection_string")
                 connectionconnectionstringelement.text = attributes['connection_string']
 
-
         try:
 
             # format the xml nicely
@@ -827,7 +850,7 @@ class CanvasController:
             prettyxml = reparsed.toprettyxml(indent="  ")
 
             # save the xml doc
-            with open(path,'w') as f:
+            with open(path, 'w') as f:
                 f.write(prettyxml)
         except Exception, e:
             print '> [ERROR]: An error occurred when attempting to save the project '
@@ -838,7 +861,7 @@ class CanvasController:
 
     # def _loadsimulation(self, file):
     #
-    #     thread = self.loadsimulation(file)
+    # thread = self.loadsimulation(file)
     #     join = thread.result_queue.get()
     #     print 'here'
 
@@ -868,8 +891,8 @@ class CanvasController:
         # get all known transformations
         space = SpatialInterpolation()
         time = TemporalInterpolation()
-        spatial_transformations = {i.name():i for i in space.methods()}
-        temporal_transformations = {i.name():i for i in time.methods()}
+        spatial_transformations = {i.name(): i for i in space.methods()}
+        temporal_transformations = {i.name(): i for i in time.methods()}
 
         databaselist = [x for x in elementslist if x.tag == 'DbConnection']
         # for db_conn in databaselist:
@@ -881,7 +904,7 @@ class CanvasController:
                     textlist.append(data.text)
                     taglist.append(data.tag)
 
-                attrib = dict(zip(taglist,textlist))
+                attrib = dict(zip(taglist, textlist))
 
                 connection_string = attrib['connection_string']
 
@@ -901,13 +924,13 @@ class CanvasController:
 
                 # if database doesn't exist, then connect to it
                 if not database_exists:
-                    connect = wx.MessageBox('This database connection does not currently exist.  Click OK to connect.', 'Info', wx.OK | wx.CANCEL )
-
+                    connect = wx.MessageBox('This database connection does not currently exist.  Click OK to connect.',
+                                            'Info', wx.OK | wx.CANCEL)
 
                     if connect == wx.OK:
 
                         # attempt to connect to the database
-                        title=dic['args']['name']
+                        title = dic['args']['name']
                         desc = dic['args']['desc']
                         engine = dic['args']['engine']
                         address = dic['args']['address']
@@ -915,8 +938,9 @@ class CanvasController:
                         user = dic['args']['user']
                         pwd = dic['args']['pwd']
 
-                        if not self.AddDatabaseConnection(title,desc,engine,address,name,user, pwd):
-                            wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
+                        if not self.AddDatabaseConnection(title, desc, engine, address, name, user, pwd):
+                            wx.MessageBox('I was unable to connect to the database with the information provided :(',
+                                          'Info', wx.OK | wx.ICON_ERROR)
                             return
 
                         # map the connection id
@@ -936,7 +960,7 @@ class CanvasController:
                     textlist.append(data.text)
                     taglist.append(data.tag)
 
-                attrib = dict(zip(taglist,textlist))
+                attrib = dict(zip(taglist, textlist))
                 # get the data type
                 dtype = datatypes.ModelTypes.FeedForward
 
@@ -962,7 +986,7 @@ class CanvasController:
                     textlist.append(data.text)
                     taglist.append(data.tag)
 
-                attrib = dict(zip(taglist,textlist))
+                attrib = dict(zip(taglist, textlist))
 
                 # get the data type
                 dtype = datatypes.ModelTypes.Data
@@ -976,12 +1000,10 @@ class CanvasController:
 
                 # thread = self.cmd.add_model(dtype,id=attrib['id'], attrib=attrib)
                 # model = thread.result_queue.get()
-                model = self.cmd.add_model(type=dtype,id=attrib['id'], attrib=attrib)
-
+                model = self.cmd.add_model(type=dtype, id=attrib['id'], attrib=attrib)
 
                 x = float(attrib['xcoordinate'])
                 y = float(attrib['ycoordinate'])
-
 
                 self.createBox(name=model.get_name(), id=model.get_id(), xCoord=x, yCoord=y, color='#FFFF99')
 
@@ -1008,8 +1030,8 @@ class CanvasController:
                     raise Exception('Could not find Model identifer in loaded models')
 
                 # add the link object
-                l = self.cmd.add_link_by_name(  attrib['from_id'], attrib['from_item'],
-                                    attrib['to_id'], attrib['to_item'])
+                l = self.cmd.add_link_by_name(attrib['from_id'], attrib['from_item'],
+                                              attrib['to_id'], attrib['to_item'])
 
                 # set the temporal and spatial interpolations
                 transform = child.find("./transformation")
@@ -1024,9 +1046,7 @@ class CanvasController:
 
 
                 # this draws the line
-                self.createLine(R1,R2)
-
-
+                self.createLine(R1, R2)
 
             self.FloatCanvas.Draw()
             #self.Canvas.Draw()
@@ -1042,7 +1062,7 @@ class CanvasController:
 
     def setCursor(self, value=None):
         #print "Cursor was set to value ", dir(value), value.GetHandle()
-        self._Cursor=value
+        self._Cursor = value
 
     def LaunchContext(self, event):
 
@@ -1053,23 +1073,23 @@ class CanvasController:
         elif type(event) == wx.lib.floatcanvas.FloatCanvas.Polygon:
             #if object is link
             if event.type == "ArrowHead":
-                self.Canvas.PopupMenu(LinkContextMenu(self,event), event.HitCoordsPixel.Get())
+                self.Canvas.PopupMenu(LinkContextMenu(self, event), event.HitCoordsPixel.Get())
 
             # if object is model
             elif event.type == 'Model':
-                self.Canvas.PopupMenu(ModelContextMenu(self,event), event.HitCoordsPixel.Get())
+                self.Canvas.PopupMenu(ModelContextMenu(self, event), event.HitCoordsPixel.Get())
 
-        # # if object is neither
-        # else:
-        #     self.Canvas.PopupMenu(GeneralContextMenu(self), event.GetPosition())
+                # # if object is neither
+                # else:
+                #     self.Canvas.PopupMenu(GeneralContextMenu(self), event.GetPosition())
 
 
-        #self.Canvas.ClearAll()
-        #self.Canvas.Draw()
+                #self.Canvas.ClearAll()
+                #self.Canvas.Draw()
 
-    def MenuSelectionCb( self, event ):
+    def MenuSelectionCb(self, event):
         # TODO: Fix the menu selection
-        operation = menu_title_by_id[ event.GetId() ]
+        operation = menu_title_by_id[event.GetId()]
         #target    = self.list_item_clicked
         print '> Perform "%(operation)s" on "%(target)s."' % vars()
 
@@ -1078,7 +1098,8 @@ class CanvasController:
         try:
             self.cmd.run_simulation()
         except Exception as e:
-            wx.MessageBox(str(e.args[0]), 'Error',wx.OK | wx.ICON_ERROR)
+            wx.MessageBox(str(e.args[0]), 'Error', wx.OK | wx.ICON_ERROR)
+
 
 class FileDrop(wx.FileDropTarget):
     def __init__(self, controller, window, cmd):
@@ -1093,10 +1114,10 @@ class FileDrop(wx.FileDropTarget):
         x = 0
         y = 0
 
-        self.OnDropFiles(x,y,filenames)
+        self.OnDropFiles(x, y, filenames)
 
     def OnDropFiles(self, x, y, filenames):
-        originx, originy = self.window.Canvas.PixelToWorld((0,0))
+        originx, originy = self.window.Canvas.PixelToWorld((0, 0))
 
         x = x + originx
         y = originy - y
@@ -1105,15 +1126,44 @@ class FileDrop(wx.FileDropTarget):
 
         # make sure the correct file type was dragged
         name, ext = os.path.splitext(filenames[0])
-        if ext == '.mdl' or ext =='.sim':
+        if ext == '.mdl' or ext == '.sim':
 
-            try:
+            # try:
                 if ext == '.mdl':
 
                     dtype = datatypes.ModelTypes.FeedForward
-                    kwargs = dict(x=x, y=y, type=dtype, attrib={'mdl': filenames[0]})
-                    task = ('addmodel', kwargs)
-                    self.controller.dispatcher.putTask(task)
+                    #kwargs = dict(x=x, y=y, type=dtype, attrib={'mdl': filenames[0]})
+
+                    params = parse_config(filenames[0])
+
+                    software = params['software']
+                    classname = software[0]['classname']
+                    relpath = software[0]['filepath']
+
+                    # load the model
+                    basedir = params['basedir']
+                    abspath = os.path.abspath(os.path.join(basedir, relpath))
+                    filename = os.path.basename(abspath)
+                    from models.test_models.slow_loading import slow_loading
+                    # instance = slow_loading.slowloading(params)
+                    module = imp.load_source(filename, abspath)
+                    model_class = getattr(module, classname)
+
+                    kwargs = dict(type=dtype, attrib={'mdl': filenames[0]}, model_class=model_class)
+                    task = [('AddModels', kwargs)]
+                    self.controller.taskserver.setTasks(task)
+
+                    # import filename
+
+                    #logger.debug("Processing tasks")
+                    self.controller.taskserver.processTasks()
+                    print "Is there anything in models?"
+                    for k, v in self.cmd.get_models().iteritems():
+                        print k, v
+                    #logger.debug("Finished Processing Tasks")
+
+                    # DELETEME
+                    #self.controller.dispatcher.putTask(task)
                     # args = dtype
                     # attrib = {'mdl': filenames[0]}
                     # task = (self.cmd, (args, attrib))
@@ -1121,31 +1171,25 @@ class FileDrop(wx.FileDropTarget):
                     #
                     # t = threading.Thread(target=worker, args=(self.controller,))
                     # t.start()
-
                     # model = self.cmd.add_model(type=dtype, attrib={'mdl': filenames[0]})
-
                     # # this blocks, waiting for the result
                     # model = model_thread.result_queue.get()
-                    #
                     # import uuid
                     # ID = uuid.uuid4().hex[:5]
                     # self.controller.createBox(name='test', id=ID, xCoord=x, yCoord=y)
-
                     # name = model.get_name()
                     # modelid = model.get_id()
-
                     # name = "test"
                     # modelid = "-1"
-
 
                 else:
                     # load the simulation
                     self.controller.loadsimulation(filenames[0])
 
 
-            except Exception, e:
-                print '> Could not load the model. Please verify that the model file exists.'
-                print '> %s' % e
+            # except Exception, e:
+            #     logger.debug('> Could not load the model. Please verify that the model file exists.')
+            #     logger.debug('> %s' % e)
 
         else:
             # # -- must be a data object --
@@ -1164,13 +1208,13 @@ class FileDrop(wx.FileDropTarget):
                                    name=inst.name(),
                                    instance=inst,
                                    desc=inst.description(),
-                                   input_exchange_items= [],
-                                   output_exchange_items=  oei,
+                                   input_exchange_items=[],
+                                   output_exchange_items=oei,
                                    params=None)
 
 
             # save the result id
-            att = {'resultid':name}
+            att = {'resultid': name}
 
             # save the database connection
             dbs = self.cmd.get_db_connections()
@@ -1186,7 +1230,7 @@ class FileDrop(wx.FileDropTarget):
             # save the model
             self.cmd.Models(thisModel)
 
-            #self.cmd.__models[name] = thisModel
+            # self.cmd.__models[name] = thisModel
 
 
             # draw a box for this model
@@ -1194,7 +1238,7 @@ class FileDrop(wx.FileDropTarget):
             self.window.Canvas.Draw()
 
 
-    def getObj(self,resultID):
+    def getObj(self, resultID):
 
         session = self.getDbSession()
 
@@ -1205,7 +1249,7 @@ class FileDrop(wx.FileDropTarget):
 
         return obj
 
-    def getData(self,resultID):
+    def getData(self, resultID):
 
 
         session = self.getDbSession()
@@ -1223,13 +1267,14 @@ class FileDrop(wx.FileDropTarget):
 
         session.close()
 
-        return dates,values,obj
+        return dates, values, obj
 
-menu_titles = [ "Open",
-                "Properties",
-                "Rename",
-                "Delete" ]
+
+menu_titles = ["Open",
+               "Properties",
+               "Rename",
+               "Delete"]
 
 menu_title_by_id = {}
 for title in menu_titles:
-    menu_title_by_id[ wx.NewId() ] = title
+    menu_title_by_id[wx.NewId()] = title

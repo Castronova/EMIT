@@ -14,6 +14,8 @@ try:
 except:
    import pickle
 
+from coordinator import main as cmd
+
 __author__ = 'jmeline'
 
 tool = LoggerTool()
@@ -26,14 +28,12 @@ class TaskServerMP:
     The TaskServerMP class provides a target worker class method for queued processes.
     """
 
-    def __init__(self, numproc=1, engine=None):
+    def __init__(self, numproc=1):
         """
         Initialise the TaskServerMP and create the dispatcher and processes.
         """
         self.numprocesses = numproc
         self.tasks = []
-
-        self.engine = engine
 
         # Create the dispatcher
         self.dispatcher = Dispatcher()
@@ -43,7 +43,7 @@ class TaskServerMP:
         # begin processes before entering app.MainLoop()
         # attempting to start them before will crash wxPython. Don't do it
         for n in range(numproc):
-            process = Process(target=TaskServerMP.worker, args=(self.dispatcher, self.engine))
+            process = Process(target=TaskServerMP.worker, args=(self.dispatcher,))
             process.start()
             self.Processes.append(process)
 
@@ -59,13 +59,15 @@ class TaskServerMP:
         self.numtasks = len(taskList)
 
 
-    def worker(cls, dispatcher, engine):
+    def worker(cls, dispatcher):
         """
         The worker creates a TaskProcessor object to calculate the result.
         """
 
         while True:
             args = dispatcher.getTask()
+            engine = cmd.Coordinator()
+            print "Engine in worker: ", engine
             task_type = args[0]
             task_args = args[1]
             print "WORKER! ", str(task_args)
@@ -73,16 +75,19 @@ class TaskServerMP:
             if task_type == 'AddModels':
                 eng_type = task_args['type']
                 eng_attrib = task_args['attrib']
-                model = engine.add_model(type=eng_type, attrib=eng_attrib)
+                model_id = engine.add_model(type=eng_type, attrib=eng_attrib)
+                print "Finished Model in worker: ", model_id, engine.get_models()
+                dispatcher.putResult(model_id)
 
-                print "Model! ", model
 
-                pickled = pickle.dumps(model)
-                print "Picked! ", pickled, type(pickled)
+                #print "Model! ", model
 
-                print "Loads! ", pickle.loads(pickled)
+                #pickled = pickle.dumps(model)
+                #print "Picked! ", pickled, type(pickled)
 
-                dispatcher.putResult(pickled)
+                #print "Loads! ", pickle.loads(pickled)
+
+                #dispatcher.putResult("Done")
 
 
 
@@ -100,8 +105,9 @@ class TaskServerMP:
             self.dispatcher.putTask(task)
 
         # get output
-        model = self.dispatcher.getResult()
-        print "In ProcessTasks: ", pickle.loads(model)
+        return self.dispatcher.getResult()
+
+        #print "In ProcessTasks: ", pickle.loads(model)
 
     def processStop(self, resfunc=None):
         """

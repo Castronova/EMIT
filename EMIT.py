@@ -41,7 +41,7 @@ class MyApp(wx.App):
         # Build GUI components to be passed into the CanvasController
         self.frame = MainGui(None, self.engine)
 
-        sys.stdout = SysOutListener()
+        #sys.stdout = SysOutListener()
 
         CanvasController(self.frame, self.taskserver)
 
@@ -80,10 +80,10 @@ if __name__ == '__main__':
 
     # create and instance of the coordinator engine
     engine = cmd.Coordinator()
-
+    print "Instance of Coordinate: ", engine
     # Initialize TaskServer
     # This class starts the processes before starting wxpython and is a required step
-    tsmp = TaskServerMP(numproc=numproc, engine=engine)
+    tsmp = TaskServerMP(numproc=numproc)
 
     app = MyApp(taskserver=tsmp, eng=engine)
     app.MainLoop()

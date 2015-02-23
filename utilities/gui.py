@@ -256,7 +256,7 @@ def create_database_connections_from_args(title, desc, engine, address, db, user
 
     return db_connections
 
-def load_model(config_params, model_class):
+def load_model(config_params):
     """
     Creates an instance of the model by loading the contents of the configuration ini file.
     returns (model name,model instance)
@@ -273,8 +273,6 @@ def load_model(config_params, model_class):
     basedir = config_params['basedir']
     abspath = os.path.abspath(os.path.join(basedir,relpath))
     filename = os.path.basename(abspath)
-    # from models.test_models.slow_loading import slow_loading
-    # instance = slow_loading.slowloading(config_params)
     module = imp.load_source(filename, abspath)
     model_class = getattr(module, classname)
 
@@ -282,7 +280,7 @@ def load_model(config_params, model_class):
     instance = model_class(config_params)
 
     #return (config_params['general'][0]['name'], instance)
-    return (instance.__class__, instance)
+    return (instance.name(), instance)
 
 def create_database_connections_from_file(ini):
 

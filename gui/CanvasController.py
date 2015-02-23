@@ -37,6 +37,7 @@ import datatypes
 from api.ODM2.Results.services import readResults
 from api.ODM2.Core.services import readCore
 #from gui.async import EVT_CREATE_BOX, Dispatcher, WorkerThread
+from coordinator import main as cmd
 
 tool = LoggerTool()
 logger = tool.setupLogger(__name__, __name__ + '.log', 'w', logging.DEBUG)
@@ -1132,35 +1133,19 @@ class FileDrop(wx.FileDropTarget):
                 if ext == '.mdl':
 
                     dtype = datatypes.ModelTypes.FeedForward
-                    #kwargs = dict(x=x, y=y, type=dtype, attrib={'mdl': filenames[0]})
 
-                    params = parse_config(filenames[0])
-
-                    software = params['software']
-                    classname = software[0]['classname']
-                    relpath = software[0]['filepath']
-
-                    # load the model
-                    basedir = params['basedir']
-                    abspath = os.path.abspath(os.path.join(basedir, relpath))
-                    filename = os.path.basename(abspath)
-                    from models.test_models.slow_loading import slow_loading
-                    # instance = slow_loading.slowloading(params)
-                    module = imp.load_source(filename, abspath)
-                    model_class = getattr(module, classname)
-
-                    kwargs = dict(type=dtype, attrib={'mdl': filenames[0]}, model_class=model_class)
+                    kwargs = dict(type=dtype, attrib={'mdl': filenames[0]})
                     task = [('AddModels', kwargs)]
                     self.controller.taskserver.setTasks(task)
 
-                    # import filename
-
                     #logger.debug("Processing tasks")
-                    self.controller.taskserver.processTasks()
-                    print "Is there anything in models?"
-                    for k, v in self.cmd.get_models().iteritems():
-                        print k, v
+                    result = self.controller.taskserver.processTasks()
+                    print "Is there anything in models? ", result
+                    engine = cmd.Coordinator()
+                    print "Engine: ", engine
                     #logger.debug("Finished Processing Tasks")
+                    ID="-1"
+                    self.controller.createBox(name=result, id=ID, xCoord=x, yCoord=y)
 
                     # DELETEME
                     #self.controller.dispatcher.putTask(task)

@@ -1,3 +1,5 @@
+import multiprocessing
+
 __author__ = 'tonycastronova'
 
 
@@ -42,7 +44,20 @@ from gui.async import *
 """
 Purpose: This file contains the logic used to run coupled model simulations
 """
+def getEngine():
+    return Coordinator()
 
+class Singleton(type):
+    _instances = {}
+    _lock = multiprocessing.Lock()
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            with cls._lock:
+                if cls not in cls._instances:
+                    print "Singleton... Creating new Singleton"
+                    cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
 
 
 class Link(object):
@@ -214,6 +229,9 @@ class Model(object):
         return self.__params_path
 
 class Coordinator(object):
+
+    __metaclass__ = Singleton
+
     def __init__(self):
         """
         globals
@@ -303,7 +321,7 @@ class Coordinator(object):
             if params is not None:
 
                 # load model
-                name, model_inst = load_model(params, model_class)
+                name, model_inst = load_model(params)
 
                 # make sure this model doesnt already exist
                 if name in self.__models:
@@ -366,7 +384,7 @@ class Coordinator(object):
         self.__models[thisModel.get_name()] = thisModel
 
         # return the model id
-        return thisModel
+        return thisModel.get_id()
 
     def remove_model(self,linkablecomponent):
         """

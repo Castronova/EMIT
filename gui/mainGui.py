@@ -11,10 +11,10 @@ import wx.lib.agw.aui as aui
 import objectListViewDatabase as olv
 from api.ODM2.Core.services import *
 import logging
-from ContextMenu import GeneralContextMenu
+from ContextMenu import GeneralContextMenu, TimeSeriesContextMenu, SimulationContextMenu, ConsoleContextMenu
 import threading
 from db import dbapi as dbapi
-from objectListViewDatabase import ContextMenu
+from gui.ContextMenu import ContextMenu
 from frmMatPlotLib import MatplotFrame
 from api.ODM2.Simulation.services import readSimulation
 from api.ODM2.Results.services import readResults
@@ -799,122 +799,6 @@ class SimulationDataTable(DataSeries):
                 Publisher.sendMessage('SetCurrentDb',value=selected_db)  # sends to CanvasController.getCurrentDbSession
 
 
-class TimeSeriesContextMenu(ContextMenu):
-    def __init__(self, parent):
-        super(TimeSeriesContextMenu, self).__init__(parent)
-
-
-class SimulationContextMenu(ContextMenu):
-    def __init__(self, parent):
-        super(SimulationContextMenu, self).__init__(parent)
-
-    def getData(self,simulationID):
-
-        session = self.parent.getDbSession()
-        if session is not None:
-
-
-            readsim = readSimulation(session)
-            core = readCore(session)
-            readres = readResults(session)
-            results = readsim.getResultsBySimulationID(simulationID)
-
-            res = {}
-            for r in results:
-
-                variable_name = r.VariableObj.VariableCode
-                result_values = readres.getTimeSeriesValuesByResultId(int(r.ResultID))
-
-                dates = []
-                values = []
-                for val in result_values:
-                    dates.append(val.ValueDateTime)
-                    values.append(val.DataValue)
-
-
-                # save data series based on variable
-                if variable_name in res:
-                    res[variable_name].append([dates,values,r])
-                else:
-                    res[variable_name] = [[dates,values,r]]
-
-
-
-            return res
-
-    def OnPlot(self, event):
-        #print 'overriding plot!'
-
-        obj, id = self.Selected()
-        #obj = self.__list_obj
-
-        # create a plot frame
-        PlotFrame = None
-        xlabel = None
-        title = None
-        variable = None
-        units = None
-        warning = None
-        x_series = []
-        y_series = []
-        labels = []
-        id = self.parent.GetFirstSelected()
-        while id != -1:
-            # get the result
-            simulationID = obj.GetItem(id,0).GetText()
-
-            name = obj.GetItem(id,1).GetText()
-
-            # get resultid from simulation id
-
-            # get data for this row
-            # x,y, resobj = self.getData(simulationID)
-            results = self.getData(simulationID)
-
-
-
-            if PlotFrame is None:
-
-                # todo: plot more than just this first variable
-                key = results.keys()[0]
-
-
-                resobj = results[key][0][2]
-                # set metadata based on first series
-                ylabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
-                title = '%s' % (resobj.VariableObj.VariableCode)
-
-                # save the variable and units to validate future time series
-                variable = resobj.VariableObj.VariableNameCV
-                units = resobj.UnitObj.UnitsName
-                title = '%s: %s [%s]' % (name, variable,units)
-
-                PlotFrame = MatplotFrame(self.Parent, ylabel=ylabel, title=title)
-
-                for x,y,resobj in results[key]:
-                    # store the x and Y data
-                    x_series.append(x)
-                    y_series.append(y)
-                    labels.append(int(resobj.ResultID))
-
-
-                # PlotFrame.add_series(x,y)
-
-            elif warning is None:
-                warning = 'Multiple Variables/Units were selected.  I currently don\'t support plotting heterogeneous time series. ' +\
-                          'Some of the selected time series will not be shown :( '
-
-            # get the next selected item
-            id = obj.GetNextSelected(id)
-
-        if warning:
-            dlg = wx.MessageDialog(self.parent, warning, '', wx.OK | wx.ICON_WARNING)
-            dlg.ShowModal()
-            dlg.Destroy()
-
-        # plot the data
-        PlotFrame.plot(xlist=x_series, ylist=y_series, labels=labels)
-        PlotFrame.Show()
 
 
 def runAsync(func):
@@ -951,6 +835,7 @@ class consoleOutput(wx.Panel):
         self.log = wx.TextCtrl(self, -1, size=(100,100),
                           style = wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
         self.Bind(EVT_STDDOUT, self.OnUpdateOutputWindow)
+        self.Bind(wx.EVT_CONTEXT_MENU, self.onRightUp)
 
 
         # txtHandler = console.CustomConsoleHandler(log)
@@ -978,6 +863,9 @@ class consoleOutput(wx.Panel):
     def OnUpdateOutputWindow(self, event):
         value = event.text
         self.log.AppendText(value)
+
+    def onRightUp(self, event):
+        self.log.PopupMenu(ConsoleContextMenu(self, event))
 
 class RedirectText(object):
 

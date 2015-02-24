@@ -25,7 +25,7 @@ from threading import Thread
 from functools import wraps
 from itertools import cycle
 import time
-
+from api.ODMconnection import  dbconnection
 from wx.lib.newevent import NewEvent
 
 wxStdOut, EVT_STDDOUT = NewEvent()
@@ -496,6 +496,7 @@ class TimeSeries(wx.Panel):
                     wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info',
                                   wx.OK | wx.ICON_ERROR)
 
+    # TODO: THIS SHOULD HAPPEN IN A PROCESS (I.E. MULTIPROCESSING)
     def refresh_database(self):
 
         # get the name of the selected database
@@ -513,6 +514,17 @@ class TimeSeries(wx.Panel):
 
                 from db import dbapi as dbapi
                 from gui.objectListViewDatabase import Database
+
+                if 'session' not in db.keys():
+                    e = db['args']['engine']
+                    a = db['args']['address']
+                    d = db['args']['db']
+                    u = db['args']['user']
+                    p = db['args']['pwd']
+                    session = dbconnection.createConnection(e,a,d,u,p)
+                    if not session:
+                        raise Exception('Could not create database session')
+                    db['session'] = session
 
                 u = dbapi.utils(db['session'])
                 series = u.getAllSeries()

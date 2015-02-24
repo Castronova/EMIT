@@ -384,7 +384,8 @@ class CanvasController:
             att = {'resultid': name}
 
             # save the database connection
-            dbs = self.cmd.get_db_connections()
+            dbs = self.taskserver.get_db_connections()
+            # dbs = self.cmd.get_db_connections()
             for id, dic in dbs.iteritems():
                 if dic['session'] == self.getCurrentDbSession():
                     att['databaseid'] = id
@@ -656,7 +657,8 @@ class CanvasController:
 
     def getCurrentDbSession(self, value=None):
         if value is not None:
-            dbs = self.cmd.get_db_connections()
+            dbs = self.taskserver.get_db_connections()
+            # dbs = self.cmd.get_db_connections()
             for db in dbs.iterkeys():
                 if dbs[db]['name'] == value:
                     self._currentDbSession = dbs[db]['session']
@@ -685,9 +687,13 @@ class CanvasController:
 
             return False
 
+    def setDatabases(self,connections):
+        Publisher.sendMessage('getKnownDatabases', value=connections)  # sends message to mainGui
+
     def getDatabases(self):
-        knownconnections = self.cmd.get_db_connections()
-        Publisher.sendMessage('getKnownDatabases', value=knownconnections)  # sends message to mainGui
+        knownconnections = self.taskserver.get_db_connections(self)
+        # knownconnections = self.cmd.get_db_connections()
+        # Publisher.sendMessage('getKnownDatabases', value=knownconnections)  # sends message to mainGui
 
     def DetailView(self):
         # DCV.ShowDetails()
@@ -823,7 +829,8 @@ class CanvasController:
         for db_id in db_ids:
             attributes = {}
 
-            connections = self.cmd.get_db_connections()
+            connections = self.taskserver.get_db_connections()
+            # connections = self.cmd.get_db_connections()
 
             db_conn = connections[db_id]['args']
 
@@ -916,7 +923,8 @@ class CanvasController:
 
 
         # make sure the required database connections are loaded
-        connections = self.cmd.get_db_connections()
+        connections = self.taskserver.get_db_connections()
+        # connections = self.cmd.get_db_connections()
         conn_ids = {}
         elementslist = root.getchildren()
 
@@ -1245,10 +1253,18 @@ class FileDrop(wx.FileDropTarget):
             # # -- must be a data object --
 
             # get the current database connection dictionary
-            session = self.controller.getCurrentDbSession()
+            # session = self.controller.getCurrentDbSession()
+
+            dbs = self.controller.taskserver.get_db_conn(self.controller)
+
+            # save the database connection
+            for id, dic in dbs.iteritems():
+                if dic['name'] == self.controller.getCurrentDbSession():
+                    db_id = id
+                    break
 
             self.controller.set_model_coords(name=name, x=x,y=y)
-            self.controller.taskserver.add_data_model(self.controller, name=name)
+            self.controller.taskserver.add_data_model(self.controller, type=datatypes.ModelTypes.Data, database_id=db_id, resultid=name)
 
             # # create odm2 instance
             # inst = odm2_data.odm2(resultid=name, session=session)

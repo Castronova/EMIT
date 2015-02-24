@@ -7,8 +7,8 @@ from utilities.multiprocessing.dispatcher import Dispatcher
 from utilities.logger import LoggerTool
 from wx.lib.newevent import NewEvent
 from threading import Thread
-
-BoxEvent, EVT_DRAW_BOX = NewEvent()
+import os
+import copy
 
 # Credit for solution came from Roger Stuckey's example
 
@@ -51,6 +51,10 @@ class TaskServerMP:
             process.start()
             self.Processes.append(process)
 
+        currentdir = os.path.dirname(os.path.abspath(__file__))
+        connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/connections'))
+        self.connect_to_databases_from_file(connections_txt)
+
     def setEngine(self, engine):
         self.engine = engine
 
@@ -87,14 +91,7 @@ class TaskServerMP:
 
             elif task_type == 'AddDataModel':
 
-        #         dbs = engine.get_db_connections()
-        #         for db in dbs.iterkeys():
-        #             if dbs[db]['name'] == value:
-        #                 self._currentDbSession = dbs[db]['session']
-        #             break
-        # return self._currentDbSession
-
-                result = engine.add_data_model(session=task_args['session'],
+                result = engine.add_data_model(database_id=task_args['database_id'],
                                                name=task_args['name'])
                 result['type'] = 'AddDataModel'
                 dispatcher.putResult(result)
@@ -113,6 +110,23 @@ class TaskServerMP:
                 result = {'type':'AddLink',
                           'source_id':task_args['source_id'],
                           'target_id':task_args['target_id']}
+
+                dispatcher.putResult(result)
+
+            elif task_type == 'ConnectToDatabasesFromFile':
+
+                engine.connect_to_db([task_args['filepath']])
+                if not engine.get_default_db():
+                    engine.set_default_database()
+                dispatcher.putResult({'type':'ConnectToDatabasesFromFile'})
+
+            elif task_type == "GetDatabaseConnections":
+                connections = engine.get_db_connections()
+                result = {}
+                for k, v in connections.iteritems():
+                    result[k] = {'args':v['args'],'connection_string':v['connection_string'],'description':v['description'], 'name':v['name']}
+                    # v.pop('session')
+                result['type'] =  'GetDatabaseConnections'
 
                 dispatcher.putResult(result)
 
@@ -238,6 +252,12 @@ class TaskServerMP:
             parent.draw_link(source_id=source_id,target_id=target_id)
             print 'here'
 
+        elif result['type'] == 'GetDatabaseConnections':
+            result.pop('type')
+            parent.setDatabases(result)
+
+        else:
+            pass
 
 
     def add_model(self, parent, type=None, id=None, attrib=None, model_class=None):
@@ -250,10 +270,11 @@ class TaskServerMP:
         self.thread.start()
         # self.thread.join()
 
-    def add_data_model(self, parent, name=None):
+    def add_data_model(self, parent, type, database_id=None, resultid=None):
 
-        kwargs = dict(name=name)
-        task = [('AddDataModel', kwargs)]
+        att = {'databaseid':database_id,'resultid':resultid}
+        kwargs = dict(type=type, attrib=att)
+        task = [('AddModel', kwargs)]
         self.setTasks(task)
 
         self.thread = Thread(target = self.check_for_process_results,args=(parent,))
@@ -271,8 +292,29 @@ class TaskServerMP:
 
     def get_models(self):
         kwargs = dict()
-        task = [('GetModels'),kwargs]
+        task = [('GetModels',kwargs)]
         self.setTasks(task)
 
-    def get_db_connections(self):
-        return self.engine.get_db_connections()
+    def get_db_connections(self,parent):
+        kwargs = dict()
+        task = [('GetDatabaseConnections',kwargs)]
+        self.setTasks(task)
+
+        self.thread = Thread(target = self.check_for_process_results,args=(parent,))
+        self.thread.start()
+
+    def connect_to_databases_from_file(self, filepath):
+
+        kwargs = dict(filepath=filepath)
+        task = [('ConnectToDatabasesFromFile',kwargs)]
+        self.setTasks(task)
+
+        self.thread = Thread(target = self.check_for_process_results,args=(None, ))
+        self.thread.start()
+
+    def get_db_conn(self, parent):
+        kwargs = dict()
+        task = [('GetDatabaseConnections',kwargs)]
+        self.setTasks(task)
+        result = self.processTasks()
+        return result

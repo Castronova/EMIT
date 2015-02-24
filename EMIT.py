@@ -30,9 +30,15 @@ class MyApp(wx.App):
 
     def OnInit(self):
 
-        # connect to databases and set default
-        currentdir = os.path.dirname(os.path.abspath(__file__))
-        connections_txt = os.path.abspath(os.path.join(currentdir, './data/connections'))
+        # # connect to databases and set default
+        # currentdir = os.path.dirname(os.path.abspath(__file__))
+        # connections_txt = os.path.abspath(os.path.join(currentdir, './data/connections'))
+        #
+        # self.engine.connect_to_db([connections_txt])
+        # if not self.engine.get_default_db():
+        #     self.engine.set_default_database()
+
+
 
         # We are terminating dependency logging errors, We may want this in the future but it
         # tends to add clutter to our console.
@@ -45,9 +51,7 @@ class MyApp(wx.App):
 
         CanvasController(self.frame, self.taskserver)
 
-        self.engine.connect_to_db([connections_txt])
-        if not self.engine.get_default_db():
-            self.engine.set_default_database()
+
 
         self.frame.Show(True)
         self.frame.Center()

@@ -60,16 +60,6 @@ class SysOutListener:
 
 if __name__ == '__main__':
 
-    # from console import consoleOutput
-    # c = consoleOutput(frame)
-
-    #thread = threading.Thread(target=c.run,args=())
-    #thread.daemon = True
-    #thread.start()
-
-    # C = console(None)
-    # C.Show(True)
-
     app = MyApp()
     sys.stdout = SysOutListener()
     app.MainLoop()

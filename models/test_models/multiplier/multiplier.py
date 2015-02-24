@@ -41,7 +41,7 @@ class multiply(feed_forward.feed_forward_wrapper):
 
             # looping
             c = 0
-            for i in range(90000000):
+            for i in range(900000000):
                 c += 1
 
             ts = []

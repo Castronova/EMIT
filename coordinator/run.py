@@ -1,4 +1,4 @@
-from utilities.threading.dispatcher import Dispatcher
+from utilities.threading.threadManager import ThreadManager
 
 __author__ = 'tonycastronova'
 
@@ -17,8 +17,8 @@ def run_feed_forward(obj):
     # store db sessions
     db_sessions = {}
 
-    # Thread
-    dispatcher = Dispatcher()
+    # ThreadManager
+    dispatcher = ThreadManager().get_dispatcher()
 
 
     # todo: determine unresolved exchange items (utilities)
@@ -97,7 +97,7 @@ def run_feed_forward(obj):
                 pass
         db_sessions[modelid] = postgresdb(session)
 
-    sys.stdout.write('done\n')
+    #sys.stdout.write('done\n')
 
     # todo:  move this into function
     # prepare all models
@@ -117,8 +117,8 @@ def run_feed_forward(obj):
         model_obj = obj.get_model_by_id(modelid)
         model_inst = model_obj.get_instance()
         msg = '> \n' + \
-              '> ------------------' +len(model_inst.name())*'-' + \
-              '> Executing module: %s \n' % model_inst.name() + \
+              '> ------------------' +len(model_inst.name())*'-' + '\n' + \
+              '> Executing module: %s \n' % model_inst.name()  + \
               '> ------------------'+len(model_inst.name())*'-'
 
         dispatcher.putOutput(msg)
@@ -210,13 +210,14 @@ def run_feed_forward(obj):
         # sys.__stdout__.flush()
 
 
-    msg = '> ' + \
-        '> ------------------------------------------' + \
-        '>           Simulation Summary '               + \
-        '> ------------------------------------------' + \
-        '> Completed without error :)' + \
-        '> Simulation duration: %3.2f seconds' % (time.time()-sim_st) + \
+    msg = '> \n' + \
+        '> ------------------------------------------\n' + \
+        '>           Simulation Summary \n'               + \
+        '> ------------------------------------------\n' + \
+        '> Completed without error :)\n' + \
+        '> Simulation duration: %3.2f seconds\n' % (time.time()-sim_st) + \
         '> ------------------------------------------'
+    dispatcher.putOutput(msg)
 
     # print '> '
     # print '> ------------------------------------------'

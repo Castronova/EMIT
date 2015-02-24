@@ -8,11 +8,10 @@ from utilities import mdl
 
 
 class randomizer(feed_forward.feed_forward_wrapper):
-
-    def __init__(self,config_params):
+    def __init__(self, config_params):
         super(randomizer, self).__init__(config_params)
 
-        #   .__ts = [(date,val),(date,val),]
+        # .__ts = [(date,val),(date,val),]
         self.__ts = []
 
         # build inputs and outputs
@@ -23,7 +22,7 @@ class randomizer(feed_forward.feed_forward_wrapper):
         self.outputs(value=io['output'])
 
 
-    def run(self,inputs):
+    def run(self, inputs):
         """
         This is an abstract method that must be implemented.
         :param exchangeitems: list of input exchange items
@@ -37,7 +36,7 @@ class randomizer(feed_forward.feed_forward_wrapper):
         geoms = output.geometries()
 
         c = 0
-        for i in range(90000000):
+        for i in range(900000000):
             c += 1
 
         # loop over each output geometry instance and generate a random number
@@ -49,15 +48,15 @@ class randomizer(feed_forward.feed_forward_wrapper):
             # calculate a random number timeseries
             current_time = self.current_time()
             end = self.simulation_end()
-            while(current_time <= end):
-                ts.append(((current_time),(random.random())))
+            while (current_time <= end):
+                ts.append(((current_time), (random.random())))
 
                 # increment time
                 current_time = self.increment_time(current_time)
 
 
             # save this timeseries to the output geom
-            self.set_geom_values('random_number',geom,ts)
+            self.set_geom_values('random_number', geom, ts)
 
 
     def save(self):

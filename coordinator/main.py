@@ -1,3 +1,5 @@
+from utilities.threading import ThreadManager
+
 __author__ = 'tonycastronova'
 
 
@@ -677,10 +679,16 @@ class Coordinator(object):
                 return
 
             else:
+                # threadManager = ThreadManager()
                 if feed_forward.feed_forward_wrapper in types:
-                    run.run_feed_forward(self)
+                    t = threading.Thread(target=run.run_feed_forward, args=(self,))
+                    t.start()
+                    # run.run_feed_forward(self)
                 elif time_step.time_step_wrapper in types:
-                    run.run_time_step(self)
+
+                    t = threading.Thread(target=run.run_time_step, args=(self,))
+                    t.start()
+                    #run.run_time_step(self)
 
             return
 

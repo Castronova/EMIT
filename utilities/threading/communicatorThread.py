@@ -14,10 +14,6 @@ class CommunicatorThread(BaseThread):
     def run(self):
         while self.signal:
             output = self.dispatcher.getOutput()
-
-            # if not output:
-            #     continue
-            print self.name, "> output: ", output
             evt = wxUpdateConsole()
             evt.message = output
             wx.PostEvent(wx.GetApp().frame, evt)

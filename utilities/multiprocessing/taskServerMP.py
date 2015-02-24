@@ -5,6 +5,10 @@ import sys
 import time
 from utilities.multiprocessing.dispatcher import Dispatcher
 from utilities.logger import LoggerTool
+from wx.lib.newevent import NewEvent
+from threading import Thread
+
+BoxEvent, EVT_DRAW_BOX = NewEvent()
 
 # Credit for solution came from Roger Stuckey's example
 
@@ -54,7 +58,6 @@ class TaskServerMP:
         """
         Sets the tasks for the TaskServerMP to handle.
         """
-        #logger.debug("tasklist: %s" % taskList)
         self.tasks.extend(taskList)
         self.numtasks = len(taskList)
 
@@ -67,27 +70,19 @@ class TaskServerMP:
         while True:
             args = dispatcher.getTask()
             engine = cmd.Coordinator()
-            print "Engine in worker: ", engine
+            # print "Engine in worker: ", engine
             task_type = args[0]
             task_args = args[1]
-            print "WORKER! ", str(task_args)
+            # print "WORKER! ", str(task_args)
 
             if task_type == 'AddModels':
                 eng_type = task_args['type']
                 eng_attrib = task_args['attrib']
-                model_id = engine.add_model(type=eng_type, attrib=eng_attrib)
-                print "Finished Model in worker: ", model_id, engine.get_models()
-                dispatcher.putResult(model_id)
+                eng_id = task_args['id']
 
-
-                #print "Model! ", model
-
-                #pickled = pickle.dumps(model)
-                #print "Picked! ", pickled, type(pickled)
-
-                #print "Loads! ", pickle.loads(pickled)
-
-                #dispatcher.putResult("Done")
+                result = engine.add_model(type=eng_type, attrib=eng_attrib,id=eng_id)
+                # print "Finished Model in worker: ", result, engine.get_models()
+                dispatcher.putResult(result)
 
 
 
@@ -102,7 +97,12 @@ class TaskServerMP:
         logger.debug("Entering Process Tasks")
         # put task in
         for task in self.tasks:
-            self.dispatcher.putTask(task)
+
+            # remove the task from the global object so that duplicates aren't added to the task queue
+            t = self.tasks.pop()
+
+            self.dispatcher.putTask(t)
+
 
         # get output
         return self.dispatcher.getResult()
@@ -187,4 +187,25 @@ class TaskServerMP:
         sys.stdout.write('\n')
 
 
+    def check_for_process_results(self, parent):
 
+        result = self.processTasks()
+
+        if result['type'] == 'AddModel':
+            id = result['id']
+            name = result['name']
+
+            parent.draw_box(name=name,id=id)
+
+
+
+
+    def add_model(self, parent, type=None, id=None, attrib=None, model_class=None):
+        #kwargs = dict(type=dtype, attrib={'mdl': filenames[0]})
+        kwargs = dict(type=type, attrib=attrib, id=id,model_class=model_class)
+        task = [('AddModels', kwargs)]
+        self.setTasks(task)
+
+        self.thread = Thread(target = self.check_for_process_results,args=(parent,))
+        self.thread.start()
+        # self.thread.join()

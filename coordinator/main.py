@@ -384,7 +384,7 @@ class Coordinator(object):
         self.__models[thisModel.get_name()] = thisModel
 
         # return the model id
-        return thisModel.get_id()
+        return {'type':'AddModel', 'id':thisModel.get_id(), 'name':thisModel.get_name()}
 
     def remove_model(self,linkablecomponent):
         """

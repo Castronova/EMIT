@@ -36,11 +36,16 @@ from transform.time import TemporalInterpolation
 import datatypes
 from api.ODM2.Results.services import readResults
 from api.ODM2.Core.services import readCore
-#from gui.async import EVT_CREATE_BOX, Dispatcher, WorkerThread
 from coordinator import main as cmd
+from threading import Thread
+
 
 tool = LoggerTool()
 logger = tool.setupLogger(__name__, __name__ + '.log', 'w', logging.DEBUG)
+
+from wx.lib.newevent import NewEvent
+BoxEvent, EVT_DRAW_BOX = NewEvent()
+
 
 
 class CanvasController:
@@ -85,6 +90,8 @@ class CanvasController:
 
         self._currentDbSession = self.cmd.get_default_db()
 
+        self.model_coords = {}
+
     def UnBindAllMouseEvents(self):
         ## Here is how you unbind FloatCanvas mouse events
         self.Canvas.Unbind(FC.EVT_LEFT_DOWN)
@@ -108,6 +115,8 @@ class CanvasController:
         self.frame.Bind(wx.EVT_CLOSE, self.onClose)
         # DELETEME
         #self.frame.Bind(EVT_CREATE_BOX, self.onCreateBox)
+
+        self.FloatCanvas.Bind(EVT_DRAW_BOX, self.draw_box)
 
     def initSubscribers(self):
         Publisher.subscribe(self.createBox, "createBox")
@@ -867,6 +876,7 @@ class CanvasController:
     #     print 'here'
 
     def loadsimulation(self, file):
+
         #TODO: Should be part of the cmd.
         ########### NEW CODE #############
         tree = et.parse(file)
@@ -967,16 +977,28 @@ class CanvasController:
 
                 # load the model
                 # self.cmd.add_model(model.attrib['mdl'], id=model.attrib['id'],type=dtype)
-                self.cmd.add_model(attrib={'mdl': attrib['path']}, type=dtype, id=attrib['id'])
 
-                # draw the box
-                name = attrib['name']
-                modelid = attrib['id']
-
+                model_name = attrib['name']
+                model_id = attrib['id']
                 x = float(attrib['xcoordinate'])
                 y = float(attrib['ycoordinate'])
+                mdl = attrib['path']
+                self.set_model_coords(name=model_name, x=x,y=y)
+                #    taskserver.add_model(parent, type=None, id=None, attrib=None, model_class=None)
+                self.taskserver.add_model(self, type=dtype, id=model_id, attrib={'mdl':attrib['path']})
 
-                self.createBox(name=name, id=modelid, xCoord=x, yCoord=y)
+                # self.taskserver.add_model(type=dtype, attrib={'mdl': attrib['path']}, id=attrib['id'])
+
+                #result = self.taskserver.processTasks()
+                #ID = result['id']
+                #NAME = result['name']
+
+
+
+                #x = float(attrib['xcoordinate'])
+                #y = float(attrib['ycoordinate'])
+
+                #self.createBox(name=NAME, id=ID, xCoord=x, yCoord=y)
 
         # for data in root.iter('DataModel'):
         for child in root._children:
@@ -1001,6 +1023,8 @@ class CanvasController:
 
                 # thread = self.cmd.add_model(dtype,id=attrib['id'], attrib=attrib)
                 # model = thread.result_queue.get()
+
+
                 model = self.cmd.add_model(type=dtype, id=attrib['id'], attrib=attrib)
 
                 x = float(attrib['xcoordinate'])
@@ -1101,6 +1125,17 @@ class CanvasController:
         except Exception as e:
             wx.MessageBox(str(e.args[0]), 'Error', wx.OK | wx.ICON_ERROR)
 
+    def draw_box(self,name,id):
+        x,y = self.get_model_coords(name=name)
+        self.createBox(name=name, id=id, xCoord=x, yCoord=y)
+
+    def set_model_coords(self,name, x, y):
+
+        self.model_coords[name] = {'x':x, 'y':y}
+
+    def get_model_coords(self, name):
+
+        return (self.model_coords[name]['x'], self.model_coords[name]['y'])
 
 class FileDrop(wx.FileDropTarget):
     def __init__(self, controller, window, cmd):
@@ -1116,6 +1151,19 @@ class FileDrop(wx.FileDropTarget):
         y = 0
 
         self.OnDropFiles(x, y, filenames)
+
+    def check_for_process_results(self):
+
+        result = self.controller.taskserver.processTasks()
+        id = result['id']
+        name = result['name']
+        self.draw_box(name=name, id=id, x=50, y=50)
+        self.thread.join()
+        # return result
+
+    def draw_box(self,name,id,x,y):
+
+        self.controller.createBox(name=name, id=id, xCoord=x, yCoord=y)
 
     def OnDropFiles(self, x, y, filenames):
         originx, originy = self.window.Canvas.PixelToWorld((0, 0))
@@ -1134,38 +1182,12 @@ class FileDrop(wx.FileDropTarget):
 
                     dtype = datatypes.ModelTypes.FeedForward
 
-                    kwargs = dict(type=dtype, attrib={'mdl': filenames[0]})
-                    task = [('AddModels', kwargs)]
-                    self.controller.taskserver.setTasks(task)
-
-                    #logger.debug("Processing tasks")
-                    result = self.controller.taskserver.processTasks()
-                    print "Is there anything in models? ", result
-                    engine = cmd.Coordinator()
-                    print "Engine: ", engine
-                    #logger.debug("Finished Processing Tasks")
-                    ID="-1"
-                    self.controller.createBox(name=result, id=ID, xCoord=x, yCoord=y)
-
-                    # DELETEME
-                    #self.controller.dispatcher.putTask(task)
-                    # args = dtype
-                    # attrib = {'mdl': filenames[0]}
-                    # task = (self.cmd, (args, attrib))
-                    # self.controller.dispatcher.putTask(task)
-                    #
-                    # t = threading.Thread(target=worker, args=(self.controller,))
-                    # t.start()
-                    # model = self.cmd.add_model(type=dtype, attrib={'mdl': filenames[0]})
-                    # # this blocks, waiting for the result
-                    # model = model_thread.result_queue.get()
-                    # import uuid
-                    # ID = uuid.uuid4().hex[:5]
-                    # self.controller.createBox(name='test', id=ID, xCoord=x, yCoord=y)
-                    # name = model.get_name()
-                    # modelid = model.get_id()
-                    # name = "test"
-                    # modelid = "-1"
+                    params = parse_config(filenames[0])
+                    model_name = params['general'][0]['name']
+                    self.controller.set_model_coords(name=model_name, x=x,y=y)
+                    self.controller.taskserver.add_model(self.controller, type=dtype, attrib={'mdl':filenames[0]})
+                    # self.thread = Thread(target = self.check_for_process_results,args=())
+                    # self.thread.start()
 
                 else:
                     # load the simulation

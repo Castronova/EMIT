@@ -146,7 +146,7 @@ class pnlCreateLink ( wx.Panel ):
 
         PanelSizer.Add(h1)
 
-       
+
         # deactivate Next button
         self.activateLinkButton()
         # print outputitems, inputitems

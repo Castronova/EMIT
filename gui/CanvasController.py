@@ -29,9 +29,7 @@ from transform.time import TemporalInterpolation
 
 import datatypes
 from api.ODM2.Results.services import readResults
-from api.ODM2.Core.services import readCore
-from gui.async import EVT_CREATE_BOX, Dispatcher, WorkerThread
-from Queue import Queue
+from utilities.threading import EVT_CREATE_BOX, EVT_UPDATE_CONSOLE, ThreadManager
 
 
 
@@ -42,9 +40,8 @@ class CanvasController:
         self.cmd = cmd
         self.frame = frame
 
-        self.dispatcher = Dispatcher()
-        self.threadManager = WorkerThread(self, self.dispatcher)
-        self.threadManager.start()
+        # Start threading
+        self.threadManager = ThreadManager(self)
 
         # This is just to ensure that we are starting without interference from NavToolbar or drag-drop
         self.UnBindAllMouseEvents()
@@ -95,6 +92,7 @@ class CanvasController:
         self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.LaunchContext)
         self.frame.Bind(wx.EVT_CLOSE, self.onClose)
         self.frame.Bind(EVT_CREATE_BOX, self.onCreateBox)
+        self.frame.Bind(EVT_UPDATE_CONSOLE, self.onUpdateConsole)
 
     def initSubscribers(self):
         Publisher.subscribe(self.createBox, "createBox")
@@ -114,8 +112,9 @@ class CanvasController:
                                wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
 
         if dlg.ShowModal() !=wx.ID_NO:
-            self.threadManager.dispatcher.putTask(('kill', 'kill'))
-            self.threadManager.join(.5)
+
+            self.threadManager.stop()
+
             windowsRemaining = len(wx.GetTopLevelWindows())
             if windowsRemaining > 0:
                 import wx.lib.agw.aui.framemanager as aui
@@ -155,6 +154,14 @@ class CanvasController:
             self.MoveObject = self.StartObject + dxy
             dc.DrawPolygon(self.MoveObject)
 
+    def onUpdateConsole(self, evt):
+        """
+        Updates the output console
+        """
+        #print "onUpdateConsole: ", evt.message
+        if evt.message:
+            self.frame.output.log.AppendText(evt.message)
+
     def onCreateBox(self, evt):
         print "Creating box"
         name = evt.name
@@ -163,6 +170,7 @@ class CanvasController:
         y = evt.yCoord
         self.createBox(xCoord=x, yCoord=y, id=id, name=name)
         print "finish Creating box"
+
 
     def createBox(self, xCoord, yCoord, id=None, name=None, color='#A2CAF5'):
 
@@ -1113,7 +1121,8 @@ class FileDrop(wx.FileDropTarget):
                     dtype = datatypes.ModelTypes.FeedForward
                     kwargs = dict(x=x, y=y, type=dtype, attrib={'mdl': filenames[0]})
                     task = ('addmodel', kwargs)
-                    self.controller.dispatcher.putTask(task)
+                    print "Putting Tasks!"
+                    self.controller.threadManager.dispatcher.putTask(task)
                     # args = dtype
                     # attrib = {'mdl': filenames[0]}
                     # task = (self.cmd, (args, attrib))

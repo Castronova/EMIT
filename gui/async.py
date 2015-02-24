@@ -7,8 +7,6 @@ import wx
 from threading import Thread
 from functools import wraps
 
-from wx.lib.newevent import NewEvent
-wxCreateBox, EVT_CREATE_BOX = NewEvent()
 
 def runAsync(func):
     '''Decorates a method to run in a separate thread'''
@@ -53,97 +51,10 @@ def threaded(f, daemon=False):
     return wrap
 
 
-class WorkerThread(threading.Thread):
-    def __init__(self, controller, dispatcher):
-        threading.Thread.__init__(self)
-        self.dispatcher = dispatcher
-        self.controller = controller
-        self.cmd = controller.cmd
-        self.keepRunning = True
 
-    def StartThread(self):
-        print "Starting Thread"
-        self.start()
-        print "Joining Thread"
-        self.join()
-        print "Done joining Thread"
-
-    # TODO look into threadpools concurrent.futures
-    def run(self):
-        while self.keepRunning:
-            print "Waiting for task"
-            task_type, task = self.dispatcher.getTask()
-            result = None
-            if task_type == "addmodel":
-                result = self.addModel(**task)
-            if task_type == 'kill':
-                self.keepRunning = False
-            self.dispatcher.getTaskQueue().task_done()
-            self.dispatcher.putResult(result)
-            #self.join()
-            print "Done with task"
-
-
-    def addModel(self, **task):
-
-        x = task.pop('x')
-        y = task.pop('y')
-
-        model = self.cmd.add_model(**task)
-        name = model.get_name()
-        modelId = model.get_id()
-
-        # post event
-        evt = wxCreateBox()
-        evt.name = name
-        evt.id = modelId
-        evt.xCoord = x
-        evt.yCoord = y
-        #wx.PostEvent(wx.GetApp().frame, evt)
 
         #return model
 
-class Dispatcher:
-    """
-    The Dispatcher class manages the task and result queues.
-    """
-
-    def __init__(self):
-        """
-        Initialise the Dispatcher.
-        """
-        self.taskQueue = Queue()
-        self.resultQueue = Queue()
-
-    def getTaskQueue(self):
-        return self.taskQueue
-
-    def getResultQueue(self):
-        return self.resultQueue
-
-    def putTask(self, task):
-        """
-        Put a task on the task queue.
-        """
-        self.taskQueue.put(task)
-
-    def getTask(self):
-        """
-        Get a task from the task queue.
-        """
-        return self.taskQueue.get()
-
-    def putResult(self, output):
-        """
-        Put a result on the result queue.
-        """
-        self.resultQueue.put(output)
-
-    def getResult(self):
-        """
-        Get a result from the result queue.
-        """
-        return self.resultQueue.get()
 
 # def worker():
 #     print "Worker started!"

@@ -34,7 +34,6 @@ import time
 
 from wx.lib.newevent import NewEvent
 wxStdOut, EVT_STDDOUT= NewEvent()
-wxCreateBox, EVT_CREATE_BOX = NewEvent()
 
 class MainGui(wx.Frame):
     def __init__(self, parent, cmd):
@@ -85,7 +84,6 @@ class MainGui(wx.Frame):
         self.Directory = DirectoryCtrlView(self.pnlDocking)
         self.Toolbox = ToolboxPanel(self.pnlDocking)
         self.Toolbox.Hide()
-
 
         self.bnb = wx.Notebook(self.pnlDocking)
         self.output = consoleOutput(self.bnb)

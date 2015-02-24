@@ -1,6 +1,5 @@
 #!/usr/bin/env python2
 import sys
-from gui import non_blocking_gui
 
 __author__ = 'Mario'
 
@@ -54,7 +53,7 @@ class MyApp(wx.App):
 
 class SysOutListener:
     def write(self, string):
-        sys.__stdout__.write(string)
+        #sys.__stdout__.write(string)
         evt = wxStdOut(text=string)
         wx.PostEvent(wx.GetApp().frame.output, evt)
 
@@ -72,7 +71,7 @@ if __name__ == '__main__':
     # C.Show(True)
 
     app = MyApp()
-    sys.stdout = SysOutListener()
+    # sys.stdout = SysOutListener()
     app.MainLoop()
 
 

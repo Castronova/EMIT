@@ -1,3 +1,5 @@
+import time
+
 __author__ = 'tonycastronova'
 
 from wrappers import feed_forward
@@ -11,15 +13,13 @@ class slowloading(feed_forward.feed_forward_wrapper):
 
         print "begin loading module"
         # loop designed to cause slow initialization
+
         cnt = 0
-        for i in range(0,50000000):
+        for i in range(0, 50000000):
             cnt += i
         print "Done loading module"
 
-
-
-    def run(self,inputs):
-
+    def run(self, inputs):
         pass
 
     def save(self):

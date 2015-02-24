@@ -1,0 +1,33 @@
+[software]
+filepath  = ./multiplier.py
+classname = multiply
+
+[model]
+code = tonys_multiplier
+name = TonyÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢s multiplier module
+description = This is a module that multiplies numbers
+
+[general]
+name = Multiplier
+description = This model multiplies things
+simulation_start = 03/01/2014 12:00:00
+simulation_end = 05/01/2014 13:00:00
+
+[time_step]
+unit_type_cv = hours
+value = 1
+
+[output]
+variable_name_cv = multipliedValue
+unit_type_cv = international inch
+elementset = POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))
+epsg_code = 2921
+
+[input]
+variable_name_cv = some_value
+unit_type_cv = international inch
+elementset = POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))
+epsg_code = 2921
+
+[options]
+ignorecv = 1

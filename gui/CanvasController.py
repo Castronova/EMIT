@@ -160,17 +160,17 @@ class CanvasController:
         """
         #print "onUpdateConsole: ", evt.message
         if evt.message:
-            self.frame.output.log.AppendText(evt.message)
+            print ">>> ", evt.message
+            #self.frame.output.log.AppendText(evt.message + '\n')
 
     def onCreateBox(self, evt):
-        print "Creating box"
+        self.threadManager.dispatcher.putOutput("Creating box")
         name = evt.name
         id = evt.id
         x = evt.xCoord
         y = evt.yCoord
         self.createBox(xCoord=x, yCoord=y, id=id, name=name)
-        print "finish Creating box"
-
+        self.threadManager.dispatcher.putOutput("finish Creating box")
 
     def createBox(self, xCoord, yCoord, id=None, name=None, color='#A2CAF5'):
 
@@ -1081,6 +1081,7 @@ class CanvasController:
         #target    = self.list_item_clicked
         print '> Perform "%(operation)s" on "%(target)s."' % vars()
 
+    # THREADME
     def run(self):
 
         try:

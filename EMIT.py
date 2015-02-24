@@ -71,7 +71,7 @@ if __name__ == '__main__':
     # C.Show(True)
 
     app = MyApp()
-    # sys.stdout = SysOutListener()
+    sys.stdout = SysOutListener()
     app.MainLoop()
 
 

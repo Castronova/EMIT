@@ -1,3 +1,5 @@
+from utilities.threading.dispatcher import Dispatcher
+
 __author__ = 'tonycastronova'
 
 import time
@@ -15,6 +17,9 @@ def run_feed_forward(obj):
     # store db sessions
     db_sessions = {}
 
+    # Thread
+    dispatcher = Dispatcher()
+
 
     # todo: determine unresolved exchange items (utilities)
 
@@ -24,11 +29,18 @@ def run_feed_forward(obj):
     activethreads = []
 
     # determine execution order
-    sys.stdout.write('> Determining execution order... ')
+    msg = '> Determining execution order... '
+    dispatcher.putOutput(msg)
+    # sys.stdout.write(msg)
+
     exec_order = obj.determine_execution_order()
-    sys.stdout.write('done\n')
+    msg = 'done'
+    dispatcher.putOutput(msg)
+    # sys.stdout.write('done\n')
     for i in range(0, len(exec_order)):
-        print '> %d.) %s'%(i+1,obj.get_model_by_id(exec_order[i]).get_name())
+        msg = '> %d.) %s' % (i+1, obj.get_model_by_id(exec_order[i]).get_name())
+        dispatcher.putOutput(msg)
+        #print '> %d.) %s'%(i+1,obj.get_model_by_id(exec_order[i]).get_name())
 
 
     # store model db sessions
@@ -53,7 +65,9 @@ def run_feed_forward(obj):
     spatial_maps = {}
 
     # todo:  move this into function
-    sys.stdout.write('> [PRE-RUN] Performing spatial mapping... ')
+    msg = '> [PRE-RUN] Performing spatial mapping... '
+    dispatcher.putOutput(msg)
+    # sys.stdout.write('> [PRE-RUN] Performing spatial mapping... ')
     for modelid in exec_order:
 
         # get links
@@ -102,15 +116,23 @@ def run_feed_forward(obj):
         # get the current model instance
         model_obj = obj.get_model_by_id(modelid)
         model_inst = model_obj.get_instance()
+        msg = '> \n' + \
+              '> ------------------' +len(model_inst.name())*'-' + \
+              '> Executing module: %s \n' % model_inst.name() + \
+              '> ------------------'+len(model_inst.name())*'-'
 
-        print '> '
-        print '> ------------------'+len(model_inst.name())*'-'
-        print '> Executing module: %s ' % model_inst.name()
-        print '> ------------------'+len(model_inst.name())*'-'
+        dispatcher.putOutput(msg)
+
+        # print '> '
+        # print '> ------------------'+len(model_inst.name())*'-'
+        # print '> Executing module: %s ' % model_inst.name()
+        # print '> ------------------'+len(model_inst.name())*'-'
 
         #  retrieve inputs from database
-        sys.stdout.write('> [1 of 4] Retrieving input data... ')
-        sys.__stdout__.flush()
+        msg = '> [1 of 4] Retrieving input data... '
+        dispatcher.putOutput(msg)
+        #sys.stdout.write('> [1 of 4] Retrieving input data... ')
+        #sys.__stdout__.flush()
 
         # todo: pass db_sessions instead of simulation_dbapi
         # try:
@@ -119,19 +141,29 @@ def run_feed_forward(obj):
         #     raise Exception (e)
         input_data = model_inst.inputs()
 
-        sys.stdout.write('done\n')
-        sys.__stdout__.flush()
+        msg = 'done'
+        dispatcher.putOutput(msg)
+        # sys.stdout.write('done\n')
+        # sys.__stdout__.flush()
 
-        sys.stdout.write('> [2 of 4] Performing calculation... ')
-        sys.__stdout__.flush()
+        msg = '> [2 of 4] Performing calculation... '
+        dispatcher.putOutput(msg)
+        # sys.stdout.write('> [2 of 4] Performing calculation... ')
+        # sys.__stdout__.flush()
+
         # pass these inputs ts to the models' run function
         model_inst.run(input_data)
-        sys.stdout.write('done\n')
-        sys.__stdout__.flush()
+
+        msg = 'done'
+        dispatcher.putOutput(msg)
+        # sys.stdout.write('done\n')
+        # sys.__stdout__.flush()
 
         # save these results
-        sys.stdout.write('> [3 of 4] Saving calculations to database... ')
-        sys.__stdout__.flush()
+        msg = '> [3 of 4] Saving calculations to database... '
+        dispatcher.putOutput(msg)
+        # sys.stdout.write('> [3 of 4] Saving calculations to database... ')
+        # sys.__stdout__.flush()
         exchangeitems = model_inst.save()
 
         # only insert data if its not already in a database
@@ -152,30 +184,47 @@ def run_feed_forward(obj):
             if db_sessions[modelid] is not None:
                 obj.DbResults(key=model_inst.name(), value = (model_inst.resultid(), model_inst.session(), 'result'))
 
-        sys.stdout.write('done\n')
-        sys.__stdout__.flush()
+        msg = 'done'
+        dispatcher.putOutput(msg)
+        # sys.stdout.write('done\n')
+        # sys.__stdout__.flush()
 
         # update links
-        sys.stdout.write('> [4 of 4] Updating links... ')
-        sys.__stdout__.flush()
+        msg = '> [4 of 4] Updating links... '
+        dispatcher.putOutput(msg)
+        # sys.stdout.write('> [4 of 4] Updating links... ')
+        # sys.__stdout__.flush()
 
         #obj.update_links(model_inst,exchangeitems)
         update.update_links_feed_forward(obj,links[modelid],exchangeitems,spatial_maps)
 
-        sys.stdout.write('done\n')
-        sys.__stdout__.flush()
+        msg = 'done'
+        dispatcher.putOutput(msg)
+        # sys.stdout.write('done\n')
+        # sys.__stdout__.flush()
 
-        sys.stdout.write('> module simulation completed in %3.2f seconds' % (time.time() - st))
-        sys.__stdout__.flush()
+
+        msg = '> module simulation completed in %3.2f seconds' % (time.time() - st)
+        dispatcher.putOutput(msg)
+        # sys.stdout.write('> module simulation completed in %3.2f seconds' % (time.time() - st))
+        # sys.__stdout__.flush()
 
 
-    print '> '
-    print '> ------------------------------------------'
-    print '>           Simulation Summary '
-    print '> ------------------------------------------'
-    print '> Completed without error :)'
-    print '> Simulation duration: %3.2f seconds' % (time.time()-sim_st)
-    print '> ------------------------------------------'
+    msg = '> ' + \
+        '> ------------------------------------------' + \
+        '>           Simulation Summary '               + \
+        '> ------------------------------------------' + \
+        '> Completed without error :)' + \
+        '> Simulation duration: %3.2f seconds' % (time.time()-sim_st) + \
+        '> ------------------------------------------'
+
+    # print '> '
+    # print '> ------------------------------------------'
+    # print '>           Simulation Summary '
+    # print '> ------------------------------------------'
+    # print '> Completed without error :)'
+    # print '> Simulation duration: %3.2f seconds' % (time.time()-sim_st)
+    # print '> ------------------------------------------'
 
 
 def run_time_step(obj):

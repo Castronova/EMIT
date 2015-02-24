@@ -128,18 +128,25 @@ class pnlCreateLink ( wx.Panel ):
         self.ComboboxSpatial = wx.ComboBox(self, wx.ID_ANY, u"No Interpolation", wx.DefaultPosition,
                                            wx.DefaultSize, ComboboxSpatialChoices, 0)
 
-        bsizer = wx.BoxSizer( wx.HORIZONTAL )
-        bsizer.Add(self.temporal_label)
-        bsizer.AddSpacer( ( 20, 0), 0, wx.EXPAND, 5 )
-        bsizer.Add(self.ComboboxTemporal)
-        PanelSizer.Add(bsizer)
+        v1 = wx.BoxSizer(wx.VERTICAL)
+        v1.AddSpacer( ( 20, 2), 0, wx.EXPAND, 5 )
+        v1.Add(self.temporal_label)
+        v1.AddSpacer( ( 20, 10), 0, wx.EXPAND, 5 )
+        v1.Add(self.spatial_label)
 
-        bsizer = wx.BoxSizer( wx.HORIZONTAL )
-        bsizer.Add(self.spatial_label)
-        bsizer.AddSpacer( ( 20, 0), 0, wx.EXPAND, 5 )
-        bsizer.Add(self.ComboboxSpatial)
-        PanelSizer.Add(bsizer)
+        v2 = wx.BoxSizer(wx.VERTICAL)
+        v2.Add(self.ComboboxTemporal,0,wx.ALIGN_RIGHT)
+        v2.AddSpacer( ( 20, 0), 0, wx.EXPAND, 5 )
+        v2.Add(self.ComboboxSpatial,0,wx.ALIGN_RIGHT)
 
+        h1 = wx.BoxSizer(wx.HORIZONTAL)
+        h1.Add(v1, 1, wx.ALIGN_LEFT,4)
+        h1.AddStretchSpacer()
+        h1.Add(v2, 0, wx.ALIGN_RIGHT,4)
+
+        PanelSizer.Add(h1)
+
+       
         # deactivate Next button
         self.activateLinkButton()
         # print outputitems, inputitems

@@ -309,7 +309,6 @@ class CanvasController:
 
         return arrow_shape
 
-
     def addModel(self, filepath, x, y):
         """
         Adds a model to the canvas using x,y.  This is useful if adding by file click/dialog
@@ -337,10 +336,17 @@ class CanvasController:
                 if ext == '.mdl':
                     # load the model
                     dtype = datatypes.ModelTypes.FeedForward
-                    model = self.cmd.add_model(type=dtype, attrib={'mdl': filepath})
-                    name = model.get_name()
-                    modelid = model.get_id()
-                    self.createBox(name=name, id=modelid, xCoord=x, yCoord=y)
+
+                    params = parse_config(filepath)
+                    model_name = params['general'][0]['name']
+                    self.set_model_coords(name=model_name, x=x,y=y)
+                    self.taskserver.add_model(self, type=dtype, attrib={'mdl':filepath})
+
+
+                    # model = self.cmd.add_model(type=dtype, attrib={'mdl': filepath})
+                    # name = model.get_name()
+                    # modelid = model.get_id()
+                    # self.createBox(name=name, id=modelid, xCoord=x, yCoord=y)
 
                 else:
                     # load the simulation
@@ -875,6 +881,21 @@ class CanvasController:
     #     join = thread.result_queue.get()
     #     print 'here'
 
+    # def load_simulation(self, file):
+    #     data = self.parse_simulation_file(file)
+    #
+    #     # get models
+    #     models = data['models']
+    #
+    #     # self.set_model_coords(name=model_name, x=x,y=y)
+    #     # self.taskserver.add_model(self, type=dtype, id=model_id, attrib={'mdl':attrib['path']})
+    #
+    #     # load datamodels
+    #     dmodels = data['datamodels']
+    #
+    #     # load links
+    #     links = data['links']
+
     def loadsimulation(self, file):
 
         #TODO: Should be part of the cmd.
@@ -963,6 +984,7 @@ class CanvasController:
 
         # loop through each model and load it
         # for model in root.iter('Model'):
+        models = {}
         for child in root._children:
             if child.tag == 'Model':
                 taglist = []
@@ -983,24 +1005,16 @@ class CanvasController:
                 x = float(attrib['xcoordinate'])
                 y = float(attrib['ycoordinate'])
                 mdl = attrib['path']
+
+                # models[model_name] = dict(dtype,model_name,model_id,x,y,mdl)
+
                 self.set_model_coords(name=model_name, x=x,y=y)
-                #    taskserver.add_model(parent, type=None, id=None, attrib=None, model_class=None)
                 self.taskserver.add_model(self, type=dtype, id=model_id, attrib={'mdl':attrib['path']})
 
-                # self.taskserver.add_model(type=dtype, attrib={'mdl': attrib['path']}, id=attrib['id'])
 
-                #result = self.taskserver.processTasks()
-                #ID = result['id']
-                #NAME = result['name']
-
-
-
-                #x = float(attrib['xcoordinate'])
-                #y = float(attrib['ycoordinate'])
-
-                #self.createBox(name=NAME, id=ID, xCoord=x, yCoord=y)
 
         # for data in root.iter('DataModel'):
+        data_models = {}
         for child in root._children:
             if child.tag == 'DataModel':
                 taglist = []
@@ -1024,15 +1038,22 @@ class CanvasController:
                 # thread = self.cmd.add_model(dtype,id=attrib['id'], attrib=attrib)
                 # model = thread.result_queue.get()
 
-
-                model = self.cmd.add_model(type=dtype, id=attrib['id'], attrib=attrib)
-
+                model_name = attrib['name']
+                model_id = attrib['id']
                 x = float(attrib['xcoordinate'])
                 y = float(attrib['ycoordinate'])
 
-                self.createBox(name=model.get_name(), id=model.get_id(), xCoord=x, yCoord=y, color='#FFFF99')
+                data_models[model_name] = dict(dtype,model_name,model_id,x,y,attrib)
+
+                # model = self.cmd.add_model(type=dtype, id=attrib['id'], attrib=attrib)
+                #
+                # x = float(attrib['xcoordinate'])
+                # y = float(attrib['ycoordinate'])
+                #
+                # self.createBox(name=model.get_name(), id=model.get_id(), xCoord=x, yCoord=y, color='#FFFF99')
 
         # for link in root.iter('Link'):
+        links = {}
         for child in root._children:
             if child.tag == 'Link':
                 # for link in child:
@@ -1042,38 +1063,44 @@ class CanvasController:
                     textlist.append(items.text)
                     taglist.append(items.tag)
 
+
                 attrib = dict(zip(taglist, textlist))
-                R1 = None
-                R2 = None
-                for R, id in self.models.iteritems():
-                    if id == attrib['from_id']:
-                        R1 = R
-                    elif id == attrib['to_id']:
-                        R2 = R
 
-                if R1 is None or R2 is None:
-                    raise Exception('Could not find Model identifer in loaded models')
-
-                # add the link object
-                l = self.cmd.add_link_by_name(attrib['from_id'], attrib['from_item'],
-                                              attrib['to_id'], attrib['to_item'])
 
                 # set the temporal and spatial interpolations
+                temporal = None
+                spatial = None
                 transform = child.find("./transformation")
                 for transform_child in transform:
                     if transform_child.text.upper() != 'NONE':
                         if transform_child.tag == 'temporal':
                             transformation = temporal_transformations[transform_child.text]
-                            l.temporal_interpolation(transformation)
+                            temporal_transformations = transformation
+                            #l.temporal_interpolation(transformation)
                         elif transform_child.tag == 'spatial':
                             transformation = spatial_transformations[transform_child.text]
-                            l.spatial_interpolation(transformation)
+                            spatial = transformation
+                            # l.spatial_interpolation(transformation)
 
+                # add the link object
+                l = self.taskserver.add_link(self, attrib['from_id'], attrib['from_item'],
+                                              attrib['to_id'], attrib['to_item'],spatial, temporal)
 
-                # this draws the line
-                self.createLine(R1, R2)
-
-            self.FloatCanvas.Draw()
+            #     R1 = None
+            #     R2 = None
+            #     for R, id in self.models.iteritems():
+            #         if id == attrib['from_id']:
+            #             R1 = R
+            #         elif id == attrib['to_id']:
+            #             R2 = R
+            #
+            #     if R1 is None or R2 is None:
+            #         raise Exception('Could not find Model identifer in loaded models')
+            #
+            #     # this draws the line
+            #     self.createLine(R1, R2)
+            #
+            # self.FloatCanvas.Draw()
             #self.Canvas.Draw()
 
     def addModelDialog(self):
@@ -1129,6 +1156,25 @@ class CanvasController:
         x,y = self.get_model_coords(name=name)
         self.createBox(name=name, id=id, xCoord=x, yCoord=y)
 
+    def draw_link(self, source_id, target_id):
+
+
+        R1 = None
+        R2 = None
+        for R, id in self.models.iteritems():
+            if id == source_id:
+                R1 = R
+            elif id == target_id:
+                R2 = R
+
+        if R1 is None or R2 is None:
+            raise Exception('Could not find Model identifer in loaded models')
+
+        # this draws the line
+        self.createLine(R1, R2)
+
+        #self.FloatCanvas.Draw()
+
     def set_model_coords(self,name, x, y):
 
         self.model_coords[name] = {'x':x, 'y':y}
@@ -1152,14 +1198,14 @@ class FileDrop(wx.FileDropTarget):
 
         self.OnDropFiles(x, y, filenames)
 
-    def check_for_process_results(self):
-
-        result = self.controller.taskserver.processTasks()
-        id = result['id']
-        name = result['name']
-        self.draw_box(name=name, id=id, x=50, y=50)
-        self.thread.join()
-        # return result
+    # def check_for_process_results(self):
+    #
+    #     result = self.controller.taskserver.processTasks()
+    #     id = result['id']
+    #     name = result['name']
+    #     self.draw_box(name=name, id=id, x=50, y=50)
+    #     self.thread.join()
+    #     # return result
 
     def draw_box(self,name,id,x,y):
 
@@ -1181,13 +1227,10 @@ class FileDrop(wx.FileDropTarget):
                 if ext == '.mdl':
 
                     dtype = datatypes.ModelTypes.FeedForward
-
                     params = parse_config(filenames[0])
                     model_name = params['general'][0]['name']
                     self.controller.set_model_coords(name=model_name, x=x,y=y)
                     self.controller.taskserver.add_model(self.controller, type=dtype, attrib={'mdl':filenames[0]})
-                    # self.thread = Thread(target = self.check_for_process_results,args=())
-                    # self.thread.start()
 
                 else:
                     # load the simulation
@@ -1204,45 +1247,48 @@ class FileDrop(wx.FileDropTarget):
             # get the current database connection dictionary
             session = self.controller.getCurrentDbSession()
 
-            # create odm2 instance
-            inst = odm2_data.odm2(resultid=name, session=session)
+            self.controller.set_model_coords(name=name, x=x,y=y)
+            self.controller.taskserver.add_data_model(self.controller, name=name)
 
-            oei = inst.outputs().values()
-
-            from coordinator import main
-            # create a model instance
-            thisModel = main.Model(id=inst.id(),
-                                   name=inst.name(),
-                                   instance=inst,
-                                   desc=inst.description(),
-                                   input_exchange_items=[],
-                                   output_exchange_items=oei,
-                                   params=None)
-
-
-            # save the result id
-            att = {'resultid': name}
-
-            # save the database connection
-            dbs = self.cmd.get_db_connections()
-            for id, dic in dbs.iteritems():
-                if dic['session'] == self.controller.getCurrentDbSession():
-                    att['databaseid'] = id
-                    thisModel.attrib(att)
-                    break
-
-            thisModel.type(datatypes.ModelTypes.Data)
-
-
-            # save the model
-            self.cmd.Models(thisModel)
+            # # create odm2 instance
+            # inst = odm2_data.odm2(resultid=name, session=session)
+            #
+            # oei = inst.outputs().values()
+            #
+            # from coordinator import main
+            # # create a model instance
+            # thisModel = main.Model(id=inst.id(),
+            #                        name=inst.name(),
+            #                        instance=inst,
+            #                        desc=inst.description(),
+            #                        input_exchange_items=[],
+            #                        output_exchange_items=oei,
+            #                        params=None)
+            #
+            #
+            # # save the result id
+            # att = {'resultid': name}
+            #
+            # # save the database connection
+            # dbs = self.cmd.get_db_connections()
+            # for id, dic in dbs.iteritems():
+            #     if dic['session'] == self.controller.getCurrentDbSession():
+            #         att['databaseid'] = id
+            #         thisModel.attrib(att)
+            #         break
+            #
+            # thisModel.type(datatypes.ModelTypes.Data)
+            #
+            #
+            # # save the model
+            # self.cmd.Models(thisModel)
 
             # self.cmd.__models[name] = thisModel
 
 
             # draw a box for this model
-            self.controller.createBox(name=inst.name(), id=inst.id(), xCoord=x, yCoord=y, color='#FFFF99')
-            self.window.Canvas.Draw()
+            # self.controller.createBox(name=inst.name(), id=inst.id(), xCoord=x, yCoord=y, color='#FFFF99')
+            # self.window.Canvas.Draw()
 
 
     def getObj(self, resultID):

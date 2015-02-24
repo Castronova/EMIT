@@ -75,16 +75,46 @@ class TaskServerMP:
             task_args = args[1]
             # print "WORKER! ", str(task_args)
 
-            if task_type == 'AddModels':
+            if task_type == 'AddModel':
                 eng_type = task_args['type']
                 eng_attrib = task_args['attrib']
                 eng_id = task_args['id']
 
                 result = engine.add_model(type=eng_type, attrib=eng_attrib,id=eng_id)
                 # print "Finished Model in worker: ", result, engine.get_models()
+                result['type']='AddModel'
                 dispatcher.putResult(result)
 
+            elif task_type == 'AddDataModel':
 
+        #         dbs = engine.get_db_connections()
+        #         for db in dbs.iterkeys():
+        #             if dbs[db]['name'] == value:
+        #                 self._currentDbSession = dbs[db]['session']
+        #             break
+        # return self._currentDbSession
+
+                result = engine.add_data_model(session=task_args['session'],
+                                               name=task_args['name'])
+                result['type'] = 'AddDataModel'
+                dispatcher.putResult(result)
+
+            elif task_type == 'AddLink':
+                # eng_type = task_args['type']
+                # eng_attrib = task_args['attrib']
+
+
+                link = engine.add_link_by_name(from_id=task_args['source_id'],
+                                                 from_item_name=task_args['source_item'],
+                                                 to_id=task_args['target_id'],
+                                                 to_item_name=task_args['target_item'])
+                link.temporal_interpolation(task_args['temporal'])
+                link.spatial_interpolation(task_args['spatial'])
+                result = {'type':'AddLink',
+                          'source_id':task_args['source_id'],
+                          'target_id':task_args['target_id']}
+
+                dispatcher.putResult(result)
 
     # The multiprocessing worker must not require any existing object for execution!
     worker = classmethod(worker)
@@ -197,15 +227,52 @@ class TaskServerMP:
 
             parent.draw_box(name=name,id=id)
 
+        elif result['type'] == 'AddDataModel':
+            id = result['id']
+            name = result['name']
+            parent.draw_box(name=name,id=id)
+
+        elif result['type'] == 'AddLink':
+            source_id = result['source_id']
+            target_id = result['target_id']
+            parent.draw_link(source_id=source_id,target_id=target_id)
+            print 'here'
 
 
 
     def add_model(self, parent, type=None, id=None, attrib=None, model_class=None):
         #kwargs = dict(type=dtype, attrib={'mdl': filenames[0]})
         kwargs = dict(type=type, attrib=attrib, id=id,model_class=model_class)
-        task = [('AddModels', kwargs)]
+        task = [('AddModel', kwargs)]
         self.setTasks(task)
 
         self.thread = Thread(target = self.check_for_process_results,args=(parent,))
         self.thread.start()
         # self.thread.join()
+
+    def add_data_model(self, parent, name=None):
+
+        kwargs = dict(name=name)
+        task = [('AddDataModel', kwargs)]
+        self.setTasks(task)
+
+        self.thread = Thread(target = self.check_for_process_results,args=(parent,))
+        self.thread.start()
+
+
+    def add_link(self, parent, source_id=None, source_item=None, target_id=None, target_item=None,spatial=None, temporal=None ):
+
+        kwargs = dict(source_id=source_id, source_item=source_item, target_id=target_id, target_item=target_item,spatial=spatial, temporal=temporal)
+        task = [('AddLink',kwargs)]
+        self.setTasks(task)
+
+        self.thread = Thread(target = self.check_for_process_results,args=(parent,))
+        self.thread.start()
+
+    def get_models(self):
+        kwargs = dict()
+        task = [('GetModels'),kwargs]
+        self.setTasks(task)
+
+    def get_db_connections(self):
+        return self.engine.get_db_connections()

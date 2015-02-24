@@ -302,7 +302,31 @@ class Coordinator(object):
     def get_default_db(self):
         return self.__default_db
 
-    # @threaded
+    def add_data_model(self,session=None, name=None):
+        inst = odm2_data.odm2(resultid=name, session=session)
+
+        oei = inst.outputs().values()
+
+        # create a model instance
+        thisModel = Model(id=inst.id(),
+                           name=inst.name(),
+                           instance=inst,
+                           desc=inst.description(),
+                           input_exchange_items=[],
+                           output_exchange_items=oei,
+                           params=None)
+
+
+        # save the result id
+        att = {'resultid': name}
+
+        thisModel.type(datatypes.ModelTypes.Data)
+
+        self.__models[thisModel.get_name()] = thisModel
+
+        # return the model id
+        return {'id':thisModel.get_id(), 'name':thisModel.get_name()}
+
     def add_model(self, type=None, id=None, attrib=None, model_class=None):
         """
         stores model component objects when added to a configuration
@@ -384,7 +408,7 @@ class Coordinator(object):
         self.__models[thisModel.get_name()] = thisModel
 
         # return the model id
-        return {'type':'AddModel', 'id':thisModel.get_id(), 'name':thisModel.get_name()}
+        return {'id':thisModel.get_id(), 'name':thisModel.get_name()}
 
     def remove_model(self,linkablecomponent):
         """

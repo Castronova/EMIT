@@ -26,6 +26,9 @@ import threading
 class MyApp(wx.App):
     def OnInit(self):
 
+        # redirect stdout using wxpython events
+        sys.stdout = SysOutListener()
+
         # create and instance of the coordinator engine
         self.cmd = cmd.Coordinator()
 
@@ -53,15 +56,16 @@ class MyApp(wx.App):
 
 class SysOutListener:
     def write(self, string):
-        #sys.__stdout__.write(string)
-        evt = wxStdOut(text=string)
-        wx.PostEvent(wx.GetApp().frame.output, evt)
+        try:
+            sys.__stdout__.write(string)
+            evt = wxStdOut(text=string)
+            wx.PostEvent(wx.GetApp().frame.output, evt)
+        except:
+            pass
 
 
 if __name__ == '__main__':
-
     app = MyApp()
-    sys.stdout = SysOutListener()
     app.MainLoop()
 
 

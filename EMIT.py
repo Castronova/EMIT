@@ -57,7 +57,7 @@ class MyApp(wx.App):
 class SysOutListener:
     def write(self, string):
         try:
-            # sys.__stdout__.write(string)
+            sys.__stdout__.write(string)
             evt = wxStdOut(text=string)
             wx.PostEvent(wx.GetApp().frame.output, evt)
         except:

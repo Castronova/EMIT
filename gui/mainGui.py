@@ -32,6 +32,7 @@ from functools import wraps
 from itertools import cycle
 import time
 
+from images import water_drop as title_icon
 from wx.lib.newevent import NewEvent
 wxStdOut, EVT_STDDOUT= NewEvent()
 
@@ -45,6 +46,15 @@ class MainGui(wx.Frame):
 
         # save cmd object in pnlDocking so that children can access it
         self.pnlDocking.__setattr__('cmd',cmd)
+        import os
+        # path = 'gui/images/water_drop.png'
+        # print "PATH: ", path
+        # image = wx.Image(path, wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+        # icon = wx.EmptyIcon()
+        # icon.CopyFromBitmap(title_icon.getBitmap())
+        self.SetIcon(title_icon.getIcon())
+
+        #self.SetIcon(title_icon.getIcon())
 
 
         self.notebook_pages = {}

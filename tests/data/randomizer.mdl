@@ -6,6 +6,7 @@ classname = randomizer
 code = tonys_random_number_generator
 name = Tonyâ€™s random number generator module
 description = This is a module that generates random numbers
+control_type = FEEDFORWARD
 
 [general]
 name = Random Number Generator

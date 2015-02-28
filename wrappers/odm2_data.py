@@ -6,6 +6,7 @@ from api.ODM2.Results.services import readResults
 from shapely import wkb
 import stdlib, uuid
 from utilities.status import Status
+import datatypes
 
 class odm2(object):
     def __init__(self,resultid, session):
@@ -205,3 +206,6 @@ class odm2(object):
         if value is not None:
             self.__status = value
         return self.__status
+
+    def type(self):
+        return datatypes.ModelTypes.Data

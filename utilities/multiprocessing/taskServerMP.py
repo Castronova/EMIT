@@ -89,12 +89,12 @@ class TaskServerMP:
                 result['type']='AddModel'
                 dispatcher.putResult(result)
 
-            elif task_type == 'AddDataModel':
-
-                result = engine.add_data_model(database_id=task_args['database_id'],
-                                               name=task_args['name'])
-                result['type'] = 'AddDataModel'
-                dispatcher.putResult(result)
+            # elif task_type == 'AddDataModel':
+            #
+            #     result = engine.add_data_model(database_id=task_args['database_id'],
+            #                                    name=task_args['name'])
+            #     result['type'] = 'AddDataModel'
+            #     dispatcher.putResult(result)
 
             elif task_type == 'AddLink':
                 # eng_type = task_args['type']
@@ -238,8 +238,8 @@ class TaskServerMP:
         if result['type'] == 'AddModel':
             id = result['id']
             name = result['name']
-
-            parent.draw_box(name=name,id=id)
+            type = result['model_type']
+            parent.draw_box(name=name,id=id,type=type)
 
         elif result['type'] == 'AddDataModel':
             id = result['id']
@@ -270,15 +270,15 @@ class TaskServerMP:
         self.thread.start()
         # self.thread.join()
 
-    def add_data_model(self, parent, type, database_id=None, resultid=None):
-
-        att = {'databaseid':database_id,'resultid':resultid}
-        kwargs = dict(type=type, attrib=att)
-        task = [('AddModel', kwargs)]
-        self.setTasks(task)
-
-        self.thread = Thread(target = self.check_for_process_results,args=(parent,))
-        self.thread.start()
+    # def add_data_model(self, parent, type, database_id=None, resultid=None):
+    #
+    #     att = {'databaseid':database_id,'resultid':resultid}
+    #     kwargs = dict(type=type, attrib=att)
+    #     task = [('AddModel', kwargs)]
+    #     self.setTasks(task)
+    #
+    #     self.thread = Thread(target = self.check_for_process_results,args=(parent,))
+    #     self.thread.start()
 
 
     def add_link(self, parent, source_id=None, source_item=None, target_id=None, target_item=None,spatial=None, temporal=None ):
@@ -299,6 +299,7 @@ class TaskServerMP:
         kwargs = dict()
         task = [('GetDatabaseConnections',kwargs)]
         self.setTasks(task)
+        #result = self.processTasks()
 
         self.thread = Thread(target = self.check_for_process_results,args=(parent,))
         self.thread.start()

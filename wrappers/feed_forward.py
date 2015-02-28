@@ -2,6 +2,8 @@ __author__ = 'tonycastronova'
 
 import datetime as dt
 from utilities.status import Status
+import datatypes
+
 
 class feed_forward_wrapper(object):
     def __init__(self, config_params):
@@ -204,3 +206,6 @@ class feed_forward_wrapper(object):
         if value is not None:
             self.__status = value
         return self.__status
+
+    def type(self):
+        return datatypes.ModelTypes.FeedForward

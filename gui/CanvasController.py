@@ -38,7 +38,7 @@ from api.ODM2.Results.services import readResults
 from api.ODM2.Core.services import readCore
 from coordinator import main as cmd
 from threading import Thread
-
+import uuid
 
 tool = LoggerTool()
 logger = tool.setupLogger(__name__, __name__ + '.log', 'w', logging.DEBUG)
@@ -89,6 +89,7 @@ class CanvasController:
         self.link_clicks = 0
 
         self._currentDbSession = self.cmd.get_default_db()
+        self._currentDbID = None
 
         self.model_coords = {}
 
@@ -191,69 +192,60 @@ class CanvasController:
         self.createBox(xCoord=x, yCoord=y, id=id, name=name)
         print "finish Creating box"
 
-    def createBox(self, xCoord, yCoord, id=None, name=None, color='#A2CAF5'):
+    def createBox(self, xCoord, yCoord, id=None, name=None, type=datatypes.ModelTypes.TimeStep):
 
-        if name:
-            w, h = 180, 120
-            WH = (w / 2, h / 2)
-            x, y = xCoord, yCoord
-            FontSize = 14
-            # filename = os.path.basename(filepath)
+        # set box color based on model type
+        if type == datatypes.ModelTypes.TimeStep:
+            color = '#B3DBG6'
+        elif type == datatypes.ModelTypes.FeedForward:
+            color = '#A2CAF5'
+        elif type == datatypes.ModelTypes.Data:
+            color = '#A2BGA5'
 
-            # get the coordinates for the rounded rectangle
-            rect_coords = CanvasObjects.build_rounded_rectangle((x, y), width=w, height=h)
+        w, h = 180, 120
+        WH = (w / 2, h / 2)
+        x, y = xCoord, yCoord
+        FontSize = 14
 
-            R = self.FloatCanvas.AddObject(FC.Polygon(rect_coords, FillColor=color, InForeground=True))
+        # get the coordinates for the rounded rectangle
+        rect_coords = CanvasObjects.build_rounded_rectangle((x, y), width=w, height=h)
 
-            #R = self.FloatCanvas.AddRectangle((x,y), (w,h), LineWidth = 2, FillColor = "BLUE",InForeground=True)
-            #R.HitFill = True
-            R.ID = id
-            R.Name = name
-            R.wh = (w, h)
-            R.xy = (x, y)
+        R = self.FloatCanvas.AddObject(FC.Polygon(rect_coords, FillColor=color, InForeground=True))
 
-            # set the shape type so that we can identify it later
-            R.type = CanvasObjects.ShapeType.Model
+        R.ID = id
+        R.Name = name
+        R.wh = (w, h)
+        R.xy = (x, y)
 
-            width = 15
-            wrappedtext = tw.wrap(unicode(name), width)
-            # new_line = []
-            # for line in wrappedtext:
-            #
-            #     frontpadding = int(math.floor((width - len(line))/2))
-            #     backpadding = int(math.ceil((width - len(line))/2))
-            #     line = ' '*frontpadding + line
-            #     line += ' '*backpadding
-            #     new_line.append(line)
+        # set the shape type so that we can identify it later
+        R.type = CanvasObjects.ShapeType.Model
 
-            #FC.DrawLabel(self, text, rect, alignment=wxALIGN_LEFT|wxALIGN_TOP, indexAccel=-1)
+        width = 15
 
-            #label = self.FloatCanvas.AddObject(textbox)
+        # define the font
+        font = wx.Font(16, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
 
-            # define the font
-            font = wx.Font(16, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
-
-            label = self.FloatCanvas.AddScaledTextBox(unicode(name), (x, y),  #(x+1, y+h/2),
-                                                      Color="Black", Size=FontSize, Width=w - 10, Position="cc",
-                                                      Alignment="center",
-                                                      Weight=wx.BOLD, Style=wx.ITALIC, InForeground=True, Font=font,
-                                                      LineWidth=0, LineColor=None)
+        label = self.FloatCanvas.AddScaledTextBox(unicode(name), (x, y),  #(x+1, y+h/2),
+                                                  Color="Black", Size=FontSize, Width=w - 10, Position="cc",
+                                                  Alignment="center",
+                                                  Weight=wx.BOLD, Style=wx.ITALIC, InForeground=True, Font=font,
+                                                  LineWidth=0, LineColor=None)
 
 
-            # set the type of this object so that we can find it later
-            label.type = CanvasObjects.ShapeType.Label
+        # set the type of this object so that we can find it later
+        label.type = CanvasObjects.ShapeType.Label
 
-            # add this text as an attribute of the rectangle
-            R.Text = label
+        # add this text as an attribute of the rectangle
+        R.Text = label
 
-            print '> ', name, ' has been added to the canvas.'
+        print '> ', name, ' has been added to the canvas.'
 
-            R.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit)
-            R.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
+        R.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit)
+        R.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
 
-            self.models[R] = id
+        self.models[R] = id
 
-            self.FloatCanvas.Draw()
+        self.FloatCanvas.Draw()
 
     def createLine(self, R1, R2):
         # print "creating link", R1, R2
@@ -657,7 +649,7 @@ class CanvasController:
 
     def getCurrentDbSession(self, value=None):
         if value is not None:
-            dbs = self.taskserver.get_db_connections()
+            dbs = self.taskserver.get_db_connections(self)
             # dbs = self.cmd.get_db_connections()
             for db in dbs.iterkeys():
                 if dbs[db]['name'] == value:
@@ -688,6 +680,16 @@ class CanvasController:
             return False
 
     def setDatabases(self,connections):
+
+        for db in connections.iterkeys():
+            #if connections[db]['name'] == value:
+
+            # set the current database as the first db returned
+            self._currentDbID = db
+            break
+
+            #self._currentDbSession = connections[db]['session']
+
         Publisher.sendMessage('getKnownDatabases', value=connections)  # sends message to mainGui
 
     def getDatabases(self):
@@ -1160,9 +1162,9 @@ class CanvasController:
         except Exception as e:
             wx.MessageBox(str(e.args[0]), 'Error', wx.OK | wx.ICON_ERROR)
 
-    def draw_box(self,name,id):
-        x,y = self.get_model_coords(name=name)
-        self.createBox(name=name, id=id, xCoord=x, yCoord=y)
+    def draw_box(self,name,id,type):
+        x,y = self.get_model_coords(id=id)
+        self.createBox(name=name, id=id, xCoord=x, yCoord=y,type=type)
 
     def draw_link(self, source_id, target_id):
 
@@ -1183,13 +1185,13 @@ class CanvasController:
 
         #self.FloatCanvas.Draw()
 
-    def set_model_coords(self,name, x, y):
+    def set_model_coords(self,id, x, y):
 
-        self.model_coords[name] = {'x':x, 'y':y}
+        self.model_coords[id] = {'x':x, 'y':y}
 
-    def get_model_coords(self, name):
+    def get_model_coords(self, id):
 
-        return (self.model_coords[name]['x'], self.model_coords[name]['y'])
+        return (self.model_coords[id]['x'], self.model_coords[id]['y'])
 
 class FileDrop(wx.FileDropTarget):
     def __init__(self, controller, window, cmd):
@@ -1234,11 +1236,15 @@ class FileDrop(wx.FileDropTarget):
             # try:
                 if ext == '.mdl':
 
-                    dtype = datatypes.ModelTypes.FeedForward
-                    params = parse_config(filenames[0])
-                    model_name = params['general'][0]['name']
-                    self.controller.set_model_coords(name=model_name, x=x,y=y)
-                    self.controller.taskserver.add_model(self.controller, type=dtype, attrib={'mdl':filenames[0]})
+                    #dtype = datatypes.ModelTypes.FeedForward
+
+                    # params = parse_config(filenames[0])
+                    # model_name = params['general'][0]['name']
+                    # dtype= params['model'][0]['control_type']
+
+                    id = uuid.uuid4().hex[:5]
+                    self.controller.set_model_coords(id=id, x=x,y=y)
+                    self.controller.taskserver.add_model(self.controller, id=id,  attrib={'mdl':filenames[0]})
 
                 else:
                     # load the simulation
@@ -1255,16 +1261,26 @@ class FileDrop(wx.FileDropTarget):
             # get the current database connection dictionary
             # session = self.controller.getCurrentDbSession()
 
-            dbs = self.controller.taskserver.get_db_conn(self.controller)
+            #dbs = self.controller.taskserver.get_db_conn(self.controller)
 
-            # save the database connection
-            for id, dic in dbs.iteritems():
-                if dic['name'] == self.controller.getCurrentDbSession():
-                    db_id = id
-                    break
 
-            self.controller.set_model_coords(name=name, x=x,y=y)
-            self.controller.taskserver.add_data_model(self.controller, type=datatypes.ModelTypes.Data, database_id=db_id, resultid=name)
+            current_db_id = self.controller._currentDbID
+
+
+            # # save the database connection
+            # for id, dic in dbs.iteritems():
+            #     if dic['name'] == self.controller.getCurrentDbSession():
+            #         db_id = id
+            #         break
+
+
+            id = uuid.uuid4().hex[:5]
+
+            self.controller.set_model_coords(id=id, x=x,y=y)
+
+            #type=None, id=None, attrib=None, model_class=None
+            attrib = dict(databaseid=current_db_id, resultid=name)
+            self.controller.taskserver.add_model(self.controller, type=datatypes.ModelTypes.Data, id=id, attrib=attrib)
 
             # # create odm2 instance
             # inst = odm2_data.odm2(resultid=name, session=session)

@@ -126,7 +126,6 @@ class Model(object):
         self.__oei = {}
         self.__id = id
         self.__params = params
-        self.__type = None
         self.__attrib  = {}
 
         for iei in input_exchange_items:
@@ -139,9 +138,8 @@ class Model(object):
         self.__params_path = None
 
     def type(self,value=None):
-        if value is not None:
-            self.__type = value
-        return self.__type
+
+        return self.get_instance().type()
 
     def attrib(self, value=None):
         """
@@ -309,8 +307,8 @@ class Coordinator(object):
 
         thisModel = None
 
-
-        if type == datatypes.ModelTypes.FeedForward or type == datatypes.ModelTypes.TimeStep:
+        if 'mdl' in attrib:
+        # if type == datatypes.ModelTypes.FeedForward or type == datatypes.ModelTypes.TimeStep:
 
             ini_path = attrib['mdl']
 
@@ -346,8 +344,8 @@ class Coordinator(object):
 
                 thisModel.params_path(ini_path)
 
-        elif type == datatypes.ModelTypes.Data:
-
+        # elif type == datatypes.ModelTypes.Data:
+        elif 'databaseid' in attrib and 'resultid' in attrib:
             databaseid = attrib['databaseid']
             resultid = attrib['resultid']
 
@@ -359,8 +357,11 @@ class Coordinator(object):
 
             oei = inst.outputs().values()
 
+            if id is None:
+                id = uuid.uuid4().hex[:5]
+
             # create a model instance
-            thisModel = Model(id=attrib['id'],
+            thisModel = Model(id=id,
                               name=inst.name(),
                               instance=inst,
                               desc=inst.description(),
@@ -383,7 +384,7 @@ class Coordinator(object):
         self.__models[thisModel.get_name()] = thisModel
 
         # return the model id
-        return {'id':thisModel.get_id(), 'name':thisModel.get_name()}
+        return {'id':thisModel.get_id(), 'name':thisModel.get_name(),'model_type':thisModel.type()}
 
     def remove_model(self,linkablecomponent):
         """

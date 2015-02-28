@@ -3,6 +3,7 @@ __author__ = 'tonycastronova'
 import datetime as dt
 from utilities.status import Status
 from stdlib import Geometry
+import datatypes
 
 class time_step_wrapper(object):
 
@@ -34,6 +35,7 @@ class time_step_wrapper(object):
 
     # def data_directory(self):
     #     raise NotImplementedError('This is an abstract method that must be implemented!')
+
 
     def save(self):
         raise NotImplementedError('This is an abstract method that must be implemented!')
@@ -241,3 +243,6 @@ class time_step_wrapper(object):
         if value is not None:
             self.__status = value
         return self.__status
+
+    def type(self):
+        return datatypes.ModelTypes.TimeStep

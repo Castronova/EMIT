@@ -143,8 +143,6 @@ class ModelContextMenu(wx.Menu):
         # listview.PopulateDetails(self.sb.GetValue())
         view.Show()
 
-
-
     def PopupDisplay(self, e):
         self.parent.DetailView(e)
 
@@ -230,6 +228,7 @@ class GeneralContextMenu(wx.Menu):
             if save.ShowModal() == wx.ID_OK:
                 path = save.GetPath()
                 self.parent.SaveSimulation(path)
+                self.parent.SetLoadingPath(path)
         else:
             self.parent.SaveSimulation(self.parent.GetLoadingPath())
 
@@ -241,6 +240,7 @@ class GeneralContextMenu(wx.Menu):
         if save.ShowModal() == wx.ID_OK:
             path = save.GetPath()
             self.parent.SaveSimulation(path)
+            self.parent.SetLoadingPath(path)
 
     def LoadConfiguration(self, e):
         load = wx.FileDialog(self.parent.Canvas.GetTopLevelParent(), "Load Configuration","","",
@@ -283,7 +283,6 @@ class DirectoryContextMenu(wx.Menu):
 
     def OnClose(self, e):
         self.parent.Close()
-
 
 class TreeItemContextMenu(wx.Menu):
 

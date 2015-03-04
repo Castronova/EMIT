@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<Simulation>
+  <Model>
+    <name>Random Number Generator</name>
+    <id>15347</id>
+    <xcoordinate>-67.0</xcoordinate>
+    <ycoordinate>-39.0</ycoordinate>
+    <path>/home/mario/Projects/EMIT/gui/../tests/data/randomizer.mdl</path>
+  </Model>
+</Simulation>

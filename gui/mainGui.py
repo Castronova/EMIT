@@ -305,6 +305,8 @@ class MainGui(wx.Frame):
                 save.Destroy()
 
             Publisher.sendMessage('SetSavePath',path=save.GetPath()) #send message to canvascontroller.SaveSimulation
+
+            self.loadingpath = save.GetPath()
         else:
             Publisher.sendMessage('SetSavePath', path=self.loadingpath)
 
@@ -317,7 +319,7 @@ class MainGui(wx.Frame):
         else:
             save.Destroy()
 
-
+        self.loadingpath = save.GetPath()
         Publisher.sendMessage('SetSavePath',path=save.GetPath()) #send message to canvascontroller.SaveSimulation
 
 

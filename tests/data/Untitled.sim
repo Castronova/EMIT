@@ -3,8 +3,8 @@
   <Model>
     <name>Multiplier</name>
     <id>46abb</id>
-    <xcoordinate>-186.0</xcoordinate>
-    <ycoordinate>78.0</ycoordinate>
+    <xcoordinate>38.0</xcoordinate>
+    <ycoordinate>25.0</ycoordinate>
     <path>/home/mario/Projects/EMIT/gui/../tests/data/multiplier.mdl</path>
   </Model>
 </Simulation>

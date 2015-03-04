@@ -65,6 +65,9 @@ class MainGui(wx.Frame):
 
         Publisher.subscribe(self.OnPageChange,'ChangePage')
 
+        self.filename = None
+        self.loadingpath = None
+
 
 
 
@@ -210,6 +213,7 @@ class MainGui(wx.Frame):
         self.m_fileMenu = wx.Menu()
         #exit = wx.MenuItem(self.m_fileMenu, wx.ID_EXIT, '&Quit\tCtrl+Q')
         Save = self.m_fileMenu.Append(wx.NewId(), '&Save Configuration\tCtrl+S', 'Save Configuration')
+        SaveAs = self.m_fileMenu.Append(wx.NewId(), '&Save Configuration As', 'Save Configuration')
         Open = self.m_fileMenu.Append(wx.NewId(), '&Load Configuration\tCtrl+O', 'Load Configuration')
         exit = self.m_fileMenu.Append(wx.NewId(), '&Quit\tCtrl+Q', 'Quit application')
 
@@ -233,6 +237,7 @@ class MainGui(wx.Frame):
 
         ## Events
         self.Bind(wx.EVT_MENU, self.SaveConfiguration, Save)
+        self.Bind(wx.EVT_MENU, self.SaveConfigurationAs, SaveAs)
         self.Bind(wx.EVT_MENU, self.LoadConfiguration, Open)
         #self.Bind(wx.EVT_MENU, self.onClose, exit)
         self.Bind(wx.EVT_MENU, self.onDirectory, ShowDir)
@@ -246,7 +251,6 @@ class MainGui(wx.Frame):
 
     def __del__(self):
         self.m_mgr.UnInit()
-
 
 
     def LoadConfiguration(self,event):
@@ -263,11 +267,14 @@ class MainGui(wx.Frame):
 
         if openFileDialog.ShowModal() == wx.ID_CANCEL:
             return     # the user changed idea...
-
+        print "Filename is: ", openFileDialog.GetFilename()
         # proceed loading the file chosen by the user
         # this can be done with e.g. wxPython input streams:
         input_stream = (openFileDialog.GetPath())
         Publisher.sendMessage('SetLoadPath',file=input_stream) #send message to canvascontroller
+
+        self.filename = openFileDialog.GetFilename()
+        self.loadingpath = input_stream
         #
         # data = wx.FileDataObject()
         # data.AddFile(input_stream)
@@ -288,6 +295,20 @@ class MainGui(wx.Frame):
         # pass
 
     def SaveConfiguration(self,event):
+        if self.loadingpath == None:
+            save = wx.FileDialog(self.Canvas.GetTopLevelParent(), "Save Configuration","","",
+                                 "Simulation Files (*.sim)|*.sim", wx.FD_SAVE  | wx.FD_OVERWRITE_PROMPT)
+
+            if save.ShowModal() == wx.ID_OK:
+                self.save_path = save.GetPath() + ".sim"
+            else:
+                save.Destroy()
+
+            Publisher.sendMessage('SetSavePath',path=save.GetPath()) #send message to canvascontroller.SaveSimulation
+        else:
+            Publisher.sendMessage('SetSavePath', path=self.loadingpath)
+
+    def SaveConfigurationAs(self,event):
         save = wx.FileDialog(self.Canvas.GetTopLevelParent(), "Save Configuration","","",
                              "Simulation Files (*.sim)|*.sim", wx.FD_SAVE  | wx.FD_OVERWRITE_PROMPT)
 
@@ -298,6 +319,8 @@ class MainGui(wx.Frame):
 
 
         Publisher.sendMessage('SetSavePath',path=save.GetPath()) #send message to canvascontroller.SaveSimulation
+
+
 
     def onDirectory(self, event):
         ToolboxPane = self.m_mgr.GetPane(self.Toolbox)

@@ -69,6 +69,7 @@ class CanvasController:
         self.link_clicks = 0
 
         self._currentDbSession = self.cmd.get_default_db()
+        self.loadingpath = None
 
     def UnBindAllMouseEvents(self):
         ## Here is how you unbind FloatCanvas mouse events
@@ -857,6 +858,8 @@ class CanvasController:
 
         ########### END CODE #############
 
+        self.loadingpath = file
+
         tree = et.parse(file)
 
         # get the root
@@ -1038,6 +1041,13 @@ class CanvasController:
 
             self.FloatCanvas.Draw()
             #self.Canvas.Draw()
+
+    def SetLoadingPath(self, path):
+        # loadingpath = path
+        self.loadingpath = path
+
+    def GetLoadingPath(self):
+        return self.loadingpath
 
     def addModelDialog(self):
         # Note that we need to make sure this passes in information from the model

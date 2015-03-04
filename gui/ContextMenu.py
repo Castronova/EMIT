@@ -183,6 +183,10 @@ class GeneralContextMenu(wx.Menu):
         self.AppendItem(mmi)
         self.Bind(wx.EVT_MENU, self.SaveConfiguration, mmi)
 
+        mmi = wx.MenuItem(self, wx.NewId(), 'Save Configuration As')
+        self.AppendItem(mmi)
+        self.Bind(wx.EVT_MENU, self.SaveConfigurationAs, mmi)
+
         mmi = wx.MenuItem(self, wx.NewId(), 'Run')
         self.AppendItem(mmi)
         self.Bind(wx.EVT_MENU, self.OnClickRun, mmi)
@@ -219,6 +223,17 @@ class GeneralContextMenu(wx.Menu):
         #     self.parent.clear()
 
     def SaveConfiguration(self,e):
+        if self.parent.GetLoadingPath() == None:
+            save = wx.FileDialog(self.parent.Canvas.GetTopLevelParent(), "Save Configuration","","",
+                                 "Simulation Files (*.sim)|*.sim", wx.FD_SAVE  | wx.FD_OVERWRITE_PROMPT)
+
+            if save.ShowModal() == wx.ID_OK:
+                path = save.GetPath()
+                self.parent.SaveSimulation(path)
+        else:
+            self.parent.SaveSimulation(self.parent.GetLoadingPath())
+
+    def SaveConfigurationAs(self,e):
 
         save = wx.FileDialog(self.parent.Canvas.GetTopLevelParent(), "Save Configuration","","",
                              "Simulation Files (*.sim)|*.sim", wx.FD_SAVE  | wx.FD_OVERWRITE_PROMPT)
@@ -233,6 +248,7 @@ class GeneralContextMenu(wx.Menu):
         if load.ShowModal() == wx.ID_OK:
             path = load.GetPath()
             self.parent.loadsimulation(path)
+            self.parent.SetLoadingPath(path)
 
     def OnMinimize(self, e):
         self.parent.Iconize()

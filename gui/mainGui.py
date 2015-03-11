@@ -145,11 +145,13 @@ class MainGui(wx.Frame):
                            Position(1).
                            CloseButton(False).
                            MaximizeButton(True)
-                           .Movable()
+                           # .Movable()
+                           .MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_BOTTOM)
+                           # .Minimize()
                            .MinimizeButton(True).
-                           PinButton(True).
-                           Resizable().
-                           Floatable().
+                           # PinButton(True).
+                           # Resizable().
+                           # Floatable().
                            MinSize(wx.Size(1200, 200)))
 
 
@@ -160,32 +162,51 @@ class MainGui(wx.Frame):
                            CloseButton(False).
                            MaximizeButton(True).
                            MinimizeButton(True).
-                           MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_SMART).
+                           # MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_SMART).
                            PinButton(True).
                            Resizable().
                            MinSize(wx.Size(275,400)).
-                           Floatable().
-                           Movable().
-                           FloatingSize(size=(600, 800)).
-                           Show(show=False).Hide().
-                           CloseButton(True))
+                           Minimize().
+                           # Floatable().
+                           # Movable().
+                           # FloatingSize(size=(600, 800)).
+                           Show(show=False).Hide()
+                           )
+
+        # self.m_mgr.AddPane(self.Directory,
+        #                    aui.AuiPaneInfo().
+        #                    Left().
+        #                    Dock().
+        #                    CloseButton(False).
+        #                    MaximizeButton(True).
+        #                    MinimizeButton(True).
+        #                    MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_SMART).
+        #                    PinButton(True).
+        #                    Resizable().
+        #                    MinSize(wx.Size(275,400)).
+        #                    Minimize().
+        #                    Floatable().
+        #                    Movable().
+        #                    FloatingSize(size=(600, 800)).
+        #                    Show(show=False).Hide().
+        #                    CloseButton(True))
 
         self.m_mgr.AddPane(self.Toolbox,
                            aui.AuiPaneInfo().
                            Left().
                            Dock().
-                           CloseButton(False).
+                           # CloseButton(False).
                            MaximizeButton(True).
                            MinimizeButton(True).
-                           MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_SMART).
-                           PinButton(True).
-                           Resizable().
+                           MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_LEFT).
+                           # PinButton(True).
+                           # Resizable().
                            MinSize(wx.Size(275,400)).
-                           Floatable().
-                           Movable().
-                           FloatingSize(size=(600, 800)).
-                           Show(show=True).
-                           CloseButton(True))
+                           # Minimize().
+                           # Floatable().
+                           # Movable().
+                           # FloatingSize(size=(600, 800)).
+                           Show(show=True))
 
         self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED,self.OnSelect)
 

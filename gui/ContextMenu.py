@@ -21,6 +21,10 @@ class LinkContextMenu(wx.Menu):
         self.arrow_obj = e
         self.parent = parent
 
+        mmi = wx.MenuItem(self, wx.NewId(), 'Details')
+        self.AppendItem(mmi)
+        self.Bind(wx.EVT_MENU, self.OnLinkDetails, mmi)
+
         mmi = wx.MenuItem(self, wx.NewId(), 'Edit')
         self.AppendItem(mmi)
         self.Bind(wx.EVT_MENU, self.OnAddLink, mmi)
@@ -37,6 +41,8 @@ class LinkContextMenu(wx.Menu):
     def RemoveLink(self, e):
         self.parent.RemoveLink(self.arrow_obj)
 
+    def OnLinkDetails(self, e):
+        self.parent.LinkDetailsShow(self.arrow_obj)
 
     def OnMinimize(self, e):
         self.parent.Iconize()

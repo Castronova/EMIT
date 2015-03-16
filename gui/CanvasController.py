@@ -20,6 +20,7 @@ import math
 import markdown2
 import CanvasObjects
 from LinkStart import LinkStart
+from LinkDetailsContext import LinkDetailsContextActivatedFrame as LDCAF
 from ContextMenu import LinkContextMenu, ModelContextMenu, GeneralContextMenu
 from wrappers import odm2_data
 import xml.etree.ElementTree as et
@@ -554,6 +555,27 @@ class CanvasController:
         # print "The Link was clicked"
         linkstart = LinkStart(self.FloatCanvas, from_model, to_model, inputitems, outputitems, self.cmd)
         linkstart.Show()
+
+    def LinkDetailsShow(self, event):
+
+        # get the models associated with the link
+        polygons = self.links[event]
+
+        # get r1 and r2
+        r1 = polygons[0]
+        r2 = polygons[1]
+        # get output items from r1
+        from_model = self.cmd.get_model_by_id(r1.ID)
+
+        # get exchange items
+        inputitems = from_model.get_output_exchange_items()
+        # get output items from r1
+        to_model = self.cmd.get_model_by_id(r2.ID)
+
+        # get exchange items
+        outputitems = to_model.get_input_exchange_items()
+        linkdetails = LDCAF(self.FloatCanvas, from_model, to_model, inputitems, outputitems, self.cmd)
+        linkdetails.Show()
 
     def RightClickCb( self, event ):
         # get the link object

@@ -32,17 +32,14 @@ from functools import wraps
 from itertools import cycle
 import time
 
-<<<<<<< HEAD
 from wx.lib.newevent import NewEvent
 wxStdOut, EVT_STDDOUT= NewEvent()
 wxCreateBox, EVT_CREATE_BOX = NewEvent()
 
 
-=======
 from images import water_drop as title_icon
 from wx.lib.newevent import NewEvent
 wxStdOut, EVT_STDDOUT= NewEvent()
->>>>>>> 406c14a4a264f0f8dc9810b1e6583422c68eaec7
 
 class MainGui(wx.Frame):
     def __init__(self, parent, cmd):
@@ -107,12 +104,9 @@ class MainGui(wx.Frame):
         self.Toolbox.Hide()
 
         self.bnb = wx.Notebook(self.pnlDocking)
-<<<<<<< HEAD
-        self.output =consoleOutput(self.bnb)
-=======
+
         self.output = consoleOutput(self.bnb)
 
->>>>>>> 406c14a4a264f0f8dc9810b1e6583422c68eaec7
         # output.start()
 
         # seriesoutput = OutputTimeSeries(self.bnb)
@@ -903,10 +897,7 @@ class consoleOutput(wx.Panel):
         self.log = wx.TextCtrl(self, -1, size=(100,100),
                           style = wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
         self.Bind(EVT_STDDOUT, self.OnUpdateOutputWindow)
-<<<<<<< HEAD
-=======
         self.Bind(wx.EVT_CONTEXT_MENU, self.onRightUp)
->>>>>>> 406c14a4a264f0f8dc9810b1e6583422c68eaec7
 
 
         # txtHandler = console.CustomConsoleHandler(log)
@@ -934,12 +925,9 @@ class consoleOutput(wx.Panel):
     def OnUpdateOutputWindow(self, event):
         value = event.text
         self.log.AppendText(value)
-<<<<<<< HEAD
-=======
 
     def onRightUp(self, event):
         self.log.PopupMenu(ConsoleContextMenu(self, event))
->>>>>>> 406c14a4a264f0f8dc9810b1e6583422c68eaec7
 
 class RedirectText(object):
 

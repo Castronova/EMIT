@@ -32,7 +32,6 @@ from api.ODM2.Results.services import readResults
 from utilities.threading import EVT_CREATE_BOX, EVT_UPDATE_CONSOLE, ThreadManager
 
 
-
 class CanvasController:
     def __init__(self, cmd, frame):
         self.Canvas = frame.Canvas

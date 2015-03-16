@@ -53,7 +53,7 @@ class MyApp(wx.App):
         #self.frame2 = non_blocking_gui.Frame()
         #self.frame2.Show()
 
-        CanvasController(self.cmd, self.frame.Canvas)
+        CanvasController(self.cmd, self.frame)
 
         self.cmd.connect_to_db([connections_txt])
         if not self.cmd.get_default_db():

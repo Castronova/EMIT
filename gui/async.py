@@ -1,8 +1,12 @@
+from Queue import Queue
+import threading
+
 __author__ = 'tonycastronova'
 
 import wx
 from threading import Thread
 from functools import wraps
+
 
 def runAsync(func):
     '''Decorates a method to run in a separate thread'''
@@ -45,3 +49,20 @@ def threaded(f, daemon=False):
         return t
 
     return wrap
+
+
+
+
+        #return model
+
+
+# def worker():
+#     print "Worker started!"
+#     model = self.cmd.add_model(dtype,attrib={'mdl':filenames[0]})
+#     name = model.get_name()
+#     modelid = model.get_id()
+#     self.controller.createBox(name=name, id=modelid, xCoord=x, yCoord=y)
+#     print "worker Finished"
+#
+# t = threading.Thread(target=worker, args=(,))
+# t.start()

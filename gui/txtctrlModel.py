@@ -16,7 +16,7 @@ from wx.lib.pubsub import pub as Publisher
 
 class ModelTxtCtrl ( wx.Frame ):
 
-    def __init__( self, parent, spatial=True, temporal=True, edit=True ):
+    def __init__( self, parent, spatial=True, temporal=True, edit=True, properties = True):
         wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition,
                             size = wx.Size( 500,500 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 

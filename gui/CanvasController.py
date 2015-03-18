@@ -566,7 +566,7 @@ class CanvasController:
         r2 = polygons[1]
         # get output items from r1
         from_model = self.cmd.get_model_by_id(r1.ID)
-
+        link = self.cmd.get_links_btwn_models(r1.ID, r2.ID)
         # get exchange items
         inputitems = from_model.get_output_exchange_items()
         # get output items from r1
@@ -574,7 +574,7 @@ class CanvasController:
 
         # get exchange items
         outputitems = to_model.get_input_exchange_items()
-        linkdetails = LDCAF(self.FloatCanvas, from_model, to_model, inputitems, outputitems, self.cmd)
+        linkdetails = LDCAF(self.FloatCanvas, link, self.cmd)
         linkdetails.Show()
 
     def RightClickCb( self, event ):

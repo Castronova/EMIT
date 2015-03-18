@@ -6,17 +6,17 @@ import wx.propgrid as wxpg
 
 class LinkDetailsContextActivatedFrame ( wx.Frame ):
 
-    def __init__( self, parent, from_model, to_model, input, output, cmd ):
+    def __init__( self, parent, link, cmd ):
         wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( 500,500 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 
-        self.input = input
-        self.output = output
+        self.link = link
+        # self.output = output
         self.FloatCanvas = parent
         self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
 
         self.cmd = cmd
-        self.from_model = from_model
-        self.to_model = to_model
+        # self.from_model = from_model
+        # self.to_model = to_model
 
         self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
 
@@ -45,16 +45,16 @@ class LinkDetailsContextActivatedFrame ( wx.Frame ):
 
 
         self.pg.Append( wxpg.PropertyCategory("Input Item") )
-        self.pg.Append( wxpg.StringProperty("Variable Name (input)",value=str(self.input[0].name() ) ))
-        self.pg.Append( wxpg.StringProperty("Variable Description (input)",value= str(self.input[0]._ExchangeItem__description) ))
-        self.pg.Append( wxpg.StringProperty("Unit Code (input)", value= str(self.input[0]._ExchangeItem__unit)))
+        self.pg.Append( wxpg.StringProperty("Variable Name (input)",value=str(self.link[0].source_exchange_item()._ExchangeItem__name ) ))
+        self.pg.Append( wxpg.StringProperty("Variable Description (input)",value= str(self.link[0].source_exchange_item()._ExchangeItem__description) ))
+        self.pg.Append( wxpg.StringProperty("Unit Code (input)", value= str(self.link[0].source_exchange_item()._ExchangeItem__unit)))
         # self.pg.Append( wxpg.StringProperty("Unit Abbreviation (input)", value=self.input.GetPropertyByName("Abbreviation").GetValue() or 'undefined'))
         # self.pg.Append( wxpg.StringProperty("Unit Type (input)", value=self.input.GetPropertyByName("Type").GetValue() or 'undefined'))
 
         self.pg.Append( wxpg.PropertyCategory("Output Item") )
-        self.pg.Append( wxpg.StringProperty("Variable Name (output)",value= str(self.output[0].name())))
-        self.pg.Append( wxpg.StringProperty("Variable Description (output)",value= str(self.output[0]._ExchangeItem__description)))
-        self.pg.Append( wxpg.StringProperty("Unit Code (output)", value= str(self.output[0]._ExchangeItem__unit)))
+        self.pg.Append( wxpg.StringProperty("Variable Name (output)",value= str(self.link[0].target_exchange_item()._ExchangeItem__name)))
+        self.pg.Append( wxpg.StringProperty("Variable Description (output)",value= str(self.link[0].target_exchange_item()._ExchangeItem__description)))
+        self.pg.Append( wxpg.StringProperty("Unit Code (output)", value= str(self.link[0].target_exchange_item()._ExchangeItem__unit)))
         # self.pg.Append( wxpg.StringProperty("Unit Abbreviation (output)", value=self.output.GetPropertyByName("Abbreviation").GetValue()  or 'undefined'))
         # self.pg.Append( wxpg.StringProperty("Unit Type (output)", value=self.output.GetPropertyByName("Type").GetValue()  or 'undefined'))
 

@@ -48,7 +48,7 @@ class MyApp(wx.App):
 
         self.frame = MainGui(None,self.cmd)
         self.frame.Show(True)
-        sys.stdout = SysOutListener()
+        # sys.stdout = SysOutListener()
 
         #self.frame2 = non_blocking_gui.Frame()
         #self.frame2.Show()

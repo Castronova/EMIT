@@ -21,39 +21,59 @@ class LinkDetailsContextActivatedFrame ( wx.Frame ):
         self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
 
         bSizer1 = wx.BoxSizer( wx.VERTICAL )
+        bSizer2 = wx.BoxSizer( wx.VERTICAL )
 
         self.m_panel1 = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-        bSizer1.Add( self.m_panel1, 1, wx.EXPAND |wx.ALL, 5 )
-
-
-        self.SetSizer( bSizer1 )
-
         self.pg = pg = wxpg.PropertyGridManager(self.m_panel1,
                     style=wxpg.PG_SPLITTER_AUTO_CENTER |
                           wxpg.PG_AUTO_SORT |
                           wxpg.PG_PROP_READONLY)
 
-        # self.input.GetPropertyByName()
-        self.input.GetPropertyByName("Name").GetValue()
+        self.SetSizer( bSizer1 )
+
+
+        self.pg.AddPage( "Link Details" )
+
+        bSizer2.Add(self.pg, 1, wx.EXPAND|wx.ALL, 5)
+        bSizer1.Add( self.m_panel1, 1, wx.EXPAND |wx.ALL, 5 )
+        self.m_panel1.SetSizer( bSizer2)
+        self.m_panel1.Layout()
+        bSizer2.Fit(self.m_panel1)
+
+        # bSizer1.Add(pg, 1, wx.EXPAND)
+
+
 
         self.pg.Append( wxpg.PropertyCategory("Input Item") )
-        self.pg.Append( wxpg.StringProperty("Variable Name (input)",value=self.input.GetPropertyByName("Name").GetValue() or 'undefined' ))
-        self.pg.Append( wxpg.StringProperty("Variable Definition (input)",value=self.input.GetPropertyByName("Definition").GetValue() or 'undefined'))
-        self.pg.Append( wxpg.StringProperty("Unit Code (input)", value=self.input.GetPropertyByName("Code").GetValue() or 'undefined'))
-        self.pg.Append( wxpg.StringProperty("Unit Abbreviation (input)", value=self.input.GetPropertyByName("Abbreviation").GetValue() or 'undefined'))
-        self.pg.Append( wxpg.StringProperty("Unit Type (input)", value=self.input.GetPropertyByName("Type").GetValue() or 'undefined'))
+        self.pg.Append( wxpg.StringProperty("Variable Name (input)",value=str(self.input[0].name() ) ))
+        self.pg.Append( wxpg.StringProperty("Variable Description (input)",value= str(self.input[0]._ExchangeItem__description) ))
+        self.pg.Append( wxpg.StringProperty("Unit Code (input)", value= str(self.input[0]._ExchangeItem__unit)))
+        # self.pg.Append( wxpg.StringProperty("Unit Abbreviation (input)", value=self.input.GetPropertyByName("Abbreviation").GetValue() or 'undefined'))
+        # self.pg.Append( wxpg.StringProperty("Unit Type (input)", value=self.input.GetPropertyByName("Type").GetValue() or 'undefined'))
 
         self.pg.Append( wxpg.PropertyCategory("Output Item") )
-        self.pg.Append( wxpg.StringProperty("Variable Name (output)",value=self.output.GetPropertyByName("Name").GetValue()  or 'undefined' ))
-        self.pg.Append( wxpg.StringProperty("Variable Definition (output)",value=self.output.GetPropertyByName("Definition").GetValue() or 'undefined'))
-        self.pg.Append( wxpg.StringProperty("Unit Code (output)", value=self.output.GetPropertyByName("Code").GetValue()  or 'undefined' ))
-        self.pg.Append( wxpg.StringProperty("Unit Abbreviation (output)", value=self.output.GetPropertyByName("Abbreviation").GetValue()  or 'undefined'))
-        self.pg.Append( wxpg.StringProperty("Unit Type (output)", value=self.output.GetPropertyByName("Type").GetValue()  or 'undefined'))
+        self.pg.Append( wxpg.StringProperty("Variable Name (output)",value= str(self.output[0].name())))
+        self.pg.Append( wxpg.StringProperty("Variable Description (output)",value= str(self.output[0]._ExchangeItem__description)))
+        self.pg.Append( wxpg.StringProperty("Unit Code (output)", value= str(self.output[0]._ExchangeItem__unit)))
+        # self.pg.Append( wxpg.StringProperty("Unit Abbreviation (output)", value=self.output.GetPropertyByName("Abbreviation").GetValue()  or 'undefined'))
+        # self.pg.Append( wxpg.StringProperty("Unit Type (output)", value=self.output.GetPropertyByName("Type").GetValue()  or 'undefined'))
 
 
         self.Layout()
 
         self.Centre( wx.BOTH )
+
+    def OnPropGridChange(self, event):
+        p = event.GetProperty()
+
+    def OnPropGridSelect(self, event):
+        p = event.GetProperty()
+
+    #def OnReserved(self, event):
+    #    pass
+
+    def OnPropGridPageChange(self, event):
+        index = self.pg.GetSelectedPage()
 
     def __del__( self ):
         pass

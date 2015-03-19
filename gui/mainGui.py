@@ -899,12 +899,13 @@ class consoleOutput(wx.Panel):
         self.Bind(EVT_STDDOUT, self.OnUpdateOutputWindow)
         self.Bind(wx.EVT_CONTEXT_MENU, self.onRightUp)
 
+        # deactivate the console if we are in debug mode
+        if not sys.gettrace():
+            # txtHandler = console.CustomConsoleHandler(log)
+            # self.logger.addHandler(txtHandler)
 
-        # txtHandler = console.CustomConsoleHandler(log)
-        # self.logger.addHandler(txtHandler)
-
-        #redir = RedirectText(self.log)
-        #sys.stdout = redir
+            redir = RedirectText(self.log)
+            sys.stdout = redir
 
 
         # # Add widgets to a sizer

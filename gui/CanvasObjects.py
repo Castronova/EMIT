@@ -1,11 +1,13 @@
 __author__ = 'Mario'
 
-__author__ = 'tonycastronova'
 
 import wx
 import sys
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
+import numpy as np
+import math
+import numpy.linalg as la
 
 sys.path.append("..")
 
@@ -16,7 +18,6 @@ from wx.lib.ogl import RectangleShape
 from wx.lib.floatcanvas.Utilities import GUI
 from math import *
 import numpy as N
-
 from numpy import meshgrid, linspace
 
 
@@ -74,69 +75,59 @@ def get_hex_from_gradient(gradient, num):
 
     return hexcolors
 
-def build_arrow(pts,arrow_length=3):
-
-    if arrow_length > len(pts)/2:
-        print '> Arrow length is too large! Setting arrow length to default (i.e. 3)'
-        arrow_length = 3
-
-
-
+def build_arrow(pts, arrow_length=3):
 
     # get the center coordinate of line
     x1,y1 = pts[len(pts)/2]
 
-    # get the point at 'length' away from center
-    x2,y2 = pts[(len(pts)/2) - int(arrow_length)]
+    # build triangle
+    v1 = (10,0)
+    v2 = (0,22)
+    v3 = (20,22)
+    v4 = (10,22) # point bisecting base of triangle
 
-    #return (x1,y1), ()
-
-    actual_length = sqrt((x2-x1)**2 + (y2-y1)**2)
-
-    # determine the slope of this line segment
-    m = (y2-y1) / (x2-x1)
-    M = -1./m
-
-
-    # determine y intercept
-    b = y2 - M*x2
-
-    import numpy as np
-    import math
-
-    # find start and end range based on distance from x2,y2
-    idx = np.where(pts==x2)[0][0]
-
-    step = -.01 if pts[0][0] > pts[-1][0] else .01
-    x3 = np.arange(pts[0][0],pts[-1][0],step)
+    # todo: snap center of mass of triangle to line rather than v1
+    # move to center of line
+    dx = v1[0] - x1
+    dy = v1[1] - y1
 
 
-    y3 = [M*x + b for x in x3]
-    xy3 = zip(x3,y3)
 
-    diff = [abs(x2-x)for x in x3]
-    idx = diff.index(min(diff))
+    v1 = (v1[0]-dx,v1[1]-dy)
+    v2 = (v2[0]-dx,v2[1]-dy)
+    v3 = (v3[0]-dx,v3[1]-dy)
+    v4 = (v4[0]-dx,v4[1]-dy)
 
-    line = []
-    distance = 0
-    for x,y in xy3[idx+1:]:
-        line.append((x,y))
-        distance = math.sqrt((x2-x)**2 + (y2-y)**2)
-        if distance > 10: break
+    # return v1,v2,v3
 
-    line.reverse()
+    # determine angle of rotation
+    p1 = v1
+    p2 = v4
+    p3 = pts[len(pts)/2 + 5]
+    p12 = sqrt((p1[0] - p2[0])**2 + (p1[1]-p2[1])**2)
+    p13 = sqrt((p1[0] - p3[0])**2 + (p1[1]-p3[1])**2)
+    p23 = sqrt((p2[0] - p3[0])**2 + (p2[1]-p3[1])**2)
+    c = math.acos((p12**2 + p13**2 - p23**2) / (2 * p12 * p13))
 
-    distance = 0
-    xy3.reverse()
-    for x,y in xy3[len(xy3)-idx+1:]:
-        line.append((x,y))
-        distance = math.sqrt((x2-x)**2 + (y2-y)**2)
-        if distance > 10: break
 
-    v1 = line[0]
-    v2 = line[-1]
-    v3 = (x1,y1)
-    return v1,v2,v3
+    # determine quadrant, using source model as origin
+    dX = p3[0] - p1[0]
+    dY = p3[1] - p1[1]
+    if dX > 0 and dY > 0: c = pi - c
+    elif dX > 0 and dY < 0: c = pi - c
+    elif dX < 0 and dY < 0: c += pi
+    else : c += pi
+
+    # set the origin for rotation as v1
+    ox,oy = v1
+    coords = [v1]
+    for x,y in [v2,v3]:
+        new_x = (x - ox) * cos(c) - (y-oy)*sin(c) + ox
+        new_y = (y - oy) * cos(c) + (x-ox)*sin(c) + oy
+        coord = (new_x,new_y)
+        coords.append(coord)
+
+    return coords
 
 
 def get_inverse(pts,arrow_length=3):

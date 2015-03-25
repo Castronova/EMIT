@@ -140,8 +140,8 @@ class MainGui(wx.Frame):
                            MinimizeButton(True).
                            PinButton(False).
                            Resizable().
-                           Movable().
-                           Floatable(True).
+                           # Movable().
+                           Floatable(False).
                            MinSize(wx.Size(1000, 400)))
 
 
@@ -154,7 +154,7 @@ class MainGui(wx.Frame):
                            MinimizeButton(True).
                            CloseButton(False).
                            # MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_SMART).
-                           PinButton(True).
+                           PinButton(False).
                            Resizable().
                            MinSize(wx.Size(275,400)).
                            Minimize().
@@ -206,10 +206,12 @@ class MainGui(wx.Frame):
                            aui.AuiPaneInfo().
                            Bottom().
                            Name("Console").
-                           Position(1).
+                           Position(0).
                            CloseButton(False).
                            MaximizeButton(True)
                            # .Movable()
+                           .DockFixed(True)
+                           # .Movable(False)
                            .MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_BOTTOM)
                            # .Minimize()
                            .MinimizeButton(True).

@@ -2,6 +2,8 @@ from api.ODM2.Core.services import readCore
 from api.ODM2.Results.services import readResults
 from gui.frmMatPlotLib import MatplotFrame
 from utilities import spatial
+from api.ODM2.Simulation.services import readSimulation
+
 
 __author__ = 'tonycastronova'
 

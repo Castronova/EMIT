@@ -20,6 +20,7 @@ import math
 import markdown2
 import CanvasObjects
 from LinkStart import LinkStart
+from LinkCreationFrame import LinkCreationFrame
 from LinkDetailsContext import LinkDetailsContextActivatedFrame as LDCAF
 from ContextMenu import LinkContextMenu, ModelContextMenu, GeneralContextMenu
 from wrappers import odm2_data
@@ -133,8 +134,12 @@ class CanvasController:
                             item.Destroy()
                         item.Close()
 
-        self.frame.Destroy()
-        wx.GetApp().ExitMainLoop()
+            self.frame.Destroy()
+            wx.GetApp().ExitMainLoop()
+
+        else:
+            pass
+
 
     def OnMove(self, event):
         """
@@ -553,7 +558,7 @@ class CanvasController:
 
 
         # print "The Link was clicked"
-        linkstart = LinkStart(self.FloatCanvas, from_model, to_model, inputitems, outputitems, self.cmd)
+        linkstart = LinkCreationFrame(self.FloatCanvas, from_model, to_model, inputitems, outputitems, self.cmd)
         linkstart.Show()
 
     def LinkDetailsShow(self, event):

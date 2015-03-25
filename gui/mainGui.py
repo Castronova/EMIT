@@ -138,7 +138,7 @@ class MainGui(wx.Frame):
                            CloseButton(False).
                            MaximizeButton(True).
                            MinimizeButton(True).
-                           PinButton(True).
+                           PinButton(False).
                            Resizable().
                            Movable().
                            Floatable(True).
@@ -168,6 +168,7 @@ class MainGui(wx.Frame):
                            CloseButton(False).
                            MaximizeButton(True).
                            MinimizeButton(True).
+                           CloseButton(False).
                            # MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_SMART).
                            PinButton(True).
                            Resizable().
@@ -204,6 +205,7 @@ class MainGui(wx.Frame):
                            # CloseButton(False).
                            MaximizeButton(True).
                            MinimizeButton(True).
+                           CloseButton(False).
                            MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_LEFT).
                            # PinButton(True).
                            # Resizable().

@@ -558,7 +558,11 @@ class CanvasController:
 
 
         # print "The Link was clicked"
-        linkstart = LinkCreationFrame(self.FloatCanvas, from_model, to_model, inputitems, outputitems, self.cmd)
+        # linkstart = LinkCreationFrame(self.FloatCanvas, from_model, to_model, inputitems, outputitems, self.cmd)
+        # linkstart = LinkStart(self.FloatCanvas, from_model, to_model, inputitems, outputitems, self.cmd)
+        from LinkFrame import LinkStart
+        linkstart = LinkStart(self.FloatCanvas)
+
         linkstart.Show()
 
     def LinkDetailsShow(self, event):

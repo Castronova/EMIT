@@ -342,9 +342,6 @@ def get_line_pts(start, end, order=3, num=10):
         endX   = end[0]
         endY   = end[1]
 
-        # get the arrow vertices
-        _trianglePoints = GetTrianglePoints( startX, startY, endX, endY );
-
         lineArray = []
 
         # draw curved line
@@ -365,62 +362,11 @@ def get_line_pts(start, end, order=3, num=10):
 
         pts = []
         for val in linspace( 0, 1, V ):
-            #print '%s: %s' % (val, bez( val ))
             pts.append(tuple(bez(val)))
 
-        #for pt in pts:
-        #    print pt
 
         return pts
-        # g.SmoothingMode = SmoothingMode.AntiAlias;
-        # g.DrawBeziers(arrowPen, lineArray);
-        # _arrowPath.AddBeziers(lineArray);
-        # _arrowPath.Flatten();
-        #
-        # //g.DrawLine(linePen, startX, startY, endX, endY);
-        #
-        # if (Math.Abs(startX - endX) + Math.Abs(startY - endY) > 10)
-        # {
-        #     return windowTrianglePoints;
-        # }
-        # else
-        #     return new Point[0];
 
-
-def GetTrianglePoints(startx,starty,endx,endy):
-
-        trianglePoints = []
-
-        # define the size of the triangles
-        size = 50
-
-        # determine x,y midpoints
-        midx   = (endx + startx) / 2
-        midy   = (endy + starty) / 2
-
-        # calculate the arrow length
-        length = sqrt((startx-midx)**2) + (starty-midy)**2
-
-
-        # calculate the arrow vertices
-        px = midx + size *(startx - midx)/length
-        py = midy + size *(starty - midy)/length
-
-        vx = midx - px
-        vy = midy - py
-
-        t1x = px - vy
-        t1y = py + vx
-
-        t2x = px + vy
-        t2y = py - vx
-
-        # save the arrow vertices
-        trianglePoints.append((midx,midy))
-        trianglePoints.append((t1x,t1y))
-        trianglePoints.append((t2x,t2y))
-
-        return trianglePoints
 
 
 

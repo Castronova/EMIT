@@ -144,22 +144,6 @@ class MainGui(wx.Frame):
                            Floatable(True).
                            MinSize(wx.Size(1000, 400)))
 
-        self.m_mgr.AddPane(self.bnb,
-                           aui.AuiPaneInfo().
-                           Center().
-                           Name("Console").
-                           Position(1).
-                           CloseButton(False).
-                           MaximizeButton(True)
-                           # .Movable()
-                           .MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_BOTTOM)
-                           # .Minimize()
-                           .MinimizeButton(True).
-                           # PinButton(True).
-                           # Resizable().
-                           # Floatable().
-                           MinSize(wx.Size(1200, 200)))
-
 
         self.m_mgr.AddPane(self.Directory,
                            aui.AuiPaneInfo().
@@ -215,6 +199,26 @@ class MainGui(wx.Frame):
                            # Movable().
                            # FloatingSize(size=(600, 800)).
                            Show(show=True))
+
+
+
+        self.m_mgr.AddPane(self.bnb,
+                           aui.AuiPaneInfo().
+                           Bottom().
+                           Name("Console").
+                           Position(1).
+                           CloseButton(False).
+                           MaximizeButton(True)
+                           # .Movable()
+                           .MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_BOTTOM)
+                           # .Minimize()
+                           .MinimizeButton(True).
+                           # PinButton(True).
+                           # Resizable().
+                           # Floatable().
+                           MinSize(wx.Size(1200, 200)))
+
+
 
         self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED,self.OnSelect)
 

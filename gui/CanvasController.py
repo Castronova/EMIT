@@ -384,24 +384,28 @@ class CanvasController:
     def RemoveLink(self, link_obj):
 
         # todo: need to warn the user that all links will be removed
+        dlg = wx.MessageDialog(None, 'You are about to remove all data mappings that are associated with this link.  Are you sure you want to perform this action?', 'Question',
+                               wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
 
-        # remove the link entry in self.links
-        link = self.links.pop(link_obj)
+        if dlg.ShowModal() !=wx.ID_NO:
 
-        # remove the link from the cmd
-        from_id = link[0].ID
-        to_id = link[1].ID
+            # remove the link entry in self.links
+            link = self.links.pop(link_obj)
 
-        # get the link id
-        links = self.cmd.get_links_btwn_models(from_id,to_id)
+            # remove the link from the cmd
+            from_id = link[0].ID
+            to_id = link[1].ID
 
-        # remove all links
-        for link in links:
-            linkid = link.get_id()
-            self.cmd.remove_link_by_id(linkid)
+            # get the link id
+            links = self.cmd.get_links_btwn_models(from_id,to_id)
 
-        # redraw the canvas
-        self.RedrawConfiguration()
+            # remove all links
+            for link in links:
+                linkid = link.get_id()
+                self.cmd.remove_link_by_id(linkid)
+
+            # redraw the canvas
+            self.RedrawConfiguration()
 
     def RemoveModel(self, model_obj):
 

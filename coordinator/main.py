@@ -273,9 +273,9 @@ class Coordinator(object):
 
         try:
             self.__default_db = self._db[db_id]
-            print '> Default database : %s'%self._db[db_id]['connection_string']
+            print 'Default database : %s'%self._db[db_id]['connection_string']
         except:
-            print '> [error] could not find database: %s'%db_id
+            print 'ERROR | could not find database: %s'%db_id
 
     def get_new_id(self):
         self.__incr += 1

@@ -889,7 +889,7 @@ class consoleOutput(wx.Panel):
                                             style = wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL|wx.SIMPLE_BORDER)
 
 
-        self.Bind(wx.EVT_CONTEXT_MENU, self.onRightUp)
+        self.log.Bind(wx.EVT_CONTEXT_MENU, self.onRightUp)
 
         # deactivate the console if we are in debug mode
         if not sys.gettrace():
@@ -914,20 +914,38 @@ class RedirectText(object):
     def __init__(self,TextCtrl):
 
         self.out=TextCtrl
+        self.__line_num = 0
 
-
-    def write(self,string,type=logging.INFO):
-
-        if type == logging.WARNING:
-            self.out.BeginTextColour((255, 140, 0))
-            self.out.WriteText(string)
-            self.out.EndTextColour()
-        elif type == logging.ERROR:
-            self.out.BeginTextColour((255, 0, 0))
-            self.out.WriteText(string)
-            self.out.EndTextColour()
+    def line_num(self,reset=False):
+        if not reset:
+            self.__line_num += 1
+            return self.__line_num
         else:
-            self.out.WriteText(string)
+            self.__line_num = 0
+
+    def write(self,string):
+
+        args = string.split('|')
+        string = args[-1]
+        args = [a.strip() for a in args[:-1]]
+
+
+        if 'RESET' in args:
+            self.line_num(reset=True)
+            return
+
+
+        string = str(self.line_num())+ ':  '+string if string != '\n' else string
+
+        if 'WARNING' in args:
+            self.out.BeginTextColour((255, 140, 0))
+        elif 'ERROR' in args:
+            self.out.BeginTextColour((255, 0, 0))
+        elif not 'DEBUG' in args:
+            self.out.BeginTextColour((255, 140, 0))
+
+        self.out.WriteText(string)
+        self.out.EndTextColour()
 
         self.out.Refresh()
 

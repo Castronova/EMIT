@@ -71,6 +71,7 @@ class ConsoleContextMenu(wx.Menu):
         User clears the
         """
         self.log.Clear()
+        print 'RESET |'
 
     def OnMinimize(self, e):
         self.parent.Iconize()

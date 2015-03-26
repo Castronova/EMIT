@@ -166,7 +166,7 @@ class CanvasController:
         """
         #print "onUpdateConsole: ", evt.message
         if evt.message:
-            print ">>> ", evt.message
+            print "DEBUG|", evt.message
             #self.frame.output.log.AppendText(evt.message + '\n')
 
     def onCreateBox(self, evt):
@@ -231,7 +231,7 @@ class CanvasController:
             # add this text as an attribute of the rectangle
             R.Text = label
 
-            print '> ', name, ' has been added to the canvas.'
+            print name, ' has been added to the canvas.'
 
             R.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit)
             R.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
@@ -333,8 +333,8 @@ class CanvasController:
                     self.loadsimulation(filepath)
 
             except Exception, e:
-                print '> Could not load the model. Please verify that the model file exists.'
-                print '> %s' % e
+                print 'ERROR| Could not load the model. Please verify that the model file exists.'
+                print 'ERROR| %s' % e
         else:
             # # -- must be a data object --
 
@@ -701,7 +701,7 @@ class CanvasController:
     def SaveSimulation(self, path):
 
         if len(self.models.keys()) == 0:
-            print '> Nothing to save!'
+            print 'WARNING | Nothing to save!'
             return
 
         # create an xml tree
@@ -876,11 +876,11 @@ class CanvasController:
             with open(path,'w') as f:
                 f.write(prettyxml)
         except Exception, e:
-            print '> [ERROR]: An error occurred when attempting to save the project '
-            print '> [ERROR]: EXECPTION MESSAGE '
+            print 'ERROR | An error occurred when attempting to save the project '
+            print 'ERROR | EXECPTION MESSAGE '
             print e
 
-        print '> Configuration Saved Successfully! '
+        print 'Configuration Saved Successfully! '
 
     # def _loadsimulation(self, file):
     #
@@ -1126,7 +1126,7 @@ class CanvasController:
         # TODO: Fix the menu selection
         operation = menu_title_by_id[ event.GetId() ]
         #target    = self.list_item_clicked
-        print '> Perform "%(operation)s" on "%(target)s."' % vars()
+        print 'DEBUG | Perform "%(operation)s" on "%(target)s."' % vars()
 
     # THREADME
     def run(self):
@@ -1201,8 +1201,8 @@ class FileDrop(wx.FileDropTarget):
 
 
             except Exception, e:
-                print '> Could not load the model. Please verify that the model file exists.'
-                print '> %s' % e
+                print 'ERROR | Could not load the model. Please verify that the model file exists.'
+                print 'ERROR | %s' % e
 
         else:
             # # -- must be a data object --

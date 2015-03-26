@@ -329,34 +329,34 @@ class TreeItemContextMenu(wx.Menu):
     def OnClose(self, e):
         self.parent.Close()
 
-class Example(wx.Frame):
-
-    def __init__(self, *args, **kwargs):
-        super(Example, self).__init__(*args, **kwargs)
-
-        self.InitUI()
-
-    def InitUI(self):
-
-        self.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
-
-        self.SetSize((250, 200))
-        self.SetTitle('Context menu')
-        self.Centre()
-        self.Show(True)
-
-    def OnRightDown(self, e):
-        self.PopupMenu(LinkContextMenu(self), e.GetPosition())
-
-def main():
-
-    ex = wx.App()
-    Example(None)
-    ex.MainLoop()
-
-
-if __name__ == '__main__':
-    main()
+# class Example(wx.Frame):
+#
+#     def __init__(self, *args, **kwargs):
+#         super(Example, self).__init__(*args, **kwargs)
+#
+#         self.InitUI()
+#
+#     def InitUI(self):
+#
+#         self.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
+#
+#         self.SetSize((250, 200))
+#         self.SetTitle('Context menu')
+#         self.Centre()
+#         self.Show(True)
+#
+#     def OnRightDown(self, e):
+#         self.PopupMenu(LinkContextMenu(self), e.GetPosition())
+#
+# def main():
+#
+#     ex = wx.App()
+#     Example(None)
+#     ex.MainLoop()
+#
+#
+# if __name__ == '__main__':
+#     main()
 
 
 class ContextMenu(wx.Menu):

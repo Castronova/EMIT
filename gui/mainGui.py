@@ -14,13 +14,12 @@ import logging
 from ContextMenu import GeneralContextMenu, TimeSeriesContextMenu, SimulationContextMenu, ConsoleContextMenu
 import threading
 from db import dbapi as dbapi
+from wx import richtext
+
 from gui.ContextMenu import ContextMenu
 from frmMatPlotLib import MatplotFrame
 from api.ODM2.Simulation.services import readSimulation
 from api.ODM2.Results.services import readResults
-
-
-
 
 #Save Features
 import xml.etree.ElementTree as et
@@ -875,54 +874,30 @@ class SimulationDataTable(DataSeries):
                 Publisher.sendMessage('SetCurrentDb',value=selected_db)  # sends to CanvasController.getCurrentDbSession
 
 
-
-
-def runAsync(func):
-    '''Decorates a method to run in a separate thread'''
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        func_hl = Thread(target=func, args=args, kwargs=kwargs)
-        func_hl.start()
-        return func_hl
-    return wrapper
-
-
-def wxCallafter(target):
-    '''Decorates a method to be called as a wxCallafter'''
-    @wraps(target)
-    def wrapper(*args, **kwargs):
-        wx.CallAfter(target, *args, **kwargs)
-    return wrapper
-
-
-
-
-#from gui.async import *
-
 class consoleOutput(wx.Panel):
 
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
-        import console
         self.logger = logging.getLogger('wxApp')
 
-
         # Add a panel so it looks the correct on all platforms
-        self.log = wx.TextCtrl(self, -1, size=(100,100),
-                          style = wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
-        self.Bind(EVT_STDDOUT, self.OnUpdateOutputWindow)
+        # self.log = wx.TextCtrl(self, -1, size=(100,100),
+        #                   style = wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
+
+
+        self.log = wx.richtext.RichTextCtrl(self, -1, size=(100,100),
+                                            style = wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL|wx.SIMPLE_BORDER)
+
+
         self.Bind(wx.EVT_CONTEXT_MENU, self.onRightUp)
 
         # deactivate the console if we are in debug mode
         if not sys.gettrace():
-            # txtHandler = console.CustomConsoleHandler(log)
-            # self.logger.addHandler(txtHandler)
-
             redir = RedirectText(self.log)
             sys.stdout = redir
 
 
-        # # Add widgets to a sizer
+        # Add widgets to a sizer
         sizer = wx.BoxSizer()
         sizer.Add(self.log, 1, wx.ALL|wx.EXPAND, 5)
         self.SetSizer(sizer)
@@ -930,28 +905,30 @@ class consoleOutput(wx.Panel):
 
         self.SetSizerAndFit(sizer)
 
-
-        # thread = threading.Thread(target=self.run,args=())
-        # thread.daemon = True
-        # thread.start()
-
-        #thread = self.run()
-
-    def OnUpdateOutputWindow(self, event):
-        value = event.text
-        self.log.AppendText(value)
-
     def onRightUp(self, event):
         self.log.PopupMenu(ConsoleContextMenu(self, event))
 
+
 class RedirectText(object):
 
-    def __init__(self,aWxTextCtrl):
-        self.out=aWxTextCtrl
+    def __init__(self,TextCtrl):
+
+        self.out=TextCtrl
 
 
-    def write(self,string):
-        self.out.WriteText(string)
+    def write(self,string,type=logging.INFO):
+
+        if type == logging.WARNING:
+            self.out.BeginTextColour((255, 140, 0))
+            self.out.WriteText(string)
+            self.out.EndTextColour()
+        elif type == logging.ERROR:
+            self.out.BeginTextColour((255, 0, 0))
+            self.out.WriteText(string)
+            self.out.EndTextColour()
+        else:
+            self.out.WriteText(string)
+
         self.out.Refresh()
 
 class AddConnectionDialog(wx.Dialog):

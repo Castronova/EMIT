@@ -66,14 +66,6 @@ class ConsoleContextMenu(wx.Menu):
         self.AppendItem(mmi)
         self.Bind(wx.EVT_MENU, self.OnClear, mmi)
 
-        # mmi = wx.MenuItem(self, wx.NewId(), 'Copy Console')
-        # self.AppendItem(mmi)
-        # self.Bind(wx.EVT_MENU, self.OnClear, mmi)
-
-        # mmi = wx.MenuItem(self, wx.NewId(), 'Remove')
-        # self.AppendItem(mmi)
-        # self.Bind(wx.EVT_MENU, self.RemoveLink, mmi)
-
     def OnClear(self, event):
         """
         User clears the

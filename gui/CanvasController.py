@@ -170,13 +170,13 @@ class CanvasController:
             #self.frame.output.log.AppendText(evt.message + '\n')
 
     def onCreateBox(self, evt):
-        self.threadManager.dispatcher.putOutput("Creating box")
+        # self.threadManager.dispatcher.putOutput("Creating box")
         name = evt.name
         id = evt.id
         x = evt.xCoord
         y = evt.yCoord
         self.createBox(xCoord=x, yCoord=y, id=id, name=name)
-        self.threadManager.dispatcher.putOutput("finish Creating box")
+        # self.threadManager.dispatcher.putOutput("finish Creating box")
 
     def createBox(self, xCoord, yCoord, id=None, name=None, color='#A2CAF5'):
 

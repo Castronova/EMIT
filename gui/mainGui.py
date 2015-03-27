@@ -886,10 +886,12 @@ class consoleOutput(wx.Panel):
 
 
         self.log = wx.richtext.RichTextCtrl(self, -1, size=(100,100),
-                                            style = wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL|wx.SIMPLE_BORDER)
+                                            style = wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL|wx.SIMPLE_BORDER|wx.CURSOR_NONE)
+
 
 
         self.log.Bind(wx.EVT_CONTEXT_MENU, self.onRightUp)
+
 
         # deactivate the console if we are in debug mode
         if not sys.gettrace():
@@ -929,25 +931,29 @@ class RedirectText(object):
         string = args[-1]
         args = [a.strip() for a in args[:-1]]
 
+        if string  != '\n':
 
-        if 'RESET' in args:
-            self.line_num(reset=True)
-            return
+            string += '\n'
+            if 'RESET' in args:
+                self.line_num(reset=True)
+                return
 
 
-        string = str(self.line_num())+ ':  '+string if string != '\n' else string
+            string = str(self.line_num())+ ':  '+string if string != '\n' else string
+            self.out.SetInsertionPoint(0)
+            if 'WARNING' in args:
+                self.out.BeginTextColour((255, 140, 0))
+            elif 'ERROR' in args:
+                self.out.BeginTextColour((255, 0, 0))
+            elif not 'DEBUG' in args:
+                self.out.BeginTextColour((255, 140, 0))
 
-        if 'WARNING' in args:
-            self.out.BeginTextColour((255, 140, 0))
-        elif 'ERROR' in args:
-            self.out.BeginTextColour((255, 0, 0))
-        elif not 'DEBUG' in args:
-            self.out.BeginTextColour((255, 140, 0))
+            # self.out.Text =  self.out.Text.Insert(string+ "\n");
 
-        self.out.WriteText(string)
-        self.out.EndTextColour()
+            self.out.WriteText(string)
+            self.out.EndTextColour()
 
-        self.out.Refresh()
+            self.out.Refresh()
 
 class AddConnectionDialog(wx.Dialog):
     def __init__(

@@ -17,10 +17,10 @@ class WorkerThread(BaseThread):
     def run(self):
         while self.signal:
             task_type, task = self.dispatcher.getTask()
-            self.dispatcher.putOutput("Got a task (%s, %s)" % (task_type, task))
+            # self.dispatcher.putOutput("Got a task (%s, %s)" % (task_type, task))
             if task_type == "addmodel":
                 self.addModel(**task)
-            self.dispatcher.putOutput("Done with task (%s, %s)" % (task_type, task))
+            # self.dispatcher.putOutput("Done with task (%s, %s)" % (task_type, task))
 
             self.dispatcher.getTaskQueue().task_done()
 

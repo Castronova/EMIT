@@ -931,7 +931,7 @@ class RedirectText(object):
         string = args[-1]
         args = [a.strip() for a in args[:-1]]
 
-        if string  != '\n':
+        if len(string.strip()) > 0:
 
             string += '\n'
             if 'RESET' in args:
@@ -946,7 +946,7 @@ class RedirectText(object):
             elif 'ERROR' in args:
                 self.out.BeginTextColour((255, 0, 0))
             elif not 'DEBUG' in args:
-                self.out.BeginTextColour((255, 140, 0))
+                self.out.BeginTextColour((0, 0, 0))
 
             # self.out.Text =  self.out.Text.Insert(string+ "\n");
 

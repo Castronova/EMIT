@@ -384,10 +384,10 @@ class postgresdb():
         resultid = None
         for result, geom in results:
             if result.VariableObj.VariableCode != from_variableName:
-                print '> WARNING: Variables are inconsistent.  %s !=  %s' %(result.VariableObj.VariableCode, from_variableName)
+                print 'WARNING | Variables are inconsistent.  %s !=  %s' %(result.VariableObj.VariableCode, from_variableName)
 
             if result.UnitObj.UnitsName != from_unitName:
-                print '> WARNING: Units are inconsistent.  %s !=  %s'%(result.UnitObj.UnitsName, from_unitName)
+                print 'WARNING | Units are inconsistent.  %s !=  %s'%(result.UnitObj.UnitsName, from_unitName)
 
             resultid = result.ResultID
 
@@ -396,7 +396,7 @@ class postgresdb():
             values = self._resread.getTimeSeriesValuesByTime(resultid=resultid,starttime=startTime,endtime=endTime)
 
             if len(values) == 0:
-                raise Exception('> [Error] Could not find any data for specified time range: %s, %s - %s'%(from_variableName,startTime,endTime))
+                raise Exception('ERROR | Could not find any data for specified time range: %s, %s - %s'%(from_variableName,startTime,endTime))
 
             # save each timeseries to a geometry
             dv = stdlib.DataValues(timeseries=[(value.ValueDateTime,value.DataValue) for value in values])

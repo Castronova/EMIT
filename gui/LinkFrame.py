@@ -19,12 +19,12 @@ import wx.dataview
 
 class LinkStart ( wx.Frame ):
 
-    def __init__( self, parent):
+    def __init__( self, parent, input, output):
         wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( 550,525 ), style = wx.DEFAULT_FRAME_STYLE|wx.STAY_ON_TOP|wx.TAB_TRAVERSAL )
 
-
-        # self.input = input
-        # self.output = output
+        # self.SetBackgroundColour(wx.BLACK)
+        self.input = input
+        self.output = output
 
 
         # Set the Top Panel:

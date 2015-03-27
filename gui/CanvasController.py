@@ -525,6 +525,7 @@ class CanvasController:
 
         linkstart = LinkStart(self.FloatCanvas)
 
+
         linkstart.Show()
 
 

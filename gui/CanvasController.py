@@ -567,7 +567,7 @@ class CanvasController:
         # linkstart = LinkCreationFrame(self.FloatCanvas, from_model, to_model, inputitems, outputitems, self.cmd)
         # linkstart = LinkStart(self.FloatCanvas, from_model, to_model, inputitems, outputitems, self.cmd)
         from LinkFrame import LinkStart
-        linkstart = LinkStart(self.FloatCanvas)
+        linkstart = LinkStart(self.FloatCanvas, inputitems, outputitems)
 
         linkstart.Show()
 

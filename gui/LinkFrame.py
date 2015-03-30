@@ -74,9 +74,9 @@ class LinkStart ( wx.Frame ):
                                            wx.DefaultPosition, wx.Size( 250,35 ), self.OutputComboBoxChoices(), 0 )
         OutputSizer.Add( self.OutputComboBox, 0, wx.ALL, 5 )
 
-        self.Output_dataViewTreeCtrl1 = wx.dataview.DataViewTreeCtrl( self.ExchangeItemSizer, wx.ID_ANY,
+        self.OutputDataTreeCtrl = wx.dataview.DataViewTreeCtrl( self.ExchangeItemSizer, wx.ID_ANY,
                                                                       wx.DefaultPosition, wx.Size( 250,150 ), 0 )
-        OutputSizer.Add( self.Output_dataViewTreeCtrl1, 0, wx.ALL, 5 )
+        OutputSizer.Add( self.OutputDataTreeCtrl, 0, wx.ALL, 5 )
 
         self.temporal_label = wx.StaticText(self, label = 'Temporal Interpolation: ', pos = (20,280))
         self.spatial_label = wx.StaticText(self, label = 'Spatial Interpolation: ', pos = (20, 300))
@@ -94,9 +94,9 @@ class LinkStart ( wx.Frame ):
                                           wx.DefaultPosition, wx.Size( 250,35 ), self.InputComboBoxChoices(), 0 )
         InputSizer.Add( self.InputComboBox, 0, wx.ALL, 5 )
 
-        self.Input_dataViewTreeCtrl2 = wx.dataview.DataViewTreeCtrl( self.ExchangeItemSizer, wx.ID_ANY,
+        self.InputDataTreeCtrl = wx.dataview.DataViewTreeCtrl( self.ExchangeItemSizer, wx.ID_ANY,
                                                                      wx.DefaultPosition, wx.Size( 250,150 ), 0 )
-        InputSizer.Add( self.Input_dataViewTreeCtrl2, 0, wx.ALL, 5 )
+        InputSizer.Add( self.InputDataTreeCtrl, 0, wx.ALL, 5 )
 
         # ComboBoxTemporalChoices = []
         TemporalChoices = self.TemporalInterpolationChoices()
@@ -187,6 +187,14 @@ class LinkStart ( wx.Frame ):
     def InputComboBoxChoices(self):
         InputExchangeItemsList = [self.input.get_input_exchange_items()[i]._ExchangeItem__name for i in range(0, len(self.input.get_input_exchange_items()))]
         return InputExchangeItemsList
+
+    def OutputTreePopulation(self):
+        self.OutputDataTreeCtrl.Append
+        pass
+
+    def InputTreePopulation(self):
+        self.InputDataTreeCtrl
+        pass
 
     def InterpolationComboBoxChoices(self):
         # populate spatial and temporal interpolations

@@ -12,6 +12,8 @@ __author__ = 'mario'
 import wx
 import wx.xrc
 import wx.dataview
+from transform.time import *
+from transform.space import *
 
 ###########################################################################
 ## Class LinkStartSizer
@@ -19,12 +21,13 @@ import wx.dataview
 
 class LinkStart ( wx.Frame ):
 
-    def __init__( self, parent, input, output):
+    def __init__( self, parent, output, input):
         wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( 550,525 ), style = wx.DEFAULT_FRAME_STYLE|wx.STAY_ON_TOP|wx.TAB_TRAVERSAL )
 
         # self.SetBackgroundColour(wx.BLACK)
         self.input = input
         self.output = output
+        # self.InterpolationComboBoxChoices()
         self.InitUI()
         self.InitBindings()
 
@@ -66,31 +69,46 @@ class LinkStart ( wx.Frame ):
 
         OutputSizer = wx.BoxSizer( wx.VERTICAL )
 
-        OutputComboBoxChoices = []
-        self.OutputComboBox = wx.ComboBox( self.ExchangeItemSizer, wx.ID_ANY, u"Combo!", wx.DefaultPosition, wx.Size( 250,35 ), OutputComboBoxChoices, 0 )
+        # OutputComboBoxChoices = []
+        self.OutputComboBox = wx.ComboBox( self.ExchangeItemSizer, wx.ID_ANY, u"Select Output Item",
+                                           wx.DefaultPosition, wx.Size( 250,35 ), self.OutputComboBoxChoices(), 0 )
         OutputSizer.Add( self.OutputComboBox, 0, wx.ALL, 5 )
 
-        self.Output_dataViewTreeCtrl1 = wx.dataview.DataViewTreeCtrl( self.ExchangeItemSizer, wx.ID_ANY, wx.DefaultPosition, wx.Size( 250,150 ), 0 )
+        self.Output_dataViewTreeCtrl1 = wx.dataview.DataViewTreeCtrl( self.ExchangeItemSizer, wx.ID_ANY,
+                                                                      wx.DefaultPosition, wx.Size( 250,150 ), 0 )
         OutputSizer.Add( self.Output_dataViewTreeCtrl1, 0, wx.ALL, 5 )
 
+        self.temporal_label = wx.StaticText(self, label = 'Temporal Interpolation: ', pos = (20,280))
+        self.spatial_label = wx.StaticText(self, label = 'Spatial Interpolation: ', pos = (20, 300))
 
+        # OutputSizer.AddSpacer( ( 20, 100), 0, wx.EXPAND, 5 )
+        # OutputSizer.Add(self.temporal_label)
+        # OutputSizer.AddSpacer( ( 20, 10), 0, wx.EXPAND, 5 )
+        # OutputSizer.Add(self.spatial_label)
         ExchangeItemSizer.Add( OutputSizer, 1, wx.EXPAND, 5 )
 
         InputSizer = wx.BoxSizer( wx.VERTICAL )
 
-        InputComboBoxChoices = []
-        self.InputComboBox = wx.ComboBox( self.ExchangeItemSizer, wx.ID_ANY, u"Combo!", wx.DefaultPosition, wx.Size( 250,35 ), InputComboBoxChoices, 0 )
+        # InputComboBoxChoices = []
+        self.InputComboBox = wx.ComboBox( self.ExchangeItemSizer, wx.ID_ANY, u"Select Input Item",
+                                          wx.DefaultPosition, wx.Size( 250,35 ), self.InputComboBoxChoices(), 0 )
         InputSizer.Add( self.InputComboBox, 0, wx.ALL, 5 )
 
-        self.Input_dataViewTreeCtrl2 = wx.dataview.DataViewTreeCtrl( self.ExchangeItemSizer, wx.ID_ANY, wx.DefaultPosition, wx.Size( 250,150 ), 0 )
+        self.Input_dataViewTreeCtrl2 = wx.dataview.DataViewTreeCtrl( self.ExchangeItemSizer, wx.ID_ANY,
+                                                                     wx.DefaultPosition, wx.Size( 250,150 ), 0 )
         InputSizer.Add( self.Input_dataViewTreeCtrl2, 0, wx.ALL, 5 )
 
-        ComboBoxTemporalChoices = []
-        self.ComboBoxTemporal = wx.ComboBox( self.ExchangeItemSizer, wx.ID_ANY, u"No interpolation", wx.DefaultPosition, wx.Size( 300,30 ), ComboBoxTemporalChoices, 0 )
+        # ComboBoxTemporalChoices = []
+        TemporalChoices = self.TemporalInterpolationChoices()
+        self.ComboBoxTemporal = wx.ComboBox( self.ExchangeItemSizer, wx.ID_ANY, u"No interpolation",
+                                             wx.DefaultPosition, wx.Size( 300,30 ),
+                                             self.TemporalInterpolationChoices(), 0 )
         InputSizer.Add( self.ComboBoxTemporal, 0, wx.ALL, 5 )
 
-        ComboBoxSpatialChoices = []
-        self.ComboBoxSpatial = wx.ComboBox( self.ExchangeItemSizer, wx.ID_ANY, u"No interpolation", wx.DefaultPosition, wx.Size( 300,30 ), ComboBoxSpatialChoices, 0 )
+        # ComboBoxSpatialChoices = []
+        self.ComboBoxSpatial = wx.ComboBox( self.ExchangeItemSizer, wx.ID_ANY, u"No interpolation",
+                                            wx.DefaultPosition, wx.Size( 300,30 ),
+                                            self.SpatialInterpolationChoices(), 0 )
         InputSizer.Add( self.ComboBoxSpatial, 0, wx.ALL, 5 )
 
         ExchangeItemSizer.Add( InputSizer, 1, wx.EXPAND, 5 )
@@ -137,6 +155,9 @@ class LinkStart ( wx.Frame ):
 
     def InitBindings(self):
         self.ButtonAdd.Bind(wx.EVT_BUTTON, self.GetName)
+        self.ComboBoxTemporal.Bind(wx.EVT_COMBOBOX, self.on_select_temporal)
+        self.ComboBoxTemporal.Bind(wx.EVT_COMBOBOX, self.on_select_spatial)
+        self.ButtonClose.Bind(wx.EVT_BUTTON, self.OnClose)
 
     def GetName(self, event):
         dlg = NameDialog(self)
@@ -144,18 +165,87 @@ class LinkStart ( wx.Frame ):
         # self.txt.SetValue(dlg.result)
         self.LinkNameListBox.Append(dlg.result)
 
+    def OnDelete(self, event):
+
+        rmlink = self.cmd.remove_link_all()
+        all = self.listbox.GetSelections()
+
+        try:
+            for i in range(0,stop=None, step=1):
+                self.listbox.Delete(i)
+        except:
+            pass
+
+        sel = self.listbox.GetSelection()
+        if sel != -1:
+            self.listbox.Delete(sel)
+
+    def OutputComboBoxChoices(self):
+        OutputExchangeItemsList = [self.output.get_output_exchange_items()[i]._ExchangeItem__name for i in range(0, len(self.output.get_output_exchange_items()))]
+        return OutputExchangeItemsList
+
+    def InputComboBoxChoices(self):
+        InputExchangeItemsList = [self.input.get_input_exchange_items()[i]._ExchangeItem__name for i in range(0, len(self.input.get_input_exchange_items()))]
+        return InputExchangeItemsList
+
+    def InterpolationComboBoxChoices(self):
+        # populate spatial and temporal interpolations
+        t = TemporalInterpolation()
+        self.temporal_transformations = {i.name():i for i in t.methods()}
+        self.ComboboxTemporalChoices = self.temporal_transformations.keys()
+
+        s = SpatialInterpolation()
+        self.spatial_transformations = {i.name():i for i in s.methods()}
+        self.ComboboxSpatialChoices = self.spatial_transformations.keys()
+
+    def TemporalInterpolationChoices(self):
+        t = TemporalInterpolation()
+        self.temporal_transformations = {i.name():i for i in t.methods()}
+        return self.temporal_transformations.keys()
+
+    def SpatialInterpolationChoices(self):
+        s = SpatialInterpolation()
+        self.spatial_transformations = {i.name():i for i in s.methods()}
+        return self.spatial_transformations.keys()
+
+    def on_select_spatial(self, event):
+        spatial_value = self.ComboboxSpatial.GetValue()
+        self.spatial_interpolation = self.spatial_transformations[spatial_value]
+
+    def on_select_temporal(self, event):
+        temporal_value = self.ComboboxTemporal.GetValue()
+        self.temporal_interpolation = self.temporal_transformations[temporal_value]
+
+    def get_spatial_and_temporal_transformations(self):
+
+        return (self.spatial_interpolation, self.temporal_interpolation)
+
+    def OnClose(self, event):
+        dial = wx.MessageDialog(None, 'Do you wish to close without saving?', 'Question',
+            wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
+        if dial.ShowModal() == wx.ID_YES:
+            self.Destroy()
+        # if dial =='Yes':
+        #     self.Close()
+
+    def OnSave(self, event):
+        # TODO: Need to send information to cmd, unless there is another way, we need to add cmd into the class
+        pass
+
+
+
     def __del__( self ):
         pass
 
 
 class NameDialog(wx.Dialog):
     def __init__(self, parent, id=-1, title="Enter Name!"):
-        wx.Dialog.__init__(self, parent, id, title, size=(-1, -1))
+        wx.Dialog.__init__(self, parent, id, title, size=(400, 150))
 
         self.mainSizer = wx.BoxSizer(wx.VERTICAL)
         self.buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.label = wx.StaticText(self, label="Enter Name:")
+        self.label = wx.StaticText(self, label="Enter the Name of your Link:")
         self.field = wx.TextCtrl(self, value="", size=(300, 20))
         self.okbutton = wx.Button(self, label="OK", id=wx.ID_OK)
 
@@ -168,6 +258,7 @@ class NameDialog(wx.Dialog):
 
         self.Bind(wx.EVT_BUTTON, self.onOK, id=wx.ID_OK)
         self.Bind(wx.EVT_TEXT_ENTER, self.onOK)
+        self.Bind(wx.EVT_CLOSE, self.onOK)
 
         self.SetSizer(self.mainSizer)
         self.result = None

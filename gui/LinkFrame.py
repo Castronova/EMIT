@@ -158,6 +158,9 @@ class LinkStart ( wx.Frame ):
         self.ComboBoxTemporal.Bind(wx.EVT_COMBOBOX, self.on_select_temporal)
         self.ComboBoxTemporal.Bind(wx.EVT_COMBOBOX, self.on_select_spatial)
         self.ButtonClose.Bind(wx.EVT_BUTTON, self.OnClose)
+        self.OutputComboBox.Bind(wx.EVT_COMBOBOX, self.on_select_output)
+        self.InputComboBox.Bind(wx.EVT_COMBOBOX, self.on_select_output)
+
 
     def GetName(self, event):
         dlg = NameDialog(self)
@@ -215,6 +218,14 @@ class LinkStart ( wx.Frame ):
         s = SpatialInterpolation()
         self.spatial_transformations = {i.name():i for i in s.methods()}
         return self.spatial_transformations.keys()
+
+    def on_select_output(self, event):
+        output_value = self.OutputComboBox.GetValue()
+        self.output_selected = self.output.get_output_exchange_item_by_name(output_value)
+
+    def on_select_input(self, event):
+        input_value = self.InputComboBox.GetValue()
+        self.input_selected = self.input.get_input_exchange_item_by_name(input_value)
 
     def on_select_spatial(self, event):
         spatial_value = self.ComboboxSpatial.GetValue()

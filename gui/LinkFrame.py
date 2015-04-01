@@ -74,8 +74,9 @@ class LinkStart ( wx.Frame ):
                                            wx.DefaultPosition, wx.Size( 250,35 ), self.OutputComboBoxChoices(), 0 )
         OutputSizer.Add( self.OutputComboBox, 0, wx.ALL, 5 )
 
-        self.OutputDataTreeCtrl = wx.dataview.DataViewTreeCtrl( self.ExchangeItemSizer, wx.ID_ANY,
-                                                                      wx.DefaultPosition, wx.Size( 250,150 ), 0 )
+        self.OutputDataTreeCtrl = wx.dataview.DataViewTreeCtrl( self.ExchangeItemSizer, id=wx.ID_ANY,
+                                                                      pos=wx.DefaultPosition, size=wx.Size( 250,150 ),
+                                                                      style=wx.dataview.DV_NO_HEADER)
         OutputSizer.Add( self.OutputDataTreeCtrl, 0, wx.ALL, 5 )
 
         self.temporal_label = wx.StaticText(self, label = 'Temporal Interpolation: ', pos = (20,280))
@@ -94,8 +95,9 @@ class LinkStart ( wx.Frame ):
                                           wx.DefaultPosition, wx.Size( 250,35 ), self.InputComboBoxChoices(), 0 )
         InputSizer.Add( self.InputComboBox, 0, wx.ALL, 5 )
 
-        self.InputDataTreeCtrl = wx.dataview.DataViewTreeCtrl( self.ExchangeItemSizer, wx.ID_ANY,
-                                                                     wx.DefaultPosition, wx.Size( 250,150 ), 0 )
+        self.InputDataTreeCtrl = wx.dataview.DataViewTreeCtrl( self.ExchangeItemSizer, id=wx.ID_ANY,
+                                                                      pos=wx.DefaultPosition, size=wx.Size( 250,150 ),
+                                                                      style=wx.dataview.DV_NO_HEADER )
         InputSizer.Add( self.InputDataTreeCtrl, 0, wx.ALL, 5 )
 
         # ComboBoxTemporalChoices = []
@@ -159,7 +161,7 @@ class LinkStart ( wx.Frame ):
         self.ComboBoxTemporal.Bind(wx.EVT_COMBOBOX, self.on_select_spatial)
         self.ButtonClose.Bind(wx.EVT_BUTTON, self.OnClose)
         self.OutputComboBox.Bind(wx.EVT_COMBOBOX, self.on_select_output)
-        self.InputComboBox.Bind(wx.EVT_COMBOBOX, self.on_select_output)
+        self.InputComboBox.Bind(wx.EVT_COMBOBOX, self.on_select_input)
 
 
     def GetName(self, event):
@@ -221,11 +223,27 @@ class LinkStart ( wx.Frame ):
 
     def on_select_output(self, event):
         output_value = self.OutputComboBox.GetValue()
+        self.OutputDataTreeCtrl.DeleteAllItems()
+
         self.output_selected = self.output.get_output_exchange_item_by_name(output_value)
+        self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, self.output_selected._ExchangeItem__name)
+        self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, self.output_selected._ExchangeItem__description)
+        # self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, self.output_selected._ExchangeItem__geoms)
+        self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, self.output_selected._ExchangeItem__type)
+        self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, self.output_selected._ExchangeItem__unit._Unit__unitName)
+        # self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, self.output_selected._ExchangeItem__variable._Variable__variableNameCV)
 
     def on_select_input(self, event):
         input_value = self.InputComboBox.GetValue()
         self.input_selected = self.input.get_input_exchange_item_by_name(input_value)
+        self.InputDataTreeCtrl.DeleteAllItems()
+
+        self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, self.input_selected._ExchangeItem__name)
+        self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, self.input_selected._ExchangeItem__description)
+        # self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, self.input_selected._ExchangeItem__geoms)
+        self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, self.input_selected._ExchangeItem__type)
+        self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, self.input_selected._ExchangeItem__unit._Unit__unitName)
+        # self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, self.input_selected._ExchangeItem__variable._Variable__variableNameCV)
 
     def on_select_spatial(self, event):
         spatial_value = self.ComboboxSpatial.GetValue()

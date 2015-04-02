@@ -11,16 +11,15 @@ import wx.lib.agw.aui as aui
 import objectListViewDatabase as olv
 from api.ODM2.Core.services import *
 import logging
-from ContextMenu import GeneralContextMenu
+from ContextMenu import GeneralContextMenu, TimeSeriesContextMenu, SimulationContextMenu, ConsoleContextMenu
 import threading
 from db import dbapi as dbapi
-from objectListViewDatabase import ContextMenu
+from wx import richtext
+
+from gui.ContextMenu import ContextMenu
 from frmMatPlotLib import MatplotFrame
 from api.ODM2.Simulation.services import readSimulation
 from api.ODM2.Results.services import readResults
-
-
-
 
 #Save Features
 import xml.etree.ElementTree as et
@@ -37,6 +36,9 @@ wxStdOut, EVT_STDDOUT= NewEvent()
 wxCreateBox, EVT_CREATE_BOX = NewEvent()
 
 
+from images import water_drop as title_icon
+from wx.lib.newevent import NewEvent
+wxStdOut, EVT_STDDOUT= NewEvent()
 
 class MainGui(wx.Frame):
     def __init__(self, parent, cmd):
@@ -48,8 +50,16 @@ class MainGui(wx.Frame):
 
         # save cmd object in pnlDocking so that children can access it
         self.pnlDocking.__setattr__('cmd',cmd)
+        import os
+        # path = 'gui/images/water_drop.png'
+        # print "PATH: ", path
+        # image = wx.Image(path, wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+        # icon = wx.EmptyIcon()
+        # icon.CopyFromBitmap(title_icon.getBitmap())
+        self.SetIcon(title_icon.getIcon())
 
-        self.Bind(wx.EVT_CLOSE, self.onClose)
+        #self.SetIcon(title_icon.getIcon())
+
 
         self.notebook_pages = {}
 
@@ -58,6 +68,9 @@ class MainGui(wx.Frame):
         self._init_sizers()
 
         Publisher.subscribe(self.OnPageChange,'ChangePage')
+
+        self.filename = None
+        self.loadingpath = None
 
 
 
@@ -89,9 +102,10 @@ class MainGui(wx.Frame):
         self.Toolbox = ToolboxPanel(self.pnlDocking)
         self.Toolbox.Hide()
 
-
         self.bnb = wx.Notebook(self.pnlDocking)
-        self.output =consoleOutput(self.bnb)
+
+        self.output = consoleOutput(self.bnb)
+
         # output.start()
 
         # seriesoutput = OutputTimeSeries(self.bnb)
@@ -123,25 +137,11 @@ class MainGui(wx.Frame):
                            CloseButton(False).
                            MaximizeButton(True).
                            MinimizeButton(True).
-                           PinButton(True).
+                           PinButton(False).
                            Resizable().
-                           Movable().
-                           Floatable(True).
+                           # Movable().
+                           Floatable(False).
                            MinSize(wx.Size(1000, 400)))
-
-        self.m_mgr.AddPane(self.bnb,
-                           aui.AuiPaneInfo().
-                           Center().
-                           Name("Console").
-                           Position(1).
-                           CloseButton(False).
-                           MaximizeButton(True)
-                           .Movable()
-                           .MinimizeButton(True).
-                           PinButton(True).
-                           Resizable().
-                           Floatable().
-                           MinSize(wx.Size(1200, 200)))
 
 
         self.m_mgr.AddPane(self.Directory,
@@ -151,32 +151,75 @@ class MainGui(wx.Frame):
                            CloseButton(False).
                            MaximizeButton(True).
                            MinimizeButton(True).
-                           MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_SMART).
-                           PinButton(True).
+                           CloseButton(False).
+                           # MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_SMART).
+                           PinButton(False).
                            Resizable().
                            MinSize(wx.Size(275,400)).
-                           Floatable().
-                           Movable().
-                           FloatingSize(size=(600, 800)).
-                           Show(show=False).Hide().
-                           CloseButton(True))
+                           Minimize().
+                           # Floatable().
+                           # Movable().
+                           # FloatingSize(size=(600, 800)).
+                           Show(show=False).Hide()
+                           )
+
+        # self.m_mgr.AddPane(self.Directory,
+        #                    aui.AuiPaneInfo().
+        #                    Left().
+        #                    Dock().
+        #                    CloseButton(False).
+        #                    MaximizeButton(True).
+        #                    MinimizeButton(True).
+        #                    MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_SMART).
+        #                    PinButton(True).
+        #                    Resizable().
+        #                    MinSize(wx.Size(275,400)).
+        #                    Minimize().
+        #                    Floatable().
+        #                    Movable().
+        #                    FloatingSize(size=(600, 800)).
+        #                    Show(show=False).Hide().
+        #                    CloseButton(True))
 
         self.m_mgr.AddPane(self.Toolbox,
                            aui.AuiPaneInfo().
                            Left().
                            Dock().
-                           CloseButton(False).
+                           # CloseButton(False).
                            MaximizeButton(True).
                            MinimizeButton(True).
-                           MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_SMART).
-                           PinButton(True).
-                           Resizable().
+                           CloseButton(False).
+                           MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_LEFT).
+                           # PinButton(True).
+                           # Resizable().
                            MinSize(wx.Size(275,400)).
-                           Floatable().
-                           Movable().
-                           FloatingSize(size=(600, 800)).
-                           Show(show=True).
-                           CloseButton(True))
+                           # Minimize().
+                           # Floatable().
+                           # Movable().
+                           # FloatingSize(size=(600, 800)).
+                           Show(show=True))
+
+
+
+        self.m_mgr.AddPane(self.bnb,
+                           aui.AuiPaneInfo().
+                           Bottom().
+                           Name("Console").
+                           Position(0).
+                           CloseButton(False).
+                           MaximizeButton(True)
+                           # .Movable()
+                           .DockFixed(True)
+                           # .Movable(False)
+                           .MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_BOTTOM)
+                           # .Minimize()
+                           .MinimizeButton(True).
+                           # PinButton(True).
+                           # Resizable().
+                           # Floatable().
+                           MinSize(wx.Size(1200, 200)))
+
+
 
         self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED,self.OnSelect)
 
@@ -204,6 +247,7 @@ class MainGui(wx.Frame):
         self.m_fileMenu = wx.Menu()
         #exit = wx.MenuItem(self.m_fileMenu, wx.ID_EXIT, '&Quit\tCtrl+Q')
         Save = self.m_fileMenu.Append(wx.NewId(), '&Save Configuration\tCtrl+S', 'Save Configuration')
+        SaveAs = self.m_fileMenu.Append(wx.NewId(), '&Save Configuration As', 'Save Configuration')
         Open = self.m_fileMenu.Append(wx.NewId(), '&Load Configuration\tCtrl+O', 'Load Configuration')
         exit = self.m_fileMenu.Append(wx.NewId(), '&Quit\tCtrl+Q', 'Quit application')
 
@@ -218,7 +262,10 @@ class MainGui(wx.Frame):
         ShowDir = self.m_viewMenu.Append(wx.NewId(), '&Directory\tCtrl+D', 'Shows file directory', wx.ITEM_RADIO)
         separator = self.m_viewMenu.Append(wx.NewId(), 'separate', 'separate', wx.ITEM_SEPARATOR)
         MinimizeConsole = self.m_viewMenu.Append(wx.NewId(), '&Console Off', 'Minimizes the Console', wx.ITEM_CHECK)
-        defaultview = self.m_viewMenu.Append(wx.NewId(), '&Default View', 'Returns the view to the default (inital) state', wx.ITEM_NORMAL)
+
+        # todo: temporarily disabled until we fix the AUI manager bugs
+        # defaultview = self.m_viewMenu.Append(wx.NewId(), '&Default View', 'Returns the view to the default (inital) state', wx.ITEM_NORMAL)
+
         self.m_menubar.Append(self.m_viewMenu, "&View")
 
         self.SetMenuBar(self.m_menubar)
@@ -227,12 +274,15 @@ class MainGui(wx.Frame):
 
         ## Events
         self.Bind(wx.EVT_MENU, self.SaveConfiguration, Save)
+        self.Bind(wx.EVT_MENU, self.SaveConfigurationAs, SaveAs)
         self.Bind(wx.EVT_MENU, self.LoadConfiguration, Open)
-        self.Bind(wx.EVT_MENU, self.onClose, exit)
+        #self.Bind(wx.EVT_MENU, self.onClose, exit)
         self.Bind(wx.EVT_MENU, self.onDirectory, ShowDir)
         self.Bind(wx.EVT_MENU, self.onAllFiles, ShowAll)
         self.Bind(wx.EVT_MENU, self.onConsole, MinimizeConsole)
-        self.Bind(wx.EVT_MENU, self.defaultview, defaultview)
+
+        # todo: temporarily disabled until we fix the AUI manager bugs
+        # self.Bind(wx.EVT_MENU, self.defaultview, defaultview)
 
     def _postStart(self):
         ## Starts stuff after program has initiated
@@ -241,29 +291,6 @@ class MainGui(wx.Frame):
     def __del__(self):
         self.m_mgr.UnInit()
 
-    def onClose(self, event):
-        dlg = wx.MessageDialog(None, 'Are you sure you want to exit?', 'Question',
-                               wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
-
-        if dlg.ShowModal() !=wx.ID_NO:
-            windowsRemaining = len(wx.GetTopLevelWindows())
-            if windowsRemaining > 0:
-                import wx.lib.agw.aui.framemanager as aui
-                # logger.debug("Windows left to close: %d" % windowsRemaining)
-                for item in wx.GetTopLevelWindows():
-                    #logger.debug("Windows %s" % item)
-                    if not isinstance(item, self.__class__):
-                        if isinstance(item, aui.AuiFloatingFrame):
-                            item.Destroy()
-                        elif isinstance(item, aui.AuiSingleDockingGuide):
-                            item.Destroy()
-                        elif isinstance(item, aui.AuiDockingHintWindow):
-                            item.Destroy()
-                        elif isinstance(item, wx.Dialog):
-                            item.Destroy()
-                        item.Close()
-            self.Destroy()
-            wx.GetApp().ExitMainLoop()
 
     def LoadConfiguration(self,event):
 
@@ -279,11 +306,14 @@ class MainGui(wx.Frame):
 
         if openFileDialog.ShowModal() == wx.ID_CANCEL:
             return     # the user changed idea...
-
+        print "Filename is: ", openFileDialog.GetFilename()
         # proceed loading the file chosen by the user
         # this can be done with e.g. wxPython input streams:
         input_stream = (openFileDialog.GetPath())
         Publisher.sendMessage('SetLoadPath',file=input_stream) #send message to canvascontroller
+
+        self.filename = openFileDialog.GetFilename()
+        self.loadingpath = input_stream
         #
         # data = wx.FileDataObject()
         # data.AddFile(input_stream)
@@ -304,6 +334,22 @@ class MainGui(wx.Frame):
         # pass
 
     def SaveConfiguration(self,event):
+        if self.loadingpath == None:
+            save = wx.FileDialog(self.Canvas.GetTopLevelParent(), "Save Configuration","","",
+                                 "Simulation Files (*.sim)|*.sim", wx.FD_SAVE  | wx.FD_OVERWRITE_PROMPT)
+
+            if save.ShowModal() == wx.ID_OK:
+                self.save_path = save.GetPath() + ".sim"
+            else:
+                save.Destroy()
+
+            Publisher.sendMessage('SetSavePath',path=save.GetPath()) #send message to canvascontroller.SaveSimulation
+
+            self.loadingpath = save.GetPath()
+        else:
+            Publisher.sendMessage('SetSavePath', path=self.loadingpath)
+
+    def SaveConfigurationAs(self,event):
         save = wx.FileDialog(self.Canvas.GetTopLevelParent(), "Save Configuration","","",
                              "Simulation Files (*.sim)|*.sim", wx.FD_SAVE  | wx.FD_OVERWRITE_PROMPT)
 
@@ -312,8 +358,10 @@ class MainGui(wx.Frame):
         else:
             save.Destroy()
 
-
+        self.loadingpath = save.GetPath()
         Publisher.sendMessage('SetSavePath',path=save.GetPath()) #send message to canvascontroller.SaveSimulation
+
+
 
     def onDirectory(self, event):
         ToolboxPane = self.m_mgr.GetPane(self.Toolbox)
@@ -343,27 +391,28 @@ class MainGui(wx.Frame):
         self.m_mgr.Update()
         pass
 
-    def defaultview(self, event):
-        self.onAllFiles(event)
-        ConsolePane = self.m_mgr.GetPane(self.bnb)
-        ConsolePane.Show(show=True)
-        # self.m_mgr.ClosePane(self.bnb)
-        # self.m_mgr.AddPane(self.bnb,
-        #                    aui.AuiPaneInfo().
-        #                    Center().
-        #                    Name("Console").
-        #                    Position(1).
-        #                    CloseButton(False).
-        #                    MaximizeButton(True)
-        #                    .Movable()
-        #                    .MinimizeButton(True).
-        #                    PinButton(True).
-        #                    Resizable().
-        #                    Floatable().
-        #                    MinSize(wx.Size(1200, 200)))
-        self.m_mgr.Update()
-
-        pass
+    # todo: temporarily disabled until we fix the AUI manager bugs
+    # def defaultview(self, event):
+    #     self.onAllFiles(event)
+    #     ConsolePane = self.m_mgr.GetPane(self.bnb)
+    #     ConsolePane.Show(show=True)
+    #     # self.m_mgr.ClosePane(self.bnb)
+    #     # self.m_mgr.AddPane(self.bnb,
+    #     #                    aui.AuiPaneInfo().
+    #     #                    Center().
+    #     #                    Name("Console").
+    #     #                    Position(1).
+    #     #                    CloseButton(False).
+    #     #                    MaximizeButton(True)
+    #     #                    .Movable()
+    #     #                    .MinimizeButton(True).
+    #     #                    PinButton(True).
+    #     #                    Resizable().
+    #     #                    Floatable().
+    #     #                    MinSize(wx.Size(1200, 200)))
+    #     self.m_mgr.Update()
+    #
+    #     pass
 
 class ModelView(wx.Panel):
     def __init__(self, parent):
@@ -825,195 +874,32 @@ class SimulationDataTable(DataSeries):
                 Publisher.sendMessage('SetCurrentDb',value=selected_db)  # sends to CanvasController.getCurrentDbSession
 
 
-class TimeSeriesContextMenu(ContextMenu):
-    def __init__(self, parent):
-        super(TimeSeriesContextMenu, self).__init__(parent)
-
-
-class SimulationContextMenu(ContextMenu):
-    def __init__(self, parent):
-        super(SimulationContextMenu, self).__init__(parent)
-
-    def getData(self,simulationID):
-
-        session = self.parent.getDbSession()
-        if session is not None:
-
-
-            readsim = readSimulation(session)
-            core = readCore(session)
-            readres = readResults(session)
-            results = readsim.getResultsBySimulationID(simulationID)
-
-            res = {}
-            for r in results:
-
-                variable_name = r.VariableObj.VariableCode
-                result_values = readres.getTimeSeriesValuesByResultId(int(r.ResultID))
-
-                dates = []
-                values = []
-                for val in result_values:
-                    dates.append(val.ValueDateTime)
-                    values.append(val.DataValue)
-
-
-                # save data series based on variable
-                if variable_name in res:
-                    res[variable_name].append([dates,values,r])
-                else:
-                    res[variable_name] = [[dates,values,r]]
-
-
-
-            return res
-
-    def OnPlot(self, event):
-        #print 'overriding plot!'
-
-        obj, id = self.Selected()
-        #obj = self.__list_obj
-
-        # create a plot frame
-        PlotFrame = None
-        xlabel = None
-        title = None
-        variable = None
-        units = None
-        warning = None
-        x_series = []
-        y_series = []
-        labels = []
-        id = self.parent.GetFirstSelected()
-        while id != -1:
-            # get the result
-            simulationID = obj.GetItem(id,0).GetText()
-
-            name = obj.GetItem(id,1).GetText()
-
-            # get resultid from simulation id
-
-            # get data for this row
-            # x,y, resobj = self.getData(simulationID)
-            results = self.getData(simulationID)
-
-
-
-            if PlotFrame is None:
-
-                # todo: plot more than just this first variable
-                key = results.keys()[0]
-
-
-                resobj = results[key][0][2]
-                # set metadata based on first series
-                ylabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
-                title = '%s' % (resobj.VariableObj.VariableCode)
-
-                # save the variable and units to validate future time series
-                variable = resobj.VariableObj.VariableNameCV
-                units = resobj.UnitObj.UnitsName
-                title = '%s: %s [%s]' % (name, variable,units)
-
-                PlotFrame = MatplotFrame(self.Parent, ylabel=ylabel, title=title)
-
-                for x,y,resobj in results[key]:
-                    # store the x and Y data
-                    x_series.append(x)
-                    y_series.append(y)
-                    labels.append(int(resobj.ResultID))
-
-
-                # PlotFrame.add_series(x,y)
-
-            elif warning is None:
-                warning = 'Multiple Variables/Units were selected.  I currently don\'t support plotting heterogeneous time series. ' +\
-                          'Some of the selected time series will not be shown :( '
-
-            # get the next selected item
-            id = obj.GetNextSelected(id)
-
-        if warning:
-            dlg = wx.MessageDialog(self.parent, warning, '', wx.OK | wx.ICON_WARNING)
-            dlg.ShowModal()
-            dlg.Destroy()
-
-        # plot the data
-        PlotFrame.plot(xlist=x_series, ylist=y_series, labels=labels)
-        PlotFrame.Show()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def runAsync(func):
-    '''Decorates a method to run in a separate thread'''
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        func_hl = Thread(target=func, args=args, kwargs=kwargs)
-        func_hl.start()
-        return func_hl
-    return wrapper
-
-
-def wxCallafter(target):
-    '''Decorates a method to be called as a wxCallafter'''
-    @wraps(target)
-    def wrapper(*args, **kwargs):
-        wx.CallAfter(target, *args, **kwargs)
-    return wrapper
-
-
-
-
-#from gui.async import *
-
 class consoleOutput(wx.Panel):
 
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
-        import console
         self.logger = logging.getLogger('wxApp')
 
-
         # Add a panel so it looks the correct on all platforms
-        self.log = wx.TextCtrl(self, -1, size=(100,100),
-                          style = wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
-        self.Bind(EVT_STDDOUT, self.OnUpdateOutputWindow)
+        # self.log = wx.TextCtrl(self, -1, size=(100,100),
+        #                   style = wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
 
 
-        # txtHandler = console.CustomConsoleHandler(log)
-        # self.logger.addHandler(txtHandler)
-
-        #redir = RedirectText(self.log)
-        #sys.stdout = redir
+        self.log = wx.richtext.RichTextCtrl(self, -1, size=(100,100),
+                                            style = wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL|wx.SIMPLE_BORDER|wx.CURSOR_NONE)
 
 
-        # # Add widgets to a sizer
+
+        self.log.Bind(wx.EVT_CONTEXT_MENU, self.onRightUp)
+
+
+        # deactivate the console if we are in debug mode
+        if not sys.gettrace():
+            redir = RedirectText(self.log)
+            sys.stdout = redir
+
+
+        # Add widgets to a sizer
         sizer = wx.BoxSizer()
         sizer.Add(self.log, 1, wx.ALL|wx.EXPAND, 5)
         self.SetSizer(sizer)
@@ -1021,26 +907,53 @@ class consoleOutput(wx.Panel):
 
         self.SetSizerAndFit(sizer)
 
+    def onRightUp(self, event):
+        self.log.PopupMenu(ConsoleContextMenu(self, event))
 
-        # thread = threading.Thread(target=self.run,args=())
-        # thread.daemon = True
-        # thread.start()
-
-        #thread = self.run()
-
-    def OnUpdateOutputWindow(self, event):
-        value = event.text
-        self.log.AppendText(value)
 
 class RedirectText(object):
 
-    def __init__(self,aWxTextCtrl):
-        self.out=aWxTextCtrl
+    def __init__(self,TextCtrl):
 
+        self.out=TextCtrl
+        self.__line_num = 0
+
+    def line_num(self,reset=False):
+        if not reset:
+            self.__line_num += 1
+            return self.__line_num
+        else:
+            self.__line_num = 0
 
     def write(self,string):
-        self.out.WriteText(string)
-        self.out.Refresh()
+
+        args = string.split('|')
+        string = args[-1]
+        args = [a.strip() for a in args[:-1]]
+
+        if len(string.strip()) > 0:
+
+            string += '\n'
+            if 'RESET' in args:
+                self.line_num(reset=True)
+                return
+
+
+            string = str(self.line_num())+ ':  '+string if string != '\n' else string
+            self.out.SetInsertionPoint(0)
+            if 'WARNING' in args:
+                self.out.BeginTextColour((255, 140, 0))
+            elif 'ERROR' in args:
+                self.out.BeginTextColour((255, 0, 0))
+            elif not 'DEBUG' in args:
+                self.out.BeginTextColour((0, 0, 0))
+
+            # self.out.Text =  self.out.Text.Insert(string+ "\n");
+
+            self.out.WriteText(string)
+            self.out.EndTextColour()
+
+            self.out.Refresh()
 
 class AddConnectionDialog(wx.Dialog):
     def __init__(

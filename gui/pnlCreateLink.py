@@ -18,7 +18,7 @@ class pnlCreateLink ( wx.Panel ):
 
     def __init__( self, prnt, from_model_name, to_model_name, outputitems,inputitems ):
         wx.Panel.__init__(self, id=wxID_PNLCREATELINK, name=u'pnlIntro', parent=prnt,
-              pos=wx.Point(571, 262), size=wx.Size(439, 427),
+              pos=wx.Point(571, 262), size=wx.Size(550, 700),
               style=wx.TAB_TRAVERSAL)
         self.SetClientSize(wx.Size(423, 420))
 
@@ -44,11 +44,11 @@ class pnlCreateLink ( wx.Panel ):
 
         self.outputs = MyTree(id=wxID_PNLCREATELINK,
                parent=self, pos=wx.Point(5, 60),
-              size=wx.Size(210, 100), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT)
+              size=wx.Size(260, 100), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT)
 
         self.inputs = MyTree(id=wxID_PNLCREATELINK,
                parent=self, pos=wx.Point(215, 60),
-              size=wx.Size(210, 100), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT)
+              size=wx.Size(260, 100), style=wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT)
         # self.panelSizer = PanelSizer.AddSpacer( ( 20, 0), 0, wx.EXPAND, 5 )
 
         bSizer6.Add(self.outputs)
@@ -65,9 +65,9 @@ class pnlCreateLink ( wx.Panel ):
         from_label.SetFont(font)
         wx.StaticText(self, label = "Output Variables", pos=wx.Point(0,43))
 
-        to_label = wx.StaticText(self, label = to_model_name, pos=wx.Point(236,20))
+        to_label = wx.StaticText(self, label = to_model_name, pos=wx.Point(280,20))
         to_label.SetFont(font)
-        wx.StaticText(self, label = "Input Variables", pos=wx.Point(236,43))
+        wx.StaticText(self, label = "Input Variables", pos=wx.Point(280,43))
 
         # self.output_text = wx.StaticText(self,id=wxID_PNLCREATELINK, label = "Inputs", pos=wx.Point(0,0),size=wx.Size(210,10))
         # self.input_text  = wx.StaticText(self,id=wxID_PNLCREATELINK, label = "Outputs", pos=wx.Point(225,0),size=wx.Size(210,10))
@@ -76,11 +76,11 @@ class pnlCreateLink ( wx.Panel ):
 
         ## This is the Property Grid related code
 
-        self.pgout  = wxpg.PropertyGridManager(self, size = wx.Size(210, 130),
+        self.pgout  = wxpg.PropertyGridManager(self, size = wx.Size(260, 200),
                         style=wxpg.PG_SPLITTER_AUTO_CENTER |
                               wxpg.PG_AUTO_SORT)
 
-        self.pgin  = wxpg.PropertyGridManager(self, size = wx.Size(210, 130),
+        self.pgin  = wxpg.PropertyGridManager(self, size = wx.Size(260, 200),
                         style=wxpg.PG_SPLITTER_AUTO_CENTER |
                               wxpg.PG_AUTO_SORT)
 

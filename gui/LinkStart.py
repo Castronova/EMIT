@@ -9,7 +9,7 @@ import LinkWizard
 class LinkStart ( wx.Frame ):
 
     def __init__( self, parent, from_model, to_model, input, output, cmd):
-        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( 750,250 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( 750,550 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 
         self.input = input
         self.output = output
@@ -38,13 +38,13 @@ class LinkStart ( wx.Frame ):
         self.Bind(wx.EVT_BUTTON, self.OnEdit, id=wx.ID_EDIT)
         self.Bind(wx.EVT_BUTTON, self.OnDelete, id=wx.ID_DELETE)
         self.Bind(wx.EVT_BUTTON, self.OnClear, id=wx.ID_CLEAR)
-        self.Bind(wx.EVT_LISTBOX_DCLICK, self.OnEdit)
+        # self.Bind(wx.EVT_LISTBOX_DCLICK, self.OnEdit)
 
         vbox.Add((-1, 20))
         vbox.Add(new)
         # vbox.Add(ren, 0, wx.TOP, 5)
         vbox.Add(dlt, 0, wx.TOP, 5)
-        vbox.Add(close, 0, wx.TOP, 5)
+        # vbox.Add(close, 0, wx.TOP, 5)
 
         btnPanel.SetSizer(vbox)
         hbox.Add(btnPanel, 0.6, wx.EXPAND | wx.RIGHT, 20)

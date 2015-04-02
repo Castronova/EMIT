@@ -1,3 +1,5 @@
+from utilities.threading import ThreadManager
+
 __author__ = 'tonycastronova'
 
 
@@ -64,11 +66,11 @@ class Link(object):
 
     # todo: this should be replaced by accessors for each of the from_lc,to_lc,from_item,to_item
     def get_link(self):
-        print '\n> [Deprecated] This function has been deprecated...do not use! '
-        print '> [Deprecated] main.py -> get_link()'
+        print 'ERROR |[Deprecated] This function has been deprecated...do not use! '
+        print 'ERROR | [Deprecated] main.py -> get_link()'
         for caller in inspect.stack():
             if 'EMIT' in caller[1]:
-                print '> [Deprecated Call Stack] ',caller[1],caller[3],caller[2]
+                print 'ERROR | [Deprecated Call Stack] ',caller[1],caller[3],caller[2]
 
         return [self.__from_lc,self.__from_item], [self.__to_lc,self.__to_item]
 
@@ -154,7 +156,7 @@ class Model(object):
                 ii = self.__iei[k]
 
         if ii is None:
-            print '>  Could not find Input Exchange Item: '+value
+            print 'ERROR | Could not find Input Exchange Item: '+value
 
         return ii
 
@@ -166,7 +168,7 @@ class Model(object):
                 oi = self.__oei[k]
 
         if oi is None:
-            print '>  Could not find Output Exchange Item: '+value
+            print 'ERROR | Could not find Output Exchange Item: '+value
 
         return oi
 
@@ -179,7 +181,7 @@ class Model(object):
                 ii = self.__iei[k]
 
         if ii is None:
-            print '>  Could not find Input Exchange Item: '+value
+            print 'ERROR |Could not find Input Exchange Item: '+value
 
         return ii
 
@@ -191,7 +193,7 @@ class Model(object):
                 oi = self.__oei[k]
 
         if oi is None:
-            print '>  Could not find Output Exchange Item: '+value
+            print 'ERROR | Could not find Output Exchange Item: '+value
 
         return oi
 
@@ -271,9 +273,9 @@ class Coordinator(object):
 
         try:
             self.__default_db = self._db[db_id]
-            print '> Default database : %s'%self._db[db_id]['connection_string']
+            print 'Default database : %s'%self._db[db_id]['connection_string']
         except:
-            print '> [error] could not find database: %s'%db_id
+            print 'ERROR | could not find database: %s'%db_id
 
     def get_new_id(self):
         self.__incr += 1
@@ -283,7 +285,7 @@ class Coordinator(object):
         return self.__default_db
 
     # @threaded
-    def add_model(self, type, id=None, attrib=None):
+    def add_model(self, type=None, id=None, attrib=None):
         """
         stores model component objects when added to a configuration
         """
@@ -303,7 +305,7 @@ class Coordinator(object):
 
                 # make sure this model doesnt already exist
                 if name in self.__models:
-                    print '> Model named '+name+' already exists in configuration'
+                    print 'WARNING | Model named '+name+' already exists in configuration'
                     return None
 
                 iei = model_inst.inputs().values()
@@ -432,7 +434,7 @@ class Coordinator(object):
 
             return link
         else:
-            print '>  Could Not Create Link :('
+            print 'WARNING | Could Not Create Link :('
 
     def add_link_by_name(self,from_id, from_item_name, to_id, to_item_name):
         """
@@ -465,7 +467,7 @@ class Coordinator(object):
 
             return link
         else:
-            print '>  Could Not Create Link :('
+            print 'WARNING | Could Not Create Link :('
 
     def get_from_links_by_model(self, model_id):
 
@@ -493,7 +495,7 @@ class Coordinator(object):
 
 
         if len(links) == 0:
-            print '>  Could not find any links associated with model id: '+str(model_id)
+            print 'ERROR |  Could not find any links associated with model id: '+str(model_id)
 
         # todo: this should return a dict of link objects, NOT some random list
         return links
@@ -677,10 +679,16 @@ class Coordinator(object):
                 return
 
             else:
+                # threadManager = ThreadManager()
                 if feed_forward.feed_forward_wrapper in types:
-                    run.run_feed_forward(self)
+                    t = threading.Thread(target=run.run_feed_forward, args=(self,))
+                    t.start()
+                    # run.run_feed_forward(self)
                 elif time_step.time_step_wrapper in types:
-                    run.run_time_step(self)
+
+                    t = threading.Thread(target=run.run_time_step, args=(self,))
+                    t.start()
+                    #run.run_time_step(self)
 
             return
 
@@ -691,7 +699,7 @@ class Coordinator(object):
     def get_configuration_details(self,arg):
 
         if len(self.__models.keys()) == 0:
-            print '>  [warning] no models found in configuration.'
+            print 'WARNING | no models found in configuration.'
 
         if arg.strip() == 'summary':
             print '\n   Here is everything I know about the current simulation...\n'
@@ -857,7 +865,7 @@ class Coordinator(object):
                     return True
                 except Exception,e:
                     print e
-                    print '> [error] Could not create connections from file '+args[0]
+                    print 'ERROR | Could not create connections from file '+args[0]
                     return None
 
         else:
@@ -909,7 +917,7 @@ class Coordinator(object):
                     command = line.strip()
                     if len(command) > 0:
                         if command[0] != '#':
-                            print '> %s'%command
+                            # print '%s'%command
                             self.parse_args(command.split(' '))
 
                             if 'link' in command:
@@ -918,7 +926,7 @@ class Coordinator(object):
             # return the models and links created
             return self.__models.values(), self.__links.values(), link_objs
 
-        else: print '> Could not find path %s'%simulation_file
+        else: print 'ERROR | Could not find path %s'%simulation_file
 
     def show_db_results(self, args):
 
@@ -926,7 +934,7 @@ class Coordinator(object):
         db_id = args[0]
 
         if db_id not in self._db:
-            print '> [error] could not find database id: %s'%db_id
+            print 'ERROR | could not find database id: %s'%db_id
             return
 
 
@@ -976,7 +984,7 @@ class Coordinator(object):
                 else: self.set_default_db(arg[1:])
 
             elif arg[0] == 'run':
-                print '> Running Simulation in Feed Forward Mode'
+                print 'Running Simulation in Feed Forward Mode'
                 self.run_simulation()
 
             elif arg[0] == 'load':
@@ -994,7 +1002,7 @@ class Coordinator(object):
             elif arg[0] == 'info': print h.info()
 
             else:
-                print '> [error] command not recognized.  Type "help" for a complete list of commands.'
+                print 'ERROR | command not recognized.  Type "help" for a complete list of commands.'
 
 
 

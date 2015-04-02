@@ -1,3 +1,5 @@
+import threading
+import time
 
 __author__ = 'Mario'
 
@@ -17,7 +19,9 @@ import os
 import math
 import markdown2
 import CanvasObjects
-from LinkStart import LinkStart
+# from LinkStart import LinkStart
+from LinkCreationFrame import LinkCreationFrame
+from LinkDetailsContext import LinkDetailsContextActivatedFrame as LDCAF
 from ContextMenu import LinkContextMenu, ModelContextMenu, GeneralContextMenu
 from wrappers import odm2_data
 import xml.etree.ElementTree as et
@@ -28,14 +32,19 @@ from transform.time import TemporalInterpolation
 import datatypes
 from api.ODM2.Results.services import readResults
 from api.ODM2.Core.services import readCore
-from gui.async import *
-from Queue import Queue
+from utilities.threading import EVT_CREATE_BOX, EVT_UPDATE_CONSOLE, ThreadManager
+from matplotlib.pyplot import cm
+from LinkFrame import LinkStart
 
 class CanvasController:
-    def __init__(self, cmd, Canvas):
-        self.Canvas = Canvas
+    def __init__(self, cmd, frame):
+        self.Canvas = frame.Canvas
         self.FloatCanvas = self.Canvas.Canvas
         self.cmd = cmd
+        self.frame = frame
+
+        # Start threading
+        self.threadManager = ThreadManager(self)
 
         # This is just to ensure that we are starting without interference from NavToolbar or drag-drop
         self.UnBindAllMouseEvents()
@@ -63,6 +72,7 @@ class CanvasController:
         self.link_clicks = 0
 
         self._currentDbSession = self.cmd.get_default_db()
+        self.loadingpath = None
 
     def UnBindAllMouseEvents(self):
         ## Here is how you unbind FloatCanvas mouse events
@@ -84,6 +94,9 @@ class CanvasController:
         # self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.onRightDown)
         # self.FloatCanvas.Bind(FC.EVT_LEFT_DOWN, self.onLeftDown)
         self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.LaunchContext)
+        self.frame.Bind(wx.EVT_CLOSE, self.onClose)
+        self.frame.Bind(EVT_CREATE_BOX, self.onCreateBox)
+        self.frame.Bind(EVT_UPDATE_CONSOLE, self.onUpdateConsole)
 
     def initSubscribers(self):
         Publisher.subscribe(self.createBox, "createBox")
@@ -96,6 +109,39 @@ class CanvasController:
         Publisher.subscribe(self.SaveSimulation, "SetSavePath")
         Publisher.subscribe(self.loadsimulation, "SetLoadPath")
         Publisher.subscribe(self.addModel, "AddModel")  # subscribes to object list view
+
+    def onClose(self, event):
+        print "In close"
+        dlg = wx.MessageDialog(None, 'Are you sure you want to exit?', 'Question',
+                               wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
+
+        if dlg.ShowModal() !=wx.ID_NO:
+
+            self.threadManager.stop()
+
+            windowsRemaining = len(wx.GetTopLevelWindows())
+            if windowsRemaining > 0:
+                import wx.lib.agw.aui.framemanager as aui
+                # logger.debug("Windows left to close: %d" % windowsRemaining)
+                for item in wx.GetTopLevelWindows():
+                    #logger.debug("Windows %s" % item)
+                    if not isinstance(item, self.frame.__class__):
+                        if isinstance(item, aui.AuiFloatingFrame):
+                            item.Destroy()
+                        elif isinstance(item, aui.AuiSingleDockingGuide):
+                            item.Destroy()
+                        elif isinstance(item, aui.AuiDockingHintWindow):
+                            item.Destroy()
+                        elif isinstance(item, wx.Dialog):
+                            item.Destroy()
+                        item.Close()
+
+            self.frame.Destroy()
+            wx.GetApp().ExitMainLoop()
+
+        else:
+            pass
+
 
     def OnMove(self, event):
         """
@@ -116,22 +162,36 @@ class CanvasController:
             self.MoveObject = self.StartObject + dxy
             dc.DrawPolygon(self.MoveObject)
 
+    def onUpdateConsole(self, evt):
+        """
+        Updates the output console
+        """
+        #print "onUpdateConsole: ", evt.message
+        if evt.message:
+            print "DEBUG|", evt.message
+            #self.frame.output.log.AppendText(evt.message + '\n')
+
+    def onCreateBox(self, evt):
+        # self.threadManager.dispatcher.putOutput("Creating box")
+        name = evt.name
+        id = evt.id
+        x = evt.xCoord
+        y = evt.yCoord
+        self.createBox(xCoord=x, yCoord=y, id=id, name=name)
+        # self.threadManager.dispatcher.putOutput("finish Creating box")
+
     def createBox(self, xCoord, yCoord, id=None, name=None, color='#A2CAF5'):
 
         if name:
             w, h = 180, 120
-            WH = (w/2, h/2)
             x,y = xCoord, yCoord
             FontSize = 14
-            #filename = os.path.basename(filepath)
 
             # get the coordinates for the rounded rectangle
             rect_coords = CanvasObjects.build_rounded_rectangle((x,y), width=w, height=h)
 
             R = self.FloatCanvas.AddObject(FC.Polygon(rect_coords,FillColor=color,InForeground=True))
 
-            #R = self.FloatCanvas.AddRectangle((x,y), (w,h), LineWidth = 2, FillColor = "BLUE",InForeground=True)
-            #R.HitFill = True
             R.ID = id
             R.Name = name
             R.wh = (w,h)
@@ -142,18 +202,6 @@ class CanvasController:
 
             width = 15
             wrappedtext = tw.wrap(unicode(name), width)
-            # new_line = []
-            # for line in wrappedtext:
-            #
-            #     frontpadding = int(math.floor((width - len(line))/2))
-            #     backpadding = int(math.ceil((width - len(line))/2))
-            #     line = ' '*frontpadding + line
-            #     line += ' '*backpadding
-            #     new_line.append(line)
-
-            #FC.DrawLabel(self, text, rect, alignment=wxALIGN_LEFT|wxALIGN_TOP, indexAccel=-1)
-
-            #label = self.FloatCanvas.AddObject(textbox)
 
             # define the font
             font = wx.Font(16, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
@@ -169,7 +217,7 @@ class CanvasController:
             # add this text as an attribute of the rectangle
             R.Text = label
 
-            print '> ', name, ' has been added to the canvas.'
+            print name + ' has been added to the canvas.'
 
             R.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit)
             R.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
@@ -184,18 +232,10 @@ class CanvasController:
         x1,y1  = (R1.BoundingBox[0] + (R1.wh[0]/2, R1.wh[1]/2))
         x2,y2  = (R2.BoundingBox[0] + (R2.wh[0]/2, R2.wh[1]/2))
 
-        length = (((x2 - x1)**2)+(y2 - y1)**2)**.5
-        dy = (y2 - y1)
-        dx = (x2 - x1)
-        angle = 90- math.atan2(dy,dx) *180/math.pi
-
-        #print 'angle: ',angle
-        from matplotlib.pyplot import cm
         cmap = cm.Blues
         line = CanvasObjects.get_line_pts((x1,y1),(x2,y2),order=4, num=200)
         linegradient = CanvasObjects.get_hex_from_gradient(cmap, len(line))
         linegradient.reverse()
-       # print arrow
 
         for i in range(0,len(line)-1):
             l = FC.Line((line[i],line[i+1]),LineColor=linegradient[i],LineWidth=2,InForeground=False)
@@ -224,8 +264,6 @@ class CanvasController:
         # set the shape type so that we can identify it later
         arrow_shape.type = CanvasObjects.ShapeType.ArrowHead
         self.FloatCanvas.AddObject(arrow_shape)
-        #arrow_draw = self.FloatCanvas.AddObject(arrow_shape)
-        #arrow_draw.PutInBackground()
 
         # bind the arrow to left click
         arrow_shape.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
@@ -243,10 +281,6 @@ class CanvasController:
         :return: None
         """
 
-        # controller = self
-        # window = self.Canvas
-        # cmd = self.cmd)
-
         x0 = self.Canvas.MinWidth / 2.
         y0 = self.Canvas.MinHeight / 2.
 
@@ -261,7 +295,7 @@ class CanvasController:
                 if ext == '.mdl':
                     # load the model
                     dtype = datatypes.ModelTypes.FeedForward
-                    model = self.cmd.add_model(dtype,attrib={'mdl':filepath})
+                    model = self.cmd.add_model(type=dtype, attrib={'mdl':filepath})
                     name = model.get_name()
                     modelid = model.get_id()
                     self.createBox(name=name, id=modelid, xCoord=x, yCoord=y)
@@ -271,8 +305,8 @@ class CanvasController:
                     self.loadsimulation(filepath)
 
             except Exception, e:
-                print '> Could not load the model. Please verify that the model file exists.'
-                print '> %s' % e
+                print 'ERROR| Could not load the model. Please verify that the model file exists.'
+                print 'ERROR| %s' % e
         else:
             # # -- must be a data object --
 
@@ -321,23 +355,29 @@ class CanvasController:
 
     def RemoveLink(self, link_obj):
 
-        # remove the link entry in self.links
-        link = self.links.pop(link_obj)
+        # todo: need to warn the user that all links will be removed
+        dlg = wx.MessageDialog(None, 'You are about to remove all data mappings that are associated with this link.  Are you sure you want to perform this action?', 'Question',
+                               wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
 
-        # remove the link from the cmd
-        from_id = link[0].ID
-        to_id = link[1].ID
+        if dlg.ShowModal() !=wx.ID_NO:
 
-        # get the link id
-        links = self.cmd.get_links_btwn_models(from_id,to_id)
+            # remove the link entry in self.links
+            link = self.links.pop(link_obj)
 
-        # remove all links
-        for link in links:
-            linkid = link.get_id()
-            self.cmd.remove_link_by_id(linkid)
+            # remove the link from the cmd
+            from_id = link[0].ID
+            to_id = link[1].ID
 
-        # redraw the canvas
-        self.RedrawConfiguration()
+            # get the link id
+            links = self.cmd.get_links_btwn_models(from_id,to_id)
+
+            # remove all links
+            for link in links:
+                linkid = link.get_id()
+                self.cmd.remove_link_by_id(linkid)
+
+            # redraw the canvas
+            self.RedrawConfiguration()
 
     def RemoveModel(self, model_obj):
 
@@ -388,14 +428,6 @@ class CanvasController:
             obj_id = object.ID
             obj = self.cmd.get_model_by_id(obj_id)
 
-            # format the model parameters for printing
-
-            #text = '\n'.join([k for k in params.keys()])
-
-            #text = '||a||b||\n||test||test||\n||test||test||'
-
-            #md = "###Heading\n---\n```\nsome code\n```"
-
             try:
                 params = obj.get_config_params()
                 if params is None:
@@ -416,7 +448,6 @@ class CanvasController:
                 except: pass
             html = markdown2.markdown(text, extras=["wiki-tables"])
 
-            #css = "<style>h3 a{font-weight:100;color: gold;text-decoration: none;}</style>"
             css = "<style>tr:nth-child(even) " \
                     "{ background-color: #e6f1f5;} " \
                     "table {border-collapse: collapse;width:100%}" \
@@ -472,10 +503,6 @@ class CanvasController:
 
     def ArrowClicked(self,event):
 
-        #if event
-
-        #self.Log("The Link was Clicked")
-
         # get the models associated with the link
         polygons = self.links[event]
 
@@ -487,22 +514,23 @@ class CanvasController:
         from_model = self.cmd.get_model_by_id(r1.ID)
 
         # get exchange items
-        inputitems = from_model.get_output_exchange_items()
+        # inputitems = from_model.get_output_exchange_items()
+
         # get output items from r1
         to_model = self.cmd.get_model_by_id(r2.ID)
 
         # get exchange items
-        outputitems = to_model.get_input_exchange_items()
+        # outputitems = to_model.get_input_exchange_items()
 
 
-        # print "The Link was clicked"
-        linkstart = LinkStart(self.FloatCanvas, from_model, to_model, inputitems, outputitems, self.cmd)
+        linkstart = LinkStart(self.FloatCanvas, from_model, to_model)
+
+
         linkstart.Show()
 
+
+
     def RightClickCb( self, event ):
-        # get the link object
-        # get the model id's from the link
-        # get the model objects from the models id's
         menu = wx.Menu()
         for (id,title) in menu_title_by_id.items():
             menu.Append( id, title )
@@ -515,11 +543,9 @@ class CanvasController:
     def RedrawConfiguration(self):
         # clear lines from drawlist
         self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != CanvasObjects.ShapeType.Link]
-        #self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Line]
 
         # remove any arrowheads from the _ForeDrawList
         self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if obj.type != CanvasObjects.ShapeType.ArrowHead]
-        #self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if type(obj) != FC.Polygon]
 
         # remove any models
         i = 0
@@ -548,7 +574,6 @@ class CanvasController:
 
                 # clear lines from drawlist
                 self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != CanvasObjects.ShapeType.Link]
-                #self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if type(obj) != FC.Line]
 
                 # remove any arrowheads from the two FloatCanvas DrawLists
                 self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if obj.type != CanvasObjects.ShapeType.ArrowHead]
@@ -607,7 +632,7 @@ class CanvasController:
     def SaveSimulation(self, path):
 
         if len(self.models.keys()) == 0:
-            print '> Nothing to save!'
+            print 'WARNING | Nothing to save!'
             return
 
         # create an xml tree
@@ -782,34 +807,25 @@ class CanvasController:
             with open(path,'w') as f:
                 f.write(prettyxml)
         except Exception, e:
-            print '> [ERROR]: An error occurred when attempting to save the project '
-            print '> [ERROR]: EXECPTION MESSAGE '
+            print 'ERROR | An error occurred when attempting to save the project '
+            print 'ERROR | EXECPTION MESSAGE '
             print e
 
-        print '> Configuration Saved Successfully! '
-
-    # def _loadsimulation(self, file):
-    #
-    #     thread = self.loadsimulation(file)
-    #     join = thread.result_queue.get()
-    #     print 'here'
+        print 'Configuration Saved Successfully! '
 
     def loadsimulation(self, file):
         #TODO: Should be part of the cmd.
-        ########### NEW CODE #############
         tree = et.parse(file)
 
-        ########### END CODE #############
+        self.loadingpath = file
 
         tree = et.parse(file)
 
         # get the root
         root = tree.getroot()
 
-        # items = [modelelement, datamodelelement, linkelement, DbConnection]
-
-        elementtag = [i.tag for i in root._children]
-        elementlist = [i for i in root._children]
+        # elementtag = [i.tag for i in root._children]
+        # elementlist = [i for i in root._children]
 
 
         # make sure the required database connections are loaded
@@ -823,7 +839,7 @@ class CanvasController:
         spatial_transformations = {i.name():i for i in space.methods()}
         temporal_transformations = {i.name():i for i in time.methods()}
 
-        databaselist = [x for x in elementslist if x.tag == 'DbConnection']
+        # databaselist = [x for x in elementslist if x.tag == 'DbConnection']
         # for db_conn in databaselist:
         for child in root._children:
             if child.tag == 'DbConnection':
@@ -879,7 +895,6 @@ class CanvasController:
 
 
         # loop through each model and load it
-        # for model in root.iter('Model'):
         for child in root._children:
             if child.tag == 'Model':
                 taglist = []
@@ -889,11 +904,9 @@ class CanvasController:
                     taglist.append(data.tag)
 
                 attrib = dict(zip(taglist,textlist))
-                # get the data type
                 dtype = datatypes.ModelTypes.FeedForward
 
                 # load the model
-                # self.cmd.add_model(model.attrib['mdl'], id=model.attrib['id'],type=dtype)
                 self.cmd.add_model(attrib={'mdl': attrib['path']}, type=dtype, id=attrib['id'])
 
                 # draw the box
@@ -919,17 +932,13 @@ class CanvasController:
                 # get the data type
                 dtype = datatypes.ModelTypes.Data
 
-                resultid = attrib['resultid']
+                # resultid = attrib['resultid']
                 databaseid = attrib['databaseid']
                 mappedid = conn_ids[databaseid]
 
-                #model = self.cmd.add_data_model(resultid,mappedid,id=data.attrib['id'],type=dtype)
                 attrib['databaseid'] = mappedid
 
-                # thread = self.cmd.add_model(dtype,id=attrib['id'], attrib=attrib)
-                # model = thread.result_queue.get()
-                model = self.cmd.add_model(dtype,id=attrib['id'], attrib=attrib)
-
+                model = self.cmd.add_model(type=dtype,id=attrib['id'], attrib=attrib)
 
                 x = float(attrib['xcoordinate'])
                 y = float(attrib['ycoordinate'])
@@ -937,10 +946,8 @@ class CanvasController:
 
                 self.createBox(name=model.get_name(), id=model.get_id(), xCoord=x, yCoord=y, color='#FFFF99')
 
-        # for link in root.iter('Link'):
         for child in root._children:
             if child.tag == 'Link':
-                # for link in child:
                 taglist = []
                 textlist = []
                 for items in child:
@@ -978,10 +985,15 @@ class CanvasController:
                 # this draws the line
                 self.createLine(R1,R2)
 
-
-
             self.FloatCanvas.Draw()
             #self.Canvas.Draw()
+
+    def SetLoadingPath(self, path):
+        # loadingpath = path
+        self.loadingpath = path
+
+    def GetLoadingPath(self):
+        return self.loadingpath
 
     def addModelDialog(self):
         # Note that we need to make sure this passes in information from the model
@@ -1011,11 +1023,6 @@ class CanvasController:
             elif event.type == 'Model':
                 self.Canvas.PopupMenu(ModelContextMenu(self,event), event.HitCoordsPixel.Get())
 
-        # # if object is neither
-        # else:
-        #     self.Canvas.PopupMenu(GeneralContextMenu(self), event.GetPosition())
-
-
         #self.Canvas.ClearAll()
         #self.Canvas.Draw()
 
@@ -1023,8 +1030,9 @@ class CanvasController:
         # TODO: Fix the menu selection
         operation = menu_title_by_id[ event.GetId() ]
         #target    = self.list_item_clicked
-        print '> Perform "%(operation)s" on "%(target)s."' % vars()
+        print 'DEBUG | Perform "%(operation)s" on "%(target)s."' % vars()
 
+    # THREADME
     def run(self):
 
         try:
@@ -1048,47 +1056,22 @@ class FileDrop(wx.FileDropTarget):
         self.OnDropFiles(x,y,filenames)
 
     def OnDropFiles(self, x, y, filenames):
-        #print "filename: {2} x: {0} y: {1}".format(x,y, filenames)
-
-        #Canvas = NC.NavCanvas(self, -1, size=wx.DefaultSize).Canvas
-        #Canvas.AddRectangle((110, 10), (100, 100), FillColor='Red')
-        #print x,y
         originx, originy = self.window.Canvas.PixelToWorld((0,0))
-        #ar = self.window.Canvas.ScreenPosition
-        #x-= ar[0]
-        x = x +originx
-        y = originy - y
-        #x, y = self.window.Canvas.WorldToPixel((nx,ny))
-        #print x,y
-        #x = y = 0
 
-        link_objs = []
+        x = x + originx
+        y = originy - y
 
         # make sure the correct file type was dragged
         name, ext = os.path.splitext(filenames[0])
         if ext == '.mdl' or ext =='.sim':
 
-            models = None
             try:
                 if ext == '.mdl':
 
                     dtype = datatypes.ModelTypes.FeedForward
-
-                    model = self.cmd.add_model(dtype,attrib={'mdl':filenames[0]})
-
-                    # # this blocks, waiting for the result
-                    # model = model_thread.result_queue.get()
-                    #
-                    # import uuid
-                    # ID = uuid.uuid4().hex[:5]
-                    # self.controller.createBox(name='test', id=ID, xCoord=x, yCoord=y)
-
-                    name = model.get_name()
-                    modelid = model.get_id()
-
-
-
-                    self.controller.createBox(name=name, id=modelid, xCoord=x, yCoord=y)
+                    kwargs = dict(x=x, y=y, type=dtype, attrib={'mdl': filenames[0]})
+                    task = ('addmodel', kwargs)
+                    self.controller.threadManager.dispatcher.putTask(task)
 
                 else:
                     # load the simulation
@@ -1096,8 +1079,8 @@ class FileDrop(wx.FileDropTarget):
 
 
             except Exception, e:
-                print '> Could not load the model. Please verify that the model file exists.'
-                print '> %s' % e
+                print 'ERROR | Could not load the model. Please verify that the model file exists.'
+                print 'ERROR | %s' % e
 
         else:
             # # -- must be a data object --
@@ -1137,9 +1120,6 @@ class FileDrop(wx.FileDropTarget):
 
             # save the model
             self.cmd.Models(thisModel)
-
-            #self.cmd.__models[name] = thisModel
-
 
             # draw a box for this model
             self.controller.createBox(name=inst.name(), id=inst.id(), xCoord=x, yCoord=y, color='#FFFF99')

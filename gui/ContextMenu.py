@@ -1,4 +1,9 @@
+from api.ODM2.Core.services import readCore
+from api.ODM2.Results.services import readResults
+from gui.frmMatPlotLib import MatplotFrame
 from utilities import spatial
+from api.ODM2.Simulation.services import readSimulation
+
 
 __author__ = 'tonycastronova'
 
@@ -6,7 +11,8 @@ __author__ = 'tonycastronova'
 import wx
 from txtctrlModel import ModelTxtCtrl
 
-from wx.lib.pubsub import pub as Publisher
+from wx.lib.pubsub import pub as Publisher, __all__
+
 
 class LinkContextMenu(wx.Menu):
 
@@ -17,9 +23,13 @@ class LinkContextMenu(wx.Menu):
         self.arrow_obj = e
         self.parent = parent
 
-        mmi = wx.MenuItem(self, wx.NewId(), 'Edit')
-        self.AppendItem(mmi)
-        self.Bind(wx.EVT_MENU, self.OnAddLink, mmi)
+        # mmi = wx.MenuItem(self, wx.NewId(), 'Details')
+        # self.AppendItem(mmi)
+        # self.Bind(wx.EVT_MENU, self.OnLinkDetails, mmi)
+
+        # mmi = wx.MenuItem(self, wx.NewId(), 'Edit')
+        # self.AppendItem(mmi)
+        # self.Bind(wx.EVT_MENU, self.OnAddLink, mmi)
 
 
         mmi = wx.MenuItem(self, wx.NewId(), 'Remove')
@@ -27,12 +37,41 @@ class LinkContextMenu(wx.Menu):
         self.Bind(wx.EVT_MENU, self.RemoveLink, mmi)
 
 
-    def OnAddLink(self, e):
-        self.parent.ArrowClicked(self.arrow_obj)
+    # def OnAddLink(self, e):
+    #     self.parent.ArrowClicked(self.arrow_obj)
 
     def RemoveLink(self, e):
         self.parent.RemoveLink(self.arrow_obj)
 
+    # def OnLinkDetails(self, e):
+    #     self.parent.LinkDetailsShow(self.arrow_obj)
+
+    def OnMinimize(self, e):
+        self.parent.Iconize()
+
+    def OnClose(self, e):
+        self.parent.Close()
+
+class ConsoleContextMenu(wx.Menu):
+    """
+    Context menu for when a user does a right click in the ConsoleOutput
+    """
+
+    def __init__(self, parent, event):
+        wx.Menu.__init__(self)
+        self.log = parent.log
+        self.parent = parent
+
+        mmi = wx.MenuItem(self, wx.NewId(), 'Clear Console')
+        self.AppendItem(mmi)
+        self.Bind(wx.EVT_MENU, self.OnClear, mmi)
+
+    def OnClear(self, event):
+        """
+        User clears the
+        """
+        self.log.Clear()
+        print 'RESET |'
 
     def OnMinimize(self, e):
         self.parent.Iconize()
@@ -105,8 +144,6 @@ class ModelContextMenu(wx.Menu):
         # listview.PopulateDetails(self.sb.GetValue())
         view.Show()
 
-
-
     def PopupDisplay(self, e):
         self.parent.DetailView(e)
 
@@ -137,12 +174,17 @@ class GeneralContextMenu(wx.Menu):
         self.AppendItem(mmi)
         self.Bind(wx.EVT_MENU, self.OnAddLink, mmi)
 
-        # mmi = wx.MenuItem(self, wx.NewId(), 'Load Configuration')
-        # self.AppendItem(mmi)
-        #
-        # mmi = wx.MenuItem(self, wx.NewId(), 'Save Configuration')
-        # self.AppendItem(mmi)
-        # self.Bind(wx.EVT_MENU, self.SaveConfiguration, mmi)
+        mmi = wx.MenuItem(self, wx.NewId(), 'Load Configuration')
+        self.AppendItem(mmi)
+        self.Bind(wx.EVT_MENU, self.LoadConfiguration, mmi)
+
+        mmi = wx.MenuItem(self, wx.NewId(), 'Save Configuration')
+        self.AppendItem(mmi)
+        self.Bind(wx.EVT_MENU, self.SaveConfiguration, mmi)
+
+        mmi = wx.MenuItem(self, wx.NewId(), 'Save Configuration As')
+        self.AppendItem(mmi)
+        self.Bind(wx.EVT_MENU, self.SaveConfigurationAs, mmi)
 
         mmi = wx.MenuItem(self, wx.NewId(), 'Run')
         self.AppendItem(mmi)
@@ -180,13 +222,34 @@ class GeneralContextMenu(wx.Menu):
         #     self.parent.clear()
 
     def SaveConfiguration(self,e):
+        if self.parent.GetLoadingPath() == None:
+            save = wx.FileDialog(self.parent.Canvas.GetTopLevelParent(), "Save Configuration","","",
+                                 "Simulation Files (*.sim)|*.sim", wx.FD_SAVE  | wx.FD_OVERWRITE_PROMPT)
+
+            if save.ShowModal() == wx.ID_OK:
+                path = save.GetPath()
+                self.parent.SaveSimulation(path)
+                self.parent.SetLoadingPath(path)
+        else:
+            self.parent.SaveSimulation(self.parent.GetLoadingPath())
+
+    def SaveConfigurationAs(self,e):
 
         save = wx.FileDialog(self.parent.Canvas.GetTopLevelParent(), "Save Configuration","","",
                              "Simulation Files (*.sim)|*.sim", wx.FD_SAVE  | wx.FD_OVERWRITE_PROMPT)
 
-        if save.ShowModal() != wx.ID_OK:
+        if save.ShowModal() == wx.ID_OK:
             path = save.GetPath()
             self.parent.SaveSimulation(path)
+            self.parent.SetLoadingPath(path)
+
+    def LoadConfiguration(self, e):
+        load = wx.FileDialog(self.parent.Canvas.GetTopLevelParent(), "Load Configuration","","",
+                             "Simulation Files (*.sim)|*.sim", wx.FD_OPEN)
+        if load.ShowModal() == wx.ID_OK:
+            path = load.GetPath()
+            self.parent.loadsimulation(path)
+            self.parent.SetLoadingPath(path)
 
     def OnMinimize(self, e):
         self.parent.Iconize()
@@ -221,7 +284,6 @@ class DirectoryContextMenu(wx.Menu):
 
     def OnClose(self, e):
         self.parent.Close()
-
 
 class TreeItemContextMenu(wx.Menu):
 
@@ -260,31 +322,272 @@ class TreeItemContextMenu(wx.Menu):
     def OnClose(self, e):
         self.parent.Close()
 
-class Example(wx.Frame):
+# class Example(wx.Frame):
+#
+#     def __init__(self, *args, **kwargs):
+#         super(Example, self).__init__(*args, **kwargs)
+#
+#         self.InitUI()
+#
+#     def InitUI(self):
+#
+#         self.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
+#
+#         self.SetSize((250, 200))
+#         self.SetTitle('Context menu')
+#         self.Centre()
+#         self.Show(True)
+#
+#     def OnRightDown(self, e):
+#         self.PopupMenu(LinkContextMenu(self), e.GetPosition())
+#
+# def main():
+#
+#     ex = wx.App()
+#     Example(None)
+#     ex.MainLoop()
+#
+#
+# if __name__ == '__main__':
+#     main()
 
-    def __init__(self, *args, **kwargs):
-        super(Example, self).__init__(*args, **kwargs)
 
-        self.InitUI()
+class ContextMenu(wx.Menu):
 
-    def InitUI(self):
+    def __init__(self, parent):
+        super(ContextMenu, self).__init__()
 
-        self.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
+        self.parent = parent
 
-        self.SetSize((250, 200))
-        self.SetTitle('Context menu')
-        self.Centre()
-        self.Show(True)
+        mmi = wx.MenuItem(self, wx.NewId(), 'Add')
+        self.AppendItem(mmi)
+        self.Bind(wx.EVT_MENU, self.OnAdd, mmi)
 
-    def OnRightDown(self, e):
-        self.PopupMenu(LinkContextMenu(self), e.GetPosition())
+        mmi = wx.MenuItem(self, wx.NewId(), 'Plot')
+        self.AppendItem(mmi)
+        self.Bind(wx.EVT_MENU, self.OnPlot, mmi)
 
-def main():
+        mmi = wx.MenuItem(self, wx.NewId(), 'Delete')
+        self.AppendItem(mmi)
+        self.Bind(wx.EVT_MENU, self.OnDelete, mmi)
 
-    ex = wx.App()
-    Example(None)
-    ex.MainLoop()
+        # this is the list event from the right click
+        self.__list_obj = None
+        self.__list_id = None
+
+    def Selected(self, list_obj=None, list_id=None):
+        if list_id is not None and list_obj is not None:
+            self.__list_obj = list_obj
+            self.__list_id = list_id
+        return self.__list_obj, self.__list_id
 
 
-if __name__ == '__main__':
-    main()
+
+
+    def OnAdd(self, event):
+
+        obj = self.__list_obj
+        id = self.__list_id
+        filename = obj.GetItem(id).GetText()
+
+        Publisher.sendMessage('AddModel',filepath=filename, x = 0, y = 0) # sends message to CanvasController
+
+        #print filename
+
+    def getData(self,resultID):
+
+
+
+        session = self.parent.getDbSession()
+        if session is not None:
+            readres = readResults(session)
+            results = readres.getTimeSeriesValuesByResultId(resultId=int(resultID))
+
+
+            core = readCore(session)
+            obj = core.getResultByID(resultID=int(resultID))
+
+            dates = []
+            values = []
+            for val in results:
+                dates.append(val.ValueDateTime)
+                values.append(val.DataValue)
+
+            return dates,values,obj
+
+    def OnPlot(self, event):
+
+        obj = self.__list_obj
+
+        # create a plot frame
+        PlotFrame = None
+        xlabel = None
+        title = None
+        variable = None
+        units = None
+        warning = None
+        x_series = []
+        y_series = []
+        labels = []
+        id = self.parent.GetFirstSelected()
+        while id != -1:
+            # get the result
+            resultID = obj.GetItem(id,0).GetText()
+
+            # get data for this row
+            x,y, resobj = self.getData(resultID)
+
+            if PlotFrame is None:
+                # set metadata based on first series
+                xlabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
+                title = '%s' % (resobj.VariableObj.VariableCode)
+
+                # save the variable and units to validate future time series
+                variable = resobj.VariableObj.VariableCode
+                units = resobj.UnitObj.UnitsName
+
+                PlotFrame = MatplotFrame(self.Parent, title, ylabel=xlabel)
+
+            if resobj.VariableObj.VariableCode == variable and resobj.UnitObj.UnitsName == units:
+                # store the x and Y data
+                x_series.append(x)
+                y_series.append(y)
+                labels.append(resultID)
+
+                # PlotFrame.add_series(x,y)
+            elif warning is None:
+                warning = 'Multiple Variables/Units were selected.  I currently don\'t support plotting heterogeneous time series. ' +\
+                          'Some of the selected time series will not be shown :( '
+
+            # get the next selected item
+            id = obj.GetNextSelected(id)
+
+        if warning:
+            dlg = wx.MessageDialog(self.parent, warning, '', wx.OK | wx.ICON_WARNING)
+            dlg.ShowModal()
+            dlg.Destroy()
+
+        # plot the data
+        PlotFrame.plot(xlist=x_series, ylist=y_series, labels=labels)
+        PlotFrame.Show()
+
+    def OnDelete(self,event):
+        dlg = wx.MessageDialog(self.parent, 'Unfortunately, delete has not been implemented yet.', '', wx.OK | wx.ICON_WARNING)
+        dlg.ShowModal()
+        dlg.Destroy()
+
+class TimeSeriesContextMenu(ContextMenu):
+    def __init__(self, parent):
+        super(TimeSeriesContextMenu, self).__init__(parent)
+
+class SimulationContextMenu(ContextMenu):
+    def __init__(self, parent):
+        super(SimulationContextMenu, self).__init__(parent)
+
+    def getData(self,simulationID):
+
+        session = self.parent.getDbSession()
+        if session is not None:
+
+
+            readsim = readSimulation(session)
+            core = readCore(session)
+            readres = readResults(session)
+            results = readsim.getResultsBySimulationID(simulationID)
+
+            res = {}
+            for r in results:
+
+                variable_name = r.VariableObj.VariableCode
+                result_values = readres.getTimeSeriesValuesByResultId(int(r.ResultID))
+
+                dates = []
+                values = []
+                for val in result_values:
+                    dates.append(val.ValueDateTime)
+                    values.append(val.DataValue)
+
+
+                # save data series based on variable
+                if variable_name in res:
+                    res[variable_name].append([dates,values,r])
+                else:
+                    res[variable_name] = [[dates,values,r]]
+
+
+
+            return res
+
+    def OnPlot(self, event):
+        #print 'overriding plot!'
+
+        obj, id = self.Selected()
+        #obj = self.__list_obj
+
+        # create a plot frame
+        PlotFrame = None
+        xlabel = None
+        title = None
+        variable = None
+        units = None
+        warning = None
+        x_series = []
+        y_series = []
+        labels = []
+        id = self.parent.GetFirstSelected()
+        while id != -1:
+            # get the result
+            simulationID = obj.GetItem(id,0).GetText()
+
+            name = obj.GetItem(id,1).GetText()
+
+            # get resultid from simulation id
+
+            # get data for this row
+            # x,y, resobj = self.getData(simulationID)
+            results = self.getData(simulationID)
+
+
+
+            if PlotFrame is None:
+
+                # todo: plot more than just this first variable
+                key = results.keys()[0]
+
+
+                resobj = results[key][0][2]
+                # set metadata based on first series
+                ylabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
+                title = '%s' % (resobj.VariableObj.VariableCode)
+
+                # save the variable and units to validate future time series
+                variable = resobj.VariableObj.VariableNameCV
+                units = resobj.UnitObj.UnitsName
+                title = '%s: %s [%s]' % (name, variable,units)
+
+                PlotFrame = MatplotFrame(self.Parent, ylabel=ylabel, title=title)
+
+                for x,y,resobj in results[key]:
+                    # store the x and Y data
+                    x_series.append(x)
+                    y_series.append(y)
+                    labels.append(int(resobj.ResultID))
+
+
+                # PlotFrame.add_series(x,y)
+
+            elif warning is None:
+                warning = 'Multiple Variables/Units were selected.  I currently don\'t support plotting heterogeneous time series. ' +\
+                          'Some of the selected time series will not be shown :( '
+
+            # get the next selected item
+            id = obj.GetNextSelected(id)
+
+        if warning:
+            dlg = wx.MessageDialog(self.parent, warning, '', wx.OK | wx.ICON_WARNING)
+            dlg.ShowModal()
+            dlg.Destroy()
+
+        # plot the data
+        PlotFrame.plot(xlist=x_series, ylist=y_series, labels=labels)
+        PlotFrame.Show()

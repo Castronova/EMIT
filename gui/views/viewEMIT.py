@@ -1,23 +1,25 @@
+from gui.controller.logicDirectory import LogicDirectory
+
 __author__ = 'Mario'
 import wx
 import wx.html2
-from DirectoryView import DirectoryCtrlView
-from Toolbox import ToolboxPanel
+# from DirectoryView import DirectoryCtrlView
+from ..Toolbox import ToolboxPanel
 import sys
-from CanvasView import Canvas
+from ..CanvasView import Canvas
 from wx.lib.pubsub import pub as Publisher
-from CanvasController import CanvasController
+from ..CanvasController import CanvasController
 import wx.lib.agw.aui as aui
-import objectListViewDatabase as olv
+from .. import objectListViewDatabase as olv
 from api.ODM2.Core.services import *
 import logging
-from ContextMenu import GeneralContextMenu, TimeSeriesContextMenu, SimulationContextMenu, ConsoleContextMenu
+from ..ContextMenu import GeneralContextMenu, TimeSeriesContextMenu, SimulationContextMenu, ConsoleContextMenu
 import threading
 from db import dbapi as dbapi
 from wx import richtext
 
 from gui.ContextMenu import ContextMenu
-from frmMatPlotLib import MatplotFrame
+from ..frmMatPlotLib import MatplotFrame
 from api.ODM2.Simulation.services import readSimulation
 from api.ODM2.Results.services import readResults
 
@@ -36,34 +38,28 @@ wxStdOut, EVT_STDDOUT= NewEvent()
 wxCreateBox, EVT_CREATE_BOX = NewEvent()
 
 
-from images import water_drop as title_icon
+# from images import water_drop as title_icon
 from wx.lib.newevent import NewEvent
 wxStdOut, EVT_STDDOUT= NewEvent()
 
-class MainGui(wx.Frame):
-    def __init__(self, parent, cmd):
+class ViewEMIT(wx.Frame):
+    def __init__(self, parent):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title="Environmental Model Integration Project", pos=wx.DefaultPosition,
                           size=wx.Size(1200, 750), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
 
         self.pnlDocking = wx.Panel(id=wx.ID_ANY, name='pnlDocking', parent=self, size=wx.Size(1200, 750),
                                    style=wx.TAB_TRAVERSAL)
 
-        # save cmd object in pnlDocking so that children can access it
-        self.pnlDocking.__setattr__('cmd',cmd)
-        import os
-        # path = 'gui/images/water_drop.png'
-        # print "PATH: ", path
-        # image = wx.Image(path, wx.BITMAP_TYPE_PNG).ConvertToBitmap()
-        # icon = wx.EmptyIcon()
-        # icon.CopyFromBitmap(title_icon.getBitmap())
-        self.SetIcon(title_icon.getIcon())
-
-        #self.SetIcon(title_icon.getIcon())
-
 
         self.notebook_pages = {}
 
         self.initMenu()
+
+        self.Directory = LogicDirectory(self.pnlDocking)
+        self.Toolbox = ToolboxPanel(self.pnlDocking)
+        self.Toolbox.Hide()
+
+
         self.initAUIManager()
         self._init_sizers()
 
@@ -72,18 +68,16 @@ class MainGui(wx.Frame):
         self.filename = None
         self.loadingpath = None
 
+        self.Center()
+
+        self.Show()
+
 
 
     def _init_sizers(self):
-        # generated method, don't edit
         self.s = wx.BoxSizer(wx.VERTICAL)
-        self._init_s_Items(self.s)
+        self.s.AddWindow(self.pnlDocking, 85, flag=wx.ALL | wx.EXPAND)
         self.SetSizer(self.s)
-
-    def _init_s_Items(self, parent):
-        # generated method, don't edit
-        #parent.AddWindow(self._ribbon, 0, wx.EXPAND)
-        parent.AddWindow(self.pnlDocking, 85, flag=wx.ALL | wx.EXPAND)
 
     def OnPageChange(self, page):
 
@@ -96,10 +90,9 @@ class MainGui(wx.Frame):
         self.m_mgr.SetManagedWindow(self.pnlDocking)
 
         #self.m_mgr.SetFlags(aui.AUI_MGR_DEFAULT)
+        # TODO fix circular import error with float canvas
         self.Canvas = Canvas(self.pnlDocking)
-        self.Directory = DirectoryCtrlView(self.pnlDocking)
-        self.Toolbox = ToolboxPanel(self.pnlDocking)
-        self.Toolbox.Hide()
+
 
         self.bnb = wx.Notebook(self.pnlDocking)
 

@@ -1,10 +1,9 @@
-import threading
-import time
-
 __author__ = 'Mario'
 
-import wx
 import textwrap as tw
+
+import wx
+
 ver = 'local'
 from utilities import gui
 
@@ -16,13 +15,10 @@ from wx.lib.floatcanvas.NavCanvas import NavCanvas
 from wx.lib.pubsub import pub as Publisher
 import numpy as N
 import os
-import math
 import markdown2
-import CanvasObjects
+from .. import CanvasObjects
 # from LinkStart import LinkStart
-from LinkCreationFrame import LinkCreationFrame
-from LinkDetailsContext import LinkDetailsContextActivatedFrame as LDCAF
-from ContextMenu import LinkContextMenu, ModelContextMenu, GeneralContextMenu
+from ..ContextMenu import LinkContextMenu, ModelContextMenu, GeneralContextMenu
 from wrappers import odm2_data
 import xml.etree.ElementTree as et
 from xml.dom import minidom
@@ -30,21 +26,20 @@ from transform.space import SpatialInterpolation
 from transform.time import TemporalInterpolation
 
 import datatypes
-from api.ODM2.Results.services import readResults
-from api.ODM2.Core.services import readCore
 from utilities.threading import EVT_CREATE_BOX, EVT_UPDATE_CONSOLE, ThreadManager
 from matplotlib.pyplot import cm
-from LinkFrame import LinkStart
+from ..LinkFrame import LinkStart
 
-class CanvasController:
-    def __init__(self, cmd, frame):
-
+from gui.views.viewEMIT import ViewEMIT
 
 
-        self.Canvas = frame.Canvas
+class LogicEMIT(ViewEMIT):
+    def __init__(self, parent, cmd):
+
+        ViewEMIT.__init__(self, parent)
+
         self.FloatCanvas = self.Canvas.Canvas
         self.cmd = cmd
-        self.frame = frame
 
         # Start threading
         self.threadManager = ThreadManager(self)
@@ -64,8 +59,8 @@ class CanvasController:
 
         #self.Canvas.ZoomToFit(Event=None)
 
-        dt = FileDrop(self, self.Canvas, self.cmd)
-        self.Canvas.SetDropTarget(dt)
+        # dt = FileDrop(self, self.Canvas, self.cmd)
+        # self.Canvas.SetDropTarget(dt)
 
         self.linkRects = []
         self.links = {}
@@ -92,14 +87,14 @@ class CanvasController:
         self.EventsAreBound = False
 
     def initBindings(self):
-        self.FloatCanvas.Bind(FC.EVT_MOTION, self.OnMove )
-        self.FloatCanvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp )
+        self.FloatCanvas.Bind(FC.EVT_MOTION, self.OnMove)
+        self.FloatCanvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp)
         # self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.onRightDown)
         # self.FloatCanvas.Bind(FC.EVT_LEFT_DOWN, self.onLeftDown)
         self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.LaunchContext)
-        self.frame.Bind(wx.EVT_CLOSE, self.onClose)
-        self.frame.Bind(EVT_CREATE_BOX, self.onCreateBox)
-        self.frame.Bind(EVT_UPDATE_CONSOLE, self.onUpdateConsole)
+        self.Bind(wx.EVT_CLOSE, self.onClose)
+        self.Bind(EVT_CREATE_BOX, self.onCreateBox)
+        self.Bind(EVT_UPDATE_CONSOLE, self.onUpdateConsole)
 
     def initSubscribers(self):
         Publisher.subscribe(self.createBox, "createBox")
@@ -144,7 +139,6 @@ class CanvasController:
 
         else:
             pass
-
 
     def OnMove(self, event):
         """
@@ -273,7 +267,6 @@ class CanvasController:
         arrow_shape.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
 
         return arrow_shape
-
 
     def addModel(self, filepath, x, y):
         """
@@ -530,8 +523,6 @@ class CanvasController:
 
 
         linkstart.Show()
-
-
 
     def RightClickCb( self, event ):
         menu = wx.Menu()
@@ -1043,122 +1034,6 @@ class CanvasController:
         except Exception as e:
             wx.MessageBox(str(e.args[0]), 'Error',wx.OK | wx.ICON_ERROR)
 
-class FileDrop(wx.FileDropTarget):
-    def __init__(self, controller, window, cmd):
-        wx.FileDropTarget.__init__(self)
-        self.controller = controller
-        self.window = window
-        self.cmd = cmd
-        Publisher.subscribe(self.OnDropFiles, 'toolboxclick')
-
-    def RandomCoordinateGeneration(self, filepath):
-        filenames = filepath
-        x = 0
-        y = 0
-
-        self.OnDropFiles(x,y,filenames)
-
-    def OnDropFiles(self, x, y, filenames):
-        originx, originy = self.window.Canvas.PixelToWorld((0,0))
-
-        x = x + originx
-        y = originy - y
-
-        # make sure the correct file type was dragged
-        name, ext = os.path.splitext(filenames[0])
-        if ext == '.mdl' or ext =='.sim':
-
-            try:
-                if ext == '.mdl':
-
-                    dtype = datatypes.ModelTypes.FeedForward
-                    kwargs = dict(x=x, y=y, type=dtype, attrib={'mdl': filenames[0]})
-                    task = ('addmodel', kwargs)
-                    self.controller.threadManager.dispatcher.putTask(task)
-
-                else:
-                    # load the simulation
-                    self.controller.loadsimulation(filenames[0])
-
-
-            except Exception, e:
-                print 'ERROR | Could not load the model. Please verify that the model file exists.'
-                print 'ERROR | %s' % e
-
-        else:
-            # # -- must be a data object --
-
-            # get the current database connection dictionary
-            session = self.controller.getCurrentDbSession()
-
-            # create odm2 instance
-            inst = odm2_data.odm2(resultid=name, session=session)
-
-            oei = inst.outputs().values()
-
-            from coordinator import main
-            # create a model instance
-            thisModel = main.Model(id=inst.id(),
-                                   name=inst.name(),
-                                   instance=inst,
-                                   desc=inst.description(),
-                                   input_exchange_items= [],
-                                   output_exchange_items=  oei,
-                                   params=None)
-
-
-            # save the result id
-            att = {'resultid':name}
-
-            # save the database connection
-            dbs = self.cmd.get_db_connections()
-            for id, dic in dbs.iteritems():
-                if dic['session'] == self.controller.getCurrentDbSession():
-                    att['databaseid'] = id
-                    thisModel.attrib(att)
-                    break
-
-            thisModel.type(datatypes.ModelTypes.Data)
-
-
-            # save the model
-            self.cmd.Models(thisModel)
-
-            # draw a box for this model
-            self.controller.createBox(name=inst.name(), id=inst.id(), xCoord=x, yCoord=y, color='#FFFF99')
-            self.window.Canvas.Draw()
-
-
-    def getObj(self,resultID):
-
-        session = self.getDbSession()
-
-        core = readCore(session)
-        obj = core.getResultByID(resultID=int(resultID))
-
-        session.close()
-
-        return obj
-
-    def getData(self,resultID):
-
-
-        session = self.getDbSession()
-        readres = readResults(session)
-        results = readres.getTimeSeriesValuesByResultId(resultId=int(resultID))
-
-        core = readCore(session)
-        obj = core.getResultByID(resultID=int(resultID))
-
-        dates = []
-        values = []
-        for val in results:
-            dates.append(val.ValueDateTime)
-            values.append(val.DataValue)
-
-        session.close()
-
-        return dates,values,obj
 
 menu_titles = [ "Open",
                 "Properties",

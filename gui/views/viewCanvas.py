@@ -2,6 +2,8 @@ __author__ = 'Mario'
 
 import wx
 import sys
+
+# todo: refactor
 from ..NavToolbar import NavCanvas
 
 sys.path.append("..")

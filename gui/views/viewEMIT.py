@@ -9,15 +9,17 @@ from viewToolbox import ViewToolbox
 import sys
 from viewCanvas import ViewCanvas as Canvas
 from wx.lib.pubsub import pub as Publisher
-from ..CanvasController import CanvasController
 import wx.lib.agw.aui as aui
-from .. import objectListViewDatabase as olv
 from api.ODM2.Core.services import *
 import logging
-from ..ContextMenu import GeneralContextMenu, TimeSeriesContextMenu, SimulationContextMenu, ConsoleContextMenu
 import threading
 from db import dbapi as dbapi
 from wx import richtext
+from viewContext import GeneralContextMenu, TimeSeriesContextMenu, SimulationContextMenu, ConsoleContextMenu
+
+# todo: refactor
+from .. import objectListViewDatabase as olv
+from ..CanvasController import CanvasController
 
 from gui.ContextMenu import ContextMenu
 from ..frmMatPlotLib import MatplotFrame

@@ -1,30 +1,19 @@
-# -*- coding: utf-8 -*- 
-
-# ##########################################################################
-# # Python code generated with wxFormBuilder (version Jun  5 2014)
-## http://www.wxformbuilder.org/
-##
-## PLEASE DO "NOT" EDIT THIS FILE!
-###########################################################################
-
 import os
-
 import wx
 import wx.xrc
 from wx.lib.pubsub import pub as Publisher
 
+
+import utilities
+from utilities import gui, spatial
+from shapely import wkt
+from viewContext import DirectoryContextMenu, ModelContextMenu
+
+# todo: refactor
 from ..DirectoryLstCtrl import DirectoryListCtrl
 from ..images import icons
 from ..txtctrlModel import ModelTxtCtrl, MyTree
 
-from ..ContextMenu import DirectoryContextMenu, ModelContextMenu
-import utilities
-from utilities import gui, spatial
-from shapely import wkt
-
-###########################################################################
-## Class directoryCtrlPanel
-###########################################################################
 
 [PreviousID, UpID, HomeID, SaveID, RefreshID, TerminalID, HelpID] = [wx.NewId() for _init_ctrls in range(7)]
 

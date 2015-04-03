@@ -1,8 +1,8 @@
 import os
-from gui.ContextMenu import DirectoryContextMenu
+from gui.views.viewDirectory import ViewDirectory, HomeID, PreviousID, UpID, RefreshID
+from gui.views.viewContext import DirectoryContextMenu
 from gui.txtctrlModel import ModelTxtCtrl
 from wx.lib.pubsub import pub as Publisher
-from gui.views.viewDirectory import ViewDirectory, HomeID, PreviousID, UpID, RefreshID
 
 __author__ = 'tonycastronova'
 

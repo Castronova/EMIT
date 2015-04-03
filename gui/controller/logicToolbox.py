@@ -4,14 +4,16 @@ import random
 __author__ = 'tonycastronova'
 
 from gui.views.viewToolbox import ViewToolbox
+from gui.views.viewContext import TreeItemContextMenu
+
 import wx
 from wx.lib.pubsub import pub as Publisher
-from ..txtctrlModel import ModelTxtCtrl
-from ..ContextMenu import TreeItemContextMenu
 from os.path import join,dirname, abspath
 import ConfigParser
 import fnmatch
 
+# todo: refactor
+from ..txtctrlModel import ModelTxtCtrl
 
 class LogicToolbox(ViewToolbox):
 

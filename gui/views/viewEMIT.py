@@ -7,7 +7,7 @@ import wx.html2
 # from DirectoryView import DirectoryCtrlView
 from viewToolbox import ViewToolbox
 import sys
-from ..CanvasView import Canvas
+from viewCanvas import ViewCanvas as Canvas
 from wx.lib.pubsub import pub as Publisher
 from ..CanvasController import CanvasController
 import wx.lib.agw.aui as aui

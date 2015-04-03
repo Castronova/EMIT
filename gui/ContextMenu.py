@@ -290,21 +290,12 @@ class TreeItemContextMenu(wx.Menu):
     def __init__(self, parent, e):
         super(TreeItemContextMenu, self).__init__()
 
-        self.cmd = parent.cmd
         self.arrow_obj = e
         self.parent = parent
 
         mmi = wx.MenuItem(self, wx.NewId(), 'View Details')
         self.AppendItem(mmi)
         self.Bind(wx.EVT_MENU, self.OnViewDetails, mmi)
-
-        # mmi = wx.MenuItem(self, wx.NewId(), 'Expand All')
-        # self.AppendItem(mmi)
-        # self.Bind(wx.EVT_MENU, self.OnExpandAll, mmi)
-        #
-        # mmi = wx.MenuItem(self, wx.NewId(), 'Collapse All')
-        # self.AppendItem(mmi)
-        # self.Bind(wx.EVT_MENU, self.OnCollapseAll, mmi)
 
     def OnViewDetails(self, e):
 
@@ -321,36 +312,6 @@ class TreeItemContextMenu(wx.Menu):
 
     def OnClose(self, e):
         self.parent.Close()
-
-# class Example(wx.Frame):
-#
-#     def __init__(self, *args, **kwargs):
-#         super(Example, self).__init__(*args, **kwargs)
-#
-#         self.InitUI()
-#
-#     def InitUI(self):
-#
-#         self.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
-#
-#         self.SetSize((250, 200))
-#         self.SetTitle('Context menu')
-#         self.Centre()
-#         self.Show(True)
-#
-#     def OnRightDown(self, e):
-#         self.PopupMenu(LinkContextMenu(self), e.GetPosition())
-#
-# def main():
-#
-#     ex = wx.App()
-#     Example(None)
-#     ex.MainLoop()
-#
-#
-# if __name__ == '__main__':
-#     main()
-
 
 class ContextMenu(wx.Menu):
 

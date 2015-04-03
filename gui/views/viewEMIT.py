@@ -1,10 +1,11 @@
 from gui.controller.logicDirectory import LogicDirectory
+from gui.controller.logicToolbox import LogicToolbox
 
 __author__ = 'Mario'
 import wx
 import wx.html2
 # from DirectoryView import DirectoryCtrlView
-from ..Toolbox import ToolboxPanel
+from viewToolbox import ViewToolbox
 import sys
 from ..CanvasView import Canvas
 from wx.lib.pubsub import pub as Publisher
@@ -56,7 +57,7 @@ class ViewEMIT(wx.Frame):
         self.initMenu()
 
         self.Directory = LogicDirectory(self.pnlDocking)
-        self.Toolbox = ToolboxPanel(self.pnlDocking)
+        self.Toolbox = LogicToolbox(self.pnlDocking)
         self.Toolbox.Hide()
 
 

@@ -51,8 +51,8 @@ class NavCanvas(wx.Panel):
         box = wx.BoxSizer(wx.VERTICAL)
         # box.Add(self.ToolBar, 0, wx.ALL | wx.ALIGN_LEFT | wx.GROW, 4)
 
-        self.Canvas = FloatCanvas.FloatCanvas(self, **kwargs)
-        box.Add(self.Canvas, 1, wx.GROW)
+        self.FloatCanvas = FloatCanvas.FloatCanvas(self, **kwargs)
+        box.Add(self.FloatCanvas, 1, wx.GROW)
 
         # self.output = wx.TextCtrl(self, -1, size=(100,100), style=wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
         # box.Add(self.output, 0, wx.GROW)
@@ -128,11 +128,11 @@ class NavCanvas(wx.Panel):
     #         Publisher.sendMessage("clear")
 
     def ZoomToFit(self,Event):
-        self.Canvas.ZoomToBB()
-        self.Canvas.SetFocus() # Otherwise the focus stays on the Button, and wheel events are lost.
+        self.FloatCanvas.ZoomToBB()
+        self.FloatCanvas.SetFocus() # Otherwise the focus stays on the Button, and wheel events are lost.
 
     def ZoomIn(self, Event):
-        self.Canvas.Zoom(1.1)
+        self.FloatCanvas.Zoom(1.1)
 
     def ZoomOut(self, Event):
-        self.Canvas.Zoom(.9)
+        self.FloatCanvas.Zoom(.9)

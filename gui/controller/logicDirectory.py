@@ -62,7 +62,7 @@ class LogicDirectory(ViewDirectory):
             fileName, fileExtension = os.path.splitext(dirpath)
             if fileExtension == ".mdl" or fileExtension == ".sim":
 
-                # todo: HACK!  Should I be calling Logic instead of View???
+                # hack:  Should I be calling Logic instead of View???
                 model_details = LogicModel(self)
                 model_details.Show()
                 # ShowModel = ViewModel(self)

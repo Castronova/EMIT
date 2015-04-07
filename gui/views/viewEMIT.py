@@ -1,13 +1,14 @@
+__author__ = 'Mario'
 from gui.controller.logicDirectory import LogicDirectory
 from gui.controller.logicToolbox import LogicToolbox
+from gui.controller.logicCanvas import LogicCanvas
 
-__author__ = 'Mario'
 import wx
 import wx.html2
 # from DirectoryView import DirectoryCtrlView
 from viewToolbox import ViewToolbox
 import sys
-from viewCanvas import ViewCanvas as Canvas
+# from viewCanvas import ViewCanvas as Canvas
 from wx.lib.pubsub import pub as Publisher
 import wx.lib.agw.aui as aui
 from api.ODM2.Core.services import *
@@ -19,7 +20,7 @@ from viewContext import GeneralContextMenu, TimeSeriesContextMenu, SimulationCon
 
 # todo: refactor
 from .. import objectListViewDatabase as olv
-from ..CanvasController import CanvasController
+# from ..CanvasController import CanvasController
 
 from gui.ContextMenu import ContextMenu
 from ..frmMatPlotLib import MatplotFrame
@@ -52,21 +53,24 @@ class ViewEMIT(wx.Frame):
 
         self.pnlDocking = wx.Panel(id=wx.ID_ANY, name='pnlDocking', parent=self, size=wx.Size(1200, 750),
                                    style=wx.TAB_TRAVERSAL)
-
+        self.parent = parent
 
         self.notebook_pages = {}
 
         self.initMenu()
 
-        self.Directory = LogicDirectory(self.pnlDocking)
-        self.Toolbox = LogicToolbox(self.pnlDocking)
+        # creating components
+        # self.Directory = LogicDirectory(self.pnlDocking)
+        # self.Toolbox = LogicToolbox(self.pnlDocking)
+        self.Directory = LogicDirectory(self)
+        self.Toolbox = LogicToolbox(self)
+        self.Canvas = LogicCanvas(self)
+
         self.Toolbox.Hide()
-
-
         self.initAUIManager()
         self._init_sizers()
 
-        Publisher.subscribe(self.OnPageChange,'ChangePage')
+        Publisher.subscribe(self.OnPageChange, 'ChangePage')
 
         self.filename = None
         self.loadingpath = None
@@ -94,7 +98,13 @@ class ViewEMIT(wx.Frame):
 
         #self.m_mgr.SetFlags(aui.AUI_MGR_DEFAULT)
         # TODO fix circular import error with float canvas
-        self.Canvas = Canvas(self.pnlDocking)
+
+        # TODO: HACK! where is canvas/floatcanvas??
+        # frame = self.parent.Canvas
+        # fc = frame.Canvas
+        # self.Canvas = LogicCanvas(self.pnlDocking,self.FloatCanvas, self.cmd)
+
+        # self.Canvas = Canvas(self.pnlDocking)
 
 
         self.bnb = wx.Notebook(self.pnlDocking)
@@ -220,7 +230,7 @@ class ViewEMIT(wx.Frame):
 
         self.m_mgr.Update()
 
-    def OnSelect(self,event):
+    def OnSelect(self, event):
 
         try:
             selected_page = self.bnb.GetPage(event.GetSelection())

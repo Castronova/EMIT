@@ -40,7 +40,7 @@ class WorkerThread(BaseThread):
         evt.id = model_id
         evt.xCoord = x
         evt.yCoord = y
-        wx.PostEvent(wx.GetApp().frame, evt)
+        wx.PostEvent(wx.GetApp().logicEmit, evt)
 
     def stop(self):
         if self.isAlive():

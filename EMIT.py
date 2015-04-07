@@ -27,7 +27,7 @@ import sys
 # # Class MainFrame
 # ##########################################################################
 
-class MyApp(wx.App):
+class EMITApp(wx.App):
     def OnInit(self):
 
         # create and instance of the coordinator engine
@@ -52,7 +52,8 @@ class MyApp(wx.App):
 
         parent = None
 
-        self.logicEmit = LogicEMIT(parent, self.cmd)
+        # self.logicEmit = LogicEMIT(parent, self.cmd)
+        self.logicEmit = LogicEMIT(None, self.cmd)
 
         self.cmd.connect_to_db([connections_txt])
         if not self.cmd.get_default_db():
@@ -70,7 +71,7 @@ class SysOutListener:
             pass
 
 if __name__ == '__main__':
-    app = MyApp()
+    app = EMITApp()
     app.MainLoop()
 
 

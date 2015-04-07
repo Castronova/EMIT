@@ -145,7 +145,6 @@ class CanvasController:
         else:
             pass
 
-
     def OnMove(self, event):
         """
         Updates the status bar with the world coordinates
@@ -273,7 +272,6 @@ class CanvasController:
         arrow_shape.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
 
         return arrow_shape
-
 
     def addModel(self, filepath, x, y):
         """
@@ -530,8 +528,6 @@ class CanvasController:
 
 
         linkstart.Show()
-
-
 
     def RightClickCb( self, event ):
         menu = wx.Menu()

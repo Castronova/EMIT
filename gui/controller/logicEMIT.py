@@ -36,14 +36,16 @@ from ..LinkFrame import LinkStart
 
 class LogicEMIT(ViewEMIT):
     def __init__(self, parent, cmd):
+        self.cmd = cmd
+        
+        # Start threading
+        self.threadManager = ThreadManager(self)
 
         ViewEMIT.__init__(self, parent)
 
-        self.FloatCanvas = self.Canvas.Canvas
-        self.cmd = cmd
+        self.FloatCanvas = self.Canvas.FloatCanvas
 
-        # Start threading
-        self.threadManager = ThreadManager(self)
+
 
         # This is just to ensure that we are starting without interference from NavToolbar or drag-drop
         self.UnBindAllMouseEvents()

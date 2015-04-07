@@ -295,9 +295,6 @@ class ContextMenu(wx.Menu):
             self.__list_id = list_id
         return self.__list_obj, self.__list_id
 
-
-
-
     def OnAdd(self, event):
 
         obj = self.__list_obj

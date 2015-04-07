@@ -14,7 +14,7 @@ from sample import Sample
 from sample_medium_cv import SampleMediumCV
 from sample_type_cv import SampleTypeCV
 from series import Series
-from ODMconnection import SessionFactory
+# from ODMconnection import SessionFactory
 from site import Site
 from site_type_cv import SiteTypeCV
 from source import Source

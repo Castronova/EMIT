@@ -8,7 +8,7 @@ directory = os.path.dirname(os.path.dirname(os.path.dirname(this_file)))
 sys.path.insert(0, directory)
 
 from .. import serviceBase
-from ODMconnection import SessionFactory
+# from ODMconnection import SessionFactory
 
 
 

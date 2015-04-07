@@ -48,11 +48,12 @@ class EMITApp(wx.App):
         parent = None
 
         # self.logicEmit = LogicEMIT(parent, self.cmd)
-        self.logicEmit = LogicEMIT(None, self.cmd)
-
         self.cmd.connect_to_db([connections_txt])
         if not self.cmd.get_default_db():
             self.cmd.set_default_database()
+
+        self.logicEmit = LogicEMIT(None, self.cmd)
+
 
         return True
 

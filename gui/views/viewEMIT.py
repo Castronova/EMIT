@@ -42,7 +42,7 @@ class ViewEMIT(wx.Frame):
         # creating components
         # self.Directory = LogicDirectory(self.pnlDocking)
         # self.Toolbox = LogicToolbox(self.pnlDocking)
-        self.Directory = LogicDirectory(self)
+        # self.Directory = LogicDirectory(self)
         self.Toolbox = LogicToolbox(self)
         self.Canvas = LogicCanvas(self)
 
@@ -58,7 +58,6 @@ class ViewEMIT(wx.Frame):
         self.Center()
 
         self.Show()
-
 
 
     def _init_sizers(self):
@@ -114,39 +113,29 @@ class ViewEMIT(wx.Frame):
         self.bnb.GetPage(2).SetLabel("Simulations")
 
 
-        self.m_mgr.AddPane(self.Canvas,
-                           aui.AuiPaneInfo().
-                           Center().
-                           Name("Canvas").
-                           Position(0).
-                           CloseButton(False).
-                           MaximizeButton(True).
-                           MinimizeButton(True).
-                           PinButton(False).
-                           Resizable().
-                           # Movable().
-                           Floatable(False).
-                           MinSize(wx.Size(1000, 400)))
+        self.m_mgr.AddPane(self.Canvas, aui.AuiPaneInfo().Center().Name("Canvas").MaximizeButton(False).
+                           MinimizeButton(False).Resizable().Floatable(False).BestSize(wx.Size(1000, 400))
+        )
 
 
-        self.m_mgr.AddPane(self.Directory,
-                           aui.AuiPaneInfo().
-                           Left().
-                           Dock().
-                           CloseButton(False).
-                           MaximizeButton(True).
-                           MinimizeButton(True).
-                           CloseButton(False).
-                           # MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_SMART).
-                           PinButton(False).
-                           Resizable().
-                           MinSize(wx.Size(275,400)).
-                           Minimize().
-                           # Floatable().
-                           # Movable().
-                           # FloatingSize(size=(600, 800)).
-                           Show(show=False).Hide()
-                           )
+        # self.m_mgr.AddPane(self.Directory,
+        #                    aui.AuiPaneInfo().
+        #                    Left().
+        #                    Dock().
+        #                    CloseButton(False).
+        #                    # MaximizeButton(True).
+        #                    # MinimizeButton(True).
+        #                    # CloseButton(False).
+        #                    # MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_SMART).
+        #                    # PinButton(False).
+        #                    Resizable()
+        #                    # MinSize(wx.Size(275, 400))
+        #                    # Minimize().
+        #                    # Floatable().
+        #                    # Movable().
+        #                    # FloatingSize(size=(600, 800)).
+        #                    # Show(show=False).Hide()
+        #                    )
 
         # self.m_mgr.AddPane(self.Directory,
         #                    aui.AuiPaneInfo().
@@ -170,14 +159,14 @@ class ViewEMIT(wx.Frame):
                            aui.AuiPaneInfo().
                            Left().
                            Dock().
-                           # CloseButton(False).
                            MaximizeButton(True).
                            MinimizeButton(True).
                            CloseButton(False).
                            MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_LEFT).
                            # PinButton(True).
-                           # Resizable().
-                           MinSize(wx.Size(275,400)).
+                           Resizable().
+                           # MinSize(wx.Size(275,400)).
+                           BestSize(wx.Size(275, 400)).
                            # Minimize().
                            # Floatable().
                            # Movable().
@@ -190,25 +179,29 @@ class ViewEMIT(wx.Frame):
                            aui.AuiPaneInfo().
                            Bottom().
                            Name("Console").
-                           Position(0).
+                           # Position(0).
                            CloseButton(False).
-                           MaximizeButton(True)
+                           # MaximizeButton(True)
                            # .Movable()
-                           .DockFixed(True)
+                           # .DockFixed(True)
                            # .Movable(False)
-                           .MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_BOTTOM)
+                           # .MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_BOTTOM)
                            # .Minimize()
-                           .MinimizeButton(True).
+                           # .MinimizeButton(True).
                            # PinButton(True).
-                           # Resizable().
+                           Resizable().
+                           BestSize(wx.Size(1200, 200))
                            # Floatable().
-                           MinSize(wx.Size(1200, 200)))
+                           # MinSize(wx.Size(1200, 200))
+        )
 
 
 
-        self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED,self.OnSelect)
+        self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnSelect)
 
         self.m_mgr.Update()
+
+        self._default_perspective = self.m_mgr.SavePerspective()
 
     def OnSelect(self, event):
 
@@ -248,8 +241,7 @@ class ViewEMIT(wx.Frame):
         separator = self.m_viewMenu.Append(wx.NewId(), 'separate', 'separate', wx.ITEM_SEPARATOR)
         MinimizeConsole = self.m_viewMenu.Append(wx.NewId(), '&Console Off', 'Minimizes the Console', wx.ITEM_CHECK)
 
-        # todo: temporarily disabled until we fix the AUI manager bugs
-        # defaultview = self.m_viewMenu.Append(wx.NewId(), '&Default View', 'Returns the view to the default (inital) state', wx.ITEM_NORMAL)
+        defaultview = self.m_viewMenu.Append(wx.NewId(), '&Default View', 'Returns the view to the default (inital) state', wx.ITEM_NORMAL)
 
         self.m_menubar.Append(self.m_viewMenu, "&View")
 
@@ -266,8 +258,14 @@ class ViewEMIT(wx.Frame):
         self.Bind(wx.EVT_MENU, self.onAllFiles, ShowAll)
         self.Bind(wx.EVT_MENU, self.onConsole, MinimizeConsole)
 
-        # todo: temporarily disabled until we fix the AUI manager bugs
-        # self.Bind(wx.EVT_MENU, self.defaultview, defaultview)
+        self.Bind(wx.EVT_MENU, self.defaultview, defaultview)
+
+    def defaultview(self, event):
+        """
+        Restore previously saved perspective
+        """
+        self.m_mgr.LoadPerspective(self._default_perspective)
+
 
     def _postStart(self):
         ## Starts stuff after program has initiated
@@ -452,6 +450,7 @@ class TimeSeries(wx.Panel):
 
         self.connection_refresh_button.Bind(wx.EVT_LEFT_DOWN, self.OLVRefresh)
         self.connection_combobox.Bind(wx.EVT_CHOICE,self.DbChanged)
+        self.connection_combobox.Bind(wx.EVT_COMBOBOX_DROPDOWN, self.RefreshComboBox)
 
 
         # Sizers
@@ -477,6 +476,10 @@ class TimeSeries(wx.Panel):
         # build custom context menu
         menu = TimeSeriesContextMenu(self.m_olvSeries)
         self.m_olvSeries.setContextMenu(menu)
+
+    def RefreshComboBox(self, event):
+        pass
+
 
     def DbChanged(self, event):
         self.OLVRefresh(event)

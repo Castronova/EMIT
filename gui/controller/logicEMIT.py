@@ -124,7 +124,7 @@ class LogicEMIT(ViewEMIT):
                 # logger.debug("Windows left to close: %d" % windowsRemaining)
                 for item in wx.GetTopLevelWindows():
                     #logger.debug("Windows %s" % item)
-                    if not isinstance(item, self.frame.__class__):
+                    if not isinstance(item, self.__class__):
                         if isinstance(item, aui.AuiFloatingFrame):
                             item.Destroy()
                         elif isinstance(item, aui.AuiSingleDockingGuide):
@@ -135,7 +135,7 @@ class LogicEMIT(ViewEMIT):
                             item.Destroy()
                         item.Close()
 
-            self.frame.Destroy()
+            self.Destroy()
             wx.GetApp().ExitMainLoop()
 
         else:

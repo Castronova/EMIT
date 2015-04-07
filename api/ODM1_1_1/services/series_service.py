@@ -3,7 +3,7 @@
 from sqlalchemy import distinct
 import sqlalchemy.exc
 
-from ODMconnection import SessionFactory
+# from ODMconnection import SessionFactory
 from ODM1_1_1 import Site
 from ODM1_1_1 import Variable
 from ODM1_1_1 import Unit

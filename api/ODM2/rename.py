@@ -49,7 +49,7 @@ sys.path.insert(0, directory)
 
 from ... import serviceBase
 from ..model import *
-from ODMconnection import SessionFactory
+# from ODMconnection import SessionFactory
 
 
 

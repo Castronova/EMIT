@@ -12,7 +12,7 @@ from shapely.wkt import loads
 
 from api import dbconnection
 
-#from ODMconnection import SessionFactory
+## from ODMconnection import SessionFactory
 
 from api.ODM2.Core.model import *
 from sqlalchemy import func

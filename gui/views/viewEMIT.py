@@ -5,37 +5,17 @@ from gui.controller.logicCanvas import LogicCanvas
 
 import wx
 import wx.html2
-# from DirectoryView import DirectoryCtrlView
-from viewToolbox import ViewToolbox
 import sys
-# from viewCanvas import ViewCanvas as Canvas
 from wx.lib.pubsub import pub as Publisher
 import wx.lib.agw.aui as aui
-from api.ODM2.Core.services import *
 import logging
 import threading
 from db import dbapi as dbapi
 from wx import richtext
-from viewContext import GeneralContextMenu, TimeSeriesContextMenu, SimulationContextMenu, ConsoleContextMenu
+from viewContext import TimeSeriesContextMenu, SimulationContextMenu, ConsoleContextMenu
 
 # todo: refactor
 from .. import objectListViewDatabase as olv
-# from ..CanvasController import CanvasController
-
-from gui.ContextMenu import ContextMenu
-from ..frmMatPlotLib import MatplotFrame
-from api.ODM2.Simulation.services import readSimulation
-from api.ODM2.Results.services import readResults
-
-#Save Features
-import xml.etree.ElementTree as et
-from xml.dom import minidom
-import datatypes
-
-from threading import Thread
-from functools import wraps
-from itertools import cycle
-import time
 
 from wx.lib.newevent import NewEvent
 wxStdOut, EVT_STDDOUT= NewEvent()

@@ -1,10 +1,9 @@
+
+
 __author__ = 'Mario'
 
-import textwrap as tw
-
 import wx
-
-
+import textwrap as tw
 ver = 'local'
 from utilities import gui
 
@@ -17,9 +16,7 @@ from wx.lib.pubsub import pub as Publisher
 import numpy as N
 import os
 import markdown2
-from gui import CanvasObjects
-# from LinkStart import LinkStart
-from gui.ContextMenu import LinkContextMenu, ModelContextMenu, GeneralContextMenu
+from gui.views.viewContext import LinkContextMenu, ModelContextMenu, GeneralContextMenu
 from wrappers import odm2_data
 import xml.etree.ElementTree as et
 from xml.dom import minidom
@@ -31,20 +28,25 @@ from api.ODM2.Results.services import readResults
 from api.ODM2.Core.services import readCore
 from utilities.threading import EVT_CREATE_BOX, EVT_UPDATE_CONSOLE, ThreadManager
 from matplotlib.pyplot import cm
-from LinkFrame import LinkStart
 
-class CanvasController:
-    def __init__(self, cmd, frame):
+from gui.views.viewCanvas import ViewCanvas
+import gui.controller.logicCanvasObjects as LogicCanvasObjects
 
+# todo: refactor
+# from gui import CanvasObjects
+from ..LinkFrame import LinkStart
 
+class LogicCanvas (ViewCanvas):
+    def __init__(self, parent):
 
-        self.Canvas = frame.Canvas
-        self.FloatCanvas = self.Canvas.Canvas
-        self.cmd = cmd
-        self.frame = frame
+        # intialize the parent class
+        ViewCanvas.__init__(self, parent)
 
-        # Start threading
-        self.threadManager = ThreadManager(self)
+        self.cmd = parent.cmd
+        self.parent = parent
+
+        # # Start threading
+        self.threadManager = parent.threadManager
 
         # This is just to ensure that we are starting without interference from NavToolbar or drag-drop
         self.UnBindAllMouseEvents()
@@ -59,10 +61,8 @@ class CanvasController:
         defaultCursor.Name = 'default'
         self._Cursor = defaultCursor
 
-        #self.Canvas.ZoomToFit(Event=None)
-
-        dt = FileDrop(self, self.Canvas, self.cmd)
-        self.Canvas.SetDropTarget(dt)
+        dt = FileDrop(self, self.FloatCanvas, self.cmd)
+        self.FloatCanvas.SetDropTarget(dt)
 
         self.linkRects = []
         self.links = {}
@@ -75,28 +75,24 @@ class CanvasController:
         self.loadingpath = None
 
     def UnBindAllMouseEvents(self):
-        ## Here is how you unbind FloatCanvas mouse events
-        self.Canvas.Unbind(FC.EVT_LEFT_DOWN)
-        self.Canvas.Unbind(FC.EVT_LEFT_UP)
-        self.Canvas.Unbind(FC.EVT_LEFT_DCLICK)
-        self.Canvas.Unbind(FC.EVT_MIDDLE_DOWN)
-        self.Canvas.Unbind(FC.EVT_MIDDLE_UP)
-        self.Canvas.Unbind(FC.EVT_MIDDLE_DCLICK)
-        self.Canvas.Unbind(FC.EVT_RIGHT_DOWN)
-        self.Canvas.Unbind(FC.EVT_RIGHT_UP)
-        self.Canvas.Unbind(FC.EVT_RIGHT_DCLICK)
-
+        self.Unbind(FC.EVT_LEFT_DOWN)
+        self.Unbind(FC.EVT_LEFT_UP)
+        self.Unbind(FC.EVT_LEFT_DCLICK)
+        self.Unbind(FC.EVT_MIDDLE_DOWN)
+        self.Unbind(FC.EVT_MIDDLE_UP)
+        self.Unbind(FC.EVT_MIDDLE_DCLICK)
+        self.Unbind(FC.EVT_RIGHT_DOWN)
+        self.Unbind(FC.EVT_RIGHT_UP)
+        self.Unbind(FC.EVT_RIGHT_DCLICK)
         self.EventsAreBound = False
 
     def initBindings(self):
-        self.FloatCanvas.Bind(FC.EVT_MOTION, self.OnMove )
-        self.FloatCanvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp )
-        # self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.onRightDown)
-        # self.FloatCanvas.Bind(FC.EVT_LEFT_DOWN, self.onLeftDown)
+        self.FloatCanvas.Bind(FC.EVT_MOTION, self.OnMove)
+        self.FloatCanvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp)
         self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.LaunchContext)
-        self.frame.Bind(wx.EVT_CLOSE, self.onClose)
-        self.frame.Bind(EVT_CREATE_BOX, self.onCreateBox)
-        self.frame.Bind(EVT_UPDATE_CONSOLE, self.onUpdateConsole)
+        self.Bind(wx.EVT_CLOSE, self.onClose)
+        self.Bind(EVT_CREATE_BOX, self.onCreateBox)
+        self.Bind(EVT_UPDATE_CONSOLE, self.onUpdateConsole)
 
     def initSubscribers(self):
         Publisher.subscribe(self.createBox, "createBox")
@@ -151,33 +147,32 @@ class CanvasController:
 
         if self.Moving:
             dxy = event.GetPosition() - self.StartPoint
+
             # Draw the Moving Object:
             dc = wx.ClientDC(self.FloatCanvas)
             dc.SetPen(wx.Pen('WHITE', 2, wx.SHORT_DASH))
             dc.SetBrush(wx.TRANSPARENT_BRUSH)
             dc.SetLogicalFunction(wx.XOR)
+
             if self.MoveObject is not None:
                 dc.DrawPolygon(self.MoveObject)
             self.MoveObject = self.StartObject + dxy
+
             dc.DrawPolygon(self.MoveObject)
 
     def onUpdateConsole(self, evt):
         """
         Updates the output console
         """
-        #print "onUpdateConsole: ", evt.message
         if evt.message:
             print "DEBUG|", evt.message
-            #self.frame.output.log.AppendText(evt.message + '\n')
 
     def onCreateBox(self, evt):
-        # self.threadManager.dispatcher.putOutput("Creating box")
         name = evt.name
         id = evt.id
         x = evt.xCoord
         y = evt.yCoord
         self.createBox(xCoord=x, yCoord=y, id=id, name=name)
-        # self.threadManager.dispatcher.putOutput("finish Creating box")
 
     def createBox(self, xCoord, yCoord, id=None, name=None, color='#A2CAF5'):
 
@@ -187,7 +182,7 @@ class CanvasController:
             FontSize = 14
 
             # get the coordinates for the rounded rectangle
-            rect_coords = CanvasObjects.build_rounded_rectangle((x,y), width=w, height=h)
+            rect_coords = LogicCanvasObjects.build_rounded_rectangle((x,y), width=w, height=h)
 
             R = self.FloatCanvas.AddObject(FC.Polygon(rect_coords,FillColor=color,InForeground=True))
 
@@ -197,7 +192,7 @@ class CanvasController:
             R.xy = (x,y)
 
             # set the shape type so that we can identify it later
-            R.type = CanvasObjects.ShapeType.Model
+            R.type = LogicCanvasObjects.ShapeType.Model
 
             width = 15
             wrappedtext = tw.wrap(unicode(name), width)
@@ -211,7 +206,7 @@ class CanvasController:
 
 
             # set the type of this object so that we can find it later
-            label.type = CanvasObjects.ShapeType.Label
+            label.type = LogicCanvasObjects.ShapeType.Label
 
             # add this text as an attribute of the rectangle
             R.Text = label
@@ -232,13 +227,13 @@ class CanvasController:
         x2,y2  = (R2.BoundingBox[0] + (R2.wh[0]/2, R2.wh[1]/2))
 
         cmap = cm.Blues
-        line = CanvasObjects.get_line_pts((x1,y1),(x2,y2),order=4, num=200)
-        linegradient = CanvasObjects.get_hex_from_gradient(cmap, len(line))
+        line = LogicCanvasObjects.get_line_pts((x1,y1),(x2,y2),order=4, num=200)
+        linegradient = LogicCanvasObjects.get_hex_from_gradient(cmap, len(line))
         linegradient.reverse()
 
         for i in range(0,len(line)-1):
             l = FC.Line((line[i],line[i+1]),LineColor=linegradient[i],LineWidth=2,InForeground=False)
-            l.type = CanvasObjects.ShapeType.Link
+            l.type = LogicCanvasObjects.ShapeType.Link
             self.FloatCanvas.AddObject(l)
 
         arrow_shape = self.createArrow(line)
@@ -255,13 +250,13 @@ class CanvasController:
 
     def createArrow(self, line):
 
-        arrow = CanvasObjects.build_arrow(line, arrow_length=6)
+        arrow = LogicCanvasObjects.build_arrow(line, arrow_length=6)
 
         # create the arrowhead object
         arrow_shape = FC.Polygon(arrow,FillColor='Blue',InForeground=True)
 
         # set the shape type so that we can identify it later
-        arrow_shape.type = CanvasObjects.ShapeType.ArrowHead
+        arrow_shape.type = LogicCanvasObjects.ShapeType.ArrowHead
         self.FloatCanvas.AddObject(arrow_shape)
 
         # bind the arrow to left click
@@ -538,18 +533,18 @@ class CanvasController:
 
     def RedrawConfiguration(self):
         # clear lines from drawlist
-        self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != CanvasObjects.ShapeType.Link]
+        self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != LogicCanvasObjects.ShapeType.Link]
 
         # remove any arrowheads from the _ForeDrawList
-        self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if obj.type != CanvasObjects.ShapeType.ArrowHead]
+        self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if obj.type != LogicCanvasObjects.ShapeType.ArrowHead]
 
         # remove any models
         i = 0
         modelids = [model.ID for model in self.models]
         modellabels = [model.Name for model in self.models]
         self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList
-                                          if (obj.type == CanvasObjects.ShapeType.Model and obj.ID in modelids)
-                                          or (obj.type == CanvasObjects.ShapeType.Label and obj.String in modellabels)]
+                                          if (obj.type == LogicCanvasObjects.ShapeType.Model and obj.ID in modelids)
+                                          or (obj.type == LogicCanvasObjects.ShapeType.Label and obj.String in modellabels)]
 
         # redraw links
         for link in self.links.keys():
@@ -569,11 +564,11 @@ class CanvasController:
 
 
                 # clear lines from drawlist
-                self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != CanvasObjects.ShapeType.Link]
+                self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != LogicCanvasObjects.ShapeType.Link]
 
                 # remove any arrowheads from the two FloatCanvas DrawLists
-                self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if obj.type != CanvasObjects.ShapeType.ArrowHead]
-                self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != CanvasObjects.ShapeType.ArrowHead]
+                self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if obj.type != LogicCanvasObjects.ShapeType.ArrowHead]
+                self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != LogicCanvasObjects.ShapeType.ArrowHead]
 
                 # redraw links
                 for link in self.links.keys():
@@ -1035,12 +1030,11 @@ class CanvasController:
             self.cmd.run_simulation()
         except Exception as e:
             wx.MessageBox(str(e.args[0]), 'Error',wx.OK | wx.ICON_ERROR)
-
 class FileDrop(wx.FileDropTarget):
-    def __init__(self, controller, window, cmd):
+    def __init__(self, controller, FloatCanvas, cmd):
         wx.FileDropTarget.__init__(self)
         self.controller = controller
-        self.window = window
+        self.FloatCanvas = FloatCanvas
         self.cmd = cmd
         Publisher.subscribe(self.OnDropFiles, 'toolboxclick')
 
@@ -1052,7 +1046,7 @@ class FileDrop(wx.FileDropTarget):
         self.OnDropFiles(x,y,filenames)
 
     def OnDropFiles(self, x, y, filenames):
-        originx, originy = self.window.Canvas.PixelToWorld((0,0))
+        originx, originy = self.FloatCanvas.PixelToWorld((0,0))
 
         x = x + originx
         y = originy - y
@@ -1119,40 +1113,42 @@ class FileDrop(wx.FileDropTarget):
 
             # draw a box for this model
             self.controller.createBox(name=inst.name(), id=inst.id(), xCoord=x, yCoord=y, color='#FFFF99')
-            self.window.Canvas.Draw()
+            self.FloatCanvas.Draw()
 
 
-    def getObj(self,resultID):
 
-        session = self.getDbSession()
+    # def getObj(self,resultID):
+    #
+    #     session = self.getDbSession()
+    #
+    #     core = readCore(session)
+    #     obj = core.getResultByID(resultID=int(resultID))
+    #
+    #     session.close()
+    #
+    #     return obj
+    #
+    # def getData(self,resultID):
+    #
+    #
+    #     session = self.getDbSession()
+    #     readres = readResults(session)
+    #     results = readres.getTimeSeriesValuesByResultId(resultId=int(resultID))
+    #
+    #     core = readCore(session)
+    #     obj = core.getResultByID(resultID=int(resultID))
+    #
+    #     dates = []
+    #     values = []
+    #     for val in results:
+    #         dates.append(val.ValueDateTime)
+    #         values.append(val.DataValue)
+    #
+    #     session.close()
+    #
+    #     return dates,values,obj
 
-        core = readCore(session)
-        obj = core.getResultByID(resultID=int(resultID))
-
-        session.close()
-
-        return obj
-
-    def getData(self,resultID):
-
-
-        session = self.getDbSession()
-        readres = readResults(session)
-        results = readres.getTimeSeriesValuesByResultId(resultId=int(resultID))
-
-        core = readCore(session)
-        obj = core.getResultByID(resultID=int(resultID))
-
-        dates = []
-        values = []
-        for val in results:
-            dates.append(val.ValueDateTime)
-            values.append(val.DataValue)
-
-        session.close()
-
-        return dates,values,obj
-
+# DELETEME
 menu_titles = [ "Open",
                 "Properties",
                 "Rename",

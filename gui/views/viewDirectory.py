@@ -2,7 +2,7 @@ import os
 import wx
 import wx.xrc
 from wx.lib.pubsub import pub as Publisher
-
+from gui.views.viewDirectoryListControl import ViewDirectoryListControl
 
 import utilities
 from utilities import gui, spatial
@@ -12,7 +12,8 @@ from gui.views.viewModel import ViewModel
 
 
 # todo: refactor
-from ..DirectoryLstCtrl import DirectoryListCtrl
+# from ..DirectoryLstCtrl import DirectoryListCtrl
+from gui.controller.logicDirectoryListControl import LogicDirectoryListControl
 from ..images import icons
 
 
@@ -27,7 +28,8 @@ class ViewDirectory(wx.Panel):
                                        wx.TE_READONLY|wx.TE_CHARWRAP)
         self.textCtrl.SetValue(os.getcwd())
 
-        self.dirCtrl = DirectoryListCtrl(self, wx.ID_ANY, wx.DefaultPosition, wx.Size(1000, 400), wx.LC_REPORT)
+        # self.dirCtrl = ViewDirectoryListControl(self, wx.ID_ANY, wx.DefaultPosition, wx.Size(1000, 400), wx.LC_REPORT)
+        self.dirCtrl = LogicDirectoryListControl(self, wx.Size(1000, 400), wx.LC_REPORT)
 
         self.toolbar = self.iconToolBar()
 

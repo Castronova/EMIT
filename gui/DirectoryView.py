@@ -12,15 +12,13 @@ import os
 import wx
 import wx.xrc
 from wx.lib.pubsub import pub as Publisher
+from shapely import wkt
 
 from DirectoryLstCtrl import DirectoryListCtrl
 from images import icons
-from txtctrlModel import ModelTxtCtrl, MyTree
-
-from ContextMenu import DirectoryContextMenu, ModelContextMenu
-import utilities
+from txtctrlModel import ModelTxtCtrl
+from gui.ContextMenu import DirectoryContextMenu
 from utilities import gui, spatial
-from shapely import wkt
 
 ###########################################################################
 ## Class directoryCtrlPanel

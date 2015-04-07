@@ -16,20 +16,18 @@ from wx.lib.pubsub import pub as Publisher
 import numpy as N
 import os
 import markdown2
-# from LinkStart import LinkStart
 from wrappers import odm2_data
 import xml.etree.ElementTree as et
 from xml.dom import minidom
 from transform.space import SpatialInterpolation
 from transform.time import TemporalInterpolation
-
 import datatypes
 from utilities.threading import EVT_CREATE_BOX, EVT_UPDATE_CONSOLE, ThreadManager
 from matplotlib.pyplot import cm
-
 from gui.views.viewEMIT import ViewEMIT
 from gui.views.viewContext import LinkContextMenu, ModelContextMenu, GeneralContextMenu
 import gui.controller.logicCanvasObjects as LogicCanvasObjects
+
 
 # todo: refactor
 from ..LinkFrame import LinkStart

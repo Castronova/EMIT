@@ -1,27 +1,22 @@
 #!/usr/bin/env python2
-import sys
 from gui.controller.logicEMIT import LogicEMIT
 
 __author__ = 'Mario'
 
 
 import os
-
+import sys
 import wx
 import wx.xrc
 import wx.aui
 
-import gui.log as log
 from coordinator import main as cmd
-from gui.mainGui import MainGui, wxStdOut
-from gui.CanvasController import CanvasController
-import logging
-import threading
 
 #sys.path.append(os.path.abspath(os.path.join(os.path.abspath(__file__),'../../odm2/src')))
 
-from gui.mainGui import MainGui, wxStdOut
-import sys
+# todo: refactor
+from gui.mainGui import wxStdOut
+
 
 # ##########################################################################
 # # Class MainFrame

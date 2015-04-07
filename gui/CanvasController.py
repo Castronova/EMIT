@@ -523,7 +523,7 @@ class CanvasController:
         # outputitems = to_model.get_input_exchange_items()
 
 
-        linkstart = LinkStart(self.FloatCanvas, from_model, to_model)
+        linkstart = LinkStart(self.FloatCanvas, from_model, to_model, self.cmd)
 
 
         linkstart.Show()

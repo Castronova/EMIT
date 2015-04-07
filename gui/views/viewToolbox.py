@@ -1,17 +1,8 @@
 __author__ = 'Mario'
 import wx
-import os
-import ConfigParser
-from os.path import *
-import fnmatch
 import wx.lib.customtreectrl as CT
-import utilities
-from wx.lib.pubsub import pub as Publisher
-import random
 
 # todo: refactor
-from ..txtctrlModel import ModelTxtCtrl
-from ..ContextMenu import TreeItemContextMenu
 from ..images import icons
 
 class ViewToolbox(wx.Panel):

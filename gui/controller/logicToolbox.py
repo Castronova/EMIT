@@ -5,6 +5,7 @@ __author__ = 'tonycastronova'
 
 from gui.views.viewToolbox import ViewToolbox
 from gui.views.viewContext import TreeItemContextMenu
+from gui.controller.logicModel import LogicModel
 
 import wx
 from wx.lib.pubsub import pub as Publisher
@@ -13,7 +14,7 @@ import ConfigParser
 import fnmatch
 
 # todo: refactor
-from ..txtctrlModel import ModelTxtCtrl
+from gui.views.viewModel import ViewModel
 
 class LogicToolbox(ViewToolbox):
 
@@ -164,11 +165,12 @@ class LogicToolbox(ViewToolbox):
 
         filepath = self.filepath.get(key)
 
-        view = ModelTxtCtrl(self, spatial=False)
-        view.PopulateDetails(filepath)
-        view.PopulateEdit(filepath)
-        view.PopulateSummary(filepath)
-        view.Show()
+        kwargs = {'spatial':False}
+        model_details = LogicModel(self,**kwargs)
+        model_details.PopulateDetails(filepath)
+        model_details.PopulateEdit(filepath)
+        model_details.PopulateSummary(filepath)
+        model_details.Show()
 
 class multidict(dict):
     _unique = 0

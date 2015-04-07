@@ -8,11 +8,12 @@ import utilities
 from utilities import gui, spatial
 from shapely import wkt
 from viewContext import DirectoryContextMenu, ModelContextMenu
+from gui.views.viewModel import ViewModel
+
 
 # todo: refactor
 from ..DirectoryLstCtrl import DirectoryListCtrl
 from ..images import icons
-from ..txtctrlModel import ModelTxtCtrl, MyTree
 
 
 [PreviousID, UpID, HomeID, SaveID, RefreshID, TerminalID, HelpID] = [wx.NewId() for _init_ctrls in range(7)]
@@ -78,7 +79,7 @@ class ViewDirectory(wx.Panel):
     def ShowDetails(self):
 
         # create the details view
-        view = ModelTxtCtrl(self, spatial=False)
+        view = ViewModel(self, spatial=False)
 
 
         # load the file contents

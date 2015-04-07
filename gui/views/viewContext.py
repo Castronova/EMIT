@@ -6,9 +6,7 @@ from utilities import spatial
 from api.ODM2.Simulation.services import readSimulation
 from wx.lib.pubsub import pub as Publisher, __all__
 import wx
-
-#todo: refactor
-from ..txtctrlModel import ModelTxtCtrl
+from gui.controller.logicModel import LogicModel
 
 
 
@@ -89,25 +87,28 @@ class ModelContextMenu(wx.Menu):
         # create a frame to bind the details page to
         f = wx.Frame(self.GetParent())
 
-        # create the details view (no edit)
-        view = ModelTxtCtrl(f, edit=False)
-
         # get the input geometries
         ogeoms = spatial.get_output_geoms(self.cmd, id)
 
         # get the output geometries
         igeoms = spatial.get_input_geoms(self.cmd, id)
 
+        # todo: HACK! should all of this be in the LogicModel?
+        # create the details view (no edit)
+        # view = ViewModel(f, edit=False)
+        kwargs = {'edit':False}
+        model_details = LogicModel(f, **kwargs)
+
         # load geometry data
-        view.PopulateSpatialGeoms(ogeoms, type='output')
-        view.PopulateSpatialGeoms(igeoms, type='input')
+        model_details.PopulateSpatialGeoms(ogeoms, type='output')
+        model_details.PopulateSpatialGeoms(igeoms, type='input')
 
         atts = self.cmd.get_model_by_id(self.model_obj.ID)._Model__attrib
         if 'mdl' in atts.keys():
             mdl_path= self.cmd.get_model_by_id(self.model_obj.ID)._Model__attrib['mdl']
-            view.PopulateSummary(mdl_path)
+            model_details.PopulateSummary(mdl_path)
 
-        view.Show()
+        model_details.Show()
 
     def PopupDisplay(self, e):
         self.parent.DetailView(e)

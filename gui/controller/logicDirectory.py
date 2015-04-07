@@ -1,7 +1,9 @@
 import os
 from gui.views.viewDirectory import ViewDirectory, HomeID, PreviousID, UpID, RefreshID
 from gui.views.viewContext import DirectoryContextMenu
-from gui.txtctrlModel import ModelTxtCtrl
+from gui.views.viewModel import ViewModel
+from gui.controller.logicModel import LogicModel
+
 from wx.lib.pubsub import pub as Publisher
 
 __author__ = 'tonycastronova'
@@ -20,11 +22,11 @@ class LogicDirectory(ViewDirectory):
 
     def initBindings(self):
 
-        # # List control events
+        # List control events
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnClick)
         self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnDClick)
 
-        # # Toolbar events
+        # Toolbar events
         self.Bind(wx.EVT_TOOL, self.OnHomeClick, id=HomeID)
         self.Bind(wx.EVT_TOOL, self.OnBackClick, id=PreviousID)
         self.Bind(wx.EVT_TOOL, self.OnUpClick, id=UpID)
@@ -42,26 +44,30 @@ class LogicDirectory(ViewDirectory):
 
 
     def OnDClick(self, event):
-        ## Check if clicked Item is a directory
+        # Check if clicked Item is a directory
         dirpath = os.path.join(os.getcwd(), event.GetText())
-        # print "> Dirpath is a file?: ", os.path.isfile(dirpath)
         if os.path.isdir(dirpath):
-            # print "> Changing path to: ", dirpath
+
             try:
                 self.directoryStack.append(os.getcwd())
                 os.chdir(dirpath)
+
             except Exception, e:
                 self.directoryStack.append(os.getcwd())
                 os.chdir('..')
                 print "ERROR|", e
+
         elif os.path.isfile(dirpath):
+
             fileName, fileExtension = os.path.splitext(dirpath)
-            # print "> Execute me", fileExtension
             if fileExtension == ".mdl" or fileExtension == ".sim":
 
-                ShowModel = ModelTxtCtrl(self)
-                ShowModel.Show()
-                # Publisher.sendMessage('texteditpath', fileExtension=dirpath)
+                # todo: HACK!  Should I be calling Logic instead of View???
+                model_details = LogicModel(self)
+                model_details.Show()
+                # ShowModel = ViewModel(self)
+                # ShowModel.Show()
+
                 Publisher.sendMessage('textsavepath', fileExtension=dirpath)
 
         self.dirCtrl.clearItems()
@@ -70,9 +76,6 @@ class LogicDirectory(ViewDirectory):
     ## Tool bar events
     def OnHomeClick(self, event):
         dirpath = self.dirCtrl.gethomepath()
-        #currentdir = os.path.dirname(os.path.realpath(__file__))
-        #home = os.path.join(currentdir,'../tests/data')
-        #dirpath = os.path.abspath(home)
 
         try:
             self.directoryStack.append(dirpath)
@@ -91,9 +94,6 @@ class LogicDirectory(ViewDirectory):
         self.dirCtrl.clearItems()
 
     def OnBackClick(self, event):
-        # print 10*'-'
-        # for d in self.directoryStack:
-        #     print d
         if len(self.directoryStack) > 0:
             self.directoryStack.pop()
             os.chdir(self.directoryStack[-1])
@@ -105,7 +105,6 @@ class LogicDirectory(ViewDirectory):
         id = event.GetIndex()
         filename = obj.GetItem(id).GetText()
         dirname = self.dirCtrl.getcurrentdirectory()
-        #dirname = os.path.dirname(os.path.abspath(os.listdir(".")[0]))
         fullpath = str(os.path.join(dirname, filename))
 
         data.AddFile(fullpath)
@@ -113,7 +112,6 @@ class LogicDirectory(ViewDirectory):
         dropSource = wx.DropSource(obj)
         dropSource.SetData(data)
         result = dropSource.DoDragDrop()
-       #print fullpath
 
     def OnRightClick(self, event):
         self.dirCtrl.PopupMenu(DirectoryContextMenu(self, event), event.GetPosition())

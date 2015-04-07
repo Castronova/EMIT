@@ -96,7 +96,7 @@ class ModelContextMenu(wx.Menu):
         # todo: HACK! should all of this be in the LogicModel?
         # create the details view (no edit)
         # view = ViewModel(f, edit=False)
-        kwargs = {'edit':False}
+        kwargs = {'edit':False,'spatial':True}
         model_details = LogicModel(f, **kwargs)
 
         # load geometry data

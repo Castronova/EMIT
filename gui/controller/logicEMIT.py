@@ -29,9 +29,9 @@ from matplotlib.pyplot import cm
 
 from gui.views.viewEMIT import ViewEMIT
 from gui.views.viewContext import LinkContextMenu, ModelContextMenu, GeneralContextMenu
+import gui.controller.logicCanvasObjects as LogicCanvasObjects
 
 # todo: refactor
-from .. import CanvasObjects
 from ..LinkFrame import LinkStart
 
 class LogicEMIT(ViewEMIT):
@@ -188,7 +188,7 @@ class LogicEMIT(ViewEMIT):
             FontSize = 14
 
             # get the coordinates for the rounded rectangle
-            rect_coords = CanvasObjects.build_rounded_rectangle((x,y), width=w, height=h)
+            rect_coords = LogicCanvasObjects.build_rounded_rectangle((x,y), width=w, height=h)
 
             R = self.FloatCanvas.AddObject(FC.Polygon(rect_coords,FillColor=color,InForeground=True))
 
@@ -198,7 +198,7 @@ class LogicEMIT(ViewEMIT):
             R.xy = (x,y)
 
             # set the shape type so that we can identify it later
-            R.type = CanvasObjects.ShapeType.Model
+            R.type = LogicCanvasObjects.ShapeType.Model
 
             width = 15
             wrappedtext = tw.wrap(unicode(name), width)
@@ -212,7 +212,7 @@ class LogicEMIT(ViewEMIT):
 
 
             # set the type of this object so that we can find it later
-            label.type = CanvasObjects.ShapeType.Label
+            label.type = LogicCanvasObjects.ShapeType.Label
 
             # add this text as an attribute of the rectangle
             R.Text = label
@@ -233,13 +233,13 @@ class LogicEMIT(ViewEMIT):
         x2,y2  = (R2.BoundingBox[0] + (R2.wh[0]/2, R2.wh[1]/2))
 
         cmap = cm.Blues
-        line = CanvasObjects.get_line_pts((x1,y1),(x2,y2),order=4, num=200)
-        linegradient = CanvasObjects.get_hex_from_gradient(cmap, len(line))
+        line = LogicCanvasObjects.get_line_pts((x1,y1),(x2,y2),order=4, num=200)
+        linegradient = LogicCanvasObjects.get_hex_from_gradient(cmap, len(line))
         linegradient.reverse()
 
         for i in range(0,len(line)-1):
             l = FC.Line((line[i],line[i+1]),LineColor=linegradient[i],LineWidth=2,InForeground=False)
-            l.type = CanvasObjects.ShapeType.Link
+            l.type = LogicCanvasObjects.ShapeType.Link
             self.FloatCanvas.AddObject(l)
 
         arrow_shape = self.createArrow(line)
@@ -252,17 +252,17 @@ class LogicEMIT(ViewEMIT):
         self.links[arrow_shape] = [R1,R2]
 
 
-        self.Canvas.Canvas.Draw()
+        self.FloatCanvas.Draw()
 
     def createArrow(self, line):
 
-        arrow = CanvasObjects.build_arrow(line, arrow_length=6)
+        arrow = LogicCanvasObjects.build_arrow(line, arrow_length=6)
 
         # create the arrowhead object
         arrow_shape = FC.Polygon(arrow,FillColor='Blue',InForeground=True)
 
         # set the shape type so that we can identify it later
-        arrow_shape.type = CanvasObjects.ShapeType.ArrowHead
+        arrow_shape.type = LogicCanvasObjects.ShapeType.ArrowHead
         self.FloatCanvas.AddObject(arrow_shape)
 
         # bind the arrow to left click
@@ -539,18 +539,18 @@ class LogicEMIT(ViewEMIT):
 
     def RedrawConfiguration(self):
         # clear lines from drawlist
-        self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != CanvasObjects.ShapeType.Link]
+        self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != LogicCanvasObjects.ShapeType.Link]
 
         # remove any arrowheads from the _ForeDrawList
-        self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if obj.type != CanvasObjects.ShapeType.ArrowHead]
+        self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if obj.type != LogicCanvasObjects.ShapeType.ArrowHead]
 
         # remove any models
         i = 0
         modelids = [model.ID for model in self.models]
         modellabels = [model.Name for model in self.models]
         self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList
-                                          if (obj.type == CanvasObjects.ShapeType.Model and obj.ID in modelids)
-                                          or (obj.type == CanvasObjects.ShapeType.Label and obj.String in modellabels)]
+                                          if (obj.type == LogicCanvasObjects.ShapeType.Model and obj.ID in modelids)
+                                          or (obj.type == LogicCanvasObjects.ShapeType.Label and obj.String in modellabels)]
 
         # redraw links
         for link in self.links.keys():
@@ -570,11 +570,11 @@ class LogicEMIT(ViewEMIT):
 
 
                 # clear lines from drawlist
-                self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != CanvasObjects.ShapeType.Link]
+                self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != LogicCanvasObjects.ShapeType.Link]
 
                 # remove any arrowheads from the two FloatCanvas DrawLists
-                self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if obj.type != CanvasObjects.ShapeType.ArrowHead]
-                self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != CanvasObjects.ShapeType.ArrowHead]
+                self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if obj.type != LogicCanvasObjects.ShapeType.ArrowHead]
+                self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != LogicCanvasObjects.ShapeType.ArrowHead]
 
                 # redraw links
                 for link in self.links.keys():

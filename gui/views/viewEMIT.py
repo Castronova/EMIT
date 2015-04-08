@@ -48,7 +48,7 @@ class ViewEMIT(wx.Frame):
         self.initAUIManager()
         self._init_sizers()
 
-        Publisher.subscribe(self.OnPageChange, 'ChangePage')
+        # Publisher.subscribe(self.OnPageChange, 'ChangePage')
 
         self.filename = None
         self.loadingpath = None
@@ -63,10 +63,7 @@ class ViewEMIT(wx.Frame):
         self.s.AddWindow(self.pnlDocking, 85, flag=wx.ALL | wx.EXPAND)
         self.SetSizer(self.s)
 
-    def OnPageChange(self, page):
 
-        index = self.notebook_pages[page]
-        self.bnb.SetSelection(index)
 
     def initAUIManager(self):
 
@@ -170,6 +167,11 @@ class ViewEMIT(wx.Frame):
         self.m_mgr.Update()
 
         self._default_perspective = self.m_mgr.SavePerspective()
+
+    # def OnPageChange(self, page):
+    #
+    #     index = self.notebook_pages[page]
+    #     self.bnb.SetSelection(index)
 
     def OnSelect(self, event):
 
@@ -829,7 +831,6 @@ class SimulationDataTable(DataSeries):
                 # set the current database in canvas controller
                 Publisher.sendMessage('SetCurrentDb',value=selected_db)  # sends to CanvasController.getCurrentDbSession
 
-
 class consoleOutput(wx.Panel):
 
     def __init__(self, parent):
@@ -865,7 +866,6 @@ class consoleOutput(wx.Panel):
 
     def onRightUp(self, event):
         self.log.PopupMenu(ConsoleContextMenu(self, event))
-
 
 class RedirectText(object):
 

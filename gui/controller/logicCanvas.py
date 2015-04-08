@@ -39,14 +39,13 @@ from ..LinkFrame import LinkStart
 class LogicCanvas (ViewCanvas):
     def __init__(self, parent):
 
+        self.cmd = parent.cmd
+        self.threadManager = parent.threadManager
+
         # intialize the parent class
         ViewCanvas.__init__(self, parent)
 
-        self.cmd = parent.cmd
         self.parent = parent
-
-        # # Start threading
-        self.threadManager = parent.threadManager
 
         # This is just to ensure that we are starting without interference from NavToolbar or drag-drop
         self.UnBindAllMouseEvents()
@@ -118,9 +117,7 @@ class LogicCanvas (ViewCanvas):
             windowsRemaining = len(wx.GetTopLevelWindows())
             if windowsRemaining > 0:
                 import wx.lib.agw.aui.framemanager as aui
-                # logger.debug("Windows left to close: %d" % windowsRemaining)
                 for item in wx.GetTopLevelWindows():
-                    #logger.debug("Windows %s" % item)
                     if not isinstance(item, self.frame.__class__):
                         if isinstance(item, aui.AuiFloatingFrame):
                             item.Destroy()
@@ -246,7 +243,7 @@ class LogicCanvas (ViewCanvas):
         self.links[arrow_shape] = [R1,R2]
 
 
-        self.Canvas.Canvas.Draw()
+        self.FloatCanvas.Draw()
 
     def createArrow(self, line):
 
@@ -274,10 +271,10 @@ class LogicCanvas (ViewCanvas):
         :return: None
         """
 
-        x0 = self.Canvas.MinWidth / 2.
-        y0 = self.Canvas.MinHeight / 2.
+        x0 = self.FloatCanvas.MinWidth / 2.
+        y0 = self.FloatCanvas.MinHeight / 2.
 
-        originx, originy = self.Canvas.Canvas.PixelToWorld((0,0))
+        originx, originy = self.FloatCanvas.PixelToWorld((0,0))
         x = x0 +originx
         y = originy - y0
 
@@ -344,7 +341,7 @@ class LogicCanvas (ViewCanvas):
 
             # draw a box for this model
             self.createBox(name=inst.name(), id=inst.id(), xCoord=x, yCoord=y, color='#FFFF99')
-            self.Canvas.Canvas.Draw()
+            self.FloatCanvas.Draw()
 
     def RemoveLink(self, link_obj):
 
@@ -412,7 +409,7 @@ class LogicCanvas (ViewCanvas):
         # populate model view
         if cur.Name == 'default':
             # get the model view container
-            mainGui = self.Canvas.GetTopLevelParent()
+            mainGui = self.GetTopLevelParent()
             mv = mainGui.Children[0].FindWindowByName('notebook').GetPage(1)
 
             #mv = self.Canvas.GetTopLevelParent().m_mgr.GetPane(n
@@ -484,13 +481,13 @@ class LogicCanvas (ViewCanvas):
             self.FloatCanvas.SetMode(self.Canvas.GuiMouse)
 
     def GetHitObject(self, event, HitEvent):
-        if self.Canvas.Canvas.HitDict:
+        if self.FloatCanvas.HitDict:
             # check if there are any objects in the dict for this event
-            if self.Canvas.Canvas.HitDict[ HitEvent ]:
+            if self.FloatCanvas.HitDict[ HitEvent ]:
                 xy = event.GetPosition()
-                color = self.Canvas.Canvas.GetHitTestColor( xy )
-                if color in self.Canvas.Canvas.HitDict[ HitEvent ]:
-                    Object = self.Canvas.Canvas.HitDict[ HitEvent ][color]
+                color = self.FloatCanvas.GetHitTestColor( xy )
+                if color in self.FloatCanvas.HitDict[ HitEvent ]:
+                    Object = self.FloatCanvas.HitDict[ HitEvent ][color]
                     return Object
             return False
 
@@ -1003,16 +1000,16 @@ class LogicCanvas (ViewCanvas):
 
         # if canvas is selected
         if type(event) == wx.lib.floatcanvas.FloatCanvas._MouseEvent:
-            self.Canvas.PopupMenu(GeneralContextMenu(self), event.GetPosition())
+            self.PopupMenu(GeneralContextMenu(self), event.GetPosition())
 
         elif type(event) == wx.lib.floatcanvas.FloatCanvas.Polygon:
             #if object is link
             if event.type == "ArrowHead":
-                self.Canvas.PopupMenu(LinkContextMenu(self,event), event.HitCoordsPixel.Get())
+                self.PopupMenu(LinkContextMenu(self,event), event.HitCoordsPixel.Get())
 
             # if object is model
             elif event.type == 'Model':
-                self.Canvas.PopupMenu(ModelContextMenu(self,event), event.HitCoordsPixel.Get())
+                self.PopupMenu(ModelContextMenu(self,event), event.HitCoordsPixel.Get())
 
         #self.Canvas.ClearAll()
         #self.Canvas.Draw()
@@ -1030,6 +1027,7 @@ class LogicCanvas (ViewCanvas):
             self.cmd.run_simulation()
         except Exception as e:
             wx.MessageBox(str(e.args[0]), 'Error',wx.OK | wx.ICON_ERROR)
+
 class FileDrop(wx.FileDropTarget):
     def __init__(self, controller, FloatCanvas, cmd):
         wx.FileDropTarget.__init__(self)

@@ -40,9 +40,7 @@ class ViewEMIT(wx.Frame):
         self.initMenu()
 
         # creating components
-        # self.Directory = LogicDirectory(self.pnlDocking)
-        # self.Toolbox = LogicToolbox(self.pnlDocking)
-        # self.Directory = LogicDirectory(self)
+        self.Directory = LogicDirectory(self)
         self.Toolbox = LogicToolbox(self)
         self.Canvas = LogicCanvas(self)
 
@@ -113,86 +111,56 @@ class ViewEMIT(wx.Frame):
         self.bnb.GetPage(2).SetLabel("Simulations")
 
 
-        self.m_mgr.AddPane(self.Canvas, aui.AuiPaneInfo().Center().Name("Canvas").MaximizeButton(False).
-                           MinimizeButton(False).Resizable().Floatable(False).BestSize(wx.Size(1000, 400))
+        self.m_mgr.AddPane(self.Canvas,
+                           aui.AuiPaneInfo().
+                           Center().
+                           Name("Canvas").
+                           MaximizeButton(False).
+                           MinimizeButton(False).
+                           Floatable(False).
+                           BestSize(wx.Size(1000, 400))
         )
 
-
-        # self.m_mgr.AddPane(self.Directory,
-        #                    aui.AuiPaneInfo().
-        #                    Left().
-        #                    Dock().
-        #                    CloseButton(False).
-        #                    # MaximizeButton(True).
-        #                    # MinimizeButton(True).
-        #                    # CloseButton(False).
-        #                    # MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_SMART).
-        #                    # PinButton(False).
-        #                    Resizable()
-        #                    # MinSize(wx.Size(275, 400))
-        #                    # Minimize().
-        #                    # Floatable().
-        #                    # Movable().
-        #                    # FloatingSize(size=(600, 800)).
-        #                    # Show(show=False).Hide()
-        #                    )
-
-        # self.m_mgr.AddPane(self.Directory,
-        #                    aui.AuiPaneInfo().
-        #                    Left().
-        #                    Dock().
-        #                    CloseButton(False).
-        #                    MaximizeButton(True).
-        #                    MinimizeButton(True).
-        #                    MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_SMART).
-        #                    PinButton(True).
-        #                    Resizable().
-        #                    MinSize(wx.Size(275,400)).
-        #                    Minimize().
-        #                    Floatable().
-        #                    Movable().
-        #                    FloatingSize(size=(600, 800)).
-        #                    Show(show=False).Hide().
-        #                    CloseButton(True))
+        self.m_mgr.AddPane(self.Directory,
+                           aui.AuiPaneInfo().
+                           Left().
+                           Dock().
+                           CloseButton(False).
+                           MaximizeButton(False).
+                           MinimizeButton(False).
+                           PinButton(False).
+                           BestSize(wx.Size(275, 400)).
+                           Floatable(False).
+                           Movable(False).
+                           Show(show=False).Hide()
+                           )
 
         self.m_mgr.AddPane(self.Toolbox,
                            aui.AuiPaneInfo().
                            Left().
                            Dock().
-                           MaximizeButton(True).
-                           MinimizeButton(True).
+                           Name("Toolbox").
                            CloseButton(False).
-                           MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_LEFT).
-                           # PinButton(True).
-                           Resizable().
-                           # MinSize(wx.Size(275,400)).
+                           MaximizeButton(False).
+                           MinimizeButton(False).
+                           PinButton(False).
                            BestSize(wx.Size(275, 400)).
-                           # Minimize().
-                           # Floatable().
-                           # Movable().
-                           # FloatingSize(size=(600, 800)).
-                           Show(show=True))
-
-
+                           Floatable(False).
+                           Movable(False).
+                           Show(show=True)
+                           )
 
         self.m_mgr.AddPane(self.bnb,
                            aui.AuiPaneInfo().
                            Bottom().
                            Name("Console").
-                           # Position(0).
                            CloseButton(False).
-                           # MaximizeButton(True)
-                           # .Movable()
-                           # .DockFixed(True)
-                           # .Movable(False)
-                           # .MinimizeMode(mode=aui.framemanager.AUI_MINIMIZE_POS_BOTTOM)
-                           # .Minimize()
-                           # .MinimizeButton(True).
-                           # PinButton(True).
-                           Resizable().
+                           MaximizeButton(False).
+                           MinimizeButton(False).
+                           PinButton(False).
+                           Movable(False).
+                           Floatable(False).
                            BestSize(wx.Size(1200, 200))
-                           # Floatable().
-                           # MinSize(wx.Size(1200, 200))
         )
 
 

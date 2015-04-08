@@ -32,6 +32,7 @@ class LinkStart ( wx.Frame ):
         self.InitUI()
         self.InitBindings()
         self.l = None
+        self.OnStartUp()
 
     def InitUI(self):
         # Set the Top Panel:
@@ -303,7 +304,9 @@ class LinkStart ( wx.Frame ):
         # l.spatial_interpolation(spatial)
         # l.temporal_interpolation(temporal)
 
-
+    def OnStartUp(self):
+        Links = self.cmd.get_links_btwn_models(self.output, self.input)
+        [self.LinkNameListBox.Append(str(i)) for i in Links]
 
     def __del__( self ):
         pass

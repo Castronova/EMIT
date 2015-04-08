@@ -22,7 +22,7 @@ from transform.space import *
 class LinkStart ( wx.Frame ):
 
     def __init__( self, parent, output, input, cmd):
-        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( 550,525 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( 550,560 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 
         # self.SetBackgroundColour(wx.BLACK)
         self.input = input
@@ -31,12 +31,20 @@ class LinkStart ( wx.Frame ):
         # self.InterpolationComboBoxChoices()
         self.InitUI()
         self.InitBindings()
+        self.l = None
 
     def InitUI(self):
         # Set the Top Panel:
         self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
 
         FrameSizer = wx.BoxSizer( wx.VERTICAL )
+
+        self.LinkTitle_staticText = wx.StaticText( self, wx.ID_ANY, u"Select Add to Create a New Link", wx.Point( -1,-1 ), wx.DefaultSize, 0 )
+        self.LinkTitle_staticText.Wrap( -1 )
+        FrameSizer.Add( self.LinkTitle_staticText, 0, wx.ALL, 5 )
+
+
+        FrameSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
 
         self.LinkStartPanel = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
         LinkStartSizer = wx.BoxSizer( wx.HORIZONTAL )
@@ -73,7 +81,7 @@ class LinkStart ( wx.Frame ):
         # OutputComboBoxChoices = []
         OutChoice = self.OutputComboBoxChoices()
         self.OutputComboBox = wx.ComboBox( self.ExchangeItemSizer, wx.ID_ANY, OutChoice[0],
-                                           wx.DefaultPosition, wx.Size( 250,35 ), OutChoice, 0 )
+                                           wx.DefaultPosition, wx.Size( 250,-1 ), OutChoice, 0 )
         OutputSizer.Add( self.OutputComboBox, 0, wx.ALL, 5 )
 
         self.OutputDataTreeCtrl = wx.dataview.DataViewTreeCtrl( self.ExchangeItemSizer, id=wx.ID_ANY,
@@ -84,45 +92,34 @@ class LinkStart ( wx.Frame ):
         self.Temporal_staticText.Wrap( -1 )
         OutputSizer.Add( self.Temporal_staticText, 0, wx.ALL, 5 )
 
-        OutputSizer.AddSpacer( (0,12), 0, wx.EXPAND, 5)
+        OutputSizer.AddSpacer( (0,12), 0, wx.EXPAND, 5) # This is to make sure that the static text stays the same distance apart
 
         self.Spatial_staticText = wx.StaticText( self.ExchangeItemSizer, wx.ID_ANY, u"Spatial Interpolation", wx.DefaultPosition, wx.DefaultSize, 0 )
         self.Spatial_staticText.Wrap( -1 )
         OutputSizer.Add( self.Spatial_staticText, 0, wx.ALL, 5 )
 
-        # self.on_select_output(wx.EVT)
 
-        # self.temporal_label = wx.StaticText(self, label = 'Temporal Interpolation: ', pos = (20,280))
-        # self.spatial_label = wx.StaticText(self, label = 'Spatial Interpolation: ', pos = (20, 300))
-
-        # OutputSizer.AddSpacer( ( 20, 100), 0, wx.EXPAND, 5 )
-        # OutputSizer.Add(self.temporal_label)
-        # OutputSizer.AddSpacer( ( 20, 10), 0, wx.EXPAND, 5 )
-        # OutputSizer.Add(self.spatial_label)
         ExchangeItemSizer.Add( OutputSizer, 1, wx.EXPAND, 5 )
 
         InputSizer = wx.BoxSizer( wx.VERTICAL )
 
         InChoice = self.InputComboBoxChoices()
         self.InputComboBox = wx.ComboBox( self.ExchangeItemSizer, wx.ID_ANY, InChoice[0],
-                                          wx.DefaultPosition, wx.Size( 250,35 ), InChoice, 0 )
+                                          wx.DefaultPosition, wx.Size( 250,-1 ), InChoice, 0 )
         InputSizer.Add( self.InputComboBox, 0, wx.ALL, 5 )
 
         self.InputDataTreeCtrl = wx.dataview.DataViewTreeCtrl( self.ExchangeItemSizer, id=wx.ID_ANY,
                                                                       pos=wx.DefaultPosition, size=wx.Size( 250,150 ),
                                                                       style=wx.dataview.DV_NO_HEADER )
-        # self.on_select_input(wx.EVT)
         InputSizer.Add( self.InputDataTreeCtrl, 0, wx.ALL, 5 )
 
-        # ComboBoxTemporalChoices = []
-        TemporalChoices = self.TemporalInterpolationChoices()
+        TemporalChoices = self.TemporalInterpolationChoices() #Create the choices for the Temporal Interpolation Combobox
         self.ComboBoxTemporal = wx.ComboBox( self.ExchangeItemSizer, wx.ID_ANY, u"No interpolation",
                                              wx.DefaultPosition, wx.Size( 300,-1 ),
                                              TemporalChoices, 0 )
         InputSizer.Add( self.ComboBoxTemporal, 0, wx.ALL, 5 )
 
-        # ComboBoxSpatialChoices = []
-        SpatialChoices = self.SpatialInterpolationChoices()
+        SpatialChoices = self.SpatialInterpolationChoices() #Create the choices for the Spatial Interpolation Combobox
         self.ComboBoxSpatial = wx.ComboBox( self.ExchangeItemSizer, wx.ID_ANY, u"No interpolation",
                                             wx.DefaultPosition, wx.Size( 300,-1 ),
                                             SpatialChoices, 0 )
@@ -171,16 +168,27 @@ class LinkStart ( wx.Frame ):
         self.Centre( wx.BOTH )
 
     def InitBindings(self):
+        self.LinkNameListBox.Bind(wx.EVT_LISTBOX, self.OnChange)
         self.ButtonNew.Bind(wx.EVT_BUTTON, self.OnSave)
         self.ButtonNew.Bind(wx.EVT_BUTTON, self.NewButton)
-        # self.ButtonNew.Bind(wx.EVT_BUTTON, self.on_select_output)
-        # self.ButtonNew.Bind(wx.EVT_BUTTON, self.on_select_input)
         self.ComboBoxTemporal.Bind(wx.EVT_COMBOBOX, self.on_select_temporal)
         self.ComboBoxSpatial.Bind(wx.EVT_COMBOBOX, self.on_select_spatial)
         self.ButtonClose.Bind(wx.EVT_BUTTON, self.OnClose)
         self.OutputComboBox.Bind(wx.EVT_COMBOBOX, self.on_select_output)
         self.InputComboBox.Bind(wx.EVT_COMBOBOX, self.on_select_input)
         self.ButtonSave.Bind(wx.EVT_BUTTON, self.OnSave)
+
+    def OnChange(self, event):
+        LinkObject = self.cmd.get_link_by_id(event.GetString())
+        OutputObject = LinkObject.source_exchange_item()
+        InputObject = LinkObject.target_exchange_item()
+        OutputName = OutputObject._ExchangeItem__name
+        InputName = InputObject._ExchangeItem__name
+        self.OutputComboBox.SetStringSelection(OutputName)
+        self.InputComboBox.SetStringSelection(InputName)
+        self.ComboBoxTemporal.SetStringSelection(str(LinkObject._Link__temporal_interpolation))
+        self.ComboBoxSpatial.SetStringSelection(str(LinkObject._Link__spatial_interpolation))
+        self.l = LinkObject
 
     def NewButton(self, event):
         self.on_select_input(event)
@@ -265,10 +273,12 @@ class LinkStart ( wx.Frame ):
     def on_select_spatial(self, event):
         spatial_value = self.ComboBoxSpatial.GetValue()
         self.spatial_interpolation = self.spatial_transformations[spatial_value]
+        self.l.spatial_interpolation(spatial_value)
 
     def on_select_temporal(self, event):
         temporal_value = self.ComboBoxTemporal.GetValue()
         self.temporal_interpolation = self.temporal_transformations[temporal_value]
+        self.l.temporal_interpolation(temporal_value)
 
     def get_spatial_and_temporal_transformations(self):
 
@@ -290,8 +300,8 @@ class LinkStart ( wx.Frame ):
                           self.input._Model__id, self.InputComboBox.GetValue())
 
         # set interpolations
-        l.spatial_interpolation(spatial)
-        l.temporal_interpolation(temporal)
+        # l.spatial_interpolation(spatial)
+        # l.temporal_interpolation(temporal)
 
 
 

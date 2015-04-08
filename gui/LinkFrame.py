@@ -80,10 +80,20 @@ class LinkStart ( wx.Frame ):
                                                                       pos=wx.DefaultPosition, size=wx.Size( 250,150 ),
                                                                       style=wx.dataview.DV_NO_HEADER)
         OutputSizer.Add( self.OutputDataTreeCtrl, 0, wx.ALL, 5 )
+        self.Temporal_staticText = wx.StaticText( self.ExchangeItemSizer, wx.ID_ANY, u"Temporal Interpolation", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.Temporal_staticText.Wrap( -1 )
+        OutputSizer.Add( self.Temporal_staticText, 0, wx.ALL, 5 )
+
+        OutputSizer.AddSpacer( (0,12), 0, wx.EXPAND, 5)
+
+        self.Spatial_staticText = wx.StaticText( self.ExchangeItemSizer, wx.ID_ANY, u"Spatial Interpolation", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.Spatial_staticText.Wrap( -1 )
+        OutputSizer.Add( self.Spatial_staticText, 0, wx.ALL, 5 )
+
         # self.on_select_output(wx.EVT)
 
-        self.temporal_label = wx.StaticText(self, label = 'Temporal Interpolation: ', pos = (20,280))
-        self.spatial_label = wx.StaticText(self, label = 'Spatial Interpolation: ', pos = (20, 300))
+        # self.temporal_label = wx.StaticText(self, label = 'Temporal Interpolation: ', pos = (20,280))
+        # self.spatial_label = wx.StaticText(self, label = 'Spatial Interpolation: ', pos = (20, 300))
 
         # OutputSizer.AddSpacer( ( 20, 100), 0, wx.EXPAND, 5 )
         # OutputSizer.Add(self.temporal_label)
@@ -107,14 +117,14 @@ class LinkStart ( wx.Frame ):
         # ComboBoxTemporalChoices = []
         TemporalChoices = self.TemporalInterpolationChoices()
         self.ComboBoxTemporal = wx.ComboBox( self.ExchangeItemSizer, wx.ID_ANY, u"No interpolation",
-                                             wx.DefaultPosition, wx.Size( 300,30 ),
+                                             wx.DefaultPosition, wx.Size( 300,-1 ),
                                              TemporalChoices, 0 )
         InputSizer.Add( self.ComboBoxTemporal, 0, wx.ALL, 5 )
 
         # ComboBoxSpatialChoices = []
         SpatialChoices = self.SpatialInterpolationChoices()
         self.ComboBoxSpatial = wx.ComboBox( self.ExchangeItemSizer, wx.ID_ANY, u"No interpolation",
-                                            wx.DefaultPosition, wx.Size( 300,30 ),
+                                            wx.DefaultPosition, wx.Size( 300,-1 ),
                                             SpatialChoices, 0 )
         InputSizer.Add( self.ComboBoxSpatial, 0, wx.ALL, 5 )
 

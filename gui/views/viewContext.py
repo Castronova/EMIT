@@ -1,13 +1,12 @@
 __author__ = 'tonycastronova'
 from api.ODM2.Core.services import readCore
 from api.ODM2.Results.services import readResults
-from gui.frmMatPlotLib import MatplotFrame
 from utilities import spatial
 from api.ODM2.Simulation.services import readSimulation
 from wx.lib.pubsub import pub as Publisher, __all__
 import wx
 from gui.controller.logicModel import LogicModel
-
+from gui.controller.logicPlot import LogicPlot
 
 
 #todo:  this needs to be split up into view and logic code
@@ -354,8 +353,9 @@ class ContextMenu(wx.Menu):
                 # save the variable and units to validate future time series
                 variable = resobj.VariableObj.VariableCode
                 units = resobj.UnitObj.UnitsName
-
-                PlotFrame = MatplotFrame(self.Parent, title, ylabel=xlabel)
+                # from gui.frmMatPlotLib import MatplotFrame
+                # PlotFrame = MatplotFrame(self.Parent, title, ylabel=xlabel)
+                PlotFrame = LogicPlot(self.Parent, title, ylabel=xlabel)
 
             if resobj.VariableObj.VariableCode == variable and resobj.UnitObj.UnitsName == units:
                 # store the x and Y data
@@ -465,7 +465,8 @@ class SimulationContextMenu(ContextMenu):
                 units = resobj.UnitObj.UnitsName
                 title = '%s: %s [%s]' % (name, variable,units)
 
-                PlotFrame = MatplotFrame(self.Parent, ylabel=ylabel, title=title)
+                # PlotFrame = MatplotFrame(self.Parent, ylabel=ylabel, title=title)
+                PlotFrame = LogicPlot(self.Parent, ylabel=ylabel, title=title)
 
                 for x,y,resobj in results[key]:
                     # store the x and Y data

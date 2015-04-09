@@ -40,7 +40,8 @@ class LogicCanvas (ViewCanvas):
     def __init__(self, parent):
 
         self.cmd = parent.cmd
-        self.threadManager = parent.threadManager
+        #self.threadManager = parent.threadManager
+        self.threadManager = ThreadManager(self)
 
         # intialize the parent class
         ViewCanvas.__init__(self, parent)
@@ -1058,8 +1059,15 @@ class FileDrop(wx.FileDropTarget):
 
                     dtype = datatypes.ModelTypes.FeedForward
                     kwargs = dict(x=x, y=y, type=dtype, attrib={'mdl': filenames[0]})
-                    task = ('addmodel', kwargs)
-                    self.controller.threadManager.dispatcher.putTask(task)
+
+                    model = self.cmd.add_model(type=dtype, id=None, attrib={'mdl': filenames[0]})
+
+                    #def createBox(self, xCoord, yCoord, id=None, name=None, color='#A2CAF5'):
+                    self.controller.createBox(x,y,model.get_id(), model.get_name())
+
+                    # hack:  this is not working anymore!?
+                    #task = ('addmodel', kwargs)
+                    #self.controller.threadManager.dispatcher.putTask(task)
 
                 else:
                     # load the simulation

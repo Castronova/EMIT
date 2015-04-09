@@ -37,7 +37,7 @@ class LogicEMIT(ViewEMIT):
         self.cmd = cmd
 
         # Start threading
-        self.threadManager = ThreadManager(self)
+        #self.threadManager = ThreadManager(self)
 
         ViewEMIT.__init__(self, parent)
 
@@ -73,20 +73,24 @@ class LogicEMIT(ViewEMIT):
         self._currentDbSession = self.cmd.get_default_db()
         self.loadingpath = None
 
+
+    # todo: remove the function
     def UnBindAllMouseEvents(self):
-        ## Here is how you unbind FloatCanvas mouse events
-        self.Canvas.Unbind(FC.EVT_LEFT_DOWN)
-        self.Canvas.Unbind(FC.EVT_LEFT_UP)
-        self.Canvas.Unbind(FC.EVT_LEFT_DCLICK)
-        self.Canvas.Unbind(FC.EVT_MIDDLE_DOWN)
-        self.Canvas.Unbind(FC.EVT_MIDDLE_UP)
-        self.Canvas.Unbind(FC.EVT_MIDDLE_DCLICK)
-        self.Canvas.Unbind(FC.EVT_RIGHT_DOWN)
-        self.Canvas.Unbind(FC.EVT_RIGHT_UP)
-        self.Canvas.Unbind(FC.EVT_RIGHT_DCLICK)
+        pass
+        # ## Here is how you unbind FloatCanvas mouse events
+        # self.Canvas.Unbind(FC.EVT_LEFT_DOWN)
+        # self.Canvas.Unbind(FC.EVT_LEFT_UP)
+        # self.Canvas.Unbind(FC.EVT_LEFT_DCLICK)
+        # self.Canvas.Unbind(FC.EVT_MIDDLE_DOWN)
+        # self.Canvas.Unbind(FC.EVT_MIDDLE_UP)
+        # self.Canvas.Unbind(FC.EVT_MIDDLE_DCLICK)
+        # self.Canvas.Unbind(FC.EVT_RIGHT_DOWN)
+        # self.Canvas.Unbind(FC.EVT_RIGHT_UP)
+        # self.Canvas.Unbind(FC.EVT_RIGHT_DCLICK)
+        #
+        # self.EventsAreBound = False
 
-        self.EventsAreBound = False
-
+    # todo: remove the function
     def initBindings(self):
         pass
         # self.FloatCanvas.Bind(FC.EVT_MOTION, self.OnMove)
@@ -140,6 +144,7 @@ class LogicEMIT(ViewEMIT):
         else:
             pass
 
+    # todo: remove the function
     def OnMove(self, event):
         """
         Updates the status bar with the world coordinates
@@ -1094,11 +1099,11 @@ class LogicEMIT(ViewEMIT):
         #     wx.MessageBox(str(e.args[0]), 'Error',wx.OK | wx.ICON_ERROR)
 
 
-menu_titles = [ "Open",
-                "Properties",
-                "Rename",
-                "Delete" ]
-
-menu_title_by_id = {}
-for title in menu_titles:
-    menu_title_by_id[ wx.NewId() ] = title
+# menu_titles = [ "Open",
+#                 "Properties",
+#                 "Rename",
+#                 "Delete" ]
+#
+# menu_title_by_id = {}
+# for title in menu_titles:
+#     menu_title_by_id[ wx.NewId() ] = title

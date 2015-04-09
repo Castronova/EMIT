@@ -1,8 +1,6 @@
 #!/usr/bin/env python2
-import sys
 
 __author__ = 'Mario'
-
 
 import os
 
@@ -10,12 +8,9 @@ import wx
 import wx.xrc
 import wx.aui
 
-import gui.log as log
+# import gui.log as log
 from coordinator import main as cmd
-from gui.mainGui import MainGui, wxStdOut
 from gui.CanvasController import CanvasController
-import logging
-import threading
 
 #sys.path.append(os.path.abspath(os.path.join(os.path.abspath(__file__),'../../odm2/src')))
 

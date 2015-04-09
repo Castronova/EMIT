@@ -9,14 +9,13 @@ This approach was inspired by Christian Blouin, who also wrote the initial
 version of the code.
 
 """
-from wx.lib.pubsub import pub as Publisher
 import wx
 ## fixme: events should live in their own module, so all of FloatCanvas
 ##        wouldn't have to be imported here.
-from wx.lib.floatcanvas import FloatCanvas, Resources, NavCanvas
+from wx.lib.floatcanvas import FloatCanvas, Resources
 from wx.lib.floatcanvas.Utilities import BBox
 import numpy as N
-from CanvasController import CanvasController
+from gui.CanvasController import CanvasController
 from wx.lib.pubsub import pub as Publisher
 
 class Cursors(object):
@@ -107,6 +106,7 @@ class GUIBase(object):
         so the Rubber Band Box can get updated. Other GUIModes may require something similar
         """
         pass
+
 
 ## some mix-ins for use with the other modes:
 class ZoomWithMouseWheel():

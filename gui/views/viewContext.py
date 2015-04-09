@@ -158,7 +158,7 @@ class GeneralContextMenu(wx.Menu):
 
     def OnAddLink(self, e):
 
-        self.parent.FloatCanvas.SetMode(self.parent.Canvas.GuiLink)
+        self.parent.FloatCanvas.SetMode(self.parent.GuiLink)
 
     def OnClickRun(self, e):
 

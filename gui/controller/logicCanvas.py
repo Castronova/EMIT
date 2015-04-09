@@ -31,10 +31,12 @@ from matplotlib.pyplot import cm
 
 from gui.views.viewCanvas import ViewCanvas
 import gui.controller.logicCanvasObjects as LogicCanvasObjects
+from gui.controller.logicLink import LogicLink
+
 
 # todo: refactor
 # from gui import CanvasObjects
-from ..LinkFrame import LinkStart
+# from ..LinkFrame import LinkStart
 
 class LogicCanvas (ViewCanvas):
     def __init__(self, parent):
@@ -479,7 +481,7 @@ class LogicCanvas (ViewCanvas):
             self.linkRects=[]
 
             #change the mouse cursor
-            self.FloatCanvas.SetMode(self.Canvas.GuiMouse)
+            self.FloatCanvas.SetMode(self.GuiMouse)
 
     def GetHitObject(self, event, HitEvent):
         if self.FloatCanvas.HitDict:
@@ -514,7 +516,7 @@ class LogicCanvas (ViewCanvas):
         # outputitems = to_model.get_input_exchange_items()
 
 
-        linkstart = LinkStart(self.FloatCanvas, from_model, to_model)
+        linkstart = LogicLink(self.FloatCanvas, from_model, to_model, self.cmd)
 
 
         linkstart.Show()

@@ -29,9 +29,6 @@ from gui.views.viewContext import LinkContextMenu, ModelContextMenu, GeneralCont
 import gui.controller.logicCanvasObjects as LogicCanvasObjects
 
 
-# todo: refactor
-from ..LinkFrame import LinkStart
-
 class LogicEMIT(ViewEMIT):
     def __init__(self, parent, cmd):
         self.cmd = cmd

@@ -1,29 +1,20 @@
-from utilities.threading import ThreadManager
-
 __author__ = 'tonycastronova'
 
-
-import os
-import sys
 
 #sys.path.append(os.path.abspath(os.path.join(os.path.abspath(__file__),'../../../odm2/src')))
 
 
-import sys, getopt
+import threading
+
+import networkx as net
+
 from coordinator import help as h
 from utilities.gui import *
 from utilities.mdl import *
-
-import math
-import networkx as net
-import threading
-from api.ODM2.Simulation.services import readSimulation
-from api.ODM2.Simulation.services import createSimulation
 from api.ODM2.Core.services import readCore
+
 # from ODM2.Core.services import readCore
-from db.dbapi import postgresdb
 #import wrappers
-import time
 
 from transform import space_base
 from transform import time_base
@@ -37,8 +28,6 @@ import datatypes
 
 import run
 import inspect
-
-from gui.async import *
 
 
 """
@@ -284,7 +273,6 @@ class Coordinator(object):
     def get_default_db(self):
         return self.__default_db
 
-    # @threaded
     def add_model(self, type=None, id=None, attrib=None):
         """
         stores model component objects when added to a configuration

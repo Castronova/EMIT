@@ -1,13 +1,15 @@
 import unittest
-from gui.CanvasController import CanvasController
+
+from gui import CanvasController
 from gui.mainGui import MainGui
 from coordinator import main as cmd
+
 
 __author__ = 'mario'
 
 import wx
 
-from wx.lib.floatcanvas.FloatCanvas import FloatCanvas as FC, EVT_FC_LEFT_DOWN
+from wx.lib.floatcanvas.FloatCanvas import EVT_FC_LEFT_DOWN
 
 myNewEvent, EVT_DEMO_EVENT = wx.lib.newevent.NewEvent()
 

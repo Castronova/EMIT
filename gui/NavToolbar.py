@@ -6,9 +6,12 @@ A Panel that includes the FloatCanvas and Navigation controls
 
 import wx
 from wx.lib.floatcanvas import FloatCanvas
-from images import icons
-import GUIControl as GUIMode
 from wx.lib.pubsub import pub as Publisher
+
+from images import icons
+from gui import GUIControl as GUIMode
+
+
 # from wx.lib.floatcanvas import GUIControl as GUIMode
 
 class NavCanvas(wx.Panel):

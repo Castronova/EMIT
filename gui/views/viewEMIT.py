@@ -13,9 +13,10 @@ import threading
 from db import dbapi as dbapi
 from wx import richtext
 from viewContext import TimeSeriesContextMenu, SimulationContextMenu, ConsoleContextMenu
+from gui.controller.logicDatabase import LogicDatabase
 
 # todo: refactor
-from .. import objectListViewDatabase as olv
+# from .. import objectListViewDatabase as olv
 
 from wx.lib.newevent import NewEvent
 wxStdOut, EVT_STDDOUT= NewEvent()
@@ -244,7 +245,6 @@ class ViewEMIT(wx.Frame):
     def __del__(self):
         self.m_mgr.UnInit()
 
-
     def LoadConfiguration(self,event):
 
 
@@ -313,8 +313,6 @@ class ViewEMIT(wx.Frame):
 
         self.loadingpath = save.GetPath()
         Publisher.sendMessage('SetSavePath',path=save.GetPath()) #send message to canvascontroller.SaveSimulation
-
-
 
     def onDirectory(self, event):
         ToolboxPane = self.m_mgr.GetPane(self.Toolbox)
@@ -410,7 +408,8 @@ class TimeSeries(wx.Panel):
 
         self.connection_refresh_button = wx.Button(self, wx.ID_ANY, u"Refresh", wx.DefaultPosition, wx.DefaultSize, 0)
         self.addConnectionButton = wx.Button( self, wx.ID_ANY, u"Add Connection", wx.DefaultPosition, wx.DefaultSize, 0 )
-        self.m_olvSeries = olv.OlvSeries(self, pos = wx.DefaultPosition, size = wx.DefaultSize, id = wx.ID_ANY, style=wx.LC_REPORT|wx.SUNKEN_BORDER  )
+        self.m_olvSeries = LogicDatabase(self, pos=wx.DefaultPosition, size=wx.DefaultSize, id=wx.ID_ANY,
+                                         style=wx.LC_REPORT|wx.SUNKEN_BORDER)
         self.table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
         self.m_olvSeries.DefineColumns(self.table_columns)
 
@@ -622,28 +621,30 @@ class DataSeries(wx.Panel):
     """
 
     def __init__( self, parent ):
-        wx.Panel.__init__ ( self, parent, id = wx.ID_ANY, pos = wx.DefaultPosition, size = wx.Size( 500,500 ), style = wx.TAB_TRAVERSAL )
+        wx.Panel.__init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.Size(500, 500),
+                          style=wx.TAB_TRAVERSAL)
 
         self._databases = {}
         self._connection_added = True
 
         connection_choices = []
-        self.connection_combobox = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.Size(200, 23), connection_choices, 0)
+        self.connection_combobox = wx.Choice(self, wx.ID_ANY, wx.DefaultPosition, wx.Size(200, 23), connection_choices,
+                                             0)
         self.__selected_choice_idx = 0
         self.connection_combobox.SetSelection(0)
 
         self.connection_refresh_button = wx.Button(self, wx.ID_ANY, u"Refresh", wx.DefaultPosition, wx.DefaultSize, 0)
-        self.addConnectionButton = wx.Button( self, wx.ID_ANY, u"Add Connection", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.addConnectionButton = wx.Button(self, wx.ID_ANY, u"Add Connection", wx.DefaultPosition, wx.DefaultSize, 0)
 
-        self.table = olv.OlvSeries(self, pos = wx.DefaultPosition, size = wx.DefaultSize, id = wx.ID_ANY, style=wx.LC_REPORT|wx.SUNKEN_BORDER  )
+        self.table = LogicDatabase(self, pos=wx.DefaultPosition, size=wx.DefaultSize, id=wx.ID_ANY,
+                                   style=wx.LC_REPORT | wx.SUNKEN_BORDER)
 
         # Bindings
         self.addConnectionButton.Bind(wx.EVT_LEFT_DOWN, self.AddConnection)
         self.addConnectionButton.Bind(wx.EVT_MOUSEWHEEL, self.AddConnection_MouseWheel)
 
         self.connection_refresh_button.Bind(wx.EVT_LEFT_DOWN, self.database_refresh)
-        self.connection_combobox.Bind(wx.EVT_CHOICE,self.DbChanged)
-
+        self.connection_combobox.Bind(wx.EVT_CHOICE, self.DbChanged)
 
         # Sizers
         seriesSelectorSizer = wx.BoxSizer( wx.VERTICAL )

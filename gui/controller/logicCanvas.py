@@ -315,7 +315,7 @@ class LogicCanvas (ViewCanvas):
             from coordinator import main
             # create a model instance
             thisModel = main.Model(id=inst.id(),
-                                   name=inst.name(),
+                                   name='\n'.join([inst.name(),inst.id()]),
                                    instance=inst,
                                    desc=inst.description(),
                                    input_exchange_items= [],
@@ -341,7 +341,7 @@ class LogicCanvas (ViewCanvas):
             self.cmd.Models(thisModel)
 
             # draw a box for this model
-            self.createBox(name=inst.name(), id=inst.id(), xCoord=x, yCoord=y, color='#FFFF99')
+            self.createBox(name='\n'.join([inst.name(),inst.id()]), id=inst.id(), xCoord=x, yCoord=y, color='#FFFF99')
             self.FloatCanvas.Draw()
 
     def RemoveLink(self, link_obj):

@@ -1,8 +1,6 @@
 #!/usr/bin/env python2
-<<<<<<< HEAD
-from gui.controller.logicEMIT import LogicEMIT
-=======
->>>>>>> 1d3f20129f56f4ff9e21bba6f5e30008d633b5c3
+
+
 
 __author__ = 'Mario'
 
@@ -12,15 +10,8 @@ import wx
 import wx.xrc
 import wx.aui
 
-<<<<<<< HEAD
+from gui.controller.logicEMIT import LogicEMIT
 from coordinator import main as cmd
-=======
-# import gui.log as log
-from coordinator import main as cmd
-from gui.CanvasController import CanvasController
->>>>>>> 1d3f20129f56f4ff9e21bba6f5e30008d633b5c3
-
-#sys.path.append(os.path.abspath(os.path.join(os.path.abspath(__file__),'../../odm2/src')))
 
 # todo: refactor
 from gui.mainGui import wxStdOut

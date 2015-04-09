@@ -239,7 +239,7 @@ class ViewEMIT(wx.Frame):
 
     def _postStart(self):
         ## Starts stuff after program has initiated
-        self.Canvas.ZoomToFit(Event=None)
+        self.Canvas.ZoomToFit(event=None)
 
     def __del__(self):
         self.m_mgr.UnInit()

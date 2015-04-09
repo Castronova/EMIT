@@ -18,20 +18,12 @@ import numpy as N
 import os
 import markdown2
 from gui import CanvasObjects
-# from LinkStart import LinkStart
-<<<<<<< HEAD
-from gui.ContextMenu import LinkContextMenu, ModelContextMenu, GeneralContextMenu
-=======
-# from LinkCreationFrame import LinkCreationFrame
-# from LinkDetailsContext import LinkDetailsContextActivatedFrame as LDCAF
 from ContextMenu import LinkContextMenu, ModelContextMenu, GeneralContextMenu
->>>>>>> 1d3f20129f56f4ff9e21bba6f5e30008d633b5c3
 from wrappers import odm2_data
 import xml.etree.ElementTree as et
 from xml.dom import minidom
 from transform.space import SpatialInterpolation
 from transform.time import TemporalInterpolation
-
 import datatypes
 from api.ODM2.Results.services import readResults
 from api.ODM2.Core.services import readCore

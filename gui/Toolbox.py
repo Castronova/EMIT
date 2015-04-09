@@ -1,16 +1,17 @@
 __author__ = 'Mario'
-import wx
-import os
-from images import icons
-from ContextMenu import TreeItemContextMenu
 import ConfigParser
 from os.path import *
 import fnmatch
-import wx.lib.customtreectrl as CT
-import utilities
-from txtctrlModel import ModelTxtCtrl
-from wx.lib.pubsub import pub as Publisher
 import random
+import os
+import wx
+import wx.lib.customtreectrl as CT
+from wx.lib.pubsub import pub as Publisher
+
+from images import icons
+from ContextMenu import TreeItemContextMenu
+from gui.txtctrlModel import ModelTxtCtrl
+
 
 class ToolboxPanel(wx.Panel):
     def __init__(self, parent):

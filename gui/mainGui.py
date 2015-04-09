@@ -1,35 +1,23 @@
 __author__ = 'Mario'
+import sys
+import logging
+import threading
+
 import wx
 import wx.html2
-from DirectoryView import DirectoryCtrlView
-from Toolbox import ToolboxPanel
-import sys
-from CanvasView import Canvas
 from wx.lib.pubsub import pub as Publisher
-from CanvasController import CanvasController
 import wx.lib.agw.aui as aui
-import objectListViewDatabase as olv
-from api.ODM2.Core.services import *
-import logging
-from ContextMenu import GeneralContextMenu, TimeSeriesContextMenu, SimulationContextMenu, ConsoleContextMenu
-import threading
-from db import dbapi as dbapi
 from wx import richtext
 
-from gui.ContextMenu import ContextMenu
-from frmMatPlotLib import MatplotFrame
-from api.ODM2.Simulation.services import readSimulation
-from api.ODM2.Results.services import readResults
+from DirectoryView import DirectoryCtrlView
+from Toolbox import ToolboxPanel
+from CanvasView import Canvas
+import objectListViewDatabase as olv
+from ContextMenu import TimeSeriesContextMenu, SimulationContextMenu, ConsoleContextMenu
+from db import dbapi as dbapi
+
 
 #Save Features
-import xml.etree.ElementTree as et
-from xml.dom import minidom
-import datatypes
-
-from threading import Thread
-from functools import wraps
-from itertools import cycle
-import time
 
 from wx.lib.newevent import NewEvent
 wxStdOut, EVT_STDDOUT= NewEvent()
@@ -50,7 +38,6 @@ class MainGui(wx.Frame):
 
         # save cmd object in pnlDocking so that children can access it
         self.pnlDocking.__setattr__('cmd',cmd)
-        import os
         # path = 'gui/images/water_drop.png'
         # print "PATH: ", path
         # image = wx.Image(path, wx.BITMAP_TYPE_PNG).ConvertToBitmap()
@@ -588,7 +575,6 @@ class TimeSeries(wx.Panel):
                 # query the database and get basic series info
 
                 from db import dbapi as dbapi
-                from gui.objectListViewDatabase import Database
 
                 u = dbapi.utils(db['session'])
                 series = u.getAllSeries()

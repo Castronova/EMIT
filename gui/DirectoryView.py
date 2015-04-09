@@ -8,12 +8,10 @@
 ###########################################################################
 
 import os
-
 import wx
 import wx.xrc
 from wx.lib.pubsub import pub as Publisher
 from shapely import wkt
-
 from DirectoryLstCtrl import DirectoryListCtrl
 from images import icons
 from txtctrlModel import ModelTxtCtrl

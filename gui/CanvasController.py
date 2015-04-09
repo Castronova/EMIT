@@ -19,7 +19,13 @@ import os
 import markdown2
 from gui import CanvasObjects
 # from LinkStart import LinkStart
+<<<<<<< HEAD
 from gui.ContextMenu import LinkContextMenu, ModelContextMenu, GeneralContextMenu
+=======
+# from LinkCreationFrame import LinkCreationFrame
+# from LinkDetailsContext import LinkDetailsContextActivatedFrame as LDCAF
+from ContextMenu import LinkContextMenu, ModelContextMenu, GeneralContextMenu
+>>>>>>> 1d3f20129f56f4ff9e21bba6f5e30008d633b5c3
 from wrappers import odm2_data
 import xml.etree.ElementTree as et
 from xml.dom import minidom
@@ -521,7 +527,7 @@ class CanvasController:
         # outputitems = to_model.get_input_exchange_items()
 
 
-        linkstart = LinkStart(self.FloatCanvas, from_model, to_model)
+        linkstart = LinkStart(self.FloatCanvas, from_model, to_model, self.cmd)
 
 
         linkstart.Show()

@@ -1,16 +1,10 @@
 __author__ = 'Mario'
 
-import textwrap as tw
-
-import wx
-
-
 ver = 'local'
+import wx
+import textwrap as tw
 from utilities import gui
-
 import sys
-sys.path.append("..")
-
 from wx.lib.floatcanvas import FloatCanvas as FC
 from wx.lib.floatcanvas.NavCanvas import NavCanvas
 from wx.lib.pubsub import pub as Publisher
@@ -30,6 +24,9 @@ from api.ODM2.Core.services import readCore
 from utilities.threading import EVT_CREATE_BOX, EVT_UPDATE_CONSOLE, ThreadManager
 from matplotlib.pyplot import cm
 from LinkFrame import LinkStart
+from controller.logicFileDrop import LogicFileDrop
+
+sys.path.append("..")
 
 class CanvasController:
     def __init__(self, cmd, frame):
@@ -56,8 +53,6 @@ class CanvasController:
         defaultCursor = wx.StockCursor(wx.CURSOR_DEFAULT)
         defaultCursor.Name = 'default'
         self._Cursor = defaultCursor
-
-        #self.Canvas.ZoomToFit(Event=None)
 
         dt = FileDrop(self, self.Canvas, self.cmd)
         self.Canvas.SetDropTarget(dt)

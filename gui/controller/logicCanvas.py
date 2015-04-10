@@ -1,13 +1,13 @@
-
-
 __author__ = 'Mario'
 
 import wx
 import textwrap as tw
+
 ver = 'local'
 from utilities import gui
 
 import sys
+
 sys.path.append("..")
 
 from wx.lib.floatcanvas import FloatCanvas as FC
@@ -33,16 +33,17 @@ from gui.views.viewCanvas import ViewCanvas
 import gui.controller.logicCanvasObjects as LogicCanvasObjects
 from gui.controller.logicLink import LogicLink
 from coordinator import engine
+from gui.controller.logicFileDrop import LogicFileDrop
 
 # todo: refactor
 # from gui import CanvasObjects
 # from ..LinkFrame import LinkStart
 
-class LogicCanvas (ViewCanvas):
+class LogicCanvas(ViewCanvas):
     def __init__(self, parent):
 
         self.cmd = parent.cmd
-        #self.threadManager = parent.threadManager
+        # self.threadManager = parent.threadManager
         self.threadManager = ThreadManager(self)
 
         # intialize the parent class
@@ -63,7 +64,7 @@ class LogicCanvas (ViewCanvas):
         defaultCursor.Name = 'default'
         self._Cursor = defaultCursor
 
-        dt = FileDrop(self, self.FloatCanvas, self.cmd)
+        dt = LogicFileDrop(self, self.FloatCanvas, self.cmd)
         self.FloatCanvas.SetDropTarget(dt)
 
         self.linkRects = []
@@ -113,13 +114,14 @@ class LogicCanvas (ViewCanvas):
         dlg = wx.MessageDialog(None, 'Are you sure you want to exit?', 'Question',
                                wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
 
-        if dlg.ShowModal() !=wx.ID_NO:
+        if dlg.ShowModal() != wx.ID_NO:
 
             self.threadManager.stop()
 
             windowsRemaining = len(wx.GetTopLevelWindows())
             if windowsRemaining > 0:
                 import wx.lib.agw.aui.framemanager as aui
+
                 for item in wx.GetTopLevelWindows():
                     if not isinstance(item, self.frame.__class__):
                         if isinstance(item, aui.AuiFloatingFrame):
@@ -178,18 +180,18 @@ class LogicCanvas (ViewCanvas):
 
         if name:
             w, h = 180, 120
-            x,y = xCoord, yCoord
+            x, y = xCoord, yCoord
             FontSize = 14
 
             # get the coordinates for the rounded rectangle
-            rect_coords = LogicCanvasObjects.build_rounded_rectangle((x,y), width=w, height=h)
+            rect_coords = LogicCanvasObjects.build_rounded_rectangle((x, y), width=w, height=h)
 
-            R = self.FloatCanvas.AddObject(FC.Polygon(rect_coords,FillColor=color,InForeground=True))
+            R = self.FloatCanvas.AddObject(FC.Polygon(rect_coords, FillColor=color, InForeground=True))
 
             R.ID = id
             R.Name = name
-            R.wh = (w,h)
-            R.xy = (x,y)
+            R.wh = (w, h)
+            R.xy = (x, y)
 
             # set the shape type so that we can identify it later
             R.type = LogicCanvasObjects.ShapeType.Model
@@ -200,9 +202,11 @@ class LogicCanvas (ViewCanvas):
             # define the font
             font = wx.Font(16, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
 
-            label = self.FloatCanvas.AddScaledTextBox(unicode(name), (x,y), #(x+1, y+h/2),
-                                        Color = "Black",  Size = FontSize, Width= w-10, Position = "cc", Alignment = "center",
-                                        Weight=wx.BOLD, Style=wx.ITALIC, InForeground=True, Font = font, LineWidth = 0, LineColor = None)
+            label = self.FloatCanvas.AddScaledTextBox(unicode(name), (x, y),  # (x+1, y+h/2),
+                                                      Color="Black", Size=FontSize, Width=w - 10, Position="cc",
+                                                      Alignment="center",
+                                                      Weight=wx.BOLD, Style=wx.ITALIC, InForeground=True, Font=font,
+                                                      LineWidth=0, LineColor=None)
 
 
             # set the type of this object so that we can find it later
@@ -216,35 +220,33 @@ class LogicCanvas (ViewCanvas):
             R.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit)
             R.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
 
-
-            self.models[R]=id
+            self.models[R] = id
 
             self.FloatCanvas.Draw()
 
     def createLine(self, R1, R2):
-        #print "creating link", R1, R2
-        x1,y1  = (R1.BoundingBox[0] + (R1.wh[0]/2, R1.wh[1]/2))
-        x2,y2  = (R2.BoundingBox[0] + (R2.wh[0]/2, R2.wh[1]/2))
+        # print "creating link", R1, R2
+        x1, y1 = (R1.BoundingBox[0] + (R1.wh[0] / 2, R1.wh[1] / 2))
+        x2, y2 = (R2.BoundingBox[0] + (R2.wh[0] / 2, R2.wh[1] / 2))
 
         cmap = cm.Blues
-        line = LogicCanvasObjects.get_line_pts((x1,y1),(x2,y2),order=4, num=200)
+        line = LogicCanvasObjects.get_line_pts((x1, y1), (x2, y2), order=4, num=200)
         linegradient = LogicCanvasObjects.get_hex_from_gradient(cmap, len(line))
         linegradient.reverse()
 
-        for i in range(0,len(line)-1):
-            l = FC.Line((line[i],line[i+1]),LineColor=linegradient[i],LineWidth=2,InForeground=False)
+        for i in range(0, len(line) - 1):
+            l = FC.Line((line[i], line[i + 1]), LineColor=linegradient[i], LineWidth=2, InForeground=False)
             l.type = LogicCanvasObjects.ShapeType.Link
             self.FloatCanvas.AddObject(l)
 
         arrow_shape = self.createArrow(line)
 
         # store the link and rectangles in the self.links list
-        for k,v in self.links.iteritems():
-            if v == [R1,R2]:
+        for k, v in self.links.iteritems():
+            if v == [R1, R2]:
                 self.links.pop(k)
                 break
-        self.links[arrow_shape] = [R1,R2]
-
+        self.links[arrow_shape] = [R1, R2]
 
         self.FloatCanvas.Draw()
 
@@ -253,7 +255,7 @@ class LogicCanvas (ViewCanvas):
         arrow = LogicCanvasObjects.build_arrow(line, arrow_length=6)
 
         # create the arrowhead object
-        arrow_shape = FC.Polygon(arrow,FillColor='Blue',InForeground=True)
+        arrow_shape = FC.Polygon(arrow, FillColor='Blue', InForeground=True)
 
         # set the shape type so that we can identify it later
         arrow_shape.type = LogicCanvasObjects.ShapeType.ArrowHead
@@ -277,18 +279,18 @@ class LogicCanvas (ViewCanvas):
         x0 = self.FloatCanvas.MinWidth / 2.
         y0 = self.FloatCanvas.MinHeight / 2.
 
-        originx, originy = self.FloatCanvas.PixelToWorld((0,0))
-        x = x0 +originx
+        originx, originy = self.FloatCanvas.PixelToWorld((0, 0))
+        x = x0 + originx
         y = originy - y0
 
         name, ext = os.path.splitext(filepath)
 
-        if ext == '.mdl' or ext =='.sim':
+        if ext == '.mdl' or ext == '.sim':
             try:
                 if ext == '.mdl':
                     # load the model
                     dtype = datatypes.ModelTypes.FeedForward
-                    model = self.cmd.add_model(type=dtype, attrib={'mdl':filepath})
+                    model = self.cmd.add_model(type=dtype, attrib={'mdl': filepath})
                     name = model.get_name()
                     modelid = model.get_id()
                     self.createBox(name=name, id=modelid, xCoord=x, yCoord=y)
@@ -317,16 +319,16 @@ class LogicCanvas (ViewCanvas):
 
             # create a model instance
             thisModel = engine.Model(id=inst.id(),
-                                   name='\n'.join([inst.name(),inst.id()]),
-                                   instance=inst,
-                                   desc=inst.description(),
-                                   input_exchange_items= [],
-                                   output_exchange_items=[output],
-                                   params=None)
+                                     name='\n'.join([inst.name(), inst.id()]),
+                                     instance=inst,
+                                     desc=inst.description(),
+                                     input_exchange_items=[],
+                                     output_exchange_items=[output],
+                                     params=None)
 
 
             # save the result id
-            att = {'resultid':name}
+            att = {'resultid': name}
 
             # save the database connection
             dbs = self.cmd.get_db_connections()
@@ -343,16 +345,18 @@ class LogicCanvas (ViewCanvas):
             self.cmd.Models(thisModel)
 
             # draw a box for this model
-            self.createBox(name='\n'.join([inst.name(),inst.id()]), id=inst.id(), xCoord=x, yCoord=y, color='#FFFF99')
+            self.createBox(name='\n'.join([inst.name(), inst.id()]), id=inst.id(), xCoord=x, yCoord=y, color='#FFFF99')
             self.FloatCanvas.Draw()
 
     def RemoveLink(self, link_obj):
 
         # todo: need to warn the user that all links will be removed
-        dlg = wx.MessageDialog(None, 'You are about to remove all data mappings that are associated with this link.  Are you sure you want to perform this action?', 'Question',
+        dlg = wx.MessageDialog(None,
+                               'You are about to remove all data mappings that are associated with this link.  Are you sure you want to perform this action?',
+                               'Question',
                                wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
 
-        if dlg.ShowModal() !=wx.ID_NO:
+        if dlg.ShowModal() != wx.ID_NO:
 
             # remove the link entry in self.links
             link = self.links.pop(link_obj)
@@ -362,7 +366,7 @@ class LogicCanvas (ViewCanvas):
             to_id = link[1].ID
 
             # get the link id
-            links = self.cmd.get_links_btwn_models(from_id,to_id)
+            links = self.cmd.get_links_btwn_models(from_id, to_id)
 
             # remove all links
             for link in links:
@@ -379,7 +383,7 @@ class LogicCanvas (ViewCanvas):
         removed_model = self.models.pop(model_obj)
 
         updated_links = {}
-        for k,v in self.links.iteritems():
+        for k, v in self.links.iteritems():
             if model_obj not in v:
                 updated_links[k] = v
         self.links = updated_links
@@ -415,7 +419,7 @@ class LogicCanvas (ViewCanvas):
             mainGui = self.GetTopLevelParent()
             mv = mainGui.Children[0].FindWindowByName('notebook').GetPage(1)
 
-            #mv = self.Canvas.GetTopLevelParent().m_mgr.GetPane(n
+            # mv = self.Canvas.GetTopLevelParent().m_mgr.GetPane(n
 
             # get the model object from cmd
             obj_id = object.ID
@@ -425,27 +429,29 @@ class LogicCanvas (ViewCanvas):
                 params = obj.get_config_params()
                 if params is None:
                     params = {}
-            except: params = {}
+            except:
+                params = {}
 
             text = ''
 
-            for arg,dict in params.iteritems():
+            for arg, dict in params.iteritems():
                 title = arg
 
                 try:
                     table = ''
-                    for k,v in dict[0].iteritems():
+                    for k, v in dict[0].iteritems():
                         table += '||%s||%s||\n' % (k, v)
 
-                    text += '###%s  \n%s  \n'%(title,table)
-                except: pass
+                    text += '###%s  \n%s  \n' % (title, table)
+                except:
+                    pass
             html = markdown2.markdown(text, extras=["wiki-tables"])
 
             css = "<style>tr:nth-child(even) " \
-                    "{ background-color: #e6f1f5;} " \
-                    "table {border-collapse: collapse;width:100%}" \
-                    "table td, table th {border: 1px solid #e6f1f5;}" \
-                    "h3 {color: #66A3E0}</style>"
+                  "{ background-color: #e6f1f5;} " \
+                  "table {border-collapse: collapse;width:100%}" \
+                  "table td, table th {border: 1px solid #e6f1f5;}" \
+                  "h3 {color: #66A3E0}</style>"
 
 
             # set the model params as text
@@ -455,16 +461,14 @@ class LogicCanvas (ViewCanvas):
             except:
                 pass
 
-
-
         if not self.Moving:
             self.Moving = True
             self.StartPoint = object.HitCoordsPixel
 
             BB = object.BoundingBox
             OutlinePoints = N.array(
-            ( (BB[0, 0], BB[0, 1]), (BB[0, 0], BB[1, 1]), (BB[1, 0], BB[1, 1]), (BB[1, 0], BB[0, 1]),
-            ))
+                ( (BB[0, 0], BB[0, 1]), (BB[0, 0], BB[1, 1]), (BB[1, 0], BB[1, 1]), (BB[1, 0], BB[0, 1]),
+                  ))
             self.StartObject = self.FloatCanvas.WorldToPixel(OutlinePoints)
             self.MoveObject = None
             self.MovingObject = object
@@ -478,23 +482,23 @@ class LogicCanvas (ViewCanvas):
 
             # reset
             self.link_clicks = 0
-            self.linkRects=[]
+            self.linkRects = []
 
-            #change the mouse cursor
+            # change the mouse cursor
             self.FloatCanvas.SetMode(self.GuiMouse)
 
     def GetHitObject(self, event, HitEvent):
         if self.FloatCanvas.HitDict:
             # check if there are any objects in the dict for this event
-            if self.FloatCanvas.HitDict[ HitEvent ]:
+            if self.FloatCanvas.HitDict[HitEvent]:
                 xy = event.GetPosition()
-                color = self.FloatCanvas.GetHitTestColor( xy )
-                if color in self.FloatCanvas.HitDict[ HitEvent ]:
-                    Object = self.FloatCanvas.HitDict[ HitEvent ][color]
+                color = self.FloatCanvas.GetHitTestColor(xy)
+                if color in self.FloatCanvas.HitDict[HitEvent]:
+                    Object = self.FloatCanvas.HitDict[HitEvent][color]
                     return Object
             return False
 
-    def ArrowClicked(self,event):
+    def ArrowClicked(self, event):
 
         # get the models associated with the link
         polygons = self.links[event]
@@ -518,25 +522,26 @@ class LogicCanvas (ViewCanvas):
 
         linkstart = LogicLink(self.FloatCanvas, from_model, to_model, self.cmd)
 
-
         linkstart.Show()
 
-    def RightClickCb( self, event ):
+    def RightClickCb(self, event):
         menu = wx.Menu()
-        for (id,title) in menu_title_by_id.items():
-            menu.Append( id, title )
-            wx.EVT_MENU( menu, id, self.MenuSelectionCb )
+        for (id, title) in menu_title_by_id.items():
+            menu.Append(id, title)
+            wx.EVT_MENU(menu, id, self.MenuSelectionCb)
 
         # Launcher displays menu with call to PopupMenu, invoked on the source component, passing event's GetPoint.
-        self.frame.PopupMenu( menu, event.GetPoint() )
-        menu.Destroy() # destroy to avoid mem leak
+        self.frame.PopupMenu(menu, event.GetPoint())
+        menu.Destroy()  # destroy to avoid mem leak
 
     def RedrawConfiguration(self):
         # clear lines from drawlist
-        self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != LogicCanvasObjects.ShapeType.Link]
+        self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if
+                                      obj.type != LogicCanvasObjects.ShapeType.Link]
 
         # remove any arrowheads from the _ForeDrawList
-        self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if obj.type != LogicCanvasObjects.ShapeType.ArrowHead]
+        self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if
+                                          obj.type != LogicCanvasObjects.ShapeType.ArrowHead]
 
         # remove any models
         i = 0
@@ -544,12 +549,13 @@ class LogicCanvas (ViewCanvas):
         modellabels = [model.Name for model in self.models]
         self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList
                                           if (obj.type == LogicCanvasObjects.ShapeType.Model and obj.ID in modelids)
-                                          or (obj.type == LogicCanvasObjects.ShapeType.Label and obj.String in modellabels)]
+                                          or (
+                                              obj.type == LogicCanvasObjects.ShapeType.Label and obj.String in modellabels)]
 
         # redraw links
         for link in self.links.keys():
-            r1,r2 = self.links[link]
-            self.createLine(r1,r2)
+            r1, r2 = self.links[link]
+            self.createLine(r1, r2)
 
         self.FloatCanvas.Draw(True)
 
@@ -558,22 +564,25 @@ class LogicCanvas (ViewCanvas):
             self.Moving = False
             if self.MoveObject is not None:
                 dxy = event.GetPosition() - self.StartPoint
-                (x,y) = self.FloatCanvas.ScalePixelToWorld(dxy)
-                self.MovingObject.Move((x,y))
+                (x, y) = self.FloatCanvas.ScalePixelToWorld(dxy)
+                self.MovingObject.Move((x, y))
                 self.MovingObject.Text.Move((x, y))
 
 
                 # clear lines from drawlist
-                self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != LogicCanvasObjects.ShapeType.Link]
+                self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if
+                                              obj.type != LogicCanvasObjects.ShapeType.Link]
 
                 # remove any arrowheads from the two FloatCanvas DrawLists
-                self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if obj.type != LogicCanvasObjects.ShapeType.ArrowHead]
-                self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if obj.type != LogicCanvasObjects.ShapeType.ArrowHead]
+                self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if
+                                                  obj.type != LogicCanvasObjects.ShapeType.ArrowHead]
+                self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if
+                                              obj.type != LogicCanvasObjects.ShapeType.ArrowHead]
 
                 # redraw links
                 for link in self.links.keys():
-                    r1,r2 = self.links[link]
-                    self.createLine(r1,r2)
+                    r1, r2 = self.links[link]
+                    self.createLine(r1, r2)
 
             self.FloatCanvas.Draw(True)
 
@@ -583,7 +592,7 @@ class LogicCanvas (ViewCanvas):
         if cur.Name == 'link':
             self.AddinkCursorClick()
 
-    def getCurrentDbSession(self, value = None):
+    def getCurrentDbSession(self, value=None):
         if value is not None:
             dbs = self.cmd.get_db_connections()
             for db in dbs.iterkeys():
@@ -597,24 +606,26 @@ class LogicCanvas (ViewCanvas):
         # build the database connection
         connection = gui.create_database_connections_from_args(title, desc, engine, address, name, user, pwd)
 
-
         if type(connection) == dict and any(connection):
             # store the connection
             self.cmd.add_db_connection(connection)
 
             # notify that the connection was added successfully
-            Publisher.sendMessage('connectionAddedStatus',value=True,connection_string=connection[connection.keys()[0]]['connection_string'])  # sends message to mainGui
+            Publisher.sendMessage('connectionAddedStatus', value=True,
+                                  connection_string=connection[connection.keys()[0]][
+                                      'connection_string'])  # sends message to mainGui
 
             return True
         else:
             # notify that the connection was not added successfully
-            Publisher.sendMessage('connectionAddedStatus',value=False,connection_string=connection) # sends message to mainGui
+            Publisher.sendMessage('connectionAddedStatus', value=False,
+                                  connection_string=connection)  # sends message to mainGui
 
             return False
 
     def getDatabases(self):
         knownconnections = self.cmd.get_db_connections()
-        Publisher.sendMessage('getKnownDatabases',value=knownconnections)  # sends message to mainGui
+        Publisher.sendMessage('getKnownDatabases', value=knownconnections)  # sends message to mainGui
 
     def DetailView(self):
         # DCV.ShowDetails()
@@ -643,7 +654,7 @@ class LogicCanvas (ViewCanvas):
 
             if model.type() == datatypes.ModelTypes.FeedForward:
                 attributes['mdl'] = model.params_path()
-                modelelement = et.SubElement(tree,'Model')
+                modelelement = et.SubElement(tree, 'Model')
 
                 modelnameelement = et.SubElement(modelelement, "name")
                 modelnameelement.text = attributes['name']
@@ -662,7 +673,7 @@ class LogicCanvas (ViewCanvas):
                 attributes['databaseid'] = model.attrib()['databaseid']
                 attributes['resultid'] = model.attrib()['resultid']
                 # et.SubElement(tree,'DataModel',attributes)
-                dataelement = et.SubElement(tree,'DataModel')
+                dataelement = et.SubElement(tree, 'DataModel')
 
                 datamodelnameelement = et.SubElement(dataelement, "name")
                 datamodelnameelement.text = attributes['name']
@@ -708,7 +719,6 @@ class LogicCanvas (ViewCanvas):
             attributes['to_item'] = targetItem.name()
             attributes['to_item_id'] = targetItem.get_id()
 
-
             if L.temporal_interpolation() is not None:
                 attributes['temporal_transformation'] = L.temporal_interpolation().name()
             else:
@@ -719,7 +729,7 @@ class LogicCanvas (ViewCanvas):
             else:
                 attributes['spatial_transformation'] = "None"
 
-            linkelement = et.SubElement(tree,'Link')
+            linkelement = et.SubElement(tree, 'Link')
 
             linkfromnameelement = et.SubElement(linkelement, "from_name")
             linkfromnameelement.text = attributes['from_name']
@@ -765,12 +775,12 @@ class LogicCanvas (ViewCanvas):
                 attributes['user'] = db_conn['user']
                 attributes['databaseid'] = db_conn['id']
                 attributes['connection_string'] = str(db_conn['connection_string'])
-                connectionelement = et.SubElement(tree,'DbConnection')
+                connectionelement = et.SubElement(tree, 'DbConnection')
 
                 connectionnameelement = et.SubElement(connectionelement, "name")
                 connectionnameelement.text = attributes['name']
                 connectionaddresselement = et.SubElement(connectionelement, "address")
-                connectionaddresselement.text =attributes['address']
+                connectionaddresselement.text = attributes['address']
                 connectionpwdelement = et.SubElement(connectionelement, "pwd")
                 connectionpwdelement.text = attributes['pwd']
                 connectiondescelement = et.SubElement(connectionelement, "desc")
@@ -786,7 +796,6 @@ class LogicCanvas (ViewCanvas):
                 connectionconnectionstringelement = et.SubElement(connectionelement, "connection_string")
                 connectionconnectionstringelement.text = attributes['connection_string']
 
-
         try:
 
             # format the xml nicely
@@ -795,7 +804,7 @@ class LogicCanvas (ViewCanvas):
             prettyxml = reparsed.toprettyxml(indent="  ")
 
             # save the xml doc
-            with open(path,'w') as f:
+            with open(path, 'w') as f:
                 f.write(prettyxml)
         except Exception, e:
             print 'ERROR | An error occurred when attempting to save the project '
@@ -805,7 +814,7 @@ class LogicCanvas (ViewCanvas):
         print 'Configuration Saved Successfully! '
 
     def loadsimulation(self, file):
-        #TODO: Should be part of the cmd.
+        # TODO: Should be part of the cmd.
         tree = et.parse(file)
 
         self.loadingpath = file
@@ -827,8 +836,8 @@ class LogicCanvas (ViewCanvas):
         # get all known transformations
         space = SpatialInterpolation()
         time = TemporalInterpolation()
-        spatial_transformations = {i.name():i for i in space.methods()}
-        temporal_transformations = {i.name():i for i in time.methods()}
+        spatial_transformations = {i.name(): i for i in space.methods()}
+        temporal_transformations = {i.name(): i for i in time.methods()}
 
         # databaselist = [x for x in elementslist if x.tag == 'DbConnection']
         # for db_conn in databaselist:
@@ -840,7 +849,7 @@ class LogicCanvas (ViewCanvas):
                     textlist.append(data.text)
                     taglist.append(data.tag)
 
-                attrib = dict(zip(taglist,textlist))
+                attrib = dict(zip(taglist, textlist))
 
                 connection_string = attrib['connection_string']
 
@@ -851,7 +860,7 @@ class LogicCanvas (ViewCanvas):
                 for id, dic in connections.iteritems():
 
                     if str(dic['args']['connection_string']) == connection_string:
-                        #dic['args']['id'] = db_conn.attrib['id']
+                        # dic['args']['id'] = db_conn.attrib['id']
                         database_exists = True
 
                         # map the connection ids
@@ -860,13 +869,13 @@ class LogicCanvas (ViewCanvas):
 
                 # if database doesn't exist, then connect to it
                 if not database_exists:
-                    connect = wx.MessageBox('This database connection does not currently exist.  Click OK to connect.', 'Info', wx.OK | wx.CANCEL )
-
+                    connect = wx.MessageBox('This database connection does not currently exist.  Click OK to connect.',
+                                            'Info', wx.OK | wx.CANCEL)
 
                     if connect == wx.OK:
 
                         # attempt to connect to the database
-                        title=dic['args']['name']
+                        title = dic['args']['name']
                         desc = dic['args']['desc']
                         engine = dic['args']['engine']
                         address = dic['args']['address']
@@ -874,8 +883,9 @@ class LogicCanvas (ViewCanvas):
                         user = dic['args']['user']
                         pwd = dic['args']['pwd']
 
-                        if not self.AddDatabaseConnection(title,desc,engine,address,name,user, pwd):
-                            wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
+                        if not self.AddDatabaseConnection(title, desc, engine, address, name, user, pwd):
+                            wx.MessageBox('I was unable to connect to the database with the information provided :(',
+                                          'Info', wx.OK | wx.ICON_ERROR)
                             return
 
                         # map the connection id
@@ -894,7 +904,7 @@ class LogicCanvas (ViewCanvas):
                     textlist.append(data.text)
                     taglist.append(data.tag)
 
-                attrib = dict(zip(taglist,textlist))
+                attrib = dict(zip(taglist, textlist))
                 dtype = datatypes.ModelTypes.FeedForward
 
                 # load the model
@@ -918,7 +928,7 @@ class LogicCanvas (ViewCanvas):
                     textlist.append(data.text)
                     taglist.append(data.tag)
 
-                attrib = dict(zip(taglist,textlist))
+                attrib = dict(zip(taglist, textlist))
 
                 # get the data type
                 dtype = datatypes.ModelTypes.Data
@@ -929,11 +939,10 @@ class LogicCanvas (ViewCanvas):
 
                 attrib['databaseid'] = mappedid
 
-                model = self.cmd.add_model(type=dtype,id=attrib['id'], attrib=attrib)
+                model = self.cmd.add_model(type=dtype, id=attrib['id'], attrib=attrib)
 
                 x = float(attrib['xcoordinate'])
                 y = float(attrib['ycoordinate'])
-
 
                 self.createBox(name=model.get_name(), id=model.get_id(), xCoord=x, yCoord=y, color='#FFFF99')
 
@@ -958,8 +967,8 @@ class LogicCanvas (ViewCanvas):
                     raise Exception('Could not find Model identifer in loaded models')
 
                 # add the link object
-                l = self.cmd.add_link_by_name(  attrib['from_id'], attrib['from_item'],
-                                    attrib['to_id'], attrib['to_item'])
+                l = self.cmd.add_link_by_name(attrib['from_id'], attrib['from_item'],
+                                              attrib['to_id'], attrib['to_item'])
 
                 # set the temporal and spatial interpolations
                 transform = child.find("./transformation")
@@ -974,10 +983,10 @@ class LogicCanvas (ViewCanvas):
 
 
                 # this draws the line
-                self.createLine(R1,R2)
+                self.createLine(R1, R2)
 
             self.FloatCanvas.Draw()
-            #self.Canvas.Draw()
+            # self.Canvas.Draw()
 
     def SetLoadingPath(self, path):
         # loadingpath = path
@@ -996,8 +1005,8 @@ class LogicCanvas (ViewCanvas):
         return self._Cursor
 
     def setCursor(self, value=None):
-        #print "Cursor was set to value ", dir(value), value.GetHandle()
-        self._Cursor=value
+        # print "Cursor was set to value ", dir(value), value.GetHandle()
+        self._Cursor = value
 
     def LaunchContext(self, event):
 
@@ -1006,21 +1015,21 @@ class LogicCanvas (ViewCanvas):
             self.PopupMenu(GeneralContextMenu(self), event.GetPosition())
 
         elif type(event) == wx.lib.floatcanvas.FloatCanvas.Polygon:
-            #if object is link
+            # if object is link
             if event.type == "ArrowHead":
-                self.PopupMenu(LinkContextMenu(self,event), event.HitCoordsPixel.Get())
+                self.PopupMenu(LinkContextMenu(self, event), event.HitCoordsPixel.Get())
 
             # if object is model
             elif event.type == 'Model':
-                self.PopupMenu(ModelContextMenu(self,event), event.HitCoordsPixel.Get())
+                self.PopupMenu(ModelContextMenu(self, event), event.HitCoordsPixel.Get())
 
-        #self.Canvas.ClearAll()
-        #self.Canvas.Draw()
+                # self.Canvas.ClearAll()
+                #self.Canvas.Draw()
 
-    def MenuSelectionCb( self, event ):
+    def MenuSelectionCb(self, event):
         # TODO: Fix the menu selection
-        operation = menu_title_by_id[ event.GetId() ]
-        #target    = self.list_item_clicked
+        operation = menu_title_by_id[event.GetId()]
+        # target    = self.list_item_clicked
         print 'DEBUG | Perform "%(operation)s" on "%(target)s."' % vars()
 
     # THREADME
@@ -1029,139 +1038,15 @@ class LogicCanvas (ViewCanvas):
         try:
             self.cmd.run_simulation()
         except Exception as e:
-            wx.MessageBox(str(e.args[0]), 'Error',wx.OK | wx.ICON_ERROR)
+            wx.MessageBox(str(e.args[0]), 'Error', wx.OK | wx.ICON_ERROR)
 
-class FileDrop(wx.FileDropTarget):
-    def __init__(self, controller, FloatCanvas, cmd):
-        wx.FileDropTarget.__init__(self)
-        self.controller = controller
-        self.FloatCanvas = FloatCanvas
-        self.cmd = cmd
-        Publisher.subscribe(self.OnDropFiles, 'toolboxclick')
-
-    def RandomCoordinateGeneration(self, filepath):
-        filenames = filepath
-        x = 0
-        y = 0
-
-        self.OnDropFiles(x,y,filenames)
-
-    def OnDropFiles(self, x, y, filenames):
-        originx, originy = self.FloatCanvas.PixelToWorld((0,0))
-
-        x = x + originx
-        y = originy - y
-
-        # make sure the correct file type was dragged
-        name, ext = os.path.splitext(filenames[0])
-        if ext == '.mdl' or ext =='.sim':
-
-            try:
-                if ext == '.mdl':
-
-                    dtype = datatypes.ModelTypes.FeedForward
-                    kwargs = dict(x=x, y=y, type=dtype, attrib={'mdl': filenames[0]})
-
-                    model = self.cmd.add_model(type=dtype, id=None, attrib={'mdl': filenames[0]})
-
-                    #def createBox(self, xCoord, yCoord, id=None, name=None, color='#A2CAF5'):
-                    self.controller.createBox(x,y,model.get_id(), model.get_name())
-
-                    # hack:  this is not working anymore!?
-                    #task = ('addmodel', kwargs)
-                    #self.controller.threadManager.dispatcher.putTask(task)
-
-                else:
-                    # load the simulation
-                    self.controller.loadsimulation(filenames[0])
-
-
-            except Exception, e:
-                print 'ERROR | Could not load the model. Please verify that the model file exists.'
-                print 'ERROR | %s' % e
-
-        else:
-            # # -- must be a data object --
-
-            # get the current database connection dictionary
-            session = self.controller.getCurrentDbSession()
-
-            # create odm2 instance
-            inst = odm2_data.odm2(resultid=name, session=session)
-
-            oei = inst.outputs().values()
-
-
-            # create a model instance
-            thisModel = engine.Model(id=inst.id(),
-                                   name=inst.name(),
-                                   instance=inst,
-                                   desc=inst.description(),
-                                   input_exchange_items= [],
-                                   output_exchange_items=  oei,
-                                   params=None)
-
-
-            # save the result id
-            att = {'resultid':name}
-
-            # save the database connection
-            dbs = self.cmd.get_db_connections()
-            for id, dic in dbs.iteritems():
-                if dic['session'] == self.controller.getCurrentDbSession():
-                    att['databaseid'] = id
-                    thisModel.attrib(att)
-                    break
-
-            thisModel.type(datatypes.ModelTypes.Data)
-
-
-            # save the model
-            self.cmd.Models(thisModel)
-
-            # draw a box for this model
-            self.controller.createBox(name=inst.name(), id=inst.id(), xCoord=x, yCoord=y, color='#FFFF99')
-            self.FloatCanvas.Draw()
-
-
-
-    # def getObj(self,resultID):
-    #
-    #     session = self.getDbSession()
-    #
-    #     core = readCore(session)
-    #     obj = core.getResultByID(resultID=int(resultID))
-    #
-    #     session.close()
-    #
-    #     return obj
-    #
-    # def getData(self,resultID):
-    #
-    #
-    #     session = self.getDbSession()
-    #     readres = readResults(session)
-    #     results = readres.getTimeSeriesValuesByResultId(resultId=int(resultID))
-    #
-    #     core = readCore(session)
-    #     obj = core.getResultByID(resultID=int(resultID))
-    #
-    #     dates = []
-    #     values = []
-    #     for val in results:
-    #         dates.append(val.ValueDateTime)
-    #         values.append(val.DataValue)
-    #
-    #     session.close()
-    #
-    #     return dates,values,obj
 
 # DELETEME
-menu_titles = [ "Open",
-                "Properties",
-                "Rename",
-                "Delete" ]
+menu_titles = ["Open",
+               "Properties",
+               "Rename",
+               "Delete"]
 
 menu_title_by_id = {}
 for title in menu_titles:
-    menu_title_by_id[ wx.NewId() ] = title
+    menu_title_by_id[wx.NewId()] = title

@@ -11,7 +11,7 @@ import wx.xrc
 import wx.aui
 
 from gui.controller.logicEMIT import LogicEMIT
-from coordinator import main as cmd
+from coordinator import engine as cmd
 
 # todo: refactor
 from gui.mainGui import wxStdOut

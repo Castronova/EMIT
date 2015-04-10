@@ -32,7 +32,7 @@ from matplotlib.pyplot import cm
 from gui.views.viewCanvas import ViewCanvas
 import gui.controller.logicCanvasObjects as LogicCanvasObjects
 from gui.controller.logicLink import LogicLink
-
+from coordinator import engine
 
 # todo: refactor
 # from gui import CanvasObjects
@@ -314,9 +314,9 @@ class LogicCanvas (ViewCanvas):
             if isinstance(output, dict):
                 output = output.values()[0]
 
-            from coordinator import main
+
             # create a model instance
-            thisModel = main.Model(id=inst.id(),
+            thisModel = engine.Model(id=inst.id(),
                                    name='\n'.join([inst.name(),inst.id()]),
                                    instance=inst,
                                    desc=inst.description(),
@@ -1091,9 +1091,9 @@ class FileDrop(wx.FileDropTarget):
 
             oei = inst.outputs().values()
 
-            from coordinator import main
+
             # create a model instance
-            thisModel = main.Model(id=inst.id(),
+            thisModel = engine.Model(id=inst.id(),
                                    name=inst.name(),
                                    instance=inst,
                                    desc=inst.description(),

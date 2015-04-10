@@ -1,23 +1,10 @@
 __author__ = 'mario'
 
-# -*- coding: utf-8 -*-
-
-###########################################################################
-## Python code generated with wxFormBuilder (version Feb 25 2015)
-## http://www.wxformbuilder.org/
-##
-## PLEASE DO "NOT" EDIT THIS FILE!
-###########################################################################
-
 import wx
 import wx.xrc
 import wx.dataview
 from transform.time import *
 from transform.space import *
-
-###########################################################################
-## Class LinkStartSizer
-###########################################################################
 
 class LinkStart ( wx.Frame ):
 

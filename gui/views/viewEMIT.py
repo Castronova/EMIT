@@ -71,22 +71,9 @@ class ViewEMIT(wx.Frame):
         self.m_mgr = aui.AuiManager()
         self.m_mgr.SetManagedWindow(self.pnlDocking)
 
-        #self.m_mgr.SetFlags(aui.AUI_MGR_DEFAULT)
-        # TODO fix circular import error with float canvas
-
-        # TODO: HACK! where is canvas/floatcanvas??
-        # frame = self.parent.Canvas
-        # fc = frame.Canvas
-        # self.Canvas = LogicCanvas(self.pnlDocking,self.FloatCanvas, self.cmd)
-
-        # self.Canvas = Canvas(self.pnlDocking)
-
-
         self.bnb = wx.Notebook(self.pnlDocking)
 
         self.output = consoleOutput(self.bnb)
-
-        # output.start()
 
         # seriesoutput = OutputTimeSeries(self.bnb)
         seriesselector = TimeSeries(self.bnb)
@@ -113,6 +100,7 @@ class ViewEMIT(wx.Frame):
                            aui.AuiPaneInfo().
                            Center().
                            Name("Canvas").
+                           CloseButton(False).
                            MaximizeButton(False).
                            MinimizeButton(False).
                            Floatable(False).
@@ -368,20 +356,14 @@ class ViewEMIT(wx.Frame):
 class ModelView(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
-        #Canvas.ObjectHit()
-        t = wx.StaticText(self, -1, "This view shows relevant model information.", (60,60))
         self.contents = wx.html2.WebView.New(self)
-
-        #self.contents = wx.html.HtmlWindow (self, style=wx.TE_MULTILINE | wx.HSCROLL | wx.TE_READONLY)
-        #self.contents.SetPage("New Text")
-
         sizer = wx.BoxSizer()
         sizer.Add(self.contents, 1, wx.ALL|wx.EXPAND, 5)
         parent.SetSizer(sizer)
         self.SetSizerAndFit(sizer)
 
     def setText(self, value=None):
-        self.contents.SetPage(value,"")
+        self.contents.SetPage(value, "")
 
 class AllFileView(wx.Panel):
     def __init__(self, parent):

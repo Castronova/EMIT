@@ -11,7 +11,7 @@ import wx.xrc
 import wx.aui
 
 from gui.controller.logicEMIT import LogicEMIT
-from coordinator import engine as cmd
+import coordinator.engineManager as engineManager
 
 # todo: refactor
 from gui.mainGui import wxStdOut
@@ -24,8 +24,8 @@ from gui.mainGui import wxStdOut
 class EMITApp(wx.App):
     def OnInit(self):
 
-        # create and instance of the coordinator engine
-        self.cmd = cmd.Coordinator()
+        # get the shared instance of the coordinator engine
+        engine = engineManager.get_engine()
 
         # connect to databases and set default
         currentdir = os.path.dirname(os.path.abspath(__file__))
@@ -35,23 +35,11 @@ class EMITApp(wx.App):
         # tends to add clutter to our console.
         wx.Log.SetLogLevel(0)
 
-        # self.frame = MainGui(None,self.cmd)
-        # self.frame.Show(True)
-        # # sys.stdout = SysOutListener()
-        #
-        # #self.frame2 = non_blocking_gui.Frame()
-        # #self.frame2.Show()
-        #
-        # CanvasController(self.cmd, self.frame)
+        engine.connect_to_db([connections_txt])
+        if not engine.get_default_db():
+            engine.set_default_database()
 
-        parent = None
-
-        # self.logicEmit = LogicEMIT(parent, self.cmd)
-        self.cmd.connect_to_db([connections_txt])
-        if not self.cmd.get_default_db():
-            self.cmd.set_default_database()
-
-        self.logicEmit = LogicEMIT(None, self.cmd)
+        self.logicEmit = LogicEMIT(None)
 
 
         return True

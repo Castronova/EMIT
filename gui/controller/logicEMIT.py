@@ -27,11 +27,11 @@ from matplotlib.pyplot import cm
 from gui.views.viewEMIT import ViewEMIT
 from gui.views.viewContext import LinkContextMenu, ModelContextMenu, GeneralContextMenu
 import gui.controller.logicCanvasObjects as LogicCanvasObjects
-
+import coordinator.engineManager as engineManager
 
 class LogicEMIT(ViewEMIT):
-    def __init__(self, parent, cmd):
-        self.cmd = cmd
+    def __init__(self, parent):
+        self.cmd = engineManager.get_engine()
 
         # Start threading
         #self.threadManager = ThreadManager(self)

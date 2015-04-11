@@ -34,6 +34,7 @@ import gui.controller.logicCanvasObjects as LogicCanvasObjects
 from gui.controller.logicLink import LogicLink
 from coordinator import engine
 from gui.controller.logicFileDrop import LogicFileDrop
+import coordinator.engineManager as engineManager
 
 # todo: refactor
 # from gui import CanvasObjects
@@ -42,8 +43,8 @@ from gui.controller.logicFileDrop import LogicFileDrop
 class LogicCanvas(ViewCanvas):
     def __init__(self, parent):
 
-        self.cmd = parent.cmd
-        # self.threadManager = parent.threadManager
+        self.cmd = engineManager.get_engine()
+
         self.threadManager = ThreadManager(self)
 
         # intialize the parent class

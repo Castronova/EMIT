@@ -28,13 +28,13 @@ import datatypes
 
 import run
 import inspect
+# import coordinator.engineProcessor as engineProcessor
+from api.ODM2.Core.services import *
 
 
 """
 Purpose: This file contains the logic used to run coupled model simulations
 """
-
-
 
 class Link(object):
     """
@@ -89,7 +89,6 @@ class Link(object):
             if isinstance(value, time_base.Time):
                 self.__temporal_interpolation = value
         return self.__temporal_interpolation
-
 
 class Model(object):
     """
@@ -214,13 +213,16 @@ class Coordinator(object):
         self.__incr = 0
         self._db = {}
         self.__default_db = None
-
         self._dbresults = {}
 
 
         # TODO: Get this from gui dialog
         self.preferences = os.path.abspath(os.path.join(os.path.dirname(__file__),'../data/preferences'))
-        
+
+
+        # initialize multiprocessing classes
+        # self.processes = engineProcessor.TaskServer()
+
     def clear_all(self):
         self.__links = {}
         self.__models = {}
@@ -556,8 +558,6 @@ class Coordinator(object):
                 # update the datavalues with the mapped dates and values
                 t_geom.datavalues().set_timeseries(from_geom_dict[f_geom])
 
-
-
     def update_links(self, model, exchangeitems):
         """
         Updates the model associated with the link.  This is necessary after the run phase to update the data
@@ -682,7 +682,6 @@ class Coordinator(object):
 
         except Exception as e:
             raise Exception(e.args[0])
-
 
     def get_configuration_details(self,arg):
 
@@ -927,7 +926,6 @@ class Coordinator(object):
 
 
         # get all result entries
-        from api.odm2.api.ODM2.Core.services import *
         self._coreread = readCore(self._db[db_id]['session'])
 
         results = self._coreread.getAllResult()
@@ -992,10 +990,6 @@ class Coordinator(object):
             else:
                 print 'ERROR | command not recognized.  Type "help" for a complete list of commands.'
 
-
-
-
-
 def main(argv):
     print '|-------------------------------------------------|'
     print '|      Welcome to the Utah State University       |'
@@ -1018,8 +1012,6 @@ def main(argv):
         # get the users command
         arg = raw_input("> ").split(' ')
         coordinator.parse_args(arg)
-
-
 
 if __name__ == '__main__':
     main(sys.argv[1:])

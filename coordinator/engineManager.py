@@ -8,7 +8,6 @@ import time
 from threading import Thread
 import os
 from multiprocessing import Queue
-from coordinator.engineEvents import *
 import events
 
 class EngineBorg:
@@ -130,8 +129,9 @@ class Engine:
                     evt = next_task_args.pop('event')
 
                 result = task(**next_task_args)
-                result['type'] = next_task_name
-                result['event'] = evt
+
+                if evt is not None:
+                    result['event'] = evt
                 dispatcher.putResult(result)
 
     # The multiprocessing worker must not require any existing object for execution!
@@ -237,58 +237,25 @@ class Engine:
 
         result = self.processTasks()
 
-        if result['event'] is not None:
+        if 'event' in result.keys():
             evt_name= result.pop('event')
             evt = getattr(events, evt_name)
             evt.fire(**result)
 
-
-    def addModel(self, type=None, id=None, attrib=None, model_class=None):
-
-        #kwargs = dict(type=dtype, attrib={'mdl': filenames[0]})
-
-        evt = events.onModelAdded
-        # kwargs = dict(type=type, attrib=attrib, id=id,model_class=model_class, event = evt)
-        kwargs = dict(attrib=attrib, id=id, event = 'onModelAdded')
-        task = [('add_model', kwargs)]
-        self.setTasks(task)
-
-        self.thread = Thread(target = self.check_for_process_results)
-        self.thread.start()
-
-    # def add_data_model(self, parent, type, database_id=None, resultid=None):
-    #
-    #     att = {'databaseid':database_id,'resultid':resultid}
-    #     kwargs = dict(type=type, attrib=att)
-    #     task = [('AddModel', kwargs)]
-    #     self.setTasks(task)
-    #
-    #     self.thread = Thread(target = self.check_for_process_results,args=(parent,))
-    #     self.thread.start()
+    ################################
+    #####  ACCESSOR FUNCTIONS  #####
+    ################################
 
 
-    def add_link(self, parent, source_id=None, source_item=None, target_id=None, target_item=None,spatial=None, temporal=None ):
 
-        kwargs = dict(source_id=source_id, source_item=source_item, target_id=target_id, target_item=target_item,spatial=spatial, temporal=temporal)
-        task = [('AddLink',kwargs)]
-        self.setTasks(task)
 
-        self.thread = Thread(target = self.check_for_process_results)
-        self.thread.start()
 
     def get_models(self):
         kwargs = dict()
         task = [('GetModels',kwargs)]
         self.setTasks(task)
 
-    def get_db_connections(self,parent):
-        kwargs = dict()
-        task = [('GetDatabaseConnections',kwargs)]
-        self.setTasks(task)
-        #result = self.processTasks()
 
-        self.thread = Thread(target = self.check_for_process_results)
-        self.thread.start()
 
     def connectToDbFromFile(self, filepath):
         kwargs = dict(filepath=filepath)
@@ -299,12 +266,6 @@ class Engine:
         self.thread.start()
 
 
-    def get_db_conn(self, parent):
-        kwargs = dict()
-        task = [('GetDatabaseConnections',kwargs)]
-        self.setTasks(task)
-        result = self.processTasks()
-        return result
 
 
 

@@ -11,9 +11,7 @@ import wx.xrc
 import wx.aui
 
 from gui.controller.logicEMIT import LogicEMIT
-import coordinator.engineManager as engineManager
-# from coordinator.engineProcessor import TaskServer
-from coordinator.engineManager import Engine
+import coordinator.engineAccessors as engine
 
 
 # todo: refactor
@@ -28,12 +26,13 @@ class EMITApp(wx.App):
     def OnInit(self):
 
         # get the shared instance of the coordinator engine
-        engine = engineManager.get_engine()
-        self.ENGINE = Engine()
+        # engine = engineManager.get_engine()
+
+        # connections = engine.getDbConnections()
 
         # connect to databases and set default
-        currentdir = os.path.dirname(os.path.abspath(__file__))
-        connections_txt = os.path.abspath(os.path.join(currentdir,'./data/connections'))
+        #currentdir = os.path.dirname(os.path.abspath(__file__))
+        #connections_txt = os.path.abspath(os.path.join(currentdir,'./data/connections'))
 
         # We are terminating dependency logging errors, We may want this in the future but it
         # tends to add clutter to our console.

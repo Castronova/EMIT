@@ -14,6 +14,7 @@ from db import dbapi as dbapi
 from wx import richtext
 from viewContext import TimeSeriesContextMenu, SimulationContextMenu, ConsoleContextMenu
 from gui.controller.logicDatabase import LogicDatabase
+import coordinator.engineAccessors as engine
 
 # todo: refactor
 # from .. import objectListViewDatabase as olv
@@ -420,7 +421,7 @@ class TimeSeries(wx.Panel):
         self.Layout()
 
         #databases = Publisher.sendMessage('getDatabases')
-        Publisher.subscribe(self.getKnownDatabases, "getKnownDatabases")  # sends message to CanvasController
+        # Publisher.subscribe(self.getKnownDatabases, "getKnownDatabases")  # sends message to CanvasController
         Publisher.subscribe(self.connection_added_status, "connectionAddedStatus")
 
 
@@ -436,17 +437,20 @@ class TimeSeries(wx.Panel):
         self.OLVRefresh(event)
 
     def getKnownDatabases(self, value = None):
-        if value is None:
-            Publisher.sendMessage('getDatabases')
-        else:
-            self._databases = value
-            choices = ['---']
-            for k,v in self._databases.iteritems():
-                choices.append(self._databases[k]['name'])
-            self.connection_combobox.SetItems(choices)
 
-            # set the selected choice
-            self.connection_combobox.SetSelection( self.__selected_choice_idx)
+        self._databases = engine.getDbConnections()
+
+        # if value is None:
+        #     Publisher.sendMessage('getDatabases')
+        # else:
+        #     self._databases = value
+        choices = ['---']
+        for k,v in self._databases.iteritems():
+            choices.append(self._databases[k]['name'])
+        self.connection_combobox.SetItems(choices)
+
+        # set the selected choice
+        self.connection_combobox.SetSelection( self.__selected_choice_idx)
 
     def connection_added_status(self,value=None,connection_string=''):
         if value is not None:

@@ -36,6 +36,7 @@ from coordinator import engine
 from gui.controller.logicFileDrop import LogicFileDrop
 import coordinator.engineManager as engineManager
 import coordinator.events as engineEvent
+import coordinator.engineAccessors as engine
 
 # todo: refactor
 # from gui import CanvasObjects
@@ -103,6 +104,7 @@ class LogicCanvas(ViewCanvas):
 
         # engine bindings
         engineEvent.onModelAdded += self.draw_box
+        engineEvent.onLinkAdded += self.draw_link
 
     def initSubscribers(self):
         Publisher.subscribe(self.createBox, "createBox")
@@ -110,7 +112,7 @@ class LogicCanvas(ViewCanvas):
         Publisher.subscribe(self.run, "run")
         Publisher.subscribe(self.clear, "clear")
         Publisher.subscribe(self.AddDatabaseConnection, "DatabaseConnection")
-        Publisher.subscribe(self.getDatabases, "getDatabases")
+        # Publisher.subscribe(self.getDatabases, "getDatabases")
         Publisher.subscribe(self.getCurrentDbSession, "SetCurrentDb")
         Publisher.subscribe(self.SaveSimulation, "SetSavePath")
         Publisher.subscribe(self.loadsimulation, "SetLoadPath")
@@ -240,10 +242,29 @@ class LogicCanvas(ViewCanvas):
 
             self.FloatCanvas.Draw()
 
-    def draw_box(self,evt):
+    def draw_box(self, evt):
         #name,id,type):
         x,y = self.get_model_coords(id=evt.id)
         self.createBox(name=evt.name, id=evt.id, xCoord=x, yCoord=y,type=evt.model_type)
+
+    def draw_link(self, evt):
+        # source_id, target_id):
+
+        R1 = None
+        R2 = None
+        for R, id in self.models.iteritems():
+            if id == evt.source_id:
+                R1 = R
+            elif id == evt.target_id:
+                R2 = R
+
+        if R1 is None or R2 is None:
+            raise Exception('Could not find Model identifier in loaded models')
+
+        # this draws the line
+        self.createLine(R1, R2)
+
+        #self.FloatCanvas.Draw()
 
     def set_model_coords(self,id, x, y):
 
@@ -652,9 +673,12 @@ class LogicCanvas(ViewCanvas):
 
             return False
 
-    def getDatabases(self):
-        knownconnections = self.cmd.get_db_connections()
-        Publisher.sendMessage('getKnownDatabases', value=knownconnections)  # sends message to mainGui
+    # def getDatabases(self):
+    #
+    #     knownconnections = engine.getDbConnections()
+    #
+    #     # knownconnections = self.cmd.get_db_connections()
+    #     Publisher.sendMessage('getKnownDatabases', value=knownconnections)  # sends message to mainGui
 
     def DetailView(self):
         # DCV.ShowDetails()

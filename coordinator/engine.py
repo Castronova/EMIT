@@ -30,7 +30,7 @@ import run
 import inspect
 # import coordinator.engineProcessor as engineProcessor
 from api.ODM2.Core.services import *
-
+from copy import deepcopy
 
 """
 Purpose: This file contains the logic used to run coupled model simulations
@@ -251,7 +251,12 @@ class Coordinator(object):
         return self._db
 
     def get_db_connections(self):
-        return self._db
+        # return the database connection dictionary without sqlalchemy objects
+        db = {}
+        for db_id in self._db.iterkeys():
+            db[db_id] = {'name': self._db[db_id]['name'],
+                         'description': self._db[db_id]['description']}
+        return db
 
     def set_default_database(self,db_id=None):
 

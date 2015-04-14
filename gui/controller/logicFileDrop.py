@@ -7,6 +7,7 @@ from coordinator import engine
 from wx.lib.pubsub import pub as Publisher
 from coordinator.engineManager import Engine
 import uuid
+import coordinator.engineAccessors as eng
 
 class LogicFileDrop(wx.FileDropTarget):
     def __init__(self, controller, FloatCanvas, cmd):
@@ -35,76 +36,22 @@ class LogicFileDrop(wx.FileDropTarget):
         name, ext = os.path.splitext(filenames[0])
         if ext == '.mdl' or ext == '.sim':
 
-            try:
-                if ext == '.mdl':
+            # generate an ID for this model
+            id = uuid.uuid4().hex[:5]
 
-                    #dtype = datatypes.ModelTypes.FeedForward
-                    #kwargs = dict(x=x, y=y, type=dtype, attrib={'mdl': filenames[0]})
+            # save these coordinates for drawing once the model is loaded
+            self.controller.set_model_coords(id, x=x, y=y)
 
-                    # model = self.cmd.add_model(type=dtype, id=None, attrib={'mdl': filenames[0]})
+            # load the model within the engine process
+            if ext == '.mdl':
+                eng.addModel(id=id, attrib={'mdl': filenames[0]})
 
-                    # def createBox(self, xCoord, yCoord, id=None, name=None, color='#A2CAF5'):
-                    # self.controller.createBox(x, y, model.get_id(), model.get_name())
-
-                    # generate an ID for this model
-                    id = uuid.uuid4().hex[:5]
-
-                    # save these coordinates for drawing once the model is loaded
-                    self.controller.set_model_coords(id, x=x, y=y)
-
-                    # load the model within the engine process
-                    self.ENGINE.addModel(id=id, attrib={'mdl': filenames[0]})
-
-
-                else:
-                    # load the simulation
-                    self.controller.loadsimulation(filenames[0])
-
-
-            except Exception, e:
-                print 'ERROR | Could not load the model. Please verify that the model file exists.'
-                print 'ERROR | %s' % e
+            else:
+                current_db_id = self.controller._currentDbID
+                attrib = dict(databaseid=current_db_id, resultid=name)
+                eng.addModel(id=id, attrib=attrib)
 
         else:
-            # # -- must be a data object --
-
-            # get the current database connection dictionary
-            session = self.controller.getCurrentDbSession()
-
-            # create odm2 instance
-            inst = datatypes.odm2_data.odm2(resultid=name, session=session)
-
-            oei = inst.outputs().values()
-
-
-            # create a model instance
-            thisModel = engine.Model(id=inst.id(),
-                                     name=inst.name(),
-                                     instance=inst,
-                                     desc=inst.description(),
-                                     input_exchange_items=[],
-                                     output_exchange_items=oei,
-                                     params=None)
-
-
-            # save the result id
-            att = {'resultid': name}
-
-            # save the database connection
-            dbs = self.cmd.get_db_connections()
-            for id, dic in dbs.iteritems():
-                if dic['session'] == self.controller.getCurrentDbSession():
-                    att['databaseid'] = id
-                    thisModel.attrib(att)
-                    break
-
-            thisModel.type(datatypes.ModelTypes.Data)
-
-
-            # save the model
-            self.cmd.Models(thisModel)
-
-            # draw a box for this model
-            self.controller.createBox(name=inst.name(), id=inst.id(), xCoord=x, yCoord=y, color='#FFFF99')
-            self.FloatCanvas.Draw()
+            # load the simulation
+            self.controller.loadsimulation(filenames[0])
 

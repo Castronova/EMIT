@@ -114,9 +114,10 @@ class Model(object):
         self.__params_path = None
 
     def type(self,value=None):
-        if value is not None:
-            self.__type = value
-        return self.__type
+        # if value is not None:
+        #     self.__type = value
+        # return self.__type
+        return self.get_instance().type()
 
     def attrib(self, value=None):
         """
@@ -275,14 +276,14 @@ class Coordinator(object):
     def get_default_db(self):
         return self.__default_db
 
-    def add_model(self, type=None, id=None, attrib=None):
+    def add_model(self, id=None, attrib=None):
         """
         stores model component objects when added to a configuration
         """
         thisModel = None
 
-
-        if type == datatypes.ModelTypes.FeedForward or type == datatypes.ModelTypes.TimeStep:
+        if 'mdl' in attrib:
+        # if type == datatypes.ModelTypes.FeedForward or type == datatypes.ModelTypes.TimeStep:
 
             ini_path = attrib['mdl']
 
@@ -304,7 +305,6 @@ class Coordinator(object):
                 # generate a unique model id
                 if id is None:
                     id = uuid.uuid4().hex[:5]
-                #id = 'M'+str(self.get_new_id())
 
                 # create a model instance
                 thisModel = Model(id= id,
@@ -316,8 +316,10 @@ class Coordinator(object):
                                   params=params)
 
                 thisModel.params_path(ini_path)
+                thisModel.attrib(attrib)
 
-        elif type == datatypes.ModelTypes.Data:
+        elif 'databaseid' in attrib and 'resultid' in attrib:
+        # elif type == datatypes.ModelTypes.Data:
 
             databaseid = attrib['databaseid']
             resultid = attrib['resultid']
@@ -330,8 +332,11 @@ class Coordinator(object):
 
             oei = inst.outputs().values()
 
+            if id is None:
+                id = uuid.uuid4().hex[:5]
+
             # create a model instance
-            thisModel = Model(id=attrib['id'],
+            thisModel = Model(id=id,
                               name=inst.name(),
                               instance=inst,
                               desc=inst.description(),
@@ -347,14 +352,16 @@ class Coordinator(object):
 
 
         # set type and attribute params
-        thisModel.type(type)
-        thisModel.attrib(attrib)
+        # thisModel.type(type)
+        # thisModel.attrib(attrib)
+
 
         # save the model
         self.__models[thisModel.get_name()] = thisModel
 
         # return the model id
-        return thisModel
+        # return thisModel
+        return {'id':thisModel.get_id(), 'name':thisModel.get_name(),'model_type':thisModel.type()}
 
     def remove_model(self,linkablecomponent):
         """
@@ -822,41 +829,44 @@ class Coordinator(object):
 
             print 'test'
 
-    def connect_to_db(self,in_args):
+    def connect_to_db_from_file(self,filepath=None):
 
         # remove any empty list objects
-        args = [in_arg for in_arg in in_args if in_arg != '']
+        # args = [arg for arg in filepath if arg != '']
 
         # parse from file
-        if len(args) == 1:
+        # if len(args) == 1:
             # curdir = os.path.dirname(__file__)
             # abspath = os.path.abspath(os.path.join(curdir, args[0]))
-            abspath = os.path.abspath(os.path.join(os.getcwd(),args[0]))
-            if os.path.isfile(abspath):
-                try:
-                    connections = create_database_connections_from_file(args[0])
-                    #self.set_default_database()
 
-                    self._db = connections
+        if filepath is None: return
+
+        abspath = os.path.abspath(os.path.join(os.getcwd(),filepath))
+        if os.path.isfile(abspath):
+            try:
+                connections = create_database_connections_from_file(filepath)
+                #self.set_default_database()
+
+                self._db = connections
 
 
-                    # set the default connection
-                    for id,conn in connections.iteritems():
-                        if 'default' in conn['args']:
-                            if conn['args']['default']:
-                                self.set_default_database(db_id=id)
-                                break
-                    if not self.get_default_db():
-                        self.set_default_database()
+                # set the default connection
+                for id,conn in connections.iteritems():
+                    if 'default' in conn['args']:
+                        if conn['args']['default']:
+                            self.set_default_database(db_id=id)
+                            break
+                if not self.get_default_db():
+                    self.set_default_database()
 
-                    return True
-                except Exception,e:
-                    print e
-                    print 'ERROR | Could not create connections from file '+args[0]
-                    return None
+                return {'success':True}
+            except Exception,e:
+                print e
+                print 'ERROR | Could not create connections from file '+filepath
+                return {'success':False}
 
         else:
-            pass
+            return {'success':False}
 
     def get_format_width(self,output_array):
         width = 0

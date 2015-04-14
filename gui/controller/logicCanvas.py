@@ -35,6 +35,7 @@ from gui.controller.logicLink import LogicLink
 from coordinator import engine
 from gui.controller.logicFileDrop import LogicFileDrop
 import coordinator.engineManager as engineManager
+import coordinator.events as engineEvent
 
 # todo: refactor
 # from gui import CanvasObjects
@@ -78,6 +79,8 @@ class LogicCanvas(ViewCanvas):
         self._currentDbSession = self.cmd.get_default_db()
         self.loadingpath = None
 
+        self.model_coords = {}
+
     def UnBindAllMouseEvents(self):
         self.Unbind(FC.EVT_LEFT_DOWN)
         self.Unbind(FC.EVT_LEFT_UP)
@@ -97,6 +100,9 @@ class LogicCanvas(ViewCanvas):
         self.Bind(wx.EVT_CLOSE, self.onClose)
         self.Bind(EVT_CREATE_BOX, self.onCreateBox)
         self.Bind(EVT_UPDATE_CONSOLE, self.onUpdateConsole)
+
+        # engine bindings
+        engineEvent.onModelAdded += self.draw_box
 
     def initSubscribers(self):
         Publisher.subscribe(self.createBox, "createBox")
@@ -177,7 +183,16 @@ class LogicCanvas(ViewCanvas):
         y = evt.yCoord
         self.createBox(xCoord=x, yCoord=y, id=id, name=name)
 
-    def createBox(self, xCoord, yCoord, id=None, name=None, color='#A2CAF5'):
+    # def createBox(self, xCoord, yCoord, id=None, name=None, color='#A2CAF5'):
+    def createBox(self, xCoord, yCoord, id=None, name=None, type=datatypes.ModelTypes.TimeStep):
+
+        # set box color based on model type
+        if type == datatypes.ModelTypes.TimeStep:
+            color = '#B3DBG6'
+        elif type == datatypes.ModelTypes.FeedForward:
+            color = '#A2CAF5'
+        elif type == datatypes.ModelTypes.Data:
+            color = '#A2BGA5'
 
         if name:
             w, h = 180, 120
@@ -224,6 +239,19 @@ class LogicCanvas(ViewCanvas):
             self.models[R] = id
 
             self.FloatCanvas.Draw()
+
+    def draw_box(self,evt):
+        #name,id,type):
+        x,y = self.get_model_coords(id=evt.id)
+        self.createBox(name=evt.name, id=evt.id, xCoord=x, yCoord=y,type=evt.model_type)
+
+    def set_model_coords(self,id, x, y):
+
+        self.model_coords[id] = {'x':x, 'y':y}
+
+    def get_model_coords(self, id):
+
+        return (self.model_coords[id]['x'], self.model_coords[id]['y'])
 
     def createLine(self, R1, R2):
         # print "creating link", R1, R2

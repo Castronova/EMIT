@@ -5,7 +5,8 @@ import wx
 import datatypes
 from coordinator import engine
 from wx.lib.pubsub import pub as Publisher
-
+from coordinator.engineManager import Engine
+import uuid
 
 class LogicFileDrop(wx.FileDropTarget):
     def __init__(self, controller, FloatCanvas, cmd):
@@ -14,6 +15,8 @@ class LogicFileDrop(wx.FileDropTarget):
         self.FloatCanvas = FloatCanvas
         self.cmd = cmd
         Publisher.subscribe(self.OnDropFiles, 'toolboxclick')
+
+        self.ENGINE = Engine()
 
     def RandomCoordinateGeneration(self, filepath):
         filenames = filepath
@@ -35,17 +38,23 @@ class LogicFileDrop(wx.FileDropTarget):
             try:
                 if ext == '.mdl':
 
-                    dtype = datatypes.ModelTypes.FeedForward
-                    kwargs = dict(x=x, y=y, type=dtype, attrib={'mdl': filenames[0]})
+                    #dtype = datatypes.ModelTypes.FeedForward
+                    #kwargs = dict(x=x, y=y, type=dtype, attrib={'mdl': filenames[0]})
 
-                    model = self.cmd.add_model(type=dtype, id=None, attrib={'mdl': filenames[0]})
+                    # model = self.cmd.add_model(type=dtype, id=None, attrib={'mdl': filenames[0]})
 
                     # def createBox(self, xCoord, yCoord, id=None, name=None, color='#A2CAF5'):
-                    self.controller.createBox(x, y, model.get_id(), model.get_name())
+                    # self.controller.createBox(x, y, model.get_id(), model.get_name())
 
-                    # hack:  this is not working anymore!?
-                    #task = ('addmodel', kwargs)
-                    #self.controller.threadManager.dispatcher.putTask(task)
+                    # generate an ID for this model
+                    id = uuid.uuid4().hex[:5]
+
+                    # save these coordinates for drawing once the model is loaded
+                    self.controller.set_model_coords(id, x=x, y=y)
+
+                    # load the model within the engine process
+                    self.ENGINE.addModel(id=id, attrib={'mdl': filenames[0]})
+
 
                 else:
                     # load the simulation

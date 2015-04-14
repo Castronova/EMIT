@@ -2,6 +2,7 @@ __author__ = 'tonycastronova'
 
 import datetime as dt
 from utilities.status import Status
+import datatypes
 
 class feed_forward_wrapper(object):
     def __init__(self, config_params):
@@ -19,6 +20,9 @@ class feed_forward_wrapper(object):
 
     # def data_directory(self):
     #     raise NotImplementedError('This is an abstract method that must be implemented!')
+
+    def type(self):
+        return datatypes.ModelTypes.FeedForward
 
     def save(self):
         raise NotImplementedError('This is an abstract method that must be implemented!')

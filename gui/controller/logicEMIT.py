@@ -36,9 +36,12 @@ class LogicEMIT(ViewEMIT):
         # Start threading
         #self.threadManager = ThreadManager(self)
 
+        # self.taskServer = taskServer
+
         ViewEMIT.__init__(self, parent)
 
         self.FloatCanvas = self.Canvas.FloatCanvas
+
 
 
 

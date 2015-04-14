@@ -12,6 +12,9 @@ import wx.aui
 
 from gui.controller.logicEMIT import LogicEMIT
 import coordinator.engineManager as engineManager
+# from coordinator.engineProcessor import TaskServer
+from coordinator.engineManager import Engine
+
 
 # todo: refactor
 from gui.mainGui import wxStdOut
@@ -26,6 +29,7 @@ class EMITApp(wx.App):
 
         # get the shared instance of the coordinator engine
         engine = engineManager.get_engine()
+        self.ENGINE = Engine()
 
         # connect to databases and set default
         currentdir = os.path.dirname(os.path.abspath(__file__))
@@ -35,9 +39,9 @@ class EMITApp(wx.App):
         # tends to add clutter to our console.
         wx.Log.SetLogLevel(0)
 
-        engine.connect_to_db([connections_txt])
-        if not engine.get_default_db():
-            engine.set_default_database()
+        # engine.connect_to_db([connections_txt])
+        # if not engine.get_default_db():
+        #     engine.set_default_database()
 
         self.logicEmit = LogicEMIT(None)
 

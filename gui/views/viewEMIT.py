@@ -15,6 +15,7 @@ from wx import richtext
 from viewContext import TimeSeriesContextMenu, SimulationContextMenu, ConsoleContextMenu
 from gui.controller.logicDatabase import LogicDatabase
 import coordinator.engineAccessors as engine
+from utilities import db as dbUtilities
 
 # todo: refactor
 # from .. import objectListViewDatabase as olv
@@ -420,8 +421,6 @@ class TimeSeries(wx.Panel):
         self.SetSizer( seriesSelectorSizer )
         self.Layout()
 
-        #databases = Publisher.sendMessage('getDatabases')
-        # Publisher.subscribe(self.getKnownDatabases, "getKnownDatabases")  # sends message to CanvasController
         Publisher.subscribe(self.connection_added_status, "connectionAddedStatus")
 
 
@@ -440,10 +439,6 @@ class TimeSeries(wx.Panel):
 
         self._databases = engine.getDbConnections()
 
-        # if value is None:
-        #     Publisher.sendMessage('getDatabases')
-        # else:
-        #     self._databases = value
         choices = ['---']
         for k,v in self._databases.iteritems():
             choices.append(self._databases[k]['name'])
@@ -534,7 +529,10 @@ class TimeSeries(wx.Panel):
                 from db import dbapi as dbapi
                 from gui.objectListViewDatabase import Database
 
-                u = dbapi.utils(db['session'])
+                # hack : session wont exist here anymore!!!
+                session = dbUtilities.build_session_from_connection_string(db['connection_string'])
+
+                u = dbapi.utils(session)
                 series = u.getAllSeries()
 
                 if series is None:

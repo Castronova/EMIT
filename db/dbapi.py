@@ -435,9 +435,6 @@ class utils(serviceBase):
                 filter(Action.ActionTypeCV != 'Simulation').\
                 all()
 
-
-
-
     def getAllSimulations(self):
         """
         General select statement for retrieving many simulations.  This is intended to be used for populating gui tables
@@ -467,7 +464,6 @@ class utils(serviceBase):
 
 
 ### OLD ###
-
 
     def insert_result_ts(self):
 

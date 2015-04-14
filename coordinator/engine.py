@@ -255,7 +255,8 @@ class Coordinator(object):
         db = {}
         for db_id in self._db.iterkeys():
             db[db_id] = {'name': self._db[db_id]['name'],
-                         'description': self._db[db_id]['description']}
+                         'description': self._db[db_id]['description'],
+                         'connection_string': self._db[db_id]['connection_string']}
         return db
 
     def set_default_database(self,db_id=None):

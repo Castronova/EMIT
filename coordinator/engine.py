@@ -227,6 +227,7 @@ class Coordinator(object):
     def clear_all(self):
         self.__links = {}
         self.__models = {}
+        return True
 
     def DbResults(self,key=None, value = None):
         if key is not None:

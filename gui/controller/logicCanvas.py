@@ -399,7 +399,7 @@ class LogicCanvas(ViewCanvas):
         self.links = updated_links
 
         # remove the model from the engine
-        success = engine.RemoveModelById(model_obj.ID)
+        success = engine.removeModelById(model_obj.ID)
 
         if success:
             # remove the model from the canvas
@@ -410,15 +410,16 @@ class LogicCanvas(ViewCanvas):
 
     def clear(self, link_obj=None, model_obj=None):
 
-        # clear links and models in cmd
-        self.cmd.clear_all()
+        # clear links and models in the engine
+        success = engine.clearAll()
 
-        # clear links and model in gui
-        self.links.clear()
-        self.models.clear()
-        self.FloatCanvas.ClearAll()
+        if success:
+            # clear links and model in gui
+            self.links.clear()
+            self.models.clear()
+            self.FloatCanvas.ClearAll()
 
-        self.RedrawConfiguration()
+            self.RedrawConfiguration()
 
     def ObjectHit(self, object):
         cur = self.getCursor()

@@ -40,7 +40,7 @@ def getDefaultDb():
     return result
 
 
-def GetLinkById():
+def getLinkById():
     e = Engine()
     kwargs = dict()
     task = [('get_link_by_id',kwargs)]
@@ -48,7 +48,7 @@ def GetLinkById():
     result = e.processTasks()
     return result
 
-def RemoveModelById(modelid):
+def removeModelById(modelid):
     e = Engine()
     kwargs = dict(id=modelid)
     task = [('remove_model_by_id',kwargs)]
@@ -56,6 +56,17 @@ def RemoveModelById(modelid):
     result = e.processTasks()
     return result
 
+def clearAll():
+    """
+    Clears all the models and links in the configuration
+    :return: True on success
+    """
+    e = Engine()
+    kwargs = dict()
+    task = [('clear_all',kwargs)]
+    e.setTasks(task)
+    result = e.processTasks()
+    return result
 
 # getLinkById (id)
 # get_links_btwn_models

@@ -33,7 +33,6 @@ def get_engine():
     e = EngineBorg()
     return e.engine
 
-
 class Dispatcher:
     """
     The Dispatcher class manages the task and result queues.

@@ -16,6 +16,8 @@ from viewContext import TimeSeriesContextMenu, SimulationContextMenu, ConsoleCon
 from gui.controller.logicDatabase import LogicDatabase
 import coordinator.engineAccessors as engine
 from utilities import db as dbUtilities
+from db import dbapi as dbapi
+from gui.objectListViewDatabase import Database
 
 # todo: refactor
 # from .. import objectListViewDatabase as olv
@@ -526,8 +528,7 @@ class TimeSeries(wx.Panel):
 
                 # query the database and get basic series info
 
-                from db import dbapi as dbapi
-                from gui.objectListViewDatabase import Database
+
 
                 # hack : session wont exist here anymore!!!
                 session = dbUtilities.build_session_from_connection_string(db['connection_string'])

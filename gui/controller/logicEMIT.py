@@ -28,6 +28,8 @@ from gui.views.viewEMIT import ViewEMIT
 from gui.views.viewContext import LinkContextMenu, ModelContextMenu, GeneralContextMenu
 import gui.controller.logicCanvasObjects as LogicCanvasObjects
 import coordinator.engineManager as engineManager
+import coordinator.engineAccessors as engine
+import utilities.db as dbUtilities
 
 class LogicEMIT(ViewEMIT):
     def __init__(self, parent):
@@ -70,7 +72,11 @@ class LogicEMIT(ViewEMIT):
 
         self.link_clicks = 0
 
-        self._currentDbSession = self.cmd.get_default_db()
+        # self._currentDbSession = self.cmd.get_default_db()
+        _currentDb = engine.getDefaultDb()
+        self._currentDbSession = dbUtilities.build_session_from_connection_string(_currentDb['connection_string'])
+        # self._currentDbSession = None
+
         self.loadingpath = None
 
 

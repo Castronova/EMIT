@@ -26,7 +26,6 @@ class LogicToolbox(ViewToolbox):
         ViewToolbox.__init__(self, parent)
 
 
-
         ini = join(dirname(abspath(__file__)), '../Resources/ToolboxPaths')
         # config_params = {}
         cparser = ConfigParser.ConfigParser(None, multidict)

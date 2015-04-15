@@ -37,6 +37,7 @@ from gui.controller.logicFileDrop import LogicFileDrop
 import coordinator.engineManager as engineManager
 import coordinator.events as engineEvent
 import coordinator.engineAccessors as engine
+import utilities.db as dbUtilities
 
 # todo: refactor
 # from gui import CanvasObjects
@@ -77,7 +78,10 @@ class LogicCanvas(ViewCanvas):
 
         self.link_clicks = 0
 
-        self._currentDbSession = self.cmd.get_default_db()
+        # self._currentDbSession = self.cmd.get_default_db()
+        _currentDb = engine.getDefaultDb()
+        self._currentDbSession = dbUtilities.build_session_from_connection_string(_currentDb['connection_string'])
+
         self.loadingpath = None
 
         self.model_coords = {}
@@ -113,7 +117,7 @@ class LogicCanvas(ViewCanvas):
         Publisher.subscribe(self.clear, "clear")
         Publisher.subscribe(self.AddDatabaseConnection, "DatabaseConnection")
         # Publisher.subscribe(self.getDatabases, "getDatabases")
-        Publisher.subscribe(self.getCurrentDbSession, "SetCurrentDb")
+        # Publisher.subscribe(self.getCurrentDbSession, "SetCurrentDb")
         Publisher.subscribe(self.SaveSimulation, "SetSavePath")
         Publisher.subscribe(self.loadsimulation, "SetLoadPath")
         Publisher.subscribe(self.addModel, "AddModel")  # subscribes to object list view
@@ -326,77 +330,110 @@ class LogicCanvas(ViewCanvas):
         :return: None
         """
 
-        x0 = self.FloatCanvas.MinWidth / 2.
-        y0 = self.FloatCanvas.MinHeight / 2.
+        # x0 = self.FloatCanvas.MinWidth / 2.
+        # y0 = self.FloatCanvas.MinHeight / 2.
 
-        originx, originy = self.FloatCanvas.PixelToWorld((0, 0))
-        x = x0 + originx
-        y = originy - y0
+        # originx, originy = self.FloatCanvas.PixelToWorld((0, 0))
+        # x = x0 + originx
+        # y = originy - y0
 
+        # make sure the correct file type was dragged
         name, ext = os.path.splitext(filepath)
-
         if ext == '.mdl' or ext == '.sim':
-            try:
-                if ext == '.mdl':
-                    # load the model
-                    dtype = datatypes.ModelTypes.FeedForward
-                    model = self.cmd.add_model(type=dtype, attrib={'mdl': filepath})
-                    name = model.get_name()
-                    modelid = model.get_id()
-                    self.createBox(name=name, id=modelid, xCoord=x, yCoord=y)
 
-                else:
-                    # load the simulation
-                    self.loadsimulation(filepath)
+            import uuid
 
-            except Exception, e:
-                print 'ERROR| Could not load the model. Please verify that the model file exists.'
-                print 'ERROR| %s' % e
+            # generate an ID for this model
+            id = uuid.uuid4().hex[:5]
+
+            # save these coordinates for drawing once the model is loaded
+            self.set_model_coords(id, x=x, y=y)
+
+            # load the model within the engine process
+            if ext == '.mdl':
+                engine.addModel(id=id, attrib={'mdl': filepath})
+
+            else:
+                current_db_id = self.controller._currentDbID
+                attrib = dict(databaseid=current_db_id, resultid=name)
+                engine.addModel(id=id, attrib=attrib)
+
         else:
-            # # -- must be a data object --
+            # load the simulation
+            self.loadsimulation(filepath[0])
 
-            # get the current database connection dictionary
-            session = self.getCurrentDbSession()
+        # name, ext = os.path.splitext(filepath)
+        #
+        # if ext == '.mdl' or ext == '.sim':
+        #     try:
+        #         if ext == '.mdl':
+        #             # load the model
+        #             dtype = datatypes.ModelTypes.FeedForward
+        #             model = self.cmd.add_model(type=dtype, attrib={'mdl': filepath})
+        #             name = model.get_name()
+        #             modelid = model.get_id()
+        #             self.createBox(name=name, id=modelid, xCoord=x, yCoord=y)
+        #
+        #         else:
+        #             # load the simulation
+        #             self.loadsimulation(filepath)
+        #
+        #     except Exception, e:
+        #         print 'ERROR| Could not load the model. Please verify that the model file exists.'
+        #         print 'ERROR| %s' % e
 
-            # create odm2 instance
-            inst = odm2_data.odm2(resultid=name, session=session)
-
-            # make sure that output handles cases where a dictionary element is passed in
-            output = inst.outputs()
-            if isinstance(output, dict):
-                output = output.values()[0]
-
-
-            # create a model instance
-            thisModel = engine.Model(id=inst.id(),
-                                     name='\n'.join([inst.name(), inst.id()]),
-                                     instance=inst,
-                                     desc=inst.description(),
-                                     input_exchange_items=[],
-                                     output_exchange_items=[output],
-                                     params=None)
-
-
-            # save the result id
-            att = {'resultid': name}
-
-            # save the database connection
-            dbs = self.cmd.get_db_connections()
-            for id, dic in dbs.iteritems():
-                if dic['session'] == self.getCurrentDbSession():
-                    att['databaseid'] = id
-                    thisModel.attrib(att)
-                    break
-
-            thisModel.type(datatypes.ModelTypes.Data)
-
-
-            # save the model
-            self.cmd.Models(thisModel)
-
-            # draw a box for this model
-            self.createBox(name='\n'.join([inst.name(), inst.id()]), id=inst.id(), xCoord=x, yCoord=y, color='#FFFF99')
-            self.FloatCanvas.Draw()
+        # else:
+        #     # # -- must be a data object --
+        #
+        #
+        #     # session = dbUtilities.build_session_from_connection_string(db['connection_string'])
+        #     #
+        #     # u = dbapi.utils(session)
+        #     # series = u.getAllSeries()
+        #
+        #
+        #     # get the current database connection dictionary
+        #     session = self.getCurrentDbSession()
+        #
+        #     # create odm2 instance
+        #     inst = odm2_data.odm2(resultid=name, session=session)
+        #
+        #     # make sure that output handles cases where a dictionary element is passed in
+        #     output = inst.outputs()
+        #     if isinstance(output, dict):
+        #         output = output.values()[0]
+        #
+        #
+        #     # create a model instance
+        #     thisModel = engine.Model(id=inst.id(),
+        #                              name='\n'.join([inst.name(), inst.id()]),
+        #                              instance=inst,
+        #                              desc=inst.description(),
+        #                              input_exchange_items=[],
+        #                              output_exchange_items=[output],
+        #                              params=None)
+        #
+        #
+        #     # save the result id
+        #     att = {'resultid': name}
+        #
+        #     # save the database connection
+        #     dbs = self.cmd.get_db_connections()
+        #     for id, dic in dbs.iteritems():
+        #         if dic['session'] == self.getCurrentDbSession():
+        #             att['databaseid'] = id
+        #             thisModel.attrib(att)
+        #             break
+        #
+        #     thisModel.type(datatypes.ModelTypes.Data)
+        #
+        #
+        #     # save the model
+        #     self.cmd.Models(thisModel)
+        #
+        #     # draw a box for this model
+        #     self.createBox(name='\n'.join([inst.name(), inst.id()]), id=inst.id(), xCoord=x, yCoord=y, color='#FFFF99')
+        #     self.FloatCanvas.Draw()
 
     def RemoveLink(self, link_obj):
 
@@ -642,12 +679,14 @@ class LogicCanvas(ViewCanvas):
         if cur.Name == 'link':
             self.AddinkCursorClick()
 
-    def getCurrentDbSession(self, value=None):
-        if value is not None:
-            dbs = self.cmd.get_db_connections()
+    def getCurrentDbSession(self, dbName=None):
+        if dbName is not None:
+            dbs = engine.getDbConnections()
+            # dbs = self.cmd.get_db_connections()
             for db in dbs.iterkeys():
-                if dbs[db]['name'] == value:
-                    self._currentDbSession = dbs[db]['session']
+                if dbs[db]['name'] == dbName:
+                    self._currentDbSession = dbUtilities.build_session_from_connection_string(dbs[db]['connection_string'])
+                    # self._currentDbSession = dbs[db]['session']
                     break
         return self._currentDbSession
 

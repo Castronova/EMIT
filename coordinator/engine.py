@@ -280,7 +280,10 @@ class Coordinator(object):
         return self.__incr
 
     def get_default_db(self):
-        return self.__default_db
+        db = {'name': self.__default_db['name'],
+              'description': self.__default_db['description'],
+              'connection_string': self.__default_db['connection_string']}
+        return db
 
     def add_model(self, id=None, attrib=None):
         """

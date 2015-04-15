@@ -38,6 +38,7 @@ import coordinator.engineManager as engineManager
 import coordinator.events as engineEvent
 import coordinator.engineAccessors as engine
 import utilities.db as dbUtilities
+import uuid
 
 # todo: refactor
 # from gui import CanvasObjects
@@ -79,8 +80,8 @@ class LogicCanvas(ViewCanvas):
         self.link_clicks = 0
 
         # self._currentDbSession = self.cmd.get_default_db()
-        _currentDb = engine.getDefaultDb()
-        self._currentDbSession = dbUtilities.build_session_from_connection_string(_currentDb['connection_string'])
+        self._currentDb = engine.getDefaultDb()
+        self._currentDbSession = dbUtilities.build_session_from_connection_string(self._currentDb['connection_string'])
 
         self.loadingpath = None
 
@@ -330,110 +331,31 @@ class LogicCanvas(ViewCanvas):
         :return: None
         """
 
-        # x0 = self.FloatCanvas.MinWidth / 2.
-        # y0 = self.FloatCanvas.MinHeight / 2.
-
-        # originx, originy = self.FloatCanvas.PixelToWorld((0, 0))
-        # x = x0 + originx
-        # y = originy - y0
 
         # make sure the correct file type was dragged
         name, ext = os.path.splitext(filepath)
+
+        # generate an ID for this model
+        uid = uuid.uuid4().hex[:5]
+
+        # save these coordinates for drawing once the model is loaded
+        self.set_model_coords(uid, x=x, y=y)
+
         if ext == '.mdl' or ext == '.sim':
 
-            import uuid
-
-            # generate an ID for this model
-            id = uuid.uuid4().hex[:5]
-
-            # save these coordinates for drawing once the model is loaded
-            self.set_model_coords(id, x=x, y=y)
-
-            # load the model within the engine process
             if ext == '.mdl':
-                engine.addModel(id=id, attrib={'mdl': filepath})
+                # load the model within the engine process
+                engine.addModel(id=uid, attrib={'mdl': filepath})
 
-            else:
-                current_db_id = self.controller._currentDbID
-                attrib = dict(databaseid=current_db_id, resultid=name)
-                engine.addModel(id=id, attrib=attrib)
-
+            elif ext == '.sim':
+                # load the simulation
+                self.loadsimulation(filepath[0])
         else:
-            # load the simulation
-            self.loadsimulation(filepath[0])
+            # load data model
+            current_db_id = self._currentDb['id']
+            attrib = dict(databaseid=current_db_id, resultid=name)
+            engine.addModel(id=uid, attrib=attrib)
 
-        # name, ext = os.path.splitext(filepath)
-        #
-        # if ext == '.mdl' or ext == '.sim':
-        #     try:
-        #         if ext == '.mdl':
-        #             # load the model
-        #             dtype = datatypes.ModelTypes.FeedForward
-        #             model = self.cmd.add_model(type=dtype, attrib={'mdl': filepath})
-        #             name = model.get_name()
-        #             modelid = model.get_id()
-        #             self.createBox(name=name, id=modelid, xCoord=x, yCoord=y)
-        #
-        #         else:
-        #             # load the simulation
-        #             self.loadsimulation(filepath)
-        #
-        #     except Exception, e:
-        #         print 'ERROR| Could not load the model. Please verify that the model file exists.'
-        #         print 'ERROR| %s' % e
-
-        # else:
-        #     # # -- must be a data object --
-        #
-        #
-        #     # session = dbUtilities.build_session_from_connection_string(db['connection_string'])
-        #     #
-        #     # u = dbapi.utils(session)
-        #     # series = u.getAllSeries()
-        #
-        #
-        #     # get the current database connection dictionary
-        #     session = self.getCurrentDbSession()
-        #
-        #     # create odm2 instance
-        #     inst = odm2_data.odm2(resultid=name, session=session)
-        #
-        #     # make sure that output handles cases where a dictionary element is passed in
-        #     output = inst.outputs()
-        #     if isinstance(output, dict):
-        #         output = output.values()[0]
-        #
-        #
-        #     # create a model instance
-        #     thisModel = engine.Model(id=inst.id(),
-        #                              name='\n'.join([inst.name(), inst.id()]),
-        #                              instance=inst,
-        #                              desc=inst.description(),
-        #                              input_exchange_items=[],
-        #                              output_exchange_items=[output],
-        #                              params=None)
-        #
-        #
-        #     # save the result id
-        #     att = {'resultid': name}
-        #
-        #     # save the database connection
-        #     dbs = self.cmd.get_db_connections()
-        #     for id, dic in dbs.iteritems():
-        #         if dic['session'] == self.getCurrentDbSession():
-        #             att['databaseid'] = id
-        #             thisModel.attrib(att)
-        #             break
-        #
-        #     thisModel.type(datatypes.ModelTypes.Data)
-        #
-        #
-        #     # save the model
-        #     self.cmd.Models(thisModel)
-        #
-        #     # draw a box for this model
-        #     self.createBox(name='\n'.join([inst.name(), inst.id()]), id=inst.id(), xCoord=x, yCoord=y, color='#FFFF99')
-        #     self.FloatCanvas.Draw()
 
     def RemoveLink(self, link_obj):
 

@@ -256,7 +256,8 @@ class Coordinator(object):
         for db_id in self._db.iterkeys():
             db[db_id] = {'name': self._db[db_id]['name'],
                          'description': self._db[db_id]['description'],
-                         'connection_string': self._db[db_id]['connection_string']}
+                         'connection_string': self._db[db_id]['connection_string'],
+                         'id': db_id}
         return db
 
     def set_default_database(self,db_id=None):
@@ -271,6 +272,7 @@ class Coordinator(object):
 
         try:
             self.__default_db = self._db[db_id]
+            self.__default_db['id'] = db_id
             print 'Default database : %s'%self._db[db_id]['connection_string']
         except:
             print 'ERROR | could not find database: %s'%db_id
@@ -282,7 +284,8 @@ class Coordinator(object):
     def get_default_db(self):
         db = {'name': self.__default_db['name'],
               'description': self.__default_db['description'],
-              'connection_string': self.__default_db['connection_string']}
+              'connection_string': self.__default_db['connection_string'],
+              'id': self.__default_db['id']}
         return db
 
     def add_model(self, id=None, attrib=None):
@@ -334,7 +337,7 @@ class Coordinator(object):
             resultid = attrib['resultid']
 
             # get the database session
-            session = self.get_db_connections()[databaseid]['session']
+            session = self._db[databaseid]['session']
 
             # create odm2 datamodel instance
             inst = odm2_data.odm2(resultid=resultid, session=session)

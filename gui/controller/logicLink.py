@@ -3,7 +3,7 @@ __author__ = 'tonycastronova'
 import wx
 
 from gui.views.viewLink import ViewLink
-
+import coordinator.engineAccessors as engine
 
 class LogicLink(ViewLink):
     def __init__(self, parent, outputs, inputs, cmd):
@@ -29,6 +29,7 @@ class LogicLink(ViewLink):
 
     def OnChange(self, event):
         LinkObject = self.cmd.get_link_by_id(event.GetString())
+        # LinkObject = engine.GetLinkById(event.GetString())
         OutputObject = LinkObject.source_exchange_item()
         InputObject = LinkObject.target_exchange_item()
         OutputName = OutputObject._ExchangeItem__name

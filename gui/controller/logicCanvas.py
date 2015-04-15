@@ -69,7 +69,7 @@ class LogicCanvas(ViewCanvas):
         defaultCursor.Name = 'default'
         self._Cursor = defaultCursor
 
-        dt = LogicFileDrop(self, self.FloatCanvas, self.cmd)
+        dt = LogicFileDrop(self, self.FloatCanvas)
         self.FloatCanvas.SetDropTarget(dt)
 
         self.linkRects = []
@@ -386,10 +386,11 @@ class LogicCanvas(ViewCanvas):
             self.RedrawConfiguration()
 
     def RemoveModel(self, model_obj):
-
-
-        # remove the model from the canvas
-        removed_model = self.models.pop(model_obj)
+        """
+        Removes a model component from the modeling canvas
+        :param model_obj: model object that will be removed
+        :return: None
+        """
 
         updated_links = {}
         for k, v in self.links.iteritems():
@@ -397,11 +398,15 @@ class LogicCanvas(ViewCanvas):
                 updated_links[k] = v
         self.links = updated_links
 
-        # remove the model from the cmd engine
-        self.cmd.remove_model_by_id(model_obj.ID)
+        # remove the model from the engine
+        success = engine.RemoveModelById(model_obj.ID)
 
-        # redraw the canvas
-        self.RedrawConfiguration()
+        if success:
+            # remove the model from the canvas
+            removed_model = self.models.pop(model_obj)
+
+            # redraw the canvas
+            self.RedrawConfiguration()
 
     def clear(self, link_obj=None, model_obj=None):
 
@@ -604,11 +609,9 @@ class LogicCanvas(ViewCanvas):
     def getCurrentDbSession(self, dbName=None):
         if dbName is not None:
             dbs = engine.getDbConnections()
-            # dbs = self.cmd.get_db_connections()
             for db in dbs.iterkeys():
                 if dbs[db]['name'] == dbName:
                     self._currentDbSession = dbUtilities.build_session_from_connection_string(dbs[db]['connection_string'])
-                    # self._currentDbSession = dbs[db]['session']
                     break
         return self._currentDbSession
 
@@ -633,13 +636,6 @@ class LogicCanvas(ViewCanvas):
                                   connection_string=connection)  # sends message to mainGui
 
             return False
-
-    # def getDatabases(self):
-    #
-    #     knownconnections = engine.getDbConnections()
-    #
-    #     # knownconnections = self.cmd.get_db_connections()
-    #     Publisher.sendMessage('getKnownDatabases', value=knownconnections)  # sends message to mainGui
 
     def DetailView(self):
         # DCV.ShowDetails()

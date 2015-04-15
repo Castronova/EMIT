@@ -4,11 +4,10 @@ import wx
 from wx.lib.pubsub import pub as Publisher
 
 class LogicFileDrop(wx.FileDropTarget):
-    def __init__(self, controller, FloatCanvas, cmd):
+    def __init__(self, controller, FloatCanvas):
         wx.FileDropTarget.__init__(self)
         self.controller = controller
         self.FloatCanvas = FloatCanvas
-        self.cmd = cmd
         Publisher.subscribe(self.OnDropFiles, 'toolboxclick')
 
 

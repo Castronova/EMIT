@@ -438,14 +438,14 @@ class LogicCanvas(ViewCanvas):
 
             # get the model object from cmd
             obj_id = object.ID
-            obj = self.cmd.get_model_by_id(obj_id)
+            # obj = self.cmd.get_model_by_id(obj_id)
+            model = engine.get_model_by_id(obj_id)
 
-            try:
-                params = obj.get_config_params()
-                if params is None:
-                    params = {}
-            except:
+            if 'params' in model:
+                params = model['params']
+            else:
                 params = {}
+
 
             text = ''
 

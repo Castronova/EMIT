@@ -411,7 +411,10 @@ class Coordinator(object):
     def get_model_by_id(self,id):
         for m in self.__models:
             if self.__models[m].get_id() == id:
-                return self.__models[m]
+                return {'params': self.__models[m].get_config_params(),
+                        'name': self.__models[m].get_name(),
+                        'id': self.__models[m].get_id(),
+                        'description': self.__models[m].get_description()}
         return None
 
     def add_link(self,from_id, from_item_id, to_id, to_item_id):

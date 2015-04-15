@@ -40,14 +40,6 @@ def getDefaultDb():
     return result
 
 
-def getLinkById():
-    e = Engine()
-    kwargs = dict()
-    task = [('get_link_by_id',kwargs)]
-    e.setTasks(task)
-    result = e.processTasks()
-    return result
-
 def removeModelById(modelid):
     e = Engine()
     kwargs = dict(id=modelid)
@@ -68,6 +60,25 @@ def clearAll():
     result = e.processTasks()
     return result
 
+def get_model_by_id(modelid):
+    e = Engine()
+    kwargs = dict(id=modelid)
+    task = [('get_model_by_id',kwargs)]
+    e.setTasks(task)
+    result = e.processTasks()
+    return result
+
+
+
+
+# def getLinkById():
+#     e = Engine()
+#     kwargs = dict()
+#     task = [('get_link_by_id',kwargs)]
+#     e.setTasks(task)
+#     result = e.processTasks()
+#     return result
+#
 # getLinkById (id)
 # get_links_btwn_models
 

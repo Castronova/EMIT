@@ -408,7 +408,13 @@ class Coordinator(object):
                 return 1
         return 0
 
-    def get_model_by_id(self,id):
+    def get_model_by_id_summary(self,id):
+        """
+        finds the model that corresponds with the given id and return a summary of its metadata
+        :param id: model id
+        :return: serializable summary of the model's metadata
+        """
+
         for m in self.__models:
             if self.__models[m].get_id() == id:
                 return {'params': self.__models[m].get_config_params(),
@@ -417,7 +423,13 @@ class Coordinator(object):
                         'description': self.__models[m].get_description()}
         return None
 
-    def add_link(self,from_id, from_item_id, to_id, to_item_id):
+    def get_model_by_id(self,id):
+        for m in self.__models:
+            if self.__models[m].get_id() == id:
+                return self.__models[m]
+        return None
+
+    def add_link(self,from_id, from_item_id, to_id, to_item_id, spatial_interp=None, temporal_interp=None):
         """
         adds a data link between two components
         """
@@ -443,11 +455,25 @@ class Coordinator(object):
 
             # create link
             link = Link(id,From,To,oi,ii)
+
+            # add spatial and temporal interpolations
+            if spatial_interp is not None:
+                link.spatial_interpolation(spatial_interp)
+            if temporal_interp is not None:
+                link.temporal_interpolation(temporal_interp)
+
+            # save the link
             self.__links[id] = link
 
-            return link
+            # return link
+            return link.get_id()
         else:
             print 'WARNING | Could Not Create Link :('
+            return None
+
+
+
+
 
     def add_link_by_name(self,from_id, from_item_name, to_id, to_item_name):
         """

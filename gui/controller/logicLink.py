@@ -43,8 +43,13 @@ class LogicLink(ViewLink):
     def NewButton(self, event):
         self.on_select_input()
         self.on_select_output()
-        self.OnSave(event)
-        self.LinkNameListBox.Append(self.l._Link__id)
+
+        linkid = self.OnSave()
+
+        if linkid is not None:
+            oei = self.OutputComboBox.GetValue()
+            iei = self.InputComboBox.GetValue()
+            self.LinkNameListBox.Append(('%s -> %s, ID: %s' % (oei, iei, linkid)))
 
     def GetName(self, event):
         dlg = NameDialog(self)
@@ -118,16 +123,21 @@ class LogicLink(ViewLink):
         if dial.ShowModal() == wx.ID_YES:
             self.Destroy()
 
-    def OnSave(self, event):
-        # TODO: Need to send information to cmd, unless there is another way, we need to add cmd into the class
+    def OnSave(self):
+        """
+        Saves a link object to the engine
+        :return: linkif if successful, else None
+        """
         spatial, temporal = self.ComboBoxSpatial.GetValue(), self.ComboBoxTemporal.GetValue()
-        # set the link in cmd
-        self.l = l = self.cmd.add_link(self.output._Model__id, self.OutputComboBox.GetValue(),
-                                       self.input._Model__id, self.InputComboBox.GetValue())
 
-        # set interpolations
-        # l.spatial_interpolation(spatial)
-        # l.temporal_interpolation(temporal)
+        # create the link inside the engine
+        success = engine.addLink(source_id=self.output_component['id'],
+                       source_item=self.OutputComboBox.GetValue(),
+                       target_id=self.input_component['id'],
+                       target_item=self.InputComboBox.GetValue(),
+                       spatial_interpolation=spatial,
+                       temporal_interpolation=temporal)
+        return success
 
     def OnStartUp(self):
         links = engine.getLinksBtwnModels(self.output_component['id'], self.input_component['id'])

@@ -14,14 +14,19 @@ def addModel(id=None, attrib=None):
     e.thread.start()
 
 
-def addLink(source_id=None, source_item=None, target_id=None, target_item=None,spatial=None, temporal=None ):
+def addLink(source_id=None, source_item=None, target_id=None, target_item=None, spatial_interpolation=None,
+            temporal_interpolation=None):
     e = Engine()
-    kwargs = dict(source_id=source_id, source_item=source_item, target_id=target_id, target_item=target_item,spatial=spatial, temporal=temporal, event='onLinkAdded')
-    task = [('add_link',kwargs)]
+    kwargs = dict(from_id=source_id, from_item_id=source_item, to_id=target_id, to_item_id=target_item,
+                  spatial_interp=spatial_interpolation, temporal_interp=temporal_interpolation)
+    task = [('add_link', kwargs)]
     e.setTasks(task)
 
-    e.thread = Thread(target = e.check_for_process_results)
-    e.thread.start()
+    result = e.processTasks()
+    return result
+
+    # e.thread = Thread(target = e.check_for_process_results)
+    # e.thread.start()
 
 def getDbConnections():
     e = Engine()
@@ -63,7 +68,7 @@ def clearAll():
 def getModelById(modelid):
     e = Engine()
     kwargs = dict(id=modelid)
-    task = [('get_model_by_id', kwargs)]
+    task = [('get_model_by_id_summary', kwargs)]
     e.setTasks(task)
     result = e.processTasks()
     return result

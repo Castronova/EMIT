@@ -63,7 +63,7 @@ def clearAll():
 def getModelById(modelid):
     e = Engine()
     kwargs = dict(id=modelid)
-    task = [('get_model_by_id',kwargs)]
+    task = [('get_model_by_id', kwargs)]
     e.setTasks(task)
     result = e.processTasks()
     return result
@@ -71,7 +71,7 @@ def getModelById(modelid):
 def getOutputExchangeItems(modelid):
     e = Engine()
     kwargs = dict(id=modelid)
-    task = [('get_output_exchange_items_summary',kwargs)]
+    task = [('get_output_exchange_items_summary', kwargs)]
     e.setTasks(task)
     result = e.processTasks()
     return result
@@ -79,7 +79,15 @@ def getOutputExchangeItems(modelid):
 def getInputExchangeItems(modelid):
     e = Engine()
     kwargs = dict(id=modelid)
-    task = [('get_input_exchange_items_summary',kwargs)]
+    task = [('get_input_exchange_items_summary', kwargs)]
+    e.setTasks(task)
+    result = e.processTasks()
+    return result
+
+def getLinksBtwnModels(from_model_id, to_model_id):
+    e = Engine()
+    kwargs = dict(from_model_id=from_model_id, to_model_id=to_model_id)
+    task = [('get_links_btwn_models', kwargs)]
     e.setTasks(task)
     result = e.processTasks()
     return result

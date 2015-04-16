@@ -41,8 +41,8 @@ class LogicLink(ViewLink):
         self.l = LinkObject
 
     def NewButton(self, event):
-        self.on_select_input(event)
-        self.on_select_output(event)
+        self.on_select_input()
+        self.on_select_output()
         self.OnSave(event)
         self.LinkNameListBox.Append(self.l._Link__id)
 
@@ -64,30 +64,39 @@ class LogicLink(ViewLink):
         if sel != -1:
             self.listbox.Delete(sel)
 
-    def on_select_output(self, event):
+    def on_select_output(self):
+        """
+        gets the metadata for the selected output exchange item and populates a tree view
+        :return: 1 if successful, else 0
+        """
         output_value = self.OutputComboBox.GetValue()
         self.OutputDataTreeCtrl.DeleteAllItems()
+        for item in self.output_items:
+            if item['name'] == output_value:
+                self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, item['name'])
+                self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, item['description'])
+                self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, item['type'])
+                self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, item['unit'].UnitName())
+                self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, item['variable'].VariableNameCV())
+                return 1
+        return 0
 
-        self.output_selected = self.output.get_output_exchange_item_by_name(output_value)
-        self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, self.output_selected._ExchangeItem__name)
-        self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem,
-                                                self.output_selected._ExchangeItem__description)
-
-        self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, self.output_selected._ExchangeItem__type)
-        self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem,
-                                                self.output_selected._ExchangeItem__unit._Unit__unitName)
-
-    def on_select_input(self, event):
+    def on_select_input(self):
+        """
+        gets the metadata for the selected input exchange item and populates a tree view
+        :return: 1 if successful, else 0
+        """
         input_value = self.InputComboBox.GetValue()
-        self.input_selected = self.input.get_input_exchange_item_by_name(input_value)
         self.InputDataTreeCtrl.DeleteAllItems()
-
-        self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, self.input_selected._ExchangeItem__name)
-        self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem,
-                                               self.input_selected._ExchangeItem__description)
-        self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, self.input_selected._ExchangeItem__type)
-        self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem,
-                                               self.input_selected._ExchangeItem__unit._Unit__unitName)
+        for item in self.input_items:
+            if item['name'] == input_value:
+                self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, item['name'])
+                self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, item['description'])
+                self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, item['type'])
+                self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, item['unit'].UnitName())
+                self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, item['variable'].VariableNameCV())
+                return 1
+        return 0
 
     def on_select_spatial(self, event):
         spatial_value = self.ComboBoxSpatial.GetValue()
@@ -121,8 +130,8 @@ class LogicLink(ViewLink):
         # l.temporal_interpolation(temporal)
 
     def OnStartUp(self):
-        Links = self.cmd.get_links_btwn_models(self.output, self.input)
-        [self.LinkNameListBox.Append(str(i)) for i in Links]
+        links = engine.getLinksBtwnModels(self.output_component['id'], self.input_component['id'])
+        [self.LinkNameListBox.Append(str(i)) for i in links]
 
 
 class NameDialog(wx.Dialog):

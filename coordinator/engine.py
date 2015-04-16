@@ -513,13 +513,13 @@ class Coordinator(object):
         # todo: this should return a dict of link objects, NOT some random list
         return links
 
-    def get_links_btwn_models(self, from_model, to_model):
+    def get_links_btwn_models(self, from_model_id, to_model_id):
 
         links = []
         for linkid, link in self.__links.iteritems():
             source_id = link.source_component().get_id()
             target_id = link.target_component().get_id()
-            if source_id == from_model and target_id == to_model:
+            if source_id == from_model_id and target_id == to_model_id:
                 links.append(link)
 
         return links
@@ -545,7 +545,7 @@ class Coordinator(object):
                 items_list = []
                 for ei in eitems:
                     items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.get_id(), unit=ei.unit(),
-                                           variable=ei.variable()))
+                                           variable=ei.variable(),type=ei.get_type()))
                 return items_list
         return None
 
@@ -561,7 +561,7 @@ class Coordinator(object):
                 items_list = []
                 for ei in eitems:
                     items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.get_id(), unit=ei.unit(),
-                                           variable=ei.variable()))
+                                           variable=ei.variable(),type=ei.get_type()))
                 return items_list
         return None
 

@@ -14,6 +14,9 @@ class ViewLink(wx.Frame):
 
         self.input_component = input
         self.output_component = output
+        self.input_items = None
+        self.output_items = None
+
         self.InitUI()
 
     def InitUI(self):
@@ -148,16 +151,16 @@ class ViewLink(wx.Frame):
 
 
     def OutputComboBoxChoices(self):
-        output_items = engine.getOutputExchangeItems(self.output_component['id'])
-        if output_items is not None:
-            return [item['name'] for item in output_items]
+        self.output_items = engine.getOutputExchangeItems(self.output_component['id'])
+        if self.output_items is not None:
+            return [item['name'] for item in self.output_items]
         else:
             return [" "]
 
     def InputComboBoxChoices(self):
-        input_items = engine.getInputExchangeItems(self.input_component['id'])
-        if input_items is not None:
-            return [item['name'] for item in input_items]
+        self.input_items = engine.getInputExchangeItems(self.input_component['id'])
+        if self.input_items is not None:
+            return [item['name'] for item in self.input_items]
         else:
             return [' ']
 

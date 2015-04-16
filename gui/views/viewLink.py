@@ -101,13 +101,13 @@ class ViewLink(wx.Frame):
         InputSizer.Add(self.InputDataTreeCtrl, 0, wx.ALL, 5)
 
         TemporalChoices = self.TemporalInterpolationChoices()  # Create the choices for the Temporal Interpolation Combobox
-        self.ComboBoxTemporal = wx.ComboBox(self.ExchangeItemSizer, wx.ID_ANY, u"No interpolation",
+        self.ComboBoxTemporal = wx.ComboBox(self.ExchangeItemSizer, wx.ID_ANY, u"None Specified",
                                             wx.DefaultPosition, wx.Size(300, -1),
                                             TemporalChoices, 0)
         InputSizer.Add(self.ComboBoxTemporal, 0, wx.ALL, 5)
 
         SpatialChoices = self.SpatialInterpolationChoices()  # Create the choices for the Spatial Interpolation Combobox
-        self.ComboBoxSpatial = wx.ComboBox(self.ExchangeItemSizer, wx.ID_ANY, u"No interpolation",
+        self.ComboBoxSpatial = wx.ComboBox(self.ExchangeItemSizer, wx.ID_ANY, u"None Specified",
                                            wx.DefaultPosition, wx.Size(300, -1),
                                            SpatialChoices, 0)
         InputSizer.Add(self.ComboBoxSpatial, 0, wx.ALL, 5)
@@ -132,6 +132,7 @@ class ViewLink(wx.Frame):
         RightAlignSizer = wx.BoxSizer(wx.HORIZONTAL)
 
         self.ButtonSave = wx.Button(self.BottomPanel, wx.ID_ANY, u"Save", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.ButtonSave.Disable()
         RightAlignSizer.Add(self.ButtonSave, 0, wx.ALL, 5)
 
         self.ButtonClose = wx.Button(self.BottomPanel, wx.ID_ANY, u"Close", wx.DefaultPosition, wx.DefaultSize, 0)
@@ -164,24 +165,24 @@ class ViewLink(wx.Frame):
         else:
             return [' ']
 
-    def InterpolationComboBoxChoices(self):
-        # populate spatial and temporal interpolations
-        t = TemporalInterpolation()
-        self.temporal_transformations = {i.name(): i for i in t.methods()}
-        self.ComboboxTemporalChoices = self.temporal_transformations.keys()
-
-        s = SpatialInterpolation()
-        self.spatial_transformations = {i.name(): i for i in s.methods()}
-        self.ComboboxSpatialChoices = self.spatial_transformations.keys()
+    # def InterpolationComboBoxChoices(self):
+    #     # populate spatial and temporal interpolations
+    #     t = TemporalInterpolation()
+    #     self.temporal_transformations = {i.name(): i for i in t.methods()}
+    #     self.ComboboxTemporalChoices = ['None Specified'] + self.temporal_transformations.keys()
+    #
+    #     s = SpatialInterpolation()
+    #     self.spatial_transformations = {i.name(): i for i in s.methods()}
+    #     self.ComboboxSpatialChoices = ['None Specified'] + self.spatial_transformations.keys()
 
     def TemporalInterpolationChoices(self):
         t = TemporalInterpolation()
         self.temporal_transformations = {i.name(): i for i in t.methods()}
-        return self.temporal_transformations.keys()
+        return ['None Specified'] + self.temporal_transformations.keys()
 
     def SpatialInterpolationChoices(self):
         s = SpatialInterpolation()
         self.spatial_transformations = {i.name(): i for i in s.methods()}
-        return self.spatial_transformations.keys()
+        return ['None Specified'] + self.spatial_transformations.keys()
 
 

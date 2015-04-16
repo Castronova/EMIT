@@ -471,10 +471,6 @@ class Coordinator(object):
             print 'WARNING | Could Not Create Link :('
             return None
 
-
-
-
-
     def add_link_by_name(self,from_id, from_item_name, to_id, to_item_name):
         """
         adds a data link between two components
@@ -557,6 +553,24 @@ class Coordinator(object):
         for l in self.__links:
             if l == id:
                 return self.__links[l]
+        return None
+
+    def get_link_by_id_summary(self,id):
+        """
+        returns all the links corresponding with a linkable component
+        """
+        for l in self.__links.iterkeys():
+            if l == id:
+                spatial = self.__links[l].spatial_interpolation().name() \
+                    if self.__links[l].spatial_interpolation() is not None \
+                    else 'None Specified'
+                temporal = self.__links[l].temporal_interpolation().name() \
+                    if self.__links[l].temporal_interpolation() is not None \
+                    else 'None Specified'
+                return dict(output_name=self.__links[l].source_exchange_item().name(),
+                            input_name=self.__links[l].target_exchange_item().name(),
+                            spatial_interpolation=spatial,
+                            temporal_interpolation=temporal)
         return None
 
     def get_output_exchange_items_summary(self, id):

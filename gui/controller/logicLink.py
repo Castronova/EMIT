@@ -4,6 +4,12 @@ import wx
 
 from gui.views.viewLink import ViewLink
 import coordinator.engineAccessors as engine
+import wx.lib.newevent as ne
+
+
+LinkUpdatedEvent, EVT_LINKUPDATED  =ne.NewEvent()
+
+
 
 class LogicLink(ViewLink):
     def __init__(self, parent, outputs, inputs, cmd):
@@ -16,6 +22,18 @@ class LogicLink(ViewLink):
         self.OnStartUp()
         self.InitBindings()
 
+
+        # class link variables used to save link
+        self.__spatial_interpolation = None
+        self.__temporal_interpolation = None
+        self.__link_source_id = self.output_component['id']
+        self.__link_source_item = None
+        self.__link_target_id = self.input_component['id']
+        self.__link_target_item = None
+        self.__link_name = None
+        self.__link_ids = {}
+        self.__links = {}
+
     def InitBindings(self):
         self.LinkNameListBox.Bind(wx.EVT_LISTBOX, self.OnChange)
         self.ButtonNew.Bind(wx.EVT_BUTTON, self.OnSave)
@@ -26,30 +44,69 @@ class LogicLink(ViewLink):
         self.OutputComboBox.Bind(wx.EVT_COMBOBOX, self.on_select_output)
         self.InputComboBox.Bind(wx.EVT_COMBOBOX, self.on_select_input)
         self.ButtonSave.Bind(wx.EVT_BUTTON, self.OnSave)
+        self.Bind(EVT_LINKUPDATED, self.linkUpdated)
 
     def OnChange(self, event):
-        LinkObject = self.cmd.get_link_by_id(event.GetString())
-        # LinkObject = engine.GetLinkById(event.GetString())
-        OutputObject = LinkObject.source_exchange_item()
-        InputObject = LinkObject.target_exchange_item()
-        OutputName = OutputObject._ExchangeItem__name
-        InputName = InputObject._ExchangeItem__name
-        self.OutputComboBox.SetStringSelection(OutputName)
-        self.InputComboBox.SetStringSelection(InputName)
-        self.ComboBoxTemporal.SetStringSelection(str(LinkObject._Link__temporal_interpolation))
-        self.ComboBoxSpatial.SetStringSelection(str(LinkObject._Link__spatial_interpolation))
-        self.l = LinkObject
+        self.__link_name =event.GetString()
+        if self.__link_name in self.__link_ids.keys():
+            linkid = self.__link_ids[self.__link_name]
+            link = engine.getLinkById(linkid)
+            self.OutputComboBox.SetStringSelection(link['output_name'])
+            self.InputComboBox.SetStringSelection(link['input_name'])
+            self.ComboBoxTemporal.SetStringSelection(str(link['temporal_interpolation']))
+            self.ComboBoxSpatial.SetStringSelection(str(link['spatial_interpolation']))
+            wx.PostEvent(self, LinkUpdatedEvent())
+            # self.l = LinkObject
+
+    def linkUpdated(self, event):
+
+        # build link dictionary
+        current_link_dict = dict(source_id=self.__link_source_id,
+                       source_item=self.__link_source_item,
+                       target_id=self.__link_target_id,
+                       target_item=self.__link_target_item,
+                       spatial_interpolation=self.__spatial_interpolation,
+                       temporal_interpolation=self.__temporal_interpolation)
+
+        # grab known link dictionary
+        if self.__link_name in self.__links.keys():
+            known_link_dict = self.__links[self.__link_name]
+
+            # check if these are the same
+            if current_link_dict == known_link_dict:
+
+                # deactivate controls
+                self.activateControls(activate=False)
+            else:
+                self.activateControls(activate=True)
+        else:
+            self.activateControls(activate=True)
+
+    def activateControls(self, activate=False):
+
+        # todo: this needs to be expanded to check if any forms have been changed
+
+        if activate:
+            self.ButtonSave.Enable()
+        else:
+            self.ButtonSave.Disable()
 
     def NewButton(self, event):
         self.on_select_input()
         self.on_select_output()
 
-        linkid = self.OnSave()
+        oei = self.OutputComboBox.GetValue()
+        iei = self.InputComboBox.GetValue()
 
-        if linkid is not None:
-            oei = self.OutputComboBox.GetValue()
-            iei = self.InputComboBox.GetValue()
-            self.LinkNameListBox.Append(('%s -> %s, ID: %s' % (oei, iei, linkid)))
+        self.__link_name = '%s -> %s' % (oei, iei)
+        self.LinkNameListBox.Append(self.__link_name)
+
+        # self.__links[self.__link_name] =  dict(source_id=self.__link_source_id,
+        #                                        source_item=self.__link_source_item,
+        #                                        target_id=self.__link_target_id,
+        #                                        target_item=self.__link_target_item,
+        #                                        spatial_interpolation=self.__spatial_interpolation,
+        #                                        temporal_interpolation=self.__temporal_interpolation)
 
     def GetName(self, event):
         dlg = NameDialog(self)
@@ -74,7 +131,14 @@ class LogicLink(ViewLink):
         gets the metadata for the selected output exchange item and populates a tree view
         :return: 1 if successful, else 0
         """
+
+        # get selected value
         output_value = self.OutputComboBox.GetValue()
+
+        # set selected value
+        self.__link_source_item = output_value
+
+        # set tree view
         self.OutputDataTreeCtrl.DeleteAllItems()
         for item in self.output_items:
             if item['name'] == output_value:
@@ -83,6 +147,7 @@ class LogicLink(ViewLink):
                 self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, item['type'])
                 self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, item['unit'].UnitName())
                 self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, item['variable'].VariableNameCV())
+                wx.PostEvent(self, LinkUpdatedEvent())
                 return 1
         return 0
 
@@ -91,7 +156,14 @@ class LogicLink(ViewLink):
         gets the metadata for the selected input exchange item and populates a tree view
         :return: 1 if successful, else 0
         """
+
+        # get selected value
         input_value = self.InputComboBox.GetValue()
+
+        # set selected value
+        self.__link_target_item = input_value
+
+        # set tree view
         self.InputDataTreeCtrl.DeleteAllItems()
         for item in self.input_items:
             if item['name'] == input_value:
@@ -100,22 +172,29 @@ class LogicLink(ViewLink):
                 self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, item['type'])
                 self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, item['unit'].UnitName())
                 self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, item['variable'].VariableNameCV())
+                wx.PostEvent(self, LinkUpdatedEvent())
                 return 1
         return 0
 
     def on_select_spatial(self, event):
         spatial_value = self.ComboBoxSpatial.GetValue()
-        self.spatial_interpolation = self.spatial_transformations[spatial_value]
-        self.l.spatial_interpolation(spatial_value)
+        if spatial_value == 'None Specified':
+            self.__spatial_interpolation = None
+        else:
+            self.__spatial_interpolation = self.spatial_transformations[spatial_value]
+        wx.PostEvent(self, LinkUpdatedEvent())
 
     def on_select_temporal(self, event):
         temporal_value = self.ComboBoxTemporal.GetValue()
-        self.temporal_interpolation = self.temporal_transformations[temporal_value]
-        self.l.temporal_interpolation(temporal_value)
+        if temporal_value == 'None Specified':
+            self.__temporal_interpolation = None
+        else:
+            self.__temporal_interpolation = self.temporal_transformations[temporal_value]
+        wx.PostEvent(self, LinkUpdatedEvent())
 
-    def get_spatial_and_temporal_transformations(self):
-
-        return (self.spatial_interpolation, self.temporal_interpolation)
+    # def get_spatial_and_temporal_transformations(self):
+    #
+    #     return (self.__spatial_interpolation, self.__temporal_interpolation)
 
     def OnClose(self, event):
         dial = wx.MessageDialog(None, 'Do you wish to close without saving?', 'Question',
@@ -123,21 +202,28 @@ class LogicLink(ViewLink):
         if dial.ShowModal() == wx.ID_YES:
             self.Destroy()
 
-    def OnSave(self):
+    def OnSave(self, event):
         """
         Saves a link object to the engine
         :return: linkif if successful, else None
         """
-        spatial, temporal = self.ComboBoxSpatial.GetValue(), self.ComboBoxTemporal.GetValue()
+
+        kwargs =    dict(source_id=self.__link_source_id,
+                       source_item=self.__link_source_item,
+                       target_id=self.__link_target_id,
+                       target_item=self.__link_target_item,
+                       spatial_interpolation=self.__spatial_interpolation,
+                       temporal_interpolation=self.__temporal_interpolation)
 
         # create the link inside the engine
-        success = engine.addLink(source_id=self.output_component['id'],
-                       source_item=self.OutputComboBox.GetValue(),
-                       target_id=self.input_component['id'],
-                       target_item=self.InputComboBox.GetValue(),
-                       spatial_interpolation=spatial,
-                       temporal_interpolation=temporal)
-        return success
+        linkid = engine.addLink(**kwargs)
+
+        current_link = self.__link_name
+        self.__link_ids[current_link] = linkid
+        self.__links[current_link] = kwargs
+        wx.PostEvent(self, LinkUpdatedEvent())
+
+        return linkid
 
     def OnStartUp(self):
         links = engine.getLinksBtwnModels(self.output_component['id'], self.input_component['id'])

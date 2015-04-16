@@ -7,7 +7,7 @@ from wx.lib.pubsub import pub as Publisher, __all__
 import wx
 from gui.controller.logicModel import LogicModel
 from gui.controller.logicPlot import LogicPlot
-
+import coordinator.engineAccessors as engine
 
 #todo:  this needs to be split up into view and logic code
 
@@ -102,7 +102,7 @@ class ModelContextMenu(wx.Menu):
         model_details.PopulateSpatialGeoms(ogeoms, type='output')
         model_details.PopulateSpatialGeoms(igeoms, type='input')
 
-        atts = self.cmd.get_model_by_id(self.model_obj.ID)._Model__attrib
+        atts = self.cmd.getModelById(self.model_obj.ID)._Model__attrib
         if 'mdl' in atts.keys():
             mdl_path= self.cmd.get_model_by_id(self.model_obj.ID)._Model__attrib['mdl']
             model_details.PopulateSummary(mdl_path)

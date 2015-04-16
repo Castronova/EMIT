@@ -533,6 +533,38 @@ class Coordinator(object):
                 return self.__links[l]
         return None
 
+    def get_output_exchange_items_summary(self, id):
+        """
+        gets a serializable version of the output exchange items
+        :param id: model id
+        :return: dictionary of serializable objects
+        """
+        for m in self.__models:
+            if self.__models[m].get_id() == id:
+                eitems = self.__models[m].get_output_exchange_items()
+                items_list = []
+                for ei in eitems:
+                    items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.get_id(), unit=ei.unit(),
+                                           variable=ei.variable()))
+                return items_list
+        return None
+
+    def get_input_exchange_items_summary(self, id):
+        """
+        gets a serializable version of the input exchange items
+        :param id: model id
+        :return: dictionary of serializable objects
+        """
+        for m in self.__models:
+            if self.__models[m].get_id() == id:
+                eitems = self.__models[m].get_input_exchange_items()
+                items_list = []
+                for ei in eitems:
+                    items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.get_id(), unit=ei.unit(),
+                                           variable=ei.variable()))
+                return items_list
+        return None
+
     def remove_link_by_id(self,id):
         """
         removes a link using the link id

@@ -5,15 +5,15 @@ import wx.xrc
 import wx.dataview
 from transform.time import *
 from transform.space import *
-
+import coordinator.engineAccessors as engine
 
 class ViewLink(wx.Frame):
-    def __init__(self, parent, outputs, inputs):
+    def __init__(self, parent, output, input):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=wx.EmptyString, pos=wx.DefaultPosition,
                           size=wx.Size(550, 560), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
 
-        self.input = inputs
-        self.output = outputs
+        self.input_component = input
+        self.output_component = output
         self.InitUI()
 
     def InitUI(self):
@@ -148,20 +148,18 @@ class ViewLink(wx.Frame):
 
 
     def OutputComboBoxChoices(self):
-        if len(self.output.get_output_exchange_items()) > 0:
-            OutputExchangeItemsList = [self.output.get_output_exchange_items()[i]._ExchangeItem__name for i in
-                                       range(0, len(self.output.get_output_exchange_items()))]
+        output_items = engine.getOutputExchangeItems(self.output_component['id'])
+        if output_items is not None:
+            return [item['name'] for item in output_items]
         else:
-            OutputExchangeItemsList = [" "]
-        return OutputExchangeItemsList
+            return [" "]
 
     def InputComboBoxChoices(self):
-        if len(self.input.get_input_exchange_items()) > 0:
-            InputExchangeItemsList = [self.input.get_input_exchange_items()[i].name() for i in
-                                      range(0, len(self.input.get_input_exchange_items()))]
+        input_items = engine.getInputExchangeItems(self.input_component['id'])
+        if input_items is not None:
+            return [item['name'] for item in input_items]
         else:
-            InputExchangeItemsList = [" "]
-        return InputExchangeItemsList
+            return [' ']
 
     def InterpolationComboBoxChoices(self):
         # populate spatial and temporal interpolations

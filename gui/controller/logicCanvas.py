@@ -439,7 +439,7 @@ class LogicCanvas(ViewCanvas):
             # get the model object from cmd
             obj_id = object.ID
             # obj = self.cmd.get_model_by_id(obj_id)
-            model = engine.get_model_by_id(obj_id)
+            model = engine.getModelById(obj_id)
 
             if 'params' in model:
                 params = model['params']
@@ -523,13 +523,15 @@ class LogicCanvas(ViewCanvas):
         r2 = polygons[1]
 
         # get output items from r1
-        from_model = self.cmd.get_model_by_id(r1.ID)
+        # from_model = self.cmd.get_model_by_id(r1.ID)
+        from_model = engine.getModelById(r1.ID)
 
         # get exchange items
         # inputitems = from_model.get_output_exchange_items()
 
         # get output items from r1
-        to_model = self.cmd.get_model_by_id(r2.ID)
+        # to_model = self.cmd.get_model_by_id(r2.ID)
+        to_model = engine.getModelById(r2.ID)
 
         # get exchange items
         # outputitems = to_model.get_input_exchange_items()
@@ -656,7 +658,7 @@ class LogicCanvas(ViewCanvas):
         # add models to the xml tree
         for shape, modelid in self.models.iteritems():
             attributes = {}
-            model = self.cmd.get_model_by_id(modelid)
+            model = self.cmd.getModelById(modelid)
             bbox = shape.BoundingBox
             attributes['x'] = str((bbox[0][0] + bbox[1][0]) / 2)
             attributes['y'] = str((bbox[0][1] + bbox[1][1]) / 2)

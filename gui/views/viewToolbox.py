@@ -23,7 +23,7 @@ class ViewToolbox(wx.Panel):
         il = wx.ImageList(isz[0], isz[1])
 
         self.fldropenidx = il.Add(wx.ArtProvider_GetBitmap(wx.ART_FILE_OPEN,   wx.ART_OTHER, isz))
-        self.mdlidx    = il.Add(icons.Earth_icon.GetBitmap())
+        self.mdlidx    = il.Add(icons.modelicon.GetBitmap())
 
         self.tree.SetImageList(il)
         self.il = il

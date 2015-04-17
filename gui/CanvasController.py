@@ -1,30 +1,32 @@
 __author__ = 'Mario'
 
 ver = 'local'
-import wx
 import textwrap as tw
-from utilities import gui
 import sys
+import os
+import xml.etree.ElementTree as et
+from xml.dom import minidom
+
+import wx
 from wx.lib.floatcanvas import FloatCanvas as FC
 from wx.lib.floatcanvas.NavCanvas import NavCanvas
 from wx.lib.pubsub import pub as Publisher
 import numpy as N
-import os
 import markdown2
+from matplotlib.pyplot import cm
+
+from utilities import gui
 from gui import CanvasObjects
 from ContextMenu import LinkContextMenu, ModelContextMenu, GeneralContextMenu
 from wrappers import odm2_data
-import xml.etree.ElementTree as et
-from xml.dom import minidom
 from transform.space import SpatialInterpolation
 from transform.time import TemporalInterpolation
 import datatypes
 from api.ODM2.Results.services import readResults
 from api.ODM2.Core.services import readCore
 from utilities.threading import EVT_CREATE_BOX, EVT_UPDATE_CONSOLE, ThreadManager
-from matplotlib.pyplot import cm
-from LinkFrame import LinkStart
-from controller.logicFileDrop import LogicFileDrop
+from gui.LinkFrame import LinkStart
+
 
 sys.path.append("..")
 

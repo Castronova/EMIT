@@ -10,11 +10,13 @@ import wx.lib.agw.aui as aui
 from wx import richtext
 
 from DirectoryView import DirectoryCtrlView
-from Toolbox import ToolboxPanel
+from gui.Toolbox import ToolboxPanel
 from CanvasView import Canvas
-import objectListViewDatabase as olv
+from gui import objectListViewDatabase as olv
 from ContextMenu import TimeSeriesContextMenu, SimulationContextMenu, ConsoleContextMenu
 from db import dbapi as dbapi
+
+
 
 
 #Save Features

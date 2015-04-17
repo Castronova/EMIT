@@ -10,6 +10,12 @@ class LogicFileDrop(wx.FileDropTarget):
         self.FloatCanvas = FloatCanvas
         Publisher.subscribe(self.OnDropFiles, 'toolboxclick')
 
+    # Enable these for debugging
+    # def OnEnter(self, x, y, d):
+    #     print "OnEnter: %d, %d, %d\n" % (x, y, d)
+    #
+    # def OnLeave(self):
+    #     print "OnLeave"
 
     def RandomCoordinateGeneration(self, filepath):
         filenames = filepath

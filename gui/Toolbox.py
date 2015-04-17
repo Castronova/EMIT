@@ -3,7 +3,7 @@ import ConfigParser
 from os.path import *
 import fnmatch
 import random
-import os
+
 import wx
 import wx.lib.customtreectrl as CT
 from wx.lib.pubsub import pub as Publisher

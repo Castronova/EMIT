@@ -4,7 +4,6 @@ from utilities import spatial
 from api.ODM2.Simulation.services import readSimulation
 
 # from gui.frmMatPlotLib import MatplotFrame
-from gui.views.viewPlot import ViewPlot
 __author__ = 'tonycastronova'
 
 

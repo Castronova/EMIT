@@ -2,8 +2,9 @@ __author__ = 'Mario'
 
 import wx
 import wx.xrc
-from ..pnlSpatial import pnlSpatial
 import wx.propgrid as wxpg
+
+from gui import pnlSpatial
 
 
 class ViewModel(wx.Frame):

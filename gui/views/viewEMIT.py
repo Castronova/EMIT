@@ -50,7 +50,7 @@ class ViewEMIT(wx.Frame):
         self.Directory = LogicDirectory(self)
         self.Toolbox = LogicToolbox(self)
         self.Canvas = LogicCanvas(self)
-        self.output = consoleOutput(self.bnb)
+        self.Output = consoleOutput(self.bnb)
 
 
         self.Toolbox.Hide()
@@ -85,7 +85,7 @@ class ViewEMIT(wx.Frame):
         seriesselector = TimeSeries(self.bnb)
         seriesoutput = SimulationDataTable(self.bnb)
 
-        self.bnb.AddPage(self.output, "Console")
+        self.bnb.AddPage(self.Output, "Console")
         self.bnb.AddPage(seriesselector, "Time Series")
         self.bnb.AddPage(seriesoutput, "Simulations")
         # self.bnb.AddPage(seriesoutput, "Output Time Series")

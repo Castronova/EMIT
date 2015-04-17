@@ -15,7 +15,7 @@ import wx
 from wx.lib.floatcanvas import FloatCanvas, Resources
 from wx.lib.floatcanvas.Utilities import BBox
 import numpy as N
-from gui.CanvasController import CanvasController
+from gui import CanvasController
 from wx.lib.pubsub import pub as Publisher
 
 class Cursors(object):

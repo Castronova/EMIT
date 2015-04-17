@@ -69,9 +69,6 @@ class LogicCanvas(ViewCanvas):
         defaultCursor.Name = 'default'
         self._Cursor = defaultCursor
 
-        dt = LogicFileDrop(self, self.FloatCanvas)
-        self.FloatCanvas.SetDropTarget(dt)
-
         self.linkRects = []
         self.links = {}
         self.models = {}

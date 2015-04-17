@@ -15,7 +15,7 @@ import coordinator.engineAccessors as engine
 
 
 # todo: refactor
-from gui.mainGui import wxStdOut
+# from gui.mainGui import wxStdOut
 
 
 # ##########################################################################

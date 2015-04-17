@@ -1,3 +1,5 @@
+from gui.controller.logicFileDrop import LogicFileDrop
+
 __author__ = 'Mario'
 
 import wx
@@ -44,6 +46,8 @@ class LogicEMIT(ViewEMIT):
         connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/connections'))
         engine.connectToDbFromFile(dbtextfile=connections_txt)
 
+        dt = LogicFileDrop(self, self.FloatCanvas)
+        self.SetDropTarget(dt)
 
         self.loadingpath = None
 

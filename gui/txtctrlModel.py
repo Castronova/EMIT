@@ -3,7 +3,8 @@ __author__ = 'Mario'
 import wx
 import wx.xrc
 
-from gui.pnlSpatial import pnlSpatial
+from gui import pnlSpatial
+
 
 
 # from pnlDetails import pnlDetails

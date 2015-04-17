@@ -80,8 +80,8 @@ class LogicCanvas(ViewCanvas):
         self.link_clicks = 0
 
         # self._currentDbSession = self.cmd.get_default_db()
-        self._currentDb = engine.getDefaultDb()
-        self._currentDbSession = dbUtilities.build_session_from_connection_string(self._currentDb['connection_string'])
+        # self._currentDb = engine.getDefaultDb()
+        # self._currentDbSession = dbUtilities.build_session_from_connection_string(self._currentDb['connection_string'])
 
         self.loadingpath = None
 

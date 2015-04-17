@@ -283,11 +283,14 @@ class Coordinator(object):
         return self.__incr
 
     def get_default_db(self):
-        db = {'name': self.__default_db['name'],
-              'description': self.__default_db['description'],
-              'connection_string': self.__default_db['connection_string'],
-              'id': self.__default_db['id']}
-        return db
+        if self.__default_db is None:
+            return None
+        else:
+            db = {'name': self.__default_db['name'],
+                  'description': self.__default_db['description'],
+                  'connection_string': self.__default_db['connection_string'],
+                  'id': self.__default_db['id']}
+            return db
 
     def add_model(self, id=None, attrib=None):
         """
@@ -929,8 +932,8 @@ class Coordinator(object):
 
         if filepath is None: return
 
-        abspath = os.path.abspath(os.path.join(os.getcwd(),filepath))
-        if os.path.isfile(abspath):
+        # abspath = os.path.abspath(os.path.join(os.getcwd(),filepath))
+        if os.path.isfile(filepath):
             try:
                 connections = create_database_connections_from_file(filepath)
                 #self.set_default_database()

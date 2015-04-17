@@ -96,9 +96,9 @@ class Engine:
                 process.start()
                 self.Processes.append(process)
 
-            currentdir = os.path.dirname(os.path.abspath(__file__))
-            connections_txt = os.path.abspath(os.path.join(currentdir, '../data/connections'))
-            self.connectToDbFromFile(connections_txt)
+            # currentdir = os.path.dirname(os.path.abspath(__file__))
+            # connections_txt = os.path.abspath(os.path.join(currentdir, '../data/connections'))
+            # self.connectToDbFromFile(connections_txt)
 
             # if not self.engine.get_default_db():
             #     self.engine.set_default_database()
@@ -256,13 +256,7 @@ class Engine:
 
 
 
-    def connectToDbFromFile(self, filepath):
-        kwargs = dict(filepath=filepath)
-        task = [('connect_to_db_from_file',kwargs)]
-        self.setTasks(task)
 
-        self.thread = Thread(target = self.check_for_process_results)
-        self.thread.start()
 
 
 

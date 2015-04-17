@@ -30,6 +30,7 @@ import gui.controller.logicCanvasObjects as LogicCanvasObjects
 import coordinator.engineManager as engineManager
 import coordinator.engineAccessors as engine
 import utilities.db as dbUtilities
+import coordinator.events as engineEvents
 
 class LogicEMIT(ViewEMIT):
     def __init__(self, parent):
@@ -72,10 +73,13 @@ class LogicEMIT(ViewEMIT):
 
         self.link_clicks = 0
 
-        # self._currentDbSession = self.cmd.get_default_db()
-        _currentDb = engine.getDefaultDb()
-        self._currentDbSession = dbUtilities.build_session_from_connection_string(_currentDb['connection_string'])
-        # self._currentDbSession = None
+        # connect to known databases
+        currentdir = os.path.dirname(os.path.abspath(__file__))
+        connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/connections'))
+        success = engine.connectToDbFromFile(dbtextfile=connections_txt)
+        if not success:
+            print '|ERROR|Failed to load databases from file!'
+
 
         self.loadingpath = None
 
@@ -98,7 +102,9 @@ class LogicEMIT(ViewEMIT):
 
     # todo: remove the function
     def initBindings(self):
-        pass
+        engineEvents.onDatabaseConnected += self.onDatabaseConnected
+
+        # pass
         # self.FloatCanvas.Bind(FC.EVT_MOTION, self.OnMove)
         # self.FloatCanvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp)
         # self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.LaunchContext)
@@ -117,6 +123,19 @@ class LogicEMIT(ViewEMIT):
         Publisher.subscribe(self.SaveSimulation, "SetSavePath")
         Publisher.subscribe(self.loadsimulation, "SetLoadPath")
         # Publisher.subscribe(self.addModel, "AddModel")  # subscribes to object list view
+
+    def onDatabaseConnected(self, event):
+
+        # self._currentDbSession = self.cmd.get_default_db()
+        # if not engine.getDefaultDb():
+        #     engine.setDefaultDb()
+
+        _currentDb = engine.getDefaultDb()
+        self._currentDbSession = dbUtilities.build_session_from_connection_string(_currentDb['connection_string'])
+        # self._currentDbSession = None
+
+
+
 
     def onClose(self, event):
         print "In close"

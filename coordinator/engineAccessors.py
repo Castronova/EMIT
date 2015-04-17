@@ -14,6 +14,15 @@ def addModel(id=None, attrib=None):
     e.thread.start()
 
 
+def connectToDbFromFile(dbtextfile=None):
+        e = Engine()
+        kwargs = dict(filepath=dbtextfile, event='onDatabaseConnected')
+        task = [('connect_to_db_from_file',kwargs)]
+        e.setTasks(task)
+
+        e.thread = Thread(target = e.check_for_process_results)
+        e.thread.start()
+
 def addLink(source_id=None, source_item=None, target_id=None, target_item=None, spatial_interpolation=None,
             temporal_interpolation=None):
     e = Engine()
@@ -44,6 +53,13 @@ def getDefaultDb():
     result = e.processTasks()
     return result
 
+def setDefaultDb(database_id=None):
+    e = Engine()
+    kwargs = dict(db_id=database_id)
+    task = [('set_default_database',kwargs)]
+    e.setTasks(task)
+    result = e.processTasks()
+    return result
 
 def removeModelById(modelid):
     e = Engine()

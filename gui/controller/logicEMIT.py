@@ -1,32 +1,12 @@
 __author__ = 'Mario'
 
-import textwrap as tw
-
 import wx
-
-ver = 'local'
-from utilities import gui
-
 import sys
 sys.path.append("..")
 
-from wx.lib.floatcanvas import FloatCanvas as FC
-from wx.lib.floatcanvas.NavCanvas import NavCanvas
 from wx.lib.pubsub import pub as Publisher
-import numpy as N
 import os
-import markdown2
-from wrappers import odm2_data
-import xml.etree.ElementTree as et
-from xml.dom import minidom
-from transform.space import SpatialInterpolation
-from transform.time import TemporalInterpolation
-import datatypes
-from utilities.threading import EVT_CREATE_BOX, EVT_UPDATE_CONSOLE, ThreadManager
-from matplotlib.pyplot import cm
 from gui.views.viewEMIT import ViewEMIT
-from gui.views.viewContext import LinkContextMenu, ModelContextMenu, GeneralContextMenu
-import gui.controller.logicCanvasObjects as LogicCanvasObjects
 import coordinator.engineManager as engineManager
 import coordinator.engineAccessors as engine
 import utilities.db as dbUtilities
@@ -34,19 +14,10 @@ import coordinator.events as engineEvents
 
 class LogicEMIT(ViewEMIT):
     def __init__(self, parent):
-        self.cmd = engineManager.get_engine()
-
-        # Start threading
-        #self.threadManager = ThreadManager(self)
-
-        # self.taskServer = taskServer
 
         ViewEMIT.__init__(self, parent)
 
         self.FloatCanvas = self.Canvas.FloatCanvas
-
-
-
 
         # This is just to ensure that we are starting without interference from NavToolbar or drag-drop
         self.UnBindAllMouseEvents()
@@ -60,11 +31,6 @@ class LogicEMIT(ViewEMIT):
         defaultCursor = wx.StockCursor(wx.CURSOR_DEFAULT)
         defaultCursor.Name = 'default'
         self._Cursor = defaultCursor
-
-        #self.Canvas.ZoomToFit(Event=None)
-
-        # dt = FileDrop(self, self.Canvas, self.cmd)
-        # self.Canvas.SetDropTarget(dt)
 
         self.linkRects = []
         self.links = {}
@@ -80,9 +46,7 @@ class LogicEMIT(ViewEMIT):
         if not success:
             print '|ERROR|Failed to load databases from file!'
 
-
         self.loadingpath = None
-
 
     # todo: remove the function
     def UnBindAllMouseEvents(self):
@@ -126,16 +90,8 @@ class LogicEMIT(ViewEMIT):
 
     def onDatabaseConnected(self, event):
 
-        # self._currentDbSession = self.cmd.get_default_db()
-        # if not engine.getDefaultDb():
-        #     engine.setDefaultDb()
-
         _currentDb = engine.getDefaultDb()
         self._currentDbSession = dbUtilities.build_session_from_connection_string(_currentDb['connection_string'])
-        # self._currentDbSession = None
-
-
-
 
     def onClose(self, event):
         print "In close"

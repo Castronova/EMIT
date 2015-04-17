@@ -38,6 +38,8 @@ class ViewEMIT(wx.Frame):
 
         self.pnlDocking = wx.Panel(id=wx.ID_ANY, name='pnlDocking', parent=self, size=wx.Size(1200, 750),
                                    style=wx.TAB_TRAVERSAL)
+        self.bnb = wx.Notebook(self.pnlDocking)
+
         self.parent = parent
 
         self.notebook_pages = {}
@@ -48,6 +50,8 @@ class ViewEMIT(wx.Frame):
         self.Directory = LogicDirectory(self)
         self.Toolbox = LogicToolbox(self)
         self.Canvas = LogicCanvas(self)
+        self.output = consoleOutput(self.bnb)
+
 
         self.Toolbox.Hide()
         self.initAUIManager()
@@ -75,9 +79,7 @@ class ViewEMIT(wx.Frame):
         self.m_mgr = aui.AuiManager()
         self.m_mgr.SetManagedWindow(self.pnlDocking)
 
-        self.bnb = wx.Notebook(self.pnlDocking)
 
-        self.output = consoleOutput(self.bnb)
 
         # seriesoutput = OutputTimeSeries(self.bnb)
         seriesselector = TimeSeries(self.bnb)

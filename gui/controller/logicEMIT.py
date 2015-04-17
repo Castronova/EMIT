@@ -46,7 +46,7 @@ class LogicEMIT(ViewEMIT):
         connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/connections'))
         engine.connectToDbFromFile(dbtextfile=connections_txt)
 
-        dt = LogicFileDrop(self, self.FloatCanvas)
+        dt = LogicFileDrop(self.Canvas, self.FloatCanvas)
         self.SetDropTarget(dt)
 
         self.loadingpath = None

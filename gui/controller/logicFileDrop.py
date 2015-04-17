@@ -4,9 +4,9 @@ import wx
 from wx.lib.pubsub import pub as Publisher
 
 class LogicFileDrop(wx.FileDropTarget):
-    def __init__(self, controller, FloatCanvas):
+    def __init__(self, canvas, FloatCanvas):
         wx.FileDropTarget.__init__(self)
-        self.controller = controller
+        self.canvas = canvas
         self.FloatCanvas = FloatCanvas
         Publisher.subscribe(self.OnDropFiles, 'toolboxclick')
 
@@ -30,5 +30,5 @@ class LogicFileDrop(wx.FileDropTarget):
         x = x + originx
         y = originy - y
 
-        self.controller.addModel(filepath=filenames[0], x=x, y=y)
+        self.canvas.addModel(filepath=filenames[0], x=x, y=y)
 

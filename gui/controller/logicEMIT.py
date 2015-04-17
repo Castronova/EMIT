@@ -42,9 +42,8 @@ class LogicEMIT(ViewEMIT):
         # connect to known databases
         currentdir = os.path.dirname(os.path.abspath(__file__))
         connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/connections'))
-        success = engine.connectToDbFromFile(dbtextfile=connections_txt)
-        if not success:
-            print '|ERROR|Failed to load databases from file!'
+        engine.connectToDbFromFile(dbtextfile=connections_txt)
+
 
         self.loadingpath = None
 
@@ -89,9 +88,11 @@ class LogicEMIT(ViewEMIT):
         # Publisher.subscribe(self.addModel, "AddModel")  # subscribes to object list view
 
     def onDatabaseConnected(self, event):
-
-        _currentDb = engine.getDefaultDb()
-        self._currentDbSession = dbUtilities.build_session_from_connection_string(_currentDb['connection_string'])
+        if not event.success:
+            print '|ERROR|Failed to load databases from file!'
+        else:
+            _currentDb = engine.getDefaultDb()
+            self._currentDbSession = dbUtilities.build_session_from_connection_string(_currentDb['connection_string'])
 
     def onClose(self, event):
         print "In close"

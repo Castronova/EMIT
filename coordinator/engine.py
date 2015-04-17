@@ -930,7 +930,7 @@ class Coordinator(object):
             # curdir = os.path.dirname(__file__)
             # abspath = os.path.abspath(os.path.join(curdir, args[0]))
 
-        if filepath is None: return
+        if filepath is None: return {'success':False}
 
         # abspath = os.path.abspath(os.path.join(os.getcwd(),filepath))
         if os.path.isfile(filepath):

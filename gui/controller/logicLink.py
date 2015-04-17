@@ -192,14 +192,15 @@ class LogicLink(ViewLink):
             self.__temporal_interpolation = self.temporal_transformations[temporal_value]
         wx.PostEvent(self, LinkUpdatedEvent())
 
-    # def get_spatial_and_temporal_transformations(self):
-    #
-    #     return (self.__spatial_interpolation, self.__temporal_interpolation)
-
     def OnClose(self, event):
-        dial = wx.MessageDialog(None, 'Do you wish to close without saving?', 'Question',
-                                wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
-        if dial.ShowModal() == wx.ID_YES:
+
+        if self.ButtonSave.Enabled:
+
+            dial = wx.MessageDialog(None, 'Do you wish to close without saving?', 'Question',
+                                    wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
+            if dial.ShowModal() == wx.ID_YES:
+                self.Destroy()
+        else:
             self.Destroy()
 
     def OnSave(self, event):

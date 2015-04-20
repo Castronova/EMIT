@@ -899,6 +899,9 @@ class RedirectText(object):
 
             self.out.Refresh()
 
+    def flush(self):
+        pass
+    
 class AddConnectionDialog(wx.Dialog):
     def __init__(
             self, parent, ID, title, size=wx.DefaultSize, pos=wx.DefaultPosition,

@@ -42,9 +42,9 @@ class LogicEMIT(ViewEMIT):
         self.link_clicks = 0
 
         # connect to known databases
-        currentdir = os.path.dirname(os.path.abspath(__file__))
-        connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/connections'))
-        engine.connectToDbFromFile(dbtextfile=connections_txt)
+        # currentdir = os.path.dirname(os.path.abspath(__file__))
+        # connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/connections'))
+        # engine.connectToDbFromFile(dbtextfile=connections_txt)
 
         dt = LogicFileDrop(self.Canvas, self.FloatCanvas)
         self.SetDropTarget(dt)

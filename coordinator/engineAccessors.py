@@ -12,6 +12,8 @@ def addModel(id=None, attrib=None):
 
     e.thread = Thread(target=e.check_for_process_results)
     e.thread.start()
+    e.thread.join()
+
 
 
 def connectToDbFromFile(dbtextfile=None):
@@ -22,6 +24,8 @@ def connectToDbFromFile(dbtextfile=None):
 
         e.thread = Thread(target = e.check_for_process_results)
         e.thread.start()
+        e.thread.join()
+
 
 def addLink(source_id=None, source_item=None, target_id=None, target_item=None, spatial_interpolation=None,
             temporal_interpolation=None):

@@ -228,7 +228,9 @@ class LogicLink(ViewLink):
 
     def OnStartUp(self):
         links = engine.getLinksBtwnModels(self.output_component['id'], self.input_component['id'])
-        [self.LinkNameListBox.Append(str(i)) for i in links]
+        for l in links:
+            link_id = '%s -> %s [unique id = %s]'%(l['source_item'],l['target_item'],l['id'])
+            self.LinkNameListBox.Append(link_id)
 
 
 class NameDialog(wx.Dialog):

@@ -541,11 +541,29 @@ class Coordinator(object):
     def get_links_btwn_models(self, from_model_id, to_model_id):
 
         links = []
+        link_dict = {}
         for linkid, link in self.__links.iteritems():
             source_id = link.source_component().get_id()
             target_id = link.target_component().get_id()
             if source_id == from_model_id and target_id == to_model_id:
-                links.append(link)
+                # links.append(link)
+                spatial = link.spatial_interpolation().name() \
+                    if link.spatial_interpolation() is not None \
+                    else 'None Specified'
+                temporal = link.temporal_interpolation().name() \
+                    if link.temporal_interpolation() is not None \
+                    else 'None Specified'
+                link_dict = dict(id=link.get_id(),
+                                 source_id=source_id,
+                                 target_id=target_id,
+                                 source_name=link.source_component().get_name(),
+                                 target_name=link.target_component().get_name(),
+                                 source_item=link.source_exchange_item().name(),
+                                 target_item=link.target_exchange_item().name(),
+                                 spatial_interpolation=spatial,
+                                 temporal_interpolation=temporal)
+                links.append(link_dict)
+                # return link_dict
 
         return links
 

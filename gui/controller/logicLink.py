@@ -88,8 +88,22 @@ class LogicLink(ViewLink):
 
         if activate:
             self.ButtonSave.Enable()
+            self.ComboBoxSpatial.Enable()
+            self.ComboBoxTemporal.Enable()
+            self.OutputDataTreeCtrl.Enable()
+            self.InputDataTreeCtrl.Enable()
+            self.InputComboBox.Enable()
+            self.OutputComboBox.Enable()
+            self.ButtonPlot.Enable()
         else:
             self.ButtonSave.Disable()
+            self.ComboBoxSpatial.Disable()
+            self.ComboBoxTemporal.Disable()
+            self.OutputDataTreeCtrl.Disable()
+            self.InputDataTreeCtrl.Disable()
+            self.InputComboBox.Disable()
+            self.OutputComboBox.Disable()
+            self.ButtonPlot.Disable()
 
     def NewButton(self, event):
         self.on_select_input()
@@ -232,6 +246,7 @@ class LogicLink(ViewLink):
             link_id = '%s -> %s [unique id = %s]'%(l['source_item'],l['target_item'],l['id'])
             self.LinkNameListBox.Append(link_id)
 
+        self.activateControls()
 
 class NameDialog(wx.Dialog):
     def __init__(self, parent, id=-1, title="Enter Name!"):

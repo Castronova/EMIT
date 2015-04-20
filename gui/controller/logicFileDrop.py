@@ -25,10 +25,8 @@ class LogicFileDrop(wx.FileDropTarget):
         self.OnDropFiles(x, y, filenames)
 
     def OnDropFiles(self, x, y, filenames):
-        originx, originy = self.FloatCanvas.PixelToWorld((0, 0))
-
-        x = x + originx
-        y = originy - y
-
-        self.canvas.addModel(filepath=filenames[0], x=x, y=y)
+        originx, originy = self.FloatCanvas.WorldToPixel(self.canvas.GetPosition())
+        nx = (x - originx)
+        ny = (originy - y)
+        self.canvas.addModel(filepath=filenames[0], x=nx, y=ny)
 

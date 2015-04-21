@@ -372,12 +372,13 @@ class LogicCanvas(ViewCanvas):
             to_id = link[1].ID
 
             # get the link id
-            links = self.cmd.get_links_btwn_models(from_id, to_id)
+            links = engine.getLinksBtwnModels(from_id, to_id)
 
             # remove all links
             for link in links:
-                linkid = link.get_id()
-                self.cmd.remove_link_by_id(linkid)
+                success = engine.removeLinkById(link['id'])
+                if not success:
+                    print 'ERROR|Could not remove link: %s'%link['id']
 
             # redraw the canvas
             self.RedrawConfiguration()

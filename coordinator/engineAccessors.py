@@ -125,6 +125,14 @@ def getLinkById(linkid):
     result = e.processTasks()
     return result
 
+def removeLinkById(linkid):
+    e = Engine()
+    kwargs = dict(id=linkid)
+    task = [('remove_link_by_id', kwargs)]
+    e.setTasks(task)
+    result = e.processTasks()
+    return result
+
 # def getLinkById():
 #     e = Engine()
 #     kwargs = dict()

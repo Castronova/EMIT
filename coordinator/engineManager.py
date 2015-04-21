@@ -130,7 +130,8 @@ class Engine:
                 result = task(**next_task_args)
 
                 if evt is not None:
-                    result['event'] = evt
+                    if result is not None:
+                        result['event'] = evt
                 dispatcher.putResult(result)
 
     # The multiprocessing worker must not require any existing object for execution!
@@ -235,11 +236,11 @@ class Engine:
     def check_for_process_results(self):
 
         result = self.processTasks()
-
-        if 'event' in result.keys():
-            evt_name= result.pop('event')
-            evt = getattr(events, evt_name)
-            evt.fire(**result)
+        if result is not None:
+            if 'event' in result.keys():
+                evt_name= result.pop('event')
+                evt = getattr(events, evt_name)
+                evt.fire(**result)
 
     ################################
     #####  ACCESSOR FUNCTIONS  #####

@@ -245,9 +245,9 @@ class LogicCanvas(ViewCanvas):
             self.FloatCanvas.Draw()
 
     def draw_box(self, evt):
-        #name,id,type):
-        x,y = self.get_model_coords(id=evt.id)
-        self.createBox(name=evt.name, id=evt.id, xCoord=x, yCoord=y,type=evt.model_type)
+        # name,id,type):
+        x, y = self.get_model_coords(id=evt.id)
+        self.createBox(name=evt.name, id=evt.id, xCoord=x, yCoord=y, type=evt.model_type)
 
     def draw_link(self, evt):
         # source_id, target_id):
@@ -266,11 +266,11 @@ class LogicCanvas(ViewCanvas):
         # this draws the line
         self.createLine(R1, R2)
 
-        #self.FloatCanvas.Draw()
+        # self.FloatCanvas.Draw()
 
-    def set_model_coords(self,id, x, y):
+    def set_model_coords(self, id, x, y):
 
-        self.model_coords[id] = {'x':x, 'y':y}
+        self.model_coords[id] = {'x': x, 'y': y}
 
     def get_model_coords(self, id):
 
@@ -319,7 +319,7 @@ class LogicCanvas(ViewCanvas):
 
         return arrow_shape
 
-    def addModel(self, filepath, x, y):
+    def addModel(self, filepath, x, y, uid=None):
         """
         Adds a model to the canvas using x,y.  This is useful if adding by file click/dialog
         :param filename:  filename / path
@@ -333,7 +333,8 @@ class LogicCanvas(ViewCanvas):
         name, ext = os.path.splitext(filepath)
 
         # generate an ID for this model
-        uid = uuid.uuid4().hex[:5]
+        if uid is None:
+            uid = uuid.uuid4().hex[:5]
 
         # save these coordinates for drawing once the model is loaded
         self.set_model_coords(uid, x=x, y=y)
@@ -353,6 +354,7 @@ class LogicCanvas(ViewCanvas):
             attrib = dict(databaseid=current_db_id, resultid=name)
             engine.addModel(id=uid, attrib=attrib)
 
+        return uid
 
     def RemoveLink(self, link_obj):
 
@@ -378,7 +380,7 @@ class LogicCanvas(ViewCanvas):
             for link in links:
                 success = engine.removeLinkById(link['id'])
                 if not success:
-                    print 'ERROR|Could not remove link: %s'%link['id']
+                    print 'ERROR|Could not remove link: %s' % link['id']
 
             # redraw the canvas
             self.RedrawConfiguration()
@@ -443,7 +445,6 @@ class LogicCanvas(ViewCanvas):
                 params = model['params']
             else:
                 params = {}
-
 
             text = ''
 
@@ -521,19 +522,10 @@ class LogicCanvas(ViewCanvas):
         r2 = polygons[1]
 
         # get output items from r1
-        # from_model = self.cmd.get_model_by_id(r1.ID)
         from_model = engine.getModelById(r1.ID)
 
-        # get exchange items
-        # inputitems = from_model.get_output_exchange_items()
-
         # get output items from r1
-        # to_model = self.cmd.get_model_by_id(r2.ID)
         to_model = engine.getModelById(r2.ID)
-
-        # get exchange items
-        # outputitems = to_model.get_input_exchange_items()
-
 
         linkstart = LogicLink(self.FloatCanvas, from_model, to_model, self.cmd)
 
@@ -612,7 +604,8 @@ class LogicCanvas(ViewCanvas):
             dbs = engine.getDbConnections()
             for db in dbs.iterkeys():
                 if dbs[db]['name'] == dbName:
-                    self._currentDbSession = dbUtilities.build_session_from_connection_string(dbs[db]['connection_string'])
+                    self._currentDbSession = dbUtilities.build_session_from_connection_string(
+                        dbs[db]['connection_string'])
                     break
         return self._currentDbSession
 
@@ -624,6 +617,7 @@ class LogicCanvas(ViewCanvas):
         if type(connection) == dict and any(connection):
             # store the connection
             self.cmd.add_db_connection(connection)
+
 
             # notify that the connection was added successfully
             Publisher.sendMessage('connectionAddedStatus', value=True,
@@ -651,20 +645,21 @@ class LogicCanvas(ViewCanvas):
         # create an xml tree
         tree = et.Element('Simulation')
 
-        links = []
         db_ids = []
+
         # add models to the xml tree
         for shape, modelid in self.models.iteritems():
             attributes = {}
-            model = self.cmd.getModelById(modelid)
+            model = engine.getModelById(modelid)
             bbox = shape.BoundingBox
             attributes['x'] = str((bbox[0][0] + bbox[1][0]) / 2)
             attributes['y'] = str((bbox[0][1] + bbox[1][1]) / 2)
-            attributes['name'] = model.get_name()
-            attributes['id'] = model.get_id()
+            attributes['name'] = model['name']
+            attributes['id'] = model['id']
 
-            if model.type() == datatypes.ModelTypes.FeedForward:
-                attributes['mdl'] = model.params_path()
+            if model['type'] == datatypes.ModelTypes.FeedForward:
+                attributes['mdl'] = model['attrib']['mdl']
+
                 modelelement = et.SubElement(tree, 'Model')
 
                 modelnameelement = et.SubElement(modelelement, "name")
@@ -676,16 +671,12 @@ class LogicCanvas(ViewCanvas):
                 modelyelement = et.SubElement(modelelement, "ycoordinate")
                 modelyelement.text = attributes['y']
                 modelpathelement = et.SubElement(modelelement, "path")
-                modelpathelement.text = model.params_path()
+                modelpathelement.text = model['attrib']['mdl']
 
-
-
-            elif model.type() == datatypes.ModelTypes.Data:
-                attributes['databaseid'] = model.attrib()['databaseid']
-                attributes['resultid'] = model.attrib()['resultid']
-                # et.SubElement(tree,'DataModel',attributes)
+            elif model['type'] == datatypes.ModelTypes.Data:
+                attributes['databaseid'] = model['attrib']['databaseid']
+                attributes['resultid'] = model['attrib']['resultid']
                 dataelement = et.SubElement(tree, 'DataModel')
-
                 datamodelnameelement = et.SubElement(dataelement, "name")
                 datamodelnameelement.text = attributes['name']
                 datamodelidelement = et.SubElement(dataelement, "id")
@@ -699,46 +690,27 @@ class LogicCanvas(ViewCanvas):
                 datamodelresultidelement = et.SubElement(dataelement, "resultid")
                 datamodelresultidelement.text = attributes['resultid']
 
-
                 # save this db id
-                if model.attrib()['databaseid'] not in db_ids:
-                    db_ids.append(model.attrib()['databaseid'])
-
-            link = self.cmd.get_links_by_model(modelid)
-            for l in link:
-                if l not in links:
-                    links.append(l)
+                if model['attrib']['databaseid'] not in db_ids:
+                    db_ids.append(model['attrib']['databaseid'])
 
         # add links to the xml tree
+        links = engine.getAllLinks()
         for link in links:
-            L = self.cmd.get_link_by_id(link)
-
             attributes = {}
 
-            sourceComponent = L.source_component()
-            sourceItem = L.source_exchange_item()
-            targetComponent = L.target_component()
-            targetItem = L.target_exchange_item()
+            attributes['from_name'] = link['source_component_name']
+            attributes['from_id'] = link['source_component_id']
+            attributes['from_item'] = link['output_name']
+            attributes['from_item_id'] = link['output_id']
 
-            attributes['from_name'] = sourceComponent.get_name()
-            attributes['from_id'] = sourceComponent.get_id()
-            attributes['from_item'] = sourceItem.name()
-            attributes['from_item_id'] = sourceItem.get_id()
+            attributes['to_name'] = link['target_component_name']
+            attributes['to_id'] = link['target_component_id']
+            attributes['to_item'] = link['input_name']
+            attributes['to_item_id'] = link['input_name']
 
-            attributes['to_name'] = targetComponent.get_name()
-            attributes['to_id'] = targetComponent.get_id()
-            attributes['to_item'] = targetItem.name()
-            attributes['to_item_id'] = targetItem.get_id()
-
-            if L.temporal_interpolation() is not None:
-                attributes['temporal_transformation'] = L.temporal_interpolation().name()
-            else:
-                attributes['temporal_transformation'] = "None"
-
-            if L.spatial_interpolation() is not None:
-                attributes['spatial_transformation'] = L.spatial_interpolation().name()
-            else:
-                attributes['spatial_transformation'] = "None"
+            attributes['temporal_transformation'] = link['temporal_interpolation']
+            attributes['spatial_transformation'] = link['spatial_interpolation']
 
             linkelement = et.SubElement(tree, 'Link')
 
@@ -767,12 +739,13 @@ class LogicCanvas(ViewCanvas):
             link_transform_spatial.text = attributes['spatial_transformation']
 
 
-
         # save required databases
         for db_id in db_ids:
             attributes = {}
 
-            connections = self.cmd.get_db_connections()
+            # todo: this needs to be tested!
+            # connections = self.cmd.get_db_connections()
+            connections = engine.getDbConnections()
 
             db_conn = connections[db_id]['args']
 
@@ -835,12 +808,9 @@ class LogicCanvas(ViewCanvas):
         # get the root
         root = tree.getroot()
 
-        # elementtag = [i.tag for i in root._children]
-        # elementlist = [i for i in root._children]
-
-
         # make sure the required database connections are loaded
-        connections = self.cmd.get_db_connections()
+        # connections = self.cmd.get_db_connections()
+        connections = engine.getDbConnections()
         conn_ids = {}
         elementslist = root.getchildren()
 
@@ -888,13 +858,13 @@ class LogicCanvas(ViewCanvas):
                         # attempt to connect to the database
                         title = dic['args']['name']
                         desc = dic['args']['desc']
-                        engine = dic['args']['engine']
+                        db_engine = dic['args']['engine']
                         address = dic['args']['address']
                         name = dic['args']['db']
                         user = dic['args']['user']
                         pwd = dic['args']['pwd']
 
-                        if not self.AddDatabaseConnection(title, desc, engine, address, name, user, pwd):
+                        if not self.AddDatabaseConnection(title, desc, db_engine, address, name, user, pwd):
                             wx.MessageBox('I was unable to connect to the database with the information provided :(',
                                           'Info', wx.OK | wx.ICON_ERROR)
                             return
@@ -916,21 +886,11 @@ class LogicCanvas(ViewCanvas):
                     taglist.append(data.tag)
 
                 attrib = dict(zip(taglist, textlist))
-                dtype = datatypes.ModelTypes.FeedForward
 
                 # load the model
-                self.cmd.add_model(attrib={'mdl': attrib['path']}, type=dtype, id=attrib['id'])
+                self.addModel(filepath=attrib['path'], x=float(attrib['xcoordinate']), y=float(attrib['ycoordinate']),
+                              uid=attrib['id'])
 
-                # draw the box
-                name = attrib['name']
-                modelid = attrib['id']
-
-                x = float(attrib['xcoordinate'])
-                y = float(attrib['ycoordinate'])
-
-                self.createBox(name=name, id=modelid, xCoord=x, yCoord=y)
-
-        # for data in root.iter('DataModel'):
         for child in root._children:
             if child.tag == 'DataModel':
                 taglist = []
@@ -944,18 +904,12 @@ class LogicCanvas(ViewCanvas):
                 # get the data type
                 dtype = datatypes.ModelTypes.Data
 
-                # resultid = attrib['resultid']
                 databaseid = attrib['databaseid']
                 mappedid = conn_ids[databaseid]
 
                 attrib['databaseid'] = mappedid
-
-                model = self.cmd.add_model(type=dtype, id=attrib['id'], attrib=attrib)
-
-                x = float(attrib['xcoordinate'])
-                y = float(attrib['ycoordinate'])
-
-                self.createBox(name=model.get_name(), id=model.get_id(), xCoord=x, yCoord=y, color='#FFFF99')
+                modelid = self.addModel(filepath=attrib['path'], x=attrib['xcoordinate'], y=attrib['ycoordinate'],
+                                        uid=attrib['id'])
 
         for child in root._children:
             if child.tag == 'Link':
@@ -977,30 +931,32 @@ class LogicCanvas(ViewCanvas):
                 if R1 is None or R2 is None:
                     raise Exception('Could not find Model identifer in loaded models')
 
-                # add the link object
-                l = self.cmd.add_link_by_name(attrib['from_id'], attrib['from_item'],
-                                              attrib['to_id'], attrib['to_item'])
-
+                temporal = None
+                spatial = None
                 # set the temporal and spatial interpolations
                 transform = child.find("./transformation")
                 for transform_child in transform:
                     if transform_child.text.upper() != 'NONE':
                         if transform_child.tag == 'temporal':
-                            transformation = temporal_transformations[transform_child.text]
-                            l.temporal_interpolation(transformation)
+                            temporal = temporal_transformations[transform_child.text]
                         elif transform_child.tag == 'spatial':
-                            transformation = spatial_transformations[transform_child.text]
-                            l.spatial_interpolation(transformation)
+                            spatial = spatial_transformations[transform_child.text]
 
+                # create the link
+                l = engine.addLink(source_id=attrib['from_id'],
+                                   source_item=attrib['from_item'],
+                                   target_id=attrib['to_id'],
+                                   target_item=attrib['to_item'],
+                                   spatial_interpolation=spatial,
+                                   temporal_interpolation=temporal
+                                   )
 
                 # this draws the line
                 self.createLine(R1, R2)
 
             self.FloatCanvas.Draw()
-            # self.Canvas.Draw()
 
     def SetLoadingPath(self, path):
-        # loadingpath = path
         self.loadingpath = path
 
     def GetLoadingPath(self):
@@ -1035,7 +991,7 @@ class LogicCanvas(ViewCanvas):
                 self.PopupMenu(ModelContextMenu(self, event), event.HitCoordsPixel.Get())
 
                 # self.Canvas.ClearAll()
-                #self.Canvas.Draw()
+                # self.Canvas.Draw()
 
     def MenuSelectionCb(self, event):
         # TODO: Fix the menu selection

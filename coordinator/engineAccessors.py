@@ -133,6 +133,22 @@ def removeLinkById(linkid):
     result = e.processTasks()
     return result
 
+def getAllLinks():
+    e = Engine()
+    kwargs = dict()
+    task = [('get_all_links', kwargs)]
+    e.setTasks(task)
+    result = e.processTasks()
+    return result
+
+def getAllModels():
+    e = Engine()
+    kwargs = dict()
+    task = [('get_all_models', kwargs)]
+    e.setTasks(task)
+    result = e.processTasks()
+    return result
+
 # def getLinkById():
 #     e = Engine()
 #     kwargs = dict()

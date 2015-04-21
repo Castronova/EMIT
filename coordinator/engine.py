@@ -248,6 +248,7 @@ class Coordinator(object):
         return self._db
 
     def add_db_connection(self,value):
+
         self._db.update(value)
         return self._db
 
@@ -423,7 +424,10 @@ class Coordinator(object):
                 return {'params': self.__models[m].get_config_params(),
                         'name': self.__models[m].get_name(),
                         'id': self.__models[m].get_id(),
-                        'description': self.__models[m].get_description()}
+                        'description': self.__models[m].get_description(),
+                        'type': self.__models[m].type(),
+                        'attrib': self.__models[m].attrib(),
+                        }
         return None
 
     def get_model_by_id(self,id):
@@ -536,6 +540,7 @@ class Coordinator(object):
             print 'ERROR |  Could not find any links associated with model id: '+str(model_id)
 
         # todo: this should return a dict of link objects, NOT some random list
+
         return links
 
     def get_links_btwn_models(self, from_model_id, to_model_id):
@@ -549,10 +554,10 @@ class Coordinator(object):
                 # links.append(link)
                 spatial = link.spatial_interpolation().name() \
                     if link.spatial_interpolation() is not None \
-                    else 'None Specified'
+                    else 'None'
                 temporal = link.temporal_interpolation().name() \
                     if link.temporal_interpolation() is not None \
-                    else 'None Specified'
+                    else 'None'
                 link_dict = dict(id=link.get_id(),
                                  source_id=source_id,
                                  target_id=target_id,
@@ -584,15 +589,86 @@ class Coordinator(object):
             if l == id:
                 spatial = self.__links[l].spatial_interpolation().name() \
                     if self.__links[l].spatial_interpolation() is not None \
-                    else 'None Specified'
+                    else 'None'
                 temporal = self.__links[l].temporal_interpolation().name() \
                     if self.__links[l].temporal_interpolation() is not None \
-                    else 'None Specified'
-                return dict(output_name=self.__links[l].source_exchange_item().name(),
-                            input_name=self.__links[l].target_exchange_item().name(),
-                            spatial_interpolation=spatial,
-                            temporal_interpolation=temporal)
+                    else 'None'
+                return dict(
+                        output_name=self.__links[l].source_exchange_item().name(),
+                        output_id=self.__links[l].source_exchange_item().get_id(),
+                        input_name=self.__links[l].target_exchange_item().name(),
+                        input_id=self.__links[l].target_exchange_item().get_id(),
+                        spatial_interpolation=spatial,
+                        temporal_interpolation=temporal,
+                        source_component_name=self.__links[l].source_component().get_name(),
+                        target_component_name=self.__links[l].target_component().get_name(),
+                        source_component_id=self.__links[l].source_component().get_id(),
+                        target_component_id=self.__links[l].target_component().get_id(),)
         return None
+
+    def get_all_links(self):
+        links = []
+        for l in self.__links.iterkeys():
+
+            spatial = self.__links[l].spatial_interpolation().name() \
+                if self.__links[l].spatial_interpolation() is not None \
+                else 'None'
+            temporal = self.__links[l].temporal_interpolation().name() \
+                if self.__links[l].temporal_interpolation() is not None \
+                else 'None'
+            links.append(dict(
+                        output_name=self.__links[l].source_exchange_item().name(),
+                        output_id=self.__links[l].source_exchange_item().get_id(),
+                        input_name=self.__links[l].target_exchange_item().name(),
+                        input_id=self.__links[l].target_exchange_item().get_id(),
+                        spatial_interpolation=spatial,
+                        temporal_interpolation=temporal,
+                        source_component_name=self.__links[l].source_component().get_name(),
+                        target_component_name=self.__links[l].target_component().get_name(),
+                        source_component_id=self.__links[l].source_component().get_id(),
+                        target_component_id=self.__links[l].target_component().get_id(),
+                            ))
+        return links
+    def get_all_links(self):
+        links = []
+        for l in self.__links.iterkeys():
+
+            spatial = self.__links[l].spatial_interpolation().name() \
+                if self.__links[l].spatial_interpolation() is not None \
+                else 'None'
+            temporal = self.__links[l].temporal_interpolation().name() \
+                if self.__links[l].temporal_interpolation() is not None \
+                else 'None'
+            links.append(dict(
+                        output_name=self.__links[l].source_exchange_item().name(),
+                        output_id=self.__links[l].source_exchange_item().get_id(),
+                        input_name=self.__links[l].target_exchange_item().name(),
+                        input_id=self.__links[l].target_exchange_item().get_id(),
+                        spatial_interpolation=spatial,
+                        temporal_interpolation=temporal,
+                        source_component_name=self.__links[l].source_component().get_name(),
+                        target_component_name=self.__links[l].target_component().get_name(),
+                        source_component_id=self.__links[l].source_component().get_id(),
+                        target_component_id=self.__links[l].target_component().get_id(),
+                            ))
+        return links
+
+    def get_all_models(self):
+        models = []
+        for m in self.__models:
+
+            models.append(
+                {'params': self.__models[m].get_config_params(),
+                    'name': self.__models[m].get_name(),
+                    'id': self.__models[m].get_id(),
+                    'description': self.__models[m].get_description(),
+                    'type': self.__models[m].type(),
+                    'attrib': self.__models[m].attrib(),
+                    }
+            )
+        return models
+
+
 
     def get_output_exchange_items_summary(self, id):
         """

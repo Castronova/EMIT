@@ -18,6 +18,7 @@ import coordinator.engineAccessors as engine
 from utilities import db as dbUtilities
 from db import dbapi as dbapi
 from gui.objectListViewDatabase import Database
+import coordinator.events as engineEvent
 
 # todo: refactor
 # from .. import objectListViewDatabase as olv
@@ -653,23 +654,26 @@ class DataSeries(wx.Panel):
         Publisher.subscribe(self.connection_added_status, "connectionAddedStatus")
 
         # initialize databases
-        self.getKnownDatabases()
+        # self.getKnownDatabases()
+
+        engineEvent.onDatabaseConnected += self.getKnownDatabases
 
     def DbChanged(self, event):
         self.database_refresh(event)
 
-    def getKnownDatabases(self, value = None):
-        if value is None:
-            Publisher.sendMessage('getDatabases')
-        else:
-            self._databases = value
-            choices = ['---']
-            for k,v in self._databases.iteritems():
-                choices.append(self._databases[k]['name'])
-            self.connection_combobox.SetItems(choices)
+    def getKnownDatabases(self, evt):
+        connections = engine.getDbConnections()
+        # if value is None:
+        #     Publisher.sendMessage('getDatabases')
+        # else:
+        #     self._databases = value
+        choices = ['---']
+        for k,v in connections.iteritems():
+            choices.append(v['name'])
+        self.connection_combobox.SetItems(choices)
 
-            # set the selected choice
-            self.connection_combobox.SetSelection( self.__selected_choice_idx)
+        # set the selected choice
+        self.connection_combobox.SetSelection( self.__selected_choice_idx)
 
     def connection_added_status(self,value=None,connection_string=''):
         if value is not None:

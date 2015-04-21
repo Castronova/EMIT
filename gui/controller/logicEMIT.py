@@ -42,9 +42,9 @@ class LogicEMIT(ViewEMIT):
         self.link_clicks = 0
 
         # connect to known databases
-        # currentdir = os.path.dirname(os.path.abspath(__file__))
-        # connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/connections'))
-        # engine.connectToDbFromFile(dbtextfile=connections_txt)
+        currentdir = os.path.dirname(os.path.abspath(__file__))
+        connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/connections'))
+        engine.connectToDbFromFile(dbtextfile=connections_txt)
 
         dt = LogicFileDrop(self.Canvas, self.FloatCanvas)
         self.SetDropTarget(dt)
@@ -639,13 +639,13 @@ class LogicEMIT(ViewEMIT):
         #     Publisher.sendMessage('connectionAddedStatus',value=False,connection_string=connection) # sends message to mainGui
         #
         #     return False
-
     # todo: remove the function
     def getDatabases(self):
         pass
 
         # knownconnections = self.cmd.get_db_connections()
         # Publisher.sendMessage('getKnownDatabases',value=knownconnections)  # sends message to mainGui
+
 
     # todo: remove the function
     def DetailView(self):

@@ -107,6 +107,7 @@ class LogicCanvas(ViewCanvas):
         # engine bindings
         engineEvent.onModelAdded += self.draw_box
         engineEvent.onLinkAdded += self.draw_link
+        # engineEvent.onDatabaseConnected += self.onDatabasesLoaded
 
     def initSubscribers(self):
         Publisher.subscribe(self.createBox, "createBox")
@@ -172,6 +173,9 @@ class LogicCanvas(ViewCanvas):
             self.MoveObject = self.StartObject + dxy
 
             dc.DrawPolygon(self.MoveObject)
+
+    def onDatabasesLoaded(self, evt):
+        pass
 
     def onUpdateConsole(self, evt):
         """

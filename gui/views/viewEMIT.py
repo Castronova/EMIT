@@ -172,12 +172,9 @@ class ViewEMIT(wx.Frame):
     def OnSelect(self, event):
 
         try:
-            selected_page = self.bnb.GetPage(event.GetSelection())
-
-
             # update databases in a generic way
+            selected_page = self.bnb.GetPage(event.GetSelection())
             if len(selected_page.connection_combobox.GetItems()) == 0:
-            # if 'getKnownDatabases' in dir(selected_page):
                  selected_page.getKnownDatabases()
 
         except: pass
@@ -650,26 +647,18 @@ class DataSeries(wx.Panel):
         self.Layout()
 
         #databases = Publisher.sendMessage('getDatabases')
-        Publisher.subscribe(self.getKnownDatabases, "getKnownDatabases")  # sends message to CanvasController
+        # Publisher.subscribe(self.getKnownDatabases, "getKnownDatabases")  # sends message to CanvasController
         Publisher.subscribe(self.connection_added_status, "connectionAddedStatus")
-
-        # initialize databases
-        # self.getKnownDatabases()
-
-        engineEvent.onDatabaseConnected += self.getKnownDatabases
 
     def DbChanged(self, event):
         self.database_refresh(event)
 
-    def getKnownDatabases(self, evt):
-        connections = engine.getDbConnections()
-        # if value is None:
-        #     Publisher.sendMessage('getDatabases')
-        # else:
-        #     self._databases = value
+    def getKnownDatabases(self):
+        self._databases = engine.getDbConnections()
+
         choices = ['---']
-        for k,v in connections.iteritems():
-            choices.append(v['name'])
+        for k,v in self._databases.iteritems():
+            choices.append(self._databases[k]['name'])
         self.connection_combobox.SetItems(choices)
 
         # set the selected choice

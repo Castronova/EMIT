@@ -38,6 +38,7 @@ class LogicLink(ViewLink):
         self.LinkNameListBox.Bind(wx.EVT_LISTBOX, self.OnChange)
         self.ButtonNew.Bind(wx.EVT_BUTTON, self.OnSave)
         self.ButtonNew.Bind(wx.EVT_BUTTON, self.NewButton)
+        self.ButtonDelete.Bind(wx.EVT_BUTTON, self.OnDelete)
         self.ComboBoxTemporal.Bind(wx.EVT_COMBOBOX, self.on_select_temporal)
         self.ComboBoxSpatial.Bind(wx.EVT_COMBOBOX, self.on_select_spatial)
         self.ButtonClose.Bind(wx.EVT_BUTTON, self.OnClose)
@@ -122,6 +123,7 @@ class LogicLink(ViewLink):
         #                                        spatial_interpolation=self.__spatial_interpolation,
         #                                        temporal_interpolation=self.__temporal_interpolation)
 
+
     def GetName(self, event):
         dlg = NameDialog(self)
         dlg.ShowModal()
@@ -129,16 +131,18 @@ class LogicLink(ViewLink):
         self.LinkNameListBox.Append(str(dlg.result))
 
     def OnDelete(self, event):
-
+        # First try to delete the item from the cmd, if it has not yet been saved, it will just
+        # remove itself from the ListBox.
         try:
-            for i in range(0, stop=None, step=1):
-                self.listbox.Delete(i)
+            # for i in range(0, stop=None, step=1):
+            #     self.listbox.Delete(i)
+            sel = self.LinkNameListBox.GetStringSelection()
+            deleteid = self.__link_ids[sel]
+            self.cmd.remove_link_by_id(deleteid)
         except:
             pass
-
-        sel = self.listbox.GetSelection()
-        if sel != -1:
-            self.listbox.Delete(sel)
+        index = self.LinkNameListBox.GetSelection()
+        self.LinkNameListBox.Delete(index)
 
     def on_select_output(self):
         """

@@ -32,12 +32,10 @@ def run_feed_forward(obj):
     # determine execution order
     msg = '> Determining execution order... '
     dispatcher.putOutput(msg)
-    # sys.stdout.write(msg)
 
     exec_order = obj.determine_execution_order()
     msg = 'done'
     dispatcher.putOutput(msg)
-    # sys.stdout.write('done\n')
     for i in range(0, len(exec_order)):
         msg = '> %d.) %s' % (i + 1, obj.get_model_by_id(exec_order[i]).get_name())
         dispatcher.putOutput(msg)
@@ -98,7 +96,6 @@ def run_feed_forward(obj):
                 pass
         db_sessions[modelid] = postgresdb(session)
 
-    # sys.stdout.write('done\n')
 
     # todo:  move this into function
     # prepare all models
@@ -124,16 +121,9 @@ def run_feed_forward(obj):
 
         dispatcher.putOutput(msg)
 
-        # print '> '
-        # print '> ------------------'+len(model_inst.name())*'-'
-        # print '> Executing module: %s ' % model_inst.name()
-        # print '> ------------------'+len(model_inst.name())*'-'
-
         #  retrieve inputs from database
         msg = '> [1 of 4] Retrieving input data... '
         dispatcher.putOutput(msg)
-        #sys.stdout.write('> [1 of 4] Retrieving input data... ')
-        #sys.__stdout__.flush()
 
         # todo: pass db_sessions instead of simulation_dbapi
         # try:
@@ -144,27 +134,19 @@ def run_feed_forward(obj):
 
         msg = 'done'
         dispatcher.putOutput(msg)
-        # sys.stdout.write('done\n')
-        # sys.__stdout__.flush()
 
         msg = '> [2 of 4] Performing calculation... '
         dispatcher.putOutput(msg)
-        # sys.stdout.write('> [2 of 4] Performing calculation... ')
-        # sys.__stdout__.flush()
 
         # pass these inputs ts to the models' run function
         model_inst.run(input_data)
 
         msg = 'done'
         dispatcher.putOutput(msg)
-        # sys.stdout.write('done\n')
-        # sys.__stdout__.flush()
 
         # save these results
         msg = '> [3 of 4] Saving calculations to database... '
         dispatcher.putOutput(msg)
-        # sys.stdout.write('> [3 of 4] Saving calculations to database... ')
-        # sys.__stdout__.flush()
         exchangeitems = model_inst.save()
 
         # only insert data if its not already in a database
@@ -187,28 +169,20 @@ def run_feed_forward(obj):
 
         msg = 'done'
         dispatcher.putOutput(msg)
-        # sys.stdout.write('done\n')
-        # sys.__stdout__.flush()
 
         # update links
         msg = '> [4 of 4] Updating links... '
         dispatcher.putOutput(msg)
-        # sys.stdout.write('> [4 of 4] Updating links... ')
-        # sys.__stdout__.flush()
 
         #obj.update_links(model_inst,exchangeitems)
         update.update_links_feed_forward(obj, links[modelid], exchangeitems, spatial_maps)
 
         msg = 'done'
         dispatcher.putOutput(msg)
-        # sys.stdout.write('done\n')
-        # sys.__stdout__.flush()
 
 
         msg = '> module simulation completed in %3.2f seconds' % (time.time() - st)
         dispatcher.putOutput(msg)
-        # sys.stdout.write('> module simulation completed in %3.2f seconds' % (time.time() - st))
-        # sys.__stdout__.flush()
 
     msg = '> \n' + \
           '> ------------------------------------------\n' + \
@@ -218,15 +192,6 @@ def run_feed_forward(obj):
           '> Simulation duration: %3.2f seconds\n' % (time.time() - sim_st) + \
           '> ------------------------------------------'
     dispatcher.putOutput(msg)
-
-    # print '> '
-    # print '> ------------------------------------------'
-    # print '>           Simulation Summary '
-    # print '> ------------------------------------------'
-    # print '> Completed without error :)'
-    # print '> Simulation duration: %3.2f seconds' % (time.time()-sim_st)
-    # print '> ------------------------------------------'
-
 
 def run_time_step(obj):
     # store db sessions
@@ -241,16 +206,13 @@ def run_time_step(obj):
     # determine execution order
     msg = '> Determining execution order... '
     dispatcher.putOutput(msg)
-    # sys.stdout.write('> [PRE-RUN] Determining execution order... ')
     exec_order = obj.determine_execution_order()
 
     msg = 'done'
     dispatcher.putOutput(msg)
-    # sys.stdout.write('done\n')
     for i in range(0, len(exec_order)):
         msg = '> %d.) %s' % (i + 1, obj.get_model_by_id(exec_order[i]).get_name())
         dispatcher.putOutput(msg)
-        # print '> %d.) %s'%(i+1,obj.get_model_by_id(exec_order[i]).get_name())
 
     links = {}
     spatial_maps = {}
@@ -259,7 +221,6 @@ def run_time_step(obj):
     # todo:  move this into function
     msg = '> [PRE-RUN] Performing spatial mapping... '
     dispatcher.putOutput(msg)
-    # sys.stdout.write('> [PRE-RUN] Performing spatial mapping... ')
     for modelid in exec_order:
         # get links
         l = obj.get_from_links_by_model(modelid)
@@ -299,7 +260,6 @@ def run_time_step(obj):
 
         # todo: need to consider other databases too!
         db_sessions[modelid] = postgresdb(session)
-    # sys.stdout.write('done\n')
 
     msg = 'done'
     dispatcher.putOutput(msg)
@@ -307,7 +267,6 @@ def run_time_step(obj):
     # todo: move this into a time-horizon checking function.
     # this should check that the time-horizon is valid.
     # determine minimum overlapping timespan to set start and end times
-    # sys.stdout.write('> [PRE-RUN] Validating simulation time-horizon... ')
     msg = '> [PRE-RUN] Validating simulation time-horizon... '
     dispatcher.putOutput(msg)
     global_simulation_start = datetime.datetime(3000, 1, 1)
@@ -320,7 +279,6 @@ def run_time_step(obj):
     if global_simulation_start >= global_simulation_end:
         raise Exception("Invalid start and end times!\nstart:%s\nend:%s" % (
         str(global_simulation_start), str(global_simulation_end)))
-    # sys.stdout.write('done\n')
 
     msg = 'done'
     dispatcher.putOutput(msg)
@@ -385,8 +343,6 @@ def run_time_step(obj):
                     msg = '> %s | %s \n' % (model_inst.name(), model_inst.status())
                     dispatcher.putOutput(msg)
 
-                    # sys.stdout.write('> %s  ' % (datetime.datetime.strftime(current_time,"%m-%d-%Y %H:%M:%S")))
-                    # sys.stdout.write('> %s | %s \n' % (model_inst.name(),model_inst.status()))
 
                     break
 
@@ -399,9 +355,6 @@ def run_time_step(obj):
 
                 msg = '> %s | %s \n' % (model_inst.name(), model_inst.status())
                 dispatcher.putOutput(msg)
-
-                # sys.stdout.write('> %s  ' % (datetime.datetime.strftime(current_time, "%m-%d-%Y %H:%M:%S")))
-                # sys.stdout.write('> %s | %s \n' % (model_inst.name(), model_inst.status()))
 
                 # run model timestep
                 model_inst.run_timestep(input_data, current_time)
@@ -506,12 +459,3 @@ def run_time_step(obj):
         '> Simulation duration: %3.2f seconds\n' % (time.time()-sim_st) + \
         '> ------------------------------------------'
     dispatcher.putOutput(msg)
-
-    #
-    # print '> '
-    # print '> ------------------------------------------'
-    # print '>           Simulation Summary '
-    # print '> ------------------------------------------'
-    # print '> Completed without error :)'
-    # print '> Simulation duration: %3.2f seconds' % (time.time() - sim_st)
-    # print '> ------------------------------------------'

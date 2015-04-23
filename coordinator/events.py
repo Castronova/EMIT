@@ -21,7 +21,7 @@ onLinkUpdated = EventHook('onLinkUpdate')
 
 # Simulation related Events
 onSimulationFinished = EventHook('onSimulationFinished')
-onSimulationError = EventHook('onSimulationError')
+# onSimulationError = EventHook('onSimulationError')
 onSimulationLoaded = EventHook('onSimulationLoaded')
 
 

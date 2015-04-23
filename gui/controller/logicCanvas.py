@@ -107,6 +107,7 @@ class LogicCanvas(ViewCanvas):
         # engine bindings
         engineEvent.onModelAdded += self.draw_box
         engineEvent.onLinkAdded += self.draw_link
+        engineEvent.onSimulationFinished += self.simulation_finished
         # engineEvent.onDatabaseConnected += self.onDatabasesLoaded
 
     def initSubscribers(self):
@@ -191,7 +192,6 @@ class LogicCanvas(ViewCanvas):
         y = evt.yCoord
         self.createBox(xCoord=x, yCoord=y, id=id, name=name)
 
-    # def createBox(self, xCoord, yCoord, id=None, name=None, color='#A2CAF5'):
     def createBox(self, xCoord, yCoord, id=None, name=None, type=datatypes.ModelTypes.TimeStep):
 
         # set box color based on model type
@@ -438,11 +438,8 @@ class LogicCanvas(ViewCanvas):
             mainGui = self.GetTopLevelParent()
             mv = mainGui.Children[0].FindWindowByName('notebook').GetPage(1)
 
-            # mv = self.Canvas.GetTopLevelParent().m_mgr.GetPane(n
-
             # get the model object from cmd
             obj_id = object.ID
-            # obj = self.cmd.get_model_by_id(obj_id)
             model = engine.getModelById(obj_id)
 
             if 'params' in model:
@@ -615,31 +612,8 @@ class LogicCanvas(ViewCanvas):
 
     def AddDatabaseConnection(self, title, desc, dbengine, address, name, user, pwd):
 
-        # build the database connection
-        # connection = gui.create_database_connections_from_args(title, desc, engine, address, name, user, pwd)
-
-        # if type(connection) == dict and any(connection):
-            # store the connection
-            # self.cmd.add_db_connection(connection)
         kwargs = dict(title=title, desc=desc, engine=dbengine, address=address, name=name, user=user, pwd=pwd)
         engine.connectToDb(**kwargs)
-
-            # if result:
-            #
-            #     # notify that the connection was added successfully
-            #     Publisher.sendMessage('connectionAddedStatus', value=True,
-            #                           connection_string=connection[connection.keys()[0]][
-            #                               'connection_string'])  # sends message to mainGui
-            #
-            #     return True
-            # else:
-            #     # notify that the connection was not added successfully
-            #     Publisher.sendMessage('connectionAddedStatus', value=False,
-            #                           connection_string=connection)  # sends message to mainGui
-            #
-            #     return False
-
-        # return False
 
     def DetailView(self):
         # DCV.ShowDetails()
@@ -753,7 +727,6 @@ class LogicCanvas(ViewCanvas):
             attributes = {}
 
             # todo: this needs to be tested!
-            # connections = self.cmd.get_db_connections()
             connections = engine.getDbConnections()
 
             db_conn = connections[db_id]['args']
@@ -818,7 +791,6 @@ class LogicCanvas(ViewCanvas):
         root = tree.getroot()
 
         # make sure the required database connections are loaded
-        # connections = self.cmd.get_db_connections()
         connections = engine.getDbConnections()
         conn_ids = {}
         elementslist = root.getchildren()
@@ -829,8 +801,6 @@ class LogicCanvas(ViewCanvas):
         spatial_transformations = {i.name(): i for i in space.methods()}
         temporal_transformations = {i.name(): i for i in time.methods()}
 
-        # databaselist = [x for x in elementslist if x.tag == 'DbConnection']
-        # for db_conn in databaselist:
         for child in root._children:
             if child.tag == 'DbConnection':
                 taglist = []
@@ -1013,9 +983,14 @@ class LogicCanvas(ViewCanvas):
 
         try:
             self.cmd.run_simulation()
+            engine.runSimulation()
         except Exception as e:
             wx.MessageBox(str(e.args[0]), 'Error', wx.OK | wx.ICON_ERROR)
 
+
+    def simulation_finished(self, evt):
+
+        print 'Simulation finished'
 
 # DELETEME
 menu_titles = ["Open",

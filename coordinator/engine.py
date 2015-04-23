@@ -855,8 +855,7 @@ class Coordinator(object):
 
             # make sure that feed forward and time-step models are not mixed together
             if (feed_forward.feed_forward_wrapper in types) and (time_step.time_step_wrapper in types):
-                sys.stdout.write('> Simulation Terminated. - Cannot mix feed-forward and time-step models! ')
-                return
+                return dict(success=False, message='Cannot mix feed-forward and time-step models')
 
             else:
                 # threadManager = ThreadManager()
@@ -870,10 +869,11 @@ class Coordinator(object):
                     t.start()
                     #run.run_time_step(self)
 
-            return
+            return dict(success=True, message='')
 
         except Exception as e:
-            raise Exception(e.args[0])
+            return dict(success=False, message=e)
+            # raise Exception(e.args[0])
 
     def get_configuration_details(self,arg):
 

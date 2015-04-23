@@ -77,8 +77,8 @@ class Engine:
 
     def __init__(self):
         if not Engine.__monostate:
+
             Engine.__monostate = self.__dict__
-            # self.engine = Coordinator()
 
             self.numprocesses = 1
             self.tasks = []
@@ -95,13 +95,6 @@ class Engine:
                 process = Process(target=Engine.worker, args=(self.dispatcher,self.engine))
                 process.start()
                 self.Processes.append(process)
-
-            # currentdir = os.path.dirname(os.path.abspath(__file__))
-            # connections_txt = os.path.abspath(os.path.join(currentdir, '../data/connections'))
-            # self.connectToDbFromFile(connections_txt)
-
-            # if not self.engine.get_default_db():
-            #     self.engine.set_default_database()
 
         else:
             self.__dict__ = Engine.__monostate
@@ -241,35 +234,3 @@ class Engine:
                 evt_name= result.pop('event')
                 evt = getattr(events, evt_name)
                 evt.fire(**result)
-
-    ################################
-    #####  ACCESSOR FUNCTIONS  #####
-    ################################
-
-
-
-
-
-    def get_models(self):
-        kwargs = dict()
-        task = [('GetModels',kwargs)]
-        self.setTasks(task)
-
-
-
-
-
-
-
-
-
-class test():
-
-    def __init__(self):
-
-        events.onModelAdded += self.test_handler
-
-    def test_handler(self, evt):
-        print 'here'
-
-t = test()

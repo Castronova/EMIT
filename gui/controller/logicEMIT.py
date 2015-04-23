@@ -92,9 +92,7 @@ class LogicEMIT(ViewEMIT):
         # Publisher.subscribe(self.addModel, "AddModel")  # subscribes to object list view
 
     def onDatabaseConnected(self, event):
-        if not event.success:
-            print '|ERROR|Failed to load databases from file!'
-        else:
+        if event.success:
             _currentDb = engine.getDefaultDb()
             self._currentDbSession = dbUtilities.build_session_from_connection_string(_currentDb['connection_string'])
 
@@ -619,7 +617,7 @@ class LogicEMIT(ViewEMIT):
         # return self._currentDbSession
 
     # todo: remove the function
-    def AddDatabaseConnection(self, title, desc, engine, address, name, user, pwd):
+    def AddDatabaseConnection(self, title, desc, dbengine, address, name, user, pwd):
         pass
 
         # # build the database connection

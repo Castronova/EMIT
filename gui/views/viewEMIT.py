@@ -175,7 +175,7 @@ class ViewEMIT(wx.Frame):
             # update databases in a generic way
             selected_page = self.bnb.GetPage(event.GetSelection())
             if len(selected_page.connection_combobox.GetItems()) == 0:
-                 selected_page.getKnownDatabases()
+                 selected_page.refreshConnectionsListBox()
 
         except: pass
 
@@ -423,8 +423,9 @@ class TimeSeries(wx.Panel):
         self.SetSizer( seriesSelectorSizer )
         self.Layout()
 
-        Publisher.subscribe(self.connection_added_status, "connectionAddedStatus")
+        # Publisher.subscribe(self.connection_added_status, "connectionAddedStatus")
 
+        engineEvent.onDatabaseConnected += self.refreshConnectionsListBox
 
         # build custom context menu
         menu = TimeSeriesContextMenu(self.m_olvSeries)
@@ -437,17 +438,18 @@ class TimeSeries(wx.Panel):
     def DbChanged(self, event):
         self.OLVRefresh(event)
 
-    def getKnownDatabases(self, value = None):
+    def refreshConnectionsListBox(self, connection_added):
 
-        self._databases = engine.getDbConnections()
+        if connection_added:
+            self._databases = engine.getDbConnections()
 
-        choices = ['---']
-        for k,v in self._databases.iteritems():
-            choices.append(self._databases[k]['name'])
-        self.connection_combobox.SetItems(choices)
+            choices = ['---']
+            for k,v in self._databases.iteritems():
+                choices.append(self._databases[k]['name'])
+            self.connection_combobox.SetItems(choices)
 
-        # set the selected choice
-        self.connection_combobox.SetSelection( self.__selected_choice_idx)
+            # set the selected choice
+            self.connection_combobox.SetSelection( self.__selected_choice_idx)
 
     def connection_added_status(self,value=None,connection_string=''):
         if value is not None:
@@ -500,7 +502,7 @@ class TimeSeries(wx.Panel):
                 Publisher.sendMessage('DatabaseConnection',
                                       title=params[0],
                                       desc = params[1],
-                                      engine = params[2],
+                                      dbengine = params[2],
                                       address = params[3],
                                       name = params[4],
                                       user = params[5],
@@ -648,26 +650,29 @@ class DataSeries(wx.Panel):
 
         #databases = Publisher.sendMessage('getDatabases')
         # Publisher.subscribe(self.getKnownDatabases, "getKnownDatabases")  # sends message to CanvasController
-        Publisher.subscribe(self.connection_added_status, "connectionAddedStatus")
+        # Publisher.subscribe(self.connection_added_status, "connectionAddedStatus")
+        engineEvent.onDatabaseConnected += self.refreshConnectionsListBox
 
     def DbChanged(self, event):
         self.database_refresh(event)
 
-    def getKnownDatabases(self):
-        self._databases = engine.getDbConnections()
+    def refreshConnectionsListBox(self, connection_added):
 
-        choices = ['---']
-        for k,v in self._databases.iteritems():
-            choices.append(self._databases[k]['name'])
-        self.connection_combobox.SetItems(choices)
+        if connection_added:
+            self._databases = engine.getDbConnections()
 
-        # set the selected choice
-        self.connection_combobox.SetSelection( self.__selected_choice_idx)
+            choices = ['---']
+            for k,v in self._databases.iteritems():
+                choices.append(self._databases[k]['name'])
+            self.connection_combobox.SetItems(choices)
+
+            # set the selected choice
+            self.connection_combobox.SetSelection( self.__selected_choice_idx)
 
     def connection_added_status(self,value=None,connection_string=''):
         if value is not None:
             self._connection_added = value
-            self._conection_string = connection_string
+            self._connection_string = connection_string
         return self._connection_added
 
     def AddConnection_MouseWheel(self, event):

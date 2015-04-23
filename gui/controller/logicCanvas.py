@@ -613,28 +613,33 @@ class LogicCanvas(ViewCanvas):
                     break
         return self._currentDbSession
 
-    def AddDatabaseConnection(self, title, desc, engine, address, name, user, pwd):
+    def AddDatabaseConnection(self, title, desc, dbengine, address, name, user, pwd):
 
         # build the database connection
-        connection = gui.create_database_connections_from_args(title, desc, engine, address, name, user, pwd)
+        # connection = gui.create_database_connections_from_args(title, desc, engine, address, name, user, pwd)
 
-        if type(connection) == dict and any(connection):
+        # if type(connection) == dict and any(connection):
             # store the connection
-            self.cmd.add_db_connection(connection)
+            # self.cmd.add_db_connection(connection)
+        kwargs = dict(title=title, desc=desc, engine=dbengine, address=address, name=name, user=user, pwd=pwd)
+        engine.connectToDb(**kwargs)
 
+            # if result:
+            #
+            #     # notify that the connection was added successfully
+            #     Publisher.sendMessage('connectionAddedStatus', value=True,
+            #                           connection_string=connection[connection.keys()[0]][
+            #                               'connection_string'])  # sends message to mainGui
+            #
+            #     return True
+            # else:
+            #     # notify that the connection was not added successfully
+            #     Publisher.sendMessage('connectionAddedStatus', value=False,
+            #                           connection_string=connection)  # sends message to mainGui
+            #
+            #     return False
 
-            # notify that the connection was added successfully
-            Publisher.sendMessage('connectionAddedStatus', value=True,
-                                  connection_string=connection[connection.keys()[0]][
-                                      'connection_string'])  # sends message to mainGui
-
-            return True
-        else:
-            # notify that the connection was not added successfully
-            Publisher.sendMessage('connectionAddedStatus', value=False,
-                                  connection_string=connection)  # sends message to mainGui
-
-            return False
+        # return False
 
     def DetailView(self):
         # DCV.ShowDetails()

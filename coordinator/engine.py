@@ -1014,26 +1014,25 @@ class Coordinator(object):
 
             print 'test'
 
+    def connect_to_db(self, title, desc, engine, address, name, user, pwd):
+
+        connection = connect_to_db(title, desc, engine, address, name, user, pwd)
+
+        if connection:
+            self.add_db_connection(connection)
+            return {'success':True}
+        else:
+            return {'success':False}
+
+
     def connect_to_db_from_file(self,filepath=None):
-
-        # remove any empty list objects
-        # args = [arg for arg in filepath if arg != '']
-
-        # parse from file
-        # if len(args) == 1:
-            # curdir = os.path.dirname(__file__)
-            # abspath = os.path.abspath(os.path.join(curdir, args[0]))
 
         if filepath is None: return {'success':False}
 
-        # abspath = os.path.abspath(os.path.join(os.getcwd(),filepath))
         if os.path.isfile(filepath):
             try:
                 connections = create_database_connections_from_file(filepath)
-                #self.set_default_database()
-
                 self._db = connections
-
 
                 # set the default connection
                 for id,conn in connections.iteritems():

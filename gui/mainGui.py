@@ -222,7 +222,7 @@ class MainGui(wx.Frame):
             # update databases in a generic way
             if len(selected_page.connection_combobox.GetItems()) == 0:
             # if 'getKnownDatabases' in dir(selected_page):
-                 selected_page.getKnownDatabases()
+                 selected_page.refreshConnectionsListBox()
 
         except: pass
 

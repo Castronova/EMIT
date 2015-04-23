@@ -282,6 +282,33 @@ def load_model(config_params):
     #return (config_params['general'][0]['name'], instance)
     return (instance.name(), instance)
 
+def connect_to_db(title, desc, engine, address, name, user, pwd):
+
+    d = {}
+    session = dbconnection.createConnection(engine, address, name, user, pwd)
+
+    if session:
+        # adjusting timeout
+        session.engine.pool._timeout = 30
+
+        connection_string = session.engine.url
+
+        # save this session in the db_connections object
+        db_id = uuid.uuid4().hex[:5]
+
+        d[db_id] = {'name':title,
+                     'session': session,
+                     'connection_string':connection_string,
+                     'description':desc,
+                     'args': d}
+
+        print 'Connected to : %s [%s]'%(connection_string,db_id)
+
+    else:
+        print 'ERROR | Could not establish a connection with the database'
+
+    return d
+
 def create_database_connections_from_file(ini):
 
     # database connections dictionary

@@ -26,6 +26,16 @@ def connectToDbFromFile(dbtextfile=None):
         e.thread.start()
         e.thread.join()
 
+def connectToDb(**kwargs):
+        #engine=None, address=None, db=None, user=None, pwd=None):
+        e = Engine()
+        kwargs['event'] ='onDatabaseConnected'
+        task = [('connect_to_db',kwargs)]
+        e.setTasks(task)
+
+        e.thread = Thread(target = e.check_for_process_results)
+        e.thread.start()
+        e.thread.join()
 
 def addLink(source_id=None, source_item=None, target_id=None, target_item=None, spatial_interpolation=None,
             temporal_interpolation=None):

@@ -8,7 +8,6 @@ from gui.views.viewLink import ViewLink
 import coordinator.engineAccessors as engine
 import wx.lib.newevent as ne
 
-
 LinkUpdatedEvent, EVT_LINKUPDATED  =ne.NewEvent()
 
 
@@ -42,6 +41,7 @@ class LogicLink(ViewLink):
 
     def InitBindings(self):
         self.LinkNameListBox.Bind(wx.EVT_LISTBOX, self.OnChange)
+        self.LinkNameListBox.Bind(wx.EVT_LEFT_UP, self.OnLeftDown)
         self.ButtonNew.Bind(wx.EVT_BUTTON, self.OnSave)
         self.ButtonNew.Bind(wx.EVT_BUTTON, self.NewButton)
         self.ButtonDelete.Bind(wx.EVT_BUTTON, self.OnDelete)
@@ -53,51 +53,45 @@ class LogicLink(ViewLink):
         self.ButtonSave.Bind(wx.EVT_BUTTON, self.OnSave)
         self.Bind(EVT_LINKUPDATED, self.linkSelected)
 
-    def OnChange(self, event):
-        linkname =event.GetString()
-        l = self._LogicLink__links[linkname]
-        # linkid = self.__selected_link[linkname]['uid']
+    def OnLeftDown(self, event):
+        link_name = self.__selected_link.name
 
-        # if self.__link_name in self.__link_ids.keys():
-        #     linkid = self.__link_ids[self.__link_name]
-        link = engine.getLinkById(l.uid)
+        selected_index = self.LinkNameListBox.Items.index(link_name)
+        self.LinkNameListBox.SetSelection(selected_index)
+        self.OnChange(None)
+
+
+    def OnChange(self, event):
+        link_name = self.LinkNameListBox.GetStringSelection()
+        l = self.__links[link_name]
+        # link = engine.getLinkById(l.uid)
         self.OutputComboBox.SetStringSelection(l.oei)
         self.InputComboBox.SetStringSelection(l.iei)
         self.ComboBoxTemporal.SetStringSelection(str(l.temporal_interpolation))
         self.ComboBoxSpatial.SetStringSelection(str(l.spatial_interpolation))
+
+        self.__selected_link = l
+
         wx.PostEvent(self, LinkUpdatedEvent())
-            # self.l = LinkObject
 
     def linkSelected(self, event):
 
         # get the selected link object
         selected = self.LinkNameListBox.GetStringSelection()
-        l = self.__links[selected]
-        self.__selected_link = l
+        if selected in self.__links.keys():
+            l = self.__links[selected]
+            self.__selected_link = l
 
+            # activate controls
+            self.activateControls(True)
 
-        # build link dictionary
-        # current_link_dict = dict(source_id=self.__link_source_id,
-        #                source_item=self.__link_source_item,
-        #                target_id=self.__link_target_id,
-        #                target_item=self.__link_target_item,
-        #                spatial_interpolation=self.__spatial_interpolation,
-        #                temporal_interpolation=self.__temporal_interpolation)
+            self.populate_output_metadata(l.oei)
+            self.populate_input_metadata(l.iei)
 
-        # grab known link dictionary
-        # if self.__link_name in self.__links.keys():
-        #     known_link_dict = self.__links[self.__link_name]
-        #
-            # check if these are the same
-            # if current_link_dict == known_link_dict:
-            #
-                # deactivate controls
-                # self.activateControls(activate=False)
-            # else:
-            #     self.activateControls(activate=True)
-        # else:
-        #     self.activateControls(activate=True)
-    #
+        else:
+            # deactivate controls if nothing is selected
+            self.activateControls(False)
+
     def activateControls(self, activate=True):
 
         # todo: this needs to be expanded to check if any forms have been changed
@@ -122,8 +116,6 @@ class LogicLink(ViewLink):
             self.ButtonPlot.Disable()
 
     def NewButton(self, event):
-        self.on_select_input()
-        self.on_select_output()
 
         # generate a unique name for this link
         oei = self.OutputComboBox.GetValue()
@@ -139,12 +131,9 @@ class LogicLink(ViewLink):
         # set the currently selected link
         self.__selected_link = l
 
-        # todo: clear this if the link is not saved
-        # initialize the selected link dictionary
-        # self.__selected_link['uid'] = uid
-        # self.__selected_link['source_item'] = oei
-        # self.__selected_link['target_item'] = iei
-        # self.__selected_link['name'] = link_name
+        # select the last value
+        self.LinkNameListBox.SetSelection(self.LinkNameListBox.GetCount()-1)
+        self.OnChange(None)
 
     def GetName(self, event):
         dlg = NameDialog(self)
@@ -172,57 +161,60 @@ class LogicLink(ViewLink):
         index = self.LinkNameListBox.GetSelection()
         self.LinkNameListBox.Delete(index)
 
+    def populate_output_metadata(self, selected_output_name):
+
+        # clear the metadata box
+        self.OutputDataTreeCtrl.DeleteAllItems()
+
+        # get the link object
+        l = self.__links[self.__selected_link.name]
+        outputs = l.output_metadata
+        o = outputs[selected_output_name]
+
+        self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, o['name'])
+        self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, o['description'])
+        self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, o['type'])
+        self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, o['unit'].UnitName())
+        self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, o['variable'].VariableNameCV())
+
+    def populate_input_metadata(self,selected_input_name):
+
+        # clear the metadata box
+        self.InputDataTreeCtrl.DeleteAllItems()
+
+        # get the link object
+        l = self.__links[self.__selected_link.name]
+        inputs = l.input_metadata
+        i = inputs[selected_input_name]
+
+        self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, i['name'])
+        self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, i['description'])
+        self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, i['type'])
+        self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, i['unit'].UnitName())
+        self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, i['variable'].VariableNameCV())
+
     def on_select_output(self):
         """
-        gets the metadata for the selected output exchange item and populates a tree view
-        :return: 1 if successful, else 0
+        sets the metadata for the selected output exchange item and populates a tree view
         """
 
         # get selected value
-        output_value = self.OutputComboBox.GetValue()
+        output_name = self.OutputComboBox.GetValue()
 
-        # set selected value
-        self.__link_source_item = output_value
-
-        # set tree view
-        self.OutputDataTreeCtrl.DeleteAllItems()
-        for item in self.output_items:
-            if item['name'] == output_value:
-                self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, item['name'])
-                self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, item['description'])
-                self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, item['type'])
-                self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, item['unit'].UnitName())
-                self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, item['variable'].VariableNameCV())
-                wx.PostEvent(self, LinkUpdatedEvent())
-                return 1
-        return 0
-
+        # populate metadata
+        self.populate_output_metadata(output_name)
 
 
     def on_select_input(self):
         """
-        gets the metadata for the selected input exchange item and populates a tree view
-        :return: 1 if successful, else 0
+        sets the metadata for the selected input exchange item and populates a tree view
         """
 
         # get selected value
-        input_value = self.InputComboBox.GetValue()
+        input_name = self.InputComboBox.GetValue()
 
-        # set selected value
-        self.__link_target_item = input_value
-
-        # set tree view
-        self.InputDataTreeCtrl.DeleteAllItems()
-        for item in self.input_items:
-            if item['name'] == input_value:
-                self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, item['name'])
-                self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, item['description'])
-                self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, item['type'])
-                self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, item['unit'].UnitName())
-                self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, item['variable'].VariableNameCV())
-                wx.PostEvent(self, LinkUpdatedEvent())
-                return 1
-        return 0
+        # populate metadata
+        self.populate_input_metadata(input_name)
 
     def on_select_spatial(self, event):
         spatial_value = self.ComboBoxSpatial.GetValue()
@@ -256,12 +248,12 @@ class LogicLink(ViewLink):
 
             try:
                 kwargs =    dict(source_id=l.source_id,
-                               source_item=l.oei,
-                               target_id=l.target_id,
-                               target_item=l.iei,
-                               spatial_interpolation=l.spatial_interpolation,
-                               temporal_interpolation=l.temporal_interpolation,
-                               uid = l.uid)
+                                 source_item=l.oei,
+                                 target_id=l.target_id,
+                                 target_item=l.iei,
+                                 spatial_interpolation=l.spatial_interpolation,
+                                 temporal_interpolation=l.temporal_interpolation,
+                                 uid = l.uid)
 
                 # remove the existing link, if there is one
                 removed = engine.removeLinkById(l.uid)
@@ -282,18 +274,26 @@ class LogicLink(ViewLink):
 
     def OnStartUp(self):
         links = engine.getLinksBtwnModels(self.output_component['id'], self.input_component['id'])
-        for l in links:
-            link = LinkInfo(l['source_item'],
-                            l['target_item'],
-                            l['source_id'],
-                            l['target_id'],
-                            l['id'],
-                            l['spatial_interpolation'],
-                            l['temporal_interpolation'])
+        if links:
+            for l in links:
+                link = LinkInfo(l['source_item'],
+                                l['target_item'],
+                                l['source_id'],
+                                l['target_id'],
+                                l['id'],
+                                l['spatial_interpolation'],
+                                l['temporal_interpolation'])
 
-            self.__links[link.name] = link
+                self.__links[link.name] = link
 
-            self.LinkNameListBox.Append(link.name)
+                self.LinkNameListBox.Append(link.name)
+
+            # select the first value
+            self.LinkNameListBox.SetSelection(0)
+            self.OnChange(None)
+
+        # if not links are found, need to deactivate controls
+        self.activateControls(False)
 
 class NameDialog(wx.Dialog):
     def __init__(self, parent, id=-1, title="Enter Name!"):
@@ -343,6 +343,24 @@ class LinkInfo():
 
         self.saved = False
 
+        self.output_metadata = {}
+        self.input_metadata = {}
+
+        self.get_input_and_output_metadata()
+
     def generate_link_name(self, oei_name, iei_name, uid):
 
         return  '%s -> %s [unique id = %s]'%(oei_name, iei_name, uid)
+
+    def get_input_and_output_metadata(self):
+
+        # get output information
+        outputs = engine.getOutputExchangeItems(self.source_id)
+        for output in outputs:
+            self.output_metadata[output['name']] = output
+
+        # get input information
+        inputs = engine.getInputExchangeItems(self.target_id)
+        for input in inputs:
+            self.input_metadata[input['name']] = input
+

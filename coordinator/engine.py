@@ -436,7 +436,7 @@ class Coordinator(object):
                 return self.__models[m]
         return None
 
-    def add_link(self,from_id, from_item_id, to_id, to_item_id, spatial_interp=None, temporal_interp=None):
+    def add_link(self,from_id, from_item_id, to_id, to_item_id, spatial_interp=None, temporal_interp=None, uid=None):
         """
         adds a data link between two components
         """
@@ -458,7 +458,10 @@ class Coordinator(object):
 
         if ii is not None and oi is not None:
             # generate a unique model id
-            id = 'L'+uuid.uuid4().hex[:5]
+            if uid is None:
+                id = 'L'+uuid.uuid4().hex[:5]
+            else:
+                id = uid
 
             # create link
             link = Link(id,From,To,oi,ii)

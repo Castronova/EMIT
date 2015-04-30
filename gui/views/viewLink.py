@@ -131,12 +131,12 @@ class ViewLink(wx.Frame):
 
         RightAlignSizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.ButtonSave = wx.Button(self.BottomPanel, wx.ID_ANY, u"Save", wx.DefaultPosition, wx.DefaultSize, 0)
-        self.ButtonSave.Disable()
+        self.ButtonSave = wx.Button(self.BottomPanel, wx.ID_ANY, u"Save and Close", wx.DefaultPosition, wx.DefaultSize, 0)
+        # self.ButtonSave.Disable()
         RightAlignSizer.Add(self.ButtonSave, 0, wx.ALL, 5)
 
-        self.ButtonClose = wx.Button(self.BottomPanel, wx.ID_ANY, u"Close", wx.DefaultPosition, wx.DefaultSize, 0)
-        RightAlignSizer.Add(self.ButtonClose, 0, wx.ALL, 5)
+        self.ButtonCancel = wx.Button(self.BottomPanel, wx.ID_ANY, u"Cancel", wx.DefaultPosition, wx.DefaultSize, 0)
+        RightAlignSizer.Add(self.ButtonCancel, 0, wx.ALL, 5)
 
         ButtonSizerBottom.Add(RightAlignSizer, 1, wx.EXPAND, 5)
 

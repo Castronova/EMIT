@@ -528,7 +528,7 @@ class LogicCanvas(ViewCanvas):
         # get output items from r1
         to_model = engine.getModelById(r2.ID)
 
-        linkstart = LogicLink(self.FloatCanvas, from_model, to_model, self.cmd)
+        linkstart = LogicLink(self.FloatCanvas, from_model, to_model)
 
         linkstart.Show()
 
@@ -982,7 +982,7 @@ class LogicCanvas(ViewCanvas):
     def run(self):
 
         try:
-            self.cmd.run_simulation()
+            # self.cmd.run_simulation()
             engine.runSimulation()
         except Exception as e:
             wx.MessageBox(str(e.args[0]), 'Error', wx.OK | wx.ICON_ERROR)

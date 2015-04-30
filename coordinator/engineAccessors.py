@@ -38,10 +38,10 @@ def connectToDb(**kwargs):
         e.thread.join()
 
 def addLink(source_id=None, source_item=None, target_id=None, target_item=None, spatial_interpolation=None,
-            temporal_interpolation=None):
+            temporal_interpolation=None,uid=None):
     e = Engine()
     kwargs = dict(from_id=source_id, from_item_id=source_item, to_id=target_id, to_item_id=target_item,
-                  spatial_interp=spatial_interpolation, temporal_interp=temporal_interpolation)
+                  spatial_interp=spatial_interpolation, temporal_interp=temporal_interpolation,uid=uid)
     task = [('add_link', kwargs)]
     e.setTasks(task)
 

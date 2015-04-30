@@ -18,10 +18,26 @@ unit_type_cv = hours
 value = 1
 
 [output]
-variable_name_cv = random_number
+variable_name_cv = random 1-10
+variable_definition = This is a random number in the range of 1 to 10
 unit_type_cv = international inch
 elementset = POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))
 epsg_code = 2921
+
+[output]
+variable_name_cv = random 10-100
+variable_definition = This is a random number in the range of 10 to 100
+unit_type_cv = international inch
+elementset = POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))
+epsg_code = 2921
+
+[output]
+variable_name_cv = random 100-1000
+variable_definition = This is a random number in the range of 100 to 1000
+unit_type_cv = international inch
+elementset = POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))
+epsg_code = 2921
+
 
 [options]
 ignorecv = 1

@@ -36,6 +36,8 @@ class LogicLink(ViewLink):
         self.__link_ids = {}
         self.__links = {}
 
+
+
         self.OnStartUp()
         self.InitBindings()
 
@@ -100,8 +102,8 @@ class LogicLink(ViewLink):
             self.ButtonSave.Enable()
             self.ComboBoxSpatial.Enable()
             self.ComboBoxTemporal.Enable()
-            self.OutputDataTreeCtrl.Enable()
-            self.InputDataTreeCtrl.Enable()
+            # self.OutputDataTreeCtrl.Enable()
+            # self.InputDataTreeCtrl.Enable()
             self.InputComboBox.Enable()
             self.OutputComboBox.Enable()
             self.ButtonPlot.Enable()
@@ -109,8 +111,8 @@ class LogicLink(ViewLink):
             self.ButtonSave.Disable()
             self.ComboBoxSpatial.Disable()
             self.ComboBoxTemporal.Disable()
-            self.OutputDataTreeCtrl.Disable()
-            self.InputDataTreeCtrl.Disable()
+            # self.OutputDataTreeCtrl.Disable()
+            # self.InputDataTreeCtrl.Disable()
             self.InputComboBox.Disable()
             self.OutputComboBox.Disable()
             self.ButtonPlot.Disable()
@@ -163,35 +165,54 @@ class LogicLink(ViewLink):
 
     def populate_output_metadata(self, selected_output_name):
 
-        # clear the metadata box
-        self.OutputDataTreeCtrl.DeleteAllItems()
-
         # get the link object
         l = self.__links[self.__selected_link.name]
         outputs = l.output_metadata
         o = outputs[selected_output_name]
 
-        self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, o['name'])
-        self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, o['description'])
-        self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, o['type'])
-        self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, o['unit'].UnitName())
-        self.OutputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, o['variable'].VariableNameCV())
+        # get the property values dictionary
+        values = self.outputProperties.GetPropertyValues()
+
+        # update the property values
+        values['Variable Name'] = o['variable'].VariableNameCV()
+        values['Unit Name'] = o['unit'].UnitName()
+        values['Unit Type'] = o['unit'].UnitTypeCV()
+        values['Unit Abbreviation'] = o['unit'].UnitAbbreviation()
+        values['Variable Description'] = o['variable'].VariableDefinition()
+
+
+        for k, v in values.iteritems():
+            self.outputProperties.GetPropertyByLabel(k).SetValue(v)
+
+
+        # set the new property values
+        # r = self.outputProperties.SetPropertyValues(values)
+
+        # values = self.outputProperties.GetPropertyValues()
+        # print 'here'
 
     def populate_input_metadata(self,selected_input_name):
-
-        # clear the metadata box
-        self.InputDataTreeCtrl.DeleteAllItems()
 
         # get the link object
         l = self.__links[self.__selected_link.name]
         inputs = l.input_metadata
         i = inputs[selected_input_name]
 
-        self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, i['name'])
-        self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, i['description'])
-        self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, i['type'])
-        self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, i['unit'].UnitName())
-        self.InputDataTreeCtrl.AppendContainer(wx.dataview.NullDataViewItem, i['variable'].VariableNameCV())
+        # get the property values dictionary
+        values = self.inputProperties.GetPropertyValues()
+
+        # update the property values
+        values['Variable Name'] = i['variable'].VariableNameCV()
+        values['Unit Name'] = i['unit'].UnitName()
+        values['Unit Type'] = i['unit'].UnitTypeCV()
+        values['Unit Abbreviation'] = i['unit'].UnitAbbreviation()
+        values['Variable Description'] = i['variable'].VariableDefinition()
+
+
+        for k, v in values.iteritems():
+            self.inputProperties.GetPropertyByLabel(k).SetValue(v)
+
+
 
     def on_select_output(self):
         """
@@ -273,6 +294,10 @@ class LogicLink(ViewLink):
         self.Destroy()
 
     def OnStartUp(self):
+        # set splitter location for the gridviews.  This needs to be done after the view is rendered
+        self.inputProperties.SetSplitterPosition(130)
+        self.outputProperties.SetSplitterPosition(130)
+
         links = engine.getLinksBtwnModels(self.output_component['id'], self.input_component['id'])
         if links:
             for l in links:

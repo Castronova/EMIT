@@ -6,11 +6,12 @@ import wx.dataview
 from transform.time import *
 from transform.space import *
 import coordinator.engineAccessors as engine
+import wx.propgrid as wxpg
 
 class ViewLink(wx.Frame):
     def __init__(self, parent, output, input):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=wx.EmptyString, pos=wx.DefaultPosition,
-                          size=wx.Size(550, 560), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
+                          size=wx.Size(700, 560), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
 
         self.input_component = input
         self.output_component = output
@@ -47,9 +48,6 @@ class ViewLink(wx.Frame):
         self.ButtonDelete = wx.Button(self.LinkStartPanel, wx.ID_ANY, u"Delete", wx.DefaultPosition, wx.DefaultSize, 0)
         ButtonSizer.Add(self.ButtonDelete, 0, wx.ALL, 5)
 
-        # self.ButtonOther = wx.Button( self.LinkStartPanel, wx.ID_ANY, u"Other", wx.DefaultPosition, wx.DefaultSize, 0 )
-        # ButtonSizer.Add( self.ButtonOther, 0, wx.ALL, 5 )
-
 
         LinkStartSizer.Add(ButtonSizer, 1, wx.EXPAND, 5)
 
@@ -61,18 +59,40 @@ class ViewLink(wx.Frame):
         self.ExchangeItemSizer = wx.Panel(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         ExchangeItemSizer = wx.BoxSizer(wx.HORIZONTAL)
 
+
+        ###########################################
+        # OUTPUT EXCHANGE ITEM - PROPERTY GRID VIEW
+        ###########################################
+
         OutputSizer = wx.BoxSizer(wx.VERTICAL)
 
-        # OutputComboBoxChoices = []
         OutChoice = self.OutputComboBoxChoices()
         self.OutputComboBox = wx.ComboBox(self.ExchangeItemSizer, wx.ID_ANY, OutChoice[0],
                                           wx.DefaultPosition, wx.Size(250, -1), OutChoice, 0)
         OutputSizer.Add(self.OutputComboBox, 0, wx.ALL, 5)
 
-        self.OutputDataTreeCtrl = wx.dataview.DataViewTreeCtrl(self.ExchangeItemSizer, id=wx.ID_ANY,
-                                                               pos=wx.DefaultPosition, size=wx.Size(250, 150),
-                                                               style=wx.dataview.DV_NO_HEADER)
-        OutputSizer.Add(self.OutputDataTreeCtrl, 0, wx.ALL, 5)
+
+        self.outputProperties = wxpg.PropertyGridManager(self.ExchangeItemSizer, size=wx.Size(325, 130))
+                                    # style= wxpg.PG_PROP_READONLY)
+
+        p1 = self.outputProperties.AddPage('Output Exchange Item Metadata')
+
+        self.outputProperties.Append( wxpg.PropertyCategory("Variable") )
+        self.outputProperties.Append( wxpg.StringProperty("Variable Name",value='') )
+        self.outputProperties.Append( wxpg.ArrayStringProperty("Variable Description",value='') )
+
+        self.outputProperties.Append( wxpg.PropertyCategory("Unit") )
+        self.outputProperties.Append( wxpg.StringProperty("Unit Name",value='') )
+        self.outputProperties.Append( wxpg.StringProperty("Unit Type",value='') )
+        self.outputProperties.Append( wxpg.StringProperty("Unit Abbreviation",value='') )
+
+        OutputSizer.Add(self.outputProperties, 0, wx.ALL, 5)
+
+
+        ###########################################
+        # SPATIAL AND TEMPORAL INTERPOLATION LABELS
+        ###########################################
+
         self.Temporal_staticText = wx.StaticText(self.ExchangeItemSizer, wx.ID_ANY, u"Temporal Interpolation",
                                                  wx.DefaultPosition, wx.DefaultSize, 0)
         self.Temporal_staticText.Wrap(-1)
@@ -88,6 +108,12 @@ class ViewLink(wx.Frame):
 
         ExchangeItemSizer.Add(OutputSizer, 1, wx.EXPAND, 5)
 
+
+
+        ###########################################
+        # INPUT EXCHANGE ITEM - PROPERTY GRID VIEW
+        ###########################################
+
         InputSizer = wx.BoxSizer(wx.VERTICAL)
 
         InChoice = self.InputComboBoxChoices()
@@ -95,10 +121,30 @@ class ViewLink(wx.Frame):
                                          wx.DefaultPosition, wx.Size(250, -1), InChoice, 0)
         InputSizer.Add(self.InputComboBox, 0, wx.ALL, 5)
 
-        self.InputDataTreeCtrl = wx.dataview.DataViewTreeCtrl(self.ExchangeItemSizer, id=wx.ID_ANY,
-                                                              pos=wx.DefaultPosition, size=wx.Size(250, 150),
-                                                              style=wx.dataview.DV_NO_HEADER)
-        InputSizer.Add(self.InputDataTreeCtrl, 0, wx.ALL, 5)
+        self.inputProperties = wxpg.PropertyGridManager(self.ExchangeItemSizer, size=wx.Size(325, 130),
+                                    style= wxpg.PG_PROP_READONLY)
+
+        page = self.inputProperties.AddPage('Input Exchange Item Metadata')
+
+        self.inputProperties.Append( wxpg.PropertyCategory("Variable") )
+        self.inputProperties.Append( wxpg.StringProperty("Variable Name",value='') )
+        self.inputProperties.Append( wxpg.ArrayStringProperty("Variable Description",value='') )
+
+        self.inputProperties.Append( wxpg.PropertyCategory("Unit") )
+        self.inputProperties.Append( wxpg.StringProperty("Unit Name",value='') )
+        self.inputProperties.Append( wxpg.StringProperty("Unit Type",value='') )
+        self.inputProperties.Append( wxpg.StringProperty("Unit Abbreviation",value='') )
+
+
+
+        InputSizer.Add(self.inputProperties, 0, wx.ALL, 5)
+
+
+
+
+        #####################################
+        # SPATIAL AND TEMPORAL INTERPOLATIONS
+        #####################################
 
         TemporalChoices = self.TemporalInterpolationChoices()  # Create the choices for the Temporal Interpolation Combobox
         self.ComboBoxTemporal = wx.ComboBox(self.ExchangeItemSizer, wx.ID_ANY, u"None Specified",
@@ -111,6 +157,12 @@ class ViewLink(wx.Frame):
                                            wx.DefaultPosition, wx.Size(300, -1),
                                            SpatialChoices, 0)
         InputSizer.Add(self.ComboBoxSpatial, 0, wx.ALL, 5)
+
+
+
+
+
+
 
         ExchangeItemSizer.Add(InputSizer, 1, wx.EXPAND, 5)
 
@@ -164,16 +216,6 @@ class ViewLink(wx.Frame):
             return [item['name'] for item in self.input_items]
         else:
             return [' ']
-
-    # def InterpolationComboBoxChoices(self):
-    #     # populate spatial and temporal interpolations
-    #     t = TemporalInterpolation()
-    #     self.temporal_transformations = {i.name(): i for i in t.methods()}
-    #     self.ComboboxTemporalChoices = ['None Specified'] + self.temporal_transformations.keys()
-    #
-    #     s = SpatialInterpolation()
-    #     self.spatial_transformations = {i.name(): i for i in s.methods()}
-    #     self.ComboboxSpatialChoices = ['None Specified'] + self.spatial_transformations.keys()
 
     def TemporalInterpolationChoices(self):
         t = TemporalInterpolation()

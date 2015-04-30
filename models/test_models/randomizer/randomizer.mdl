@@ -10,7 +10,7 @@ description = This is a module that generates random numbers
 [general]
 name = Random Number Generator
 description = The model produces random numbers
-simulation_start = 03/01/2014 12:00:00
+simulation_start = 03/01/2014 12:00:00z
 simulation_end = 05/01/2014 13:00:00
 
 [time_step]

@@ -78,7 +78,10 @@ def build_exchange_items_from_config(params):
 
         for key,value in io.iteritems():
 
-            if key == 'variable_name_cv': variable = create_variable(value)
+            if key == 'variable_name_cv':
+                variable = create_variable(value)
+                if 'variable_definition' in io.keys():
+                    variable.VariableDefinition(io['variable_definition'])
             elif key == 'unit_type_cv': unit = create_unit(value)
             elif key == 'elementset' :
                 # check if the value is a path

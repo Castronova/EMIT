@@ -317,6 +317,7 @@ class LogicLink(ViewLink):
             self.LinkNameListBox.SetSelection(0)
             self.OnChange(None)
 
+
         # if not links are found, need to deactivate controls
         self.activateControls(False)
 

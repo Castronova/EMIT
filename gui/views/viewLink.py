@@ -24,6 +24,7 @@ class ViewLink(wx.Frame):
         self.SetSizeHintsSz(wx.DefaultSize, wx.DefaultSize)
 
         FrameSizer = wx.BoxSizer(wx.VERTICAL)
+        ButtonSizer = wx.BoxSizer(wx.VERTICAL)
 
         self.LinkTitle_staticText = wx.StaticText(self, wx.ID_ANY, u"Select Add to Create a New Link", wx.Point(-1, -1),
                                                   wx.DefaultSize, 0)
@@ -36,11 +37,10 @@ class ViewLink(wx.Frame):
         LinkStartSizer = wx.BoxSizer(wx.HORIZONTAL)
 
         LinkNameListBoxChoices = []
-        self.LinkNameListBox = wx.ListBox(self.LinkStartPanel, wx.ID_ANY, wx.DefaultPosition, wx.Size(425, 125),
+        self.LinkNameListBox = wx.ListBox(self.LinkStartPanel, wx.ID_ANY, wx.DefaultPosition, wx.Size(575, 125),
                                           LinkNameListBoxChoices, 0)
         LinkStartSizer.Add(self.LinkNameListBox, 0, wx.ALL, 5)
 
-        ButtonSizer = wx.BoxSizer(wx.VERTICAL)
 
         self.ButtonNew = wx.Button(self.LinkStartPanel, wx.ID_ANY, u"New", wx.DefaultPosition, wx.DefaultSize, 0)
         ButtonSizer.Add(self.ButtonNew, 0, wx.ALL, 5)
@@ -68,7 +68,7 @@ class ViewLink(wx.Frame):
 
         OutChoice = self.OutputComboBoxChoices()
         self.OutputComboBox = wx.ComboBox(self.ExchangeItemSizer, wx.ID_ANY, OutChoice[0],
-                                          wx.DefaultPosition, wx.Size(250, -1), OutChoice, 0)
+                                          wx.DefaultPosition, wx.Size(320, -1), OutChoice, 0)
         OutputSizer.Add(self.OutputComboBox, 0, wx.ALL, 5)
 
 
@@ -118,11 +118,11 @@ class ViewLink(wx.Frame):
 
         InChoice = self.InputComboBoxChoices()
         self.InputComboBox = wx.ComboBox(self.ExchangeItemSizer, wx.ID_ANY, InChoice[0],
-                                         wx.DefaultPosition, wx.Size(250, -1), InChoice, 0)
+                                         wx.DefaultPosition, wx.Size(320, -1), InChoice, 0)
         InputSizer.Add(self.InputComboBox, 0, wx.ALL, 5)
 
         self.inputProperties = wxpg.PropertyGridManager(self.ExchangeItemSizer, size=wx.Size(325, 130),
-                                    style= wxpg.PG_PROP_READONLY)
+                                    style= wxpg.PG_PROP_READONLY|wxpg.PG_PROP_NOEDITOR)
 
         page = self.inputProperties.AddPage('Input Exchange Item Metadata')
 
@@ -148,13 +148,13 @@ class ViewLink(wx.Frame):
 
         TemporalChoices = self.TemporalInterpolationChoices()  # Create the choices for the Temporal Interpolation Combobox
         self.ComboBoxTemporal = wx.ComboBox(self.ExchangeItemSizer, wx.ID_ANY, u"None Specified",
-                                            wx.DefaultPosition, wx.Size(300, -1),
+                                            wx.DefaultPosition, wx.Size(320, -1),
                                             TemporalChoices, 0)
         InputSizer.Add(self.ComboBoxTemporal, 0, wx.ALL, 5)
 
         SpatialChoices = self.SpatialInterpolationChoices()  # Create the choices for the Spatial Interpolation Combobox
         self.ComboBoxSpatial = wx.ComboBox(self.ExchangeItemSizer, wx.ID_ANY, u"None Specified",
-                                           wx.DefaultPosition, wx.Size(300, -1),
+                                           wx.DefaultPosition, wx.Size(320, -1),
                                            SpatialChoices, 0)
         InputSizer.Add(self.ComboBoxSpatial, 0, wx.ALL, 5)
 

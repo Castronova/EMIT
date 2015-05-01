@@ -122,7 +122,7 @@ class ViewLink(wx.Frame):
         InputSizer.Add(self.InputComboBox, 0, wx.ALL, 5)
 
         self.inputProperties = wxpg.PropertyGridManager(self.ExchangeItemSizer, size=wx.Size(325, 130),
-                                    style= wxpg.PG_PROP_READONLY)
+                                    style= wxpg.PG_PROP_READONLY|wxpg.PG_PROP_NOEDITOR)
 
         page = self.inputProperties.AddPage('Input Exchange Item Metadata')
 

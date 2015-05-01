@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import uuid
 
 __author__ = 'tonycastronova'
@@ -34,8 +35,11 @@ class LogicLink(ViewLink):
         self.__link_target_item = None
         self.__link_name = None
         self.__link_ids = {}
-        self.__links = {}
 
+        self.__links = []
+        # self.__links = {}
+
+        self.link_obj_hit = False
 
 
         self.OnStartUp()
@@ -43,7 +47,7 @@ class LogicLink(ViewLink):
 
     def InitBindings(self):
         self.LinkNameListBox.Bind(wx.EVT_LISTBOX, self.OnChange)
-        self.LinkNameListBox.Bind(wx.EVT_LEFT_UP, self.OnLeftDown)
+        self.LinkNameListBox.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
         self.ButtonNew.Bind(wx.EVT_BUTTON, self.OnSave)
         self.ButtonNew.Bind(wx.EVT_BUTTON, self.NewButton)
         self.ButtonDelete.Bind(wx.EVT_BUTTON, self.OnDelete)
@@ -55,17 +59,24 @@ class LogicLink(ViewLink):
         self.ButtonSave.Bind(wx.EVT_BUTTON, self.OnSave)
         self.Bind(EVT_LINKUPDATED, self.linkSelected)
 
-    def OnLeftDown(self, event):
-        link_name = self.__selected_link.name
+    def OnLeftUp(self, event):
 
-        selected_index = self.LinkNameListBox.Items.index(link_name)
-        self.LinkNameListBox.SetSelection(selected_index)
-        self.OnChange(None)
+        if not self.link_obj_hit:
+
+            link_name = self.__selected_link.name()
+
+            selected_index = self.LinkNameListBox.Items.index(link_name)
+            self.LinkNameListBox.SetSelection(selected_index)
+            # self.OnChange(None)
+
+        # reset the state of link_obj_hit
+        self.link_obj_hit = False
+
 
 
     def OnChange(self, event):
         link_name = self.LinkNameListBox.GetStringSelection()
-        l = self.__links[link_name]
+        l = self.__selected_link
         # link = engine.getLinkById(l.uid)
         self.OutputComboBox.SetStringSelection(l.oei)
         self.InputComboBox.SetStringSelection(l.iei)
@@ -74,21 +85,27 @@ class LogicLink(ViewLink):
 
         self.__selected_link = l
 
+
+        # set the state of link_obj_hit
+        self.link_obj_hit = True
+
         wx.PostEvent(self, LinkUpdatedEvent())
 
     def linkSelected(self, event):
 
         # get the selected link object
         selected = self.LinkNameListBox.GetStringSelection()
-        if selected in self.__links.keys():
-            l = self.__links[selected]
+        known_link_ids = [l.name() for l in self.__links]
+        if selected in known_link_ids:
+            l = self.__links[known_link_ids.index(selected)]
+            # l = self.__links[selected]
             self.__selected_link = l
 
             # activate controls
             self.activateControls(True)
 
-            self.populate_output_metadata(l.oei)
-            self.populate_input_metadata(l.iei)
+            self.populate_output_metadata(l)
+            self.populate_input_metadata(l)
 
         else:
             # deactivate controls if nothing is selected
@@ -117,6 +134,13 @@ class LogicLink(ViewLink):
             self.OutputComboBox.Disable()
             self.ButtonPlot.Disable()
 
+    def refreshLinkNameBox(self):
+
+        self.LinkNameListBox.Clear()
+        for l in self.__links:
+            self.LinkNameListBox.Append(l.name())
+
+
     def NewButton(self, event):
 
         # generate a unique name for this link
@@ -125,10 +149,12 @@ class LogicLink(ViewLink):
 
         # create a link object and save it at the class level
         l = LinkInfo(oei, iei, self.__link_source_id, self.__link_target_id)
-        self.__links[l.name] = l
+        # self.__links[l.name()] = l
+        self.__links.append(l)
 
         # add the link name to the links list box
-        self.LinkNameListBox.Append(l.name)
+        # self.LinkNameListBox.Append(l.name())
+        self.refreshLinkNameBox()
 
         # set the currently selected link
         self.__selected_link = l
@@ -136,6 +162,7 @@ class LogicLink(ViewLink):
         # select the last value
         self.LinkNameListBox.SetSelection(self.LinkNameListBox.GetCount()-1)
         self.OnChange(None)
+
 
     def GetName(self, event):
         dlg = NameDialog(self)
@@ -163,12 +190,12 @@ class LogicLink(ViewLink):
         index = self.LinkNameListBox.GetSelection()
         self.LinkNameListBox.Delete(index)
 
-    def populate_output_metadata(self, selected_output_name):
+    def populate_output_metadata(self, l):
 
         # get the link object
-        l = self.__links[self.__selected_link.name]
+        # l = self.__links[self.__selected_link.name()]
         outputs = l.output_metadata
-        o = outputs[selected_output_name]
+        o = outputs[l.oei]
 
         # get the property values dictionary
         values = self.outputProperties.GetPropertyValues()
@@ -191,12 +218,12 @@ class LogicLink(ViewLink):
         # values = self.outputProperties.GetPropertyValues()
         # print 'here'
 
-    def populate_input_metadata(self,selected_input_name):
+    def populate_input_metadata(self,l):
 
         # get the link object
-        l = self.__links[self.__selected_link.name]
+        # l = self.__links[self.__selected_link.name()]
         inputs = l.input_metadata
-        i = inputs[selected_input_name]
+        i = inputs[l.iei]
 
         # get the property values dictionary
         values = self.inputProperties.GetPropertyValues()
@@ -212,9 +239,7 @@ class LogicLink(ViewLink):
         for k, v in values.iteritems():
             self.inputProperties.GetPropertyByLabel(k).SetValue(v)
 
-
-
-    def on_select_output(self):
+    def on_select_output(self, event):
         """
         sets the metadata for the selected output exchange item and populates a tree view
         """
@@ -222,8 +247,25 @@ class LogicLink(ViewLink):
         # get selected value
         output_name = self.OutputComboBox.GetValue()
 
+        # get the current link
+        l = self.__selected_link
+
+        # get index of this link and then remove it from the links list
+        link_idx = self.__links.index(l)
+        self.__links.pop(link_idx)
+
+        # change the link name to reflect output -> input
+        l.oei = output_name
+        l.refresh()
+
+        # update the name in the links list
+        self.__links.insert(link_idx, l)
+
+        # refresh the link name box
+        self.refreshLinkNameBox()
+
         # populate metadata
-        self.populate_output_metadata(output_name)
+        self.populate_output_metadata(l)
 
 
     def on_select_input(self):
@@ -234,8 +276,25 @@ class LogicLink(ViewLink):
         # get selected value
         input_name = self.InputComboBox.GetValue()
 
+       # get the current link
+        l = self.__selected_link
+
+        # get index of this link and then remove it from the links list
+        link_idx = self.__links.index(l)
+        self.__links.pop(link_idx)
+
+        # change the link name to reflect output -> input
+        l.iei = input_name
+        l.refresh()
+
+        # update the name in the links list
+        self.__links.insert(link_idx, l)
+
+        # refresh the link name box
+        self.refreshLinkNameBox()
+
         # populate metadata
-        self.populate_input_metadata(input_name)
+        self.populate_input_metadata(l)
 
     def on_select_spatial(self, event):
         spatial_value = self.ComboBoxSpatial.GetValue()
@@ -265,7 +324,7 @@ class LogicLink(ViewLink):
         Saves all link objects to the engine and then closes the link creation window
         """
 
-        for l in self.__links.values():
+        for l in self.__links:
 
             try:
                 kwargs =    dict(source_id=l.source_id,
@@ -309,12 +368,12 @@ class LogicLink(ViewLink):
                                 l['spatial_interpolation'],
                                 l['temporal_interpolation'])
 
-                self.__links[link.name] = link
-
-                self.LinkNameListBox.Append(link.name)
+                self.__links.append(link)
 
             # select the first value
+            self.refreshLinkNameBox()
             self.LinkNameListBox.SetSelection(0)
+            self.__selected_link = self.__links[0]
             self.OnChange(None)
 
 
@@ -359,7 +418,7 @@ class LinkInfo():
 
 
         self.uid = 'L'+uuid.uuid4().hex[:5] if uid is None else uid
-        self.name = self.generate_link_name(oei,iei,self.uid)
+        # self.name = self.generate_link_name(oei,iei,self.uid)
         self.oei = oei
         self.iei = iei
         self.source_id = source_id
@@ -374,9 +433,14 @@ class LinkInfo():
 
         self.get_input_and_output_metadata()
 
-    def generate_link_name(self, oei_name, iei_name, uid):
+    def refresh(self):
 
-        return  '%s -> %s [unique id = %s]'%(oei_name, iei_name, uid)
+        self.get_input_and_output_metadata()
+
+
+    def name(self):
+
+        return  '%s -> %s [unique id = %s]'%(self.oei, self.iei, self.uid)
 
     def get_input_and_output_metadata(self):
 

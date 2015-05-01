@@ -16,7 +16,7 @@ class LinkContextMenu(wx.Menu):
     def __init__(self, parent, e):
         super(LinkContextMenu, self).__init__()
 
-        self.cmd = parent.cmd
+        # self.cmd = parent.cmd
         self.arrow_obj = e
         self.parent = parent
 
@@ -87,14 +87,27 @@ class ModelContextMenu(wx.Menu):
         f = wx.Frame(self.GetParent())
 
         # get the input geometries
-        ogeoms = spatial.get_output_geoms(self.cmd, id)
+        # ogeoms = spatial.get_output_geoms(self.cmd, id)
+        oei = engine.getOutputExchangeItems(id)
+        ogeoms = {}
+        for o in oei:
+            name = o['name']
+            geoms = [i['shape'] for i in o['geom']]
+            ogeoms[name] = geoms
+        # ogeoms = oei[0]['geom'][0]['shape'] if oei else None
 
         # get the output geometries
-        igeoms = spatial.get_input_geoms(self.cmd, id)
+        # igeoms = spatial.get_input_geoms(self.cmd, id)
+        igeoms = {}
+        iei = engine.getInputExchangeItems(id)
+        for i in iei:
+            name = i['name']
+            geoms = [j['shape'] for j in o['geom']]
+            ogeoms[name] = geoms
+        # igeoms = iei[0]['geom'][0]['shape'] if iei else None
+
 
         # todo: HACK! should all of this be in the LogicModel?
-        # create the details view (no edit)
-        # view = ViewModel(f, edit=False)
         kwargs = {'edit':False,'spatial':True}
         model_details = LogicModel(f, **kwargs)
 
@@ -102,10 +115,10 @@ class ModelContextMenu(wx.Menu):
         model_details.PopulateSpatialGeoms(ogeoms, type='output')
         model_details.PopulateSpatialGeoms(igeoms, type='input')
 
-        atts = self.cmd.getModelById(self.model_obj.ID)._Model__attrib
+        # populate model metadata from MDL file
+        atts = engine.getModelById(self.model_obj.ID)['attrib']
         if 'mdl' in atts.keys():
-            mdl_path= self.cmd.get_model_by_id(self.model_obj.ID)._Model__attrib['mdl']
-            model_details.PopulateSummary(mdl_path)
+            model_details.PopulateSummary(atts['mdl'])
 
         model_details.Show()
 

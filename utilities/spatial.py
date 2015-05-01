@@ -7,6 +7,7 @@ from osgeo import ogr, osr
 import cPickle as pickle
 import shapefile
 from shapely.geometry import shape
+import coordinator.engineAccessors
 
 def get_input_geoms(cmd, model_id):
 

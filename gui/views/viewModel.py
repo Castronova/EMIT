@@ -1,11 +1,12 @@
+
 __author__ = 'Mario'
 
 import wx
 import wx.xrc
 import wx.propgrid as wxpg
-
-from gui import pnlSpatial
-
+from gui.views import viewPlot
+from gui.controller.logicSpatialPlot import LogicSpatialPlot
+# from gui.views.viewPanel import SpatialPanel
 
 class ViewModel(wx.Frame):
     def __init__(self, parent, edit=True, spatial=False, temporal=False, properties=False):
@@ -46,15 +47,14 @@ class ViewModel(wx.Frame):
         self.txtNotebook.AddPage(self.PropertyGrid, u"Properties", True)
 
 
-        # treectrlSizer.Add( self.propertyGrid, 0, wx.ALL, 5 )
         # make the spatial view
         if spatial:
-            self.matplotView = pnlSpatial(self.txtNotebook)
+            # self.matplotView = pnlSpatial(self.txtNotebook)
+            # self.matplotView = viewPlot.pnlSpatial(self.txtNotebook)
+            # self.matplotView = LogicPlot(self.txtNotebook)
+            self.matplotView = LogicSpatialPlot(self.txtNotebook)
             self.txtNotebook.AddPage(self.matplotView, u"Spatial Definition", False)
-        # if not spatial:
-        #     page = self.txtNotebook.GetPage(1)
-        #     self.txtNotebook.GetPage(1).Disable()
-
+            pass
 
         # make edit view
         if edit:
@@ -73,15 +73,9 @@ class ViewModel(wx.Frame):
             txtctrlSizer.Add(self.TextDisplay, 0, wx.ALL | wx.EXPAND, 5)
             txtctrlSizer.Add(self.SaveButton, 0, wx.ALL, 5)
 
-        # if not edit:
-        #     self.txtNotebook.GetPage(2).Disable()
-
         NBSizer.Add(self.txtNotebook, 1, wx.EXPAND | wx.ALL, 5)
 
 
-
-        # Bindings
-        #self.SaveButton.Bind( wx.EVT_BUTTON, self.OnSave )
 
         self.treectrlView.Layout()
         treectrlSizer.Fit(self.treectrlView)
@@ -90,7 +84,6 @@ class ViewModel(wx.Frame):
         self.Layout()
 
         self.Centre(wx.BOTH)
-        # self.InitMenu()
 
 
     def InitMenu(self):

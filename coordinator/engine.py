@@ -684,8 +684,9 @@ class Coordinator(object):
                 eitems = self.__models[m].get_output_exchange_items()
                 items_list = []
                 for ei in eitems:
+                    geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.geometries()]
                     items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.get_id(), unit=ei.unit(),
-                                           variable=ei.variable(),type=ei.get_type()))
+                                           variable=ei.variable(),type=ei.get_type(),geom=geoms))
                 return items_list
         return None
 
@@ -700,8 +701,9 @@ class Coordinator(object):
                 eitems = self.__models[m].get_input_exchange_items()
                 items_list = []
                 for ei in eitems:
+                    geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.geometries()]
                     items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.get_id(), unit=ei.unit(),
-                                           variable=ei.variable(),type=ei.get_type()))
+                                           variable=ei.variable(),type=ei.get_type(),geom=geoms))
                 return items_list
         return None
 

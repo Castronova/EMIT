@@ -94,6 +94,10 @@ class ViewLink(wx.Frame):
         self.outputProperties.Append( wxpg.StringProperty("Unit Type",value='') )
         self.outputProperties.Append( wxpg.StringProperty("Unit Abbreviation",value='') )
 
+        # adjust the properties box size to the ideal size
+        x,y = self.outputProperties.GetBestVirtualSize()
+        self.outputProperties.Layout()
+        self.outputProperties.MinSize = (wx.Size(325,y-20))         # Need to set the minimum size b/c that is what the sizer uses
         OutputSizer.Add(self.outputProperties, 0, wx.ALL, 5)
 
 
@@ -150,10 +154,11 @@ class ViewLink(wx.Frame):
         self.inputProperties.Append( wxpg.StringProperty("Unit Type",value='') )
         self.inputProperties.Append( wxpg.StringProperty("Unit Abbreviation",value='') )
 
-
-
+        # adjust the properties box size to the ideal size
+        x,y = self.inputProperties.GetBestVirtualSize()
+        self.inputProperties.Layout()
+        self.inputProperties.MinSize = (wx.Size(325,y-20))  # Need to set the minimum size b/c that is what the sizer uses
         InputSizer.Add(self.inputProperties, 0, wx.ALL, 5)
-
 
 
 

@@ -26,8 +26,8 @@ from transform.time import TemporalInterpolation
 import datatypes
 from api.ODM2.Results.services import readResults
 from api.ODM2.Core.services import readCore
-from utilities.threading import EVT_CREATE_BOX, EVT_UPDATE_CONSOLE, ThreadManager
 from matplotlib.pyplot import cm
+from utilities.threading import EVT_CREATE_BOX, EVT_UPDATE_CONSOLE, ThreadManager
 
 from gui.views.viewCanvas import ViewCanvas
 import gui.controller.logicCanvasObjects as LogicCanvasObjects
@@ -40,14 +40,10 @@ import coordinator.engineAccessors as engine
 import utilities.db as dbUtilities
 import uuid
 
-# todo: refactor
-# from gui import CanvasObjects
-# from ..LinkFrame import LinkStart
-
 class LogicCanvas(ViewCanvas):
     def __init__(self, parent):
 
-        self.cmd = engineManager.get_engine()
+        # self.cmd = engineManager.get_engine()
 
         self.threadManager = ThreadManager(self)
 

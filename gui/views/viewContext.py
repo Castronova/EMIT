@@ -16,7 +16,6 @@ class LinkContextMenu(wx.Menu):
     def __init__(self, parent, e):
         super(LinkContextMenu, self).__init__()
 
-        # self.cmd = parent.cmd
         self.arrow_obj = e
         self.parent = parent
 
@@ -66,7 +65,6 @@ class ModelContextMenu(wx.Menu):
     def __init__(self, parent, e):
         super(ModelContextMenu, self).__init__()
 
-        self.cmd = parent.cmd
         self.model_obj = e
         self.parent = parent
 
@@ -87,24 +85,20 @@ class ModelContextMenu(wx.Menu):
         f = wx.Frame(self.GetParent())
 
         # get the input geometries
-        # ogeoms = spatial.get_output_geoms(self.cmd, id)
         oei = engine.getOutputExchangeItems(id)
         ogeoms = {}
         for o in oei:
             name = o['name']
             geoms = [i['shape'] for i in o['geom']]
             ogeoms[name] = geoms
-        # ogeoms = oei[0]['geom'][0]['shape'] if oei else None
 
         # get the output geometries
-        # igeoms = spatial.get_input_geoms(self.cmd, id)
         igeoms = {}
         iei = engine.getInputExchangeItems(id)
         for i in iei:
             name = i['name']
             geoms = [j['shape'] for j in o['geom']]
             ogeoms[name] = geoms
-        # igeoms = iei[0]['geom'][0]['shape'] if iei else None
 
 
         # todo: HACK! should all of this be in the LogicModel?
@@ -142,7 +136,6 @@ class GeneralContextMenu(wx.Menu):
     def __init__(self, parent):
         super(GeneralContextMenu, self).__init__()
 
-        self.cmd = parent.cmd
         self.parent = parent
 
         mmi = wx.MenuItem(self, wx.NewId(), 'Add Link')
@@ -233,7 +226,6 @@ class DirectoryContextMenu(wx.Menu):
     def __init__(self, parent, e):
         super(DirectoryContextMenu, self).__init__()
 
-        self.cmd = parent.cmd
         self.arrow_obj = e
         self.parent = parent
 
@@ -366,8 +358,6 @@ class ContextMenu(wx.Menu):
                 # save the variable and units to validate future time series
                 variable = resobj.VariableObj.VariableCode
                 units = resobj.UnitObj.UnitsName
-                # from gui.frmMatPlotLib import MatplotFrame
-                # PlotFrame = MatplotFrame(self.Parent, title, ylabel=xlabel)
                 PlotFrame = LogicPlot(self.Parent, title, ylabel=xlabel)
 
             if resobj.VariableObj.VariableCode == variable and resobj.UnitObj.UnitsName == units:
@@ -454,6 +444,7 @@ class SimulationContextMenu(ContextMenu):
         labels = []
         id = self.parent.GetFirstSelected()
         while id != -1:
+
             # get the result
             simulationID = obj.GetItem(id,0).GetText()
 
@@ -469,6 +460,7 @@ class SimulationContextMenu(ContextMenu):
 
 
                 resobj = results[key][0][2]
+
                 # set metadata based on first series
                 ylabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
                 title = '%s' % (resobj.VariableObj.VariableCode)
@@ -478,7 +470,6 @@ class SimulationContextMenu(ContextMenu):
                 units = resobj.UnitObj.UnitsName
                 title = '%s: %s [%s]' % (name, variable,units)
 
-                # PlotFrame = MatplotFrame(self.Parent, ylabel=ylabel, title=title)
                 PlotFrame = LogicPlot(self.Parent, ylabel=ylabel, title=title)
 
                 for x,y,resobj in results[key]:
@@ -488,7 +479,6 @@ class SimulationContextMenu(ContextMenu):
                     labels.append(int(resobj.ResultID))
 
 
-                # PlotFrame.add_series(x,y)
 
             elif warning is None:
                 warning = 'Multiple Variables/Units were selected.  I currently don\'t support plotting heterogeneous time series. ' +\

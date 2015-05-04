@@ -48,16 +48,19 @@ class LogicLink(ViewLink):
     def InitBindings(self):
         self.LinkNameListBox.Bind(wx.EVT_LISTBOX, self.OnChange)
         self.LinkNameListBox.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
+
         self.ButtonNew.Bind(wx.EVT_BUTTON, self.OnSave)
         self.ButtonNew.Bind(wx.EVT_BUTTON, self.NewButton)
         self.ButtonDelete.Bind(wx.EVT_BUTTON, self.OnDelete)
-        self.ComboBoxTemporal.Bind(wx.EVT_COMBOBOX, self.on_select_temporal)
-        self.ComboBoxSpatial.Bind(wx.EVT_COMBOBOX, self.on_select_spatial)
         self.ButtonCancel.Bind(wx.EVT_BUTTON, self.OnCancel)
+        self.ButtonSave.Bind(wx.EVT_BUTTON, self.OnSave)
+
+        self.Bind(EVT_LINKUPDATED, self.linkSelected)
+
         self.OutputComboBox.Bind(wx.EVT_COMBOBOX, self.on_select_output)
         self.InputComboBox.Bind(wx.EVT_COMBOBOX, self.on_select_input)
-        self.ButtonSave.Bind(wx.EVT_BUTTON, self.OnSave)
-        self.Bind(EVT_LINKUPDATED, self.linkSelected)
+        self.ComboBoxTemporal.Bind(wx.EVT_COMBOBOX, self.on_select_temporal)
+        self.ComboBoxSpatial.Bind(wx.EVT_COMBOBOX, self.on_select_spatial)
 
     def OnLeftUp(self, event):
 
@@ -90,9 +93,18 @@ class LogicLink(ViewLink):
         # update the combobox selections
         self.OutputComboBox.SetStringSelection(l.oei)
         self.InputComboBox.SetStringSelection(l.iei)
-        self.ComboBoxTemporal.SetStringSelection(str(l.temporal_interpolation))
-        self.ComboBoxSpatial.SetStringSelection(str(l.spatial_interpolation))
-        self.__selected_link = l
+
+        if l.temporal_interpolation is not None:
+            self.ComboBoxTemporal.SetStringSelection(l.temporal_interpolation.name())
+        else:
+            # set default value
+            self.ComboBoxTemporal.SetSelection(0)
+
+        if l.spatial_interpolation is not None:
+            self.ComboBoxSpatial.SetStringSelection(l.spatial_interpolation.name())
+        else:
+            # set default value
+            self.ComboBoxSpatial.SetSelection(0)
 
 
 
@@ -152,6 +164,10 @@ class LogicLink(ViewLink):
 
     def NewButton(self, event):
 
+        # set the exchange item values
+        self.InputComboBox.SetSelection(0)
+        self.OutputComboBox.SetSelection(0)
+
         # generate a unique name for this link
         oei = self.OutputComboBox.GetValue()
         iei = self.InputComboBox.GetValue()
@@ -170,6 +186,9 @@ class LogicLink(ViewLink):
 
         # select the last value
         self.LinkNameListBox.SetSelection(self.LinkNameListBox.GetCount()-1)
+
+
+
         self.OnChange(None)
 
     def GetName(self, event):
@@ -302,20 +321,28 @@ class LogicLink(ViewLink):
         self.populate_input_metadata(l)
 
     def on_select_spatial(self, event):
+        # get the current link
+        l = self.__selected_link
+
         spatial_value = self.ComboBoxSpatial.GetValue()
         if spatial_value == 'None Specified':
-            self.__spatial_interpolation = None
+            l.spatial_interpolation = None
         else:
-            self.__spatial_interpolation = self.spatial_transformations[spatial_value]
-        wx.PostEvent(self, LinkUpdatedEvent())
+            l.spatial_interpolation = self.spatial_transformations[spatial_value]
+
+        # wx.PostEvent(self, LinkUpdatedEvent())
 
     def on_select_temporal(self, event):
+        # get the current link
+        l = self.__selected_link
+
         temporal_value = self.ComboBoxTemporal.GetValue()
         if temporal_value == 'None Specified':
-            self.__temporal_interpolation = None
+            l.temporal_interpolation = None
         else:
-            self.__temporal_interpolation = self.temporal_transformations[temporal_value]
-        wx.PostEvent(self, LinkUpdatedEvent())
+            l.temporal_interpolation = self.temporal_transformations[temporal_value]
+
+        # wx.PostEvent(self, LinkUpdatedEvent())
 
     def OnCancel(self, event):
 

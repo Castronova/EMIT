@@ -70,7 +70,6 @@ class LogicLink(ViewLink):
 
             selected_index = self.LinkNameListBox.Items.index(link_name)
             self.LinkNameListBox.SetSelection(selected_index)
-            # self.OnChange(None)
 
         # reset the state of link_obj_hit
         self.link_obj_hit = False
@@ -106,8 +105,6 @@ class LogicLink(ViewLink):
             # set default value
             self.ComboBoxSpatial.SetSelection(0)
 
-
-
         # set the state of link_obj_hit
         self.link_obj_hit = True
 
@@ -120,7 +117,6 @@ class LogicLink(ViewLink):
         known_link_ids = [l.name() for l in self.__links]
         if selected in known_link_ids:
             l = self.__links[known_link_ids.index(selected)]
-            # l = self.__links[selected]
             self.__selected_link = l
 
             # activate controls
@@ -141,8 +137,6 @@ class LogicLink(ViewLink):
             self.ButtonSave.Enable()
             self.ComboBoxSpatial.Enable()
             self.ComboBoxTemporal.Enable()
-            # self.OutputDataTreeCtrl.Enable()
-            # self.InputDataTreeCtrl.Enable()
             self.InputComboBox.Enable()
             self.OutputComboBox.Enable()
             self.ButtonPlot.Enable()
@@ -150,8 +144,6 @@ class LogicLink(ViewLink):
             self.ButtonSave.Disable()
             self.ComboBoxSpatial.Disable()
             self.ComboBoxTemporal.Disable()
-            # self.OutputDataTreeCtrl.Disable()
-            # self.InputDataTreeCtrl.Disable()
             self.InputComboBox.Disable()
             self.OutputComboBox.Disable()
             self.ButtonPlot.Disable()
@@ -174,11 +166,9 @@ class LogicLink(ViewLink):
 
         # create a link object and save it at the class level
         l = LinkInfo(oei, iei, self.__link_source_id, self.__link_target_id)
-        # self.__links[l.name()] = l
         self.__links.append(l)
 
         # add the link name to the links list box
-        # self.LinkNameListBox.Append(l.name())
         self.refreshLinkNameBox()
 
         # set the currently selected link
@@ -194,7 +184,6 @@ class LogicLink(ViewLink):
     def GetName(self, event):
         dlg = NameDialog(self)
         dlg.ShowModal()
-        # self.txt.SetValue(dlg.result)
         self.LinkNameListBox.Append(str(dlg.result))
 
     def OnDelete(self, event):
@@ -223,7 +212,6 @@ class LogicLink(ViewLink):
     def populate_output_metadata(self, l):
 
         # get the link object
-        # l = self.__links[self.__selected_link.name()]
         outputs = l.output_metadata
         if l.oei in outputs:
             o = outputs[l.oei]
@@ -245,7 +233,6 @@ class LogicLink(ViewLink):
     def populate_input_metadata(self,l):
 
         # get the link object
-        # l = self.__links[self.__selected_link.name()]
         inputs = l.input_metadata
         if l.iei in inputs:
             i = inputs[l.iei]
@@ -259,7 +246,6 @@ class LogicLink(ViewLink):
             values['Unit Type'] = i['unit'].UnitTypeCV()
             values['Unit Abbreviation'] = i['unit'].UnitAbbreviation()
             values['Variable Description'] = i['variable'].VariableDefinition()
-
 
             for k, v in values.iteritems():
                 self.inputProperties.GetPropertyByLabel(k).SetValue(v)
@@ -330,8 +316,6 @@ class LogicLink(ViewLink):
         else:
             l.spatial_interpolation = self.spatial_transformations[spatial_value]
 
-        # wx.PostEvent(self, LinkUpdatedEvent())
-
     def on_select_temporal(self, event):
         # get the current link
         l = self.__selected_link
@@ -341,8 +325,6 @@ class LogicLink(ViewLink):
             l.temporal_interpolation = None
         else:
             l.temporal_interpolation = self.temporal_transformations[temporal_value]
-
-        # wx.PostEvent(self, LinkUpdatedEvent())
 
     def OnCancel(self, event):
 

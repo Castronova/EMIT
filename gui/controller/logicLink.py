@@ -72,8 +72,6 @@ class LogicLink(ViewLink):
         # reset the state of link_obj_hit
         self.link_obj_hit = False
 
-
-
     def OnChange(self, event):
         link_name = self.LinkNameListBox.GetStringSelection()
         l = self.__selected_link
@@ -140,7 +138,6 @@ class LogicLink(ViewLink):
         for l in self.__links:
             self.LinkNameListBox.Append(l.name())
 
-
     def NewButton(self, event):
 
         # generate a unique name for this link
@@ -162,7 +159,6 @@ class LogicLink(ViewLink):
         # select the last value
         self.LinkNameListBox.SetSelection(self.LinkNameListBox.GetCount()-1)
         self.OnChange(None)
-
 
     def GetName(self, event):
         dlg = NameDialog(self)
@@ -374,8 +370,10 @@ class LogicLink(ViewLink):
             self.OnChange(None)
 
         # initialize the exchangeitem listboxes
-        self.InputComboBox.SetItems(self.InputComboBoxChoices())
-        self.OutputComboBox.SetItems(self.OutputComboBoxChoices())
+        self.InputComboBox.SetItems( ['---'] + self.InputComboBoxChoices())
+        self.OutputComboBox.SetItems(['---'] + self.OutputComboBoxChoices())
+        self.InputComboBox.SetSelection(0)
+        self.OutputComboBox.SetSelection(0)
 
         # if not links are found, need to deactivate controls
         self.activateControls(False)
@@ -439,8 +437,13 @@ class LinkInfo():
 
 
     def name(self):
+        iei_name = self.iei if self.iei != '---' else '?'
+        oei_name = self.oei if self.oei != '---' else '?'
 
-        return  '%s -> %s [unique id = %s]'%(self.oei, self.iei, self.uid)
+        if iei_name == '?' and oei_name == '?':
+            return '%s' % self.uid
+        else:
+            return  '%s | %s -> %s '%(self.uid, oei_name, iei_name)
 
     def get_input_and_output_metadata(self):
 

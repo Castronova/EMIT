@@ -190,6 +190,9 @@ class LogicLink(ViewLink):
         index = self.LinkNameListBox.GetSelection()
         self.LinkNameListBox.Delete(index)
 
+        # remove link from __links list so that it isn't repopulated on page refresh
+        self.__links.pop(index)
+
     def populate_output_metadata(self, l):
 
         # get the link object
@@ -211,7 +214,6 @@ class LogicLink(ViewLink):
 
             for k, v in values.iteritems():
                 self.outputProperties.GetPropertyByLabel(k).SetValue(v)
-
 
     def populate_input_metadata(self,l):
 
@@ -262,7 +264,6 @@ class LogicLink(ViewLink):
 
         # populate metadata
         self.populate_output_metadata(l)
-
 
     def on_select_input(self, event):
         """

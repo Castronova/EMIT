@@ -11,7 +11,7 @@ import wx.propgrid as wxpg
 class ViewLink(wx.Frame):
     def __init__(self, parent, output, input):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=wx.EmptyString, pos=wx.DefaultPosition,
-                          size=wx.Size(700, 560), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
+                          size=wx.Size(700, 560), style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER| wx.TAB_TRAVERSAL)
 
         self.input_component = input
         self.output_component = output

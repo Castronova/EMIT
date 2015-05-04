@@ -7,6 +7,7 @@ from transform.time import *
 from transform.space import *
 import coordinator.engineAccessors as engine
 import wx.propgrid as wxpg
+import sys
 
 class ViewLink(wx.Frame):
     def __init__(self, parent, output, input):
@@ -79,7 +80,8 @@ class ViewLink(wx.Frame):
 
         self.outputProperties = wxpg.PropertyGridManager(self.ExchangeItemSizer, size=wx.Size(325, 130))
                                     # style= wxpg.PG_PROP_READONLY)
-        self.outputProperties.SetFont(self.font)
+        if sys.platform == 'linux2':
+            self.outputProperties.SetFont(self.font)
 
         p1 = self.outputProperties.AddPage('Output Exchange Item Metadata')
 
@@ -134,7 +136,8 @@ class ViewLink(wx.Frame):
 
         self.inputProperties = wxpg.PropertyGridManager(self.ExchangeItemSizer, size=wx.Size(325, 130),
                                     style= wxpg.PG_PROP_READONLY|wxpg.PG_PROP_NOEDITOR)
-        self.inputProperties.SetFont(self.font)
+        if sys.platform == 'linux2':
+            self.inputProperties.SetFont(self.font)
 
         page = self.inputProperties.AddPage('Input Exchange Item Metadata')
 

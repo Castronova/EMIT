@@ -13,6 +13,7 @@ class ViewLink(wx.Frame):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=wx.EmptyString, pos=wx.DefaultPosition,
                           size=wx.Size(700, 560), style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER| wx.TAB_TRAVERSAL)
 
+        self.font = wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL)
         self.input_component = input
         self.output_component = output
         self.input_items = None
@@ -78,6 +79,7 @@ class ViewLink(wx.Frame):
 
         self.outputProperties = wxpg.PropertyGridManager(self.ExchangeItemSizer, size=wx.Size(325, 130))
                                     # style= wxpg.PG_PROP_READONLY)
+        self.outputProperties.SetFont(self.font)
 
         p1 = self.outputProperties.AddPage('Output Exchange Item Metadata')
 
@@ -132,6 +134,7 @@ class ViewLink(wx.Frame):
 
         self.inputProperties = wxpg.PropertyGridManager(self.ExchangeItemSizer, size=wx.Size(325, 130),
                                     style= wxpg.PG_PROP_READONLY|wxpg.PG_PROP_NOEDITOR)
+        self.inputProperties.SetFont(self.font)
 
         page = self.inputProperties.AddPage('Input Exchange Item Metadata')
 

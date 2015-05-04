@@ -72,16 +72,28 @@ class LogicLink(ViewLink):
         # reset the state of link_obj_hit
         self.link_obj_hit = False
 
+    def getLinkByName(self, name):
+        for l in self.__links:
+            if l.name() == name:
+                return l
+        return None
+
     def OnChange(self, event):
         link_name = self.LinkNameListBox.GetStringSelection()
-        l = self.__selected_link
-        # link = engine.getLinkById(l.uid)
+
+        # get the selected link
+        l = self.getLinkByName(link_name)
+
+        # set the currently selected link
+        self.__selected_link = l
+
+        # update the combobox selections
         self.OutputComboBox.SetStringSelection(l.oei)
         self.InputComboBox.SetStringSelection(l.iei)
         self.ComboBoxTemporal.SetStringSelection(str(l.temporal_interpolation))
         self.ComboBoxSpatial.SetStringSelection(str(l.spatial_interpolation))
-
         self.__selected_link = l
+
 
 
         # set the state of link_obj_hit

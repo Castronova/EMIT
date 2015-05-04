@@ -66,9 +66,13 @@ class ViewLink(wx.Frame):
 
         OutputSizer = wx.BoxSizer(wx.VERTICAL)
 
-        OutChoice = self.OutputComboBoxChoices()
-        self.OutputComboBox = wx.ComboBox(self.ExchangeItemSizer, wx.ID_ANY, OutChoice[0],
-                                          wx.DefaultPosition, wx.Size(320, -1), OutChoice, 0)
+        # OutChoice = self.OutputComboBoxChoices()
+        # self.OutputComboBox = wx.ComboBox(self.ExchangeItemSizer, wx.ID_ANY, OutChoice[0],
+        #                                   wx.DefaultPosition, wx.Size(320, -1), OutChoice, 0)
+
+        self.OutputComboBox = wx.ComboBox(self.ExchangeItemSizer, wx.ID_ANY, '',
+                                          wx.DefaultPosition, wx.Size(320, -1), [''], 0)
+
         OutputSizer.Add(self.OutputComboBox, 0, wx.ALL, 5)
 
 
@@ -116,9 +120,14 @@ class ViewLink(wx.Frame):
 
         InputSizer = wx.BoxSizer(wx.VERTICAL)
 
-        InChoice = self.InputComboBoxChoices()
-        self.InputComboBox = wx.ComboBox(self.ExchangeItemSizer, wx.ID_ANY, InChoice[0],
-                                         wx.DefaultPosition, wx.Size(320, -1), InChoice, 0)
+        # InChoice = self.InputComboBoxChoices()
+
+        # self.InputComboBox = wx.ComboBox(self.ExchangeItemSizer, wx.ID_ANY, InChoice[0],
+        #                                  wx.DefaultPosition, wx.Size(320, -1), InChoice, 0)
+
+        self.InputComboBox = wx.ComboBox(self.ExchangeItemSizer, wx.ID_ANY, '',
+                                         wx.DefaultPosition, wx.Size(320, -1), [''], 0)
+
         InputSizer.Add(self.InputComboBox, 0, wx.ALL, 5)
 
         self.inputProperties = wxpg.PropertyGridManager(self.ExchangeItemSizer, size=wx.Size(325, 130),

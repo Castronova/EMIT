@@ -195,49 +195,45 @@ class LogicLink(ViewLink):
         # get the link object
         # l = self.__links[self.__selected_link.name()]
         outputs = l.output_metadata
-        o = outputs[l.oei]
+        if l.oei in outputs:
+            o = outputs[l.oei]
 
-        # get the property values dictionary
-        values = self.outputProperties.GetPropertyValues()
+            # get the property values dictionary
+            values = self.outputProperties.GetPropertyValues()
 
-        # update the property values
-        values['Variable Name'] = o['variable'].VariableNameCV()
-        values['Unit Name'] = o['unit'].UnitName()
-        values['Unit Type'] = o['unit'].UnitTypeCV()
-        values['Unit Abbreviation'] = o['unit'].UnitAbbreviation()
-        values['Variable Description'] = o['variable'].VariableDefinition()
-
-
-        for k, v in values.iteritems():
-            self.outputProperties.GetPropertyByLabel(k).SetValue(v)
+            # update the property values
+            values['Variable Name'] = o['variable'].VariableNameCV()
+            values['Unit Name'] = o['unit'].UnitName()
+            values['Unit Type'] = o['unit'].UnitTypeCV()
+            values['Unit Abbreviation'] = o['unit'].UnitAbbreviation()
+            values['Variable Description'] = o['variable'].VariableDefinition()
 
 
-        # set the new property values
-        # r = self.outputProperties.SetPropertyValues(values)
+            for k, v in values.iteritems():
+                self.outputProperties.GetPropertyByLabel(k).SetValue(v)
 
-        # values = self.outputProperties.GetPropertyValues()
-        # print 'here'
 
     def populate_input_metadata(self,l):
 
         # get the link object
         # l = self.__links[self.__selected_link.name()]
         inputs = l.input_metadata
-        i = inputs[l.iei]
+        if l.iei in inputs:
+            i = inputs[l.iei]
 
-        # get the property values dictionary
-        values = self.inputProperties.GetPropertyValues()
+            # get the property values dictionary
+            values = self.inputProperties.GetPropertyValues()
 
-        # update the property values
-        values['Variable Name'] = i['variable'].VariableNameCV()
-        values['Unit Name'] = i['unit'].UnitName()
-        values['Unit Type'] = i['unit'].UnitTypeCV()
-        values['Unit Abbreviation'] = i['unit'].UnitAbbreviation()
-        values['Variable Description'] = i['variable'].VariableDefinition()
+            # update the property values
+            values['Variable Name'] = i['variable'].VariableNameCV()
+            values['Unit Name'] = i['unit'].UnitName()
+            values['Unit Type'] = i['unit'].UnitTypeCV()
+            values['Unit Abbreviation'] = i['unit'].UnitAbbreviation()
+            values['Variable Description'] = i['variable'].VariableDefinition()
 
 
-        for k, v in values.iteritems():
-            self.inputProperties.GetPropertyByLabel(k).SetValue(v)
+            for k, v in values.iteritems():
+                self.inputProperties.GetPropertyByLabel(k).SetValue(v)
 
     def on_select_output(self, event):
         """
@@ -268,7 +264,7 @@ class LogicLink(ViewLink):
         self.populate_output_metadata(l)
 
 
-    def on_select_input(self):
+    def on_select_input(self, event):
         """
         sets the metadata for the selected input exchange item and populates a tree view
         """
@@ -376,6 +372,9 @@ class LogicLink(ViewLink):
             self.__selected_link = self.__links[0]
             self.OnChange(None)
 
+        # initialize the exchangeitem listboxes
+        self.InputComboBox.SetItems(self.InputComboBoxChoices())
+        self.OutputComboBox.SetItems(self.OutputComboBoxChoices())
 
         # if not links are found, need to deactivate controls
         self.activateControls(False)

@@ -12,7 +12,9 @@ import sys
 class ViewLink(wx.Frame):
     def __init__(self, parent, output, input):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=wx.EmptyString, pos=wx.DefaultPosition,
-                          size=wx.Size(700, 560), style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER| wx.TAB_TRAVERSAL)
+                          # size=wx.Size(700, 560),
+                          size=wx.Size(1000, 1000),
+                          style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER| wx.TAB_TRAVERSAL)
 
         self.font = wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL)
         self.input_component = input
@@ -21,67 +23,44 @@ class ViewLink(wx.Frame):
         self.output_items = None
 
         self.InitUI()
+        # vs = self.GetBestSize()
+        # self.SetSize(vs)
 
     def InitUI(self):
-        self.SetSizeHintsSz(wx.DefaultSize, wx.DefaultSize)
 
-        FrameSizer = wx.BoxSizer(wx.VERTICAL)
-        ButtonSizer = wx.BoxSizer(wx.VERTICAL)
-
-        self.LinkTitle_staticText = wx.StaticText(self, wx.ID_ANY, u"Select Add to Create a New Link", wx.Point(-1, -1),
-                                                  wx.DefaultSize, 0)
+        # add some descriptive text at the top of the window
+        self.LinkTitle_staticText = wx.StaticText(self, wx.ID_ANY, u"Select Add to Create a New Link", wx.Point(-1, -1),wx.DefaultSize, 0)
         self.LinkTitle_staticText.Wrap(-1)
-        FrameSizer.Add(self.LinkTitle_staticText, 0, wx.ALL, 5)
 
-        FrameSizer.AddSpacer(( 0, 0), 1, wx.EXPAND, 5)
+        ####################################
+        # CREATE PANELS TO HOLD UI ELEMENTS
+        ####################################
 
-        self.LinkStartPanel = wx.Panel(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
-        LinkStartSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.topPanel = wx.Panel(self, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize, style=wx.TAB_TRAVERSAL|wx.SIMPLE_BORDER)
+        self.middlePanel = wx.Panel(self, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize, style=wx.TAB_TRAVERSAL|wx.SIMPLE_BORDER)
+        self.bottomPanel = wx.Panel(self, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize, style=wx.TAB_TRAVERSAL|wx.SIMPLE_BORDER)
 
-        LinkNameListBoxChoices = []
-        self.LinkNameListBox = wx.ListBox(self.LinkStartPanel, wx.ID_ANY, wx.DefaultPosition, wx.Size(575, 125),
-                                          LinkNameListBoxChoices, 0)
-        LinkStartSizer.Add(self.LinkNameListBox, 0, wx.ALL, 5)
+        #####################
+        # TOP PANEL ELEMENTS
+        #####################
 
+        # create link list box; new and delete buttons
+        self.LinkNameListBox = wx.ListBox(self.topPanel, wx.ID_ANY, wx.DefaultPosition, wx.Size(575, 125),[], 0)
+        self.ButtonNew = wx.Button(self.topPanel, wx.ID_ANY, u"New", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.ButtonDelete = wx.Button(self.topPanel, wx.ID_ANY, u"Delete", wx.DefaultPosition, wx.DefaultSize, 0)
 
-        self.ButtonNew = wx.Button(self.LinkStartPanel, wx.ID_ANY, u"New", wx.DefaultPosition, wx.DefaultSize, 0)
-        ButtonSizer.Add(self.ButtonNew, 0, wx.ALL, 5)
+        ########################
+        # MIDDLE PANEL ELEMENTS
+        ########################
 
-        self.ButtonDelete = wx.Button(self.LinkStartPanel, wx.ID_ANY, u"Delete", wx.DefaultPosition, wx.DefaultSize, 0)
-        ButtonSizer.Add(self.ButtonDelete, 0, wx.ALL, 5)
-
-
-        LinkStartSizer.Add(ButtonSizer, 1, wx.EXPAND, 5)
-
-        self.LinkStartPanel.SetSizer(LinkStartSizer)
-        self.LinkStartPanel.Layout()
-        LinkStartSizer.Fit(self.LinkStartPanel)
-        FrameSizer.Add(self.LinkStartPanel, 1, wx.EXPAND | wx.ALL, 5)
-
-        self.ExchangeItemSizer = wx.Panel(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
-        ExchangeItemSizer = wx.BoxSizer(wx.HORIZONTAL)
-
-
-        ###########################################
         # OUTPUT EXCHANGE ITEM - PROPERTY GRID VIEW
-        ###########################################
-
-        OutputSizer = wx.BoxSizer(wx.VERTICAL)
-
-        # OutChoice = self.OutputComboBoxChoices()
-        # self.OutputComboBox = wx.ComboBox(self.ExchangeItemSizer, wx.ID_ANY, OutChoice[0],
-        #                                   wx.DefaultPosition, wx.Size(320, -1), OutChoice, 0)
-
-        self.OutputComboBox = wx.ComboBox(self.ExchangeItemSizer, wx.ID_ANY, '',
+        self.OutputComboBox = wx.ComboBox(self.middlePanel, wx.ID_ANY, '',
                                           wx.DefaultPosition, wx.Size(320, -1), [''], 0)
 
-        OutputSizer.Add(self.OutputComboBox, 0, wx.ALL, 5)
-
-
-        self.outputProperties = wxpg.PropertyGridManager(self.ExchangeItemSizer, size=wx.Size(325, 130))
+        self.outputProperties = wxpg.PropertyGridManager(self.middlePanel, size=wx.Size(325, 130))
                                     # style= wxpg.PG_PROP_READONLY)
-        if sys.platform == 'linux2':
-            self.outputProperties.SetFont(self.font)
+        # if sys.platform == 'linux2':
+        #     self.outputProperties.SetFont(self.font)
 
         p1 = self.outputProperties.AddPage('Output Exchange Item Metadata')
 
@@ -98,50 +77,17 @@ class ViewLink(wx.Frame):
         x,y = self.outputProperties.GetBestVirtualSize()
         self.outputProperties.Layout()
         self.outputProperties.MinSize = (wx.Size(325,y-20))         # Need to set the minimum size b/c that is what the sizer uses
-        OutputSizer.Add(self.outputProperties, 0, wx.ALL, 5)
-
-
-        ###########################################
-        # SPATIAL AND TEMPORAL INTERPOLATION LABELS
-        ###########################################
-
-        self.Temporal_staticText = wx.StaticText(self.ExchangeItemSizer, wx.ID_ANY, u"Temporal Interpolation",
-                                                 wx.DefaultPosition, wx.DefaultSize, 0)
-        self.Temporal_staticText.Wrap(-1)
-        OutputSizer.Add(self.Temporal_staticText, 0, wx.ALL, 5)
-
-        OutputSizer.AddSpacer((0, 12), 0, wx.EXPAND,
-                              5)  # This is to make sure that the static text stays the same distance apart
-
-        self.Spatial_staticText = wx.StaticText(self.ExchangeItemSizer, wx.ID_ANY, u"Spatial Interpolation",
-                                                wx.DefaultPosition, wx.DefaultSize, 0)
-        self.Spatial_staticText.Wrap(-1)
-        OutputSizer.Add(self.Spatial_staticText, 0, wx.ALL, 5)
-
-        ExchangeItemSizer.Add(OutputSizer, 1, wx.EXPAND, 5)
 
 
 
-        ###########################################
         # INPUT EXCHANGE ITEM - PROPERTY GRID VIEW
-        ###########################################
-
-        InputSizer = wx.BoxSizer(wx.VERTICAL)
-
-        # InChoice = self.InputComboBoxChoices()
-
-        # self.InputComboBox = wx.ComboBox(self.ExchangeItemSizer, wx.ID_ANY, InChoice[0],
-        #                                  wx.DefaultPosition, wx.Size(320, -1), InChoice, 0)
-
-        self.InputComboBox = wx.ComboBox(self.ExchangeItemSizer, wx.ID_ANY, '',
+        self.InputComboBox = wx.ComboBox(self.middlePanel, wx.ID_ANY, '',
                                          wx.DefaultPosition, wx.Size(320, -1), [''], 0)
 
-        InputSizer.Add(self.InputComboBox, 0, wx.ALL, 5)
-
-        self.inputProperties = wxpg.PropertyGridManager(self.ExchangeItemSizer, size=wx.Size(325, 130),
-                                    style= wxpg.PG_PROP_READONLY|wxpg.PG_PROP_NOEDITOR)
-        if sys.platform == 'linux2':
-            self.inputProperties.SetFont(self.font)
+        self.inputProperties = wxpg.PropertyGridManager(self.middlePanel, size=wx.Size(325, 130))
+                                    # style= wxpg.PG_PROP_READONLY|wxpg.PG_PROP_NOEDITOR)
+        # if sys.platform == 'linux2':
+        #     self.inputProperties.SetFont(self.font)
 
         page = self.inputProperties.AddPage('Input Exchange Item Metadata')
 
@@ -158,64 +104,114 @@ class ViewLink(wx.Frame):
         x,y = self.inputProperties.GetBestVirtualSize()
         self.inputProperties.Layout()
         self.inputProperties.MinSize = (wx.Size(325,y-20))  # Need to set the minimum size b/c that is what the sizer uses
-        InputSizer.Add(self.inputProperties, 0, wx.ALL, 5)
 
 
 
-        #####################################
+
         # SPATIAL AND TEMPORAL INTERPOLATIONS
-        #####################################
-
         TemporalChoices = self.TemporalInterpolationChoices()  # Create the choices for the Temporal Interpolation Combobox
-        self.ComboBoxTemporal = wx.ComboBox(self.ExchangeItemSizer, wx.ID_ANY, u"None Specified",
+        self.ComboBoxTemporal = wx.ComboBox(self.middlePanel, wx.ID_ANY, u"None Specified",
                                             wx.DefaultPosition, wx.Size(320, -1),
                                             TemporalChoices, 0)
-        InputSizer.Add(self.ComboBoxTemporal, 0, wx.ALL, 5)
+
 
         SpatialChoices = self.SpatialInterpolationChoices()  # Create the choices for the Spatial Interpolation Combobox
-        self.ComboBoxSpatial = wx.ComboBox(self.ExchangeItemSizer, wx.ID_ANY, u"None Specified",
+        self.ComboBoxSpatial = wx.ComboBox(self.middlePanel, wx.ID_ANY, u"None Specified",
                                            wx.DefaultPosition, wx.Size(320, -1),
                                            SpatialChoices, 0)
+
+
+        self.Temporal_staticText = wx.StaticText(self.middlePanel, wx.ID_ANY, u"Temporal Interpolation",
+                                                 wx.DefaultPosition, wx.DefaultSize, 0)
+        self.Temporal_staticText.Wrap(-1)
+
+
+        self.Spatial_staticText = wx.StaticText(self.middlePanel, wx.ID_ANY, u"Spatial Interpolation",
+                                                wx.DefaultPosition, wx.DefaultSize, 0)
+        self.Spatial_staticText.Wrap(-1)
+
+
+        ########################
+        # BOTTOM PANEL ELEMENTS
+        ########################
+
+        # PLOT, SAVE, CANCEL BUTTONS
+        self.ButtonPlot = wx.Button(self.bottomPanel, wx.ID_ANY, u"SpatialPlot", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.ButtonSave = wx.Button(self.bottomPanel, wx.ID_ANY, u"Save and Close", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.ButtonCancel = wx.Button(self.bottomPanel, wx.ID_ANY, u"Cancel", wx.DefaultPosition, wx.DefaultSize, 0)
+
+
+        ###############
+        # BUILD SIZERS
+        ###############
+        self.SetSizeHintsSz(wx.DefaultSize, wx.DefaultSize)
+
+        FrameSizer = wx.BoxSizer(wx.VERTICAL)
+        ButtonSizer = wx.BoxSizer(wx.VERTICAL)
+
+        FrameSizer.Add(self.LinkTitle_staticText, 0, wx.ALL, 5)
+        FrameSizer.AddSpacer(( 0, 0), 1, wx.EXPAND, 5)
+
+        LinkStartSizer = wx.BoxSizer(wx.HORIZONTAL)
+        LinkStartSizer.Add(self.LinkNameListBox, 0, wx.ALL, 5)
+
+        ButtonSizer.Add(self.ButtonNew, 0, wx.ALL, 5)
+        ButtonSizer.Add(self.ButtonDelete, 0, wx.ALL, 5)
+
+        LinkStartSizer.Add(ButtonSizer, 1, wx.EXPAND, 5)
+
+        self.topPanel.SetSizer(LinkStartSizer)
+        self.topPanel.Layout()
+        LinkStartSizer.Fit(self.topPanel)
+        FrameSizer.Add(self.topPanel, 1, wx.EXPAND | wx.ALL, 5)
+
+
+        ExchangeItemSizer = wx.BoxSizer(wx.HORIZONTAL)
+
+
+        OutputSizer = wx.BoxSizer(wx.VERTICAL)
+        OutputSizer.Add(self.OutputComboBox, 0, wx.ALL, 5)
+        OutputSizer.Add(self.outputProperties, 0, wx.ALL, 5)
+
+        OutputSizer.Add(self.Temporal_staticText, 0, wx.ALL, 5)
+
+        OutputSizer.AddSpacer((0, 12), 0, wx.EXPAND,
+                              5)  # This is to make sure that the static text stays the same distance apart
+
+        OutputSizer.Add(self.Spatial_staticText, 0, wx.ALL, 5)
+
+        ExchangeItemSizer.Add(OutputSizer, 1, wx.EXPAND, 5)
+
+        InputSizer = wx.BoxSizer(wx.VERTICAL)
+        InputSizer.Add(self.InputComboBox, 0, wx.ALL, 5)
+        InputSizer.Add(self.inputProperties, 0, wx.ALL, 5)
+        InputSizer.Add(self.ComboBoxTemporal, 0, wx.ALL, 5)
         InputSizer.Add(self.ComboBoxSpatial, 0, wx.ALL, 5)
-
-
-
-
-
 
 
         ExchangeItemSizer.Add(InputSizer, 1, wx.EXPAND, 5)
 
-        self.ExchangeItemSizer.SetSizer(ExchangeItemSizer)
-        self.ExchangeItemSizer.Layout()
-        ExchangeItemSizer.Fit(self.ExchangeItemSizer)
-        FrameSizer.Add(self.ExchangeItemSizer, 1, wx.EXPAND | wx.ALL, 5)
+        self.middlePanel.SetSizer(ExchangeItemSizer)
+        self.middlePanel.Layout()
+        ExchangeItemSizer.Fit(self.middlePanel)
+        FrameSizer.Add(self.middlePanel, 1, wx.EXPAND | wx.ALL, 5)
 
-        self.BottomPanel = wx.Panel(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
-        ButtonSizerBottom = wx.BoxSizer(wx.HORIZONTAL)
 
         PlottingButtonSizer = wx.BoxSizer(wx.HORIZONTAL)
-
-        self.ButtonPlot = wx.Button(self.BottomPanel, wx.ID_ANY, u"SpatialPlot", wx.DefaultPosition, wx.DefaultSize, 0)
         PlottingButtonSizer.Add(self.ButtonPlot, 0, wx.ALL, 5)
-
+        ButtonSizerBottom = wx.BoxSizer(wx.HORIZONTAL)
         ButtonSizerBottom.Add(PlottingButtonSizer, 1, wx.EXPAND, 5)
 
         RightAlignSizer = wx.BoxSizer(wx.HORIZONTAL)
-
-        self.ButtonSave = wx.Button(self.BottomPanel, wx.ID_ANY, u"Save and Close", wx.DefaultPosition, wx.DefaultSize, 0)
-        # self.ButtonSave.Disable()
         RightAlignSizer.Add(self.ButtonSave, 0, wx.ALL, 5)
-
-        self.ButtonCancel = wx.Button(self.BottomPanel, wx.ID_ANY, u"Cancel", wx.DefaultPosition, wx.DefaultSize, 0)
         RightAlignSizer.Add(self.ButtonCancel, 0, wx.ALL, 5)
 
         ButtonSizerBottom.Add(RightAlignSizer, 1, wx.EXPAND, 5)
 
-        self.BottomPanel.SetSizer(ButtonSizerBottom)
-        self.BottomPanel.Layout()
-        ButtonSizerBottom.Fit(self.BottomPanel)
-        FrameSizer.Add(self.BottomPanel, 1, wx.EXPAND | wx.ALL, 5)
+        self.bottomPanel.SetSizer(ButtonSizerBottom)
+        self.bottomPanel.Layout()
+        ButtonSizerBottom.Fit(self.bottomPanel)
+        FrameSizer.Add(self.bottomPanel, 1, wx.EXPAND | wx.ALL, 5)
 
         self.SetSizer(FrameSizer)
         self.Layout()

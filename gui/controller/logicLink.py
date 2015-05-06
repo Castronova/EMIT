@@ -216,20 +216,12 @@ class LogicLink(ViewLink):
         if l.oei in outputs:
             o = outputs[l.oei]
 
+            self.outputGrid.SetCellValue(1, 1, o['variable'].VariableNameCV())
+            self.outputGrid.SetCellValue(2, 1, o['variable'].VariableDefinition())
 
-            # get the property values dictionary
-            values = self.outputProperties.GetPropertyValues()
-
-            # update the property values
-            values['Variable Name'] = o['variable'].VariableNameCV()
-            values['Unit Name'] = o['unit'].UnitName()
-            values['Unit Type'] = o['unit'].UnitTypeCV()
-            values['Unit Abbreviation'] = o['unit'].UnitAbbreviation()
-            values['Variable Description'] = o['variable'].VariableDefinition()
-
-
-            for k, v in values.iteritems():
-                self.outputProperties.GetPropertyByLabel(k).SetValue(v)
+            self.outputGrid.SetCellValue(4, 1, o['unit'].UnitName())
+            self.outputGrid.SetCellValue(5, 1, o['unit'].UnitTypeCV())
+            self.outputGrid.SetCellValue(6, 1, o['unit'].UnitAbbreviation())
 
     def populate_input_metadata(self,l):
 
@@ -238,18 +230,12 @@ class LogicLink(ViewLink):
         if l.iei in inputs:
             i = inputs[l.iei]
 
-            # get the property values dictionary
-            values = self.inputProperties.GetPropertyValues()
+            self.inputGrid.SetCellValue(1, 1, i['variable'].VariableNameCV())
+            self.inputGrid.SetCellValue(2, 1, i['variable'].VariableDefinition())
 
-            # update the property values
-            values['Variable Name'] = i['variable'].VariableNameCV()
-            values['Unit Name'] = i['unit'].UnitName()
-            values['Unit Type'] = i['unit'].UnitTypeCV()
-            values['Unit Abbreviation'] = i['unit'].UnitAbbreviation()
-            values['Variable Description'] = i['variable'].VariableDefinition()
-
-            for k, v in values.iteritems():
-                self.inputProperties.GetPropertyByLabel(k).SetValue(v)
+            self.inputGrid.SetCellValue(4, 1, i['unit'].UnitName())
+            self.inputGrid.SetCellValue(5, 1, i['unit'].UnitTypeCV())
+            self.inputGrid.SetCellValue(6, 1, i['unit'].UnitAbbreviation())
 
     def on_select_output(self, event):
         """

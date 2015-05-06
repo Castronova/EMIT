@@ -35,10 +35,11 @@ from gui.controller.logicLink import LogicLink
 from coordinator import engine
 from gui.controller.logicFileDrop import LogicFileDrop
 import coordinator.engineManager as engineManager
-import coordinator.events as engineEvent
 import coordinator.engineAccessors as engine
 import utilities.db as dbUtilities
 import uuid
+import coordinator.events as engineEvent
+import gui.controller.events as guiEvent
 
 class LogicCanvas(ViewCanvas):
     def __init__(self, parent):
@@ -68,11 +69,15 @@ class LogicCanvas(ViewCanvas):
         self.linkRects = []
         self.links = {}
         self.models = {}
-        self.dbmodel_required_db = {}
+        # self.dbmodel_required_db = {}
 
         self.link_clicks = 0
 
-        # self._currentDbSession = self.cmd.get_default_db()
+        self._currentDbSession = None
+        self._currentDbName = None
+        self._dbid = None
+
+
         # self._currentDb = engine.getDefaultDb()
         # self._currentDbSession = dbUtilities.build_session_from_connection_string(self._currentDb['connection_string'])
 
@@ -104,6 +109,7 @@ class LogicCanvas(ViewCanvas):
         engineEvent.onModelAdded += self.draw_box
         engineEvent.onLinkAdded += self.draw_link
         engineEvent.onSimulationFinished += self.simulation_finished
+        guiEvent.onDbChanged += self.onDbChanged
         # engineEvent.onDatabaseConnected += self.onDatabasesLoaded
 
     def initSubscribers(self):
@@ -117,6 +123,17 @@ class LogicCanvas(ViewCanvas):
         Publisher.subscribe(self.SaveSimulation, "SetSavePath")
         Publisher.subscribe(self.loadsimulation, "SetLoadPath")
         Publisher.subscribe(self.addModel, "AddModel")  # subscribes to object list view
+
+
+    def onDbChanged(self, event):
+        """
+        This function sets current database attributes locally whenever the database is changed
+        :param event: gui.controller.events.onDbChanged
+        :return: None
+        """
+        self._currentDbSession = event.dbsession
+        self._currentDbName = event.dbname
+        self._dbid = event.dbid
 
     def onClose(self, event):
         print "In close"
@@ -350,8 +367,10 @@ class LogicCanvas(ViewCanvas):
                 self.loadsimulation(filepath[0])
         else:
             # load data model
-            current_db_id = self._currentDb['id']
-            attrib = dict(databaseid=current_db_id, resultid=name)
+            # current_db_id = self._currentDb['id']
+            # attrib = dict(databaseid=current_db_id, resultid=name)
+
+            attrib = dict(databaseid=self._dbid, resultid=name)
             engine.addModel(id=uid, attrib=attrib)
 
         return uid
@@ -438,39 +457,39 @@ class LogicCanvas(ViewCanvas):
             obj_id = object.ID
             model = engine.getModelById(obj_id)
 
-            if 'params' in model:
-                params = model['params']
-            else:
-                params = {}
-
-            text = ''
-
-            for arg, dict in params.iteritems():
-                title = arg
-
-                try:
-                    table = ''
-                    for k, v in dict[0].iteritems():
-                        table += '||%s||%s||\n' % (k, v)
-
-                    text += '###%s  \n%s  \n' % (title, table)
-                except:
-                    pass
-            html = markdown2.markdown(text, extras=["wiki-tables"])
-
-            css = "<style>tr:nth-child(even) " \
-                  "{ background-color: #e6f1f5;} " \
-                  "table {border-collapse: collapse;width:100%}" \
-                  "table td, table th {border: 1px solid #e6f1f5;}" \
-                  "h3 {color: #66A3E0}</style>"
-
-
-            # set the model params as text
-            try:
-                mv.setText(css + html)
-
-            except:
-                pass
+            # if 'params' in model:
+            #     params = model['params']
+            # else:
+            #     params = {}
+            #
+            # text = ''
+            #
+            # for arg, dict in params.iteritems():
+            #     title = arg
+            #
+            #     try:
+            #         table = ''
+            #         for k, v in dict[0].iteritems():
+            #             table += '||%s||%s||\n' % (k, v)
+            #
+            #         text += '###%s  \n%s  \n' % (title, table)
+            #     except:
+            #         pass
+            # html = markdown2.markdown(text, extras=["wiki-tables"])
+            #
+            # css = "<style>tr:nth-child(even) " \
+            #       "{ background-color: #e6f1f5;} " \
+            #       "table {border-collapse: collapse;width:100%}" \
+            #       "table td, table th {border: 1px solid #e6f1f5;}" \
+            #       "h3 {color: #66A3E0}</style>"
+            #
+            #
+            # # set the model params as text
+            # try:
+            #     mv.setText(css + html)
+            #
+            # except:
+            #     pass
 
         if not self.Moving:
             self.Moving = True

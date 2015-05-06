@@ -78,6 +78,7 @@ class LogicDatabase(ViewDatabase):
         obj = event.GetEventObject()
         filename = obj.GetItem(id).GetText()
 
+
         Publisher.sendMessage('AddModel', filepath=filename, x=0, y=0)  # sends message to LogicCanvas.addModel
 
     def getDbSession(self):

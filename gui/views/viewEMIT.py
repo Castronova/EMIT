@@ -19,18 +19,19 @@ from utilities import db as dbUtilities
 from db import dbapi as dbapi
 from gui.objectListViewDatabase import Database
 import coordinator.events as engineEvent
+import gui.controller.events as guiEvents
 
 # todo: refactor
 # from .. import objectListViewDatabase as olv
 
 from wx.lib.newevent import NewEvent
-wxStdOut, EVT_STDDOUT= NewEvent()
+
+# create custom events
 wxCreateBox, EVT_CREATE_BOX = NewEvent()
-
-
-# from images import water_drop as title_icon
-from wx.lib.newevent import NewEvent
 wxStdOut, EVT_STDDOUT= NewEvent()
+wxDbChanged, EVT_DBCHANGED= NewEvent()
+
+
 
 class ViewEMIT(wx.Frame):
     def __init__(self, parent):
@@ -431,12 +432,21 @@ class TimeSeries(wx.Panel):
         menu = TimeSeriesContextMenu(self.m_olvSeries)
         self.m_olvSeries.setContextMenu(menu)
 
+        # object to hold the current session
+        self.__current_session = None
+
     def RefreshComboBox(self, event):
         pass
 
 
     def DbChanged(self, event):
+
+        # refresh the database
+        # self refresh_database
         self.OLVRefresh(event)
+
+
+
 
     def refreshConnectionsListBox(self, connection_added):
 
@@ -530,9 +540,7 @@ class TimeSeries(wx.Panel):
 
                 # query the database and get basic series info
 
-
-
-                # hack : session wont exist here anymore!!!
+                # TODO : session wont exist here anymore!!!
                 session = dbUtilities.build_session_from_connection_string(db['connection_string'])
 
                 u = dbapi.utils(session)
@@ -561,35 +569,18 @@ class TimeSeries(wx.Panel):
                         record_object = type('DataRecord', (object,), d)
                         data.extend([record_object])
 
-                        # resultid = s.ResultID
-                        # variable = s.VariableObj.VariableCode
-                        # unit = s.UnitObj.UnitsName
-                        # date_created = s.FeatureActionObj.ActionObj.BeginDateTime
-                        # type = s.FeatureActionObj.ActionObj.ActionTypeCV
-                        # featurecode = s.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode
-                        # organization = s.FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName
-                        #
-                        #data.extend([Database(resultid,featurecode,variable,unit,data_type,org,date_created)])
-                        #table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
-
-                        # record =olv.DataRecord([('resultid',resultid),
-                        #                      ('variable',variable),
-                        #                      ('unit',unit),
-                        #                      ('date_created',date_created),
-                        #                      ('type',type),
-                        #                      ('featurecode',featurecode),
-                        #                      ('organization',organization)])
-                        #
-                        # data.extend([record])
-
                 # set the data objects in the olv control
                 self.m_olvSeries.SetObjects(data)
 
                 # set the current database in canvas controller
                 Publisher.sendMessage('SetCurrentDb',value=selected_db)  # sends to CanvasController.getCurrentDbSession
 
-                #self.__logger.info ('Database "%s" refreshed'%self.connection_combobox.GetStringSelection())
-                # exit
+                # fire the onDbChanged Event
+                kwargs = dict(dbsession=session,
+                              dbname=db['name'],
+                              dbid=db['id'] )
+                guiEvents.onDbChanged.fire(**kwargs)
+
                 break
 
         return
@@ -599,8 +590,7 @@ class TimeSeries(wx.Panel):
         thr = threading.Thread(target=self.refresh_database, args=(), kwargs={})
         thr.start()
 
-        # refresh the object list view
-        #Publisher.sendMessage("olvrefresh")
+
 
 class DataSeries(wx.Panel):
     """

@@ -216,6 +216,7 @@ class LogicLink(ViewLink):
         if l.oei in outputs:
             o = outputs[l.oei]
 
+
             # get the property values dictionary
             values = self.outputProperties.GetPropertyValues()
 

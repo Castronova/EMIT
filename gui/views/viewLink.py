@@ -12,13 +12,15 @@ import sys
 class ViewLink(wx.Frame):
     def __init__(self, parent, output, input):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=wx.EmptyString, pos=wx.DefaultPosition,
-                          style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER| wx.TAB_TRAVERSAL)
+                          style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
 
         self.font = wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL)
         self.input_component = input
         self.output_component = output
         self.input_items = None
         self.output_items = None
+
+        self.CheckOS()
 
         self.InitUI()
         # vs = self.GetBestSize()
@@ -29,6 +31,14 @@ class ViewLink(wx.Frame):
         # self.MinClientSize = wx.Size(100,100
         #                              )
         # print 'done'
+
+    def CheckOS(self):
+        if sys.platform == 'linux2':
+            self.size = (100, 300)
+        if sys.platform == 'darwin':
+            self.size = wx.DefaultSize
+        if sys.platform == 'win32':
+            self.size = (100, 400)
 
     def InitUI(self):
 
@@ -66,7 +76,7 @@ class ViewLink(wx.Frame):
         #     self.outputProperties.SetFont(self.font)
 
         self.OutputComboBox = wx.ComboBox(self.m, wx.ID_ANY, '',wx.DefaultPosition, wx.Size(150, -1), [''], 0)
-        self.outputProperties = wxpg.PropertyGridManager(self.m, size=wx.DefaultSize,style=wxpg.PG_PROP_READONLY)
+        self.outputProperties = wxpg.PropertyGridManager(self.m, size=self.size,style=wxpg.PG_PROP_READONLY)
         p1 = self.outputProperties.AddPage('Output Exchange Item Metadata')
         self.outputProperties.Append( wxpg.PropertyCategory("Variable") )
         self.outputProperties.Append( wxpg.StringProperty("Variable Name",value='') )
@@ -89,7 +99,7 @@ class ViewLink(wx.Frame):
         # #     self.inputProperties.SetFont(self.font)
         #
         self.InputComboBox = wx.ComboBox(self.m, wx.ID_ANY, '',wx.DefaultPosition, wx.Size(150, -1),[''], 0)
-        self.inputProperties = wxpg.PropertyGridManager(self.m, size=wx.Size(10,10),style=wxpg.PG_PROP_READONLY )
+        self.inputProperties = wxpg.PropertyGridManager(self.m, size=self.size,style=wxpg.PG_PROP_READONLY )
         page = self.inputProperties.AddPage('Input Exchange Item Metadata')
         self.inputProperties.Append( wxpg.PropertyCategory("Variable") )
         self.inputProperties.Append( wxpg.StringProperty("Variable Name",value='') )

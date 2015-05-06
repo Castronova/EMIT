@@ -135,26 +135,6 @@ class ViewLink(wx.Frame):
         outputcolsize = self.outputGrid.GetColSize(0)
         C,R = self.outputGrid.GetSize()
         self.outputGrid.SetColSize(1,C-outputcolsize)
-        # self.outputGrid.AutoSizeColumns()
-        # self.outputGrid.AutoSizeRows()
-
-        # p1 = self.outputProperties.AddPage('Output Exchange Item Metadata')
-        #
-        # self.outputProperties.Append( wxpg.PropertyCategory("Variable") )
-        # self.outputProperties.Append( wxpg.StringProperty("Variable Name",value='') )
-        # self.outputProperties.Append( wxpg.ArrayStringProperty("Variable Description",value='') )
-        #
-        # self.outputProperties.Append( wxpg.PropertyCategory("Unit") )
-        # self.outputProperties.Append( wxpg.StringProperty("Unit Name",value='') )
-        # self.outputProperties.Append( wxpg.StringProperty("Unit Type",value='') )
-        # self.outputProperties.Append( wxpg.StringProperty("Unit Abbreviation",value='') )
-        #
-        # # adjust the properties box size to the ideal size
-        # x,y = self.outputProperties.GetBestVirtualSize()
-        # self.outputProperties.Layout()
-        # self.outputProperties.MinSize = (wx.Size(325,y-20))         # Need to set the minimum size b/c that is what the sizer uses
-        # OutputSizer.Add(self.outputProperties, 0, wx.ALL, 5)
-
 
         ###########################################
         # SPATIAL AND TEMPORAL INTERPOLATION LABELS
@@ -193,26 +173,6 @@ class ViewLink(wx.Frame):
 
         InputSizer.Add(self.InputComboBox, 0, wx.ALL, 5)
 
-        # self.inputProperties = wxpg.PropertyGridManager(self.ExchangeItemSizer, size=wx.Size(325, 130))
-        #                             #style= wxpg.PG_PROP_READONLY|wxpg.PG_PROP_NOEDITOR)
-        #
-        #
-        # page = self.inputProperties.AddPage('Input Exchange Item Metadata')
-        #
-        # self.inputProperties.Append( wxpg.PropertyCategory("Variable") )
-        # self.inputProperties.Append( wxpg.StringProperty("Variable Name",value='') )
-        # self.inputProperties.Append( wxpg.ArrayStringProperty("Variable Description",value='') )
-        #
-        # self.inputProperties.Append( wxpg.PropertyCategory("Unit") )
-        # self.inputProperties.Append( wxpg.StringProperty("Unit Name",value='') )
-        # self.inputProperties.Append( wxpg.StringProperty("Unit Type",value='') )
-        # self.inputProperties.Append( wxpg.StringProperty("Unit Abbreviation",value='') )
-        #
-        # # adjust the properties box size to the ideal size
-        # x,y = self.inputProperties.GetBestVirtualSize()
-        # self.inputProperties.Layout()
-        # self.inputProperties.MinSize = (wx.Size(325,y-20))  # Need to set the minimum size b/c that is what the sizer uses
-        # InputSizer.Add(self.inputProperties, 0, wx.ALL, 5)
         self.inputGrid = wx.grid.Grid( self.ExchangeItemSizer, wx.ID_ANY, wx.DefaultPosition, wx.Size(325,-1), 0 )
 
         # Grid
@@ -239,7 +199,7 @@ class ViewLink(wx.Frame):
         # Label Appearance
 
         # Cell Defaults
-        self.inputGrid.SetDefaultCellBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_BTNHIGHLIGHT ) )
+        self.inputGrid.SetDefaultCellBackgroundColour( wx.Colour(255,255,255) )
         self.inputGrid.SetDefaultCellAlignment( wx.ALIGN_LEFT, wx.ALIGN_TOP )
         InputSizer.Add(self.inputGrid, 0, wx.ALL, 5)
 

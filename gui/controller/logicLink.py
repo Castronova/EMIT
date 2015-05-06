@@ -42,8 +42,8 @@ class LogicLink(ViewLink):
         self.link_obj_hit = False
 
 
-        self.OnStartUp()
-        self.InitBindings()
+        # self.OnStartUp()
+        # self.InitBindings()
 
     def InitBindings(self):
         self.LinkNameListBox.Bind(wx.EVT_LISTBOX, self.OnChange)

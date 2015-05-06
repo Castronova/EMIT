@@ -3,6 +3,7 @@ __author__ = 'mario'
 import wx
 import wx.xrc
 import wx.dataview
+import wx.grid
 from transform.time import *
 from transform.space import *
 import coordinator.engineAccessors as engine
@@ -63,7 +64,7 @@ class ViewLink(wx.Frame):
 
 
         ###########################################
-        # OUTPUT EXCHANGE ITEM - PROPERTY GRID VIEW
+        # OUTPUT EXCHANGE ITEM - GRID VIEW
         ###########################################
 
         OutputSizer = wx.BoxSizer(wx.VERTICAL)
@@ -78,27 +79,81 @@ class ViewLink(wx.Frame):
         OutputSizer.Add(self.OutputComboBox, 0, wx.ALL, 5)
 
 
-        self.outputProperties = wxpg.PropertyGridManager(self.ExchangeItemSizer, size=wx.Size(325, 130))
+        # self.outputProperties = wxpg.PropertyGridManager(self.ExchangeItemSizer, size=wx.Size(325, 130))
                                     # style= wxpg.PG_PROP_READONLY)
-        if sys.platform == 'linux2':
-            self.outputProperties.SetFont(self.font)
+        # if sys.platform == 'linux2':
+        #     self.outputProperties.SetFont(self.font)
 
-        p1 = self.outputProperties.AddPage('Output Exchange Item Metadata')
+        self.outputGrid = wx.grid.Grid( self.ExchangeItemSizer, wx.ID_ANY, wx.DefaultPosition, wx.Size(325,-1), 0 )
 
-        self.outputProperties.Append( wxpg.PropertyCategory("Variable") )
-        self.outputProperties.Append( wxpg.StringProperty("Variable Name",value='') )
-        self.outputProperties.Append( wxpg.ArrayStringProperty("Variable Description",value='') )
+        # Grid
+        self.outputGrid.CreateGrid( 7, 2 )
+        self.outputGrid.EnableEditing( False )
+        self.outputGrid.EnableGridLines( True )
+        self.outputGrid.SetGridLineColour( wx.Colour( 0, 0, 0 ) )
+        self.outputGrid.EnableDragGridSize( False )
+        self.outputGrid.SetMargins( 0, 0 )
 
-        self.outputProperties.Append( wxpg.PropertyCategory("Unit") )
-        self.outputProperties.Append( wxpg.StringProperty("Unit Name",value='') )
-        self.outputProperties.Append( wxpg.StringProperty("Unit Type",value='') )
-        self.outputProperties.Append( wxpg.StringProperty("Unit Abbreviation",value='') )
+        # Columns
+        self.outputGrid.EnableDragColMove( False )
+        self.outputGrid.EnableDragColSize( True )
+        self.outputGrid.SetColLabelSize( 0 )
+        self.outputGrid.SetColLabelAlignment( wx.ALIGN_CENTRE, wx.ALIGN_CENTRE )
 
-        # adjust the properties box size to the ideal size
-        x,y = self.outputProperties.GetBestVirtualSize()
-        self.outputProperties.Layout()
-        self.outputProperties.MinSize = (wx.Size(325,y-20))         # Need to set the minimum size b/c that is what the sizer uses
-        OutputSizer.Add(self.outputProperties, 0, wx.ALL, 5)
+
+        # Rows
+        self.outputGrid.EnableDragRowSize( True )
+        self.outputGrid.SetRowLabelSize( 0 )
+        self.outputGrid.SetRowLabelAlignment( wx.ALIGN_CENTRE, wx.ALIGN_CENTRE )
+
+
+        # Label Appearance
+
+        # Cell Defaults
+        self.outputGrid.SetDefaultCellBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_BTNHIGHLIGHT ) )
+        self.outputGrid.SetDefaultCellAlignment( wx.ALIGN_LEFT, wx.ALIGN_TOP )
+        OutputSizer.Add(self.outputGrid, 0, wx.ALL, 5)
+
+        # Set Cell Values
+        self.outputGrid.SetCellValue(0,0, " Variable")
+        self.outputGrid.SetCellValue(1,0, " Name")
+        self.outputGrid.SetCellValue(2,0, " Description")
+        self.outputGrid.SetCellValue(3,0, " Unit")
+        self.outputGrid.SetCellValue(4,0, " Name")
+        self.outputGrid.SetCellValue(5,0, " Type")
+        self.outputGrid.SetCellValue(6,0, " Abbreviation")
+
+
+
+        self.outputGrid.SetCellBackgroundColour(0,0,wx.Colour(195,195,195))
+        self.outputGrid.SetCellBackgroundColour(0,1,wx.Colour(195,195,195))
+        self.outputGrid.SetCellBackgroundColour(3,0,wx.Colour(195,195,195))
+        self.outputGrid.SetCellBackgroundColour(3,1,wx.Colour(195,195,195))
+        self.outputGrid.SetGridLineColour(wx.Colour(195,195,195))
+
+        self.outputGrid.AutoSizeColumn(0)
+        outputcolsize = self.outputGrid.GetColSize(0)
+        C,R = self.outputGrid.GetSize()
+        self.outputGrid.SetColSize(1,C-outputcolsize)
+        # self.outputGrid.AutoSizeColumns()
+        # self.outputGrid.AutoSizeRows()
+
+        # p1 = self.outputProperties.AddPage('Output Exchange Item Metadata')
+        #
+        # self.outputProperties.Append( wxpg.PropertyCategory("Variable") )
+        # self.outputProperties.Append( wxpg.StringProperty("Variable Name",value='') )
+        # self.outputProperties.Append( wxpg.ArrayStringProperty("Variable Description",value='') )
+        #
+        # self.outputProperties.Append( wxpg.PropertyCategory("Unit") )
+        # self.outputProperties.Append( wxpg.StringProperty("Unit Name",value='') )
+        # self.outputProperties.Append( wxpg.StringProperty("Unit Type",value='') )
+        # self.outputProperties.Append( wxpg.StringProperty("Unit Abbreviation",value='') )
+        #
+        # # adjust the properties box size to the ideal size
+        # x,y = self.outputProperties.GetBestVirtualSize()
+        # self.outputProperties.Layout()
+        # self.outputProperties.MinSize = (wx.Size(325,y-20))         # Need to set the minimum size b/c that is what the sizer uses
+        # OutputSizer.Add(self.outputProperties, 0, wx.ALL, 5)
 
 
         ###########################################
@@ -138,28 +193,77 @@ class ViewLink(wx.Frame):
 
         InputSizer.Add(self.InputComboBox, 0, wx.ALL, 5)
 
-        self.inputProperties = wxpg.PropertyGridManager(self.ExchangeItemSizer, size=wx.Size(325, 130),
-                                    style= wxpg.PG_PROP_READONLY|wxpg.PG_PROP_NOEDITOR)
-        if sys.platform == 'linux2':
-            self.inputProperties.SetFont(self.font)
+        # self.inputProperties = wxpg.PropertyGridManager(self.ExchangeItemSizer, size=wx.Size(325, 130))
+        #                             #style= wxpg.PG_PROP_READONLY|wxpg.PG_PROP_NOEDITOR)
+        #
+        #
+        # page = self.inputProperties.AddPage('Input Exchange Item Metadata')
+        #
+        # self.inputProperties.Append( wxpg.PropertyCategory("Variable") )
+        # self.inputProperties.Append( wxpg.StringProperty("Variable Name",value='') )
+        # self.inputProperties.Append( wxpg.ArrayStringProperty("Variable Description",value='') )
+        #
+        # self.inputProperties.Append( wxpg.PropertyCategory("Unit") )
+        # self.inputProperties.Append( wxpg.StringProperty("Unit Name",value='') )
+        # self.inputProperties.Append( wxpg.StringProperty("Unit Type",value='') )
+        # self.inputProperties.Append( wxpg.StringProperty("Unit Abbreviation",value='') )
+        #
+        # # adjust the properties box size to the ideal size
+        # x,y = self.inputProperties.GetBestVirtualSize()
+        # self.inputProperties.Layout()
+        # self.inputProperties.MinSize = (wx.Size(325,y-20))  # Need to set the minimum size b/c that is what the sizer uses
+        # InputSizer.Add(self.inputProperties, 0, wx.ALL, 5)
+        self.inputGrid = wx.grid.Grid( self.ExchangeItemSizer, wx.ID_ANY, wx.DefaultPosition, wx.Size(325,-1), 0 )
 
-        page = self.inputProperties.AddPage('Input Exchange Item Metadata')
+        # Grid
+        self.inputGrid.CreateGrid( 7, 2 )
+        self.inputGrid.EnableEditing( False )
+        self.inputGrid.EnableGridLines( True )
+        self.inputGrid.SetGridLineColour( wx.Colour( 0, 0, 0 ) )
+        self.inputGrid.EnableDragGridSize( False )
+        self.inputGrid.SetMargins( 0, 0 )
 
-        self.inputProperties.Append( wxpg.PropertyCategory("Variable") )
-        self.inputProperties.Append( wxpg.StringProperty("Variable Name",value='') )
-        self.inputProperties.Append( wxpg.ArrayStringProperty("Variable Description",value='') )
+        # Columns
+        self.inputGrid.EnableDragColMove( False )
+        self.inputGrid.EnableDragColSize( True )
+        self.inputGrid.SetColLabelSize( 0 )
+        self.inputGrid.SetColLabelAlignment( wx.ALIGN_CENTRE, wx.ALIGN_CENTRE )
 
-        self.inputProperties.Append( wxpg.PropertyCategory("Unit") )
-        self.inputProperties.Append( wxpg.StringProperty("Unit Name",value='') )
-        self.inputProperties.Append( wxpg.StringProperty("Unit Type",value='') )
-        self.inputProperties.Append( wxpg.StringProperty("Unit Abbreviation",value='') )
 
-        # adjust the properties box size to the ideal size
-        x,y = self.inputProperties.GetBestVirtualSize()
-        self.inputProperties.Layout()
-        self.inputProperties.MinSize = (wx.Size(325,y-20))  # Need to set the minimum size b/c that is what the sizer uses
-        InputSizer.Add(self.inputProperties, 0, wx.ALL, 5)
+        # Rows
+        self.inputGrid.EnableDragRowSize( True )
+        self.inputGrid.SetRowLabelSize( 0 )
+        self.inputGrid.SetRowLabelAlignment( wx.ALIGN_CENTRE, wx.ALIGN_CENTRE )
 
+
+        # Label Appearance
+
+        # Cell Defaults
+        self.inputGrid.SetDefaultCellBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_BTNHIGHLIGHT ) )
+        self.inputGrid.SetDefaultCellAlignment( wx.ALIGN_LEFT, wx.ALIGN_TOP )
+        InputSizer.Add(self.inputGrid, 0, wx.ALL, 5)
+
+        # Set Cell Values
+        self.inputGrid.SetCellValue(0,0, " Variable")
+        self.inputGrid.SetCellValue(1,0, " Name")
+        self.inputGrid.SetCellValue(2,0, " Description")
+        self.inputGrid.SetCellValue(3,0, " Unit")
+        self.inputGrid.SetCellValue(4,0, " Name")
+        self.inputGrid.SetCellValue(5,0, " Type")
+        self.inputGrid.SetCellValue(6,0, " Abbreviation")
+
+
+
+        self.inputGrid.SetCellBackgroundColour(0,0,wx.Colour(195,195,195))
+        self.inputGrid.SetCellBackgroundColour(0,1,wx.Colour(195,195,195))
+        self.inputGrid.SetCellBackgroundColour(3,0,wx.Colour(195,195,195))
+        self.inputGrid.SetCellBackgroundColour(3,1,wx.Colour(195,195,195))
+        self.inputGrid.SetGridLineColour(wx.Colour(195,195,195))
+
+        self.inputGrid.AutoSizeColumn(0)
+        inputcolsize = self.inputGrid.GetColSize(0)
+        C,R = self.inputGrid.GetSize()
+        self.inputGrid.SetColSize(1,C-inputcolsize)
 
 
         #####################################

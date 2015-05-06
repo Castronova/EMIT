@@ -368,8 +368,8 @@ class LogicLink(ViewLink):
 
     def OnStartUp(self):
         # set splitter location for the gridviews.  This needs to be done after the view is rendered
-        self.inputProperties.SetSplitterPosition(130)
-        self.outputProperties.SetSplitterPosition(130)
+        # self.inputProperties.SetSplitterPosition(130)
+        # self.outputProperties.SetSplitterPosition(130)
 
         links = engine.getLinksBtwnModels(self.output_component['id'], self.input_component['id'])
         if links:

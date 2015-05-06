@@ -96,13 +96,13 @@ class LogicLink(ViewLink):
         self.InputComboBox.SetStringSelection(l.iei)
 
         if l.temporal_interpolation is not None:
-            self.ComboBoxTemporal.SetStringSelection(l.temporal_interpolation.name())
+            self.ComboBoxTemporal.SetStringSelection(l.temporal_interpolation)
         else:
             # set default value
             self.ComboBoxTemporal.SetSelection(0)
 
         if l.spatial_interpolation is not None:
-            self.ComboBoxSpatial.SetStringSelection(l.spatial_interpolation.name())
+            self.ComboBoxSpatial.SetStringSelection(l.spatial_interpolation)
         else:
             # set default value
             self.ComboBoxSpatial.SetSelection(0)
@@ -376,6 +376,12 @@ class LogicLink(ViewLink):
         # self.inputProperties.SetSplitterPosition(130)
         # self.outputProperties.SetSplitterPosition(130)
 
+        # initialize the exchangeitem listboxes
+        self.InputComboBox.SetItems( ['---'] + self.InputComboBoxChoices())
+        self.OutputComboBox.SetItems(['---'] + self.OutputComboBoxChoices())
+        self.InputComboBox.SetSelection(0)
+        self.OutputComboBox.SetSelection(0)
+
         links = engine.getLinksBtwnModels(self.output_component['id'], self.input_component['id'])
         if links:
             for l in links:
@@ -395,13 +401,7 @@ class LogicLink(ViewLink):
             self.__selected_link = self.__links[0]
             self.OnChange(None)
 
-        # initialize the exchangeitem listboxes
-        self.InputComboBox.SetItems( ['---'] + self.InputComboBoxChoices())
-        self.OutputComboBox.SetItems(['---'] + self.OutputComboBoxChoices())
-        self.InputComboBox.SetSelection(0)
-        self.OutputComboBox.SetSelection(0)
-
-        # if not links are found, need to deactivate controls
+        # if no links are found, need to deactivate controls
         self.activateControls(False)
 
 class NameDialog(wx.Dialog):

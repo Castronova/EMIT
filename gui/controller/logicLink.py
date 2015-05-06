@@ -96,13 +96,13 @@ class LogicLink(ViewLink):
         self.InputComboBox.SetStringSelection(l.iei)
 
         if l.temporal_interpolation is not None:
-            self.ComboBoxTemporal.SetStringSelection(l.temporal_interpolation.name())
+            self.ComboBoxTemporal.SetStringSelection(l.temporal_interpolation)
         else:
             # set default value
             self.ComboBoxTemporal.SetSelection(0)
 
         if l.spatial_interpolation is not None:
-            self.ComboBoxSpatial.SetStringSelection(l.spatial_interpolation.name())
+            self.ComboBoxSpatial.SetStringSelection(l.spatial_interpolation)
         else:
             # set default value
             self.ComboBoxSpatial.SetSelection(0)
@@ -327,30 +327,46 @@ class LogicLink(ViewLink):
         Saves all link objects to the engine and then closes the link creation window
         """
 
+        warnings = []
+        errors = []
         for l in self.__links:
 
-            try:
-                kwargs =    dict(source_id=l.source_id,
-                                 source_item=l.oei,
-                                 target_id=l.target_id,
-                                 target_item=l.iei,
-                                 spatial_interpolation=l.spatial_interpolation,
-                                 temporal_interpolation=l.temporal_interpolation,
-                                 uid = l.uid)
+            if l.iei == '---' or l.oei == '--':
+                warnings.append(l)
+            else:
 
-                # remove the existing link, if there is one
-                removed = engine.removeLinkById(l.uid)
+                try:
+                    kwargs =    dict(source_id=l.source_id,
+                                     source_item=l.oei,
+                                     target_id=l.target_id,
+                                     target_item=l.iei,
+                                     spatial_interpolation=l.spatial_interpolation,
+                                     temporal_interpolation=l.temporal_interpolation,
+                                     uid = l.uid)
 
-                # add a new link inside the engine
-                linkid = engine.addLink(**kwargs)
+                    # remove the existing link, if there is one
+                    removed = engine.removeLinkById(l.uid)
 
-                if linkid:
-                    l.saved = True
+                    # add a new link inside the engine
+                    linkid = engine.addLink(**kwargs)
 
-                # self.__links[current_link] = kwargs
-                wx.PostEvent(self, LinkUpdatedEvent())
-            except:
-                print 'ERROR|Could not save link: %s'%l.name
+                    if linkid:
+                        l.saved = True
+
+                    # self.__links[current_link] = kwargs
+                    wx.PostEvent(self, LinkUpdatedEvent())
+                except:
+                    print 'ERROR|Could not save link: %s'%l.name
+                    errors.append(l)
+
+        if len(warnings) > 0:
+            warning_links = '\n'.join(l.name() for l in warnings)
+            warning = wx.MessageDialog(self, "Could not save the following links because they lacking either input or output items: \n\n "+warning_links+"\n\n Would you like to discard these partial link objects?", 'Question', wx.YES_NO| wx.NO_DEFAULT | wx.ICON_WARNING)
+
+            if warning.ShowModal() == wx.ID_YES:
+                self.Destroy()
+            else:
+                return
 
 
         self.Destroy()
@@ -359,6 +375,12 @@ class LogicLink(ViewLink):
         # set splitter location for the gridviews.  This needs to be done after the view is rendered
         # self.inputProperties.SetSplitterPosition(130)
         # self.outputProperties.SetSplitterPosition(130)
+
+        # initialize the exchangeitem listboxes
+        self.InputComboBox.SetItems( ['---'] + self.InputComboBoxChoices())
+        self.OutputComboBox.SetItems(['---'] + self.OutputComboBoxChoices())
+        self.InputComboBox.SetSelection(0)
+        self.OutputComboBox.SetSelection(0)
 
         links = engine.getLinksBtwnModels(self.output_component['id'], self.input_component['id'])
         if links:
@@ -379,13 +401,7 @@ class LogicLink(ViewLink):
             self.__selected_link = self.__links[0]
             self.OnChange(None)
 
-        # initialize the exchangeitem listboxes
-        self.InputComboBox.SetItems( ['---'] + self.InputComboBoxChoices())
-        self.OutputComboBox.SetItems(['---'] + self.OutputComboBoxChoices())
-        self.InputComboBox.SetSelection(0)
-        self.OutputComboBox.SetSelection(0)
-
-        # if not links are found, need to deactivate controls
+        # if no links are found, need to deactivate controls
         self.activateControls(False)
 
 class NameDialog(wx.Dialog):

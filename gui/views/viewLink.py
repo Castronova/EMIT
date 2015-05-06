@@ -13,7 +13,7 @@ import sys
 class ViewLink(wx.Frame):
     def __init__(self, parent, output, input):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=wx.EmptyString, pos=wx.DefaultPosition,
-                          size=wx.Size(700, 560), style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER| wx.TAB_TRAVERSAL)
+                          size=wx.Size(700, 600), style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER| wx.TAB_TRAVERSAL)
 
         self.font = wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL)
         self.input_component = input
@@ -110,7 +110,7 @@ class ViewLink(wx.Frame):
         # Label Appearance
 
         # Cell Defaults
-        self.outputGrid.SetDefaultCellBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_BTNHIGHLIGHT ) )
+        self.outputGrid.SetDefaultCellBackgroundColour( wx.Colour(255,255,255) )
         self.outputGrid.SetDefaultCellAlignment( wx.ALIGN_LEFT, wx.ALIGN_TOP )
         OutputSizer.Add(self.outputGrid, 0, wx.ALL, 5)
 
@@ -219,7 +219,7 @@ class ViewLink(wx.Frame):
         self.inputGrid.CreateGrid( 7, 2 )
         self.inputGrid.EnableEditing( False )
         self.inputGrid.EnableGridLines( True )
-        self.inputGrid.SetGridLineColour( wx.Colour( 0, 0, 0 ) )
+        self.inputGrid.SetGridLineColour( wx.Colour(255,255,255) )
         self.inputGrid.EnableDragGridSize( False )
         self.inputGrid.SetMargins( 0, 0 )
 

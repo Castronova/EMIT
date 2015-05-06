@@ -317,7 +317,7 @@ class LogicLink(ViewLink):
 
     def OnCancel(self, event):
 
-        dial = wx.MessageDialog(None, 'Are you sure that you want to close without saving?', 'Question',
+        dial = wx.MessageDialog(self, 'Are you sure that you want to close without saving?', 'Question',
                                 wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
         if dial.ShowModal() == wx.ID_YES:
             self.Destroy()

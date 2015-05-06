@@ -25,6 +25,7 @@ class LogicToolbox(ViewToolbox):
         # Initialize the View
         ViewToolbox.__init__(self, parent)
 
+        self.p = parent
 
         ini = join(dirname(abspath(__file__)), '../Resources/ToolboxPaths')
         # config_params = {}
@@ -119,12 +120,19 @@ class LogicToolbox(ViewToolbox):
         filenames = []
         filenames.append(fullpath)
 
-        # Generate Random Coordinates
-        x = random.randint(250,600)
-        y = random.randint(150, 350)
+        originx, originy = self.p.FloatCanvas.WorldToPixel(self.p.Canvas.GetPosition())
+
+        # Generate random coordinates about the center of the canvas
+        x = random.randint(-200, 200)
+        y = random.randint(-200, 200)
+        nx = (originx + x)
+        ny = (originy + y)
+
+
+
 
         # Send the filepath to the FileDrop class in CanvasController
-        Publisher.sendMessage('toolboxclick', x = x, y = y, filenames = filenames)
+        Publisher.sendMessage('toolboxclick', x = nx, y = ny, filenames = filenames)
 
     def OnItemContextMenu(self, evt):
 
@@ -139,7 +147,6 @@ class LogicToolbox(ViewToolbox):
         fullpath = self.filepath[filename]
 
         data.AddFile(fullpath)
-
         dropSource = wx.DropSource(obj)
         dropSource.SetData(data)
         result = dropSource.DoDragDrop()

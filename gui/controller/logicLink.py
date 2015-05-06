@@ -56,13 +56,13 @@ class LogicLink(ViewLink):
         self.ButtonSave.Bind(wx.EVT_BUTTON, self.OnSave)
 
         self.Bind(EVT_LINKUPDATED, self.linkSelected)
+        self.Bind(wx.EVT_CLOSE, self.OnCancel)
 
         self.OutputComboBox.Bind(wx.EVT_COMBOBOX, self.on_select_output)
         self.InputComboBox.Bind(wx.EVT_COMBOBOX, self.on_select_input)
         self.ComboBoxTemporal.Bind(wx.EVT_COMBOBOX, self.on_select_temporal)
         self.ComboBoxSpatial.Bind(wx.EVT_COMBOBOX, self.on_select_spatial)
 
-        self.Bind(wx.EVT_CLOSE, self.OnCancel)
 
     def OnLeftUp(self, event):
 

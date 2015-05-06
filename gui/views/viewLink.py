@@ -7,13 +7,13 @@ import wx.grid
 from transform.time import *
 from transform.space import *
 import coordinator.engineAccessors as engine
-import wx.propgrid as wxpg
 import sys
 
 class ViewLink(wx.Frame):
     def __init__(self, parent, output, input):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=wx.EmptyString, pos=wx.DefaultPosition,
-                          size=wx.Size(700, 600), style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER| wx.TAB_TRAVERSAL)
+                          size=wx.Size(700, 600), style=wx.SYSTEM_MENU | wx.CLOSE_BOX  ^
+                                                                         wx.RESIZE_BORDER | wx.TAB_TRAVERSAL)
 
         self.font = wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL)
         self.input_component = input

@@ -147,7 +147,6 @@ class LogicToolbox(ViewToolbox):
         fullpath = self.filepath[filename]
 
         data.AddFile(fullpath)
-
         dropSource = wx.DropSource(obj)
         dropSource.SetData(data)
         result = dropSource.DoDragDrop()

@@ -62,6 +62,8 @@ class LogicLink(ViewLink):
         self.ComboBoxTemporal.Bind(wx.EVT_COMBOBOX, self.on_select_temporal)
         self.ComboBoxSpatial.Bind(wx.EVT_COMBOBOX, self.on_select_spatial)
 
+        self.Bind(wx.EVT_CLOSE, self.OnCancel)
+
     def OnLeftUp(self, event):
 
         if not self.link_obj_hit:

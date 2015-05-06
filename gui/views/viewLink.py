@@ -267,6 +267,8 @@ class ViewLink(wx.Frame):
 
         RightAlignSizer = wx.BoxSizer(wx.HORIZONTAL)
 
+        RightAlignSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+
         self.ButtonSave = wx.Button(self.BottomPanel, wx.ID_ANY, u"Save and Close", wx.DefaultPosition, wx.DefaultSize, 0)
         # self.ButtonSave.Disable()
         RightAlignSizer.Add(self.ButtonSave, 0, wx.ALL, 5)

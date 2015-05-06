@@ -325,30 +325,46 @@ class LogicLink(ViewLink):
         Saves all link objects to the engine and then closes the link creation window
         """
 
+        warnings = []
+        errors = []
         for l in self.__links:
 
-            try:
-                kwargs =    dict(source_id=l.source_id,
-                                 source_item=l.oei,
-                                 target_id=l.target_id,
-                                 target_item=l.iei,
-                                 spatial_interpolation=l.spatial_interpolation,
-                                 temporal_interpolation=l.temporal_interpolation,
-                                 uid = l.uid)
+            if l.iei == '---' or l.oei == '--':
+                warnings.append(l)
+            else:
 
-                # remove the existing link, if there is one
-                removed = engine.removeLinkById(l.uid)
+                try:
+                    kwargs =    dict(source_id=l.source_id,
+                                     source_item=l.oei,
+                                     target_id=l.target_id,
+                                     target_item=l.iei,
+                                     spatial_interpolation=l.spatial_interpolation,
+                                     temporal_interpolation=l.temporal_interpolation,
+                                     uid = l.uid)
 
-                # add a new link inside the engine
-                linkid = engine.addLink(**kwargs)
+                    # remove the existing link, if there is one
+                    removed = engine.removeLinkById(l.uid)
 
-                if linkid:
-                    l.saved = True
+                    # add a new link inside the engine
+                    linkid = engine.addLink(**kwargs)
 
-                # self.__links[current_link] = kwargs
-                wx.PostEvent(self, LinkUpdatedEvent())
-            except:
-                print 'ERROR|Could not save link: %s'%l.name
+                    if linkid:
+                        l.saved = True
+
+                    # self.__links[current_link] = kwargs
+                    wx.PostEvent(self, LinkUpdatedEvent())
+                except:
+                    print 'ERROR|Could not save link: %s'%l.name
+                    errors.append(l)
+
+        if len(warnings) > 0:
+            warning_links = '\n'.join(l.name() for l in warnings)
+            warning = wx.MessageDialog(self, "Could not save the following links because they lacking either input or output items: \n\n "+warning_links+"\n\n Would you like to discard these partial link objects?", 'Question', wx.YES_NO| wx.NO_DEFAULT | wx.ICON_WARNING)
+
+            if warning.ShowModal() == wx.ID_YES:
+                self.Destroy()
+            else:
+                return
 
 
         self.Destroy()

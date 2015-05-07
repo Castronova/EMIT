@@ -54,7 +54,7 @@ class LogicLink(ViewLink):
         self.ButtonDelete.Bind(wx.EVT_BUTTON, self.OnDelete)
         self.ButtonCancel.Bind(wx.EVT_BUTTON, self.OnCancel)
         self.ButtonSave.Bind(wx.EVT_BUTTON, self.OnSave)
-
+        self.ButtonPlot.Bind(wx.EVT_BUTTON, self.OnPlot)
         self.Bind(EVT_LINKUPDATED, self.linkSelected)
 
         self.OutputComboBox.Bind(wx.EVT_COMBOBOX, self.on_select_output)
@@ -63,6 +63,11 @@ class LogicLink(ViewLink):
         self.ComboBoxSpatial.Bind(wx.EVT_COMBOBOX, self.on_select_spatial)
 
         self.Bind(wx.EVT_CLOSE, self.OnCancel)
+
+    def OnPlot(self, event):
+
+
+        print 'IMPLEMENT ON PLOT!'
 
     def OnLeftUp(self, event):
 

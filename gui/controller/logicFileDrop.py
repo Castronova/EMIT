@@ -1,3 +1,6 @@
+import os
+import uuid
+
 __author__ = 'tonycastronova'
 
 import wx
@@ -25,8 +28,12 @@ class LogicFileDrop(wx.FileDropTarget):
         self.OnDropFiles(x, y, filenames)
 
     def OnDropFiles(self, x, y, filenames):
-        originx, originy = self.FloatCanvas.WorldToPixel(self.canvas.GetPosition())
-        nx = (x - originx)
-        ny = (originy - y)
-        self.canvas.addModel(filepath=filenames[0], x=nx, y=ny)
+        name, ext = os.path.splitext(filenames[0])
+
+        if ext == '.mdl' or ext == '.sim':
+            originx, originy = self.FloatCanvas.WorldToPixel(self.canvas.GetPosition())
+            nx = (x - originx)
+            ny = (originy - y)
+            self.canvas.addModel(filepath=filenames[0], x=nx, y=ny)
+
 

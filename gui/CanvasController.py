@@ -106,7 +106,6 @@ class CanvasController:
         Publisher.subscribe(self.addModel, "AddModel")  # subscribes to object list view
 
     def onClose(self, event):
-        print "In close"
         dlg = wx.MessageDialog(None, 'Are you sure you want to exit?', 'Question',
                                wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
 

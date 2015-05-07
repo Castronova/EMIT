@@ -1,3 +1,5 @@
+import math
+
 __author__ = 'Mario'
 
 import wx
@@ -58,6 +60,7 @@ class LogicCanvas(ViewCanvas):
 
         self.MoveObject = None
         self.Moving = False
+        self.linelength = None
 
         self.initBindings()
         self.initSubscribers()
@@ -308,6 +311,8 @@ class LogicCanvas(ViewCanvas):
             l.type = LogicCanvasObjects.ShapeType.Link
             self.FloatCanvas.AddObject(l)
 
+        # Calculate length of line, use to show/hide arrow
+        self.linelength = math.sqrt((y2-y1)**2 + (x2-x1)**2)
         arrow_shape = self.createArrow(line)
 
         # store the link and rectangles in the self.links list
@@ -325,6 +330,10 @@ class LogicCanvas(ViewCanvas):
 
         # create the arrowhead object
         arrow_shape = FC.Polygon(arrow, FillColor='Blue', InForeground=True)
+        if self.linelength > 200:
+            arrow_shape.Show()
+        else:
+            arrow_shape.Hide()
 
         # set the shape type so that we can identify it later
         arrow_shape.type = LogicCanvasObjects.ShapeType.ArrowHead

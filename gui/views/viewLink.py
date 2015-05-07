@@ -35,8 +35,6 @@ class ViewLink(wx.Frame):
         self.LinkTitle_staticText.Wrap(-1)
         FrameSizer.Add(self.LinkTitle_staticText, 0, wx.ALL, 5)
 
-        # FrameSizer.AddSpacer(( 0, 0), 1, wx.EXPAND, 5)
-
         self.LinkStartPanel = wx.Panel(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         LinkStartSizer = wx.BoxSizer(wx.HORIZONTAL)
 

@@ -163,8 +163,8 @@ class ViewLink(wx.Frame):
         rightAlignSizer.AddSpacer((0, 12), 0, wx.EXPAND,
                               5)  # This is to make sure that the static text stays the same distance apart
 
-        self.Spatial_staticText = wx.StaticText(self.ExchangeItemPanel, wx.ID_ANY, u"Spatial Interpolation",
-                                                wx.DefaultPosition, wx.DefaultSize, 0)
+        self.Spatial_staticText = wx.StaticText(self.ExchangeItemPanel, wx.ID_ANY, u"    Spatial Interpolation",
+                                                wx.DefaultPosition, wx.DefaultSize, 0) #The space before the word Spatial is to help it align Right
         self.Spatial_staticText.Wrap(-1)
         rightAlignSizer.Add(self.Spatial_staticText, 0, wx.ALL, 5)
 

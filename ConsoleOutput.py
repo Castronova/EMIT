@@ -12,4 +12,3 @@ class Unbuffered(object):
 
 import sys
 sys.stdout = Unbuffered(sys.stdout)
-print 'Hello'

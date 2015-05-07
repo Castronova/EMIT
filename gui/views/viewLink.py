@@ -33,7 +33,7 @@ class ViewLink(wx.Frame):
         self.LinkTitle_staticText = wx.StaticText(self, wx.ID_ANY, u"Select Add to Create a New Link", wx.Point(-1, -1),
                                                   wx.DefaultSize, 0)
         self.LinkTitle_staticText.Wrap(-1)
-        # FrameSizer.Add(self.LinkTitle_staticText, 0, wx.ALL, 5)
+        FrameSizer.Add(self.LinkTitle_staticText, 0, wx.ALL, 5)
 
         # FrameSizer.AddSpacer(( 0, 0), 1, wx.EXPAND, 5)
 

@@ -164,8 +164,8 @@ class LogicSpatialPlot(ViewSpatialPlot):
 
     def SetPlotDataOut(self, dataout, colors):
 
-        geomsout = dataout
-        typeout = dataout[0].type
+        geomsout = dataout['data']
+        typeout = dataout['type']
         i = 0
 
         try:

@@ -98,7 +98,7 @@ class ModelContextMenu(wx.Menu):
         for i in iei:
             name = i['name']
             geoms = [j['shape'] for j in o['geom']]
-            ogeoms[name] = geoms
+            igeoms[name] = geoms
 
 
         # todo: HACK! should all of this be in the LogicModel?

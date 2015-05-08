@@ -8,6 +8,7 @@ import wx
 from gui.views.viewLink import ViewLink
 import coordinator.engineAccessors as engine
 import wx.lib.newevent as ne
+from gui.controller.logicSpatialPlot import LogicSpatialPlot
 
 LinkUpdatedEvent, EVT_LINKUPDATED  =ne.NewEvent()
 
@@ -19,6 +20,7 @@ class LogicLink(ViewLink):
         ViewLink.__init__(self, parent, outputs, inputs)
 
         self.l = None
+        self.parent = parent
         # self.cmd = cmd
 
 
@@ -65,9 +67,59 @@ class LogicLink(ViewLink):
 
 
     def OnPlot(self, event):
+        '''__init__(self, Window parent, int id=-1, String title=EmptyString,
+            Point pos=DefaultPosition, Size size=DefaultSize,
+            long style=DEFAULT_FRAME_STYLE, String name=FrameNameStr) -> Frame'''
 
+        title = self.__selected_link.name()
+        plot_window = wx.Frame(self.parent, id=wx.ID_ANY, title=title, pos=wx.DefaultPosition, size=wx.Size(150,150))
 
-        print 'IMPLEMENT ON PLOT!'
+        # create a spatial plot instance
+        plot_panel = LogicSpatialPlot(plot_window)
+
+        # get the source and target ids from the link object
+        source_model_id = self.__selected_link.source_id
+        target_model_id = self.__selected_link.target_id
+
+         # get the input geometries
+        oei = engine.getOutputExchangeItems(source_model_id)
+        ogeoms = {}
+        for o in oei:
+            name = o['name']
+            geoms = [i['shape'] for i in o['geom']]
+            ogeoms[name] = geoms
+
+        # get the output geometries
+        igeoms = {}
+        iei = engine.getInputExchangeItems(target_model_id)
+        for i in iei:
+            name = i['name']
+            geoms = [j['shape'] for j in o['geom']]
+            igeoms[name] = geoms
+
+        # load geometry data
+        ogeom = ogeoms[self.__selected_link.oei]
+        igeom = igeoms[self.__selected_link.iei]
+
+        # plot_panel.set_output_data(ogeom)
+        # plot_panel.set_input_data(igeom)
+
+        if ogeom:
+            colors = plot_panel.buildGradientColor(len(ogeom),'Blues')
+            plot_panel.SetPlotDataIn({'data':ogeom, 'type':ogeom[0].geom_type},colors=colors)
+
+        if igeom:
+            colors = plot_panel.buildGradientColor(len(igeom),'Reds')
+            plot_panel.SetPlotDataIn({'data':igeom, 'type':igeom[0].geom_type},colors=colors)
+
+        plot_panel.set_titles(self.__selected_link.oei, self.__selected_link.iei)
+
+        plot_panel.canvas.draw()
+
+        box = wx.BoxSizer(wx.VERTICAL)
+        box.Add(plot_panel)
+
+        plot_window.Show()
 
     def OnLeftUp(self, event):
 

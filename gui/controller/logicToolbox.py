@@ -55,11 +55,16 @@ class LogicToolbox(ViewToolbox):
 
 
 
+
+        count = 0
         for category, data in modelpaths.iteritems():
             txt =  category
-            cat = self.tree.AppendItem(self.root, txt)
-            self.tree.SetItemImage(cat, self.fldropenidx, which = wx.TreeItemIcon_Expanded)
-            self.tree.SetItemImage(cat, self.fldropenidx, which = wx.TreeItemIcon_Normal)
+            self.cat = self.tree.AppendItem(self.root, txt)
+            if count == 0:
+                self.simCategory = self.tree.AppendItem(self.root, 'Sim Files')
+                count += 1
+            self.tree.SetItemImage(self.cat, self.fldropenidx, which = wx.TreeItemIcon_Expanded)
+            self.tree.SetItemImage(self.cat, self.fldropenidx, which = wx.TreeItemIcon_Normal)
             for d in data:
                 path = d['path']
                 apath = join(dirname(abspath(__file__)), '../'+path)
@@ -71,25 +76,14 @@ class LogicToolbox(ViewToolbox):
                         fullpath = join(root, filename)
 
                         txt =  filename.split('.mdl')[0]
-
-                        mdl_parser = ConfigParser.ConfigParser(None, multidict)
-                        mdl_parser.read(fullpath)
-                        mdls = mdl_parser.sections()
-                        for s in mdls:
-                            section = s.split('^')[0]
-                            if section == 'general':
-                                # options = cparser.options(s)
-                                txt = mdl_parser.get(s,'name')
+                        self.loadMDLFile(txt, fullpath)
 
 
-                        child = self.tree.AppendItem(cat, txt)
-                        self.filepath[txt] = fullpath
-
-                        self.items[child] = fullpath
-
-                        child.__setattr__('path', fullpath)
-                        self.tree.SetItemImage(child, self.mdlidx, which = wx.TreeItemIcon_Expanded)
-                        self.tree.SetItemImage(child, self.mdlidx, which = wx.TreeItemIcon_Normal)
+                    for filename in fnmatch.filter(filenames, '*.sim'):
+                        matches.append(os.path.join(root, filename))
+                        fullpath = join(root, filename)
+                        txt = filename.split('.sim')[0]
+                        self.loadSIMFile(txt, fullpath)
 
         self.tree.SetItemImage(self.root, self.fldropenidx, which = wx.TreeItemIcon_Expanded)
         self.tree.SetItemImage(self.root, self.fldropenidx, which = wx.TreeItemIcon_Normal)
@@ -101,6 +95,37 @@ class LogicToolbox(ViewToolbox):
         self.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnItemContextMenu)
         self.Bind(wx.EVT_TREE_BEGIN_DRAG, self.onDrag)
         self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.onDoubleClick)
+
+    def loadMDLFile(self, txt, fullpath):
+        mdl_parser = ConfigParser.ConfigParser(None, multidict)
+        mdl_parser.read(fullpath)
+        mdls = mdl_parser.sections()
+        for s in mdls:
+            section = s.split('^')[0]
+            if section == 'general':
+                # options = cparser.options(s)
+                txt = mdl_parser.get(s,'name')
+
+
+        child = self.tree.AppendItem(self.cat, txt)
+        self.filepath[txt] = fullpath
+
+        self.items[child] = fullpath
+
+        child.__setattr__('path', fullpath)
+        self.tree.SetItemImage(child, self.mdlidx, which = wx.TreeItemIcon_Expanded)
+        self.tree.SetItemImage(child, self.mdlidx, which = wx.TreeItemIcon_Normal)
+
+    def loadSIMFile(self, txt, fullpath):
+
+        child = self.tree.AppendItem(self.simCategory, txt)
+        self.filepath[txt] = fullpath
+        self.items[child] = fullpath
+
+        child.__setattr__('path', fullpath)
+        self.tree.SetItemImage(child, self.mdlidx, which = wx.TreeItemIcon_Expanded)
+        self.tree.SetItemImage(child, self.mdlidx, which = wx.TreeItemIcon_Normal)
+        pass
 
     def SetCurrentlySelected(self,evt):
         item = self.tree.GetSelection()

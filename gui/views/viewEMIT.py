@@ -17,7 +17,6 @@ from gui.controller.logicDatabase import LogicDatabase
 import coordinator.engineAccessors as engine
 from utilities import db as dbUtilities
 from db import dbapi as dbapi
-from gui.objectListViewDatabase import Database
 import coordinator.events as engineEvent
 import gui.controller.events as guiEvents
 

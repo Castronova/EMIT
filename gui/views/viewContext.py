@@ -182,7 +182,7 @@ class GeneralContextMenu(wx.Menu):
 
     def SaveConfiguration(self,e):
         if self.parent.GetLoadingPath() == None:
-            save = wx.FileDialog(self.parent.Canvas.GetTopLevelParent(), "Save Configuration","","",
+            save = wx.FileDialog(self.parent.GetTopLevelParent(), "Save Configuration","","",
                                  "Simulation Files (*.sim)|*.sim", wx.FD_SAVE  | wx.FD_OVERWRITE_PROMPT)
 
             if save.ShowModal() == wx.ID_OK:
@@ -194,7 +194,7 @@ class GeneralContextMenu(wx.Menu):
 
     def SaveConfigurationAs(self,e):
 
-        save = wx.FileDialog(self.parent.Canvas.GetTopLevelParent(), "Save Configuration","","",
+        save = wx.FileDialog(self.parent.GetTopLevelParent(), "Save Configuration","","",
                              "Simulation Files (*.sim)|*.sim", wx.FD_SAVE  | wx.FD_OVERWRITE_PROMPT)
 
         if save.ShowModal() == wx.ID_OK:
@@ -203,7 +203,7 @@ class GeneralContextMenu(wx.Menu):
             self.parent.SetLoadingPath(path)
 
     def LoadConfiguration(self, e):
-        load = wx.FileDialog(self.parent.Canvas.GetTopLevelParent(), "Load Configuration","","",
+        load = wx.FileDialog(self.parent.GetTopLevelParent(), "Load Configuration","","",
                              "Simulation Files (*.sim)|*.sim", wx.FD_OPEN)
         if load.ShowModal() == wx.ID_OK:
             path = load.GetPath()

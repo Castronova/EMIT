@@ -17,7 +17,7 @@ class LogicDatabase(ViewDatabase):
         self.__list_id = None
         self.__context_menu = None
 
-        self.Bind(wx.EVT_LIST_BEGIN_DRAG, self.onDrag)
+        # self.Bind(wx.EVT_LIST_BEGIN_DRAG, self.onDrag)
         self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.onDoubleClick)
         self.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.LaunchContext)
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListItemSelect)
@@ -60,18 +60,18 @@ class LogicDatabase(ViewDatabase):
         self.__list_obj = event.GetEventObject()
         self.__list_id = event.GetIndex()
 
-    def onDrag(self, event):
-        data = wx.FileDataObject()
-        obj = event.GetEventObject()
-        id = event.GetIndex()
-
-        filename = obj.GetItem(id).GetText()
-        dataname = str(filename)
-        data.AddFile(dataname)
-
-        dropSource = wx.DropSource(obj)
-        dropSource.SetData(data)
-        result = dropSource.DoDragDrop()
+    # def onDrag(self, event):
+    #     data = wx.FileDataObject()
+    #     obj = event.GetEventObject()
+    #     id = event.GetIndex()
+    #
+    #     filename = obj.GetItem(id).GetText()
+    #     dataname = str(filename)
+    #     data.AddFile(dataname)
+    #
+    #     dropSource = wx.DropSource(obj)
+    #     dropSource.SetData(data)
+    #     result = dropSource.DoDragDrop()
 
     def onDoubleClick(self, event):
         id = event.GetIndex()

@@ -372,7 +372,7 @@ class LogicCanvas(ViewCanvas):
 
             elif ext == '.sim':
                 # load the simulation
-                self.loadsimulation(filepath[0])
+                self.loadsimulation(filepath)
         else:
             # load data model
             # current_db_id = self._currentDb['id']

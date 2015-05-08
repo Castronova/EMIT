@@ -4,7 +4,7 @@ classname = randomizer
 
 [model]
 code = tonys_random_number_generator
-name = Tonyâ€™s random number generator module
+name = Tonys random number generator module
 description = This is a module that generates random numbers
 
 [general]

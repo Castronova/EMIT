@@ -127,7 +127,6 @@ class LogicCanvas(ViewCanvas):
         Publisher.subscribe(self.loadsimulation, "SetLoadPath")
         Publisher.subscribe(self.addModel, "AddModel")  # subscribes to object list view
 
-
     def onDbChanged(self, event):
         """
         This function sets current database attributes locally whenever the database is changed

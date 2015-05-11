@@ -1,47 +1,34 @@
 import math
-
-__author__ = 'Mario'
+import textwrap as tw
+import sys
+import os
+import xml.etree.ElementTree as et
+from xml.dom import minidom
+import uuid
 
 import wx
-import textwrap as tw
-
-ver = 'local'
-from utilities import gui
-
-import sys
-
-sys.path.append("..")
-
 from wx.lib.floatcanvas import FloatCanvas as FC
 from wx.lib.floatcanvas.NavCanvas import NavCanvas
 from wx.lib.pubsub import pub as Publisher
 import numpy as N
-import os
-import markdown2
+from matplotlib.pyplot import cm
+
 from gui.views.viewContext import LinkContextMenu, ModelContextMenu, GeneralContextMenu
-from wrappers import odm2_data
-import xml.etree.ElementTree as et
-from xml.dom import minidom
 from transform.space import SpatialInterpolation
 from transform.time import TemporalInterpolation
-
 import datatypes
-from api.ODM2.Results.services import readResults
-from api.ODM2.Core.services import readCore
-from matplotlib.pyplot import cm
 from utilities.threading import EVT_CREATE_BOX, EVT_UPDATE_CONSOLE, ThreadManager
-
 from gui.views.viewCanvas import ViewCanvas
 import gui.controller.logicCanvasObjects as LogicCanvasObjects
 from gui.controller.logicLink import LogicLink
-from coordinator import engine
-from gui.controller.logicFileDrop import LogicFileDrop
-import coordinator.engineManager as engineManager
 import coordinator.engineAccessors as engine
 import utilities.db as dbUtilities
-import uuid
 import coordinator.events as engineEvent
 import gui.controller.events as guiEvent
+
+
+sys.path.append("..")
+ver = 'local'
 
 class LogicCanvas(ViewCanvas):
     def __init__(self, parent):
@@ -311,7 +298,7 @@ class LogicCanvas(ViewCanvas):
             self.FloatCanvas.AddObject(l)
 
         # Calculate length of line, use to show/hide arrow
-        self.linelength = math.sqrt((y2-y1)**2 + (x2-x1)**2)
+        self.linelength = math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2)
         arrow_shape = self.createArrow(line)
 
         # store the link and rectangles in the self.links list
@@ -466,7 +453,7 @@ class LogicCanvas(ViewCanvas):
             model = engine.getModelById(obj_id)
 
             # if 'params' in model:
-            #     params = model['params']
+            # params = model['params']
             # else:
             #     params = {}
             #

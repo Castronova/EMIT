@@ -7,15 +7,18 @@ from osgeo import ogr, osr
 import cPickle as pickle
 import shapefile
 from shapely.geometry import shape
-import coordinator.engineAccessors
+import coordinator.engineAccessors as engine
 
-def get_input_geoms(cmd, model_id):
+
+def get_input_geoms(model_id):
 
     # get the model by id
-    model = cmd.get_model_by_id(model_id)
+    # model = cmd.get_model_by_id(model_id)
+    # model = engine.getModelById(model_id)
 
     # get the mdoel inputs
-    inputs = model.get_instance().inputs()
+    # inputs = model.get_instance().inputs()
+    inputs = engine.getInputExchangeItems(model_id)
 
     # store input geometries by exchange item name
     input_geoms = {}
@@ -30,13 +33,15 @@ def get_input_geoms(cmd, model_id):
 
     return input_geoms
 
-def get_output_geoms(cmd, model_id):
+def get_output_geoms(model_id):
 
     # get the model by id
-    model = cmd.get_model_by_id(model_id)
+    # model = cmd.get_model_by_id(model_id)
+    # model = engine.getModelById(model_id)
 
     # get the model outputs
-    outputs = model.get_instance().outputs()
+    # outputs = model.get_instance().outputs()
+    outputs = engine.getOutputExchangeItems(model_id)
     # output_exchange_items = model.get_output_exchange_items()
 
     # store output geometries by exchange item name

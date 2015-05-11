@@ -1,17 +1,15 @@
-from collections import OrderedDict
-import uuid
-
 __author__ = 'tonycastronova'
 
+import uuid
+
 import wx
+import wx.lib.newevent as ne
 
 from gui.views.viewLink import ViewLink
 import coordinator.engineAccessors as engine
-import wx.lib.newevent as ne
 from gui.controller.logicSpatialPlot import LogicSpatialPlot
 
-LinkUpdatedEvent, EVT_LINKUPDATED  =ne.NewEvent()
-
+LinkUpdatedEvent, EVT_LINKUPDATED = ne.NewEvent()
 
 
 class LogicLink(ViewLink):
@@ -19,30 +17,17 @@ class LogicLink(ViewLink):
 
         ViewLink.__init__(self, parent, outputs, inputs)
 
-        self.l = None
+        # self.l = None
         self.parent = parent
-        # self.cmd = cmd
-
-
-
 
         # class link variables used to save link
         self.__selected_link = None
 
-        self.__spatial_interpolation = None
-        self.__temporal_interpolation = None
         self.__link_source_id = self.output_component['id']
-        self.__link_source_item = None
         self.__link_target_id = self.input_component['id']
-        self.__link_target_item = None
-        self.__link_name = None
         self.__link_ids = {}
-
         self.__links = []
-        # self.__links = {}
-
         self.link_obj_hit = False
-
 
         self.OnStartUp()
         self.InitBindings()
@@ -72,7 +57,7 @@ class LogicLink(ViewLink):
             long style=DEFAULT_FRAME_STYLE, String name=FrameNameStr) -> Frame'''
 
         title = self.__selected_link.name()
-        plot_window = wx.Frame(self.parent, id=wx.ID_ANY, title=title, pos=wx.DefaultPosition, size=wx.Size(150,150))
+        plot_window = wx.Frame(self.parent, id=wx.ID_ANY, title=title, pos=wx.DefaultPosition, size=wx.Size(150, 150))
 
         # create a spatial plot instance
         plot_panel = LogicSpatialPlot(plot_window)
@@ -81,7 +66,7 @@ class LogicLink(ViewLink):
         source_model_id = self.__selected_link.source_id
         target_model_id = self.__selected_link.target_id
 
-         # get the input geometries
+        # get the input geometries
         oei = engine.getOutputExchangeItems(source_model_id)
         ogeoms = {}
         for o in oei:
@@ -105,12 +90,12 @@ class LogicLink(ViewLink):
         # plot_panel.set_input_data(igeom)
 
         if ogeom:
-            colors = plot_panel.buildGradientColor(len(ogeom),'Blues')
-            plot_panel.SetPlotDataIn({'data':ogeom, 'type':ogeom[0].geom_type},colors=colors)
+            colors = plot_panel.buildGradientColor(len(ogeom), 'Blues')
+            plot_panel.SetPlotDataIn({'data': ogeom, 'type': ogeom[0].geom_type}, colors=colors)
 
         if igeom:
-            colors = plot_panel.buildGradientColor(len(igeom),'Reds')
-            plot_panel.SetPlotDataIn({'data':igeom, 'type':igeom[0].geom_type},colors=colors)
+            colors = plot_panel.buildGradientColor(len(igeom), 'Reds')
+            plot_panel.SetPlotDataIn({'data': igeom, 'type': igeom[0].geom_type}, colors=colors)
 
         plot_panel.set_titles(self.__selected_link.oei, self.__selected_link.iei)
 
@@ -124,7 +109,6 @@ class LogicLink(ViewLink):
     def OnLeftUp(self, event):
 
         if not self.link_obj_hit:
-
             link_name = self.__selected_link.name()
 
             selected_index = self.LinkNameListBox.Items.index(link_name)
@@ -234,16 +218,14 @@ class LogicLink(ViewLink):
         self.__selected_link = l
 
         # select the last value
-        self.LinkNameListBox.SetSelection(self.LinkNameListBox.GetCount()-1)
-
-
+        self.LinkNameListBox.SetSelection(self.LinkNameListBox.GetCount() - 1)
 
         self.OnChange(None)
 
-    def GetName(self, event):
-        dlg = NameDialog(self)
-        dlg.ShowModal()
-        self.LinkNameListBox.Append(str(dlg.result))
+    # def GetName(self, event):
+    # dlg = NameDialog(self)
+    #     dlg.ShowModal()
+    #     self.LinkNameListBox.Append(str(dlg.result))
 
     def OnDelete(self, event):
         # First try to delete the item from the cmd, if it has not yet been saved, it will just
@@ -282,7 +264,7 @@ class LogicLink(ViewLink):
             self.outputGrid.SetCellValue(5, 1, o['unit'].UnitTypeCV())
             self.outputGrid.SetCellValue(6, 1, o['unit'].UnitAbbreviation())
 
-    def populate_input_metadata(self,l):
+    def populate_input_metadata(self, l):
 
         # get the link object
         inputs = l.input_metadata
@@ -332,7 +314,7 @@ class LogicLink(ViewLink):
         # get selected value
         input_name = self.InputComboBox.GetValue()
 
-       # get the current link
+        # get the current link
         l = self.__selected_link
 
         # get index of this link and then remove it from the links list
@@ -393,16 +375,16 @@ class LogicLink(ViewLink):
             else:
 
                 try:
-                    kwargs =    dict(source_id=l.source_id,
-                                     source_item=l.oei,
-                                     target_id=l.target_id,
-                                     target_item=l.iei,
-                                     spatial_interpolation=l.spatial_interpolation,
-                                     temporal_interpolation=l.temporal_interpolation,
-                                     uid = l.uid)
+                    kwargs = dict(source_id=l.source_id,
+                                  source_item=l.oei,
+                                  target_id=l.target_id,
+                                  target_item=l.iei,
+                                  spatial_interpolation=l.spatial_interpolation,
+                                  temporal_interpolation=l.temporal_interpolation,
+                                  uid=l.uid)
 
                     # remove the existing link, if there is one
-                    removed = engine.removeLinkById(l.uid)
+                    engine.removeLinkById(l.uid)
 
                     # add a new link inside the engine
                     linkid = engine.addLink(**kwargs)
@@ -410,21 +392,21 @@ class LogicLink(ViewLink):
                     if linkid:
                         l.saved = True
 
-                    # self.__links[current_link] = kwargs
                     wx.PostEvent(self, LinkUpdatedEvent())
                 except:
-                    print 'ERROR|Could not save link: %s'%l.name
+                    print 'ERROR|Could not save link: %s' % l.name
                     errors.append(l)
 
         if len(warnings) > 0:
             warning_links = '\n'.join(l.name() for l in warnings)
-            warning = wx.MessageDialog(self, "Could not save the following links because they lacking either input or output items: \n\n "+warning_links+"\n\n Would you like to discard these partial link objects?", 'Question', wx.YES_NO| wx.NO_DEFAULT | wx.ICON_WARNING)
+            warning = wx.MessageDialog(self,
+                                       "Could not save the following links because they lacking either input or output items: \n\n " + warning_links + "\n\n Would you like to discard these partial link objects?",
+                                       'Question', wx.YES_NO | wx.NO_DEFAULT | wx.ICON_WARNING)
 
             if warning.ShowModal() == wx.ID_YES:
                 self.Destroy()
             else:
                 return
-
 
         self.Destroy()
 
@@ -434,7 +416,7 @@ class LogicLink(ViewLink):
         # self.outputProperties.SetSplitterPosition(130)
 
         # initialize the exchangeitem listboxes
-        self.InputComboBox.SetItems( ['---'] + self.InputComboBoxChoices())
+        self.InputComboBox.SetItems(['---'] + self.InputComboBoxChoices())
         self.OutputComboBox.SetItems(['---'] + self.OutputComboBoxChoices())
         self.InputComboBox.SetSelection(0)
         self.OutputComboBox.SetSelection(0)
@@ -461,51 +443,20 @@ class LogicLink(ViewLink):
         # if no links are found, need to deactivate controls
         self.activateControls(False)
 
-class NameDialog(wx.Dialog):
-    def __init__(self, parent, id=-1, title="Enter Name!"):
-        wx.Dialog.__init__(self, parent, id, title, size=(400, 150))
-
-        self.mainSizer = wx.BoxSizer(wx.VERTICAL)
-        self.buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
-
-        self.label = wx.StaticText(self, label="Enter the Name of your Link:")
-        self.field = wx.TextCtrl(self, value="", size=(300, 20))
-        self.okbutton = wx.Button(self, label="OK", id=wx.ID_OK)
-
-        self.mainSizer.Add(self.label, 0, wx.ALL, 8)
-        self.mainSizer.Add(self.field, 0, wx.ALL, 8)
-
-        self.buttonSizer.Add(self.okbutton, 0, wx.ALL, 8)
-
-        self.mainSizer.Add(self.buttonSizer, 0, wx.ALL, 0)
-
-        self.Bind(wx.EVT_BUTTON, self.onOK, id=wx.ID_OK)
-        self.Bind(wx.EVT_TEXT_ENTER, self.onOK)
-        self.Bind(wx.EVT_CLOSE, self.onOK)
-
-        self.SetSizer(self.mainSizer)
-        self.result = None
-
-    def onOK(self, event):
-        self.result = self.field.GetValue()
-        self.Destroy()
-
-    def onCancel(self, event):
-        self.result = None
-        self.Destroy()
 
 class LinkInfo():
-    def __init__(self, oei, iei, source_id, target_id, uid=None, spatial_interpolation=None, temporal_interpolation=None):
+    def __init__(self, oei, iei, source_id, target_id, uid=None, spatial_interpolation=None,
+                 temporal_interpolation=None):
 
 
-        self.uid = 'L'+uuid.uuid4().hex[:5] if uid is None else uid
+        self.uid = 'L' + uuid.uuid4().hex[:5] if uid is None else uid
         # self.name = self.generate_link_name(oei,iei,self.uid)
         self.oei = oei
         self.iei = iei
         self.source_id = source_id
         self.target_id = target_id
-        self.spatial_interpolation =spatial_interpolation
-        self.temporal_interpolation =  temporal_interpolation
+        self.spatial_interpolation = spatial_interpolation
+        self.temporal_interpolation = temporal_interpolation
 
         self.saved = False
 
@@ -526,7 +477,7 @@ class LinkInfo():
         if iei_name == '?' and oei_name == '?':
             return '%s' % self.uid
         else:
-            return  '%s | %s -> %s '%(self.uid, oei_name, iei_name)
+            return '%s | %s -> %s ' % (self.uid, oei_name, iei_name)
 
     def get_input_and_output_metadata(self):
 

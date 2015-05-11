@@ -27,15 +27,8 @@ import coordinator.events as engineEvent
 import gui.controller.events as guiEvent
 
 
-sys.path.append("..")
-ver = 'local'
-
 class LogicCanvas(ViewCanvas):
     def __init__(self, parent):
-
-        # self.cmd = engineManager.get_engine()
-
-        self.threadManager = ThreadManager(self)
 
         # intialize the parent class
         ViewCanvas.__init__(self, parent)
@@ -59,20 +52,11 @@ class LogicCanvas(ViewCanvas):
         self.linkRects = []
         self.links = {}
         self.models = {}
-        # self.dbmodel_required_db = {}
 
         self.link_clicks = 0
-
         self._currentDbSession = None
-        self._currentDbName = None
         self._dbid = None
-
-
-        # self._currentDb = engine.getDefaultDb()
-        # self._currentDbSession = dbUtilities.build_session_from_connection_string(self._currentDb['connection_string'])
-
         self.loadingpath = None
-
         self.model_coords = {}
 
     def UnBindAllMouseEvents(self):
@@ -85,7 +69,6 @@ class LogicCanvas(ViewCanvas):
         self.Unbind(FC.EVT_RIGHT_DOWN)
         self.Unbind(FC.EVT_RIGHT_UP)
         self.Unbind(FC.EVT_RIGHT_DCLICK)
-        self.EventsAreBound = False
 
     def initBindings(self):
         self.FloatCanvas.Bind(FC.EVT_MOTION, self.OnMove)
@@ -100,7 +83,6 @@ class LogicCanvas(ViewCanvas):
         engineEvent.onLinkAdded += self.draw_link
         engineEvent.onSimulationFinished += self.simulation_finished
         guiEvent.onDbChanged += self.onDbChanged
-        # engineEvent.onDatabaseConnected += self.onDatabasesLoaded
 
     def initSubscribers(self):
         Publisher.subscribe(self.createBox, "createBox")
@@ -121,7 +103,6 @@ class LogicCanvas(ViewCanvas):
         :return: None
         """
         self._currentDbSession = event.dbsession
-        self._currentDbName = event.dbname
         self._dbid = event.dbid
 
     def onClose(self, event):
@@ -130,8 +111,6 @@ class LogicCanvas(ViewCanvas):
                                wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
 
         if dlg.ShowModal() != wx.ID_NO:
-
-            self.threadManager.stop()
 
             windowsRemaining = len(wx.GetTopLevelWindows())
             if windowsRemaining > 0:
@@ -177,9 +156,6 @@ class LogicCanvas(ViewCanvas):
 
             dc.DrawPolygon(self.MoveObject)
 
-    def onDatabasesLoaded(self, evt):
-        pass
-
     def onUpdateConsole(self, evt):
         """
         Updates the output console
@@ -221,9 +197,6 @@ class LogicCanvas(ViewCanvas):
 
             # set the shape type so that we can identify it later
             R.type = LogicCanvasObjects.ShapeType.Model
-
-            width = 15
-            wrappedtext = tw.wrap(unicode(name), width)
 
             # define the font
             font = wx.Font(16, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
@@ -417,7 +390,7 @@ class LogicCanvas(ViewCanvas):
 
         if success:
             # remove the model from the canvas
-            removed_model = self.models.pop(model_obj)
+            self.models.pop(model_obj)
 
             # redraw the canvas
             self.RedrawConfiguration()
@@ -441,50 +414,16 @@ class LogicCanvas(ViewCanvas):
         if cur.Name == 'link':
             self.linkRects.append(object)
 
-
         # populate model view
         if cur.Name == 'default':
+
             # get the model view container
             mainGui = self.GetTopLevelParent()
-            mv = mainGui.Children[0].FindWindowByName('notebook').GetPage(1)
 
             # get the model object from cmd
             obj_id = object.ID
             model = engine.getModelById(obj_id)
 
-            # if 'params' in model:
-            # params = model['params']
-            # else:
-            #     params = {}
-            #
-            # text = ''
-            #
-            # for arg, dict in params.iteritems():
-            #     title = arg
-            #
-            #     try:
-            #         table = ''
-            #         for k, v in dict[0].iteritems():
-            #             table += '||%s||%s||\n' % (k, v)
-            #
-            #         text += '###%s  \n%s  \n' % (title, table)
-            #     except:
-            #         pass
-            # html = markdown2.markdown(text, extras=["wiki-tables"])
-            #
-            # css = "<style>tr:nth-child(even) " \
-            #       "{ background-color: #e6f1f5;} " \
-            #       "table {border-collapse: collapse;width:100%}" \
-            #       "table td, table th {border: 1px solid #e6f1f5;}" \
-            #       "h3 {color: #66A3E0}</style>"
-            #
-            #
-            # # set the model params as text
-            # try:
-            #     mv.setText(css + html)
-            #
-            # except:
-            #     pass
 
         if not self.Moving:
             self.Moving = True
@@ -512,17 +451,6 @@ class LogicCanvas(ViewCanvas):
             # change the mouse cursor
             self.FloatCanvas.SetMode(self.GuiMouse)
 
-    def GetHitObject(self, event, HitEvent):
-        if self.FloatCanvas.HitDict:
-            # check if there are any objects in the dict for this event
-            if self.FloatCanvas.HitDict[HitEvent]:
-                xy = event.GetPosition()
-                color = self.FloatCanvas.GetHitTestColor(xy)
-                if color in self.FloatCanvas.HitDict[HitEvent]:
-                    Object = self.FloatCanvas.HitDict[HitEvent][color]
-                    return Object
-            return False
-
     def ArrowClicked(self, event):
 
         # get the models associated with the link
@@ -541,16 +469,6 @@ class LogicCanvas(ViewCanvas):
         linkstart = LogicLink(self.FloatCanvas, from_model, to_model)
 
         linkstart.Show()
-
-    def RightClickCb(self, event):
-        menu = wx.Menu()
-        for (id, title) in menu_title_by_id.items():
-            menu.Append(id, title)
-            wx.EVT_MENU(menu, id, self.MenuSelectionCb)
-
-        # Launcher displays menu with call to PopupMenu, invoked on the source component, passing event's GetPoint.
-        self.frame.PopupMenu(menu, event.GetPoint())
-        menu.Destroy()  # destroy to avoid mem leak
 
     def RedrawConfiguration(self):
         # clear lines from drawlist
@@ -790,7 +708,8 @@ class LogicCanvas(ViewCanvas):
         print 'Configuration Saved Successfully! '
 
     def loadsimulation(self, file):
-        # TODO: Should be part of the cmd.
+
+        # TODO: This needs to be refactored to remove 'for' looping
         tree = et.parse(file)
 
         self.loadingpath = file
@@ -803,7 +722,6 @@ class LogicCanvas(ViewCanvas):
         # make sure the required database connections are loaded
         connections = engine.getDbConnections()
         conn_ids = {}
-        elementslist = root.getchildren()
 
         # get all known transformations
         space = SpatialInterpolation()
@@ -951,12 +869,6 @@ class LogicCanvas(ViewCanvas):
     def GetLoadingPath(self):
         return self.loadingpath
 
-    def addModelDialog(self):
-        # Note that we need to make sure this passes in information from the model
-        # Need to know if we are planning on using this feature or something else.
-        dial = wx.MessageDialog(None, 'Added a Model', 'Info', wx.OK)
-        dial.ShowModal()
-
     def getCursor(self):
         return self._Cursor
 
@@ -979,14 +891,6 @@ class LogicCanvas(ViewCanvas):
             elif event.type == 'Model':
                 self.PopupMenu(ModelContextMenu(self, event), event.HitCoordsPixel.Get())
 
-                # self.Canvas.ClearAll()
-                # self.Canvas.Draw()
-
-    def MenuSelectionCb(self, event):
-        # TODO: Fix the menu selection
-        operation = menu_title_by_id[event.GetId()]
-        # target    = self.list_item_clicked
-        print 'DEBUG | Perform "%(operation)s" on "%(target)s."' % vars()
 
     # THREADME
     def run(self):
@@ -1000,6 +904,7 @@ class LogicCanvas(ViewCanvas):
 
     def simulation_finished(self, evt):
 
+        # todo: this should open a dialog box showing the execution summary
         print 'Simulation finished'
 
 # DELETEME

@@ -1,12 +1,14 @@
 __author__ = 'tonycastronova'
 import os
-import wx
 import glob
 import time
+
+import wx
+
 from gui.views.viewDirectoryListControl import ViewDirectoryListControl
 
-class LogicDirectoryListControl(ViewDirectoryListControl):
 
+class LogicDirectoryListControl(ViewDirectoryListControl):
     def __init__(self, parent, size, style):
         ViewDirectoryListControl.__init__(self, parent, wx.ID_ANY, wx.DefaultPosition, size, style)
 
@@ -19,18 +21,18 @@ class LogicDirectoryListControl(ViewDirectoryListControl):
     def gethomepath(self, value=None):
         return self.home
 
-    def refreshList(self,cwd):
+    def refreshList(self, cwd):
 
         self.getcurrentdirectory(cwd)
         self.InsertStringItem(0, '..')
 
-        types = (cwd+'/*.mdl',cwd+'/*.sim')
+        types = (cwd + '/*.mdl', cwd + '/*.sim')
         filtered_files = []
         for files in types:
             filtered_files.extend(glob.glob(files))
 
         # get directories
-        directories = [ name for name in os.listdir(cwd) if os.path.isdir(os.path.join(cwd, name)) ]
+        directories = [name for name in os.listdir(cwd) if os.path.isdir(os.path.join(cwd, name))]
         j = 1
         for directory in sorted(directories):
             self.InsertStringItem(j, os.path.basename(directory))
@@ -66,4 +68,3 @@ class LogicDirectoryListControl(ViewDirectoryListControl):
     def clearItems(self):
         self.DeleteAllItems()
         self.refreshList(os.getcwd())
-        self.selectedFiles = os.listdir(os.getcwd())

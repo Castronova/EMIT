@@ -1,9 +1,10 @@
 __author__ = 'tonycastronova'
 
 import wx
-from gui.views.viewDatabase import ViewDatabase, Database
-from ..ObjectListView import ColumnDefn
 from wx.lib.pubsub import pub as Publisher
+
+from gui.views.viewDatabase import ViewDatabase
+from ..ObjectListView import ColumnDefn
 
 
 class LogicDatabase(ViewDatabase):
@@ -12,7 +13,6 @@ class LogicDatabase(ViewDatabase):
         ViewDatabase.__init__(self, *args, **kwargs)
 
         # initialize globals
-        self.initialSeries = [Database("", "", "", "", "", "", ""), ]
         self.__list_obj = None
         self.__list_id = None
         self.__context_menu = None
@@ -60,25 +60,10 @@ class LogicDatabase(ViewDatabase):
         self.__list_obj = event.GetEventObject()
         self.__list_id = event.GetIndex()
 
-    # def onDrag(self, event):
-    #     data = wx.FileDataObject()
-    #     obj = event.GetEventObject()
-    #     id = event.GetIndex()
-    #
-    #     filename = obj.GetItem(id).GetText()
-    #     dataname = str(filename)
-    #     data.AddFile(dataname)
-    #
-    #     dropSource = wx.DropSource(obj)
-    #     dropSource.SetData(data)
-    #     result = dropSource.DoDragDrop()
-
     def onDoubleClick(self, event):
         id = event.GetIndex()
         obj = event.GetEventObject()
         filename = obj.GetItem(id).GetText()
-
-
         Publisher.sendMessage('AddModel', filepath=filename, x=0, y=0)  # sends message to LogicCanvas.addModel
 
     def getDbSession(self):

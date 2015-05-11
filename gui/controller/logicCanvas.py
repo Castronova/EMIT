@@ -417,10 +417,7 @@ class LogicCanvas(ViewCanvas):
         # populate model view
         if cur.Name == 'default':
 
-            # get the model view container
-            mainGui = self.GetTopLevelParent()
-
-            # get the model object from cmd
+            # get the model object from the engine
             obj_id = object.ID
             model = engine.getModelById(obj_id)
 
@@ -807,9 +804,6 @@ class LogicCanvas(ViewCanvas):
                     taglist.append(data.tag)
 
                 attrib = dict(zip(taglist, textlist))
-
-                # get the data type
-                dtype = datatypes.ModelTypes.Data
 
                 databaseid = attrib['databaseid']
                 mappedid = conn_ids[databaseid]

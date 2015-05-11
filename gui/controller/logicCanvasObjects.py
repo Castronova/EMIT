@@ -231,21 +231,4 @@ class bezier():
             pts.append(tuple(bez(val)))
 
         return pts
-    def test2(self, v):
-
-
-        p = [(100, 100), (17, 100), (-66, 0), (-150, 0)]
-        P = np.array(p)
-
-        n = 3
-
-
-        V = v
-        bez = self.Bezier_Curve_n( P, n )
-
-        pts = []
-        for val in linspace( 0, 1, V ):
-            pts.append(tuple(bez(val)))
-
-        return pts
 

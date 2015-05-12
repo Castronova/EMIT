@@ -309,7 +309,7 @@ class Coordinator(object):
 
             if params is not None:
                 # load model
-                name,model_inst = load_model(params)
+                name, model_inst = load_model(params)
 
                 # make sure this model doesnt already exist
                 if name in self.__models:

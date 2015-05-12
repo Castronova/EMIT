@@ -13,7 +13,7 @@ from wx.lib.pubsub import pub as Publisher
 import numpy as N
 from matplotlib.pyplot import cm
 
-from gui.views.viewContext import LinkContextMenu, ModelContextMenu, GeneralContextMenu
+from gui.views.viewContext import LinkContextMenu, ModelContextMenu, CanvasContextMenu
 from transform.space import SpatialInterpolation
 from transform.time import TemporalInterpolation
 import datatypes
@@ -874,7 +874,7 @@ class LogicCanvas(ViewCanvas):
 
         # if canvas is selected
         if type(event) == wx.lib.floatcanvas.FloatCanvas._MouseEvent:
-            self.PopupMenu(GeneralContextMenu(self), event.GetPosition())
+            self.PopupMenu(CanvasContextMenu(self), event.GetPosition())
 
         elif type(event) == wx.lib.floatcanvas.FloatCanvas.Polygon:
             # if object is link

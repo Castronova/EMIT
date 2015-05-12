@@ -131,10 +131,10 @@ class ModelContextMenu(wx.Menu):
     def RemoveModel(self, e):
         self.parent.RemoveModel(self.model_obj)
 
-class GeneralContextMenu(wx.Menu):
+class CanvasContextMenu(wx.Menu):
 
     def __init__(self, parent):
-        super(GeneralContextMenu, self).__init__()
+        super(CanvasContextMenu, self).__init__()
 
         self.parent = parent
 
@@ -242,10 +242,10 @@ class DirectoryContextMenu(wx.Menu):
     def OnClose(self, e):
         self.parent.Close()
 
-class TreeItemContextMenu(wx.Menu):
+class ToolboxContextMenu(wx.Menu):
 
     def __init__(self, parent, e):
-        super(TreeItemContextMenu, self).__init__()
+        super(ToolboxContextMenu, self).__init__()
 
         self.arrow_obj = e
         self.parent = parent
@@ -254,8 +254,12 @@ class TreeItemContextMenu(wx.Menu):
         self.AppendItem(mmi)
         self.Bind(wx.EVT_MENU, self.OnViewDetails, mmi)
 
-    def OnViewDetails(self, e):
+        # mr stands for menu remove
+        mr = wx.MenuItem(self, wx.NewId(), 'Remove')
+        self.AppendItem(mr)
+        self.Bind(wx.EVT_MENU, self.OnRemove, mr)
 
+    def OnViewDetails(self, e):
         self.parent.ShowDetails()
 
     def OnExpandAll(self, e):
@@ -269,6 +273,10 @@ class TreeItemContextMenu(wx.Menu):
 
     def OnClose(self, e):
         self.parent.Close()
+
+    def OnRemove(self, e):
+        self.parent.Remove(e)
+
 
 class ContextMenu(wx.Menu):
 

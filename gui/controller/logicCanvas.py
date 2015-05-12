@@ -13,7 +13,7 @@ from wx.lib.pubsub import pub as Publisher
 import numpy as N
 from matplotlib.pyplot import cm
 
-from gui.views.viewContext import LinkContextMenu, ModelContextMenu, GeneralContextMenu
+from gui.views.viewContext import LinkContextMenu, ModelContextMenu, CanvasContextMenu
 from transform.space import SpatialInterpolation
 from transform.time import TemporalInterpolation
 import datatypes
@@ -726,6 +726,7 @@ class LogicCanvas(ViewCanvas):
         spatial_transformations = {i.name(): i for i in space.methods()}
         temporal_transformations = {i.name(): i for i in time.methods()}
 
+
         for child in root._children:
             if child.tag == 'DbConnection':
                 taglist = []
@@ -740,7 +741,6 @@ class LogicCanvas(ViewCanvas):
 
                 database_exists = False
                 # db_elements = db_conn.getchildren()
-
 
                 for id, dic in connections.iteritems():
 
@@ -781,7 +781,7 @@ class LogicCanvas(ViewCanvas):
 
 
         # loop through each model and load it
-        for child in root._children:
+        #for child in root._children:
             if child.tag == 'Model':
                 taglist = []
                 textlist = []
@@ -795,7 +795,7 @@ class LogicCanvas(ViewCanvas):
                 self.addModel(filepath=attrib['path'], x=float(attrib['xcoordinate']), y=float(attrib['ycoordinate']),
                               uid=attrib['id'])
 
-        for child in root._children:
+        #for child in root._children:
             if child.tag == 'DataModel':
                 taglist = []
                 textlist = []
@@ -812,7 +812,7 @@ class LogicCanvas(ViewCanvas):
                 modelid = self.addModel(filepath=attrib['path'], x=attrib['xcoordinate'], y=attrib['ycoordinate'],
                                         uid=attrib['id'])
 
-        for child in root._children:
+        #for child in root._children:
             if child.tag == 'Link':
                 taglist = []
                 textlist = []
@@ -874,7 +874,7 @@ class LogicCanvas(ViewCanvas):
 
         # if canvas is selected
         if type(event) == wx.lib.floatcanvas.FloatCanvas._MouseEvent:
-            self.PopupMenu(GeneralContextMenu(self), event.GetPosition())
+            self.PopupMenu(CanvasContextMenu(self), event.GetPosition())
 
         elif type(event) == wx.lib.floatcanvas.FloatCanvas.Polygon:
             # if object is link

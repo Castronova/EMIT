@@ -4,7 +4,7 @@ import random
 __author__ = 'tonycastronova'
 
 from gui.views.viewToolbox import ViewToolbox
-from gui.views.viewContext import TreeItemContextMenu
+from gui.views.viewContext import ToolboxContextMenu
 from gui.controller.logicModel import LogicModel
 
 import wx
@@ -18,24 +18,50 @@ from gui.views.viewModel import ViewModel
 
 class LogicToolbox(ViewToolbox):
 
-    def __init__(self, parent):
+    modelpaths = ""
+    def initBinding(self):
+        self.Bind(wx.EVT_SIZE, self.OnSize)
+        self.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnItemContextMenu)
+        self.Bind(wx.EVT_TREE_BEGIN_DRAG, self.onDrag)
+        self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.onDoubleClick)
 
+    def loadToolbox(self, modelpaths):
+        count = 0
+        for category, data in modelpaths.iteritems():
+            txt = category
+            self.cat = self.tree.AppendItem(self.root, txt)
+            if count == 0:
+                self.simCategory = self.tree.AppendItem(self.root, 'Sim Files')
+                count += 1
+            self.tree.SetItemImage(self.cat, self.fldropenidx, which=wx.TreeItemIcon_Expanded)
+            self.tree.SetItemImage(self.cat, self.fldropenidx, which=wx.TreeItemIcon_Normal)
+            for d in data:
+                path = d['path']
+                apath = join(dirname(abspath(__file__)), '../' + path)
+                matches = []
+                self.dirlist = []
+                for root, dirnames, filenames in os.walk(apath):
+                    for filename in fnmatch.filter(filenames, '*.mdl'):
+                        matches.append(os.path.join(root, filename))
+                        fullpath = join(root, filename)
 
+                        txt = filename.split('.mdl')[0]
+                        self.loadMDLFile(txt, fullpath)
 
-        # Initialize the View
-        ViewToolbox.__init__(self, parent)
+                    for filename in fnmatch.filter(filenames, '*.sim'):
+                        matches.append(os.path.join(root, filename))
+                        fullpath = join(root, filename)
+                        txt = filename.split('.sim')[0]
+                        self.loadSIMFile(txt, fullpath)
 
-        self.p = parent
+    def getModelPath(self):
+        return self.modelpaths
 
+    def sectionKey(self):
         ini = join(dirname(abspath(__file__)), '../Resources/ToolboxPaths')
-        # config_params = {}
         cparser = ConfigParser.ConfigParser(None, multidict)
         cparser.read(ini)
         sections = cparser.sections()
-        modelpaths = {}
-        self.items = {}
-        self.filepath = {}
-
         for s in sections:
             # get the section key (minus the random number)
             section = s.split('^')[0]
@@ -46,44 +72,30 @@ class LogicToolbox(ViewToolbox):
             # save ini options as dictionary
             d = {}
             for option in options:
-                d[option] = cparser.get(s,option)
+                d[option] = cparser.get(s, option)
 
-            if section not in modelpaths:
-                modelpaths[section] = [d]
+            if section not in self.modelpaths:
+                self.modelpaths[section] = [d]
             else:
-                modelpaths[section].append(d)
+                self.modelpaths[section].append(d)
+
+    def __init__(self, parent):
 
 
 
+        # Initialize the View
+        ViewToolbox.__init__(self, parent)
 
-        count = 0
-        for category, data in modelpaths.iteritems():
-            txt =  category
-            self.cat = self.tree.AppendItem(self.root, txt)
-            if count == 0:
-                self.simCategory = self.tree.AppendItem(self.root, 'Sim Files')
-                count += 1
-            self.tree.SetItemImage(self.cat, self.fldropenidx, which = wx.TreeItemIcon_Expanded)
-            self.tree.SetItemImage(self.cat, self.fldropenidx, which = wx.TreeItemIcon_Normal)
-            for d in data:
-                path = d['path']
-                apath = join(dirname(abspath(__file__)), '../'+path)
-                matches = []
-                self.dirlist = []
-                for root, dirnames, filenames in os.walk(apath):
-                    for filename in fnmatch.filter(filenames, '*.mdl'):
-                        matches.append(os.path.join(root, filename))
-                        fullpath = join(root, filename)
+        self.p = parent
+        # config_params = {}
 
-                        txt =  filename.split('.mdl')[0]
-                        self.loadMDLFile(txt, fullpath)
+        self.modelpaths = {}
+        self.items = {}
+        self.filepath = {}
 
+        self.sectionKey()
 
-                    for filename in fnmatch.filter(filenames, '*.sim'):
-                        matches.append(os.path.join(root, filename))
-                        fullpath = join(root, filename)
-                        txt = filename.split('.sim')[0]
-                        self.loadSIMFile(txt, fullpath)
+        self.loadToolbox(self.getModelPath())
 
         self.tree.SetItemImage(self.root, self.fldropenidx, which = wx.TreeItemIcon_Expanded)
         self.tree.SetItemImage(self.root, self.fldropenidx, which = wx.TreeItemIcon_Normal)
@@ -91,10 +103,7 @@ class LogicToolbox(ViewToolbox):
         self.tree.Expand(self.root)
         self.tree.ExpandAll()
 
-        self.Bind(wx.EVT_SIZE, self.OnSize)
-        self.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnItemContextMenu)
-        self.Bind(wx.EVT_TREE_BEGIN_DRAG, self.onDrag)
-        self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.onDoubleClick)
+        self.initBinding()
 
     def loadMDLFile(self, txt, fullpath):
         mdl_parser = ConfigParser.ConfigParser(None, multidict)
@@ -162,7 +171,7 @@ class LogicToolbox(ViewToolbox):
     def OnItemContextMenu(self, evt):
 
         self.tree.GetSelection()
-        self.tree.PopupMenu(TreeItemContextMenu(self,evt))
+        self.tree.PopupMenu(ToolboxContextMenu(self,evt))
 
     def onDrag(self, event):
         data = wx.FileDataObject()
@@ -202,6 +211,19 @@ class LogicToolbox(ViewToolbox):
         model_details.PopulateEdit(filepath)
         model_details.PopulateSummary(filepath)
         model_details.Show()
+
+    def Remove(self, e):
+        dlg = wx.MessageDialog(None, 'Are you sure you would like to delete?', 'Question', wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
+
+        if dlg.ShowModal() ==wx.ID_YES:
+            item = self.tree.GetSelection()
+            key = self.tree.GetItemText(item)
+            filepath = self.filepath.get(key)
+            os.remove(filepath)
+            self.tree.Delete(item)
+
+
+
 
 class multidict(dict):
     _unique = 0

@@ -8,6 +8,7 @@ import wx.lib.newevent as ne
 from gui.views.viewLink import ViewLink
 import coordinator.engineAccessors as engine
 from gui.controller.logicSpatialPlot import LogicSpatialPlot
+# from gui.views.viewLinkSpatialPlot import ViewLinkSpatialPlot
 
 LinkUpdatedEvent, EVT_LINKUPDATED = ne.NewEvent()
 
@@ -31,6 +32,9 @@ class LogicLink(ViewLink):
 
         self.OnStartUp()
         self.InitBindings()
+
+        self.__checkbox_states = [None,None]
+
 
     def InitBindings(self):
         self.LinkNameListBox.Bind(wx.EVT_LISTBOX, self.OnChange)
@@ -57,7 +61,7 @@ class LogicLink(ViewLink):
             long style=DEFAULT_FRAME_STYLE, String name=FrameNameStr) -> Frame'''
 
         title = self.__selected_link.name()
-        plot_window = wx.Frame(self.parent, id=wx.ID_ANY, title=title, pos=wx.DefaultPosition, size=wx.Size(150, 150))
+        plot_window = wx.Frame(self.parent, id=wx.ID_ANY, title=title, pos=wx.DefaultPosition, size=wx.Size(625, 625))
 
         # create a spatial plot instance
         plot_panel = LogicSpatialPlot(plot_window)
@@ -82,28 +86,63 @@ class LogicLink(ViewLink):
             geoms = [j['shape'] for j in o['geom']]
             igeoms[name] = geoms
 
-        # load geometry data
-        ogeom = ogeoms[self.__selected_link.oei]
-        igeom = igeoms[self.__selected_link.iei]
+        # set input and output geometries
+        plot_panel.set_input_data(value=igeoms)
+        plot_panel.set_output_data(value=ogeoms)
 
-        # plot_panel.set_output_data(ogeom)
-        # plot_panel.set_input_data(igeom)
+        # add some selection
+        textLabel = wx.StaticText(plot_window, wx.ID_ANY, label='Toggle the Input and Output exchange element sets: ')
+        textLabel.SetFont( wx.Font( 14, 70, 90, 92, False, wx.EmptyString ) )
+        inputSelection = wx.CheckBox(plot_window, 998,label='Input Exchange Item: '+self.__selected_link.iei)
+        outputSelection = wx.CheckBox(plot_window, 999,label='Output Exchange Item: '+self.__selected_link.oei)
+        self.__checkbox_states = [self.__selected_link.iei, self.__selected_link.oei]  # initialize checkbox state
 
-        if ogeom:
-            colors = plot_panel.buildGradientColor(len(ogeom), 'Blues')
-            plot_panel.SetPlotDataIn({'data': ogeom, 'type': ogeom[0].geom_type}, colors=colors)
+        def checked(event):
+            chk = event.Checked()
 
-        if igeom:
-            colors = plot_panel.buildGradientColor(len(igeom), 'Reds')
-            plot_panel.SetPlotDataIn({'data': igeom, 'type': igeom[0].geom_type}, colors=colors)
+            # make changes if selection is false
+            if event.Id == 998:
+                if chk: self.__checkbox_states[0] = self.__selected_link.iei
+                else:   self.__checkbox_states[0] = None
+            if event.Id == 999:
+                if chk: self.__checkbox_states[1] = self.__selected_link.oei
+                else:   self.__checkbox_states[1] = None
 
-        plot_panel.set_titles(self.__selected_link.oei, self.__selected_link.iei)
+            # set the selected datasets in the controller
+            plot_panel.set_selection(self.__checkbox_states[0], self.__checkbox_states[1])
 
-        plot_panel.canvas.draw()
+            # update the plot
+            plot_panel.UpdatePlot()
 
-        box = wx.BoxSizer(wx.VERTICAL)
-        box.Add(plot_panel)
+        # add some handlers
+        inputSelection.Bind(wx.EVT_CHECKBOX, checked)
+        outputSelection.Bind(wx.EVT_CHECKBOX, checked)
 
+        # set the initial state of the input and output selectors
+        inputSelection.SetValue(True)
+        outputSelection.SetValue(True)
+        plot_panel.set_selection(self.__selected_link.iei, self.__selected_link.oei)
+        plot_panel.UpdatePlot()  # update the plot to reflect the input/output selection
+
+        # add controls to frame
+        mainSizer = wx.BoxSizer(wx.VERTICAL)
+        plotSizer = wx.BoxSizer(wx.VERTICAL)
+        SelectionSizer= wx.BoxSizer(wx.VERTICAL)
+
+        # nest sizers to pad bothe the top and left borders
+        b = wx.BoxSizer(wx.VERTICAL)
+        b.Add(textLabel, flag=wx.LEFT, border=20 )
+        SelectionSizer.AddSizer(b, flag=wx.BOTTOM, border=10)
+        SelectionSizer.Add(outputSelection, flag=wx.LEFT, border=20)
+        SelectionSizer.Add(inputSelection, flag=wx.LEFT, border=20)
+        plotSizer.Add(plot_panel)
+
+        # add elements back to mainSizer
+        mainSizer.Add(plotSizer)
+        mainSizer.Add(SelectionSizer)
+        plot_window.SetSizer(mainSizer)
+
+        plot_window.Layout()
         plot_window.Show()
 
     def OnLeftUp(self, event):

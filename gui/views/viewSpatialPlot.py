@@ -4,25 +4,33 @@ import wx
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 
+class SelectionTypes():
+    Listbox = 'LISTBOX'
+    Checkbox = 'CHECKBOX'
+
 class ViewSpatialPlot(wx.Panel):
-    def __init__(self, parent, title='', xlabel='', ylabel=''):
+    def __init__(self, parent, title='', xlabel='', ylabel='', selection=SelectionTypes.Listbox):
 
         width = 700
         height = 500
 
         wx.Panel.__init__(self, id=wx.ID_ANY, name=u'SpatialPlot', parent=parent,
-                          pos=wx.Point(571, 262), size=wx.Size(10, 10),
+                          pos=wx.Point(571, 262), size=wx.Size(700, 500),
                           style=wx.TAB_TRAVERSAL)
 
-        self.SetClientSize(wx.Size(10, 10))
+        # self.SetClientSize(wx.Size(10, 10))
 
         self.parent = parent
 
         # create some sizers
         sizer = wx.BoxSizer(wx.VERTICAL)
 
-        self.inputCombo = wx.ComboBox(self, wx.ID_ANY,name='input_combo',choices=[])
-        self.outputCombo = wx.ComboBox(self, wx.ID_ANY,name='output_combo', choices=[])
+        # if selection == SelectionTypes.Listbox:
+        #     self.inputSelection = wx.ComboBox(self, wx.ID_ANY,name='input_combo',choices=[])
+        #     self.outputSelection = wx.ComboBox(self, wx.ID_ANY,name='output_combo', choices=[])
+        # elif selection == SelectionTypes.Checkbox:
+        #     self.inputSelection = wx. (self, wx.ID_ANY,name='input_combo',choices=[])
+        #     self.outputSelection = wx.ComboBox(self, wx.ID_ANY,name='output_combo', choices=[])
 
         self.inputLabel = wx.StaticText(self,wx.ID_ANY,label='Input Features: ')
         self.outputLabel = wx.StaticText(self,wx.ID_ANY,label='Output Features: ')
@@ -33,25 +41,11 @@ class ViewSpatialPlot(wx.Panel):
         self.ax.xaxis._visible = False
         self.ax.yaxis._visible = False
 
-        #self.axes = self.drawplot(self.figure)
         self.canvas = FigureCanvas(self, -1, self.figure)
 
         sizer.Add(self.canvas, 100, wx.ALIGN_CENTER|wx.ALL)
 
-        # add inputs controls to an iosizer
-        iosizer = wx.BoxSizer(wx.HORIZONTAL)
-        iosizer.Add(self.inputLabel, 1, wx.ALIGN_LEFT|wx.ALL)
-        iosizer.Add(self.inputCombo, 1, wx.ALIGN_LEFT|wx.ALL)
-        sizer.Add(iosizer)
-
-        iosizer = wx.BoxSizer(wx.HORIZONTAL)
-        iosizer.Add(self.outputLabel, 1, wx.ALIGN_LEFT|wx.ALL)
-        iosizer.Add(self.outputCombo, 1, wx.ALIGN_LEFT|wx.ALL)
-        sizer.Add(iosizer)
-
-        self.SetSizer(sizer)
-
-        self.intext = plt.figtext(0.12, 0.92, " ", fontsize='large', color='b', ha ='left')
-        self.outtext = plt.figtext(0.9, 0.92, " ",fontsize='large', color='r', ha ='right')
+        self.outtext = plt.figtext(0.12, 0.92, " ", fontsize='large', color='b', ha ='left')
+        self.intext = plt.figtext(0.9, 0.92, " ",fontsize='large', color='r', ha ='right')
 
 

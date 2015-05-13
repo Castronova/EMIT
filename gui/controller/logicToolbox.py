@@ -171,7 +171,17 @@ class LogicToolbox(ViewToolbox):
     def OnItemContextMenu(self, evt):
 
         self.tree.GetSelection()
-        self.tree.PopupMenu(ToolboxContextMenu(self,evt))
+        item = self.tree.GetSelection()
+        key = self.tree.GetItemText(item)
+        filepath = self.filepath.get(key)
+
+        name, ext = os.path.splitext(filepath)
+        if ext == '.sim':
+            flag = True
+        else:
+            flag = False
+
+        self.tree.PopupMenu(ToolboxContextMenu(self,evt, flag))
 
     def onDrag(self, event):
         data = wx.FileDataObject()

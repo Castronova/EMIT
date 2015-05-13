@@ -24,7 +24,9 @@ class ViewToolbox(wx.Panel):
 
         self.fldropenidx = il.Add(wx.ArtProvider_GetBitmap(wx.ART_FILE_OPEN,   wx.ART_OTHER, isz))
         self.simicon = il.Add(icons.config_sim_small.GetBitmap())
-        self.modelicon    = il.Add(icons.modelicon.GetBitmap())
+        self.modelicon = il.Add(icons.modelicon.GetBitmap())
+
+        self.folderConfigIcon = il.Add(icons.folderConfigIcon.GetBitmap())
 
         self.tree.SetImageList(il)
         self.il = il

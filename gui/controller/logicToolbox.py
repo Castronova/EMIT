@@ -19,6 +19,7 @@ from gui.views.viewModel import ViewModel
 class LogicToolbox(ViewToolbox):
 
     modelpaths = ""
+
     def initBinding(self):
         self.Bind(wx.EVT_SIZE, self.OnSize)
         self.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnItemContextMenu)
@@ -33,7 +34,7 @@ class LogicToolbox(ViewToolbox):
             if count == 0:
                 self.simCategory = self.tree.AppendItem(self.root, 'Sim Files')
                 count += 1
-            # self.tree.SetItemImage(self.cat, self.fldropenidx, which=wx.TreeItemIcon_Expanded)
+            self.tree.SetItemImage(self.cat, self.fldropenidx, which=wx.TreeItemIcon_Expanded)
             # self.tree.SetItemImage(self.cat, self.fldropenidx, which=wx.TreeItemIcon_Normal)
             for d in data:
                 path = d['path']
@@ -132,8 +133,8 @@ class LogicToolbox(ViewToolbox):
         self.items[child] = fullpath
 
         child.__setattr__('path', fullpath)
-        self.tree.SetItemImage(child, self.modelicon, which = wx.TreeItemIcon_Expanded)
-        self.tree.SetItemImage(child, self.modelicon, which = wx.TreeItemIcon_Normal)
+        self.tree.SetItemImage(child, self.simicon, which = wx.TreeItemIcon_Expanded)
+        self.tree.SetItemImage(child, self.simicon, which = wx.TreeItemIcon_Normal)
         pass
 
     def SetCurrentlySelected(self,evt):

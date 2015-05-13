@@ -33,8 +33,8 @@ class LogicToolbox(ViewToolbox):
             if count == 0:
                 self.simCategory = self.tree.AppendItem(self.root, 'Sim Files')
                 count += 1
-            self.tree.SetItemImage(self.cat, self.fldropenidx, which=wx.TreeItemIcon_Expanded)
-            self.tree.SetItemImage(self.cat, self.fldropenidx, which=wx.TreeItemIcon_Normal)
+            # self.tree.SetItemImage(self.cat, self.fldropenidx, which=wx.TreeItemIcon_Expanded)
+            # self.tree.SetItemImage(self.cat, self.fldropenidx, which=wx.TreeItemIcon_Normal)
             for d in data:
                 path = d['path']
                 apath = join(dirname(abspath(__file__)), '../' + path)
@@ -122,8 +122,8 @@ class LogicToolbox(ViewToolbox):
         self.items[child] = fullpath
 
         child.__setattr__('path', fullpath)
-        self.tree.SetItemImage(child, self.mdlidx, which = wx.TreeItemIcon_Expanded)
-        self.tree.SetItemImage(child, self.mdlidx, which = wx.TreeItemIcon_Normal)
+        self.tree.SetItemImage(child, self.modelicon, which = wx.TreeItemIcon_Expanded)
+        self.tree.SetItemImage(child, self.modelicon, which = wx.TreeItemIcon_Normal)
 
     def loadSIMFile(self, txt, fullpath):
 
@@ -132,8 +132,8 @@ class LogicToolbox(ViewToolbox):
         self.items[child] = fullpath
 
         child.__setattr__('path', fullpath)
-        self.tree.SetItemImage(child, self.mdlidx, which = wx.TreeItemIcon_Expanded)
-        self.tree.SetItemImage(child, self.mdlidx, which = wx.TreeItemIcon_Normal)
+        self.tree.SetItemImage(child, self.modelicon, which = wx.TreeItemIcon_Expanded)
+        self.tree.SetItemImage(child, self.modelicon, which = wx.TreeItemIcon_Normal)
         pass
 
     def SetCurrentlySelected(self,evt):

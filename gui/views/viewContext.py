@@ -244,7 +244,7 @@ class DirectoryContextMenu(wx.Menu):
 
 class ToolboxContextMenu(wx.Menu):
 
-    def __init__(self, parent, e):
+    def __init__(self, parent, e, flag):
         super(ToolboxContextMenu, self).__init__()
 
         self.arrow_obj = e
@@ -254,10 +254,11 @@ class ToolboxContextMenu(wx.Menu):
         self.AppendItem(mmi)
         self.Bind(wx.EVT_MENU, self.OnViewDetails, mmi)
 
-        # mr stands for menu remove
-        mr = wx.MenuItem(self, wx.NewId(), 'Remove')
-        self.AppendItem(mr)
-        self.Bind(wx.EVT_MENU, self.OnRemove, mr)
+        if flag == True:
+            # mr stands for menu remove
+            mr = wx.MenuItem(self, wx.NewId(), 'Remove')
+            self.AppendItem(mr)
+            self.Bind(wx.EVT_MENU, self.OnRemove, mr)
 
     def OnViewDetails(self, e):
         self.parent.ShowDetails()

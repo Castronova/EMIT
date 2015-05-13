@@ -122,8 +122,8 @@ class LogicToolbox(ViewToolbox):
         self.items[child] = fullpath
 
         child.__setattr__('path', fullpath)
-        self.tree.SetItemImage(child, self.mdlidx, which = wx.TreeItemIcon_Expanded)
-        self.tree.SetItemImage(child, self.mdlidx, which = wx.TreeItemIcon_Normal)
+        self.tree.SetItemImage(child, self.modelicon, which = wx.TreeItemIcon_Expanded)
+        self.tree.SetItemImage(child, self.modelicon, which = wx.TreeItemIcon_Normal)
 
     def loadSIMFile(self, txt, fullpath):
 
@@ -132,8 +132,8 @@ class LogicToolbox(ViewToolbox):
         self.items[child] = fullpath
 
         child.__setattr__('path', fullpath)
-        self.tree.SetItemImage(child, self.mdlidx, which = wx.TreeItemIcon_Expanded)
-        self.tree.SetItemImage(child, self.mdlidx, which = wx.TreeItemIcon_Normal)
+        self.tree.SetItemImage(child, self.modelicon, which = wx.TreeItemIcon_Expanded)
+        self.tree.SetItemImage(child, self.modelicon, which = wx.TreeItemIcon_Normal)
         pass
 
     def SetCurrentlySelected(self,evt):

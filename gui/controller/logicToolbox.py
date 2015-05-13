@@ -175,14 +175,16 @@ class LogicToolbox(ViewToolbox):
         item = self.tree.GetSelection()
         key = self.tree.GetItemText(item)
         filepath = self.filepath.get(key)
-
+        #ext = ""
+        #if filepath is not None:
         name, ext = os.path.splitext(filepath)
+
         if ext == '.sim':
             flag = True
         else:
             flag = False
 
-        self.tree.PopupMenu(ToolboxContextMenu(self,evt, flag))
+        self.tree.PopupMenu(ToolboxContextMenu(self, evt, flag))
 
     def onDrag(self, event):
         data = wx.FileDataObject()

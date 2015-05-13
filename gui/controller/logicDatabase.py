@@ -45,7 +45,7 @@ class LogicDatabase(ViewDatabase):
         initialSeries = [record_object]
 
         self.SetObjects(initialSeries)
-        self.SetColumnWidth(5, 500)
+        self.SetColumnWidth(5, 1200)
 
     def LaunchContext(self, event):
 

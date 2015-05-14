@@ -13,12 +13,38 @@ from os.path import join,dirname, abspath
 import ConfigParser
 import fnmatch
 
+
 # todo: refactor
 from gui.views.viewModel import ViewModel
 
 class LogicToolbox(ViewToolbox):
-
     modelpaths = ""
+
+    def __init__(self, parent):
+
+
+
+        # Initialize the View
+        ViewToolbox.__init__(self, parent)
+
+        self.p = parent
+        # config_params = {}
+
+        self.modelpaths = {}
+        self.items = {}
+        self.filepath = {}
+
+        self.sectionKey()
+
+        self.loadToolbox(self.getModelPath())
+
+        self.tree.SetItemImage(self.root, self.fldropenidx, which = wx.TreeItemIcon_Expanded)
+        self.tree.SetItemImage(self.root, self.fldropenidx, which = wx.TreeItemIcon_Normal)
+
+        self.tree.Expand(self.root)
+        self.tree.ExpandAll()
+
+        self.initBinding()
 
     def initBinding(self):
         self.Bind(wx.EVT_SIZE, self.OnSize)
@@ -82,31 +108,6 @@ class LogicToolbox(ViewToolbox):
             else:
                 self.modelpaths[section].append(d)
 
-    def __init__(self, parent):
-
-
-
-        # Initialize the View
-        ViewToolbox.__init__(self, parent)
-
-        self.p = parent
-        # config_params = {}
-
-        self.modelpaths = {}
-        self.items = {}
-        self.filepath = {}
-
-        self.sectionKey()
-
-        self.loadToolbox(self.getModelPath())
-
-        self.tree.SetItemImage(self.root, self.fldropenidx, which = wx.TreeItemIcon_Expanded)
-        self.tree.SetItemImage(self.root, self.fldropenidx, which = wx.TreeItemIcon_Normal)
-
-        self.tree.Expand(self.root)
-        self.tree.ExpandAll()
-
-        self.initBinding()
 
     def loadMDLFile(self, txt, fullpath):
         mdl_parser = ConfigParser.ConfigParser(None, multidict)
@@ -177,16 +178,22 @@ class LogicToolbox(ViewToolbox):
         item = self.tree.GetSelection()
         key = self.tree.GetItemText(item)
         filepath = self.filepath.get(key)
-        #ext = ""
-        #if filepath is not None:
-        name, ext = os.path.splitext(filepath)
 
-        if ext == '.sim':
-            flag = True
+        ext = ""
+        folder = False
+        removable = False
+        if filepath is not None:
+            name, ext = os.path.splitext(filepath)
+
+            if ext == '.sim':
+                removable = True
+            else:
+                removable = False
         else:
-            flag = False
+            folder = True
 
-        self.tree.PopupMenu(ToolboxContextMenu(self, evt, flag))
+        if not folder:
+            self.tree.PopupMenu(ToolboxContextMenu(self, evt, removable, folder))
 
     def onDrag(self, event):
         data = wx.FileDataObject()
@@ -222,10 +229,16 @@ class LogicToolbox(ViewToolbox):
 
         kwargs = {'spatial':False}
         model_details = LogicModel(self,**kwargs)
-        model_details.PopulateDetails(filepath)
-        model_details.PopulateEdit(filepath)
-        model_details.PopulateSummary(filepath)
-        model_details.Show()
+        try:
+            model_details.PopulateDetails(filepath)
+            model_details.PopulateEdit(filepath)
+            model_details.PopulateSummary(filepath)
+            model_details.Show()
+        except:
+            dlg = wx.MessageDialog(None, 'Error trying to view details', 'Error', wx.OK)
+            dlg.ShowModal()
+            pass
+
 
     def Remove(self, e):
         dlg = wx.MessageDialog(None, 'Are you sure you would like to delete?', 'Question', wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)

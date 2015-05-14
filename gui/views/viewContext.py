@@ -244,17 +244,17 @@ class DirectoryContextMenu(wx.Menu):
 
 class ToolboxContextMenu(wx.Menu):
 
-    def __init__(self, parent, e, flag):
+    def __init__(self, parent, e, removable, folder):
         super(ToolboxContextMenu, self).__init__()
 
         self.arrow_obj = e
         self.parent = parent
+        if not folder:
+            mmi = wx.MenuItem(self, wx.NewId(), 'View Details')
+            self.AppendItem(mmi)
+            self.Bind(wx.EVT_MENU, self.OnViewDetails, mmi)
 
-        mmi = wx.MenuItem(self, wx.NewId(), 'View Details')
-        self.AppendItem(mmi)
-        self.Bind(wx.EVT_MENU, self.OnViewDetails, mmi)
-
-        if flag == True:
+        if removable:
             # mr stands for menu remove
             mr = wx.MenuItem(self, wx.NewId(), 'Remove')
             self.AppendItem(mr)

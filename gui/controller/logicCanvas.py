@@ -332,7 +332,11 @@ class LogicCanvas(ViewCanvas):
 
             elif ext == '.sim':
                 # load the simulation
-                self.loadsimulation(filepath)
+                try:
+                    self.loadsimulation(filepath)
+                except:
+                    dlg = wx.MessageDialog(None, 'Configuration failed to load', 'Error', wx.OK)
+                    dlg.ShowModal()
         else:
             # load data model
             # current_db_id = self._currentDb['id']

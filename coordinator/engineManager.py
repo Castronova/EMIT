@@ -120,7 +120,10 @@ class Engine:
                 if 'event' in next_task_args:
                     evt = next_task_args.pop('event')
 
-                result = task(**next_task_args)
+                try:
+                    result = task(**next_task_args)
+                except:
+                    result = None
 
                 if evt is not None:
                     if result is not None:

@@ -362,21 +362,6 @@ water_icon = PyEmbeddedImage(
     "yaDB3DqEz09FgZeXnwoAlBe8/gZ/w3sBjE3vsXC/sr3fKXyyPReyvmfnp2n5qQTAvy5nvvwr"
     "AP43X/5/HuwiMiI9legAAAAASUVORK5CYII=")
 
-#----------------------------------------------------------------------
-blueBall_simFiles = PyEmbeddedImage(
-    "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACa0lEQVQ4jW1TS09TURAefGFi"
-    "TEhcXY0r41Jj3LAzmBj+gbYS3agEdEEQwfrASGJLXLhxoVHSGHRhQllYfJY28QUG66OYtmAj"
-    "UB9USi2huQXKq9dxvnOusRgm+XK/zHzz5Z45c4hKY9MWoqomotrHRGejRC4b4PUhoupWoort"
-    "tHrs3E/UOEBl52KGwE2uWES+BcDm7jVSo+YI0Z6D/zXv2EfUMkgicGy8GDdPPZjgl2MFnpyx"
-    "FMCRQ23d+bhDDEtMyjcTNfSj2bnNk7CCIwX+mrN43PzNE3kNcORQg0ZMnOpP1HEqj8k5Y0a5"
-    "uPuHCxzNWPw5a/HotMXJnAZ4YspStR7RQKuOU31JDGo6YeA50vWT+38sczi1zIPpIscyRR76"
-    "pQGOXDhVVJqjopWZeOhkUAzqAzCI3H6X52cji/w8uch935d4YHxJGjTAkUMtIBpo0aNuSBnI"
-    "pH3xAvuG5tmfmOenXxa4d3SBQ2Ma4Mj1SK1bNNDq2ykxuBOZZe/HGb77aZbvR+e4Kz4nYg2f"
-    "cOTuSc0rOmhphYH8Tmtoiq+9Mfn6W5NvyC/eep/njg8a4MihBg20/47g6FBDPOD9xpdfTCtc"
-    "eZXj9tc5vtqn0S5wS67NrkOLHrWxtNeJdTXWX4ibDU8y3BjIclNvlpuDWW6xAY4catBAWyZX"
-    "T1VnxGDtBlLX4Yo5K9qGrVp/museZfj4w0k+YQMcOdSgkQE6sfbq7agwdhOdDsPEIVtmVt5M"
-    "ck13SprSCuDIoSbNDqy9ejsrYuuuv39iCNRjUpO2H5OdM7D26u2sGjgOZnJIBlsX0DcEgB/u"
-    "1GuPt1MSfwCU+C2BhFFs5QAAAABJRU5ErkJggg==")
 
 #----------------------------------------------------------------------
 Link_blue_32 = PyEmbeddedImage(

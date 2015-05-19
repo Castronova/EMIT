@@ -4,6 +4,7 @@ import uuid
 
 import wx
 import wx.lib.newevent as ne
+import wx.grid as gridlib
 
 from gui.views.viewLink import ViewLink
 import coordinator.engineAccessors as engine
@@ -14,6 +15,8 @@ LinkUpdatedEvent, EVT_LINKUPDATED = ne.NewEvent()
 
 
 class LogicLink(ViewLink):
+
+    desc = ""
     def __init__(self, parent, outputs, inputs):
 
         ViewLink.__init__(self, parent, outputs, inputs)
@@ -48,6 +51,7 @@ class LogicLink(ViewLink):
         self.ButtonPlot.Bind(wx.EVT_BUTTON, self.OnPlot)
         self.Bind(EVT_LINKUPDATED, self.linkSelected)
         self.Bind(wx.EVT_CLOSE, self.OnCancel)
+        self.outputGrid.Bind(gridlib.EVT_GRID_CELL_LEFT_CLICK, self.onGrid_Hover)
 
         self.OutputComboBox.Bind(wx.EVT_COMBOBOX, self.on_select_output)
         self.InputComboBox.Bind(wx.EVT_COMBOBOX, self.on_select_input)
@@ -298,6 +302,9 @@ class LogicLink(ViewLink):
 
             self.outputGrid.SetCellValue(1, 1, o['variable'].VariableNameCV())
             self.outputGrid.SetCellValue(2, 1, o['variable'].VariableDefinition())
+            self.desc = o['variable'].VariableDefinition()
+
+
 
             self.outputGrid.SetCellValue(4, 1, o['unit'].UnitName())
             self.outputGrid.SetCellValue(5, 1, o['unit'].UnitTypeCV())
@@ -481,6 +488,14 @@ class LogicLink(ViewLink):
 
         # if no links are found, need to deactivate controls
         self.activateControls(False)
+
+    def onGrid_Hover(self, e):
+        self.setToolTip(e)
+
+    def setToolTip(self, e):
+        if e.GetRow() == 2 and e.GetCol() == 1:
+            self.outputGrid.SetToolTip(wx.ToolTip(self.desc))
+        e.Skip()
 
 
 class LinkInfo():

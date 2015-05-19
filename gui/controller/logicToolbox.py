@@ -39,7 +39,7 @@ class LogicToolbox(ViewToolbox):
         self.loadToolbox(self.getModelPath())
 
         self.tree.SetItemImage(self.root, self.fldropenidx, which = wx.TreeItemIcon_Expanded)
-        self.tree.SetItemImage(self.root, self.fldropenidx, which = wx.TreeItemIcon_Normal)
+        self.tree.SetItemImage(self.root, self.fldropenidx, which=wx.TreeItemIcon_Normal)
 
         self.tree.Expand(self.root)
         self.tree.ExpandAll()
@@ -170,7 +170,7 @@ class LogicToolbox(ViewToolbox):
 
 
         # Send the filepath to the FileDrop class in CanvasController
-        Publisher.sendMessage('toolboxclick', x = nx, y = ny, filenames = filenames)
+        Publisher.sendMessage('toolboxclick', x=nx, y=ny, filenames=filenames)
 
     def OnItemContextMenu(self, evt):
 
@@ -205,7 +205,7 @@ class LogicToolbox(ViewToolbox):
         data.AddFile(fullpath)
         dropSource = wx.DropSource(obj)
         dropSource.SetData(data)
-        result = dropSource.DoDragDrop()
+        dropSource.DoDragDrop()
     #
     # def OnRightUp(self, evt):
     #     pos = evt.GetPosition()

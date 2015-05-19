@@ -15,7 +15,7 @@ class ViewToolbox(wx.Panel):
         self.__currently_selected_item_path = None
 
         wx.Panel.__init__(self, parent)
-        self.SetBackgroundColour((0,0,0))
+        self.SetBackgroundColour((0, 0, 0))
 
         self.tree = CT.CustomTreeCtrl(self, -1, style=wx.TR_DEFAULT_STYLE )
         self.tree.SetBackgroundColour((255,255,255))
@@ -23,7 +23,7 @@ class ViewToolbox(wx.Panel):
         il = wx.ImageList(isz[0], isz[1])
 
         self.fldropenidx = il.Add(wx.ArtProvider_GetBitmap(wx.ART_FILE_OPEN,   wx.ART_OTHER, isz))
-        self.simicon = il.Add(icons.config_sim_small.GetBitmap())
+        self.simicon = il.Add(icons.blueBall_simFiles.GetBitmap())
         self.modelicon = il.Add(icons.modelicon.GetBitmap())
 
         self.folderConfigIcon = il.Add(icons.folderConfigIcon.GetBitmap())

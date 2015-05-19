@@ -363,22 +363,20 @@ water_icon = PyEmbeddedImage(
     "AP43X/5/HuwiMiI9legAAAAASUVORK5CYII=")
 
 #----------------------------------------------------------------------
-Japan_icon = PyEmbeddedImage(
-    "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACz0lEQVR42n2TXUhTYRzGn/ds"
-    "nm3qyMS+/OLoZvlZoFiYzTSGFtJFF15EF1LghTeFJGWEogtlkmFFKlkYXkQX3kSRYU6zDftA"
-    "0osUDT82nZ9U0PzY5nZ21nvOZl+If144F+/7/N7/+z/PQ0DrqsGok7MhNUqFQqtgWTCEASHi"
-    "DpEW/H74xY8gwOPl4d7cnOJ5r+H2zWsWUlHXoIvYtctUmJfLxsdEQy6TUUBQiCBElEvLD573"
-    "wb60jF7Le49jdU1Prhvv9J7Jz9NnZaRCERIChpEFb/+3g63y0S68Xi9GxibwesBsIrXNLdaS"
-    "4iKOi4uBSqGgYkLP+yHY5yHQm8RiDuwHExf7e8/j8WJucQld3T02Uv/gofVckZ5LjI8FSzvA"
-    "hhPuJ53wTVvxd8k0CVBeLAUJD6PP4ClgGc/f9NmIsfWR9ay+gNNy8QiRy+GsNsA3OobtSpae"
-    "htBbNRDoM0TAC1M/BbQ9thafyuMOJnBgvoxhvfwydqrwtvsgRw5TwCJe9r2zkUYKOJ2v45Jp"
-    "i76OTria7u0IUFVeAVt2CbPzC3jVbw4CTp7gkrWJ8LV3wGVs2hlQVQm2vAw2+wK635oDTxAB"
-    "KZpEkOERrJVc2BGg7noKJjsL1nkRYAkMsUgE0A7Ev7B2vhT84IdtxfLcHKifdUpemJmzUx9Q"
-    "QENLu7VQd5xLTdKAWhn+nw5pkP9DRLE4QGZ3hOSDSdssesyDNlJ3t9VakHOUSzukRYRaTZ3I"
-    "SGbhPw2B/zwcEGdlQn4sWzKS+AtX1zcwPjWNgY9DNnKjsbk3Mz1Vn5GchH1RUQhVKsHImEAU"
-    "tjwdDJPgE+B0u7Hy/QdGv05SO4+bSEVtvS4yMtKUkqRho/fugTo8nM5CLnVCgokS5YKUAZ7e"
-    "vo7FlW+YmJ7xOByreumECAkNC6tRKVVapYKVEkkYgj+RpAjBLw2PRhlOl3tq0+0yNFVXWX4B"
-    "gZo65ADQJAwAAAAASUVORK5CYII=")
+blueBall_simFiles = PyEmbeddedImage(
+    "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACa0lEQVQ4jW1TS09TURAefGFi"
+    "TEhcXY0r41Jj3LAzmBj+gbYS3agEdEEQwfrASGJLXLhxoVHSGHRhQllYfJY28QUG66OYtmAj"
+    "UB9USi2huQXKq9dxvnOusRgm+XK/zHzz5Z45c4hKY9MWoqomotrHRGejRC4b4PUhoupWoort"
+    "tHrs3E/UOEBl52KGwE2uWES+BcDm7jVSo+YI0Z6D/zXv2EfUMkgicGy8GDdPPZjgl2MFnpyx"
+    "FMCRQ23d+bhDDEtMyjcTNfSj2bnNk7CCIwX+mrN43PzNE3kNcORQg0ZMnOpP1HEqj8k5Y0a5"
+    "uPuHCxzNWPw5a/HotMXJnAZ4YspStR7RQKuOU31JDGo6YeA50vWT+38sczi1zIPpIscyRR76"
+    "pQGOXDhVVJqjopWZeOhkUAzqAzCI3H6X52cji/w8uch935d4YHxJGjTAkUMtIBpo0aNuSBnI"
+    "pH3xAvuG5tmfmOenXxa4d3SBQ2Ma4Mj1SK1bNNDq2ykxuBOZZe/HGb77aZbvR+e4Kz4nYg2f"
+    "cOTuSc0rOmhphYH8Tmtoiq+9Mfn6W5NvyC/eep/njg8a4MihBg20/47g6FBDPOD9xpdfTCtc"
+    "eZXj9tc5vtqn0S5wS67NrkOLHrWxtNeJdTXWX4ibDU8y3BjIclNvlpuDWW6xAY4catBAWyZX"
+    "T1VnxGDtBlLX4Yo5K9qGrVp/museZfj4w0k+YQMcOdSgkQE6sfbq7agwdhOdDsPEIVtmVt5M"
+    "ck13SprSCuDIoSbNDqy9ejsrYuuuv39iCNRjUpO2H5OdM7D26u2sGjgOZnJIBlsX0DcEgB/u"
+    "1GuPt1MSfwCU+C2BhFFs5QAAAABJRU5ErkJggg==")
 
 #----------------------------------------------------------------------
 Link_blue_32 = PyEmbeddedImage(

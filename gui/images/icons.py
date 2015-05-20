@@ -2616,7 +2616,8 @@ blueBall_simFiles = PyEmbeddedImage(
     "ck13SprSCuDIoSbNDqy9ejsrYuuuv39iCNRjUpO2H5OdM7D26u2sGjgOZnJIBlsX0DcEgB/u"
     "1GuPt1MSfwCU+C2BhFFs5QAAAABJRU5ErkJggg==")
 
-folderConfigIcon = PyEmbeddedImage(
+#----------------------------------------------------------------------
+oldfolderConfigIcon = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAAnNCSVQICFXsRgQAAAAJcEhZ"
     "cwAAAHMAAABzAWPBQ/4AAAAZdEVYdFNvZnR3YXJlAHd3dy5pbmtzY2FwZS5vcmeb7jwaAAAA"
     "3klEQVQoU4XPsSuEcRzH8dcgdVmkTBb1lFmRRQabxWiSDKITdRkMynhyg3/gWE7KKSlSjB6b"
@@ -2624,3 +2625,34 @@ folderConfigIcon = PyEmbeddedImage(
     "uLNi1oPVzuDFpKJnwYdj883gx4FFM4qCnIxNDW8JODVq26OUCa/2BZfubVEXBFVTqmpqKvJ2"
     "LClb9+WWDQUFWePq0ga9O7fs06GyhpO/D6bV7YpUXOiTFVwZMZCASMm3oGQvkDJnOAitK625"
     "1t+6WujRLwF10XCQKR6HAAAAAElFTkSuQmCC")
+
+
+#----------------------------------------------------------------------
+folder_desktop = PyEmbeddedImage(
+    "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAA"
+    "CXBIWXMAAABIAAAASABGyWs+AAAACXZwQWcAAAAQAAAAEABcxq3DAAABoElEQVQ4y62Ty25T"
+    "YQyEP/v/zyUnaWGTsgCxAPEmPDcvgHiDqotuQEJVk5xczuW3zSLhsqwUZjOy5BlZM7JEBNdA"
+    "r1L/DwMBlutv/XeZj6FZSbWigBfIrZAUIi6bF2pAVl3bf33ffcrAm90x3cRDQV9ntBFwQRpF"
+    "Kgg7izyCSqBT4XlyurdaA+sMrPLkjFtHF0G4U3UJGww/BAi4Q5tgkYV+DEyDZRSAVQa0diFG"
+    "YB9U7xIUx7YGWYjZWbVKTsrzwZAMSKBmwHnkWAIZnOrk6I1yuh+JKYji3NxmZKlsd0aUQEvQ"
+    "4lhv/7TgMO0LYyMMW8M2RuyMZa3EuqLvDd8bqTjdGEw/ZrYnByADeAlIAbVSHmeYhaZV7K5i"
+    "3BSiD2pT8sk47CZEnVsz9n8MJkO6hD8ZcTTaBHMj2OOImFDPoJuZuR/JNYQYw6H9ewE4eOBP"
+    "AzmCGSjbIIki5ky7CZ8M1Ilaz8nNqr8NIlc6x8eFMjpNEsYhyCWQyWFy5FUmAZrk0gLkPgYg"
+    "BPgAfL7wS2HAPfBFgCVwd+GXIoA98FOufedf8tbkwdtRjvUAAAAldEVYdGRhdGU6Y3JlYXRl"
+    "ADIwMTAtMDItMTBUMDQ6MDU6MDEtMDY6MDD6voTaAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDA2"
+    "LTA4LTA4VDEyOjIwOjIyLTA1OjAwCRY9agAAAABJRU5ErkJggg==")
+
+
+#----------------------------------------------------------------------
+folderConfigIcon = PyEmbeddedImage(
+    "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAB8UlEQVQ4jcWSvWsUURTFf2/e"
+    "G7Ibk0oNSTQWikq0lIBYGERMLMQ+oAkI/g9Cqpi/wEYR00a7dIIgadyUNoqQIoIQCH4k6+7M"
+    "OrMz8z6uRRRidgutvM2Fc+85nPsB/zvU3zTdXCoXlWLyIOacffr64VDDnJ9ZVrUL9+eBuB9Z"
+    "x3XdKuUBMHQQF9EDQEMtLG09Hx8fmasZiCOIABGwASqBnaana3VfZzWVrZojdZmumTqDWjh7"
+    "Yl/g0w7kAUQpxo7Bzq7FmF6DebJ7NWq2ku/OBxZuaU5PGCbGDHdua0IQ9hKh9UMg1lTWEQSC"
+    "yK8MzpZN0+pUrWuXNOtvhZdvHASYntJcv6x5tBaQGCRWZEWgPiC/NwBAWtiWSfIiHT0asbZh"
+    "aVZAgI1Nz8yVmHblkQBRUHQqoSt/jtDp2tS08zJ7ty1MTSoaWwIBZicV77eFrwVEGqQUXBWI"
+    "Dwnkpc+MVS5/0vA8njesngtYL5wZMyRZYGRU+NxW4EGC4A8JWFfkJkhRpgJ3XzgunlREWrH5"
+    "xbE8q1m5FzP3zJG2Ayrq/TlFVBrBVmJABuBDImCAmrC47rhxKiJ1ilBlaDPcIxBctzI+2eui"
+    "PMqY/V80gFf4AK8+CqGTovUgSvU6CDYrVBQPDaP18X4WEfYP3oeMAJH51lv4x/gJjlz0QzQj"
+    "PRgAAAAASUVORK5CYII=")

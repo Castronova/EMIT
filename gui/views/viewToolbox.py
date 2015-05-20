@@ -27,6 +27,7 @@ class ViewToolbox(wx.Panel):
         self.modelicon = il.Add(icons.modelicon.GetBitmap())
 
         self.folderConfigIcon = il.Add(icons.folderConfigIcon.GetBitmap())
+        self.folderComponents = il.Add(icons.folder_desktop.GetBitmap())
 
         self.tree.SetImageList(il)
         self.il = il

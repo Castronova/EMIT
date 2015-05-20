@@ -39,9 +39,9 @@ class LogicModel(ViewModel):
         if geometrycoords is None: return
 
         if type == 'input':
-            self.matplotView.set_input_data(geometrycoords)
+            self.plotPanel.set_input_data(geometrycoords)
         elif type == 'output':
-                self.matplotView.set_output_data(geometrycoords)
+                self.plotPanel.set_output_data(geometrycoords)
 
         # # todo: extend support for multiple inputs/outputs
         # for variable, geom in geometrycoords.iteritems():

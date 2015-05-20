@@ -1,3 +1,4 @@
+from coordinator import engine
 
 __author__ = 'Mario'
 
@@ -11,7 +12,7 @@ from gui.controller.logicSpatialPlot import LogicSpatialPlot
 class ViewModel(wx.Frame):
     def __init__(self, parent, edit=True, spatial=False, temporal=False, properties=False):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=wx.EmptyString, pos=wx.DefaultPosition,
-                          size=wx.Size(500, 500), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
+                          size=wx.Size(665, 600), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
 
         self.edit = edit
         self.spatial = spatial
@@ -37,24 +38,34 @@ class ViewModel(wx.Frame):
                                      wx.DefaultSize, wx.TAB_TRAVERSAL)
         self.DetailTree = MyTree(self.treectrlView, id=wx.ID_ANY,
                                  pos=wx.Point(0, 0),
-                                 size=wx.Size(423, 319), style=wx.TR_HAS_BUTTONS | wx.TR_HIDE_ROOT)
+                                 # size=wx.Size(700,500),
+                                 size=wx.Size(423, 319),
+                                 style=wx.TR_HAS_BUTTONS | wx.TR_HIDE_ROOT)
 
         self.treectrlView.SetSizer(treectrlSizer)
 
         self.PropertyGrid = MyPropertyGrid(self.txtNotebook, id=wx.ID_ANY,
                                            pos=wx.Point(0, 0),
+                                           # size=wx.Size(700,500))
                                            size=wx.Size(423, 319))
         self.txtNotebook.AddPage(self.PropertyGrid, u"Properties", True)
 
 
         # make the spatial view
         if spatial:
-            # self.matplotView = pnlSpatial(self.txtNotebook)
-            # self.matplotView = viewPlot.pnlSpatial(self.txtNotebook)
-            # self.matplotView = LogicPlot(self.txtNotebook)
-            self.matplotView = LogicSpatialPlot(self.txtNotebook)
-            self.txtNotebook.AddPage(self.matplotView, u"Spatial Definition", False)
-            pass
+            # self.plotPanel = LogicSpatialPlot(self.txtNotebook)
+            # inputSelection = wx.CheckBox(self.plotPanel, 998,label='Input Exchange Item: ')
+            # self.txtNotebook.AddPage(self.plotPanel, u"Spatial Definition", False)
+
+            P = wx.Panel(self.txtNotebook)
+
+            self.plotPanel = LogicSpatialPlot(self.txtNotebook)
+            inputSelection = wx.CheckBox(self.txtNotebook, 998,label='Input Exchange Item: ')
+            s = wx.BoxSizer(wx.VERTICAL)
+            s.Add(self.plotPanel)
+            s.Add(inputSelection)
+            P.SetSizer(s)
+            self.txtNotebook.AddPage(P, u"Spatial Definition", False)
 
         # make edit view
         if edit:

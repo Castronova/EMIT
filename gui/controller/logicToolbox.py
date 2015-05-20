@@ -58,12 +58,12 @@ class LogicToolbox(ViewToolbox):
             txt = category
             self.cat = self.tree.AppendItem(self.root, txt)
             if count == 0:
-                self.simCategory = self.tree.AppendItem(self.root, 'Sim Files')
+                self.simCategory = self.tree.AppendItem(self.root, 'Configurations')
                 self.tree.SetItemImage(self.simCategory, self.folderConfigIcon, which=wx.TreeItemIcon_Expanded)
                 self.tree.SetItemImage(self.simCategory, self.folderConfigIcon, which=wx.TreeItemIcon_Normal)
                 count += 1
-            self.tree.SetItemImage(self.cat, self.fldropenidx, which=wx.TreeItemIcon_Expanded)
-            self.tree.SetItemImage(self.cat, self.fldropenidx, which=wx.TreeItemIcon_Normal)
+            self.tree.SetItemImage(self.cat, self.folderComponents, which=wx.TreeItemIcon_Expanded)
+            self.tree.SetItemImage(self.cat, self.folderComponents, which=wx.TreeItemIcon_Normal)
             for d in data:
                 path = d['path']
                 apath = join(dirname(abspath(__file__)), '../' + path)

@@ -18,19 +18,10 @@ class ViewSpatialPlot(wx.Panel):
                           pos=wx.Point(571, 262), size=wx.Size(700, 500),
                           style=wx.TAB_TRAVERSAL)
 
-        # self.SetClientSize(wx.Size(10, 10))
-
         self.parent = parent
 
         # create some sizers
         sizer = wx.BoxSizer(wx.VERTICAL)
-
-        # if selection == SelectionTypes.Listbox:
-        #     self.inputSelection = wx.ComboBox(self, wx.ID_ANY,name='input_combo',choices=[])
-        #     self.outputSelection = wx.ComboBox(self, wx.ID_ANY,name='output_combo', choices=[])
-        # elif selection == SelectionTypes.Checkbox:
-        #     self.inputSelection = wx. (self, wx.ID_ANY,name='input_combo',choices=[])
-        #     self.outputSelection = wx.ComboBox(self, wx.ID_ANY,name='output_combo', choices=[])
 
         self.inputLabel = wx.StaticText(self,wx.ID_ANY,label='Input Features: ')
         self.outputLabel = wx.StaticText(self,wx.ID_ANY,label='Output Features: ')

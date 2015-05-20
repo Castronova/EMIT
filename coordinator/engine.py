@@ -688,7 +688,7 @@ class Coordinator(object):
                     items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.get_id(), unit=ei.unit(),
                                            variable=ei.variable(),type=ei.get_type(),geom=geoms))
                 return items_list
-        return None
+        return {}
 
     def get_input_exchange_items_summary(self, id):
         """
@@ -705,7 +705,7 @@ class Coordinator(object):
                     items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.get_id(), unit=ei.unit(),
                                            variable=ei.variable(),type=ei.get_type(),geom=geoms))
                 return items_list
-        return None
+        return {}
 
     def remove_link_by_id(self,id):
         """

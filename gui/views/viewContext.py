@@ -361,13 +361,18 @@ class ContextMenu(wx.Menu):
 
             if PlotFrame is None:
                 # set metadata based on first series
-                xlabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
+                ylabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
+
+                # todo: this needs to change based on the axis format decided by matplotlib
+                xlabel = 'DateTime'
+
+                # todo: this title must be more specific.  e.g. include gage location?
                 title = '%s' % (resobj.VariableObj.VariableCode)
 
                 # save the variable and units to validate future time series
                 variable = resobj.VariableObj.VariableCode
                 units = resobj.UnitObj.UnitsName
-                PlotFrame = LogicPlot(self.Parent, title, ylabel=xlabel)
+                PlotFrame = LogicPlot(self.Parent, title=title, ylabel=ylabel, xlabel=xlabel)
 
             if resobj.VariableObj.VariableCode == variable and resobj.UnitObj.UnitsName == units:
                 # store the x and Y data
@@ -375,7 +380,6 @@ class ContextMenu(wx.Menu):
                 y_series.append(y)
                 labels.append(resultID)
 
-                # PlotFrame.add_series(x,y)
             elif warning is None:
                 warning = 'Multiple Variables/Units were selected.  I currently don\'t support plotting heterogeneous time series. ' +\
                           'Some of the selected time series will not be shown :( '

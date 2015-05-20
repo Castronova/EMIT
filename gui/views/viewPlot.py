@@ -92,6 +92,31 @@ class LogicLegend(ViewLegend):
 
             self.RefreshIndex(rowIndex, modelObject)
 
+class PlotPanel(wx.Panel):
+    def __init__(self, parent):
+
+        wx.Panel.__init__(self, id=wx.ID_ANY, name=u'PlotPanel', parent=parent, style=wx.TAB_TRAVERSAL)
+        self.parent = parent
+
+        # create some sizers
+        sizer = wx.BoxSizer(wx.VERTICAL)
+
+        # put up a figure
+        self.figure = plt.figure()
+        self.ax = self.figure.add_subplot(1,1,1)
+
+        self.ax.grid()
+        self.ax.axis('auto')
+        self.ax.margins(0.1)
+
+        self.canvas = FigureCanvas(self, -1, self.figure)
+        sizer.Add(self.canvas, 100, wx.ALIGN_CENTER|wx.ALL)
+
+    def Axis(self):
+        return self.ax
+
+    def Figure(self):
+        return self.figure
 
 class ViewPlot(wx.Frame):
     def __init__(self, parent, title='', xlabel='', ylabel='', selector=True):
@@ -119,8 +144,9 @@ class ViewPlot(wx.Frame):
         self.cmap = plt.cm.jet
 
         # create an instance of the figure
-        self.spatialPanel = pnlSpatial(self, title, xlabel, self.cmap)
-        self.HSizer.Add(self.spatialPanel, 1, wx.ALL | wx.EXPAND | wx.GROW, 0)
+        self.plotPanel = PlotPanel(self)
+
+        self.HSizer.Add(self.plotPanel, 1, wx.ALL | wx.EXPAND | wx.GROW, 0)
 
         if selector:
             self.legend = LogicLegend(self)
@@ -147,10 +173,10 @@ class ViewPlot(wx.Frame):
             self.plot_type = PlotEnum.point
 
             # initializer for the figure axis
-            self.axis = self.spatialPanel.Axis()
+            self.axis = self.plotPanel.Axis()
 
             # intializer for figure
-            self.figure = self.spatialPanel.Figure()
+            self.figure = self.plotPanel.Figure()
 
             # initializer for x and y data
             self.xdata = []
@@ -162,6 +188,7 @@ class ViewPlot(wx.Frame):
             self.x_label = xlabel
             self.y_label = ylabel
             self.title = title
+
 
             Publisher.subscribe(self.update_plot, "SeriesChecked")  # subscribes LegendListControl
 

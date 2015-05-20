@@ -2,8 +2,9 @@ __author__ = 'tonycastronova'
 
 import wx
 from wx.lib.pubsub import pub as Publisher
-
 from gui.views.viewDatabase import ViewDatabase
+from utilities import db as dbutils
+
 from ..ObjectListView import ColumnDefn
 
 
@@ -72,7 +73,10 @@ class LogicDatabase(ViewDatabase):
         for key, db in self.Parent._databases.iteritems():
             # get the database session associated with the selected name
             if db['name'] == selected_db:
-                return db['session']
+                session = dbutils.build_session_from_connection_string(db['connection_string'])
+                return session
+
+                # return db['session']
         return None
 
     def olvrefresh(self):

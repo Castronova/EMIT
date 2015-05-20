@@ -209,6 +209,19 @@ class ViewEMIT(wx.Frame):
 
         self.m_menubar.Append(self.m_viewMenu, "&View")
 
+        self.m_optionMenu = wx.Menu()
+        ShowSim = self.m_optionMenu.Append(wx.NewId(), 'Show Configurations', 'Shows the saved configurations files in the toolbox', wx.ITEM_RADIO)
+        HideSim = self.m_optionMenu.Append(wx.NewId(), 'Hide Configurations', 'Only shows Hydrology models in the toolbox', wx.ITEM_RADIO)
+        self.m_menubar.Append(self.m_optionMenu, "&Options")
+
+        self.m_runMenu = wx.Menu()
+        applicationRun = self.m_runMenu.Append(wx.NewId(), '&Run Configuration', 'Runs the existing configurations')
+        separator = self.m_runMenu.Append(wx.NewId(), 'separate', 'separate', wx.ITEM_SEPARATOR)
+        databaseSave = self.m_runMenu.Append(wx.NewId(), '&Save Results to Database', 'Saves the result to the default database', wx.ITEM_CHECK)
+        viewResult = self.m_runMenu.Append(wx.NewId(), '&View Results', 'View the result', wx.ITEM_CHECK)
+        viewResult.Check()
+        self.m_menubar.Append(self.m_runMenu, "&Run")
+
         self.SetMenuBar(self.m_menubar)
 
         wx.CallAfter(self._postStart)

@@ -2481,7 +2481,7 @@ class FastObjectListView(AbstractVirtualObjectListView):
         self.RefreshObjects()
 
         # Auto-resize once all the data has been added
-        self.AutoSizeColumns()
+        #self.AutoSizeColumns()
 
 
     def RefreshObjects(self, aList=None):

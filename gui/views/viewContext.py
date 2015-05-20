@@ -163,11 +163,9 @@ class CanvasContextMenu(wx.Menu):
         self.Bind(wx.EVT_MENU, self.OnClickClear, mmi)
 
     def OnAddLink(self, e):
-
         self.parent.FloatCanvas.SetMode(self.parent.GuiLink)
 
     def OnClickRun(self, e):
-
         # switch focus of the notebook tabs
         Publisher.sendMessage('ChangePage', page='Console')  # sends message to mainGui.py
 
@@ -317,14 +315,10 @@ class ContextMenu(wx.Menu):
         Publisher.sendMessage('AddModel',filepath=filename, x = 0, y = 0) # sends message to CanvasController
 
     def getData(self,resultID):
-
-
-
         session = self.parent.getDbSession()
         if session is not None:
             readres = readResults(session)
             results = readres.getTimeSeriesValuesByResultId(resultId=int(resultID))
-
 
             core = readCore(session)
             obj = core.getResultByID(resultID=int(resultID))
@@ -414,7 +408,6 @@ class SimulationContextMenu(ContextMenu):
         session = self.parent.getDbSession()
         if session is not None:
 
-
             readsim = readSimulation(session)
             readres = readResults(session)
             results = readsim.getResultsBySimulationID(simulationID)
@@ -436,8 +429,6 @@ class SimulationContextMenu(ContextMenu):
                     res[variable_name].append([dates,values,r])
                 else:
                     res[variable_name] = [[dates,values,r]]
-
-
 
             return res
 
@@ -490,8 +481,6 @@ class SimulationContextMenu(ContextMenu):
                     x_series.append(x)
                     y_series.append(y)
                     labels.append(int(resobj.ResultID))
-
-
 
             elif warning is None:
                 warning = 'Multiple Variables/Units were selected.  I currently don\'t support plotting heterogeneous time series. ' +\

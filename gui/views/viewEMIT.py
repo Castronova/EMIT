@@ -159,6 +159,7 @@ class ViewEMIT(wx.Frame):
 
 
         self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnSelect)
+        self.Bind(wx.EVT_CLOSE, self.onClose)
 
         self.m_mgr.Update()
 
@@ -216,12 +217,19 @@ class ViewEMIT(wx.Frame):
         self.Bind(wx.EVT_MENU, self.SaveConfiguration, Save)
         self.Bind(wx.EVT_MENU, self.SaveConfigurationAs, SaveAs)
         self.Bind(wx.EVT_MENU, self.LoadConfiguration, Open)
-        #self.Bind(wx.EVT_MENU, self.onClose, exit)
+        self.Bind(wx.EVT_MENU, self.onClose, exit)
         self.Bind(wx.EVT_MENU, self.onDirectory, ShowDir)
         self.Bind(wx.EVT_MENU, self.onAllFiles, ShowAll)
         self.Bind(wx.EVT_MENU, self.onConsole, MinimizeConsole)
 
         self.Bind(wx.EVT_MENU, self.defaultview, defaultview)
+        # self.Bind(wx.EVT)
+
+    def onClose(self, event):
+        dial = wx.MessageDialog(None, 'Are you sure to quit?', 'Question',
+            wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
+        if dial.ShowModal() == wx.ID_YES:
+            self.Destroy()
 
     def defaultview(self, event):
         """
@@ -604,7 +612,7 @@ class DataSeries(wx.Panel):
         self._connection_added = True
 
         connection_choices = []
-        self.connection_combobox = wx.Choice(self, wx.ID_ANY, wx.DefaultPosition, wx.Size(200, 23), connection_choices,
+        self.connection_combobox = wx.Choice(self, wx.ID_ANY, wx.DefaultPosition, wx.Size(200, -1), connection_choices,
                                              0)
         self.__selected_choice_idx = 0
         self.connection_combobox.SetSelection(0)

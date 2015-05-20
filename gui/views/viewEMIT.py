@@ -388,7 +388,7 @@ class TimeSeries(wx.Panel):
 
 
         connection_choices = []
-        self.connection_combobox = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.Size(200, 23), connection_choices, 0)
+        self.connection_combobox = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.Size(200, -1), connection_choices, 0)
         self.__selected_choice_idx = 0
         self.connection_combobox.SetSelection( self.__selected_choice_idx)
 

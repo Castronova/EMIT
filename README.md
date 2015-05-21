@@ -11,4 +11,8 @@ Environmental Model Integration Project (EMIT)
 
 2. Coupled modeling workflow
 
+> Coupled modeling platforms typically rely upon a single data passing workflow which is defined by a coordination mechanism.  Some utilize a feed-forward approach (e.g. OMS, CSDMS) while others use a pull driven approach (e.g. OpenMI).  Each offers its own benefits, however rarely do we ever encounter a set of models for which a single workflow is ideal. For instance, closed-source models can be coupled with other computations via reading and writing input/output files, but are unable to interact with others at individual time-steps (unless specifically designed to).  Similarly, sometimes model are coupled along shared boundary conditions which require time-step iterations to converge on a solution.  Therefore, a second objective of this work is to investigate methods for utilizing multiple workflows within a single coupling framework as well as within a single simulation. 
+
 3. Platform and Language Compatibility
+
+> 

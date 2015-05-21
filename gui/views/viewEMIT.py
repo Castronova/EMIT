@@ -216,7 +216,7 @@ class ViewEMIT(wx.Frame):
         self.m_menubar.Append(self.m_optionMenu, "&Options")
 
         self.m_runMenu = wx.Menu()
-        applicationRun = self.m_runMenu.Append(wx.NewId(), '&Run Configuration', 'Runs the existing configurations')
+        self.applicationRun = self.m_runMenu.Append(wx.NewId(), '&Run Configuration', 'Runs the existing configurations')
         separator = self.m_runMenu.Append(wx.NewId(), 'separate', 'separate', wx.ITEM_SEPARATOR)
         databaseSave = self.m_runMenu.Append(wx.NewId(), '&Save Results to Database', 'Saves the result to the default database', wx.ITEM_CHECK)
         viewResult = self.m_runMenu.Append(wx.NewId(), '&View Results', 'View the result', wx.ITEM_CHECK)
@@ -228,16 +228,19 @@ class ViewEMIT(wx.Frame):
         wx.CallAfter(self._postStart)
 
         ## Events
+        #File MenuBar
         self.Bind(wx.EVT_MENU, self.SaveConfiguration, Save)
         self.Bind(wx.EVT_MENU, self.SaveConfigurationAs, SaveAs)
         self.Bind(wx.EVT_MENU, self.LoadConfiguration, Open)
         self.Bind(wx.EVT_MENU, self.onClose, exit)
+
+        #View MenuBar
         self.Bind(wx.EVT_MENU, self.onDirectory, ShowDir)
         self.Bind(wx.EVT_MENU, self.onAllFiles, ShowAll)
         self.Bind(wx.EVT_MENU, self.onConsole, MinimizeConsole)
-
         self.Bind(wx.EVT_MENU, self.defaultview, defaultview)
         # self.Bind(wx.EVT)
+
 
     def onClose(self, event):
         dial = wx.MessageDialog(None, 'Are you sure to quit?', 'Question',
@@ -781,12 +784,11 @@ class SimulationDataTable(DataSeries):
             # get the database session associated with the selected name
             if db['name'] == selected_db:
 
-                # query the database and get basic series info
 
+                # build the database session
+                session = dbUtilities.build_session_from_connection_string(db['connection_string'])
 
-
-                u = dbapi.utils(db['session'])
-                #simulations = u.getAllSeries()
+                u = dbapi.utils(session)
                 simulations = u.getAllSimulations()
 
 

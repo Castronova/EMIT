@@ -57,15 +57,25 @@ class ViewModel(wx.Frame):
             # inputSelection = wx.CheckBox(self.plotPanel, 998,label='Input Exchange Item: ')
             # self.txtNotebook.AddPage(self.plotPanel, u"Spatial Definition", False)
 
-            P = wx.Panel(self.txtNotebook)
+            panel = wx.Panel(self.txtNotebook)
 
-            self.plotPanel = LogicSpatialPlot(self.txtNotebook)
-            inputSelection = wx.CheckBox(self.txtNotebook, 998,label='Input Exchange Item: ')
-            s = wx.BoxSizer(wx.VERTICAL)
-            s.Add(self.plotPanel)
-            s.Add(inputSelection)
-            P.SetSizer(s)
-            self.txtNotebook.AddPage(P, u"Spatial Definition", False)
+            self.plotPanel = LogicSpatialPlot(panel)
+            inputSelection = wx.CheckBox(panel, 998,label='Input Exchange Item: ')
+
+            sizer = wx.BoxSizer(wx.VERTICAL)
+            sizer.Add(self.plotPanel, 1, wx.ALL, 5)
+            sizer.Add(inputSelection, 0, wx.ALL, 5)
+            panel.SetSizer(sizer)
+            panel.Layout()
+            self.txtNotebook.AddPage(panel, u"Spatial Definition", False)
+
+            # m_bitmap1 = wx.StaticBitmap( self, wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, 0 )
+            # s = wx.BoxSizer(wx.VERTICAL)
+            # s.Add(m_bitmap1, 0, wx.ALL, 5)
+            # s.Add(inputSelection, 0, wx.ALL, 5)
+            # P.SetSizer(s)
+            # P.Layout()
+            # self.txtNotebook.AddPage(P, u"Spatial Definition", False)
 
         # make edit view
         if edit:

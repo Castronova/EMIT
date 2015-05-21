@@ -230,17 +230,22 @@ class LogicToolbox(ViewToolbox):
         key = self.tree.GetItemText(item)
 
         filepath = self.filepath.get(key)
+        name, ext = os.path.splitext(filepath)
 
-        kwargs = {'spatial':False}
-        model_details = LogicModel(self,**kwargs)
-        try:
-            model_details.PopulateDetails(filepath)
-            model_details.PopulateEdit(filepath)
-            model_details.PopulateSummary(filepath)
-            model_details.Show()
-        except:
-            dlg = wx.MessageDialog(None, 'Error trying to view details', 'Error', wx.OK)
-            dlg.ShowModal()
+        if ext == '.mdl':
+            kwargs = {'spatial':False}
+            model_details = LogicModel(self,**kwargs)
+            try:
+                model_details.PopulateDetails(filepath)
+                model_details.PopulateEdit(filepath)
+                model_details.PopulateSummary(filepath)
+                model_details.Show()
+            except:
+                dlg = wx.MessageDialog(None, 'Error trying to view details', 'Error', wx.OK)
+                dlg.ShowModal()
+                pass
+        if ext == '.sim':
+            # TODO: set the xml file as what is displayed on show details
             pass
 
 

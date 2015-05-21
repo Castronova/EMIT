@@ -276,7 +276,6 @@ class ToolboxContextMenu(wx.Menu):
     def OnRemove(self, e):
         self.parent.Remove(e)
 
-
 class ContextMenu(wx.Menu):
 
     def __init__(self, parent):

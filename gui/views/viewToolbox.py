@@ -25,6 +25,8 @@ class ViewToolbox(wx.Panel):
         self.fldropenidx = il.Add(wx.ArtProvider_GetBitmap(wx.ART_FILE_OPEN,   wx.ART_OTHER, isz))
         self.simicon = il.Add(icons.blueBall_simFiles.GetBitmap())
         self.modelicon = il.Add(icons.modelicon.GetBitmap())
+        self.componentFolder = il.Add(icons.componentFolder.GetBitmap())
+        self.hydrologyFolder = il.Add(icons.hydrologyFolder.GetBitmap())
 
         self.folderConfigIcon = il.Add(icons.folderConfigIcon.GetBitmap())
         self.folderComponents = il.Add(icons.folder_desktop.GetBitmap())
@@ -32,7 +34,8 @@ class ViewToolbox(wx.Panel):
         self.tree.SetImageList(il)
         self.il = il
 
-        self.root = self.tree.AddRoot("Model Toolbox")
+        self.root_mdl = self.tree.AddRoot("Toolbox")
+
 
 
 

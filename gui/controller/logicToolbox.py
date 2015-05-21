@@ -38,13 +38,14 @@ class LogicToolbox(ViewToolbox):
 
         self.loadToolbox(self.getModelPath())
 
-        self.tree.SetItemImage(self.root, self.fldropenidx, which = wx.TreeItemIcon_Expanded)
-        self.tree.SetItemImage(self.root, self.fldropenidx, which=wx.TreeItemIcon_Normal)
+        self.tree.SetItemImage(self.root_mdl, self.fldropenidx, which = wx.TreeItemIcon_Expanded)
+        self.tree.SetItemImage(self.root_mdl, self.fldropenidx, which=wx.TreeItemIcon_Normal)
 
-        self.tree.Expand(self.root)
+        self.tree.Expand(self.root_mdl)
         self.tree.ExpandAll()
 
         self.initBinding()
+        self.simConfigurations.Collapse()
 
     def initBinding(self):
         self.Bind(wx.EVT_SIZE, self.OnSize)
@@ -56,12 +57,15 @@ class LogicToolbox(ViewToolbox):
         count = 0
         for category, data in modelpaths.iteritems():
             txt = category
-            self.cat = self.tree.AppendItem(self.root, txt)
             if count == 0:
-                self.simCategory = self.tree.AppendItem(self.root, 'Configurations')
-                self.tree.SetItemImage(self.simCategory, self.folderConfigIcon, which=wx.TreeItemIcon_Expanded)
-                self.tree.SetItemImage(self.simCategory, self.folderConfigIcon, which=wx.TreeItemIcon_Normal)
+                self.simConfigurations = self.tree.AppendItem(self.root_mdl, 'Configurations')
+                self.tree.SetItemImage(self.simConfigurations, self.folderConfigIcon, which=wx.TreeItemIcon_Expanded)
+                self.tree.SetItemImage(self.simConfigurations, self.folderConfigIcon, which=wx.TreeItemIcon_Normal)
+                self.componentBranch = self.tree.AppendItem(self.root_mdl, "Components")
+                self.tree.SetItemImage(self.componentBranch, self.folderConfigIcon, which=wx.TreeItemIcon_Expanded)
+                self.tree.SetItemImage(self.componentBranch, self.folderConfigIcon, which=wx.TreeItemIcon_Normal)
                 count += 1
+            self.cat = self.tree.AppendItem(self.componentBranch, txt)
             self.tree.SetItemImage(self.cat, self.folderComponents, which=wx.TreeItemIcon_Expanded)
             self.tree.SetItemImage(self.cat, self.folderComponents, which=wx.TreeItemIcon_Normal)
             for d in data:
@@ -131,7 +135,7 @@ class LogicToolbox(ViewToolbox):
 
     def loadSIMFile(self, txt, fullpath):
 
-        child = self.tree.AppendItem(self.simCategory, txt)
+        child = self.tree.AppendItem(self.simConfigurations, txt)
         self.filepath[txt] = fullpath
         self.items[child] = fullpath
 
@@ -214,10 +218,10 @@ class LogicToolbox(ViewToolbox):
         self.tree.SetSize(self.GetSize())
 
     def OnExpandAll(self):
-        self.tree.Expand(self.root)
+        self.tree.Expand(self.root_mdl)
 
     def OnCollapseAll(self):
-        self.tree.Collapse(self.root)
+        self.tree.Collapse(self.root_mdl)
 
 
     def ShowDetails(self):

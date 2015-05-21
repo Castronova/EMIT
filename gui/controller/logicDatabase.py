@@ -82,3 +82,4 @@ class LogicDatabase(ViewDatabase):
     def olvrefresh(self):
         self.RepopulateList()
         self.Refresh()
+        self.SetColumnWidth(6,2000)

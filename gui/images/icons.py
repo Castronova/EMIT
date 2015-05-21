@@ -2656,3 +2656,23 @@ folderConfigIcon = PyEmbeddedImage(
     "xbE8q1m5FzP3zJG2Ayrq/TlFVBrBVmJABuBDImCAmrC47rhxKiJ1ilBlaDPcIxBctzI+2eui"
     "PMqY/V80gFf4AK8+CqGTovUgSvU6CDYrVBQPDaP18X4WEfYP3oeMAJH51lv4x/gJjlz0QzQj"
     "PRgAAAAASUVORK5CYII=")
+
+
+#----------------------------------------------------------------------
+componentFolder = PyEmbeddedImage(
+    "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlw"
+    "SFlzAAALEwAACxMBAJqcGAAAANhJREFUOI3FkLFNA0EQRd8MdxWARRFOQCK1cAtIBEjkbsEJ"
+    "sAISN0EBhEguYC++TqAD9jTfgckA3a0lxE9n3tPMh/+Oze5Lj3Hxw6z7eGqXYwL/BQa4PE5l"
+    "VGCzh6KxpW+JGMz8+v25ffNqGMC9EZwDNIjHQxzh5L3ASAcdEQDkpgaSlMB6Q/MhmleoKFFS"
+    "kuzKnTOgI2Ihjm4rSrT+CwaRcXc8NpNfMDQH6xA5nOwBktYO9FMEn6V9IWKBkTxYYiTMtjb9"
+    "BTi5G27w2Ch0itl2KO2qhv+b7ADdSUtp7u9vQAAAAABJRU5ErkJggg==")
+
+#----------------------------------------------------------------------
+hydrologyFolder = PyEmbeddedImage(
+    "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlw"
+    "SFlzAAALEwAACxMBAJqcGAAAARxJREFUOI2lkj1Lw1AUhp97k8Zgi7i5+QccdBAqYqG4OtdU"
+    "iWjd/BX5JRL8aKrVQXBxcFBwqKOLUxf/gJ+DSTC5DtIokiapvtM95573Oe9w4J8SyctxJFd1"
+    "Wch1XY9AqG/ApmsSmi2kiPNXKomQLxxYHoD+1Z00IXil3WznAhpdg1K0NSizI6+7c2x0p7NG"
+    "hgPs/TKMLxBFy38DRMYSkkuU1sc+mh0N0PSmEExwaPXprN6Aqo0G0KhijPWSOhS3NL1q2qie"
+    "ClDxHWFYY/vsnOCtQqzmMQK3eALPfiDkgnd/BVFa5EPbZa/lF08AcGo9gjoeXNww5ZxutvlH"
+    "gmcfyhXWOjt5BmQsQH9KViQfjiO5nxGppt86acRF0hXSJ05bTTZmWxN9AAAAAElFTkSuQmCC")

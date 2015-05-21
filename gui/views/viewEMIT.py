@@ -784,12 +784,11 @@ class SimulationDataTable(DataSeries):
             # get the database session associated with the selected name
             if db['name'] == selected_db:
 
-                # query the database and get basic series info
 
+                # build the database session
+                session = dbUtilities.build_session_from_connection_string(db['connection_string'])
 
-
-                u = dbapi.utils(db['session'])
-                #simulations = u.getAllSeries()
+                u = dbapi.utils(session)
                 simulations = u.getAllSimulations()
 
 

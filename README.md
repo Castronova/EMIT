@@ -15,4 +15,4 @@ Environmental Model Integration Project (EMIT)
 
 3. Platform and Language Compatibility
 
-> 
+> Within the water resources community several coupled modeling frameworks exist, however they often writen in different languages (e.g. C#, Python, Java, etc).  Scientists are forced to choose the coupling software that is compatible their models and/or operating system.  Moreover, many legacy models are written in C, C++, and Fortran which make compatibility more difficult.  A third goal of this project is to investigate how these platform and language compatibility issues can be overcome to build a system that can be adopted by the water resources community.  

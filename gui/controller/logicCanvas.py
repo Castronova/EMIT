@@ -58,6 +58,7 @@ class LogicCanvas(ViewCanvas):
         self._dbid = None
         self.loadingpath = None
         self.model_coords = {}
+        self.uniqueId = None
 
     def UnBindAllMouseEvents(self):
         self.Unbind(FC.EVT_LEFT_DOWN)
@@ -185,6 +186,9 @@ class LogicCanvas(ViewCanvas):
             x, y = xCoord, yCoord
             FontSize = 14
 
+            if self.getUniqueId() is not None:
+                name = self.getUniqueId() + " " + name
+
             # get the coordinates for the rounded rectangle
             rect_coords = LogicCanvasObjects.build_rounded_rectangle((x, y), width=w, height=h)
 
@@ -304,7 +308,10 @@ class LogicCanvas(ViewCanvas):
 
         return arrow_shape
 
-    def addModel(self, filepath, x, y, uid=None):
+    def getUniqueId(self):
+        return self.uniqueId
+
+    def addModel(self, filepath, x, y, uid=None, uniqueId = None):
         """
         Adds a model to the canvas using x,y.  This is useful if adding by file click/dialog
         :param filename:  filename / path
@@ -312,7 +319,8 @@ class LogicCanvas(ViewCanvas):
         :param y: y location
         :return: None
         """
-
+        if uniqueId is not None:
+            self.uniqueId = uniqueId
 
         # make sure the correct file type was dragged
         name, ext = os.path.splitext(filepath)

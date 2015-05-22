@@ -57,15 +57,30 @@ class ViewModel(wx.Frame):
             # inputSelection = wx.CheckBox(self.plotPanel, 998,label='Input Exchange Item: ')
             # self.txtNotebook.AddPage(self.plotPanel, u"Spatial Definition", False)
 
-            panel = wx.Panel(self.txtNotebook)
+            panel = wx.Panel(self.txtNotebook, size = wx.Size( 500,300 ))
 
             self.plotPanel = LogicSpatialPlot(panel)
-            inputSelection = wx.CheckBox(panel, 998,label='Input Exchange Item: ')
+            # self.inputSelection = wx.CheckBox(panel, 998,label='Input Exchange Item: ')
 
-            sizer = wx.BoxSizer(wx.VERTICAL)
-            sizer.Add(self.plotPanel, 1, wx.ALL, 5)
-            sizer.Add(inputSelection, 0, wx.ALL, 5)
-            panel.SetSizer(sizer)
+            # self.inputSelections = wx.Choice( panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0, choices=None )
+            # self.inputSelections.SetSelection( 0 )
+
+            self.inputSelections = wx.ComboBox(panel, wx.ID_ANY, "-", wx.DefaultPosition, wx.DefaultSize, [], wx.CB_DROPDOWN | wx.CB_READONLY)
+            self.inputSelections.Disable()
+            self.outputSelections = wx.ComboBox(panel, wx.ID_ANY, "-", wx.DefaultPosition, wx.DefaultSize, [], wx.CB_DROPDOWN | wx.CB_READONLY)
+
+            mainSizer = wx.BoxSizer(wx.VERTICAL)
+            plotSizer = wx.BoxSizer(wx.VERTICAL)
+            inOutSelectionSizer = wx.BoxSizer(wx.HORIZONTAL)
+
+            plotSizer.Add(self.plotPanel, 1, wx.ALL, 5)
+            inOutSelectionSizer.Add(self.inputSelections, 0, wx.ALL, 5)
+            inOutSelectionSizer.Add(self.outputSelections, 0, wx.ALL, 5)
+
+            mainSizer.Add( plotSizer, 1, wx.EXPAND, 5 )
+            mainSizer.Add( inOutSelectionSizer, 1, wx.EXPAND, 5 )
+
+            panel.SetSizer(mainSizer)
             panel.Layout()
             self.txtNotebook.AddPage(panel, u"Spatial Definition", False)
 

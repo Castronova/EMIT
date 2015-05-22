@@ -84,11 +84,15 @@ class ModelContextMenu(wx.Menu):
         # create a frame to bind the details page to
         f = wx.Frame(self.GetParent())
 
+        kwargs = {'edit':False,'spatial':True}
+        model_details = LogicModel(f, **kwargs)
+
         # get the input geometries
         oei = engine.getOutputExchangeItems(id)
         ogeoms = {}
         for o in oei:
             name = o['name']
+            model_details.outputSelections.Append(name)
             geoms = [i['shape'] for i in o['geom']]
             ogeoms[name] = geoms
 
@@ -97,18 +101,22 @@ class ModelContextMenu(wx.Menu):
         iei = engine.getInputExchangeItems(id)
         for i in iei:
             name = i['name']
+            model_details.inputSelections.Append(name)
+            print "input name: " + name
             geoms = [j['shape'] for j in o['geom']]
             igeoms[name] = geoms
 
 
         # todo: HACK! should all of this be in the LogicModel?
-        kwargs = {'edit':False,'spatial':True}
-        model_details = LogicModel(f, **kwargs)
+        # kwargs = {'edit':False,'spatial':True}
+        # model_details = LogicModel(f, **kwargs)
 
         # load geometry data
         model_details.PopulateSpatialGeoms(ogeoms, type='output')
         model_details.PopulateSpatialGeoms(igeoms, type='input')
 
+        # model_details.inputSelections.Clear()
+        # model_details.inputSelections.Append("test2")
         # populate model metadata from MDL file
         atts = engine.getModelById(self.model_obj.ID)['attrib']
         if 'mdl' in atts.keys():

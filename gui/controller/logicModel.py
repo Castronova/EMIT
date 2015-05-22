@@ -17,7 +17,13 @@ class LogicModel(ViewModel):
         if self.edit:
             self.SaveButton.Bind(wx.EVT_BUTTON, self.OnSave)
 
+        # Add another conditional so these bindings don't get added when they don't need to perhaps?
+        self.inputSelections.Bind(wx.EVT_COMBOBOX, self.update_plot)
+        self.outputSelections.Bind(wx.EVT_COMBOBOX, self.update_plot)
 
+
+    def update_plot(self, event):
+        print "selection updates"
 
     def PopulateEdit(self, fileExtension):
 

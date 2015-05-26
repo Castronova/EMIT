@@ -17,7 +17,7 @@ class ViewLink(wx.Frame):
                           style=wx.DEFAULT_FRAME_STYLE
                           ^(wx.RESIZE_BORDER | wx.MINIMIZE_BOX | wx.MAXIMIZE_BOX))
 
-        if os.name == 'posix':
+        if sys.platform == 'darwin':
             self.SetSize((700, 500))
         self.font = wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL)
         self.input_component = input

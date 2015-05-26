@@ -24,7 +24,12 @@ class LogicModel(ViewModel):
 
 
     def update_plot(self, event):
-        print "selection updates"
+        # print event.EventObject.StringSelection + " selected"
+        input = event.EventObject.StringSelection
+        self.TopLevelParent.plotPanel.set_selection(input)
+        self.TopLevelParent.plotPanel.UpdatePlot()
+
+
 
     def PopulateEdit(self, fileExtension):
 

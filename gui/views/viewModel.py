@@ -68,7 +68,6 @@ class ViewModel(wx.Frame):
 
             self.inputSelections = wx.ComboBox(panel, wx.ID_ANY, "-", wx.DefaultPosition, wx.DefaultSize, [],
                                                wx.CB_DROPDOWN | wx.CB_READONLY)
-            self.inputSelections.Disable()
             self.outputSelections = wx.ComboBox(panel, wx.ID_ANY, "-", wx.DefaultPosition, wx.DefaultSize, [],
                                                 wx.CB_DROPDOWN | wx.CB_READONLY)
 

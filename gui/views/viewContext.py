@@ -87,25 +87,34 @@ class ModelContextMenu(wx.Menu):
         kwargs = {'edit':False,'spatial':True}
         model_details = LogicModel(f, **kwargs)
 
-        # get the input geometries
+        # get the output geometries
         oei = engine.getOutputExchangeItems(id)
         ogeoms = {}
-        for o in oei:
-            name = o['name']
-            model_details.outputSelections.Append(name)
-            geoms = [i['shape'] for i in o['geom']]
-            ogeoms[name] = geoms
+        # disable dropdown box if empty
+        if not oei:
+            model_details.outputSelections.Enable(False)
+        else:
+            model_details.outputSelections.Append('-')
+            for o in oei:
+                name = o['name']
+                model_details.outputSelections.Append(name)
+                geoms = [i['shape'] for i in o['geom']]
+                ogeoms[name] = geoms
 
-        # get the output geometries
+        # get the input geometries
         igeoms = {}
         iei = engine.getInputExchangeItems(id)
-        for i in iei:
-            name = i['name']
-            model_details.inputSelections.Append(name)
-            print "input name: " + name
-            geoms = [j['shape'] for j in o['geom']]
-            igeoms[name] = geoms
-
+        # disable dropdown box if empty
+        if not iei:
+            model_details.inputSelections.Enable(False)
+        else:
+            model_details.inputSelections.Append('-')
+            for i in iei:
+                name = i['name']
+                model_details.inputSelections.Append(name)
+                print "input name: " + name
+                geoms = [j['shape'] for j in o['geom']]
+                igeoms[name] = geoms
 
         # todo: HACK! should all of this be in the LogicModel?
         # kwargs = {'edit':False,'spatial':True}

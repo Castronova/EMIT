@@ -563,7 +563,7 @@ class ObjectListView(wx.ListCtrl):
                 boundedWidth = col.CalcBoundedWidth(colWidth)
                 if colWidth != boundedWidth:
                     self.SetColumnWidth(iCol, boundedWidth)
-
+        self.SetColumnWidth(6, 1800)
 
     def Check(self, modelObject):
         """
@@ -3780,7 +3780,6 @@ class ColumnDefn(object):
         """
         Calculate the given width bounded by the (optional) minimum and maximum column widths
         """
-
         # Values of < 0 have special meanings, so just return them
         if width < 0:
             return width

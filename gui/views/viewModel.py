@@ -57,15 +57,40 @@ class ViewModel(wx.Frame):
             # inputSelection = wx.CheckBox(self.plotPanel, 998,label='Input Exchange Item: ')
             # self.txtNotebook.AddPage(self.plotPanel, u"Spatial Definition", False)
 
-            P = wx.Panel(self.txtNotebook)
+            panel = wx.Panel(self.txtNotebook, size = wx.Size( 500,300 ))
 
-            self.plotPanel = LogicSpatialPlot(self.txtNotebook)
-            inputSelection = wx.CheckBox(self.txtNotebook, 998,label='Input Exchange Item: ')
-            s = wx.BoxSizer(wx.VERTICAL)
-            s.Add(self.plotPanel)
-            s.Add(inputSelection)
-            P.SetSizer(s)
-            self.txtNotebook.AddPage(P, u"Spatial Definition", False)
+            self.plotPanel = LogicSpatialPlot(panel)
+            # self.inputSelection = wx.CheckBox(panel, 998,label='Input Exchange Item: ')
+
+            # self.inputSelections = wx.Choice( panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0, choices=None )
+            # self.inputSelections.SetSelection( 0 )
+
+            self.inputSelections = wx.ComboBox(panel, wx.ID_ANY, "-", wx.DefaultPosition, wx.DefaultSize, [], wx.CB_DROPDOWN | wx.CB_READONLY)
+            self.inputSelections.Disable()
+            self.outputSelections = wx.ComboBox(panel, wx.ID_ANY, "-", wx.DefaultPosition, wx.DefaultSize, [], wx.CB_DROPDOWN | wx.CB_READONLY)
+
+            mainSizer = wx.BoxSizer(wx.VERTICAL)
+            plotSizer = wx.BoxSizer(wx.VERTICAL)
+            inOutSelectionSizer = wx.BoxSizer(wx.HORIZONTAL)
+
+            plotSizer.Add(self.plotPanel, 1, wx.ALL, 5)
+            inOutSelectionSizer.Add(self.inputSelections, 0, wx.ALL, 5)
+            inOutSelectionSizer.Add(self.outputSelections, 0, wx.ALL, 5)
+
+            mainSizer.Add( plotSizer, 1, wx.EXPAND, 5 )
+            mainSizer.Add( inOutSelectionSizer, 1, wx.EXPAND, 5 )
+
+            panel.SetSizer(mainSizer)
+            panel.Layout()
+            self.txtNotebook.AddPage(panel, u"Spatial Definition", False)
+
+            # m_bitmap1 = wx.StaticBitmap( self, wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, 0 )
+            # s = wx.BoxSizer(wx.VERTICAL)
+            # s.Add(m_bitmap1, 0, wx.ALL, 5)
+            # s.Add(inputSelection, 0, wx.ALL, 5)
+            # P.SetSizer(s)
+            # P.Layout()
+            # self.txtNotebook.AddPage(P, u"Spatial Definition", False)
 
         # make edit view
         if edit:

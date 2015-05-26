@@ -5,10 +5,14 @@ import wx
 import wx.xrc
 import wx.aui
 from gui.controller.logicEMIT import LogicEMIT
+from coordinator import engineManager
+
 
 
 class EMITApp(wx.App):
     def OnInit(self):
+        # Don't delete this line, instantiating the Borg Engine main thread here
+        engine = engineManager.Engine()
 
         # We are terminating dependency logging errors, We may want this in the future but it
         # tends to add clutter to our console.

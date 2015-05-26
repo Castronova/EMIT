@@ -66,7 +66,8 @@ class LogicDatabase(ViewDatabase):
         id = event.GetIndex()
         obj = event.GetEventObject()
         filename = obj.GetItem(id).GetText()
-        Publisher.sendMessage('AddModel', filepath=filename, x=0, y=0)  # sends message to LogicCanvas.addModel
+        uniqueId = obj.GetItem(id).GetText()
+        Publisher.sendMessage('AddModel', filepath=filename, x=0, y=0, uniqueId=uniqueId)  # sends message to LogicCanvas.addModel
 
     def getDbSession(self):
         selected_db = self.Parent.connection_combobox.GetStringSelection()

@@ -12,7 +12,7 @@ from gui.controller.logicSpatialPlot import LogicSpatialPlot
 class ViewModel(wx.Frame):
     def __init__(self, parent, edit=True, spatial=False, temporal=False, properties=False):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=wx.EmptyString, pos=wx.DefaultPosition,
-                          size=wx.Size(665, 600), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
+                          size=wx.Size(665, 640), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
 
         self.edit = edit
         self.spatial = spatial

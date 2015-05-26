@@ -8,6 +8,7 @@ from transform.time import *
 from transform.space import *
 import coordinator.engineAccessors as engine
 import sys
+import os
 
 class ViewLink(wx.Frame):
     def __init__(self, parent, output, input):
@@ -16,6 +17,8 @@ class ViewLink(wx.Frame):
                           style=wx.DEFAULT_FRAME_STYLE
                           ^(wx.RESIZE_BORDER | wx.MINIMIZE_BOX | wx.MAXIMIZE_BOX))
 
+        if sys.platform == 'darwin':
+            self.SetSize((700, 500))
         self.font = wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL)
         self.input_component = input
         self.output_component = output

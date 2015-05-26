@@ -18,8 +18,9 @@ class LogicModel(ViewModel):
             self.SaveButton.Bind(wx.EVT_BUTTON, self.OnSave)
 
         # Add another conditional so these bindings don't get added when they don't need to perhaps?
-        self.inputSelections.Bind(wx.EVT_COMBOBOX, self.update_plot)
-        self.outputSelections.Bind(wx.EVT_COMBOBOX, self.update_plot)
+        if self.spatial:
+            self.inputSelections.Bind(wx.EVT_COMBOBOX, self.update_plot)
+            self.outputSelections.Bind(wx.EVT_COMBOBOX, self.update_plot)
 
 
     def update_plot(self, event):
@@ -33,6 +34,15 @@ class LogicModel(ViewModel):
         self.TextDisplay.SetValue(filehandle.read())
         filehandle.close()
         self.SetTitle("Editor")
+
+    def ConfigurationDisplay(self, fileExtension):
+        self.current_file = fileExtension
+        filehandle=open(fileExtension)
+        self.xmlTextCtrl.SetValue(filehandle.read())
+        filehandle.close()
+        self.SetTitle("File Configurations (Read-Only)")
+
+
 
     def PopulateSpatial(self, coordlist, type):
         if type == 'input':

@@ -9,7 +9,7 @@ from gui.controller.logicModel import LogicModel
 
 import wx
 from wx.lib.pubsub import pub as Publisher
-from os.path import join,dirname, abspath
+from os.path import join, dirname, abspath
 import ConfigParser
 import fnmatch
 
@@ -17,11 +17,11 @@ import fnmatch
 # todo: refactor
 from gui.views.viewModel import ViewModel
 
+
 class LogicToolbox(ViewToolbox):
     modelpaths = ""
 
     def __init__(self, parent):
-
 
 
         # Initialize the View
@@ -38,7 +38,7 @@ class LogicToolbox(ViewToolbox):
 
         self.loadToolbox(self.getModelPath())
 
-        self.tree.SetItemImage(self.root_mdl, self.fldropenidx, which = wx.TreeItemIcon_Expanded)
+        self.tree.SetItemImage(self.root_mdl, self.fldropenidx, which=wx.TreeItemIcon_Expanded)
         self.tree.SetItemImage(self.root_mdl, self.fldropenidx, which=wx.TreeItemIcon_Normal)
 
         self.tree.Expand(self.root_mdl)
@@ -121,8 +121,7 @@ class LogicToolbox(ViewToolbox):
             section = s.split('^')[0]
             if section == 'general':
                 # options = cparser.options(s)
-                txt = mdl_parser.get(s,'name')
-
+                txt = mdl_parser.get(s, 'name')
 
         child = self.tree.AppendItem(self.cat, txt)
         self.filepath[txt] = fullpath
@@ -130,8 +129,8 @@ class LogicToolbox(ViewToolbox):
         self.items[child] = fullpath
 
         child.__setattr__('path', fullpath)
-        self.tree.SetItemImage(child, self.modelicon, which = wx.TreeItemIcon_Expanded)
-        self.tree.SetItemImage(child, self.modelicon, which = wx.TreeItemIcon_Normal)
+        self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Expanded)
+        self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Normal)
 
     def loadSIMFile(self, txt, fullpath):
 
@@ -140,11 +139,11 @@ class LogicToolbox(ViewToolbox):
         self.items[child] = fullpath
 
         child.__setattr__('path', fullpath)
-        self.tree.SetItemImage(child, self.simicon, which = wx.TreeItemIcon_Expanded)
-        self.tree.SetItemImage(child, self.simicon, which = wx.TreeItemIcon_Normal)
+        self.tree.SetItemImage(child, self.simicon, which=wx.TreeItemIcon_Expanded)
+        self.tree.SetItemImage(child, self.simicon, which=wx.TreeItemIcon_Normal)
         pass
 
-    def SetCurrentlySelected(self,evt):
+    def SetCurrentlySelected(self, evt):
         item = self.tree.GetSelection()
 
         for i in self.items.keys():
@@ -153,7 +152,7 @@ class LogicToolbox(ViewToolbox):
                 break
 
     # def OnActivate(self, evt):
-    #     item = self.tree.GetSelection()
+    # item = self.tree.GetSelection()
 
     def onDoubleClick(self, event):
         id = event.GetItem()
@@ -210,6 +209,7 @@ class LogicToolbox(ViewToolbox):
         dropSource = wx.DropSource(obj)
         dropSource.SetData(data)
         dropSource.DoDragDrop()
+
     #
     # def OnRightUp(self, evt):
     #     pos = evt.GetPosition()
@@ -231,30 +231,40 @@ class LogicToolbox(ViewToolbox):
 
         filepath = self.filepath.get(key)
 
-        kwargs = {'spatial':False}
-        model_details = LogicModel(self,**kwargs)
-        try:
-            model_details.PopulateDetails(filepath)
-            model_details.PopulateEdit(filepath)
-            model_details.PopulateSummary(filepath)
-            model_details.Show()
-        except:
-            dlg = wx.MessageDialog(None, 'Error trying to view details', 'Error', wx.OK)
-            dlg.ShowModal()
-            pass
-
+        filename, ext = os.path.splitext(filepath)
+        if ext == '.mdl':
+            kwargs = {'spatial': False}
+            model_details = LogicModel(self, **kwargs)
+            try:
+                model_details.PopulateDetails(filepath)
+                model_details.PopulateEdit(filepath)
+                model_details.PopulateSummary(filepath)
+                model_details.Show()
+            except:
+                dlg = wx.MessageDialog(None, 'Error trying to view details', 'Error', wx.OK)
+                dlg.ShowModal()
+                pass
+        if ext == '.sim':
+            kwargs = {'configuration': True, 'edit': False, 'properties': False, 'spatial': False}
+            model_details = LogicModel(self, **kwargs)
+            try:
+                model_details.ConfigurationDisplay(filepath)
+                model_details.Show()
+            except:
+                dlg = wx.MessageDialog(None, 'Error trying to view details', 'Error', wx.OK)
+                dlg.ShowModal()
+                pass
 
     def Remove(self, e):
-        dlg = wx.MessageDialog(None, 'Are you sure you would like to delete?', 'Question', wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
+        dlg = wx.MessageDialog(None, 'Are you sure you would like to delete?', 'Question',
+                               wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
 
-        if dlg.ShowModal() ==wx.ID_YES:
+        if dlg.ShowModal() == wx.ID_YES:
             item = self.tree.GetSelection()
             key = self.tree.GetItemText(item)
             filepath = self.filepath.get(key)
             os.remove(filepath)
             self.tree.Delete(item)
-
-
 
 
 class multidict(dict):
@@ -263,5 +273,5 @@ class multidict(dict):
     def __setitem__(self, key, val):
         if isinstance(val, dict):
             self._unique += 1
-            key += '^'+str(self._unique)
+            key += '^' + str(self._unique)
         dict.__setitem__(self, key, val)

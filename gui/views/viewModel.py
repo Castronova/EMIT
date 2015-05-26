@@ -10,7 +10,7 @@ from gui.controller.logicSpatialPlot import LogicSpatialPlot
 # from gui.views.viewPanel import SpatialPanel
 
 class ViewModel(wx.Frame):
-    def __init__(self, parent, edit=True, spatial=False, temporal=False, properties=False):
+    def __init__(self, parent, edit=True, spatial=False, temporal=False, properties=True, configuration=False):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=wx.EmptyString, pos=wx.DefaultPosition,
                           size=wx.Size(665, 640), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
 
@@ -18,6 +18,7 @@ class ViewModel(wx.Frame):
         self.spatial = spatial
         self.temporal = temporal
         self.properties = properties
+        self.configuration = configuration
 
         self.current_file = None
 
@@ -33,22 +34,22 @@ class ViewModel(wx.Frame):
 
         self.txtNotebook = wx.Notebook(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0)
 
-        # make the detail view
-        self.treectrlView = wx.Panel(self.txtNotebook, wx.ID_ANY, wx.DefaultPosition,
-                                     wx.DefaultSize, wx.TAB_TRAVERSAL)
-        self.DetailTree = MyTree(self.treectrlView, id=wx.ID_ANY,
-                                 pos=wx.Point(0, 0),
-                                 # size=wx.Size(700,500),
-                                 size=wx.Size(423, 319),
-                                 style=wx.TR_HAS_BUTTONS | wx.TR_HIDE_ROOT)
+        if properties:
+            # make the detail view
+            self.treectrlView = wx.Panel(self.txtNotebook, wx.ID_ANY, wx.DefaultPosition,
+                                         wx.DefaultSize, wx.TAB_TRAVERSAL)
+            self.DetailTree = MyTree(self.treectrlView, id=wx.ID_ANY,
+                                     pos=wx.Point(0, 0),
+                                     # size=wx.Size(700,500),
+                                     size=wx.Size(423, 319),
+                                     style=wx.TR_HAS_BUTTONS | wx.TR_HIDE_ROOT)
 
-        self.treectrlView.SetSizer(treectrlSizer)
-
-        self.PropertyGrid = MyPropertyGrid(self.txtNotebook, id=wx.ID_ANY,
-                                           pos=wx.Point(0, 0),
-                                           # size=wx.Size(700,500))
-                                           size=wx.Size(423, 319))
-        self.txtNotebook.AddPage(self.PropertyGrid, u"Properties", True)
+            self.treectrlView.SetSizer(treectrlSizer)
+            self.PropertyGrid = MyPropertyGrid(self.txtNotebook, id=wx.ID_ANY,
+                                               pos=wx.Point(0, 0),
+                                               # size=wx.Size(700,500))
+                                               size=wx.Size(423, 319))
+            self.txtNotebook.AddPage(self.PropertyGrid, u"Properties", True)
 
 
         # make the spatial view
@@ -57,7 +58,7 @@ class ViewModel(wx.Frame):
             # inputSelection = wx.CheckBox(self.plotPanel, 998,label='Input Exchange Item: ')
             # self.txtNotebook.AddPage(self.plotPanel, u"Spatial Definition", False)
 
-            panel = wx.Panel(self.txtNotebook, size = wx.Size( 500,300 ))
+            panel = wx.Panel(self.txtNotebook, size=wx.Size(500, 300))
 
             self.plotPanel = LogicSpatialPlot(panel)
             # self.inputSelection = wx.CheckBox(panel, 998,label='Input Exchange Item: ')
@@ -65,9 +66,11 @@ class ViewModel(wx.Frame):
             # self.inputSelections = wx.Choice( panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0, choices=None )
             # self.inputSelections.SetSelection( 0 )
 
-            self.inputSelections = wx.ComboBox(panel, wx.ID_ANY, "-", wx.DefaultPosition, wx.DefaultSize, [], wx.CB_DROPDOWN | wx.CB_READONLY)
+            self.inputSelections = wx.ComboBox(panel, wx.ID_ANY, "-", wx.DefaultPosition, wx.DefaultSize, [],
+                                               wx.CB_DROPDOWN | wx.CB_READONLY)
             self.inputSelections.Disable()
-            self.outputSelections = wx.ComboBox(panel, wx.ID_ANY, "-", wx.DefaultPosition, wx.DefaultSize, [], wx.CB_DROPDOWN | wx.CB_READONLY)
+            self.outputSelections = wx.ComboBox(panel, wx.ID_ANY, "-", wx.DefaultPosition, wx.DefaultSize, [],
+                                                wx.CB_DROPDOWN | wx.CB_READONLY)
 
             mainSizer = wx.BoxSizer(wx.VERTICAL)
             plotSizer = wx.BoxSizer(wx.VERTICAL)
@@ -77,8 +80,8 @@ class ViewModel(wx.Frame):
             inOutSelectionSizer.Add(self.inputSelections, 0, wx.ALL, 5)
             inOutSelectionSizer.Add(self.outputSelections, 0, wx.ALL, 5)
 
-            mainSizer.Add( plotSizer, 1, wx.EXPAND, 5 )
-            mainSizer.Add( inOutSelectionSizer, 1, wx.EXPAND, 5 )
+            mainSizer.Add(plotSizer, 1, wx.EXPAND, 5)
+            mainSizer.Add(inOutSelectionSizer, 1, wx.EXPAND, 5)
 
             panel.SetSizer(mainSizer)
             panel.Layout()
@@ -97,24 +100,33 @@ class ViewModel(wx.Frame):
             self.txtctrlView = wx.Panel(self.txtNotebook, wx.ID_ANY, wx.DefaultPosition,
                                         wx.DefaultSize, wx.TAB_TRAVERSAL)
             self.txtNotebook.AddPage(self.txtctrlView, u"Edit", False)
-
             self.SaveButton = wx.Button(self.txtctrlView, wx.ID_ANY, u"Save Changes",
                                         wx.DefaultPosition, wx.DefaultSize, 0)
-
             self.txtctrlView.SetSizer(txtctrlSizer)
-
             self.TextDisplay = wx.TextCtrl(self.txtctrlView, wx.ID_ANY, wx.EmptyString,
-                                           wx.DefaultPosition, wx.Size(450, 350), wx.TE_MULTILINE | wx.TE_WORDWRAP)
+                                           wx.DefaultPosition, wx.Size(450, 500),
+                                           wx.TE_MULTILINE | wx.TE_WORDWRAP)
 
             txtctrlSizer.Add(self.TextDisplay, 0, wx.ALL | wx.EXPAND, 5)
             txtctrlSizer.Add(self.SaveButton, 0, wx.ALL, 5)
 
+        if configuration:
+            xmlPanel = wx.Panel(self.txtNotebook, wx.ID_ANY, wx.DefaultPosition,
+                                wx.DefaultSize, wx.TAB_TRAVERSAL)
+            self.txtNotebook.AddPage(xmlPanel, u"File Configurations (Read-Only)", False)
+            txtSizer = wx.BoxSizer(wx.VERTICAL)
+            self.xmlTextCtrl = wx.TextCtrl(xmlPanel, -1,
+                                           wx.EmptyString,
+                                           size=(640, 550),
+                                           style=wx.TE_MULTILINE | wx.TE_PROCESS_ENTER | wx.TE_READONLY)
+            txtSizer.Add(self.xmlTextCtrl, 0, wx.ALL, 5)
+            xmlPanel.SetSizer(txtSizer)
+
         NBSizer.Add(self.txtNotebook, 1, wx.EXPAND | wx.ALL, 5)
 
-
-
-        self.treectrlView.Layout()
-        treectrlSizer.Fit(self.treectrlView)
+        if properties:
+            self.treectrlView.Layout()
+            treectrlSizer.Fit(self.treectrlView)
 
         self.SetSizer(NBSizer)
         self.Layout()

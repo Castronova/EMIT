@@ -79,8 +79,6 @@ class LogicCanvas(ViewCanvas):
         self.Bind(EVT_CREATE_BOX, self.onCreateBox)
         self.Bind(EVT_UPDATE_CONSOLE, self.onUpdateConsole)
         self.Bind(wx.EVT_ENTER_WINDOW, self.onEnterWindow)
-        # self.Bind(wx.EVT_LEAVE_WINDOW, self.onExitWindow)
-        # self.FloatCanvas.Bind(FC.EVT_FC_LEFT_UP, self.onDrag)
 
         # engine bindings
         engineEvent.onModelAdded += self.draw_box
@@ -103,37 +101,32 @@ class LogicCanvas(ViewCanvas):
 
     def OnSetFilepath(self, path):
         self.path = path
-        # return path
 
-    def onDrag(self, event):
-        x,y = event.Position
-        print(x,y)
-        path = filepath()
-        path.GetFilepath()
-
-    def onMoving(self, event):
-        print(event.Position)
+    # def onDrag(self, event):
+    #     x,y = event.Position
+    #     print(x,y)
+    #     path = filepath()
+    #     path.GetFilepath()
+    #
+    # def onMoving(self, event):
+    #     print(event.Position)
 
     def onEnterWindow(self, event):
         try:
-            # dragpath = filepath()
             filenames = self.path
-            x,y = 500,200
+            x,y = event.Position
             if filenames:
                 name, ext = os.path.splitext(filenames)
 
                 if ext == '.mdl' or ext == '.sim':
                     originx, originy = self.FloatCanvas.WorldToPixel(self.GetPosition())
-                    nx = (x - originx)
+                    nx = (x - originx)+300
                     ny = (originy - y)
                     self.addModel(filepath=filenames, x=nx, y=ny)
 
         except:
             pass
-        print('Entered Window')
-
-    def onExitWindow(self, event):
-        print('Left Window')
+        self.path = None
 
     def onDbChanged(self, event):
         """
@@ -544,22 +537,7 @@ class LogicCanvas(ViewCanvas):
         self.FloatCanvas.Draw(True)
 
     def OnLeftUp(self, event, path=None):
-        print('LeftUp')
-        try:
-            # dragpath = filepath()
-            filenames = self.path
-            x,y = event.Position
-            if filenames:
-                name, ext = os.path.splitext(filenames)
 
-                if ext == '.mdl' or ext == '.sim':
-                    originx, originy = self.FloatCanvas.WorldToPixel(self.GetPosition())
-                    nx = (x - originx)
-                    ny = (originy - y)
-                    self.addModel(filepath=filenames, x=nx, y=ny)
-
-        except:
-            print('No filepath saved')
         if self.Moving:
             self.Moving = False
             if self.MoveObject is not None:

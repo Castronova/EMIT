@@ -31,7 +31,7 @@ class ViewCanvas(wx.Panel):
         self.Modes = [("Pointer",  self.GuiMouse,   icons.Cursor.GetBitmap()),
                       ("Zoom In",  self.GuiZoomIn,  icons.Zoom_In.GetBitmap()),
                       ("Zoom Out", self.GuiZoomOut, icons.Zoom_Out.GetBitmap()),
-                      ("Pan",      self.GuiMove,    icons.Move.GetBitmap())
+                      # ("Pan",      self.GuiMove,    icons.Move.GetBitmap())
                       # ("Add Link", self.GuiLink, icons.add_link.GetBitmap()),
                       # ("Run Model", self.GuiRun, icons.Run.GetBitmap()),
                       # ("Clear", self.GuiDelete, icons.Trash.GetBitmap())

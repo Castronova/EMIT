@@ -69,14 +69,19 @@ class ViewModel(wx.Frame):
             self.inputSelections = wx.ComboBox(panel, wx.ID_ANY, "-", wx.DefaultPosition, wx.DefaultSize, [],
                                                wx.CB_DROPDOWN | wx.CB_READONLY)
             self.outputSelections = wx.ComboBox(panel, wx.ID_ANY, "-", wx.DefaultPosition, wx.DefaultSize, [],
-                                                wx.CB_DROPDOWN | wx.CB_READONLY)
+                                                wx.CB_DROPDOWN | wx.CB_READONLY | wx.ALIGN_RIGHT)
 
             mainSizer = wx.BoxSizer(wx.VERTICAL)
             plotSizer = wx.BoxSizer(wx.VERTICAL)
             inOutSelectionSizer = wx.BoxSizer(wx.HORIZONTAL)
 
             plotSizer.Add(self.plotPanel, 1, wx.ALL, 5)
+            self.inputLabel = wx.StaticText(panel, wx.ID_ANY, u"Input", wx.DefaultPosition, wx.DefaultSize, 0)
+            self.outputLabel = wx.StaticText(panel, wx.ID_ANY, u"Output", wx.DefaultPosition, wx.DefaultSize, 0)
+            inOutSelectionSizer.Add( self.inputLabel, 0, wx.ALL, 5)
             inOutSelectionSizer.Add(self.inputSelections, 0, wx.ALL, 5)
+
+            inOutSelectionSizer.Add( self.outputLabel, 0, wx.ALL, 5)
             inOutSelectionSizer.Add(self.outputSelections, 0, wx.ALL, 5)
 
             mainSizer.Add(plotSizer, 1, wx.EXPAND, 5)

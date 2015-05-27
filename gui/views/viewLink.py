@@ -18,7 +18,7 @@ class ViewLink(wx.Frame):
                           ^(wx.RESIZE_BORDER | wx.MINIMIZE_BOX | wx.MAXIMIZE_BOX))
 
         if sys.platform == 'darwin':
-            self.SetSize((700, 500))
+            self.SetSize((700, 520))
         self.font = wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL)
         self.input_component = input
         self.output_component = output
@@ -75,9 +75,12 @@ class ViewLink(wx.Frame):
         # self.OutputComboBox = wx.ComboBox(self.ExchangeItemSizer, wx.ID_ANY, OutChoice[0],
         #                                   wx.DefaultPosition, wx.Size(320, -1), OutChoice, 0)
 
+        self.outputLabel = wx.StaticText(self.ExchangeItemPanel, wx.ID_ANY, u"Output", wx.DefaultPosition,
+                                        wx.DefaultSize, 0)
         self.OutputComboBox = wx.ComboBox(self.ExchangeItemPanel, wx.ID_ANY, '',
                                           wx.DefaultPosition, wx.Size(320, -1), [''], 0)
 
+        OutputSizer.Add(self.outputLabel, 0, wx.ALL, 5)
         OutputSizer.Add(self.OutputComboBox, 0, wx.ALL, 5)
 
 
@@ -188,10 +191,11 @@ class ViewLink(wx.Frame):
 
         # self.InputComboBox = wx.ComboBox(self.ExchangeItemSizer, wx.ID_ANY, InChoice[0],
         #                                  wx.DefaultPosition, wx.Size(320, -1), InChoice, 0)
-
+        self.inputLabel = wx.StaticText(self.ExchangeItemPanel, wx.ID_ANY, u"Input", wx.DefaultPosition,
+                                        wx.DefaultSize, 0)
         self.InputComboBox = wx.ComboBox(self.ExchangeItemPanel, wx.ID_ANY, '',
                                          wx.DefaultPosition, wx.Size(320, -1), [''], 0)
-
+        InputSizer.Add(self.inputLabel, 0, wx.ALL, 5)
         InputSizer.Add(self.InputComboBox, 0, wx.ALL, 5)
 
         self.inputGrid = wx.grid.Grid( self.ExchangeItemPanel, wx.ID_ANY, wx.DefaultPosition, wx.Size(325,-1), 0 )

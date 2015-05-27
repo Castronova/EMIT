@@ -66,8 +66,10 @@ class ViewModel(wx.Frame):
             # self.inputSelections = wx.Choice( panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0, choices=None )
             # self.inputSelections.SetSelection( 0 )
 
+            self.inputLabel = wx.StaticText(panel, wx.ID_ANY, u"Input", wx.DefaultPosition, wx.DefaultSize, 0)
             self.inputSelections = wx.ComboBox(panel, wx.ID_ANY, "-", wx.DefaultPosition, wx.DefaultSize, [],
                                                wx.CB_DROPDOWN | wx.CB_READONLY)
+            self.outputLabel = wx.StaticText(panel, wx.ID_ANY, u"Output", wx.DefaultPosition, wx.DefaultSize, 0)
             self.outputSelections = wx.ComboBox(panel, wx.ID_ANY, "-", wx.DefaultPosition, wx.DefaultSize, [],
                                                 wx.CB_DROPDOWN | wx.CB_READONLY | wx.ALIGN_RIGHT)
 
@@ -76,13 +78,14 @@ class ViewModel(wx.Frame):
             inOutSelectionSizer = wx.BoxSizer(wx.HORIZONTAL)
 
             plotSizer.Add(self.plotPanel, 1, wx.ALL, 5)
-            self.inputLabel = wx.StaticText(panel, wx.ID_ANY, u"Input", wx.DefaultPosition, wx.DefaultSize, 0)
-            self.outputLabel = wx.StaticText(panel, wx.ID_ANY, u"Output", wx.DefaultPosition, wx.DefaultSize, 0)
+
+            inOutSelectionSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
             inOutSelectionSizer.Add( self.inputLabel, 0, wx.ALL, 5)
             inOutSelectionSizer.Add(self.inputSelections, 0, wx.ALL, 5)
-
+            inOutSelectionSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
             inOutSelectionSizer.Add( self.outputLabel, 0, wx.ALL, 5)
             inOutSelectionSizer.Add(self.outputSelections, 0, wx.ALL, 5)
+            inOutSelectionSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
 
             mainSizer.Add(plotSizer, 1, wx.EXPAND, 5)
             mainSizer.Add(inOutSelectionSizer, 1, wx.EXPAND, 5)

@@ -94,7 +94,7 @@ class ModelContextMenu(wx.Menu):
         if not oei:
             model_details.outputSelections.Enable(False)
         else:
-            model_details.outputSelections.Append('-')
+            model_details.outputSelections.Append('---')
             for o in oei:
                 name = o['name']
                 model_details.outputSelections.Append(name)
@@ -108,7 +108,7 @@ class ModelContextMenu(wx.Menu):
         if not iei:
             model_details.inputSelections.Enable(False)
         else:
-            model_details.inputSelections.Append('-')
+            model_details.inputSelections.Append('---')
             for i in iei:
                 name = i['name']
                 model_details.inputSelections.Append(name)

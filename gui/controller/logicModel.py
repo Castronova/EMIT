@@ -19,16 +19,20 @@ class LogicModel(ViewModel):
 
         # Add another conditional so these bindings don't get added when they don't need to perhaps?
         if self.spatial:
-            self.inputSelections.Bind(wx.EVT_COMBOBOX, self.update_plot)
-            self.outputSelections.Bind(wx.EVT_COMBOBOX, self.update_plot)
+            self.inputSelections.Bind(wx.EVT_COMBOBOX, self.update_plot_input)
+            self.outputSelections.Bind(wx.EVT_COMBOBOX, self.update_plot_output)
 
 
-    def update_plot(self, event):
+    def update_plot_output(self, event):
         # print event.EventObject.StringSelection + " selected"
-        input = event.EventObject.StringSelection
-        self.TopLevelParent.plotPanel.set_selection(input)
+        received_data = event.EventObject.StringSelection
+        self.TopLevelParent.plotPanel.set_selection_output(received_data)
         self.TopLevelParent.plotPanel.UpdatePlot()
 
+    def update_plot_input(self, event):
+        received_data = event.EventObject.StringSelection
+        self.TopLevelParent.plotPanel.set_selection_input(received_data)
+        self.TopLevelParent.plotPanel.UpdatePlot()
 
 
     def PopulateEdit(self, fileExtension):

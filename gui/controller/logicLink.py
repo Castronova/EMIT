@@ -115,8 +115,8 @@ class LogicLink(ViewLink):
                 else:   self.__checkbox_states[1] = None
 
             # set the selected datasets in the controller
-            plot_panel.set_selection_output(self.__checkbox_states[0])
-            plot_panel.set_selection_input(self.__checkbox_states[1])
+            plot_panel.set_selection_input(self.__checkbox_states[0])
+            plot_panel.set_selection_output(self.__checkbox_states[1])
 
             # update the plot
             plot_panel.UpdatePlot()

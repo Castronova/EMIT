@@ -25,16 +25,6 @@ class LogicSpatialPlot(ViewSpatialPlot):
     def OnClick(self,event):
         self.log("button clicked, id#%d\n", event.GetId())
 
-    # def set_selection(self, iei_name, oei_name):
-    #     if oei_name in self.__output_data:
-    #         self.__oei = oei_name
-    #     else:
-    #         self.__oei = None
-    #     if oei_name in self.__input_data:
-    #         self.__iei = iei_name
-    #     else:
-    #         self.__iei = None
-
     def set_selection_output(self, oei_name):
         if oei_name in self.__output_data:
             self.__oei = oei_name

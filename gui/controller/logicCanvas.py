@@ -25,7 +25,7 @@ import coordinator.engineAccessors as engine
 import utilities.db as dbUtilities
 import coordinator.events as engineEvent
 import gui.controller.events as guiEvent
-
+from logicFileDrop import filepath
 
 class LogicCanvas(ViewCanvas):
     def __init__(self, parent):
@@ -78,6 +78,9 @@ class LogicCanvas(ViewCanvas):
         self.Bind(wx.EVT_CLOSE, self.onClose)
         self.Bind(EVT_CREATE_BOX, self.onCreateBox)
         self.Bind(EVT_UPDATE_CONSOLE, self.onUpdateConsole)
+        self.Bind(wx.EVT_ENTER_WINDOW, self.onEnterWindow)
+        # self.Bind(wx.EVT_LEAVE_WINDOW, self.onExitWindow)
+        # self.FloatCanvas.Bind(FC.EVT_FC_LEFT_UP, self.onDrag)
 
         # engine bindings
         engineEvent.onModelAdded += self.draw_box
@@ -96,6 +99,41 @@ class LogicCanvas(ViewCanvas):
         Publisher.subscribe(self.SaveSimulation, "SetSavePath")
         Publisher.subscribe(self.loadsimulation, "SetLoadPath")
         Publisher.subscribe(self.addModel, "AddModel")  # subscribes to object list view
+        Publisher.subscribe(self.OnSetFilepath, 'dragpathsent')
+
+    def OnSetFilepath(self, path):
+        self.path = path
+        # return path
+
+    def onDrag(self, event):
+        x,y = event.Position
+        print(x,y)
+        path = filepath()
+        path.GetFilepath()
+
+    def onMoving(self, event):
+        print(event.Position)
+
+    def onEnterWindow(self, event):
+        try:
+            # dragpath = filepath()
+            filenames = self.path
+            x,y = 500,200
+            if filenames:
+                name, ext = os.path.splitext(filenames)
+
+                if ext == '.mdl' or ext == '.sim':
+                    originx, originy = self.FloatCanvas.WorldToPixel(self.GetPosition())
+                    nx = (x - originx)
+                    ny = (originy - y)
+                    self.addModel(filepath=filenames, x=nx, y=ny)
+
+        except:
+            pass
+        print('Entered Window')
+
+    def onExitWindow(self, event):
+        print('Left Window')
 
     def onDbChanged(self, event):
         """
@@ -136,6 +174,7 @@ class LogicCanvas(ViewCanvas):
             pass
 
     def OnMove(self, event):
+        # print(event.Position)
         """
         Updates the status bar with the world coordinates
         and moves the object it is clicked on
@@ -504,7 +543,23 @@ class LogicCanvas(ViewCanvas):
 
         self.FloatCanvas.Draw(True)
 
-    def OnLeftUp(self, event):
+    def OnLeftUp(self, event, path=None):
+        print('LeftUp')
+        try:
+            # dragpath = filepath()
+            filenames = self.path
+            x,y = event.Position
+            if filenames:
+                name, ext = os.path.splitext(filenames)
+
+                if ext == '.mdl' or ext == '.sim':
+                    originx, originy = self.FloatCanvas.WorldToPixel(self.GetPosition())
+                    nx = (x - originx)
+                    ny = (originy - y)
+                    self.addModel(filepath=filenames, x=nx, y=ny)
+
+        except:
+            print('No filepath saved')
         if self.Moving:
             self.Moving = False
             if self.MoveObject is not None:

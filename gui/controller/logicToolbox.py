@@ -12,6 +12,7 @@ from wx.lib.pubsub import pub as Publisher
 from os.path import join, dirname, abspath
 import ConfigParser
 import fnmatch
+from logicFileDrop import filepath
 
 
 # todo: refactor
@@ -199,16 +200,21 @@ class LogicToolbox(ViewToolbox):
             self.tree.PopupMenu(ToolboxContextMenu(self, evt, removable, folder))
 
     def onDrag(self, event):
+
         data = wx.FileDataObject()
         obj = event.GetEventObject()
         id = event.GetItem()
         filename = id.GetText()
         fullpath = self.filepath[filename]
 
-        data.AddFile(fullpath)
-        dropSource = wx.DropSource(obj)
-        dropSource.SetData(data)
-        dropSource.DoDragDrop()
+        # filepathclass = filepath()
+        # filepathclass.filepath = fullpath
+        Publisher.sendMessage('dragpathsent', path=fullpath)
+
+        # data.AddFile(fullpath)
+        # dropSource = wx.DropSource(obj)
+        # dropSource.SetData(data)
+        # dropSource.DoDragDrop()
 
     #
     # def OnRightUp(self, evt):

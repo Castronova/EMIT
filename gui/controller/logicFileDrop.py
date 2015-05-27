@@ -31,4 +31,17 @@ class LogicFileDrop(wx.FileDropTarget):
             ny = (originy - y)
             self.canvas.addModel(filepath=filenames[0], x=nx, y=ny)
 
+class filepath(object):
 
+    def __init__(self):
+        self.filepath = None
+        Publisher.subscribe(self.SetFilepath, 'dragpathsent')
+
+    def SetFilepath(self, path):
+        self.filepath=path
+
+    def GetFilepath(self):
+        return self.filepath
+
+    def DeleteFilepath(self):
+        self.filepath = None

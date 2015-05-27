@@ -46,7 +46,7 @@ class LogicDatabase(ViewDatabase):
         initialSeries = [record_object]
 
         self.SetObjects(initialSeries)
-        self.SetColumnWidth(6, 2000)
+        # self.SetColumnWidth(6, 2000)
 
     def LaunchContext(self, event):
 
@@ -82,5 +82,5 @@ class LogicDatabase(ViewDatabase):
 
     def olvrefresh(self):
         self.RepopulateList()
+        self.AutoSizeColumns()
         self.Refresh()
-        self.SetColumnWidth(6,2000)

@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/castronova/emit.png?label=ready&title=Ready)](https://waffle.io/castronova/emit)
 EMIT
 ====
 

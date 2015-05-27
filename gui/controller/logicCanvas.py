@@ -771,6 +771,16 @@ class LogicCanvas(ViewCanvas):
 
         print 'Configuration Saved Successfully! '
 
+    def appendChild(self, child):
+        taglist = []
+        textlist = []
+        for data in child:
+            textlist.append(data.text)
+            taglist.append(data.tag)
+
+        attrib = dict(zip(taglist, textlist))
+        return attrib
+
     def loadsimulation(self, file):
 
         # TODO: This needs to be refactored to remove 'for' looping
@@ -796,13 +806,7 @@ class LogicCanvas(ViewCanvas):
 
         for child in root._children:
             if child.tag == 'DbConnection':
-                taglist = []
-                textlist = []
-                for data in child:
-                    textlist.append(data.text)
-                    taglist.append(data.tag)
-
-                attrib = dict(zip(taglist, textlist))
+                attrib = self.appendChild(child)
 
                 connection_string = attrib['connection_string']
 
@@ -846,31 +850,15 @@ class LogicCanvas(ViewCanvas):
                     else:
                         return
 
-
-        # loop through each model and load it
-        #for child in root._children:
             if child.tag == 'Model':
-                taglist = []
-                textlist = []
-                for data in child:
-                    textlist.append(data.text)
-                    taglist.append(data.tag)
-
-                attrib = dict(zip(taglist, textlist))
+                attrib = self.appendChild(child)
 
                 # load the model
                 self.addModel(filepath=attrib['path'], x=float(attrib['xcoordinate']), y=float(attrib['ycoordinate']),
                               uid=attrib['id'])
 
-        #for child in root._children:
             if child.tag == 'DataModel':
-                taglist = []
-                textlist = []
-                for data in child:
-                    textlist.append(data.text)
-                    taglist.append(data.tag)
-
-                attrib = dict(zip(taglist, textlist))
+                attrib = self.appendChild(child)
 
                 databaseid = attrib['databaseid']
                 mappedid = conn_ids[databaseid]
@@ -879,15 +867,9 @@ class LogicCanvas(ViewCanvas):
                 modelid = self.addModel(filepath=attrib['path'], x=attrib['xcoordinate'], y=attrib['ycoordinate'],
                                         uid=attrib['id'])
 
-        #for child in root._children:
             if child.tag == 'Link':
-                taglist = []
-                textlist = []
-                for items in child:
-                    textlist.append(items.text)
-                    taglist.append(items.tag)
+                attrib = self.appendChild(child)
 
-                attrib = dict(zip(taglist, textlist))
                 R1 = None
                 R2 = None
                 for R, id in self.models.iteritems():

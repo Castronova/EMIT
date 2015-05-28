@@ -1,6 +1,20 @@
-[Tests]
-path = ../tests
+; This file lists the search paths for the EMIT toolbox.
+; Each section can have a single parameter 'path' which lists search paths separated by semicolons.
+; Paths should begin at the root of the project
+; Folder_Path must include the entire hierarchy of the folder
 
+
+[Tests]
+folder_path = Components
+path = /models/test_models
+
+[Tests]
+folder_path = Configurations
+path = /models
 
 [Hydrology Models]
-path = ../models
+folder_path = Components
+
+[My Folder]
+folder_path = Components/Hydrology Models
+path = /models/swmm_timestep_1;/models/swmm_timestep_1

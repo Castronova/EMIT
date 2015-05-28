@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import os
 import random
 
@@ -31,7 +32,7 @@ class LogicToolbox(ViewToolbox):
         self.p = parent
         # config_params = {}
 
-        self.modelpaths = {}
+        self.modelpaths = []
         self.items = {}
         self.filepath = {}
 
@@ -55,38 +56,66 @@ class LogicToolbox(ViewToolbox):
         self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.onDoubleClick)
 
     def loadToolbox(self, modelpaths):
-        count = 0
-        for category, data in modelpaths.iteritems():
-            txt = category
-            if count == 0:
-                self.simConfigurations = self.tree.AppendItem(self.root_mdl, 'Configurations')
-                self.tree.SetItemImage(self.simConfigurations, self.folderConfigIcon, which=wx.TreeItemIcon_Expanded)
-                self.tree.SetItemImage(self.simConfigurations, self.folderConfigIcon, which=wx.TreeItemIcon_Normal)
-                self.componentBranch = self.tree.AppendItem(self.root_mdl, "Components")
-                self.tree.SetItemImage(self.componentBranch, self.folderConfigIcon, which=wx.TreeItemIcon_Expanded)
-                self.tree.SetItemImage(self.componentBranch, self.folderConfigIcon, which=wx.TreeItemIcon_Normal)
-                count += 1
-            self.cat = self.tree.AppendItem(self.componentBranch, txt)
-            self.tree.SetItemImage(self.cat, self.folderComponents, which=wx.TreeItemIcon_Expanded)
-            self.tree.SetItemImage(self.cat, self.folderComponents, which=wx.TreeItemIcon_Normal)
-            for d in data:
-                path = d['path']
-                apath = join(dirname(abspath(__file__)), '../' + path)
-                matches = []
-                self.dirlist = []
-                for root, dirnames, filenames in os.walk(apath):
-                    for filename in fnmatch.filter(filenames, '*.mdl'):
-                        matches.append(os.path.join(root, filename))
-                        fullpath = join(root, filename)
 
-                        txt = filename.split('.mdl')[0]
-                        self.loadMDLFile(txt, fullpath)
+        # add base-level folders
+        self.simConfigurations = self.tree.AppendItem(self.root_mdl, 'Configurations')
+        self.tree.SetItemImage(self.simConfigurations, self.folderConfigIcon, which=wx.TreeItemIcon_Expanded)
+        self.tree.SetItemImage(self.simConfigurations, self.folderConfigIcon, which=wx.TreeItemIcon_Normal)
+        self.componentBranch = self.tree.AppendItem(self.root_mdl, "Components")
+        self.tree.SetItemImage(self.componentBranch, self.folderConfigIcon, which=wx.TreeItemIcon_Expanded)
+        self.tree.SetItemImage(self.componentBranch, self.folderConfigIcon, which=wx.TreeItemIcon_Normal)
 
-                    for filename in fnmatch.filter(filenames, '*.sim'):
-                        matches.append(os.path.join(root, filename))
-                        fullpath = join(root, filename)
-                        txt = filename.split('.sim')[0]
-                        self.loadSIMFile(txt, fullpath)
+        folders = dict(Configurations=self.simConfigurations, Components=self.componentBranch)
+
+        for pathinfo in modelpaths:
+
+            # get the folder name and path
+            folder_path = pathinfo['folder_path']
+            folder_name = pathinfo['folder']
+
+            # create the folder
+            parent = folders[pathinfo['folder_path']]
+            cat = self.tree.AppendItem(parent, folder_name)
+
+            # save the folder instance so that child elements can be added during future iterations
+            folders[folder_path+'/'+folder_name] = cat
+
+            # set folder images
+            self.tree.SetItemImage(cat, self.folderComponents, which=wx.TreeItemIcon_Expanded)
+            self.tree.SetItemImage(cat, self.folderComponents, which=wx.TreeItemIcon_Normal)
+
+
+            # get the PATH
+            if 'path' in pathinfo:
+                path = pathinfo['path']
+
+                # populate models
+                if 'Components' in folder_path:
+                    for p in path.split(';'):
+                        apath = join(dirname(abspath(__file__)), '../../' + p)
+                        matches = []
+                        self.dirlist = []
+                        for root, dirnames, filenames in os.walk(apath):
+                            for filename in fnmatch.filter(filenames, '*.mdl'):
+                                matches.append(os.path.join(root, filename))
+                                fullpath = join(root, filename)
+                                txt = filename.split('.mdl')[0]
+                                self.loadMDLFile(cat, txt, fullpath)
+
+
+
+                # populate simulations
+                if 'Configurations' in folder_path:
+                    for p in path.split(';'):
+                        apath = join(dirname(abspath(__file__)), '../../' + p)
+                        matches = []
+                        self.dirlist = []
+                        for root, dirnames, filenames in os.walk(apath):
+                            for filename in fnmatch.filter(filenames, '*.sim'):
+                                matches.append(os.path.join(root, filename))
+                                fullpath = join(root, filename)
+                                txt = filename.split('.sim')[0]
+                                self.loadSIMFile(cat, txt, fullpath)
 
     def getModelPath(self):
         return self.modelpaths
@@ -96,6 +125,7 @@ class LogicToolbox(ViewToolbox):
         cparser = ConfigParser.ConfigParser(None, multidict)
         cparser.read(ini)
         sections = cparser.sections()
+        d = []
         for s in sections:
             # get the section key (minus the random number)
             section = s.split('^')[0]
@@ -104,17 +134,19 @@ class LogicToolbox(ViewToolbox):
             options = cparser.options(s)
 
             # save ini options as dictionary
-            d = {}
+
+            kvp = dict(folder=section)
             for option in options:
-                d[option] = cparser.get(s, option)
+                kvp[option] = cparser.get(s, option)
+            d.append(kvp)
 
-            if section not in self.modelpaths:
-                self.modelpaths[section] = [d]
-            else:
-                self.modelpaths[section].append(d)
+            #if section not in self.modelpaths:
+        self.modelpaths = d
+            # else:
+            #     self.modelpaths[section].append(d)
 
 
-    def loadMDLFile(self, txt, fullpath):
+    def loadMDLFile(self, cat, txt, fullpath):
         mdl_parser = ConfigParser.ConfigParser(None, multidict)
         mdl_parser.read(fullpath)
         mdls = mdl_parser.sections()
@@ -124,7 +156,7 @@ class LogicToolbox(ViewToolbox):
                 # options = cparser.options(s)
                 txt = mdl_parser.get(s, 'name')
 
-        child = self.tree.AppendItem(self.cat, txt)
+        child = self.tree.AppendItem(cat, txt)
         self.filepath[txt] = fullpath
 
         self.items[child] = fullpath
@@ -133,9 +165,9 @@ class LogicToolbox(ViewToolbox):
         self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Expanded)
         self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Normal)
 
-    def loadSIMFile(self, txt, fullpath):
+    def loadSIMFile(self, cat, txt, fullpath):
 
-        child = self.tree.AppendItem(self.simConfigurations, txt)
+        child = self.tree.AppendItem(cat, txt)
         self.filepath[txt] = fullpath
         self.items[child] = fullpath
 
@@ -275,11 +307,29 @@ class LogicToolbox(ViewToolbox):
             self.tree.Delete(item)
 
 
+
 class multidict(dict):
-    _unique = 0
+    """
+    Dictionary class that has been extended for Ordering and Duplicate Keys
+    """
+
+    def __init__(self, *args, **kw):
+        self.itemlist = super(multidict,self).keys()
+        self._unique = 0
 
     def __setitem__(self, key, val):
+
         if isinstance(val, dict):
             self._unique += 1
             key += '^' + str(self._unique)
+        self.itemlist.append(key)
         dict.__setitem__(self, key, val)
+
+    def __iter__(self):
+        return iter(self.itemlist)
+    def keys(self):
+       return self.itemlist
+    def values(self):
+        return [self[key] for key in self]
+    def itervalues(self):
+        return (self[key] for key in self)

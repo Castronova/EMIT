@@ -553,7 +553,7 @@ class ObjectListView(wx.ListCtrl):
     def AutoSizeColumns(self):
         """
         Resize our auto sizing columns to match the data
-
+        """
         for (iCol, col) in enumerate(self.columns):
             if col.width == wx.LIST_AUTOSIZE:
                 self.SetColumnWidth(iCol, wx.LIST_AUTOSIZE)
@@ -567,14 +567,14 @@ class ObjectListView(wx.ListCtrl):
             if iCol == 6:
                 # This is the only place that really lets you resize the columns
                 self.SetColumnWidth(6, 1800)
-        """
-        self.SetColumnWidth(0,100)
-        self.SetColumnWidth(1,150)
-        self.SetColumnWidth(2,250)
-        self.SetColumnWidth(3,150)
-        self.SetColumnWidth(4,150)
-        self.SetColumnWidth(5,250)
-        self.SetColumnWidth(6,1800)
+
+        # self.SetColumnWidth(0,100)
+        # self.SetColumnWidth(1,150)
+        # self.SetColumnWidth(2,250)
+        # self.SetColumnWidth(3,150)
+        # self.SetColumnWidth(4,150)
+        # self.SetColumnWidth(5,250)
+        # self.SetColumnWidth(6,1800)
 
 
 

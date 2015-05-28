@@ -219,7 +219,9 @@ class LogicCanvas(ViewCanvas):
             FontSize = 14
 
             if self.getUniqueId() is not None:
-                name = self.getUniqueId() + " " + name
+                name = self.title
+                name = name.replace("_", "  ")
+                name = name + "\n" + "ID = " + self.getUniqueId()
 
             # get the coordinates for the rounded rectangle
             rect_coords = LogicCanvasObjects.build_rounded_rectangle((x, y), width=w, height=h)
@@ -343,7 +345,7 @@ class LogicCanvas(ViewCanvas):
     def getUniqueId(self):
         return self.uniqueId
 
-    def addModel(self, filepath, x, y, uid=None, uniqueId = None):
+    def addModel(self, filepath, x, y, uid=None, uniqueId = None, title = None):
         """
         Adds a model to the canvas using x,y.  This is useful if adding by file click/dialog
         :param filename:  filename / path
@@ -353,6 +355,8 @@ class LogicCanvas(ViewCanvas):
         """
         if uniqueId is not None:
             self.uniqueId = uniqueId
+        if title is not None:
+            self.title = title
 
         # make sure the correct file type was dragged
         name, ext = os.path.splitext(filepath)
@@ -360,6 +364,8 @@ class LogicCanvas(ViewCanvas):
         # generate an ID for this model
         if uid is None:
             uid = uuid.uuid4().hex[:5]
+
+
 
         # save these coordinates for drawing once the model is loaded
         self.set_model_coords(uid, x=x, y=y)

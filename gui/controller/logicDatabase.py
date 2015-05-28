@@ -68,7 +68,11 @@ class LogicDatabase(ViewDatabase):
         obj = event.GetEventObject()
         filename = obj.GetItem(id).GetText()
         uniqueId = obj.GetItem(id).GetText()
-        Publisher.sendMessage('AddModel', filepath=filename, x=0, y=0, uniqueId=uniqueId)  # sends message to LogicCanvas.addModel
+        try:
+            title = obj.GetObjectAt(id).model_name
+        except:
+            title = obj.GetObjectAt(id).variable
+        Publisher.sendMessage('AddModel', filepath=filename, x=0, y=0, uniqueId=uniqueId, title=title)  # sends message to LogicCanvas.addModel
 
     def getDbSession(self):
         selected_db = self.Parent.connection_combobox.GetStringSelection()

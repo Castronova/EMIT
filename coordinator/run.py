@@ -18,55 +18,44 @@ def run_feed_forward(obj):
     # store db sessions
     db_sessions = {}
 
-    # ThreadManager
-    dispatcher = ThreadManager().get_dispatcher()
-
-
     # todo: determine unresolved exchange items (utilities)
-
 
     sim_st = time.time()
 
     activethreads = []
 
     # determine execution order
-    msg = '> Determining execution order... '
-    dispatcher.putOutput(msg)
+    print 'Determining execution order... '
 
     exec_order = obj.determine_execution_order()
-    msg = 'done'
-    dispatcher.putOutput(msg)
     for i in range(0, len(exec_order)):
-        msg = '> %d.) %s' % (i + 1, obj.get_model_by_id(exec_order[i]).get_name())
-        dispatcher.putOutput(msg)
-        # print '> %d.) %s'%(i+1,obj.get_model_by_id(exec_order[i]).get_name())
+        print  '%d.) %s' % (i + 1, obj.get_model_by_id(exec_order[i]).get_name())
 
 
-    # store model db sessions
-    for modelid in exec_order:
-        session = obj.get_model_by_id(modelid).get_instance().session()
-
-        if session is None:
-            try:  # this is necessary if no db connection exists
-                session = obj.get_default_db()['session']
-
-                # todo: need to consider other databases too!
-                db_sessions[modelid] = postgresdb(session)
-            except:
-                db_sessions[modelid] = None
-
-                # todo: this should be stored in the model instance
-                # model_obj = obj.get_model_by_id(modelid)
-                # model_inst = model_obj.get_instance()
-                # model_inst.session
+    # # store model db sessions
+    # for modelid in exec_order:
+    #     session = obj.get_model_by_id(modelid).get_instance().session()
+    #
+    #     if session is None:
+    #         try:  # this is necessary if no db connection exists
+    #             session = obj.get_default_db()['session']
+    #
+    #             # todo: need to consider other databases too!
+    #             db_sessions[modelid] = postgresdb(session)
+    #         except:
+    #             db_sessions[modelid] = None
+    #
+    #             # todo: this should be stored in the model instance
+    #             # model_obj = obj.get_model_by_id(modelid)
+    #             # model_inst = model_obj.get_instance()
+    #             # model_inst.session
 
     links = {}
     spatial_maps = {}
 
     # todo:  move this into function
-    msg = '> [PRE-RUN] Performing spatial mapping... '
-    dispatcher.putOutput(msg)
-    # sys.stdout.write('> [PRE-RUN] Performing spatial mapping... ')
+    print '[PRE-RUN] Performing spatial mapping... '
+
     for modelid in exec_order:
 
         # get links
@@ -83,18 +72,14 @@ def run_feed_forward(obj):
                 spatial_maps[key] = spatial_interp.transform(source.get_all_datasets().keys(),
                                                              target.get_all_datasets().keys())
 
-        # get the database session
-        # simulation_dbapi = postgresdb(obj.get_default_db()['session'])
-        # simulation_dbapi = db_sessions[modelid]
-
-        # store model db sessions
-        session = obj.get_model_by_id(modelid).get_instance().session()
-        if session is None:
-            try:  # this is necessary if no db connection exists
-                session = obj.get_default_db()['session']
-            except:
-                pass
-        db_sessions[modelid] = postgresdb(session)
+        # # store model db sessions
+        # session = obj.get_model_by_id(modelid).get_instance().session()
+        # if session is None:
+        #     try:  # this is necessary if no db connection exists
+        #         session = obj.get_default_db()['session']
+        #     except:
+        #         pass
+        # db_sessions[modelid] = postgresdb(session)
 
 
     # todo:  move this into function
@@ -114,16 +99,13 @@ def run_feed_forward(obj):
         # get the current model instance
         model_obj = obj.get_model_by_id(modelid)
         model_inst = model_obj.get_instance()
-        msg = '> \n' + \
-              '> ------------------' + len(model_inst.name()) * '-' + '\n' + \
-              '> Executing module: %s \n' % model_inst.name() + \
-              '> ------------------' + len(model_inst.name()) * '-'
-
-        dispatcher.putOutput(msg)
+        print '\n' + \
+              '------------------' + len(model_inst.name()) * '-' + '\n' + \
+              'Executing module: %s \n' % model_inst.name() + \
+              '------------------' + len(model_inst.name()) * '-'
 
         #  retrieve inputs from database
-        msg = '> [1 of 4] Retrieving input data... '
-        dispatcher.putOutput(msg)
+        print '[1 of 4] Retrieving input data... '
 
         # todo: pass db_sessions instead of simulation_dbapi
         # try:
@@ -132,21 +114,16 @@ def run_feed_forward(obj):
         #     raise Exception (e)
         input_data = model_inst.inputs()
 
-        msg = 'done'
-        dispatcher.putOutput(msg)
-
-        msg = '> [2 of 4] Performing calculation... '
-        dispatcher.putOutput(msg)
+        print '[2 of 4] Performing calculation... '
 
         # pass these inputs ts to the models' run function
         model_inst.run(input_data)
 
-        msg = 'done'
-        dispatcher.putOutput(msg)
+        # msg = 'done'
+        # dispatcher.putOutput(msg)
 
         # save these results
-        msg = '> [3 of 4] Saving calculations to database... '
-        dispatcher.putOutput(msg)
+        print '[3 of 4] Saving calculations to database... '
         exchangeitems = model_inst.save()
 
         # only insert data if its not already in a database
@@ -167,31 +144,21 @@ def run_feed_forward(obj):
             if db_sessions[modelid] is not None:
                 obj.DbResults(key=model_inst.name(), value=(model_inst.resultid(), model_inst.session(), 'result'))
 
-        msg = 'done'
-        dispatcher.putOutput(msg)
-
         # update links
-        msg = '> [4 of 4] Updating links... '
-        dispatcher.putOutput(msg)
+        print '[4 of 4] Updating links... '
 
         #obj.update_links(model_inst,exchangeitems)
         update.update_links_feed_forward(obj, links[modelid], exchangeitems, spatial_maps)
 
-        msg = 'done'
-        dispatcher.putOutput(msg)
+        print 'module simulation completed in %3.2f seconds' % (time.time() - st)
 
-
-        msg = '> module simulation completed in %3.2f seconds' % (time.time() - st)
-        dispatcher.putOutput(msg)
-
-    msg = '> \n' + \
-          '> ------------------------------------------\n' + \
-          '>           Simulation Summary \n' + \
-          '> ------------------------------------------\n' + \
-          '> Completed without error :)\n' + \
-          '> Simulation duration: %3.2f seconds\n' % (time.time() - sim_st) + \
-          '> ------------------------------------------'
-    dispatcher.putOutput(msg)
+    print '\n' + \
+          '------------------------------------------\n' + \
+          '          Simulation Summary \n' + \
+          '------------------------------------------\n' + \
+          'Completed without error :)\n' + \
+          'Simulation duration: %3.2f seconds\n' % (time.time() - sim_st) + \
+          '------------------------------------------'
 
 def run_time_step(obj):
     # store db sessions

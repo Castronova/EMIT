@@ -1,11 +1,10 @@
 __author__ = 'tonycastronova'
-__author__ = 'tonycastronova'
 
 import random
 from wrappers import feed_forward
 import stdlib
 from utilities import mdl
-
+import os
 
 class randomizer(feed_forward.feed_forward_wrapper):
 
@@ -22,7 +21,6 @@ class randomizer(feed_forward.feed_forward_wrapper):
         self.inputs(value=io['input'])
         self.outputs(value=io['output'])
 
-
     def run(self,inputs):
         """
         This is an abstract method that must be implemented.
@@ -33,27 +31,35 @@ class randomizer(feed_forward.feed_forward_wrapper):
         # Note: this calculation requires no input timeseries
 
         # get spatial objects (assuming that all variable exist at the same locations)
-        output = self.get_output_by_name('random_number')
-        geoms = output.geometries()
 
-        # loop over each output geometry instance and generate a random number
-        for g in geoms:
-            # get the geometry
-            geom = g.geom()
-            ts = []
+        # loop over all output exchange items
+        for oei in self.outputs().keys():
 
-            # calculate a random number timeseries
-            current_time = self.current_time()
-            end = self.simulation_end()
-            while(current_time <= end):
-                ts.append(((current_time),(random.random())))
+            output = self.get_output_by_name(oei)
+            geoms = output.geometries()
 
-                # increment time
-                current_time = self.increment_time(current_time)
+            for g in geoms:
+                # get the geometry
+                geom = g.geom()
+                ts = []
 
+                # calculate a random number timeseries
+                current_time = self.current_time()
+                end = self.simulation_end()
+                while(current_time <= end):
+                    if oei == 'random 1-10':
+                        ts.append(((current_time),(random.randint(1,10))))
+                    elif oei =='random 10-100':
+                        ts.append(((current_time),(random.randint(10,100))))
+                    elif oei =='random 100-1000':
+                        ts.append(((current_time),(random.randint(100,1000))))
 
-            # save this timeseries to the output geom
-            self.set_geom_values('random_number',geom,ts)
+                    # increment time
+                    current_time = self.increment_time(current_time)
+
+                # save this timeseries to the output geom
+                self.set_geom_values(oei,geom,ts)
+
 
 
     def save(self):
@@ -62,5 +68,21 @@ class randomizer(feed_forward.feed_forward_wrapper):
         :return: list of output exchange items
         """
 
-        # save all timeseries
+        # save calculations locally
+        base = os.path.dirname(__file__)
+        # save output locally
+        with open(base+'/output.out', 'w') as f:
+            for oei in self.outputs().keys():
+                output = self.get_output_by_name(oei)
+                geoms = output.geometries()
+                f.write(oei+'\n')
+                for g in geoms:
+                    f.write(g.geom().to_wkt()+'\n')
+                    date, val = g.datavalues().get_dates_values()
+                    for i in xrange(0, len(date)):
+                        f.write(date[i].strftime("%m-%d-%Y %H:%M")+','+str(val[i])+'\n')
+
+                f.write('\n')
+
+        # return all timeseries
         return self.outputs()

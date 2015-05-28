@@ -210,15 +210,15 @@ class LogicToolbox(ViewToolbox):
         # filepathclass = filepath()
         # filepathclass.filepath = fullpath
         Publisher.sendMessage('dragpathsent', path=fullpath)
+        dragCursor = wx.StockCursor(wx.CURSOR_LEFT_BUTTON)
+        self.SetCursor(dragCursor)
+
+        print(self.GetCursor())
 
         # data.AddFile(fullpath)
         # dropSource = wx.DropSource(obj)
         # dropSource.SetData(data)
         # dropSource.DoDragDrop()
-
-    #
-    # def OnRightUp(self, evt):
-    #     pos = evt.GetPosition()
 
     def OnSize(self, evt):
         self.tree.SetSize(self.GetSize())

@@ -213,7 +213,6 @@ class LogicToolbox(ViewToolbox):
         dragCursor = wx.StockCursor(wx.CURSOR_LEFT_BUTTON)
         self.SetCursor(dragCursor)
 
-        print(self.GetCursor())
 
         # data.AddFile(fullpath)
         # dropSource = wx.DropSource(obj)

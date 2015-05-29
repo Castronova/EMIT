@@ -320,11 +320,12 @@ class ViewEMIT(wx.Frame):
             Publisher.sendMessage('SetSavePath', path=self.loadingpath)
 
     def SaveConfigurationAs(self,event):
+        # Executes from File ->Save As
         save = wx.FileDialog(self.Canvas.GetTopLevelParent(), "Save Configuration","","",
-                             "Simulation Files (*.sim)|*.sim", wx.FD_SAVE  | wx.FD_OVERWRITE_PROMPT)
+                             "Simulation Files (*.sim)|*.sim|MDL Files (*.mdl)|*.mdl", wx.FD_SAVE  | wx.FD_OVERWRITE_PROMPT)
 
         if save.ShowModal() == wx.ID_OK:
-            self.save_path = save.GetPath() + ".sim"
+            self.save_path = save.GetPath()
         else:
             save.Destroy()
 

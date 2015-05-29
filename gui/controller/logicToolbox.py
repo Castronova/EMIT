@@ -102,6 +102,13 @@ class LogicToolbox(ViewToolbox):
                                 txt = filename.split('.mdl')[0]
                                 self.loadMDLFile(cat, txt, fullpath)
 
+                            for filename in fnmatch.filter(filenames, '*.sim'):
+                                flag = True
+                                matches.append(os.path.join(root, filename))
+                                fullpath = join(root, filename)
+                                txt = filename.split('.sim')[0]
+                                self.loadMDLFile(cat, txt, fullpath, flag)
+
 
 
                 # populate simulations
@@ -146,24 +153,34 @@ class LogicToolbox(ViewToolbox):
             #     self.modelpaths[section].append(d)
 
 
-    def loadMDLFile(self, cat, txt, fullpath):
-        mdl_parser = ConfigParser.ConfigParser(None, multidict)
-        mdl_parser.read(fullpath)
-        mdls = mdl_parser.sections()
-        for s in mdls:
-            section = s.split('^')[0]
-            if section == 'general':
-                # options = cparser.options(s)
-                txt = mdl_parser.get(s, 'name')
+    def loadMDLFile(self, cat, txt, fullpath, flag=False):
+        if flag is True:
+            child = self.tree.AppendItem(cat, txt)
+            self.filepath[txt] = fullpath
+            self.items[child] = fullpath
 
-        child = self.tree.AppendItem(cat, txt)
-        self.filepath[txt] = fullpath
+            child.__setattr__('path', fullpath)
+            self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Expanded)
+            self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Normal)
+            pass
+        else:
+            mdl_parser = ConfigParser.ConfigParser(None, multidict)
+            mdl_parser.read(fullpath)
+            mdls = mdl_parser.sections()
+            for s in mdls:
+                section = s.split('^')[0]
+                if section == 'general':
+                    # options = cparser.options(s)
+                    txt = mdl_parser.get(s, 'name')
 
-        self.items[child] = fullpath
+            child = self.tree.AppendItem(cat, txt)
+            self.filepath[txt] = fullpath
 
-        child.__setattr__('path', fullpath)
-        self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Expanded)
-        self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Normal)
+            self.items[child] = fullpath
+
+            child.__setattr__('path', fullpath)
+            self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Expanded)
+            self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Normal)
 
     def loadSIMFile(self, cat, txt, fullpath):
 

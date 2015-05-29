@@ -15,6 +15,10 @@ path = /models
 [Hydrology Models]
 folder_path = Components
 
-[My Folder]
+[User's Models]
 folder_path = Components/Hydrology Models
+path = /models/Users_Models
+
+[My Configurations]
+folder_path = Configurations
 path = /models/swmm_timestep_1;/models/swmm_timestep_1

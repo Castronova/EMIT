@@ -96,6 +96,7 @@ class LogicToolbox(ViewToolbox):
                         apath = join(dirname(abspath(__file__)), '../../' + p)
                         matches = []
                         self.dirlist = []
+                        self.cat = cat
                         for root, dirnames, filenames in os.walk(apath):
                             for filename in fnmatch.filter(filenames, '*.mdl'):
                                 matches.append(os.path.join(root, filename))
@@ -107,7 +108,6 @@ class LogicToolbox(ViewToolbox):
                                 matches.append(os.path.join(root, filename))
                                 fullpath = join(root, filename)
                                 txt = filename.split('.sim')[0]
-                                self.cat = cat
                                 self.loadSIMFile(cat, txt, fullpath)
 
                 # populate simulations

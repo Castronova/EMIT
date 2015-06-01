@@ -322,18 +322,18 @@ class ViewEMIT(wx.Frame):
     def SaveConfigurationAs(self,event):
         # Executes from File ->Save As
         save = wx.FileDialog(self.Canvas.GetTopLevelParent(), "Save Configuration","","",
-                             "Simulation Files (*.sim)|*.sim|MDL Files (*.mdl)|*.mdl", wx.FD_SAVE  | wx.FD_OVERWRITE_PROMPT)
+                             "Simulation Files (*.sim)|*.sim", wx.FD_SAVE  | wx.FD_OVERWRITE_PROMPT)
 
         if save.ShowModal() == wx.ID_OK:
             self.save_path = save.GetPath()
+            if self.save_path[-4] != '.':  # check if extension was added
+                self.save_path += '.sim'
+            self.loadingpath = self.save_path
+            Publisher.sendMessage('SetSavePath',path=self.save_path) #send message to canvascontroller.SaveSimulation
+            txt = save.Filename.split('.sim')[0]
+            self.Toolbox.loadSIMFile(self.Toolbox.cat, txt, save.Path)  # this appends the file to the Toolbox
         else:
             save.Destroy()
-
-        self.loadingpath = save.GetPath()
-        Publisher.sendMessage('SetSavePath',path=save.GetPath()) #send message to canvascontroller.SaveSimulation
-
-        txt = save.Filename.split('.sim')[0]
-        self.Toolbox.loadSIMFile(self.Toolbox.cat, txt, save.Path)  # this appends the file to the Toolbox
 
     def onDirectory(self, event):
         ToolboxPane = self.m_mgr.GetPane(self.Toolbox)

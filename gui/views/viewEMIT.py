@@ -332,6 +332,9 @@ class ViewEMIT(wx.Frame):
         self.loadingpath = save.GetPath()
         Publisher.sendMessage('SetSavePath',path=save.GetPath()) #send message to canvascontroller.SaveSimulation
 
+        txt = save.Filename.split('.sim')[0]
+        self.Toolbox.loadSIMFile(self.Toolbox.cat, txt, save.Path)  # this appends the file to the Toolbox
+
     def onDirectory(self, event):
         ToolboxPane = self.m_mgr.GetPane(self.Toolbox)
         ToolboxPane.Hide()

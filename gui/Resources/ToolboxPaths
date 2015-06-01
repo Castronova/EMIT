@@ -17,7 +17,7 @@ folder_path = Components
 
 [My Components]
 folder_path = Components/Hydrology
-path = /models/Users_Models
+path = /models/MyComponents
 
 [My Configurations]
 folder_path = Configurations

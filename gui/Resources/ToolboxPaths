@@ -12,11 +12,11 @@ path = /models/test_models
 folder_path = Configurations
 path = /models
 
-[Hydrology Models]
+[Hydrology]
 folder_path = Components
 
-[User's Models]
-folder_path = Components/Hydrology Models
+[My Components]
+folder_path = Components/Hydrology
 path = /models/Users_Models
 
 [My Configurations]

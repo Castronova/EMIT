@@ -8,6 +8,7 @@ import wx
 from gui.controller.logicModel import LogicModel
 from gui.controller.logicPlot import LogicPlot
 import coordinator.engineAccessors as engine
+from gui import events
 
 #todo:  this needs to be split up into view and logic code
 
@@ -218,6 +219,11 @@ class CanvasContextMenu(wx.Menu):
                 path += '.sim'
             self.parent.SaveSimulation(path)
             self.parent.SetLoadingPath(path)
+            # Firing an event
+            txt = save.Filename.split('.sim')[0]
+            e = dict(cat=self.Toolbox.cat, txt=txt, fullpath=save.Path)
+            events.onSimulationSaved.fire(**e)
+
 
     def LoadConfiguration(self, e):
         load = wx.FileDialog(self.parent.GetTopLevelParent(), "Load Configuration", "", "",

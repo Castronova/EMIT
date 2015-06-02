@@ -21,4 +21,4 @@ path = /models/MyComponents
 
 [My Configurations]
 folder_path = Configurations
-path = /models/swmm_timestep_1;/models/swmm_timestep_1
+path = /models/swmm_timestep_1;/models/swmm_timestep_1;/models/MyConfigurations

@@ -7,6 +7,7 @@ __author__ = 'tonycastronova'
 from gui.views.viewToolbox import ViewToolbox
 from gui.views.viewContext import ToolboxContextMenu
 from gui.controller.logicModel import LogicModel
+from gui import events
 
 import wx
 from wx.lib.pubsub import pub as Publisher
@@ -25,7 +26,6 @@ class LogicToolbox(ViewToolbox):
 
     def __init__(self, parent):
 
-
         # Initialize the View
         ViewToolbox.__init__(self, parent)
 
@@ -39,6 +39,8 @@ class LogicToolbox(ViewToolbox):
 
         self.sectionKey()
 
+        self.initBinding()
+
         self.loadToolbox(self.getModelPath())
 
         self.tree.SetItemImage(self.root_mdl, self.fldropenidx, which=wx.TreeItemIcon_Expanded)
@@ -47,7 +49,7 @@ class LogicToolbox(ViewToolbox):
         self.tree.Expand(self.root_mdl)
         self.tree.ExpandAll()
 
-        self.initBinding()
+
         self.simConfigurations.Collapse()
 
     def initBinding(self):
@@ -55,6 +57,7 @@ class LogicToolbox(ViewToolbox):
         self.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnItemContextMenu)
         self.Bind(wx.EVT_TREE_BEGIN_DRAG, self.onDrag)
         self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.onDoubleClick)
+        events.onSimulationSaved += self.loadSIMFile
 
     def loadToolbox(self, modelpaths):
 
@@ -104,12 +107,6 @@ class LogicToolbox(ViewToolbox):
                                 txt = filename.split('.mdl')[0]
                                 self.loadMDLFile(cat, txt, fullpath)
 
-                            for filename in fnmatch.filter(filenames, '*.sim'):
-                                matches.append(os.path.join(root, filename))
-                                fullpath = join(root, filename)
-                                txt = filename.split('.sim')[0]
-                                self.loadSIMFile(cat, txt, fullpath)
-
                 # populate simulations
                 if 'Configurations' in folder_path:
                     for p in path.split(';'):
@@ -121,7 +118,8 @@ class LogicToolbox(ViewToolbox):
                                 matches.append(os.path.join(root, filename))
                                 fullpath = join(root, filename)
                                 txt = filename.split('.sim')[0]
-                                self.loadSIMFile(cat, txt, fullpath)
+                                e = dict(cat=self.cat, txt=txt, fullpath=fullpath)
+                                events.onSimulationSaved.fire(**e)
 
     def getModelPath(self):
         return self.modelpaths
@@ -173,15 +171,14 @@ class LogicToolbox(ViewToolbox):
         self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Expanded)
         self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Normal)
 
-    def loadSIMFile(self, cat, txt, fullpath):
-        child = self.tree.AppendItem(cat, txt)
-        self.filepath[txt] = fullpath
-        self.items[child] = fullpath
+    def loadSIMFile(self, e):
+        child = self.tree.AppendItem(e.cat, e.txt)
+        self.filepath[e.txt] = e.fullpath
+        self.items[child] = e.fullpath
 
-        child.__setattr__('path', fullpath)
-        self.tree.SetItemImage(child, self.simicon, which=wx.TreeItemIcon_Expanded)
-        self.tree.SetItemImage(child, self.simicon, which=wx.TreeItemIcon_Normal)
-
+        child.__setattr__('path', e.fullpath)
+        self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Expanded)
+        self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Normal)
 
     def SetCurrentlySelected(self, evt):
         item = self.tree.GetSelection()

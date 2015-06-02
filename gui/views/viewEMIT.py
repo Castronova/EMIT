@@ -18,7 +18,8 @@ import coordinator.engineAccessors as engine
 from utilities import db as dbUtilities
 from db import dbapi as dbapi
 import coordinator.events as engineEvent
-import gui.controller.events as guiEvents
+# import gui.controller.events as guiEvents
+from gui import events
 
 # todo: refactor
 # from .. import objectListViewDatabase as olv
@@ -331,7 +332,8 @@ class ViewEMIT(wx.Frame):
             self.loadingpath = self.save_path
             Publisher.sendMessage('SetSavePath',path=self.save_path) #send message to canvascontroller.SaveSimulation
             txt = save.Filename.split('.sim')[0]
-            self.Toolbox.loadSIMFile(self.Toolbox.cat, txt, save.Path)  # this appends the file to the Toolbox
+            e = dict(cat=self.Toolbox.cat, txt=txt, fullpath=save.Path)
+            events.onSimulationSaved.fire(**e)  # calls loadSIMFile from logicToolBox
         else:
             save.Destroy()
 
@@ -607,7 +609,7 @@ class TimeSeries(wx.Panel):
                 kwargs = dict(dbsession=session,
                               dbname=db['name'],
                               dbid=db['id'] )
-                guiEvents.onDbChanged.fire(**kwargs)
+                events.onDbChanged.fire(**kwargs)
 
                 break
 

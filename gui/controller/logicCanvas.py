@@ -24,7 +24,7 @@ from gui.controller.logicLink import LogicLink
 import coordinator.engineAccessors as engine
 import utilities.db as dbUtilities
 import coordinator.events as engineEvent
-import gui.controller.events as guiEvent
+from gui import events
 from logicFileDrop import filepath
 
 class LogicCanvas(ViewCanvas):
@@ -84,7 +84,7 @@ class LogicCanvas(ViewCanvas):
         engineEvent.onModelAdded += self.draw_box
         engineEvent.onLinkAdded += self.draw_link
         engineEvent.onSimulationFinished += self.simulation_finished
-        guiEvent.onDbChanged += self.onDbChanged
+        events.onDbChanged += self.onDbChanged
 
     def initSubscribers(self):
         Publisher.subscribe(self.createBox, "createBox")

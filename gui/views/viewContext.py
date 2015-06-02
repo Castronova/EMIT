@@ -207,18 +207,20 @@ class CanvasContextMenu(wx.Menu):
         else:
             self.parent.SaveSimulation(self.parent.GetLoadingPath())
 
-    def SaveConfigurationAs(self,e):
+    def SaveConfigurationAs(self, e):
         # Executes from Float Canvas -> right click -> Save As
-        save = wx.FileDialog(self.parent.GetTopLevelParent(), "Save Configuration","","",
-                             "Simulation Files (*.sim)|*.sim|MDL Files (*.mdl)|*.mdl", wx.FD_SAVE  | wx.FD_OVERWRITE_PROMPT)
+        save = wx.FileDialog(self.parent.GetTopLevelParent(), "Save Configuration", "", "",
+                             "Simulation Files (*.sim)|*.sim", wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
 
         if save.ShowModal() == wx.ID_OK:
             path = save.GetPath()
+            if path[-4] != '.':
+                path += '.sim'
             self.parent.SaveSimulation(path)
             self.parent.SetLoadingPath(path)
 
     def LoadConfiguration(self, e):
-        load = wx.FileDialog(self.parent.GetTopLevelParent(), "Load Configuration","","",
+        load = wx.FileDialog(self.parent.GetTopLevelParent(), "Load Configuration", "", "",
                              "Simulation Files (*.sim)|*.sim", wx.FD_OPEN)
         if load.ShowModal() == wx.ID_OK:
             path = load.GetPath()

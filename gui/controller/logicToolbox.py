@@ -51,13 +51,7 @@ class LogicToolbox(ViewToolbox):
         self.componentBranch.Expand()
         self.simConfigurations.Expand()
 
-<<<<<<< HEAD
         self.initBinding()
-
-=======
-
-        self.simConfigurations.Collapse()
->>>>>>> 78457705364e87c73b7337abecf5b34c8bdd3a51
 
     def initBinding(self):
         self.Bind(wx.EVT_SIZE, self.OnSize)
@@ -180,14 +174,10 @@ class LogicToolbox(ViewToolbox):
         child = self.tree.AppendItem(e.cat, e.txt)
         self.filepath[e.txt] = e.fullpath
         self.items[child] = e.fullpath
-
-<<<<<<< HEAD
-=======
         child.__setattr__('path', e.fullpath)
         self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Expanded)
         self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Normal)
 
->>>>>>> 78457705364e87c73b7337abecf5b34c8bdd3a51
     def SetCurrentlySelected(self, evt):
         item = self.tree.GetSelection()
 

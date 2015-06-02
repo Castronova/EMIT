@@ -53,10 +53,13 @@ class EventHook(object):
     #     return self
 
     def fire(self, **kwargs):
+        count = 0  # to prevent event firing twice.
         evt_mgr = EventManager()
         handlers = evt_mgr.get_handlers(self.__name)
         if handlers is not None:
             for handler in handlers:
-                evt_obj = EventResponse(**kwargs)
-                handler(evt_obj)
+                if count == 0:
+                    count = 1
+                    evt_obj = EventResponse(**kwargs)
+                    handler(evt_obj)
 

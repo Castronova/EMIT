@@ -81,6 +81,7 @@ class LogicToolbox(ViewToolbox):
             # create the folder
             parent = folders[pathinfo['folder_path']]
             cat = self.tree.AppendItem(parent, folder_name)
+            self.cat = cat
 
             # save the folder instance so that child elements can be added during future iterations
             folders[folder_path + '/' + folder_name] = cat
@@ -99,7 +100,7 @@ class LogicToolbox(ViewToolbox):
                         apath = join(dirname(abspath(__file__)), '../../' + p)
                         matches = []
                         self.dirlist = []
-                        self.cat = cat
+
                         for root, dirnames, filenames in os.walk(apath):
                             for filename in fnmatch.filter(filenames, '*.mdl'):
                                 matches.append(os.path.join(root, filename))

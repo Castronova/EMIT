@@ -905,7 +905,7 @@ class LogicCanvas(ViewCanvas):
         if type(event) == wx.lib.floatcanvas.FloatCanvas._MouseEvent:
             self.PopupMenu(CanvasContextMenu(self), event.GetPosition())
 
-        elif type(event) == wx.lib.floatcanvas.FloatCanvas.Polygon:
+        elif type(event) == wx.lib.floatcanvas.FloatCanvas.Bitmap:
             # if object is link
             if event.type == "ArrowHead":
                 self.PopupMenu(LinkContextMenu(self, event), event.HitCoordsPixel.Get())

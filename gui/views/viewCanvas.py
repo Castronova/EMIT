@@ -20,12 +20,15 @@ class ViewCanvas(wx.Panel):
         wx.Panel.__init__(self, parent, id, size=wx.Size(0,0))
 
         # Get the Canvas Objects Resources
-        self.ModelsBox = rco.EMITModelDeepBlueReflected.GetBitmap()
+        self.ModelsBox = rco.EMITModelDeepBlueWavesReflected.GetBitmap()
         self.DatabaseBox = rco.EMITModelSilver.GetBitmap()
         self.TimeseriesBox = rco.EMITModelGold.GetBitmap()
-        self.UnassignedBox1 = rco.EMITModelBlue.GetBitmap()
+        self.UnassignedBox1 = rco.EMITModelDeepBlueWaves.GetBitmap()
         self.UnassignedBox2 = rco.EMITModelDeepBlue.GetBitmap()
         self.UnassignedBox3 = rco.EMITModelGreen.GetBitmap()
+        self.UnassignedBox4 = rco.EMITModelBlueWaves.GetBitmap()
+        self.UnassignedBox5 = rco.EMITModelBlueWavesNormal.GetBitmap()
+        self.UnassignedBox5 = rco.EMITModelSilverReflected.GetBitmap()
 
         self.GuiMouse = GUIMouse()
         self.GuiZoomIn = GUIZoomIn()

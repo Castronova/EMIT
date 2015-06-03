@@ -25,7 +25,6 @@ import coordinator.engineAccessors as engine
 import utilities.db as dbUtilities
 import coordinator.events as engineEvent
 from gui import events
-from logicFileDrop import filepath
 
 class LogicCanvas(ViewCanvas):
     def __init__(self, parent):
@@ -101,15 +100,6 @@ class LogicCanvas(ViewCanvas):
 
     def OnSetFilepath(self, path):
         self.path = path
-
-    # def onDrag(self, event):
-    #     x,y = event.Position
-    #     print(x,y)
-    #     path = filepath()
-    #     path.GetFilepath()
-    #
-    # def onMoving(self, event):
-    #     print(event.Position)
 
     def onEnterWindow(self, event):
         try:
@@ -208,10 +198,13 @@ class LogicCanvas(ViewCanvas):
         # set box color based on model type
         if type == datatypes.ModelTypes.TimeStep:
             color = '#B3DBG6'
+            bitmap = self.ModelsBox
         elif type == datatypes.ModelTypes.FeedForward:
             color = '#A2CAF5'
+            bitmap = self.TimeseriesBox
         elif type == datatypes.ModelTypes.Data:
             color = '#A2BGA5'
+            bitmap = self.DatabaseBox
 
         if name:
             w, h = 180, 120
@@ -226,7 +219,8 @@ class LogicCanvas(ViewCanvas):
             # get the coordinates for the rounded rectangle
             rect_coords = LogicCanvasObjects.build_rounded_rectangle((x, y), width=w, height=h)
 
-            R = self.FloatCanvas.AddObject(FC.Polygon(rect_coords, FillColor=color, InForeground=True))
+            # R = self.FloatCanvas.AddObject(FC.Polygon(rect_coords, FillColor=color, InForeground=True))
+            R = self.FloatCanvas.AddBitmap(bitmap, (x,y), position="cc")
 
             R.ID = id
             R.Name = name

@@ -323,7 +323,7 @@ class LogicCanvas(ViewCanvas):
 
         # create the arrowhead object
         arrow_shape = FC.Polygon(arrow, FillColor='Blue', InForeground=True)
-        if self.linelength > 200:
+        if self.linelength > 230:
             arrow_shape.Show()
         else:
             arrow_shape.Hide()

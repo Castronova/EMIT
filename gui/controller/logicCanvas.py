@@ -198,10 +198,11 @@ class LogicCanvas(ViewCanvas):
         # set box color based on model type
         if type == datatypes.ModelTypes.TimeStep:
             color = '#B3DBG6'
-            bitmap = self.ModelsBox
+            bitmap = self.TimeseriesBox
         elif type == datatypes.ModelTypes.FeedForward:
             color = '#A2CAF5'
-            bitmap = self.TimeseriesBox
+            # bitmap = self.ModelsBox
+            bitmap = self.UnassignedBox4
         elif type == datatypes.ModelTypes.Data:
             color = '#A2BGA5'
             bitmap = self.DatabaseBox
@@ -220,7 +221,7 @@ class LogicCanvas(ViewCanvas):
             rect_coords = LogicCanvasObjects.build_rounded_rectangle((x, y), width=w, height=h)
 
             # R = self.FloatCanvas.AddObject(FC.Polygon(rect_coords, FillColor=color, InForeground=True))
-            R = self.FloatCanvas.AddBitmap(bitmap, (x,y))
+            R = self.FloatCanvas.AddBitmap(bitmap, (x,y), Position="cc", InForeground=True)
             R.ID = id
             R.Name = name
             R.wh = (w, h)
@@ -232,7 +233,7 @@ class LogicCanvas(ViewCanvas):
             # define the font
             font = wx.Font(16, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
 
-            label = self.FloatCanvas.AddScaledTextBox(unicode(name), (x, y),  # (x+1, y+h/2),
+            label = self.FloatCanvas.AddScaledTextBox(unicode(name), (x,y),  # (x+1, y+h/2),
                                                       Color="Black", Size=FontSize, Width=w - 10, Position="cc",
                                                       Alignment="center",
                                                       Weight=wx.BOLD, Style=wx.ITALIC, InForeground=True, Font=font,
@@ -290,9 +291,11 @@ class LogicCanvas(ViewCanvas):
         # print "creating link", R1, R2
         x1, y1 = (R1.BoundingBox[0] + (R1.wh[0] / 2, R1.wh[1] / 2))
         x2, y2 = (R2.BoundingBox[0] + (R2.wh[0] / 2, R2.wh[1] / 2))
+        x1,y1=x1-90,y1-64
+        x2,y2=x2-90,y2-64
 
         cmap = cm.Blues
-        line = LogicCanvasObjects.get_line_pts((x1, y1), (x2, y2), order=4, num=200)
+        line = LogicCanvasObjects.get_line_pts((x1, y1), (x2, y2), order=4, num=200,)
         linegradient = LogicCanvasObjects.get_hex_from_gradient(cmap, len(line))
         linegradient.reverse()
 

@@ -234,6 +234,7 @@ class ViewEMIT(wx.Frame):
         self.Bind(wx.EVT_MENU, self.SaveConfigurationAs, SaveAs)
         self.Bind(wx.EVT_MENU, self.LoadConfiguration, Open)
         self.Bind(wx.EVT_MENU, self.onClose, exit)
+        events.onSaveFromCanvas += self.SaveConfigurationAs
 
         #View MenuBar
         self.Bind(wx.EVT_MENU, self.onDirectory, ShowDir)

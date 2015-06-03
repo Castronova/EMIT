@@ -210,20 +210,8 @@ class CanvasContextMenu(wx.Menu):
 
     def SaveConfigurationAs(self, e):
         # Executes from Float Canvas -> right click -> Save As
-        save = wx.FileDialog(self.parent.GetTopLevelParent(), "Save Configuration", "", "",
-                             "Simulation Files (*.sim)|*.sim", wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
-
-        if save.ShowModal() == wx.ID_OK:
-            path = save.GetPath()
-            if path[-4] != '.':
-                path += '.sim'
-            self.parent.SaveSimulation(path)
-            self.parent.SetLoadingPath(path)
-            # Firing an event
-            txt = save.Filename.split('.sim')[0]
-            e = dict(cat=self.Toolbox.cat, txt=txt, fullpath=save.Path)
-            events.onSimulationSaved.fire(**e)
-
+        e = dict()
+        events.onSaveFromCanvas.fire(**e)  # calls SaveConfigurationsAs in ViewEMIT.py
 
     def LoadConfiguration(self, e):
         load = wx.FileDialog(self.parent.GetTopLevelParent(), "Load Configuration", "", "",

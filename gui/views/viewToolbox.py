@@ -36,12 +36,6 @@ class ViewToolbox(wx.Panel):
 
         self.root_mdl = self.tree.AddRoot("Toolbox")
 
-
-
-
-
-
-
 class multidict(dict):
     _unique = 0
 

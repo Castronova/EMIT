@@ -46,11 +46,12 @@ class LogicToolbox(ViewToolbox):
         self.tree.SetItemImage(self.root_mdl, self.fldropenidx, which=wx.TreeItemIcon_Expanded)
         self.tree.SetItemImage(self.root_mdl, self.fldropenidx, which=wx.TreeItemIcon_Normal)
 
-        self.tree.Expand(self.root_mdl)
-        self.tree.ExpandAll()
+        # Expand "Toolbox", "Configurations", and "Components" trees in the toolbox
+        self.root_mdl.Expand()
+        self.componentBranch.Expand()
+        self.simConfigurations.Expand()
 
-
-        self.simConfigurations.Collapse()
+        self.initBinding()
 
     def initBinding(self):
         self.Bind(wx.EVT_SIZE, self.OnSize)
@@ -62,7 +63,7 @@ class LogicToolbox(ViewToolbox):
     def loadToolbox(self, modelpaths):
 
         # add base-level folders
-        self.simConfigurations = self.tree.AppendItem(self.root_mdl, 'Configurations')
+        self.simConfigurations = self.tree.AppendItem(self.root_mdl, "Configurations")
         self.tree.SetItemImage(self.simConfigurations, self.folderConfigIcon, which=wx.TreeItemIcon_Expanded)
         self.tree.SetItemImage(self.simConfigurations, self.folderConfigIcon, which=wx.TreeItemIcon_Normal)
         self.componentBranch = self.tree.AppendItem(self.root_mdl, "Components")
@@ -80,14 +81,14 @@ class LogicToolbox(ViewToolbox):
             # create the folder
             parent = folders[pathinfo['folder_path']]
             cat = self.tree.AppendItem(parent, folder_name)
+            self.cat = cat
 
             # save the folder instance so that child elements can be added during future iterations
-            folders[folder_path+'/'+folder_name] = cat
+            folders[folder_path + '/' + folder_name] = cat
 
             # set folder images
             self.tree.SetItemImage(cat, self.folderComponents, which=wx.TreeItemIcon_Expanded)
             self.tree.SetItemImage(cat, self.folderComponents, which=wx.TreeItemIcon_Normal)
-
 
             # get the PATH
             if 'path' in pathinfo:
@@ -99,7 +100,7 @@ class LogicToolbox(ViewToolbox):
                         apath = join(dirname(abspath(__file__)), '../../' + p)
                         matches = []
                         self.dirlist = []
-                        self.cat = cat
+
                         for root, dirnames, filenames in os.walk(apath):
                             for filename in fnmatch.filter(filenames, '*.mdl'):
                                 matches.append(os.path.join(root, filename))
@@ -147,11 +148,10 @@ class LogicToolbox(ViewToolbox):
                 kvp[option] = cparser.get(s, option)
             d.append(kvp)
 
-            #if section not in self.modelpaths:
+        # if section not in self.modelpaths:
         self.modelpaths = d
-            # else:
-            #     self.modelpaths[section].append(d)
-
+        # else:
+        #     self.modelpaths[section].append(d)
 
     def loadMDLFile(self, cat, txt, fullpath):
         mdl_parser = ConfigParser.ConfigParser(None, multidict)
@@ -175,7 +175,6 @@ class LogicToolbox(ViewToolbox):
         child = self.tree.AppendItem(e.cat, e.txt)
         self.filepath[e.txt] = e.fullpath
         self.items[child] = e.fullpath
-
         child.__setattr__('path', e.fullpath)
         self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Expanded)
         self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Normal)
@@ -264,14 +263,12 @@ class LogicToolbox(ViewToolbox):
     def OnCollapseAll(self):
         self.tree.Collapse(self.root_mdl)
 
-
     def ShowDetails(self):
 
         item = self.tree.GetSelection()
         key = self.tree.GetItemText(item)
 
         filepath = self.filepath.get(key)
-
 
         filename, ext = os.path.splitext(filepath)
         if ext == '.mdl':
@@ -310,18 +307,16 @@ class LogicToolbox(ViewToolbox):
             self.tree.Delete(item)
 
 
-
 class multidict(dict):
     """
     Dictionary class that has been extended for Ordering and Duplicate Keys
     """
 
     def __init__(self, *args, **kw):
-        self.itemlist = super(multidict,self).keys()
+        self.itemlist = super(multidict, self).keys()
         self._unique = 0
 
     def __setitem__(self, key, val):
-
         if isinstance(val, dict):
             self._unique += 1
             key += '^' + str(self._unique)
@@ -330,9 +325,12 @@ class multidict(dict):
 
     def __iter__(self):
         return iter(self.itemlist)
+
     def keys(self):
-       return self.itemlist
+        return self.itemlist
+
     def values(self):
         return [self[key] for key in self]
+
     def itervalues(self):
         return (self[key] for key in self)

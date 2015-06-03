@@ -1,8 +1,10 @@
 __author__ = 'Jacob'
 
 import os
+
 import wx
-from ..images import icons
+
+from gui.Resources import icons
 
 ID_BUTTON = 100
 ID_EXIT = 200

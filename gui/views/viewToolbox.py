@@ -3,7 +3,8 @@ import wx
 import wx.lib.customtreectrl as CT
 
 # todo: refactor
-from ..images import icons
+from gui.Resources import icons
+
 
 class ViewToolbox(wx.Panel):
     def __init__(self, parent):

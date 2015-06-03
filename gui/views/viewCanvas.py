@@ -3,8 +3,7 @@ __author__ = 'Mario'
 from gui.controller.logicNavigationCanvas import *
 
 # todo: refactor
-from ..images import icons
-from ..images import resourcesCanvasObjects as rco
+from gui.Resources import resourcesCanvasObjects as rco, icons
 
 
 class ViewCanvas(wx.Panel):
@@ -29,6 +28,7 @@ class ViewCanvas(wx.Panel):
         self.UnassignedBox4 = rco.EMITModelBlueWaves.GetBitmap()
         self.UnassignedBox5 = rco.EMITModelBlueWavesNormal.GetBitmap()
         self.UnassignedBox5 = rco.EMITModelSilverReflected.GetBitmap()
+        self.LinkTriangle = rco.LinkTriangle.GetBitmap()
 
         self.GuiMouse = GUIMouse()
         self.GuiZoomIn = GUIZoomIn()

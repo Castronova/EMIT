@@ -1,21 +1,18 @@
 import os
+
 import wx
 import wx.xrc
-from wx.lib.pubsub import pub as Publisher
-from gui.views.viewDirectoryListControl import ViewDirectoryListControl
-
-import utilities
-from utilities import gui, spatial
 from shapely import wkt
-from viewContext import DirectoryContextMenu, ModelContextMenu
+
+from utilities import gui, spatial
 from gui.views.viewModel import ViewModel
+
 
 
 # todo: refactor
 # from ..DirectoryLstCtrl import DirectoryListCtrl
 from gui.controller.logicDirectoryListControl import LogicDirectoryListControl
-from ..images import icons
-
+from gui.Resources import icons
 
 [PreviousID, UpID, HomeID, SaveID, RefreshID, TerminalID, HelpID] = [wx.NewId() for _init_ctrls in range(7)]
 

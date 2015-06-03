@@ -220,8 +220,7 @@ class LogicCanvas(ViewCanvas):
             rect_coords = LogicCanvasObjects.build_rounded_rectangle((x, y), width=w, height=h)
 
             # R = self.FloatCanvas.AddObject(FC.Polygon(rect_coords, FillColor=color, InForeground=True))
-            R = self.FloatCanvas.AddBitmap(bitmap, (x,y), position="cc")
-
+            R = self.FloatCanvas.AddBitmap(bitmap, (x,y))
             R.ID = id
             R.Name = name
             R.wh = (w, h)

@@ -4,7 +4,7 @@ from gui.controller.logicNavigationCanvas import *
 
 # todo: refactor
 from ..images import icons
-
+from ..images import resourcesCanvasObjects as rco
 
 
 class ViewCanvas(wx.Panel):
@@ -18,6 +18,14 @@ class ViewCanvas(wx.Panel):
     def __init__(self, parent, id=wx.ID_ANY, **kwargs): # The rest just get passed into FloatCanvas
 
         wx.Panel.__init__(self, parent, id, size=wx.Size(0,0))
+
+        # Get the Canvas Objects Resources
+        self.ModelsBox = rco.EMITModelDeepBlueReflected.GetBitmap()
+        self.DatabaseBox = rco.EMITModelSilver.GetBitmap()
+        self.TimeseriesBox = rco.EMITModelGold.GetBitmap()
+        self.UnassignedBox1 = rco.EMITModelBlue.GetBitmap()
+        self.UnassignedBox2 = rco.EMITModelDeepBlue.GetBitmap()
+        self.UnassignedBox3 = rco.EMITModelGreen.GetBitmap()
 
         self.GuiMouse = GUIMouse()
         self.GuiZoomIn = GUIZoomIn()

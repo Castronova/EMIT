@@ -374,7 +374,7 @@ class Coordinator(object):
 
 
         # save the model
-        self.__models[thisModel.get_name()] = thisModel
+        self.__models[thisModel.get_id()] = thisModel
 
         # return the model id
         # return thisModel

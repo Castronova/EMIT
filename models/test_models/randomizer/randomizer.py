@@ -42,8 +42,8 @@ class randomizer(feed_forward.feed_forward_wrapper):
             random.randrange(5,60,5)
 
             c = 0
-            for i in range(900000000):
-                c += 1
+            # for i in range(900000000):
+            #     c += 1
 
             # loop over each output geometry instance and generate a random number
             for g in geoms:
@@ -56,7 +56,7 @@ class randomizer(feed_forward.feed_forward_wrapper):
                 end = self.simulation_end()
                 while (current_time <= end):
 
-                    Min,Max = output.split(' ').split('-')
+                    Min,Max = output.name().split(' ')[-1].split('-')
                     val = random.random()*float(Max) + float(Min)
                     ts.append(((current_time), (val)))
 

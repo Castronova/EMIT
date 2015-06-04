@@ -325,7 +325,7 @@ class Coordinator(object):
 
                 # create a model instance
                 thisModel = Model(id= id,
-                                  name=model_inst.name()+"-"+id,
+                                  name=model_inst.name(),
                                   instance=model_inst,
                                   desc=model_inst.description(),
                                   input_exchange_items= iei,
@@ -374,7 +374,7 @@ class Coordinator(object):
 
 
         # save the model
-        self.__models[thisModel.get_name()] = thisModel
+        self.__models[thisModel.get_id()] = thisModel
 
         # return the model id
         # return thisModel

@@ -1,3 +1,5 @@
+import os
+
 __author__ = 'tonycastronova'
 
 import random
@@ -69,6 +71,23 @@ class randomizer(feed_forward.feed_forward_wrapper):
         This function is used to build output exchange items
         :return: list of output exchange items
         """
+
+        # save calculations locally
+        base = os.path.dirname(__file__)
+        # save output locally
+        with open(base+'/output.out', 'w') as f:
+            for oei in self.outputs().keys():
+                output = self.get_output_by_name(oei)
+                geoms = output.geometries()
+                f.write(oei+'\n')
+                for g in geoms:
+                    f.write(g.geom().to_wkt()+'\n')
+                    date, val = g.datavalues().get_dates_values()
+                    for i in xrange(0, len(date)):
+                        f.write(date[i].strftime("%m-%d-%Y %H:%M")+','+str(val[i])+'\n')
+
+                f.write('\n')
+
 
         # save all timeseries
         return self.outputs()

@@ -7,7 +7,7 @@ __author__ = 'tonycastronova'
 import threading
 
 import networkx as net
-
+import os
 from coordinator import help as h
 from utilities.gui import *
 from utilities.mdl import *

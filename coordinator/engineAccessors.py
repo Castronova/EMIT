@@ -168,4 +168,5 @@ def runSimulation():
     e.thread = Thread(target=e.check_for_process_results)
     e.thread.start()
     e.thread.join()
+    return '1'
 

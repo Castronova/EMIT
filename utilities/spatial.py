@@ -7,68 +7,68 @@ from osgeo import ogr, osr
 import cPickle as pickle
 import shapefile
 from shapely.geometry import shape
-import coordinator.engineAccessors as engine
+# import coordinator.engineAccessors as engine
 
 
-def get_input_geoms(model_id):
+# def get_input_geoms(model_id):
+#
+#     # get the model by id
+#     # model = cmd.get_model_by_id(model_id)
+#     # model = engine.getModelById(model_id)
+#
+#     # get the mdoel inputs
+#     # inputs = model.get_instance().inputs()
+#     inputs = engine.getInputExchangeItems(model_id)
+#
+#     # store input geometries by exchange item name
+#     input_geoms = {}
+#
+#     if inputs is not None:
+#         for iei in inputs.values():
+#             input_geoms[iei.name()] = {}
+#             input_geoms[iei.name()]['data'] = get_coords(iei.geometries())
+#             # hack: assumes all geoms will be the same type
+#             input_geoms[iei.name()]['type'] =iei.geometries()[0].type()
+#
+#
+#     return input_geoms
 
-    # get the model by id
-    # model = cmd.get_model_by_id(model_id)
-    # model = engine.getModelById(model_id)
+# def get_output_geoms(model_id):
+#
+#     # get the model by id
+#     # model = cmd.get_model_by_id(model_id)
+#     # model = engine.getModelById(model_id)
+#
+#     # get the model outputs
+#     # outputs = model.get_instance().outputs()
+#     outputs = engine.getOutputExchangeItems(model_id)
+#     # output_exchange_items = model.get_output_exchange_items()
+#
+#     # store output geometries by exchange item name
+#     output_geoms = {}
+#
+#     if outputs is not None:
+#         for oei in outputs.values():
+#             output_geoms[oei.name()] = {}
+#             output_geoms[oei.name()]['data'] = get_coords(oei.geometries())
+#             # hack: assumes all geoms will be the same type
+#             output_geoms[oei.name()]['type'] =oei.geometries()[0].type()
+#
+#     return output_geoms
 
-    # get the mdoel inputs
-    # inputs = model.get_instance().inputs()
-    inputs = engine.getInputExchangeItems(model_id)
-
-    # store input geometries by exchange item name
-    input_geoms = {}
-
-    if inputs is not None:
-        for iei in inputs.values():
-            input_geoms[iei.name()] = {}
-            input_geoms[iei.name()]['data'] = get_coords(iei.geometries())
-            # hack: assumes all geoms will be the same type
-            input_geoms[iei.name()]['type'] =iei.geometries()[0].type()
-
-
-    return input_geoms
-
-def get_output_geoms(model_id):
-
-    # get the model by id
-    # model = cmd.get_model_by_id(model_id)
-    # model = engine.getModelById(model_id)
-
-    # get the model outputs
-    # outputs = model.get_instance().outputs()
-    outputs = engine.getOutputExchangeItems(model_id)
-    # output_exchange_items = model.get_output_exchange_items()
-
-    # store output geometries by exchange item name
-    output_geoms = {}
-
-    if outputs is not None:
-        for oei in outputs.values():
-            output_geoms[oei.name()] = {}
-            output_geoms[oei.name()]['data'] = get_coords(oei.geometries())
-            # hack: assumes all geoms will be the same type
-            output_geoms[oei.name()]['type'] =oei.geometries()[0].type()
-
-    return output_geoms
-
-def set_output_geoms(model, variable, geoms):
-
-
-    # find the item by variable name
-    oei = model.get_output_by_name(variable)
-
-    for g in geoms:
-        # create a stdlib geometry
-        geom = stdlib.Geometry(geom=g)
-
-        # add this geometry to the exchange item
-        oei.add_geometry(geom)
-
+# def set_output_geoms(model, variable, geoms):
+#
+#
+#     # find the item by variable name
+#     oei = model.get_output_by_name(variable)
+#
+#     for g in geoms:
+#         # create a stdlib geometry
+#         geom = stdlib.Geometry(geom=g)
+#
+#         # add this geometry to the exchange item
+#         oei.add_geometry(geom)
+#
 def get_coords(geometries):
 
     geoms = []

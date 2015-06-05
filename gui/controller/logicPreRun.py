@@ -24,3 +24,4 @@ class logicPreRun(viewPreRun):
 
     def OnRun(self, event):
         print "Run me"
+        return True

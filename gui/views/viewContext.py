@@ -9,10 +9,8 @@ from wx.lib.pubsub import pub as Publisher, __all__
 from gui.controller.logicModel import LogicModel
 from gui.controller.logicPlot import LogicPlot
 from gui.controller.logicPreRun import logicPreRun
-# from gui.views.viewPreRun import viewPreRun
 import coordinator.engineAccessors as engine
 from gui import events
-import random
 
 #todo:  this needs to be split up into view and logic code
 
@@ -201,7 +199,6 @@ class CanvasContextMenu(wx.Menu):
     def OnRunModel(self, e):
         preRunDialog = logicPreRun(self)
         preRunDialog.Show()
-
 
     def OnClickClear(self, e):
         dlg = wx.MessageDialog(None, 'Are you sure you would like to clear configuration?', 'Question', wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)

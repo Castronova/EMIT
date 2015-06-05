@@ -38,7 +38,6 @@ class LogicToolbox(ViewToolbox):
         self.filepath = {}
 
         self.sectionKey()
-
         self.initBinding()
 
         self.loadToolbox(self.getModelPath())
@@ -50,8 +49,6 @@ class LogicToolbox(ViewToolbox):
         self.root_mdl.Expand()
         self.componentBranch.Expand()
         self.simConfigurations.Expand()
-
-        self.initBinding()
 
     def initBinding(self):
         self.Bind(wx.EVT_SIZE, self.OnSize)

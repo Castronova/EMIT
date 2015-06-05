@@ -1,12 +1,15 @@
 __author__ = 'tonycastronova'
+import wx
+
 from api.ODM2.Core.services import readCore
 from api.ODM2.Results.services import readResults
 from utilities import spatial
 from api.ODM2.Simulation.services import readSimulation
 from wx.lib.pubsub import pub as Publisher, __all__
-import wx
 from gui.controller.logicModel import LogicModel
 from gui.controller.logicPlot import LogicPlot
+from gui.controller.logicPreRun import logicPreRun
+# from gui.views.viewPreRun import viewPreRun
 import coordinator.engineAccessors as engine
 from gui import events
 import random
@@ -196,8 +199,8 @@ class CanvasContextMenu(wx.Menu):
         self.parent.run()
 
     def OnRunModel(self, e):
-        notebook = MainFrame()
-        notebook.Show()
+        preRunDialog = logicPreRun(self)
+        preRunDialog.Show()
 
 
     def OnClickClear(self, e):
@@ -519,112 +522,3 @@ class SimulationContextMenu(ContextMenu):
         # plot the data
         PlotFrame.plot(xlist=x_series, ylist=y_series, labels=labels)
         PlotFrame.Show()
-
-class PageOne(wx.Panel):
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent=parent, id=wx.ID_ANY)
-
-        # ------------------This way I was trying to manually positioning everything ------------------------
-        # simulationTitle = wx.StaticText(self, -1, label="Simulation Title", pos=(10, 10))
-        # databaseTitle = wx.StaticText(self, id=wx.ID_ANY, label="Database Title", pos=(50, 50))
-        # simulationName = wx.TextCtrl(self, id=wx.ID_ANY, value="Simulation name goes here", pos=(125, 5), size=(300, -1))
-        # runButton = wx.Button(self, label='Run', pos=(400, 195), style=0)
-
-        self.parent = parent
-        sizer = wx.GridBagSizer(5, 5)
-
-        simulationName = wx.StaticText(self, label="Simulation Name: ")
-        sizer.Add(simulationName, pos=(1, 0), flag=wx.LEFT, border=10)
-
-        simulationNameTextBox = wx.TextCtrl(self)
-        sizer.Add(simulationNameTextBox, pos=(1, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND)
-
-        databaseName = wx.StaticText(self, label="Database Name: ")
-        sizer.Add(databaseName, pos=(2, 0), flag=wx.LEFT|wx.TOP, border=10)
-
-        databaseCombo = wx.ComboBox(self)
-        sizer.Add(databaseCombo, pos=(2, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND, border=5)
-
-        # browseDataBaseButton = wx.Button(self, label="Browse...")
-        # sizer.Add(browseDataBaseButton, pos=(2, 4), flag=wx.TOP|wx.RIGHT, border=5)
-
-        accountName = wx.StaticText(self, label="Account: ")
-        sizer.Add(accountName, pos=(3, 0), flag=wx.TOP|wx.LEFT, border=10)
-
-        accountCombo = wx.ComboBox(self)
-        sizer.Add(accountCombo, pos=(3, 1), span=(1, 3),
-            flag=wx.TOP|wx.EXPAND, border=5)
-
-        browseAccountButton = wx.Button(self, label="Add New")
-        sizer.Add(browseAccountButton, pos=(3, 4), flag=wx.TOP|wx.RIGHT, border=5)
-
-        lineBreak = wx.StaticLine(self)
-        sizer.Add(lineBreak, pos=(4, 0), span=(1, 5), flag=wx.EXPAND|wx.BOTTOM, border=10)
-
-        sizerStaticBox = wx.StaticBox(self, label="Optional Features")
-
-        boxsizer = wx.StaticBoxSizer(sizerStaticBox, wx.VERTICAL)
-        boxsizer.Add(wx.CheckBox(self, label="Display Simulation Message"), flag=wx.LEFT|wx.TOP, border=5)
-        boxsizer.Add(wx.CheckBox(self, label="Log Simulation Message"), flag=wx.LEFT, border=5)
-        boxsizer.Add(wx.CheckBox(self, label="Checkbox 3"), flag=wx.LEFT|wx.BOTTOM, border=5)
-        sizer.Add(boxsizer, pos=(5, 0), span=(1, 5), flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT, border=10)
-
-        helpButton = wx.Button(self, label='Help')
-        sizer.Add(helpButton, pos=(7, 0), flag=wx.LEFT, border=10)
-
-        self.runButton = wx.Button(self, label="Run")
-        sizer.Add(self.runButton, pos=(7, 4))
-
-        self.cancelButton = wx.Button(self, label="Cancel")
-        sizer.Add(self.cancelButton, pos=(7, 3), span=(1, 1), flag=wx.BOTTOM | wx.RIGHT, border=5)
-
-        sizer.AddGrowableCol(2)
-
-        self.SetSizer(sizer)
-
-        self.cancelButton.Bind(wx.EVT_BUTTON, self.OnCancel)
-        self.runButton.Bind(wx.EVT_BUTTON, self.OnRun)
-
-    def OnCancel(self, event):
-        frame = self.GetTopLevelParent()
-        frame.Close(True)
-
-    def OnRun(self, event):
-        print "Run me"
-
-
-class PageTwo(wx.Panel):
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent)
-        t = wx.StaticText(self, -1, "This is a Page Two", (40, 40))
-
-class PageThree(wx.Panel):
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent)
-        t = wx.StaticText(self, -1, "This is a Page Three\nThis is here in case we want to add another tab. ", (60, 60))
-
-
-class MainFrame(wx.Frame):
-    def __init__(self):                                                         # this style makes the window non-resizable
-        wx.Frame.__init__(self, None, title="Window Title", size=(450, 425), style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER)
-
-        # Here we create a panel and a notebook on the panel
-        panel = wx.Panel(self)
-        notebook = wx.Notebook(panel)
-
-        # create the page windows as children of the notebook
-        page1 = PageOne(notebook)
-        page2 = PageTwo(notebook)
-        page3 = PageThree(notebook)
-
-        # add the pages to the notebook with the label to show on the tab
-        notebook.AddPage(page1, "Summary")
-        notebook.AddPage(page2, "Details")
-        notebook.AddPage(page3, "Page 3")
-
-        # finally, put the notebook in a sizer for the panel to manage
-        # the layout
-        sizer = wx.BoxSizer()
-        sizer.Add(notebook, 1, wx.EXPAND)
-        panel.SetSizer(sizer)
-

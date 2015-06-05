@@ -41,10 +41,6 @@ class randomizer(feed_forward.feed_forward_wrapper):
 
             random.randrange(5,60,5)
 
-            c = 0
-            # for i in range(900000000):
-            #     c += 1
-
             # loop over each output geometry instance and generate a random number
             for g in geoms:
                 # get the geometry
@@ -65,7 +61,7 @@ class randomizer(feed_forward.feed_forward_wrapper):
 
 
                 # save this timeseries to the output geom
-                self.set_geom_values(output, geom, ts)
+                self.set_geom_values(output.name(), geom, ts)
 
 
     def save(self):

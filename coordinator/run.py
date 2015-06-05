@@ -67,10 +67,14 @@ def run_feed_forward(obj):
             source = link.source_exchange_item()
             target = link.target_exchange_item()
             key = generate_link_key(link)
+
+            # set default spatial interpolation to ExactMatch
+            if link.spatial_interpolation() is None:
+                link.spatial_interpolation(spatial_exact_match())
+
             spatial_interp = link.spatial_interpolation()
-            if spatial_interp:
-                spatial_maps[key] = spatial_interp.transform(source.get_all_datasets().keys(),
-                                                             target.get_all_datasets().keys())
+            spatial_maps[key] = spatial_interp.transform(source.get_all_datasets().keys(),
+                                                         target.get_all_datasets().keys())
 
         # # store model db sessions
         # session = obj.get_model_by_id(modelid).get_instance().session()

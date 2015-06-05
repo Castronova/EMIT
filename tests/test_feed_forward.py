@@ -53,8 +53,6 @@ class test_feed_forward(unittest.TestCase):
         is_successful =  engine.runSimulation()
         self.assertTrue(is_successful)
 
-        print '\n\ndone'
-
 
     def generic_listener(self, e):
         # this is a listener function for all modeladded, linkadded, etc.

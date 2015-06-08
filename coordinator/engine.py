@@ -188,8 +188,14 @@ class Model(object):
 
     def get_description(self):
         return self.__description
+
     def get_name(self):
-        return self.__name
+        if 'mdl' in self.attrib():
+            return self.__name
+        elif 'databaseid' in self.attrib() and 'resultid' in self.attrib():
+            attribDict = self.attrib()
+            return self.__name + '-' + attribDict['resultid']
+
     def get_id(self):
         return self.__id
 
@@ -346,8 +352,13 @@ class Coordinator(object):
 
             # create odm2 datamodel instance
             inst = odm2_data.odm2(resultid=resultid, session=session)
-
             oei = inst.outputs().values()
+
+            # Make sure the series is not already in the canvas
+            # List of canvas models are kept as a dict with keys in the format of 'NAME-ID'
+            if inst.name()+'-'+resultid in self.__models:
+                print 'WARNING | Series named '+inst.name()+' already exists in configuration'
+                return None
 
             if id is None:
                 id = uuid.uuid4().hex[:5]

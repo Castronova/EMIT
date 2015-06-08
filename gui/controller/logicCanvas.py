@@ -212,8 +212,10 @@ class LogicCanvas(ViewCanvas):
             x, y = xCoord, yCoord
             FontSize = 14
 
-            if self.getUniqueId() is not None:
-                name = self.title
+            if self.getUniqueId() is not None and type == datatypes.ModelTypes.Data:
+                # Strip out last bit of the name (normally includes an id), e.g. "rainfall-5" -> "rainfall"
+                sub = name.rfind('-')-name.__len__()
+                name = name[:sub]
                 name = name.replace("_", "  ")
                 name = name + "\n" + "ID = " + self.getUniqueId()
 
@@ -231,7 +233,7 @@ class LogicCanvas(ViewCanvas):
             R.type = LogicCanvasObjects.ShapeType.Model
 
             # define the font
-            font = wx.Font(16, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+            font = wx.Font(16, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
 
             label = self.FloatCanvas.AddScaledTextBox(unicode(name), (x,y),  # (x+1, y+h/2),
                                                       Color="Black", Size=FontSize, Width=w - 10, Position="cc",

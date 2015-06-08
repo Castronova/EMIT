@@ -47,7 +47,7 @@ class PageOne(wx.Panel):
         self.databaseName = ""
         self.accountName = ""
         self.accountCombo = ""
-        self.browseAccountButton = ""
+        self.addAccountButton = ""
         self.lineBreak = ""
         self.sizerStaticBox = ""
         self.boxsizer = ""
@@ -78,8 +78,8 @@ class PageOne(wx.Panel):
         self.accountCombo = wx.ComboBox(self)
         self.sizer.Add(self.accountCombo, pos=(3, 1), span=(1, 3), flag=wx.TOP|wx.EXPAND, border=5)
 
-        self.browseAccountButton = wx.Button(self, label="Add New")
-        self.sizer.Add(self.browseAccountButton, pos=(3, 4), flag=wx.TOP|wx.RIGHT, border=5)
+        self.addAccountButton = wx.Button(self, label="Add New")
+        self.sizer.Add(self.addAccountButton, pos=(3, 4), flag=wx.TOP|wx.RIGHT, border=5)
 
         self.lineBreak = wx.StaticLine(self)
         self.sizer.Add(self.lineBreak, pos=(4, 0), span=(1, 5), flag=wx.EXPAND|wx.BOTTOM, border=10)
@@ -105,7 +105,6 @@ class PageOne(wx.Panel):
 
         self.SetSizer(self.sizer)
 
-
 class PageTwo(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
@@ -115,4 +114,3 @@ class PageThree(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
         t = wx.StaticText(self, -1, "This is a Page Three\nThis is here in case we want to add another tab. ", (60, 60))
-

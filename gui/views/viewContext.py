@@ -176,11 +176,8 @@ class CanvasContextMenu(wx.Menu):
 
         mmi = wx.MenuItem(self, wx.NewId(), 'Run')
         self.AppendItem(mmi)
-        self.Bind(wx.EVT_MENU, self.OnClickRun, mmi)
-
-        mmi = wx.MenuItem(self, wx.NewId(), 'Run Model')
-        self.AppendItem(mmi)
         self.Bind(wx.EVT_MENU, self.OnRunModel, mmi)
+        events.onClickRun += self.OnClickRun
 
         mmi = wx.MenuItem(self, wx.NewId(), 'Clear Configuration')
         self.AppendItem(mmi)
@@ -199,6 +196,7 @@ class CanvasContextMenu(wx.Menu):
     def OnRunModel(self, e):
         preRunDialog = logicPreRun(self)
         preRunDialog.Show()
+
 
     def OnClickClear(self, e):
         dlg = wx.MessageDialog(None, 'Are you sure you would like to clear configuration?', 'Question', wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)

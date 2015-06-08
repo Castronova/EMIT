@@ -9,3 +9,6 @@ onSaveFromCanvas = EventHook('onSaveFromCanvas')
 # Database Related Events
 onDbChanged = EventHook('onDbChanged')
 
+
+#  Pre Run Events
+onClickRun = EventHook('onClickRun')

@@ -410,8 +410,8 @@ class TimeSeries(wx.Panel):
 
     """
 
-    def __init__( self, parent ):
-        wx.Panel.__init__ ( self, parent, id = wx.ID_ANY, pos = wx.DefaultPosition, size = wx.Size( 500,500 ), style = wx.TAB_TRAVERSAL )
+    def __init__( self, parent):
+        wx.Panel.__init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.Size(500,500), style=wx.TAB_TRAVERSAL)
 
         self._databases = {}
         self._connection_added = True
@@ -420,12 +420,12 @@ class TimeSeries(wx.Panel):
 
 
         connection_choices = []
-        self.connection_combobox = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.Size(200, -1), connection_choices, 0)
+        self.connection_combobox = wx.Choice(self, wx.ID_ANY, wx.DefaultPosition, wx.Size(200, -1), connection_choices, 0)
         self.__selected_choice_idx = 0
-        self.connection_combobox.SetSelection( self.__selected_choice_idx)
+        self.connection_combobox.SetSelection(self.__selected_choice_idx)
 
         self.connection_refresh_button = wx.Button(self, wx.ID_ANY, u"Refresh", wx.DefaultPosition, wx.DefaultSize, 0)
-        self.addConnectionButton = wx.Button( self, wx.ID_ANY, u"Add Connection", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.addConnectionButton = wx.Button(self, wx.ID_ANY, u"Add Connection", wx.DefaultPosition, wx.DefaultSize, 0)
         self.m_olvSeries = LogicDatabase(self, pos=wx.DefaultPosition, size=wx.DefaultSize, id=wx.ID_ANY,
                                          style=wx.LC_REPORT|wx.SUNKEN_BORDER)
         self.table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
@@ -436,23 +436,23 @@ class TimeSeries(wx.Panel):
         self.addConnectionButton.Bind(wx.EVT_MOUSEWHEEL, self.AddConnection_MouseWheel)
 
         self.connection_refresh_button.Bind(wx.EVT_LEFT_DOWN, self.OLVRefresh)
-        self.connection_combobox.Bind(wx.EVT_CHOICE,self.DbChanged)
+        self.connection_combobox.Bind(wx.EVT_CHOICE, self.DbChanged)
         self.connection_combobox.Bind(wx.EVT_COMBOBOX_DROPDOWN, self.RefreshComboBox)
 
 
         # Sizers
-        seriesSelectorSizer = wx.BoxSizer( wx.VERTICAL )
-        buttonSizer = wx.BoxSizer( wx.HORIZONTAL )
-        buttonSizer.SetMinSize( wx.Size( -1,45 ) )
+        seriesSelectorSizer = wx.BoxSizer(wx.VERTICAL)
+        buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
+        buttonSizer.SetMinSize(wx.Size(-1, 45))
 
-        buttonSizer.Add( self.connection_combobox, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
-        buttonSizer.Add( self.addConnectionButton, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
-        buttonSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
-        buttonSizer.Add( self.connection_refresh_button, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
-        seriesSelectorSizer.Add( buttonSizer, 0, wx.ALL|wx.EXPAND, 5 )
-        seriesSelectorSizer.Add( self.m_olvSeries, 1, wx.ALL|wx.EXPAND, 5 )
+        buttonSizer.Add(self.connection_combobox, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 5)
+        buttonSizer.Add(self.addConnectionButton, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 5)
+        buttonSizer.AddSpacer((0, 0), 1, wx.EXPAND, 5)
+        buttonSizer.Add(self.connection_refresh_button, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 5)
+        seriesSelectorSizer.Add( buttonSizer, 0, wx.ALL|wx.EXPAND, 5)
+        seriesSelectorSizer.Add(self.m_olvSeries, 1, wx.ALL | wx.EXPAND, 5)
 
-        self.SetSizer( seriesSelectorSizer )
+        self.SetSizer(seriesSelectorSizer)
         self.Layout()
 
         # Publisher.subscribe(self.connection_added_status, "connectionAddedStatus")

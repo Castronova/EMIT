@@ -4,6 +4,7 @@ import wx
 from gui.views.viewPreRun import viewPreRun
 from gui import events
 
+
 class logicPreRun(viewPreRun):
     def __init__(self, parent):
 
@@ -15,10 +16,11 @@ class logicPreRun(viewPreRun):
         self.parent = parent
         self.initBinding()
 
+
     def initBinding(self):
         self.page1.cancelButton.Bind(wx.EVT_BUTTON, self.OnCancel)
         self.page1.runButton.Bind(wx.EVT_BUTTON, self.OnRun)
-        # self.page1.addAccountButton.Bind(wx.EVT_BUTTON, self.OnAddNew)
+        self.page1.addAccountButton.Bind(wx.EVT_BUTTON, self.OnAddNew)
 
     def OnCancel(self, event):
         frame = self.GetTopLevelParent()
@@ -26,11 +28,14 @@ class logicPreRun(viewPreRun):
 
     def OnRun(self, event):
         e = dict()
-        events.onClickRun.fire(**e)
+        events.onClickRun.fire(**e)  # Calls onClickRun from viewContext.py
         self.OnCancel(event)  # Close after Run is clicked
 
     def OnAddNew(self, event):
         print "add a new user"
+        dlg = self.page1.onAddUser()
+        dlg.CenterOnScreen()
+        dlg.ShowModal()
 
 
 

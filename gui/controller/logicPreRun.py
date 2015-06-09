@@ -32,7 +32,6 @@ class logicPreRun(viewPreRun):
         self.OnCancel(event)  # Close after Run is clicked
 
     def OnAddNew(self, event):
-        print "add a new user"
         dlg = self.page1.onAddUser()
         dlg.CenterOnScreen()
         dlg.ShowModal()

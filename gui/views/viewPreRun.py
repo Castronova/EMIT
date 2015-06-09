@@ -55,6 +55,7 @@ class PageOne(wx.Panel):
         self.cancelButton = ""
         self.runButton = ""
         self.databaseComboChoices = self.loadDatabase()
+        self.accountComboChoices = self.loadAccounts()
 
 
         self.parent = parent
@@ -78,7 +79,7 @@ class PageOne(wx.Panel):
         self.accountName = wx.StaticText(self, label="User Account: ")
         self.sizer.Add(self.accountName, pos=(3, 0), flag=wx.TOP|wx.LEFT, border=10)
 
-        self.accountCombo = wx.ComboBox(self)
+        self.accountCombo = wx.ComboBox(self, choices=self.accountComboChoices, style=wx.CB_READONLY)
         self.sizer.Add(self.accountCombo, pos=(3, 1), span=(1, 2), flag=wx.TOP|wx.EXPAND, border=5)
 
         self.addAccountButton = wx.Button(self, label="Add New")
@@ -118,11 +119,21 @@ class PageOne(wx.Panel):
         connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/connections'))  # finds the file
         file = open(connections_txt, 'r')
         data = file.readlines()
+        return self.getFromFile(data, "name")
+
+    def loadAccounts(self):
+        currentdir = os.path.dirname(os.path.abspath(__file__))  # Get the directory
+        connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/preferences'))  # finds the file
+        file = open(connections_txt, 'r')
+        data = file.readlines()
+        return self.getFromFile(data, "lastname")
+
+    def getFromFile(self, data, search):
         combobox = []
         for line in data:
             words = line.split(' = ')
-            if words[0] == "name":
-                combobox.append(words[1].split('\n')[0])  # get the name in the connections file
+            if words[0] == search:
+                combobox.append(words[1].split('\n')[0])
         combobox.sort()
         return combobox
 
@@ -217,7 +228,7 @@ class AddNewUserDialog(wx.Dialog):
         self.cancelButton = wx.Button(self, wx.ID_CANCEL)
 
         self.okbutton.SetDefault()
-        # self.okbutton.Disable()
+        self.okbutton.Disable()
 
         buttonsizer.AddButton(self.okbutton)
         buttonsizer.AddButton(self.cancelButton)
@@ -229,6 +240,17 @@ class AddNewUserDialog(wx.Dialog):
         self.SetSizer(self.sizer)
         self.sizer.Fit(self)
 
+        self.initBinding()
+
+    def initBinding(self):
+        self.firstnameTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
+        self.lastnameTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
+        self.organizationTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
+        self.phoneTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
+        self.emailTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
+        self.addressTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
+        self.startdateTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
+
     def setvalues(self, first, last, org, phone, email, address, date):
         self.firstnameTextBox = first
         self.lastnameTextBox = last
@@ -237,3 +259,15 @@ class AddNewUserDialog(wx.Dialog):
         self.emailTextBox = email
         self.addressTextBox = address
         self.startdateTextBox = date
+
+    def OnTextEnter(self, event):
+        if self.firstnameTextBox.GetValue == '' or \
+                        self.lastnameTextBox.GetValue == '' or \
+                        self.organizationTextBox.GetValue() == '' or \
+                        self.phoneTextBox.GetValue() == '' or \
+                        self.emailTextBox.GetValue() == '' or \
+                        self.addressTextBox.GetValue() == '' or \
+                        self.startdateTextBox.GetValue == '':
+            self.okbutton.Disable()
+        else:
+            self.okbutton.Enable()

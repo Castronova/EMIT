@@ -119,6 +119,7 @@ class PageOne(wx.Panel):
         connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/connections'))  # finds the file
         file = open(connections_txt, 'r')
         data = file.readlines()
+        file.close()
         return self.getFromFile(data, "name")
 
     def loadAccounts(self):
@@ -126,6 +127,7 @@ class PageOne(wx.Panel):
         connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/preferences'))  # finds the file
         file = open(connections_txt, 'r')
         data = file.readlines()
+        file.close()
         return self.getFromFile(data, "lastname")
 
     def getFromFile(self, data, search):
@@ -271,3 +273,10 @@ class AddNewUserDialog(wx.Dialog):
             self.okbutton.Disable()
         else:
             self.okbutton.Enable()
+
+    def GetTextBoxValues(self):
+        accountInfo = [self.firstnameTextBox, self.lastnameTextBox, self.organizationTextBox,
+                       self.phoneTextBox, self.emailTextBox,
+                       self.addressTextBox, self.startdateTextBox]
+        return accountInfo
+

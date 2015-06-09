@@ -18,7 +18,7 @@ class logicPreRun(viewPreRun):
     def initBinding(self):
         self.page1.cancelButton.Bind(wx.EVT_BUTTON, self.OnCancel)
         self.page1.runButton.Bind(wx.EVT_BUTTON, self.OnRun)
-        self.page1.addAccountButton.Bind(wx.EVT_BUTTON, self.OnAddNew)
+        # self.page1.addAccountButton.Bind(wx.EVT_BUTTON, self.OnAddNew)
 
     def OnCancel(self, event):
         frame = self.GetTopLevelParent()

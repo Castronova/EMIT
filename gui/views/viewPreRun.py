@@ -104,6 +104,7 @@ class PageOne(wx.Panel):
         self.sizer.AddGrowableCol(2)
 
         self.SetSizer(self.sizer)
+        self.sizer.Fit(self)
 
         self.addAccountButton.Bind(wx.EVT_BUTTON, self.onAddUser)
 

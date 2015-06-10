@@ -96,13 +96,14 @@ class PageOne(wx.Panel):
         self.boxsizer.Add(wx.CheckBox(self, label="Checkbox 3"), flag=wx.LEFT|wx.BOTTOM, border=5)
         self.sizer.Add(self.boxsizer, pos=(5, 0), span=(1, 4), flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT, border=10)
 
-        self.helpButton = wx.Button(self, label='Help')
+        self.helpButton = wx.Button(self, id=wx.ID_HELP, label='Help')
         self.sizer.Add(self.helpButton, pos=(7, 0), flag=wx.LEFT, border=10)
 
-        self.runButton = wx.Button(self, label="Run")
+        self.runButton = wx.Button(self, id=wx.ID_OK, label="Run")
         self.sizer.Add(self.runButton, pos=(7, 3), flag=wx.BOTTOM | wx.RIGHT, border=5)
+        self.runButton.SetDefault()
 
-        self.cancelButton = wx.Button(self, label="Cancel")
+        self.cancelButton = wx.Button(self, id=wx.ID_CANCEL, label="Cancel")
         self.sizer.Add(self.cancelButton, pos=(7, 2), flag=wx.BOTTOM | wx.RIGHT, border=5)
 
         self.sizer.AddGrowableCol(2)

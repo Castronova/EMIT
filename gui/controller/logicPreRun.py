@@ -4,6 +4,7 @@ import wx
 from gui.views.viewPreRun import viewPreRun
 from gui import events
 import os
+from gui.views.viewPostRun import viewPostRun
 
 
 class logicPreRun(viewPreRun):
@@ -32,7 +33,10 @@ class logicPreRun(viewPreRun):
     def OnRun(self, event):
         e = dict()
         events.onClickRun.fire(**e)  # Calls onClickRun from viewContext.py
-        self.OnCancel(event)  # Close after Run is clicked
+        self.OnCancel(event)
+        frm = viewPostRun()
+        frm.Show()
+
 
     def OnAddNew(self, event):
         self.dlg.CenterOnScreen()

@@ -263,8 +263,8 @@ class AddNewUserDialog(wx.Dialog):
         self.startdateTextBox = date
 
     def OnTextEnter(self, event):
-        if self.firstnameTextBox.GetValue == '' or \
-                        self.lastnameTextBox.GetValue == '' or \
+        if not self.firstnameTextBox.GetValue or \
+                        not self.lastnameTextBox.GetValue or \
                         self.organizationTextBox.GetValue() == '' or \
                         self.phoneTextBox.GetValue() == '' or \
                         self.emailTextBox.GetValue() == '' or \
@@ -275,8 +275,11 @@ class AddNewUserDialog(wx.Dialog):
             self.okbutton.Enable()
 
     def GetTextBoxValues(self):
-        accountInfo = [self.firstnameTextBox, self.lastnameTextBox, self.organizationTextBox,
-                       self.phoneTextBox, self.emailTextBox,
-                       self.addressTextBox, self.startdateTextBox]
-        return accountInfo
+        accountinfo = [self.firstnameTextBox.GetValue(), self.lastnameTextBox.GetValue(),
+                       self.organizationTextBox.GetValue(), self.phoneTextBox.GetValue(),
+                       self.emailTextBox.GetValue(), self.addressTextBox.GetValue(),
+                       self.startdateTextBox.GetValue()]
+        return accountinfo
+
+
 

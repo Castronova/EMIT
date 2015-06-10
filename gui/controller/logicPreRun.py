@@ -39,14 +39,27 @@ class logicPreRun(viewPreRun):
         self.dlg.ShowModal()
 
     def OnOkButton(self, event):
-        print "You hit the ok button"
 
-        # currentdir = os.path.dirname(os.path.abspath(__file__))
-        # connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/preferences'))
-        # file = open(connections_txt, 'a')
-        # accountinfo = self.dlg.GetTextBoxValues()
-        # file.write("hello there")
-        # file.close()
+        currentdir = os.path.dirname(os.path.abspath(__file__))
+        connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/preferences'))
+        file = open(connections_txt, 'a')
+        self.accountinfo = self.dlg.GetTextBoxValues()
+        accounttxt = "[person]\n" \
+                "firstname = " + self.accountinfo[0] + "\n"\
+                 + "lastname = " + self.accountinfo[1] + "\n"\
+                 + "organizationcode = " + self.accountinfo[2] + "\n"\
+                 + "phone = " + self.accountinfo[3] + "\n"\
+                 + "email = " + self.accountinfo[4] + "\n"\
+                 + "address = " + self.accountinfo[5] + "\n"\
+                 + "start_date = " + self.accountinfo[6] + "\n"\
+                     + "\n"
+        self.RefreshCombo()
 
+        file.write(accounttxt)
+        file.close()
         self.dlg.Close(True)
+
+    def RefreshCombo(self):
+        # Simply appends the item to the combobox
+        self.page1.accountCombo.AppendItems([self.accountinfo[1]])
 

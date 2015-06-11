@@ -36,12 +36,13 @@ class viewPreRun(wx.Frame):
         self.sizer.Add(self.notebook, 1, wx.EXPAND)
         self.panel.SetSizer(self.sizer)
 
+
 class PageOne(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent=parent, id=wx.ID_ANY)
 
         #  Variables
-        self.parent = ""
+        self.parent = parent
         self.sizer = ""
         self.simulationName = ""
         self.simulationNameTextBox = ""
@@ -57,8 +58,7 @@ class PageOne(wx.Panel):
         self.databaseComboChoices = self.loadDatabase()
         self.accountComboChoices = self.loadAccounts()
 
-        self.parent = parent
-        self.sizer = wx.GridBagSizer(5, 5)
+        self.sizer = wx.GridBagSizer(vgap=5, hgap=5)
 
         self.simulationName = wx.StaticText(self, label="Simulation Name: ")
         self.sizer.Add(self.simulationName, pos=(1, 0), flag=wx.LEFT, border=10)
@@ -115,7 +115,6 @@ class PageOne(wx.Panel):
         self.sizer.AddGrowableCol(2)
 
         self.SetSizer(self.sizer)
-        self.sizer.Fit(self)
 
     def onAddUser(self):
         dlg = AddNewUserDialog(self, id=-1, title="Add New User", style=wx.DEFAULT_DIALOG_STYLE)
@@ -150,7 +149,23 @@ class PageOne(wx.Panel):
 class PageTwo(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
-        t = wx.StaticText(self, -1, "This is a Page Two", (40, 40))
+
+        # Variables
+        self.parent = parent
+        self.sizer = ""
+        self.modelsLabel = ""
+        self.modellistbox = ""
+
+        self.gridbagsizer = wx.GridBagSizer(vgap=5, hgap=5)
+
+        self.modelsLabel = wx.StaticText(self, id=-1, label="Models:", style=wx.ALIGN_LEFT)
+        self.modellistbox = wx.ListBox(self, id=-1, size=(340, 100), choices=['testing a really looooooooooooooooooooooooooooooooooooooong name', 'model 2', 'models from the canvas', 'go here'])
+
+        self.gridbagsizer.Add(self.modelsLabel, pos=(1, 1), flag=wx.ALL, border=5)
+        self.gridbagsizer.Add(self.modellistbox, pos=(1, 2), flag=wx.ALL, border=5)
+
+        self.SetSizer(self.gridbagsizer)
+
 
 class PageThree(wx.Panel):
     def __init__(self, parent):

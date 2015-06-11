@@ -385,7 +385,6 @@ class Coordinator(object):
 
 
         # save the model
-        # CHANGE THIS BACK TO get_id()
         self.__models[thisModel.get_name()] = thisModel
 
         # return the model id

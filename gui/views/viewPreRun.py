@@ -57,7 +57,6 @@ class PageOne(wx.Panel):
         self.databaseComboChoices = self.loadDatabase()
         self.accountComboChoices = self.loadAccounts()
 
-
         self.parent = parent
         self.sizer = wx.GridBagSizer(5, 5)
 
@@ -70,7 +69,7 @@ class PageOne(wx.Panel):
         self.databaseName = wx.StaticText(self, label="Database: ")
         self.sizer.Add(self.databaseName, pos=(2, 0), flag=wx.LEFT|wx.TOP, border=10)
 
-        self.databaseCombo = wx.ComboBox(self, choices=self.databaseComboChoices, style=wx.CB_READONLY)
+        self.databaseCombo = wx.ComboBox(self, value=self.databaseComboChoices[0], choices=self.databaseComboChoices, style=wx.CB_READONLY)
         self.sizer.Add(self.databaseCombo, pos=(2, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND, border=5)
 
         # browseDataBaseButton = wx.Button(self, label="Browse...")
@@ -79,22 +78,29 @@ class PageOne(wx.Panel):
         self.accountName = wx.StaticText(self, label="User Account: ")
         self.sizer.Add(self.accountName, pos=(3, 0), flag=wx.TOP|wx.LEFT, border=10)
 
-        self.accountCombo = wx.ComboBox(self, choices=self.accountComboChoices, style=wx.CB_READONLY)
-        self.sizer.Add(self.accountCombo, pos=(3, 1), span=(1, 2), flag=wx.TOP|wx.EXPAND, border=5)
+        self.accountCombo = wx.ComboBox(self, value=self.accountComboChoices[0], choices=self.accountComboChoices, style=wx.CB_READONLY)
+        self.sizer.Add(self.accountCombo, pos=(3, 1), span=(1, 2), flag=wx.TOP | wx.EXPAND, border=5)
 
         self.addAccountButton = wx.Button(self, label="Add New")
         self.sizer.Add(self.addAccountButton, pos=(3, 3), flag=wx.TOP|wx.RIGHT, border=5)
 
         self.lineBreak = wx.StaticLine(self)
-        self.sizer.Add(self.lineBreak, pos=(4, 0), span=(1, 4), flag=wx.EXPAND|wx.BOTTOM, border=10)
+        self.sizer.Add(self.lineBreak, pos=(4, 0), span=(1, 4), flag=wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT, border=10)
 
         self.sizerStaticBox = wx.StaticBox(self, label="Optional Features")
 
         self.boxsizer = wx.StaticBoxSizer(self.sizerStaticBox, wx.VERTICAL)
-        self.boxsizer.Add(wx.CheckBox(self, label="Display Simulation Message"), flag=wx.LEFT|wx.TOP, border=5)
-        self.boxsizer.Add(wx.CheckBox(self, label="Log Simulation Message"), flag=wx.LEFT, border=5)
-        self.boxsizer.Add(wx.CheckBox(self, label="Checkbox 3"), flag=wx.LEFT|wx.BOTTOM, border=5)
-        self.sizer.Add(self.boxsizer, pos=(5, 0), span=(1, 4), flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT, border=10)
+
+        self.displayMessage = wx.CheckBox(self, label="Display Simulation Message")
+        self.displayMessage.SetValue(True)  # By default it is checked
+        self.logMessage = wx.CheckBox(self, label="Log Simulation Message")
+        self.checkbox3 = wx.CheckBox(self, label="Checkbox 3")
+
+        self.boxsizer.Add(self.displayMessage, flag=wx.LEFT | wx.TOP, border=5)
+        self.boxsizer.Add(self.logMessage, flag=wx.LEFT, border=5)
+        self.boxsizer.Add(self.checkbox3, flag=wx.LEFT | wx.BOTTOM, border=5)
+
+        self.sizer.Add(self.boxsizer, pos=(5, 0), span=(1, 4), flag=wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT, border=10)
 
         self.helpButton = wx.Button(self, id=wx.ID_HELP, label='Help')
         self.sizer.Add(self.helpButton, pos=(7, 0), flag=wx.LEFT, border=10)

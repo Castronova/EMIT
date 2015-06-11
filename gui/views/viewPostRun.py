@@ -10,7 +10,7 @@ class viewPostRun(wx.Frame):
         self.amount = 255  # Cannot be greater than 255 because its a 2 byte argument
         self.delta = 5
         self.panel = wx.Panel(self)
-        self.runsummary = "Simulation Finished"
+        self.runsummary = ""
 
         sim_st = time.time()
 
@@ -24,7 +24,9 @@ class viewPostRun(wx.Frame):
         self.boxsizer = wx.BoxSizer(wx.VERTICAL)
 
         self.statictext = wx.StaticText(self.panel, label=self.runsummary, style=wx.ALIGN_CENTRE)
+        self.closeButton = wx.Button(self.panel, label="Close")
         self.boxsizer.Add(self.statictext, flag=wx.ALL, border=5)
+        self.boxsizer.Add(self.closeButton, flag=wx.BOTTOM | wx.ALIGN_RIGHT | wx.RIGHT, border=5)
         self.panel.SetSizer(self.boxsizer)
         self.Center()
         self.boxsizer.Fit(self)
@@ -35,6 +37,7 @@ class viewPostRun(wx.Frame):
         self.timer = wx.Timer(self, wx.ID_ANY)
         self.timer.Start(70)
         self.Bind(wx.EVT_TIMER, self.FadeOutAlphaCycle)
+        self.closeButton.Bind(wx.EVT_BUTTON, self.OnClose)
 
     def FadeInOutAlphaCycle(self, event):
         self.amount += self.delta
@@ -53,3 +56,7 @@ class viewPostRun(wx.Frame):
             self.Close()
         if self.amount <= 150:  # wait a second before fading
             self.SetTransparent(self.amount)
+
+    def OnClose(self, event):
+        self.Close()
+

@@ -50,9 +50,9 @@ class ViewEMIT(wx.Frame):
         self.initMenu()
 
         # creating components
-        self.Directory = LogicDirectory(self)
-        self.Toolbox = LogicToolbox(self)
-        self.Canvas = LogicCanvas(self)
+        self.Directory = LogicDirectory(self.pnlDocking)
+        self.Toolbox = LogicToolbox(self.pnlDocking)
+        self.Canvas = LogicCanvas(self.pnlDocking)
         self.Output = consoleOutput(self.bnb)
 
 

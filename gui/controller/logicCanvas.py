@@ -78,6 +78,7 @@ class LogicCanvas(ViewCanvas):
         self.Bind(EVT_CREATE_BOX, self.onCreateBox)
         self.Bind(EVT_UPDATE_CONSOLE, self.onUpdateConsole)
         self.Bind(wx.EVT_ENTER_WINDOW, self.onEnterWindow)
+        self.FloatCanvas.Bind(FC.EVT_ENTER_WINDOW,self.onEnterWindow)
 
         # engine bindings
         engineEvent.onModelAdded += self.draw_box

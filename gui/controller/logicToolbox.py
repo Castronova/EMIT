@@ -194,7 +194,7 @@ class LogicToolbox(ViewToolbox):
         filenames = []
         filenames.append(fullpath)
 
-        originx, originy = self.p.FloatCanvas.WorldToPixel(self.p.Canvas.GetPosition())
+        originx, originy = self.p.GetParent().FloatCanvas.WorldToPixel(self.p.GetParent().Canvas.GetPosition())
 
         # Generate random coordinates about the center of the canvas
         x = random.randint(-200, 200)

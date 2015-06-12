@@ -34,8 +34,9 @@ class logicPreRun(viewPreRun):
         e = dict()
         events.onClickRun.fire(**e)  # Calls onClickRun from viewContext.py
         self.OnCancel(event)
-        frm = viewPostRun()
-        frm.Show()
+        if self.page1.displayMessage.GetValue():  # If Checkbox Display Message is checked
+            frm = viewPostRun()
+            frm.Show()
 
 
     def OnAddNew(self, event):
@@ -49,13 +50,13 @@ class logicPreRun(viewPreRun):
         file = open(connections_txt, 'a')
         self.accountinfo = self.dlg.GetTextBoxValues()
         accounttxt = "[person]\n" \
-                "firstname = " + self.accountinfo[0] + "\n"\
-                 + "lastname = " + self.accountinfo[1] + "\n"\
-                 + "organizationcode = " + self.accountinfo[2] + "\n"\
-                 + "phone = " + self.accountinfo[3] + "\n"\
-                 + "email = " + self.accountinfo[4] + "\n"\
-                 + "address = " + self.accountinfo[5] + "\n"\
-                 + "start_date = " + self.accountinfo[6] + "\n"\
+                     "firstname = " + self.accountinfo[0] + "\n" \
+                     + "lastname = " + self.accountinfo[1] + "\n" \
+                     + "organizationcode = " + self.accountinfo[2] + "\n" \
+                     + "phone = " + self.accountinfo[3] + "\n" \
+                     + "email = " + self.accountinfo[4] + "\n" \
+                     + "address = " + self.accountinfo[5] + "\n" \
+                     + "start_date = " + self.accountinfo[6] + "\n" \
                      + "\n"
         self.RefreshCombo()
 
@@ -66,4 +67,3 @@ class logicPreRun(viewPreRun):
     def RefreshCombo(self):
         # Simply appends the item to the combobox
         self.page1.accountCombo.AppendItems([self.accountinfo[1]])
-

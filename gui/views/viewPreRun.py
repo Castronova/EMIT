@@ -36,12 +36,13 @@ class viewPreRun(wx.Frame):
         self.sizer.Add(self.notebook, 1, wx.EXPAND)
         self.panel.SetSizer(self.sizer)
 
+
 class PageOne(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent=parent, id=wx.ID_ANY)
 
         #  Variables
-        self.parent = ""
+        self.parent = parent
         self.sizer = ""
         self.simulationName = ""
         self.simulationNameTextBox = ""
@@ -57,9 +58,7 @@ class PageOne(wx.Panel):
         self.databaseComboChoices = self.loadDatabase()
         self.accountComboChoices = self.loadAccounts()
 
-
-        self.parent = parent
-        self.sizer = wx.GridBagSizer(5, 5)
+        self.sizer = wx.GridBagSizer(vgap=5, hgap=5)
 
         self.simulationName = wx.StaticText(self, label="Simulation Name: ")
         self.sizer.Add(self.simulationName, pos=(1, 0), flag=wx.LEFT, border=10)
@@ -70,7 +69,7 @@ class PageOne(wx.Panel):
         self.databaseName = wx.StaticText(self, label="Database: ")
         self.sizer.Add(self.databaseName, pos=(2, 0), flag=wx.LEFT|wx.TOP, border=10)
 
-        self.databaseCombo = wx.ComboBox(self, choices=self.databaseComboChoices, style=wx.CB_READONLY)
+        self.databaseCombo = wx.ComboBox(self, value=self.databaseComboChoices[0], choices=self.databaseComboChoices, style=wx.CB_READONLY)
         self.sizer.Add(self.databaseCombo, pos=(2, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND, border=5)
 
         # browseDataBaseButton = wx.Button(self, label="Browse...")
@@ -79,22 +78,29 @@ class PageOne(wx.Panel):
         self.accountName = wx.StaticText(self, label="User Account: ")
         self.sizer.Add(self.accountName, pos=(3, 0), flag=wx.TOP|wx.LEFT, border=10)
 
-        self.accountCombo = wx.ComboBox(self, choices=self.accountComboChoices, style=wx.CB_READONLY)
-        self.sizer.Add(self.accountCombo, pos=(3, 1), span=(1, 2), flag=wx.TOP|wx.EXPAND, border=5)
+        self.accountCombo = wx.ComboBox(self, value=self.accountComboChoices[0], choices=self.accountComboChoices, style=wx.CB_READONLY)
+        self.sizer.Add(self.accountCombo, pos=(3, 1), span=(1, 2), flag=wx.TOP | wx.EXPAND, border=5)
 
         self.addAccountButton = wx.Button(self, label="Add New")
         self.sizer.Add(self.addAccountButton, pos=(3, 3), flag=wx.TOP|wx.RIGHT, border=5)
 
         self.lineBreak = wx.StaticLine(self)
-        self.sizer.Add(self.lineBreak, pos=(4, 0), span=(1, 4), flag=wx.EXPAND|wx.BOTTOM, border=10)
+        self.sizer.Add(self.lineBreak, pos=(4, 0), span=(1, 4), flag=wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT, border=10)
 
         self.sizerStaticBox = wx.StaticBox(self, label="Optional Features")
 
         self.boxsizer = wx.StaticBoxSizer(self.sizerStaticBox, wx.VERTICAL)
-        self.boxsizer.Add(wx.CheckBox(self, label="Display Simulation Message"), flag=wx.LEFT|wx.TOP, border=5)
-        self.boxsizer.Add(wx.CheckBox(self, label="Log Simulation Message"), flag=wx.LEFT, border=5)
-        self.boxsizer.Add(wx.CheckBox(self, label="Checkbox 3"), flag=wx.LEFT|wx.BOTTOM, border=5)
-        self.sizer.Add(self.boxsizer, pos=(5, 0), span=(1, 4), flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT, border=10)
+
+        self.displayMessage = wx.CheckBox(self, label="Display Simulation Message")
+        self.displayMessage.SetValue(True)  # By default it is checked
+        self.logMessage = wx.CheckBox(self, label="Log Simulation Message")
+        self.checkbox3 = wx.CheckBox(self, label="Checkbox 3")
+
+        self.boxsizer.Add(self.displayMessage, flag=wx.LEFT | wx.TOP, border=5)
+        self.boxsizer.Add(self.logMessage, flag=wx.LEFT, border=5)
+        self.boxsizer.Add(self.checkbox3, flag=wx.LEFT | wx.BOTTOM, border=5)
+
+        self.sizer.Add(self.boxsizer, pos=(5, 0), span=(1, 4), flag=wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT, border=10)
 
         self.helpButton = wx.Button(self, id=wx.ID_HELP, label='Help')
         self.sizer.Add(self.helpButton, pos=(7, 0), flag=wx.LEFT, border=10)
@@ -109,7 +115,6 @@ class PageOne(wx.Panel):
         self.sizer.AddGrowableCol(2)
 
         self.SetSizer(self.sizer)
-        self.sizer.Fit(self)
 
     def onAddUser(self):
         dlg = AddNewUserDialog(self, id=-1, title="Add New User", style=wx.DEFAULT_DIALOG_STYLE)
@@ -144,7 +149,23 @@ class PageOne(wx.Panel):
 class PageTwo(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
-        t = wx.StaticText(self, -1, "This is a Page Two", (40, 40))
+
+        # Variables
+        self.parent = parent
+        self.sizer = ""
+        self.modelsLabel = ""
+        self.modellistbox = ""
+
+        self.gridbagsizer = wx.GridBagSizer(vgap=5, hgap=5)
+
+        self.modelsLabel = wx.StaticText(self, id=-1, label="Models:", style=wx.ALIGN_LEFT)
+        self.modellistbox = wx.ListBox(self, id=-1, size=(340, 100), choices=['testing a really looooooooooooooooooooooooooooooooooooooong name', 'model 2', 'models from the canvas', 'go here'])
+
+        self.gridbagsizer.Add(self.modelsLabel, pos=(1, 1), flag=wx.ALL, border=5)
+        self.gridbagsizer.Add(self.modellistbox, pos=(1, 2), flag=wx.ALL, border=5)
+
+        self.SetSizer(self.gridbagsizer)
+
 
 class PageThree(wx.Panel):
     def __init__(self, parent):

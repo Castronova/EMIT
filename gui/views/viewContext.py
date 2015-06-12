@@ -155,33 +155,42 @@ class CanvasContextMenu(wx.Menu):
 
     def __init__(self, parent):
         super(CanvasContextMenu, self).__init__()
-
         self.parent = parent
 
-        mmi = wx.MenuItem(self, wx.NewId(), 'Add Link')
-        self.AppendItem(mmi)
-        self.Bind(wx.EVT_MENU, self.OnAddLink, mmi)
+        addLink = wx.MenuItem(self, wx.NewId(), 'Add Link')
+        self.AppendItem(addLink)
+        self.Bind(wx.EVT_MENU, self.OnAddLink, addLink)
 
-        mmi = wx.MenuItem(self, wx.NewId(), 'Load Configuration')
-        self.AppendItem(mmi)
-        self.Bind(wx.EVT_MENU, self.LoadConfiguration, mmi)
+        load = wx.MenuItem(self, wx.NewId(), 'Load Configuration')
+        self.AppendItem(load)
+        self.Bind(wx.EVT_MENU, self.LoadConfiguration, load)
 
-        mmi = wx.MenuItem(self, wx.NewId(), 'Save Configuration')
-        self.AppendItem(mmi)
-        self.Bind(wx.EVT_MENU, self.SaveConfiguration, mmi)
+        save = wx.MenuItem(self, wx.NewId(), 'Save Configuration')
+        self.AppendItem(save)
+        self.Bind(wx.EVT_MENU, self.SaveConfiguration, save)
 
-        mmi = wx.MenuItem(self, wx.NewId(), 'Save Configuration As')
-        self.AppendItem(mmi)
-        self.Bind(wx.EVT_MENU, self.SaveConfigurationAs, mmi)
+        saveAs = wx.MenuItem(self, wx.NewId(), 'Save Configuration As')
+        self.AppendItem(saveAs)
+        self.Bind(wx.EVT_MENU, self.SaveConfigurationAs, saveAs)
 
-        mmi = wx.MenuItem(self, wx.NewId(), 'Run')
-        self.AppendItem(mmi)
-        self.Bind(wx.EVT_MENU, self.OnRunModel, mmi)
+        run = wx.MenuItem(self, wx.NewId(), 'Run')
+        self.AppendItem(run)
+        self.Bind(wx.EVT_MENU, self.OnRunModel, run)
         events.onClickRun += self.OnClickRun
 
-        mmi = wx.MenuItem(self, wx.NewId(), 'Clear Configuration')
-        self.AppendItem(mmi)
-        self.Bind(wx.EVT_MENU, self.OnClickClear, mmi)
+        clear = wx.MenuItem(self, wx.NewId(), 'Clear Configuration')
+        self.AppendItem(clear)
+        self.Bind(wx.EVT_MENU, self.OnClickClear, clear)
+
+        # Disable certain options if there aren't any models present
+        if len(self.parent.models) < 2:
+            addLink.Enable(False)
+            run.Enable(False)
+            clear.Enable(False)
+
+        if len(self.parent.models) < 1:
+            save.Enable(False)
+            saveAs.Enable(False)
 
     def OnAddLink(self, e):
         self.parent.FloatCanvas.SetMode(self.parent.GuiLink)

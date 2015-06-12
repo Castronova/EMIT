@@ -32,7 +32,9 @@ class EventManager(object):
         if name in self.__handlers.keys():
             return self.__handlers[name]
         else:
-            raise Exception("No handlers for event: ", name)
+            # ignore if no handlers are assigned, but print warning message to log
+            print 'WARNING|No handlers for event:', name
+            # raise Exception("No handlers for event: ", name)
 
 class EventHook(object):
 

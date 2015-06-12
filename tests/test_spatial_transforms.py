@@ -131,7 +131,7 @@ class testSpatial(unittest.TestCase):
         plt.xlim(vor.min_bound[0] - 0.1, vor.max_bound[0] + 0.1)
         plt.ylim(vor.min_bound[1] - 0.1, vor.max_bound[1] + 0.1)
 
-        plt.show()
+#        plt.show()
 
 
     def test_voronoi(self):
@@ -158,7 +158,7 @@ class testSpatial(unittest.TestCase):
         plt.xlim(vor.min_bound[0] - 0.1, vor.max_bound[0] + 0.1)
         plt.ylim(vor.min_bound[1] - 0.1, vor.max_bound[1] + 0.1)
 
-        plt.show()
+#        plt.show()
 
 
     def voronoi_finite_polygons_2d(self, vor, radius=None):
@@ -275,7 +275,7 @@ class testSpatial(unittest.TestCase):
                 n = loads(geom[0])
                 plt.plot(n.x,n.y,marker='o',color=(0.0,0.0,0.0,0.2))
 
-        plt.show()
+#        plt.show()
 
 
     def func(self, x, y):
@@ -351,7 +351,7 @@ class testSpatial(unittest.TestCase):
         plt.imshow(grid_z2.T, extent=(0,1,0,1), origin='lower')
         plt.title('Cubic')
         plt.gcf().set_size_inches(6, 6)
-        plt.show()
+#        plt.show()
 
 
     def test_2d_iterp(self):
@@ -382,7 +382,7 @@ class testSpatial(unittest.TestCase):
         plt.ylim(-2, 2)
         plt.colorbar()
 
-        plt.show()
+#        plt.show()
 
     def test_2d_iterp_pts(self):
 
@@ -453,7 +453,7 @@ class testSpatial(unittest.TestCase):
         # plt.ylim(-2, 2)
         # plt.colorbar()
 
-        plt.show()
+#        plt.show()
 
 
     def test_spatial_exact_match(self):

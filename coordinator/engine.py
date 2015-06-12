@@ -421,8 +421,8 @@ class Coordinator(object):
                 for link in remove_these_links:
                     self.__links.pop(link,None)
 
-                return 1
-        return 0
+                return id
+        return None
 
     def get_model_by_id_summary(self,id):
         """
@@ -632,29 +632,7 @@ class Coordinator(object):
                 if self.__links[l].temporal_interpolation() is not None \
                 else 'None'
             links.append(dict(
-                        output_name=self.__links[l].source_exchange_item().name(),
-                        output_id=self.__links[l].source_exchange_item().get_id(),
-                        input_name=self.__links[l].target_exchange_item().name(),
-                        input_id=self.__links[l].target_exchange_item().get_id(),
-                        spatial_interpolation=spatial,
-                        temporal_interpolation=temporal,
-                        source_component_name=self.__links[l].source_component().get_name(),
-                        target_component_name=self.__links[l].target_component().get_name(),
-                        source_component_id=self.__links[l].source_component().get_id(),
-                        target_component_id=self.__links[l].target_component().get_id(),
-                            ))
-        return links
-    def get_all_links(self):
-        links = []
-        for l in self.__links.iterkeys():
-
-            spatial = self.__links[l].spatial_interpolation().name() \
-                if self.__links[l].spatial_interpolation() is not None \
-                else 'None'
-            temporal = self.__links[l].temporal_interpolation().name() \
-                if self.__links[l].temporal_interpolation() is not None \
-                else 'None'
-            links.append(dict(
+                        id=l,
                         output_name=self.__links[l].source_exchange_item().name(),
                         output_id=self.__links[l].source_exchange_item().get_id(),
                         input_name=self.__links[l].target_exchange_item().name(),

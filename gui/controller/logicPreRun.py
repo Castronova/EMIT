@@ -83,20 +83,22 @@ class logicPreRun:
 
     def LogSimulation(self):
         currentdir = os.path.dirname(os.path.abspath(__file__))
-        connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/log'))
+        connections_txt = os.path.abspath(os.path.join(currentdir, '../../Log/log'))
         file = open(connections_txt, 'a')
         loginfo = self.viewprerun.page1.GetLogValues()
         logtxt = "[Simulation]\n" + \
                  "Simulation Name = " + loginfo[0] + "\n" + \
                  "Database = " + loginfo[1] + "\n" + \
-                 "User = " + loginfo[2] + "\n" + \
-                 "Date = " + time.strftime("%m/%d/%Y") + "\n\n"
+                 "User = " + loginfo[2] + "\n" +\
+                 "Date = " + time.strftime("%m/%d/%Y") + "\n" + \
+                 "Message = " + viewPostRun().runsummary + \
+                 "\n\n"
         file.write(logtxt)
         file.close()
 
     def CheckSimulationName(self, simname):
         currentdir = os.path.dirname(os.path.abspath(__file__))
-        connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/log'))
+        connections_txt = os.path.abspath(os.path.join(currentdir, '../../Log/log'))
         file = open(connections_txt, 'r')
         if simname in file.read():
             return True

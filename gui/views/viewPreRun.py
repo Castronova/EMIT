@@ -286,7 +286,7 @@ class AddNewUserDialog(wx.Dialog):
 
     def setvalues(self, first, last, org, phone, email, address, date):
         self.firstnameTextBox = first
-        self.lastnameTextBprint = last
+        self.lastnameTextBox = last
         self.organizationTextBox = org
         self.phoneTextBox = phone
         self.emailTextBox = email

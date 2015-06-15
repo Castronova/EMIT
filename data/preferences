@@ -19,3 +19,12 @@ name = Utah Water Research Laboratory
 description = research laboratory Affiliated with utah state university
 parentcode = usu
 
+[person]
+firstname = Francisco
+lastname = Arrieta
+organizationcode = UWRL
+phone = phone
+email = email
+address = address
+start_date = today
+

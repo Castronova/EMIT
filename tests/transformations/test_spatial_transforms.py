@@ -322,9 +322,6 @@ class testSpatial(unittest.TestCase):
         #plt.imshow(s)
 
         from scipy.interpolate import griddata
-        from numpy import linspace,exp
-        from numpy.random import randn
-        from scipy.interpolate import UnivariateSpline
 
 
         grid_x, grid_y = np.mgrid[0:1:100j, 0:1:200j]

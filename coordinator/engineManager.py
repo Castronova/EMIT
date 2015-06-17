@@ -99,6 +99,7 @@ class Engine:
         else:
             self.__dict__ = Engine.__monostate
 
+
     def setTasks(self, taskList):
         """
         Sets the tasks for the TaskServerMP to handle.
@@ -129,6 +130,8 @@ class Engine:
                     if result is not None:
                         result['event'] = evt
                 dispatcher.putResult(result)
+            else:
+                break
 
     # The multiprocessing worker must not require any existing object for execution!
     worker = classmethod(worker)

@@ -7,7 +7,7 @@ import unittest
 # from utilities import gui
 
 import time
-
+from coordinator import engineAccessors as engine
 import sys
 
 
@@ -17,7 +17,6 @@ class test_build_composition(unittest.TestCase):
         # add models
         self.mdl1 = '../models/test_models/randomizer/randomizer.mdl'
         self.mdl2 = '../models/test_models/multiplier/multiplier.mdl'
-        from coordinator import engineAccessors as engine
         self.engine = engine
 
     def tearDown(self):
@@ -27,9 +26,12 @@ class test_build_composition(unittest.TestCase):
 
         models = self.engine.getAllModels()
         for model in models:
-            self.engine.removeModelById(model)
+            self.engine.removeModelById(model['id'])
 
-        del self.engine
+        # self.engine.Close()
+        # del self.engine
+
+
     def test_addModel(self):
 
         # load a model
@@ -95,17 +97,19 @@ class test_build_composition(unittest.TestCase):
 
 
     def test_get_link_by_id(self):
-
+        print 'here'
         # add both models.  ids can be anything
         id1 = 'id:randomizer'
         id2 = 'id:multiplier'
         self.engine.addModel(id=id1, attrib={'mdl':self.mdl1})
         self.engine.addModel(id=id2, attrib={'mdl':self.mdl2})
         time.sleep(1)
+        print 'model added'
 
         # create link
         linkid = self.engine.addLink(id1,'random 1-10',id2,'some_value')
         time.sleep(1)
+        print 'link added'
 
         # test getting an id that doesnt exist
         self.assertIsNone(self.engine.getLinkById(10))

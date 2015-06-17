@@ -2,9 +2,9 @@ __author__ = 'tonycastronova'
 
 import os
 import unittest
-import utilities as utils
+
 from utilities import gui
-from tests.data import testmodel
+
 
 class testExchangeItem(unittest.TestCase):
 

@@ -24,9 +24,10 @@ class testDataValues(unittest.TestCase):
         elem.srs(srs)
 
         # create datavalues object
-        dv = DataValues(elem,self.vals)
+        # dv = DataValues(elem, self.vals)
+        dv = DataValues(self.vals)
 
-        self.assertTrue(dv.element().type() == 'Polygon')
+        # self.assertTrue(dv.element().type() == 'Polygon')
         self.assertTrue(len(dv.timeseries()) == 100)
 
 

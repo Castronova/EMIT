@@ -258,8 +258,9 @@ class Geometry(object):
 
         self.__datavalues.get_dates_values()
 
+
 class ExchangeItem(object):
-    def __init__ (self,id=None,name=None,desc=None, geometry=[],unit=None,variable=None,type=ExchangeItemType.Input):
+    def __init__(self, id=None, name=None, desc=None, geometry=[], unit=None, variable=None, type=ExchangeItemType.Input):
         self.__name = name
         self.__description = desc
 
@@ -325,11 +326,11 @@ class ExchangeItem(object):
 
         if isinstance(geom,list):
             self.__geoms.extend(geom)
-            for g in geom:
-                self.__calculate_start_and_end_times(g.datavalues())
+            # for g in geom:
+            #     self.__calculate_start_and_end_times(g.datavalues())
         else:
             self.__geoms.append(geom)
-            self.__calculate_start_and_end_times(geom.datavalues())
+            # self.__calculate_start_and_end_times(geom.datavalues())
 
     def get_dataset(self,geometry):
         for geom in self.__geoms:
@@ -426,21 +427,21 @@ class ExchangeItem(object):
     def clear(self):
         #self.__dataset = []
         self.__geoms = []
-        self.StartTime = datetime.datetime(2999,1,1,1,0,0)
-        self.EndTime = datetime.datetime(1900,1,1,1,0,0)
+        # self.StartTime = datetime.datetime(2999,1,1,1,0,0)
+        # self.EndTime = datetime.datetime(1900,1,1,1,0,0)
 
     def set_dataset(self,value):
         # self.__dataset = value
         # self.__calculate_start_and_end_times(value)
         pass
 
-    def __calculate_start_and_end_times(self,dv):
-        #for dv in datavalues:
-        if dv.earliest_date() is not None and dv.latest_date() is not None:
-            if dv.earliest_date() < self.StartTime:
-                self.StartTime = dv.earliest_date()
-            if dv.latest_date() > self.EndTime:
-                self.EndTime = dv.latest_date()
+    # def __calculate_start_and_end_times(self,dv):
+    #     #for dv in datavalues:
+    #     if dv.earliest_date() is not None and dv.latest_date() is not None:
+    #         if dv.earliest_date() < self.StartTime:
+    #             self.StartTime = dv.earliest_date()
+    #         if dv.latest_date() > self.EndTime:
+    #             self.EndTime = dv.latest_date()
 
     def session(self,value=None):
         """

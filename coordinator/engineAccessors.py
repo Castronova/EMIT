@@ -3,6 +3,12 @@ __author__ = 'tonycastronova'
 from engineManager import Engine
 from threading import Thread
 
+def Close():
+    e = Engine()
+    task = [(None, {})]
+    e.setTasks(task)
+    return 1
+
 
 def addModel(id=None, attrib=None):
     e = Engine()

@@ -3,30 +3,38 @@ __author__ = 'tonycastronova'
 
 import unittest
 import networkx as n
+import time
+from coordinator.engine import  Coordinator
 
 class test_link_order(unittest.TestCase):
 
     def setUp(self):
 
         self.g = n.DiGraph()
+        self.engine = Coordinator()
 
     def tearDown(self):
         del self.g
 
     def test_determine_execution_order(self):
-        from coordinator import main
-        self.sim = main.Coordinator()
+
         # add models
-        mdl1 = '/Users/tonycastronova/Documents/projects/iUtah/EMIT/tests/data/multiplier.mdl'
-        id1 = self.sim.add_model(mdl1)
-        mdl2 = '/Users/tonycastronova/Documents/projects/iUtah/EMIT/tests/data/random.mdl'
-        id2 = self.sim.add_model(mdl2)
+        mdl1 = '../models/test_models/randomizer/randomizer.mdl'
+        mdl2 = '../models/test_models/multiplier/multiplier.mdl'
+
+        # add both models.  ids can be anything
+        id1 = 'id:randomizer'
+        id2 = 'id:multiplier'
+        self.engine.add_model(id=id1, attrib={'mdl': mdl1})
+        self.engine.add_model(id=id2, attrib={'mdl': mdl2})
+        time.sleep(1)
 
         # create link
-        linkid = self.sim.add_link(id2,'OUTPUT1',id1,'INPUT1')
+        linkid = self.engine.add_link(id1,'random 1-10',id2,'some_value')
+        time.sleep(1)
 
         # get execution order
-        order = self.sim.determine_execution_order()
+        order = self.engine.determine_execution_order()
 
         self.assertTrue(order.index(id1) > order.index(id2))
 

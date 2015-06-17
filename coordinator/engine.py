@@ -391,7 +391,7 @@ class Coordinator(object):
         # return thisModel
         return {'id':thisModel.get_id(), 'name':thisModel.get_name(),'model_type':thisModel.type()}
 
-    def remove_model(self,linkablecomponent):
+    def remove_model(self, linkablecomponent):
         """
         removes model component objects from the registry
         """

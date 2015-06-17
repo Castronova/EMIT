@@ -186,11 +186,11 @@ class CanvasContextMenu(wx.Menu):
         if len(self.parent.models) < 2:
             addLink.Enable(False)
             run.Enable(False)
-            clear.Enable(False)
 
         if len(self.parent.models) < 1:
             save.Enable(False)
             saveAs.Enable(False)
+            clear.Enable(False)
 
     def OnAddLink(self, e):
         self.parent.FloatCanvas.SetMode(self.parent.GuiLink)
@@ -203,8 +203,8 @@ class CanvasContextMenu(wx.Menu):
         self.parent.run()
 
     def OnRunModel(self, e):
-        preRunDialog = logicPreRun(self)
-        preRunDialog.Show()
+        preRunDialog = logicPreRun()
+        preRunDialog.viewprerun.Show()
 
 
     def OnClickClear(self, e):

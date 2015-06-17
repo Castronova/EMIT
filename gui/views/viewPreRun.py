@@ -6,7 +6,7 @@ import os
 
 class viewPreRun(wx.Frame):
     def __init__(self):                                                         # this style makes the window non-resizable
-        wx.Frame.__init__(self, None, title="Pre Run", size=(450, 425), style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER)
+        wx.Frame.__init__(self, None, title="Pre Run", size=(450, 400), style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER)
 
         #  Variables
         self.panel = ""
@@ -22,13 +22,15 @@ class viewPreRun(wx.Frame):
 
         # create the page windows as children of the notebook
         self.page1 = PageOne(self.notebook)
-        self.page2 = PageTwo(self.notebook)
-        self.page3 = PageThree(self.notebook)
+
+        #  Uncomment this two bottom lines to show a second or third tab.
+        # self.page2 = PageTwo(self.notebook)
+        # self.page3 = PageThree(self.notebook)
 
         # add the pages to the notebook with the label to show on the tab
         self.notebook.AddPage(self.page1, "Summary")
-        self.notebook.AddPage(self.page2, "Details")
-        self.notebook.AddPage(self.page3, "Page 3")
+        # self.notebook.AddPage(self.page2, "Details")
+        # self.notebook.AddPage(self.page3, "Page 3")
 
         # finally, put the notebook in a sizer for the panel to manage
         # the layout
@@ -92,18 +94,20 @@ class PageOne(wx.Panel):
         self.boxsizer = wx.StaticBoxSizer(self.sizerStaticBox, wx.VERTICAL)
 
         self.displayMessage = wx.CheckBox(self, label="Display Simulation Message")
-        self.displayMessage.SetValue(True)  # By default it is checked
         self.logMessage = wx.CheckBox(self, label="Log Simulation Message")
-        self.checkbox3 = wx.CheckBox(self, label="Checkbox 3")
+        # self.checkbox3 = wx.CheckBox(self, label="Checkbox 3")
+
+        self.displayMessage.SetValue(True)  # By default it is checked
+        self.logMessage.SetValue(False)
 
         self.boxsizer.Add(self.displayMessage, flag=wx.LEFT | wx.TOP, border=5)
         self.boxsizer.Add(self.logMessage, flag=wx.LEFT, border=5)
-        self.boxsizer.Add(self.checkbox3, flag=wx.LEFT | wx.BOTTOM, border=5)
+        # self.boxsizer.Add(self.checkbox3, flag=wx.LEFT | wx.BOTTOM, border=5)
 
         self.sizer.Add(self.boxsizer, pos=(5, 0), span=(1, 4), flag=wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT, border=10)
 
-        self.helpButton = wx.Button(self, id=wx.ID_HELP, label='Help')
-        self.sizer.Add(self.helpButton, pos=(7, 0), flag=wx.LEFT, border=10)
+        # self.helpButton = wx.Button(self, id=wx.ID_HELP, label='Help')
+        # self.sizer.Add(self.helpButton, pos=(7, 0), flag=wx.LEFT, border=10)
 
         self.runButton = wx.Button(self, id=wx.ID_OK, label="Run")
         self.sizer.Add(self.runButton, pos=(7, 3), flag=wx.BOTTOM | wx.RIGHT, border=5)
@@ -144,6 +148,11 @@ class PageOne(wx.Panel):
                 combobox.append(words[1].split('\n')[0])
         combobox.sort()
         return combobox
+
+    def GetLogValues(self):
+        loginfo = [self.simulationNameTextBox.GetValue(), self.databaseCombo.GetValue(), self.accountCombo.GetValue()]
+        return loginfo
+
 
 
 class PageTwo(wx.Panel):
@@ -263,8 +272,8 @@ class AddNewUserDialog(wx.Dialog):
         self.sizer.AddGrowableCol(2)
         self.SetSizer(self.sizer)
         self.sizer.Fit(self)
-
         self.initBinding()
+
 
     def initBinding(self):
         self.firstnameTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
@@ -286,7 +295,7 @@ class AddNewUserDialog(wx.Dialog):
 
     def OnTextEnter(self, event):
         if not self.firstnameTextBox.GetValue or \
-                        not self.lastnameTextBox.GetValue or \
+                not self.lastnameTextBox.GetValue or \
                         self.organizationTextBox.GetValue() == '' or \
                         self.phoneTextBox.GetValue() == '' or \
                         self.emailTextBox.GetValue() == '' or \
@@ -302,6 +311,8 @@ class AddNewUserDialog(wx.Dialog):
                        self.emailTextBox.GetValue(), self.addressTextBox.GetValue(),
                        self.startdateTextBox.GetValue()]
         return accountinfo
+
+
 
 
 

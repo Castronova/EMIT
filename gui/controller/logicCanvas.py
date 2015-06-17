@@ -158,27 +158,17 @@ class LogicCanvas(ViewCanvas):
             pass
 
     def OnMove(self, event):
-        # print(event.Position)
-        """
-        Updates the status bar with the world coordinates
-        and moves the object it is clicked on
-
-        """
-
         if self.Moving:
-            dxy = event.GetPosition() - self.StartPoint
+            cursorPos = event.GetPosition()
+            deltaX = cursorPos.x - self.lastPos.x
+            deltaY = self.lastPos.y - cursorPos.y
+            dxy = (deltaX,deltaY)
 
-            # Draw the Moving Object:
-            dc = wx.ClientDC(self.FloatCanvas)
-            dc.SetPen(wx.Pen('WHITE', 2, wx.SHORT_DASH))
-            dc.SetBrush(wx.TRANSPARENT_BRUSH)
-            dc.SetLogicalFunction(wx.XOR)
-
-            if self.MoveObject is not None:
-                dc.DrawPolygon(self.MoveObject)
-            self.MoveObject = self.StartObject + dxy
-
-            dc.DrawPolygon(self.MoveObject)
+            self.MovingObject.Move(dxy)
+            self.MovingObject.Text.Move(dxy)
+            # self.FloatCanvas.Draw(True)
+            self.RedrawConfiguration()
+            self.lastPos = cursorPos
 
     def onUpdateConsole(self, evt):
         """
@@ -482,6 +472,7 @@ class LogicCanvas(ViewCanvas):
             self.StartObject = self.FloatCanvas.WorldToPixel(OutlinePoints)
             self.MoveObject = None
             self.MovingObject = object
+            self.lastPos = object.HitCoordsPixel
 
     def AddinkCursorClick(self):
         self.link_clicks += 1

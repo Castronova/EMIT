@@ -1,13 +1,12 @@
 __author__ = 'tonycastronova'
 
 import uuid
-from stdlib import *
 import os
 from shapely import wkt
 import cPickle as pickle
 from osgeo import ogr, osr
-from utilities.spatial import *
-
+import utilities.spatial
+import stdlib
 
 def create_variable(variable_name_cv):
     """
@@ -18,12 +17,12 @@ def create_variable(variable_name_cv):
     var = pickle.load(open(os.path.join(dir,'../data/var_cv.dat'),'rb'))
 
     if variable_name_cv in var:
-        V = Variable()
+        V = stdlib.Variable()
         V.VariableNameCV(value=variable_name_cv)
         V.VariableDefinition(value=var[variable_name_cv].strip())
         return V
     else:
-        V = Variable()
+        V = stdlib.Variable()
         V.VariableNameCV(value=variable_name_cv)
         V.VariableDefinition(value='unknown')
         #print '> [WARNING] Variable not found in controlled vocabulary : '+variable_name_cv
@@ -37,13 +36,13 @@ def create_unit(unit_name):
     var = pickle.load(open(os.path.join(dir,'../data/units_cv.dat'),'rb'))
 
     if unit_name in var:
-        U = Unit()
+        U = stdlib.Unit()
         U.UnitName(value=unit_name)
         U.UnitTypeCV(value=var[unit_name][0].strip())
         U.UnitAbbreviation(value=var[unit_name][1].strip())
         return U
     else:
-        U = Unit()
+        U = stdlib.Unit()
         U.UnitName(value=unit_name)
         U.UnitTypeCV(value='unknown')
         U.UnitAbbreviation(value='unknown')
@@ -71,14 +70,17 @@ def build_exchange_items_from_config(params):
         elementset = []
 
 
-        iotype = ExchangeItemType.Output if io['type'].lower() == 'output' else ExchangeItemType.Input
+        iotype = stdlib.ExchangeItemType.Output if io['type'].lower() == 'output' else stdlib.ExchangeItemType.Input
 
         #if 'output' in io.keys(): type = stlib.ExchangeItemType.Output
         #else: type = stlib.ExchangeItemType.Input
 
         for key,value in io.iteritems():
 
-            if key == 'variable_name_cv': variable = create_variable(value)
+            if key == 'variable_name_cv':
+                variable = create_variable(value)
+                if 'variable_definition' in io.keys():
+                    variable.VariableDefinition(io['variable_definition'])
             elif key == 'unit_type_cv': unit = create_unit(value)
             elif key == 'elementset' :
                 # check if the value is a path
@@ -86,7 +88,7 @@ def build_exchange_items_from_config(params):
                     if not os.path.isfile(value):
                         raise Exception('Could not find file: %s'%value)
 
-                    geom,srs = read_shapefile(value)
+                    geom,srs = utilities.spatial.read_shapefile(value)
 
 
                 # otherwise it must be a wkt
@@ -101,7 +103,7 @@ def build_exchange_items_from_config(params):
                             geom = [geoms]
 
                     except: raise Exception('Could not load WKT string: %s.'%value)
-                    srs = get_srs_from_epsg(io['epsg_code'])
+                    srs = utilities.spatial.get_srs_from_epsg(io['epsg_code'])
 
 
                 for element in geom:
@@ -110,7 +112,7 @@ def build_exchange_items_from_config(params):
 
                     if srs is None:
                         # set default srs
-                        srs = get_srs_from_epsg('4269')
+                        srs = utilities.spatial.get_srs_from_epsg('4269')
 
                     # create element
                     elem = stdlib.Geometry()

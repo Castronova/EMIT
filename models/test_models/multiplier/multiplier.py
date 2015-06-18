@@ -39,11 +39,6 @@ class multiply(feed_forward.feed_forward_wrapper):
 
             time = self.current_time()
 
-            # looping
-            c = 0
-            for i in range(900000000):
-                c += 1
-
             ts = []
             while time <= self.simulation_end():
 

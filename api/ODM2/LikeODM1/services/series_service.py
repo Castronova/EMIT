@@ -3,7 +3,7 @@
 from sqlalchemy import distinct
 import sqlalchemy.exc
 
-from ODMconnection import SessionFactory
+# from ODMconnection import SessionFactory
 from ODM1_1_1 import Site, Variable, Unit, Series, DataValue, Qualifier, OffsetType, Sample, Method, QualityControlLevel, ODMVersion
 
 

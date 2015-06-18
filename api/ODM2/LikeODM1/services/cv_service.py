@@ -1,5 +1,5 @@
 # CV imports
-from ODMconnection import SessionFactory
+# from ODMconnection import SessionFactory
 from ODM1_1_1 import VerticalDatumCV
 from ODM1_1_1 import SiteTypeCV
 from ODM1_1_1 import VariableNameCV

@@ -1,4 +1,5 @@
-__author__ = 'tonycastronova'
+import os
+
 __author__ = 'tonycastronova'
 
 import random
@@ -31,32 +32,38 @@ class randomizer(feed_forward.feed_forward_wrapper):
 
         # Note: this calculation requires no input timeseries
 
-        # get spatial objects (assuming that all variable exist at the same locations)
-        output = self.get_output_by_name('random_number')
-        geoms = output.geometries()
+        outputs = [self.get_output_by_name('random 1-10'),
+                   self.get_output_by_name('random 10-100'),
+                   self.get_output_by_name('random 100-1000')
+                   ]
 
-        c = 0
-        for i in range(900000000):
-            c += 1
+        for output in outputs:
 
-        # loop over each output geometry instance and generate a random number
-        for g in geoms:
-            # get the geometry
-            geom = g.geom()
-            ts = []
+            geoms = output.geometries()
 
-            # calculate a random number timeseries
-            current_time = self.current_time()
-            end = self.simulation_end()
-            while (current_time <= end):
-                ts.append(((current_time), (random.random())))
+            random.randrange(5,60,5)
 
-                # increment time
-                current_time = self.increment_time(current_time)
+            # loop over each output geometry instance and generate a random number
+            for g in geoms:
+                # get the geometry
+                geom = g.geom()
+                ts = []
+
+                # calculate a random number timeseries
+                current_time = self.current_time()
+                end = self.simulation_end()
+                while (current_time <= end):
+
+                    Min,Max = output.name().split(' ')[-1].split('-')
+                    val = random.random()*float(Max) + float(Min)
+                    ts.append(((current_time), (val)))
+
+                    # increment time
+                    current_time = self.increment_time(current_time)
 
 
-            # save this timeseries to the output geom
-            self.set_geom_values('random_number', geom, ts)
+                # save this timeseries to the output geom
+                self.set_geom_values(output.name(), geom, ts)
 
 
     def save(self):
@@ -64,6 +71,23 @@ class randomizer(feed_forward.feed_forward_wrapper):
         This function is used to build output exchange items
         :return: list of output exchange items
         """
+
+        # save calculations locally
+        base = os.path.dirname(__file__)
+        # save output locally
+        with open(base+'/output.out', 'w') as f:
+            for oei in self.outputs().keys():
+                output = self.get_output_by_name(oei)
+                geoms = output.geometries()
+                f.write(oei+'\n')
+                for g in geoms:
+                    f.write(g.geom().to_wkt()+'\n')
+                    date, val = g.datavalues().get_dates_values()
+                    for i in xrange(0, len(date)):
+                        f.write(date[i].strftime("%m-%d-%Y %H:%M")+','+str(val[i])+'\n')
+
+                f.write('\n')
+
 
         # save all timeseries
         return self.outputs()

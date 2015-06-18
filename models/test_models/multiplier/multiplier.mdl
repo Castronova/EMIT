@@ -4,7 +4,7 @@ classname = multiply
 
 [model]
 code = tonys_multiplier
-name = TonyÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢s multiplier module
+name = Tonys multiplier module
 description = This is a module that multiplies numbers
 
 [general]

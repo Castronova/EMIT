@@ -6,6 +6,7 @@ from api.ODM2.Results.services import readResults
 from shapely import wkb
 import stdlib, uuid
 from utilities.status import Status
+import datatypes
 
 class odm2(object):
     def __init__(self,resultid, session):
@@ -38,6 +39,8 @@ class odm2(object):
         # build geometry object
         # todo: this assumes single geometry! fix
         shape = wkb.loads(str(obj.FeatureActionObj.SamplingFeatureObj.FeatureGeometry.data))
+
+        # todo: need to specify srs and elevation
         geometry = stdlib.Geometry(geom=shape,srs=None,elev=None,datavalues=data)
         geometry.type(shape.geom_type)
 
@@ -71,6 +74,9 @@ class odm2(object):
         self.__session = session
 
         self.__status = Status.Loaded
+
+    def type(self):
+        return datatypes.ModelTypes.Data
 
     def save(self):
         #return [self.get_output_by_name(outputname=self.name())]

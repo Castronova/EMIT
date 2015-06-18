@@ -6,6 +6,7 @@ import wx.xrc
 import wx.aui
 from gui.controller.logicEMIT import LogicEMIT
 from coordinator import engineManager
+import coordinator.emitLogging as logging
 
 
 
@@ -18,18 +19,20 @@ class EMITApp(wx.App):
         # tends to add clutter to our console.
         wx.Log.SetLogLevel(0)
 
+        logging.log.debug('THIS IS A TEST FROM EMIT.py!!!')
+
         self.logicEmit = LogicEMIT(None)
 
         return True
 
-class SysOutListener:
-    def write(self, string):
-        try:
-            sys.__stdout__.write(string)
-            evt = wxStdOut(text=string)
-            wx.PostEvent(wx.GetApp().frame.output, evt)
-        except:
-            pass
+# class SysOutListener:
+#     def write(self, string):
+#         try:
+#             sys.__stdout__.write(string)
+#             evt = wxStdOut(text=string)
+#             wx.PostEvent(wx.GetApp().frame.output, evt)
+#         except:
+#             pass
 
 if __name__ == '__main__':
     app = EMITApp()

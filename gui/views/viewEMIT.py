@@ -621,8 +621,6 @@ class TimeSeries(wx.Panel):
         thr = threading.Thread(target=self.refresh_database, args=(), kwargs={})
         thr.start()
 
-
-
 class DataSeries(wx.Panel):
     """
 
@@ -842,6 +840,7 @@ class consoleOutput(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
         self.logger = logging.getLogger('wxApp')
+        self.elogger= logging.getLogger('ENGINE_LOG')
 
         # Add a panel so it looks the correct on all platforms
         # self.log = wx.TextCtrl(self, -1, size=(100,100),

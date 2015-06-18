@@ -32,6 +32,9 @@ import inspect
 from api.ODM2.Core.services import *
 from copy import deepcopy
 
+import coordinator.emitLogging as logging
+
+
 """
 Purpose: This file contains the logic used to run coupled model simulations
 """
@@ -319,7 +322,8 @@ class Coordinator(object):
 
                 # make sure this model doesnt already exist
                 if name in self.__models:
-                    print 'WARNING | Model named '+name+' already exists in configuration'
+                    logging.log.warning('Model named '+name+' already exists in configuration')
+                    # print 'WARNING | Model named '+name+' already exists in configuration'
                     return None
 
                 iei = model_inst.inputs().values()

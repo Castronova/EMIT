@@ -9,6 +9,7 @@ import imp
 from api.ODMconnection import  dbconnection
 # from ODMconnection import dbconnection
 import uuid
+import coordinator.emitLogging as logging
 
 class multidict(dict):
     _unique = 0
@@ -353,7 +354,7 @@ def create_database_connections_from_file(ini):
                                      'description':d['desc'],
                                      'args': d}
 
-            print 'Connected to : %s [%s]'%(connection_string,db_id)
+            logging.log.info('Connected to : %s [%s]'%(connection_string,db_id))
 
 
 

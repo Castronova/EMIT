@@ -6,6 +6,7 @@ import wx.xrc
 import wx.aui
 from gui.controller.logicEMIT import LogicEMIT
 from coordinator import engineManager
+import coordinator.emitLogging as logging
 
 
 
@@ -17,6 +18,8 @@ class EMITApp(wx.App):
         # We are terminating dependency logging errors, We may want this in the future but it
         # tends to add clutter to our console.
         wx.Log.SetLogLevel(0)
+
+        logging.log.debug('THIS IS A TEST FROM EMIT.py!!!')
 
         self.logicEmit = LogicEMIT(None)
 

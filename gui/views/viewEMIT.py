@@ -856,9 +856,9 @@ class consoleOutput(wx.Panel):
 
 
         # deactivate the console if we are in debug mode
-        # if not sys.gettrace():
-        redir = RedirectText(self.log)
-        sys.stdout = redir
+        if not sys.gettrace():
+            redir = RedirectText(self.log)
+            sys.stdout = redir
 
 
         # Add widgets to a sizer

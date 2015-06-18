@@ -25,14 +25,14 @@ class EMITApp(wx.App):
 
         return True
 
-class SysOutListener:
-    def write(self, string):
-        try:
-            sys.__stdout__.write(string)
-            evt = wxStdOut(text=string)
-            wx.PostEvent(wx.GetApp().frame.output, evt)
-        except:
-            pass
+# class SysOutListener:
+#     def write(self, string):
+#         try:
+#             sys.__stdout__.write(string)
+#             evt = wxStdOut(text=string)
+#             wx.PostEvent(wx.GetApp().frame.output, evt)
+#         except:
+#             pass
 
 if __name__ == '__main__':
     app = EMITApp()

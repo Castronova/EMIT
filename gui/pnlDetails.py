@@ -8,7 +8,7 @@ import wx
 #from wx.lib.pubsub import pub as Publisher
 
 [wxID_PNLCREATELINK, wxID_PNLSPATIAL, wxID_PNLTEMPORAL,
- wxID_PNLDETAILS, wxID_PNLSUMMARYTREESUMMARY,
+wxID_PNLDETAILS, wxID_PNLSUMMARYTREESUMMARY,
 ] = [wx.NewId() for _init_ctrls in range(5)]
 
 class pnlDetails ( wx.Panel ):

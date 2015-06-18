@@ -9,9 +9,9 @@ __author__ = 'tonycastronova'
 
 
 import wx
-from txtctrlModel import ModelTxtCtrl
+from gui.txtctrlModel import ModelTxtCtrl
 
-from wx.lib.pubsub import pub as Publisher, __all__
+from wx.lib.pubsub import pub as Publisher
 
 
 class LinkContextMenu(wx.Menu):

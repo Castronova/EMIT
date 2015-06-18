@@ -66,7 +66,6 @@ class console(Thread):
 
 
 
-    # @runAsync
     def run2(self):
 
         while 1:
@@ -106,7 +105,6 @@ class consoleOutput(wx.Panel):
         thread.daemon = True
         thread.start()
 
-    # @runAsync
     def run(self):
 
         while 1:

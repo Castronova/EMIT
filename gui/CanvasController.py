@@ -20,8 +20,8 @@ import math
 import markdown2
 import CanvasObjects
 # from LinkStart import LinkStart
-from LinkCreationFrame import LinkCreationFrame
-from LinkDetailsContext import LinkDetailsContextActivatedFrame as LDCAF
+# from LinkCreationFrame import LinkCreationFrame
+# from LinkDetailsContext import LinkDetailsContextActivatedFrame as LDCAF
 from ContextMenu import LinkContextMenu, ModelContextMenu, GeneralContextMenu
 from wrappers import odm2_data
 import xml.etree.ElementTree as et
@@ -523,7 +523,7 @@ class CanvasController:
         # outputitems = to_model.get_input_exchange_items()
 
 
-        linkstart = LinkStart(self.FloatCanvas, from_model, to_model)
+        linkstart = LinkStart(self.FloatCanvas, from_model, to_model, self.cmd)
 
 
         linkstart.Show()

@@ -8,7 +8,7 @@ from matplotlib.figure import Figure
 import wx
 
 [wxID_PNLCREATELINK, wxID_PNLSPATIAL, wxID_PNLTEMPORAL,
- wxID_PNLDETAILS,
+wxID_PNLDETAILS,
 ] = [wx.NewId() for _init_ctrls in range(4)]
 
 class pnlSpatial ( wx.Panel ):

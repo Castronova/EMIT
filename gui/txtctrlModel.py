@@ -2,9 +2,12 @@ __author__ = 'Mario'
 
 import wx
 import wx.xrc
-from pnlSpatial import pnlSpatial
-from pnlDetails import pnlDetails
-from PropertyGrid import pnlProperty
+
+from gui.pnlSpatial import pnlSpatial
+
+
+# from pnlDetails import pnlDetails
+# from PropertyGrid import pnlProperty
 from utilities import gui
 import wx.propgrid as wxpg
 

@@ -1,10 +1,11 @@
-from images import icons
-
 __author__ = 'Mario'
 
-import wx
 import sys
-from NavToolbar import NavCanvas
+
+import wx
+
+from gui.NavToolbar import NavCanvas
+
 
 # from wx.lib.floatcanvas import NavCanvas
 

@@ -26,6 +26,19 @@ import utilities.db as dbUtilities
 import coordinator.events as engineEvent
 from gui import events
 
+# Not sure if this should be here
+# This creates an anti-aliased line
+class SmoothLine(FC.Line):
+    """
+    The SmoothLine class is identical to the Line class except that it uses a
+    GC rather than a DC.
+    """
+    def _Draw(self, dc , WorldToPixel, ScaleWorldToPixel, HTdc=None):
+        Points = WorldToPixel(self.Points)
+        GC = wx.GraphicsContext.Create(dc)
+        GC.SetPen(self.Pen)
+        GC.DrawLines(Points)
+
 class LogicCanvas(ViewCanvas):
     def __init__(self, parent):
 
@@ -166,9 +179,18 @@ class LogicCanvas(ViewCanvas):
 
             self.MovingObject.Move(dxy)
             self.MovingObject.Text.Move(dxy)
-            # self.FloatCanvas.Draw(True)
-            self.RedrawConfiguration()
+
+
+            for link in self.links.keys():
+                r1, r2 = self.links[link]
+                if r1 == self.MovingObject:
+                    link.Points[0] = self.MovingObject.XY
+                elif r2 == self.MovingObject:
+                    link.Points[1] = self.MovingObject.XY
+
             self.lastPos = cursorPos
+            self.RedrawConfiguration()
+            # self.FloatCanvas.Draw(True)
 
     def onUpdateConsole(self, evt):
         """
@@ -310,6 +332,23 @@ class LogicCanvas(ViewCanvas):
 
         self.FloatCanvas.Draw()
 
+    def createLineNew(self, R1, R2):
+        # Get the center of the objects
+        x1,y1 = R1.XY
+        x2,y2 = R2.XY
+        points = [(x1,y1),(x2,y2)]
+        line = SmoothLine(points, LineColor="Blue", LineStyle="Solid", LineWidth=4, InForeground=False)
+        self.links[line] = [R1, R2]
+        line.type = LogicCanvasObjects.ShapeType.Link
+
+        arrow_shape = self.createArrow(line)
+        # Calculate length of line, use to show/hide arrow
+        self.linelength = math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2)
+        arrow_shape = self.createArrow(line)
+
+        self.FloatCanvas.AddObject(line)
+        self.FloatCanvas.Draw()
+
     def createArrow(self, line):
 
         arrow = LogicCanvasObjects.build_arrow(line, arrow_length=6)
@@ -320,6 +359,37 @@ class LogicCanvas(ViewCanvas):
             arrow_shape.Show()
         else:
             arrow_shape.Hide()
+
+        # set the shape type so that we can identify it later
+        arrow_shape.type = LogicCanvasObjects.ShapeType.ArrowHead
+        self.FloatCanvas.AddObject(arrow_shape)
+
+        # bind the arrow to left click
+        arrow_shape.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
+        arrow_shape.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
+
+        return arrow_shape
+
+    def createArrowNew(self, line):
+
+        arrow_shape = self.FloatCanvas.AddScaledBitmap(self.linkArrow,
+                                                 (0, 0),
+                                                 Height = self.linkArrow.GetHeight(),
+                                                 Position = 'tl',)
+        # if self.linelength > 230:
+        #     arrow_shape.Show()
+        # else:
+        #     arrow_shape.Hide()
+
+        arrow_shape.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
+        arrow_shape.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
+
+        # create the arrowhead object
+        # arrow_shape = FC.Polygon(arrow, FillColor='Blue', InForeground=True)
+        # if self.linelength > 230:
+        #     arrow_shape.Show()
+        # else:
+        #     arrow_shape.Hide()
 
         # set the shape type so that we can identify it later
         arrow_shape.type = LogicCanvasObjects.ShapeType.ArrowHead
@@ -491,11 +561,11 @@ class LogicCanvas(ViewCanvas):
     def ArrowClicked(self, event):
 
         # get the models associated with the link
-        polygons = self.links[event]
+        models = self.links[event]
 
         # get r1 and r2
-        r1 = polygons[0]
-        r2 = polygons[1]
+        r1 = models[0]
+        r2 = models[1]
 
         # get output items from r1
         from_model = engine.getModelById(r1.ID)
@@ -507,6 +577,7 @@ class LogicCanvas(ViewCanvas):
 
         linkstart.Show()
 
+
     def RedrawConfiguration(self):
         # clear lines from drawlist
         self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if
@@ -517,7 +588,6 @@ class LogicCanvas(ViewCanvas):
                                           obj.type != LogicCanvasObjects.ShapeType.ArrowHead]
 
         # remove any models
-        i = 0
         modelids = [model.ID for model in self.models]
         modellabels = [model.Name for model in self.models]
         self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList

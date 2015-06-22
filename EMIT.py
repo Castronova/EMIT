@@ -34,6 +34,46 @@ class EMITApp(wx.App):
 #         except:
 #             pass
 
+    def follow(self, logging, target):
+            path = logging.get_logger().handlers[-1].stream.name
+            thefile = open(logging.get_logger().handlers[-1].stream.name,'r')
+            num_files = len(logging.get_logger().handlers)
+
+            # get the last position in the file
+            # f.seek(last_pos)
+            # line = f.readline()  # no 's' at the end of `readline()`
+            # last_pos = f.tell()
+            # f.close()
+
+            thefile.seek(0,2)
+            while True:
+                line = thefile.readline()
+                if not line:
+                    if len(logging.get_logger().handlers) != num_files:
+                        thefile.close()
+                        thefile = open(logging.get_logger().handlers[-1].stream.name,'r')
+
+                    time.sleep(0.5)
+                    continue
+                # yield line
+
+                target.WriteText(line)
+                target.Refresh()
+
+            return True
+
+
+
+# class SysOutListener:
+#     def write(self, string):
+#         try:
+#             sys.__stdout__.write(string)
+#             evt = wxStdOut(text=string)
+#             wx.PostEvent(wx.GetApp().frame.output, evt)
+#         except:
+#             pass
+
+
 if __name__ == '__main__':
     app = EMITApp()
     app.MainLoop()

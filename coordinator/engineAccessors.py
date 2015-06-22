@@ -20,7 +20,15 @@ def addModel(id=None, attrib=None):
     e.thread.start()
     e.thread.join()
 
+def createSQLiteInMemory(dbtextfile=None):
+        e = Engine()
+        kwargs = dict(filepath=dbtextfile, event='onDatabaseConnected')
+        task = [('create_sqlite_in_memory_database',kwargs)]
+        e.setTasks(task)
 
+        e.thread = Thread(target = e.check_for_process_results)
+        e.thread.start()
+        e.thread.join()
 
 def connectToDbFromFile(dbtextfile=None):
         e = Engine()

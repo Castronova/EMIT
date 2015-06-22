@@ -34,6 +34,7 @@ from copy import deepcopy
 
 import coordinator.emitLogging as logging
 
+import ODM2PythonAPI.src.api as odm2api
 
 """
 Purpose: This file contains the logic used to run coupled model simulations
@@ -664,8 +665,6 @@ class Coordinator(object):
             )
         return models
 
-
-
     def get_output_exchange_items_summary(self, id):
         """
         gets a serializable version of the output exchange items
@@ -1022,7 +1021,6 @@ class Coordinator(object):
         else:
             return {'success':False}
 
-
     def connect_to_db_from_file(self,filepath=None):
 
         if filepath is None: return {'success':False}
@@ -1049,6 +1047,39 @@ class Coordinator(object):
 
         else:
             return {'success':False}
+
+    def create_sqlite_in_memory_database(self):
+
+        import pyspatialite.dbapi2 as sqlite
+
+        # create a memory database
+        conn = sqlite.connect(":memory:")
+
+        # load the blank odm2 database
+        old_db = sqlite.connect('../data/odm2_empty.sqlite')
+
+        query = "".join(line for line in old_db.iterdump())
+
+        # Dump old database in the new one.
+        conn.executescript(query)
+
+
+        # todo:  Need to establish a SQLAlchemy connection with the in-memory database
+        # # connect to database
+        # odm2api.dbconnection.createConnection()
+        # session = dbconnection.createConnection('sqlite', "", name, user, pwd)
+
+        # if session:
+        # # adjusting timeout
+        # session.engine.pool._timeout = 30
+        #
+        # connection_string = session.engine.url
+        #
+        # # save this session in the db_connections object
+        # db_id = uuid.uuid4().hex[:5]
+
+
+
 
     def get_format_width(self,output_array):
         width = 0

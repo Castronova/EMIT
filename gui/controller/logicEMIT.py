@@ -18,6 +18,8 @@ class LogicEMIT(ViewEMIT):
         connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/connections'))
         engine.connectToDbFromFile(dbtextfile=connections_txt)
 
+        engine.createSQLiteInMemory()
+
         dropTarget = LogicFileDrop(self.Canvas, self.FloatCanvas)
         self.SetDropTarget(dropTarget)
 

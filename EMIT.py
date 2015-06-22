@@ -6,11 +6,11 @@ import wx.xrc
 import wx.aui
 from gui.controller.logicEMIT import LogicEMIT
 from coordinator import engineManager
-import coordinator.emitLogging as logging  # Remove this along with the single quotes
-'''
+# import coordinator.emitLogging as logging  # Remove this along with the single quotes
+
 import time
-import coordinator.emitLogging as l
-'''
+# import coordinator.emitLogging as l
+
 
 # logging = l.Log()
 
@@ -24,7 +24,7 @@ class EMITApp(wx.App):
         # tends to add clutter to our console.
         wx.Log.SetLogLevel(0)
 
-        logging.log.debug('THIS IS A TEST FROM EMIT.py!!!')
+        # logging.log.debug('THIS IS A TEST FROM EMIT.py!!!')
 
         self.logicEmit = LogicEMIT(None)
 

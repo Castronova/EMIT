@@ -6,8 +6,10 @@ import wx.xrc
 import wx.aui
 from gui.controller.logicEMIT import LogicEMIT
 from coordinator import engineManager
-import coordinator.emitLogging as logging
+import time
+import coordinator.emitLogging as l
 
+logging = l.Log()
 
 
 class EMITApp(wx.App):
@@ -25,44 +27,42 @@ class EMITApp(wx.App):
 
         return True
 
-# class SysOutListener:
-#     def write(self, string):
-#         try:
-#             sys.__stdout__.write(string)
-#             evt = wxStdOut(text=string)
-#             wx.PostEvent(wx.GetApp().frame.output, evt)
-#         except:
-#             pass
+    # class SysOutListener:
+    #     def write(self, string):
+    #         try:
+    #             sys.__stdout__.write(string)
+    #             evt = wxStdOut(text=string)
+    #             wx.PostEvent(wx.GetApp().frame.output, evt)
+    #         except:
+    #             pass
 
     def follow(self, logging, target):
-            path = logging.get_logger().handlers[-1].stream.name
-            thefile = open(logging.get_logger().handlers[-1].stream.name,'r')
-            num_files = len(logging.get_logger().handlers)
+        path = logging.get_logger().handlers[-1].stream.name
+        thefile = open(logging.get_logger().handlers[-1].stream.name, 'r')
+        num_files = len(logging.get_logger().handlers)
 
-            # get the last position in the file
-            # f.seek(last_pos)
-            # line = f.readline()  # no 's' at the end of `readline()`
-            # last_pos = f.tell()
-            # f.close()
+        # get the last position in the file
+        # f.seek(last_pos)
+        # line = f.readline()  # no 's' at the end of `readline()`
+        # last_pos = f.tell()
+        # f.close()
 
-            thefile.seek(0,2)
-            while True:
-                line = thefile.readline()
-                if not line:
-                    if len(logging.get_logger().handlers) != num_files:
-                        thefile.close()
-                        thefile = open(logging.get_logger().handlers[-1].stream.name,'r')
+        thefile.seek(0, 2)
+        while True:
+            line = thefile.readline()
+            if not line:
+                if len(logging.get_logger().handlers) != num_files:
+                    thefile.close()
+                    thefile = open(logging.get_logger().handlers[-1].stream.name, 'r')
 
-                    time.sleep(0.5)
-                    continue
-                # yield line
+                time.sleep(0.5)
+                continue
+            # yield line
 
-                target.WriteText(line)
-                target.Refresh()
+            target.WriteText(line)
+            target.Refresh()
 
-            return True
-
-
+        return True
 
 # class SysOutListener:
 #     def write(self, string):
@@ -77,7 +77,3 @@ class EMITApp(wx.App):
 if __name__ == '__main__':
     app = EMITApp()
     app.MainLoop()
-
-
-
-

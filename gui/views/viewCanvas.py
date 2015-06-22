@@ -20,12 +20,12 @@ class ViewCanvas(wx.Panel):
 
         # Get the Canvas Objects Resources
         self.ModelsBox = rco.EMITModelDeepBlueWavesReflected.GetBitmap()
-        self.DatabaseBox = rco.EMITModelSilver.GetBitmap()
-        self.TimeseriesBox = rco.EMITModelGold.GetBitmap()
+        # self.DatabaseBox = rco.EMITModelSilver.GetBitmap()
+        # self.TimeseriesBox = rco.EMITModelGold.GetBitmap()
         # self.UnassignedBox1 = rco.EMITModelDeepBlueWaves.GetBitmap()
         # self.UnassignedBox2 = rco.EMITModelDeepBlue.GetBitmap()
         # self.UnassignedBox3 = rco.EMITModelGreen.GetBitmap()
-        self.UnassignedBox4 = rco.EMITModelBlueWaves.GetBitmap()
+        # self.UnassignedBox4 = rco.EMITModelBlueWaves.GetBitmap()
         self.UnassignedBox5 = rco.EMITModelBlueWavesNormal.GetBitmap()
         # self.UnassignedBox5 = rco.EMITModelSilverReflected.GetBitmap()
         # self.LinkTriangle = rco.LinkTriangle.GetBitmap()
@@ -34,7 +34,10 @@ class ViewCanvas(wx.Panel):
         import sys, os
         curPath = sys.path[0]
         imagesPath = os.path.join(curPath, 'gui/images/')
-        self.linkArrow = wx.Image(imagesPath+'/rightChevron128x128.png', wx.BITMAP_TYPE_PNG)
+        self.linkArrow = wx.Image(imagesPath+'/rightChevron128.png', wx.BITMAP_TYPE_PNG)
+        self.UnassignedBox4 = wx.Image(imagesPath+'rectBlue.png', wx.BITMAP_TYPE_PNG)
+        self.TimeseriesBox = wx.Image(imagesPath+'rectGreen.png', wx.BITMAP_TYPE_PNG)
+        self.DatabaseBox = wx.Image(imagesPath+'rectPurple.png', wx.BITMAP_TYPE_PNG)
 
         self.GuiMouse = GUIMouse()
         self.GuiZoomIn = GUIZoomIn()

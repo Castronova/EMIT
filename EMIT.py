@@ -6,10 +6,13 @@ import wx.xrc
 import wx.aui
 from gui.controller.logicEMIT import LogicEMIT
 from coordinator import engineManager
+import coordinator.emitLogging as logging  # Remove this along with the single quotes
+'''
 import time
 import coordinator.emitLogging as l
+'''
 
-logging = l.Log()
+# logging = l.Log()
 
 
 class EMITApp(wx.App):
@@ -27,15 +30,7 @@ class EMITApp(wx.App):
 
         return True
 
-    # class SysOutListener:
-    #     def write(self, string):
-    #         try:
-    #             sys.__stdout__.write(string)
-    #             evt = wxStdOut(text=string)
-    #             wx.PostEvent(wx.GetApp().frame.output, evt)
-    #         except:
-    #             pass
-
+'''
     def follow(self, logging, target):
         path = logging.get_logger().handlers[-1].stream.name
         thefile = open(logging.get_logger().handlers[-1].stream.name, 'r')
@@ -72,7 +67,7 @@ class EMITApp(wx.App):
 #             wx.PostEvent(wx.GetApp().frame.output, evt)
 #         except:
 #             pass
-
+'''
 
 if __name__ == '__main__':
     app = EMITApp()

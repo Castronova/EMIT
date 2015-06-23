@@ -26,7 +26,7 @@ class logicPreRun:
 
 
     def OnRun(self, e):
-        if self.viewprerun.page1.logMessage.GetValue():  # If Log Message Checkbox is checked
+        if self.viewprerun.page1.logMessage.GetValue():  # If log Message Checkbox is checked
             exist = self.CheckSimulationName(self.viewprerun.page1.simulationNameTextBox.GetValue())  # Check if sim name exist
 
             if exist:
@@ -83,7 +83,7 @@ class logicPreRun:
 
     def LogSimulation(self):
         currentdir = os.path.dirname(os.path.abspath(__file__))
-        connections_txt = os.path.abspath(os.path.join(currentdir, '../../Log/log'))
+        connections_txt = os.path.abspath(os.path.join(currentdir, '../../log/log'))
         file = open(connections_txt, 'a')
         loginfo = self.viewprerun.page1.GetLogValues()
         logtxt = "[Simulation]\n" + \
@@ -98,7 +98,7 @@ class logicPreRun:
 
     def CheckSimulationName(self, simname):
         currentdir = os.path.dirname(os.path.abspath(__file__))
-        connections_txt = os.path.abspath(os.path.join(currentdir, '../../Log/log'))
+        connections_txt = os.path.abspath(os.path.join(currentdir, '../../log/log'))
         file = open(connections_txt, 'r')
         if simname in file.read():
             return True

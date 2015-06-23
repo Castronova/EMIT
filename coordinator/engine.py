@@ -25,11 +25,10 @@ import inspect
 # import coordinator.engineProcessor as engineProcessor
 from api.ODM2.Core.services import *
 from copy import deepcopy
-import coordinator.emitLogging as l
-import ODM2PythonAPI.src.api as odm2api
+from coordinator.emitLogging import elog
+# import ODM2PythonAPI.src.api as odm2api
 from datetime import datetime
 
-logging = l.Log()
 
 """
 Purpose: This file contains the logic used to run coupled model simulations
@@ -280,7 +279,7 @@ class Coordinator(object):
         try:
             self.__default_db = self._db[db_id]
             self.__default_db['id'] = db_id
-            print 'Default database : %s'%self._db[db_id]['connection_string']
+            elog.info('Default database : %s'%self._db[db_id]['connection_string'])
         except:
             print 'ERROR | could not find database: %s'%db_id
 
@@ -318,7 +317,7 @@ class Coordinator(object):
 
                 # make sure this model doesnt already exist
                 if name in self.__models:
-                    logging.warning('Model named '+name+' already exists in configuration')
+                    elog.warning('Model named '+name+' already exists in configuration')
                     # print 'WARNING | Model named '+name+' already exists in configuration'
                     return None
 

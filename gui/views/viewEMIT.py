@@ -35,8 +35,7 @@ wxDbChanged, EVT_DBCHANGED= NewEvent()
 import ConsoleOutput
 
 from logging import FileHandler
-import coordinator.emitLogging as l
-logging = l.Log()
+from coordinator.emitLogging import elog
 
 
 class ViewEMIT(wx.Frame):
@@ -61,8 +60,14 @@ class ViewEMIT(wx.Frame):
         self.Canvas = LogicCanvas(self.pnlDocking)
         self.Output = consoleOutput(self.bnb)
 
-        t = threading.Thread(target=ConsoleOutput.follow,args=(logging, self.Output.log))
-        t.start()
+        # deactivate the console if we are in debug mode
+        if not sys.gettrace():
+            # redir = RedirectText(self.log)
+            # sys.stdout = redir
+
+            #  Thread starts here to ensure its on the main thread
+            t = threading.Thread(target=ConsoleOutput.follow,args=(elog, self.Output.log))
+            t.start()
 
         self.Toolbox.Hide()
         self.initAUIManager()
@@ -792,7 +797,10 @@ class SimulationDataTable(DataSeries):
         #set the selected choice
         self.__selected_choice_idx = self.connection_combobox.GetSelection()
 
-        for key, db in self._databases.iteritems():
+        for key, db in self._databases.iteritems():        # # deactivate the console if we are in debug mode
+        # if not sys.gettrace():
+        #     redir = RedirectText(self.log)
+        #     sys.stdout = redir
 
             # get the database session associated with the selected name
             if db['name'] == selected_db:
@@ -862,11 +870,11 @@ class consoleOutput(wx.Panel):
 
         self.log.Bind(wx.EVT_CONTEXT_MENU, self.onRightUp)
 
-
-        # deactivate the console if we are in debug mode
-        if not sys.gettrace():
-            redir = RedirectText(self.log)
-            sys.stdout = redir
+        #
+        # # deactivate the console if we are in debug mode
+        # if not sys.gettrace():
+        #     redir = RedirectText(self.log)
+        #     sys.stdout = redir
 
 
         # Add widgets to a sizer

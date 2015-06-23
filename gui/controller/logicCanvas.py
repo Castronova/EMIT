@@ -25,6 +25,7 @@ import coordinator.engineAccessors as engine
 import utilities.db as dbUtilities
 import coordinator.events as engineEvent
 from gui import events
+from coordinator.emitLogging import elog
 
 # Not sure if this should be here
 # This creates an anti-aliased line
@@ -261,7 +262,7 @@ class LogicCanvas(ViewCanvas):
             # add this text as an attribute of the rectangle
             R.Text = label
 
-            print name + ' has been added to the canvas.'
+            elog.warning(name + ' has been added to the canvas.')
 
             R.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit)
             R.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)

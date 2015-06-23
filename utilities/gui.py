@@ -10,7 +10,7 @@ from api.ODMconnection import  dbconnection
 # from ODMconnection import dbconnection
 import uuid
 # import coordinator.emitLogging as l
-# logging = l.Log()
+# logging = l.log()
 
 from coordinator.emitLogging import elog
 

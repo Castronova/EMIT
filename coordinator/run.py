@@ -12,6 +12,7 @@ from transform.time import *
 from transform.space import *
 from utilities.status import Status
 import update
+from coordinator.emitLogging import elog
 
 
 def run_feed_forward(obj):
@@ -25,11 +26,11 @@ def run_feed_forward(obj):
     activethreads = []
 
     # determine execution order
-    print 'Determining execution order... '
+    elog.info('Determining execution order... ')
 
     exec_order = obj.determine_execution_order()
     for i in range(0, len(exec_order)):
-        print  '%d.) %s' % (i + 1, obj.get_model_by_id(exec_order[i]).get_name())
+        elog.info('%d.) %s' % (i + 1, obj.get_model_by_id(exec_order[i]).get_name()))
 
 
     # # store model db sessions
@@ -54,7 +55,7 @@ def run_feed_forward(obj):
     spatial_maps = {}
 
     # todo:  move this into function
-    print '[PRE-RUN] Performing spatial mapping... '
+    elog.info('[PRE-RUN] Performing spatial mapping... ')
 
     for modelid in exec_order:
 
@@ -103,13 +104,13 @@ def run_feed_forward(obj):
         # get the current model instance
         model_obj = obj.get_model_by_id(modelid)
         model_inst = model_obj.get_instance()
-        print '\n' + \
+        elog.info('\n' + \
               '------------------' + len(model_inst.name()) * '-' + '\n' + \
               'Executing module: %s \n' % model_inst.name() + \
-              '------------------' + len(model_inst.name()) * '-'
+              '------------------' + len(model_inst.name()) * '-')
 
         #  retrieve inputs from database
-        print '[1 of 4] Retrieving input data... '
+        elog.info('[1 of 4] Retrieving input data... ')
 
         # todo: pass db_sessions instead of simulation_dbapi
         # try:
@@ -118,7 +119,7 @@ def run_feed_forward(obj):
         #     raise Exception (e)
         input_data = model_inst.inputs()
 
-        print '[2 of 4] Performing calculation... '
+        elog.info('[2 of 4] Performing calculation... ')
 
         # pass these inputs ts to the models' run function
         model_inst.run(input_data)
@@ -127,7 +128,8 @@ def run_feed_forward(obj):
         # dispatcher.putOutput(msg)
 
         # save these results
-        print '[3 of 4] Saving calculations to database... '
+        elog.info('[3 of 4] Saving calculations to database... ')
+
         exchangeitems = model_inst.save()
 
         # only insert data if its not already in a database
@@ -149,20 +151,19 @@ def run_feed_forward(obj):
                 obj.DbResults(key=model_inst.name(), value=(model_inst.resultid(), model_inst.session(), 'result'))
 
         # update links
-        print '[4 of 4] Updating links... '
+        elog.info('[4 of 4] Updating links... ')
 
         #obj.update_links(model_inst,exchangeitems)
         update.update_links_feed_forward(obj, links[modelid], exchangeitems, spatial_maps)
 
-        print 'module simulation completed in %3.2f seconds' % (time.time() - st)
+        elog.info('module simulation completed in %3.2f seconds' % (time.time() - st))
 
-    print '\n' + \
-          '------------------------------------------\n' + \
-          '          Simulation Summary \n' + \
-          '------------------------------------------\n' + \
-          'Completed without error :)\n' + \
-          'Simulation duration: %3.2f seconds\n' % (time.time() - sim_st) + \
-          '------------------------------------------'
+    elog.info('------------------------------------------\n' +
+              '         Simulation Summary \n' +
+              '------------------------------------------\n' +
+              'Completed without error :)\n' +
+              'Simulation duration: %3.2f seconds\n' % (time.time() - sim_st) +
+              '------------------------------------------')
 
 def run_time_step(obj):
     # store db sessions

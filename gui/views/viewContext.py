@@ -11,6 +11,7 @@ from gui.controller.logicPlot import LogicPlot
 from gui.controller.logicPreRun import logicPreRun
 import coordinator.engineAccessors as engine
 from gui import events
+from coordinator.emitLogging import elog
 
 #todo:  this needs to be split up into view and logic code
 
@@ -55,7 +56,7 @@ class ConsoleContextMenu(wx.Menu):
         User clears the
         """
         self.log.Clear()
-        print 'RESET |'
+        elog.info('RESET |')
 
     def OnMinimize(self, e):
         self.parent.Iconize()
@@ -115,7 +116,7 @@ class ModelContextMenu(wx.Menu):
             for i in iei:
                 name = i['name']
                 model_details.inputSelections.Append(name)
-                print "input name: " + name
+                elog.info("input name: " + name)
                 geoms = [j['shape'] for j in o['geom']]
                 igeoms[name] = geoms
 

@@ -1,14 +1,14 @@
+__author__ = 'tonycastronova'
+
+
 import os
 from gui.views.viewDirectory import ViewDirectory, HomeID, PreviousID, UpID, RefreshID
 from gui.views.viewContext import DirectoryContextMenu
 from gui.views.viewModel import ViewModel
 from gui.controller.logicModel import LogicModel
-
 from wx.lib.pubsub import pub as Publisher
-
-__author__ = 'tonycastronova'
-
 import wx
+from coordinator.emitLogging import elog
 
 
 class LogicDirectory(ViewDirectory):
@@ -55,7 +55,7 @@ class LogicDirectory(ViewDirectory):
             except Exception, e:
                 self.directoryStack.append(os.getcwd())
                 os.chdir('..')
-                print "ERROR|", e
+                elog.error("ERROR|", e)
 
         elif os.path.isfile(dirpath):
 
@@ -83,7 +83,7 @@ class LogicDirectory(ViewDirectory):
             # print "You have returned home: ", dirpath
             self.dirCtrl.clearItems()
         except:
-            print 'ERROR | Home Not Defined'
+            elog.error('ERROR | Home Not Defined')
 
     def OnUpClick(self, event):
         parent = os.path.abspath(os.path.join(self.dirCtrl.getcurrentdirectory(), os.pardir))

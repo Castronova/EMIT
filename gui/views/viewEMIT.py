@@ -20,6 +20,7 @@ from db import dbapi as dbapi
 import coordinator.events as engineEvent
 # import gui.controller.events as guiEvents
 from gui import events
+from coordinator.emitLogging import elog
 
 # todo: refactor
 # from .. import objectListViewDatabase as olv
@@ -291,7 +292,7 @@ class ViewEMIT(wx.Frame):
 
         if openFileDialog.ShowModal() == wx.ID_CANCEL:
             return     # the user changed idea...
-        print "Filename is: ", openFileDialog.GetFilename()
+        elog.info("Filename is: ", openFileDialog.GetFilename())
         # proceed loading the file chosen by the user
         # this can be done with e.g. wxPython input streams:
         input_stream = (openFileDialog.GetPath())

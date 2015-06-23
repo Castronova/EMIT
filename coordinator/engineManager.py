@@ -153,8 +153,6 @@ class Engine:
         # get output
         return self.dispatcher.getResult()
 
-        #print "In ProcessTasks: ", pickle.loads(model)
-
     def processStop(self, resfunc=None):
         """
         Stop the execution of tasks by the processes.

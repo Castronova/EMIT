@@ -53,11 +53,11 @@ class Link(object):
 
     # todo: this should be replaced by accessors for each of the from_lc,to_lc,from_item,to_item
     def get_link(self):
-        print 'ERROR |[Deprecated] This function has been deprecated...do not use! '
-        print 'ERROR | [Deprecated] main.py -> get_link()'
+        elog.error('ERROR |[Deprecated] This function has been deprecated...do not use! ')
+        elog.error('ERROR | [Deprecated] main.py -> get_link()')
         for caller in inspect.stack():
             if 'EMIT' in caller[1]:
-                print 'ERROR | [Deprecated Call Stack] ',caller[1],caller[3],caller[2]
+                elog.error('ERROR | [Deprecated Call Stack] ',caller[1],caller[3],caller[2])
 
         return [self.__from_lc,self.__from_item], [self.__to_lc,self.__to_item]
 
@@ -143,7 +143,7 @@ class Model(object):
                 ii = self.__iei[k]
 
         if ii is None:
-            print 'ERROR | Could not find Input Exchange Item: '+value
+            elog.error('ERROR | Could not find Input Exchange Item: '+value)
 
         return ii
 
@@ -155,7 +155,7 @@ class Model(object):
                 oi = self.__oei[k]
 
         if oi is None:
-            print 'ERROR | Could not find Output Exchange Item: '+value
+            elog.error('ERROR | Could not find Output Exchange Item: '+value)
 
         return oi
 
@@ -168,7 +168,7 @@ class Model(object):
                 ii = self.__iei[k]
 
         if ii is None:
-            print 'ERROR |Could not find Input Exchange Item: '+value
+            elog.error('ERROR |Could not find Input Exchange Item: '+value)
 
         return ii
 
@@ -180,7 +180,7 @@ class Model(object):
                 oi = self.__oei[k]
 
         if oi is None:
-            print 'ERROR | Could not find Output Exchange Item: '+value
+            elog.error('ERROR | Could not find Output Exchange Item: '+value)
 
         return oi
 
@@ -281,7 +281,7 @@ class Coordinator(object):
             self.__default_db['id'] = db_id
             elog.info('Default database : %s'%self._db[db_id]['connection_string'])
         except:
-            print 'ERROR | could not find database: %s'%db_id
+            elog.error('ERROR | could not find database: %s'%db_id)
 
     def get_new_id(self):
         self.__incr += 1
@@ -318,7 +318,6 @@ class Coordinator(object):
                 # make sure this model doesnt already exist
                 if name in self.__models:
                     elog.warning('Model named '+name+' already exists in configuration')
-                    # print 'WARNING | Model named '+name+' already exists in configuration'
                     return None
 
                 iei = model_inst.inputs().values()
@@ -356,7 +355,7 @@ class Coordinator(object):
             # Make sure the series is not already in the canvas
             # List of canvas models are kept as a dict with keys in the format of 'NAME-ID'
             if inst.name()+'-'+resultid in self.__models:
-                print 'WARNING | Series named '+inst.name()+' already exists in configuration'
+                elog.warning('WARNING | Series named '+inst.name()+' already exists in configuration')
                 return None
 
             if id is None:
@@ -459,7 +458,7 @@ class Coordinator(object):
             if self.get_model_by_id(from_id) is None: raise Exception('> '+from_id+' does not exist in configuration')
             if self.get_model_by_id(to_id) is None: raise Exception('> ' + to_id+' does not exist in configuration')
         except Exception, e:
-            print e
+            elog.error(e)
             return None
 
         # check that input and output exchange items exist
@@ -488,7 +487,7 @@ class Coordinator(object):
             # return link
             return link.get_id()
         else:
-            print 'WARNING | Could Not Create Link :('
+            elog.warning('WARNING | Could Not Create Link :(')
             return None
 
     def add_link_by_name(self,from_id, from_item_name, to_id, to_item_name):
@@ -504,7 +503,7 @@ class Coordinator(object):
             if self.get_model_by_id(from_id) is None: raise Exception(from_id+' does not exist in configuration')
             if self.get_model_by_id(to_id) is None: raise Exception(to_id+' does not exist in configuration')
         except Exception, e:
-            print e
+            elog.error(e)
             return None
 
         # check that input and output exchange items exist
@@ -522,7 +521,7 @@ class Coordinator(object):
 
             return link
         else:
-            print 'WARNING | Could Not Create Link :('
+            elog.warning('WARNING | Could Not Create Link :(')
 
     def get_from_links_by_model(self, model_id):
 
@@ -550,7 +549,7 @@ class Coordinator(object):
 
 
         if len(links) == 0:
-            print 'ERROR |  Could not find any links associated with model id: '+str(model_id)
+            elog.error('ERROR |  Could not find any links associated with model id: '+str(model_id))
 
         # todo: this should return a dict of link objects, NOT some random list
 
@@ -869,10 +868,10 @@ class Coordinator(object):
     def get_configuration_details(self,arg):
 
         if len(self.__models.keys()) == 0:
-            print 'WARNING | no models found in configuration.'
+            elog.warning('WARNING | no models found in configuration.')
 
         if arg.strip() == 'summary':
-            print '\n   Here is everything I know about the current simulation...\n'
+            elog.info('Here is everything I know about the current simulation...\n')
 
         # print model info
         if arg.strip() == 'models' or arg.strip() == 'summary':
@@ -912,15 +911,16 @@ class Coordinator(object):
                 w = self.get_format_width(model_output)
 
                 # print model info
-                print '  |'+(w)*'-'+'|'
-                print '  *'+self.format_text(model_output[0], w,'center')+'*'
-                print '  |'+(w)*'='+'|'
-                print '  |'+self.format_text(model_output[1], w,'left')+'|'
-                print '  |'+self.format_text(model_output[2], w,'left')+'|'
-                print '  |'+(w)*'-'+'|'
-                for l in model_output[3:]: print '  |'+self.format_text(l,w,'left')+'|'
-                print '  |'+(w)*'-'+'|'
-                print ' '
+                elog.info('  |'+(w)*'-'+'|')
+                elog.info('  *'+self.format_text(model_output[0], w,'center')+'*')
+                elog.info('  |'+(w)*'='+'|')
+                elog.info('  |'+self.format_text(model_output[1], w,'left')+'|')
+                elog.info('  |'+self.format_text(model_output[2], w,'left')+'|')
+                elog.info('  |'+(w)*'-'+'|')
+                for l in model_output[3:]:
+                    elog.info('  |'+self.format_text(l,w,'left')+'|')
+                elog.info('  |'+(w)*'-'+'|')
+                elog.info(' ')
 
         # print link info
         if arg.strip() == 'links' or arg.strip() == 'summary':
@@ -944,16 +944,17 @@ class Coordinator(object):
                 #w += 4 if w % 2 == 0 else 5
 
                 # print the output
-                print '  |'+(w)*'-'+'|'
-                print '  *'+self.format_text(link_output[0], w,'center')+'*'
-                print '  |'+(w)*'='+'|'
-                for l in link_output[1:]: print '  |'+self.format_text(l,w,'left')+'|'
-                print '  |'+(w)*'-'+'|'
+                elog.info('  |'+(w)*'-'+'|')
+                elog.info('  *'+self.format_text(link_output[0], w,'center')+'*')
+                elog.info('  |'+(w)*'='+'|')
+                for l in link_output[1:]:
+                    elog.info('  |'+self.format_text(l,w,'left')+'|')
+                elog.info('  |' + w * '-' + '|')
 
         # print database info
         if arg.strip() == 'db' or arg.strip() == 'summary':
 
-            for id,db_dict in self._db.iteritems():
+            for id, db_dict in self._db.iteritems():
 
                 # string to store db output
                 db_output = []
@@ -983,11 +984,12 @@ class Coordinator(object):
                 w = self.get_format_width(db_output)
 
                 # print the output
-                print '  |'+(w)*'-'+'|'
-                print '  *'+self.format_text(db_output[0], w,'center')+'*'
-                print '  |'+(w)*'='+'|'
-                for l in db_output[1:]: print '  |'+self.format_text(l,w,'left')+'|'
-                print '  |'+(w)*'-'+'|'
+                elog.info('  |'+(w)*'-'+'|')
+                elog.info('  *'+self.format_text(db_output[0], w,'center')+'*')
+                elog.info('  |'+(w)*'='+'|')
+                for l in db_output[1:]:
+                    elog.info('  |'+self.format_text(l,w,'left')+'|')
+                elog.info('  |'+(w)*'-'+'|')
 
     def discover_timeseries(self,db_connection_name):
 
@@ -1003,7 +1005,7 @@ class Coordinator(object):
         #     result_query = read.read(self._db[db_connection_name]['args']['connection_string'])
         #     ts = result_query.getAllTimeSeriesResults()
 
-            print 'test'
+            elog.info('test')
 
     def connect_to_db(self, title, desc, engine, address, name, user, pwd):
 
@@ -1034,9 +1036,9 @@ class Coordinator(object):
                     self.set_default_database()
 
                 return {'success':True}
-            except Exception,e:
-                print e
-                print 'ERROR | Could not create connections from file '+filepath
+            except Exception, e:
+                elog.error(e)
+                elog.error('ERROR | Could not create connections from file ' + filepath)
                 return {'success':False}
 
         else:
@@ -1069,7 +1071,7 @@ class Coordinator(object):
         sessionFactory = odm2api.SessionFactory(connection_string='sqlite:///'+dbpath, echo=False)
         session = sessionFactory.getSession()
 
-        print 'here'
+        elog.info('here')
 
         # session = dbconnection.createConnection('sqlite', "", name, user, pwd)1
 
@@ -1140,7 +1142,8 @@ class Coordinator(object):
             # return the models and links created
             return self.__models.values(), self.__links.values(), link_objs
 
-        else: print 'ERROR | Could not find path %s'%simulation_file
+        else:
+            elog.error('ERROR | Could not find path %s' % simulation_file)
 
     def show_db_results(self, args):
 
@@ -1148,7 +1151,7 @@ class Coordinator(object):
         db_id = args[0]
 
         if db_id not in self._db:
-            print 'ERROR | could not find database id: %s'%db_id
+            elog.error('ERROR | could not find database id: %s' % db_id)
             return
 
 
@@ -1158,55 +1161,73 @@ class Coordinator(object):
         results = self._coreread.getAllResult()
 
         if results:
-            print 'Id   Type     Variable    Unit    ValueCount'
+            elog.info('Id   Type     Variable    Unit    ValueCount')
             for result in results:
-                print '%s    %s   %s  %s  %s '%(result.ResultID, result.ResultTypeCV,result.VariableObj.VariableCode,
-                                         result.UnitObj.UnitsName,result.ValueCount)
+                elog('%s    %s   %s  %s  %s '%(result.ResultID, result.ResultTypeCV,result.VariableObj.VariableCode,
+                                         result.UnitObj.UnitsName,result.ValueCount))
         else:
-            print 'No results found'
+            elog.info('No results found')
 
     def parse_args(self, arg):
 
         if ''.join(arg).strip() != '':
             if arg[0] == 'help':
-                if len(arg) == 1: print h.help()
-                else: print h.help_function(arg[1])
+                if len(arg) == 1:
+                    elog.info(h.help())
+                else:
+                    elog.info(h.help_function(arg[1]))
 
             elif arg[0] == 'add' :
-                if len(arg) == 1: print h.help_function('add')
-                else: self.add_model(arg[1])
+                if len(arg) == 1:
+                    elog.info(h.help_function('add'))
+                else:
+                    self.add_model(arg[1])
 
             elif arg[0] == 'remove':
-                if len(arg) == 1: print h.help_function('remove')
-                else: self.remove_model_by_id(arg[1])
+                if len(arg) == 1:
+                    elog.info(h.help_function('remove'))
+                else:
+                    self.remove_model_by_id(arg[1])
 
             elif arg[0] == 'link':
-                if len(arg) != 5: print h.help_function('link')
-                else: self.add_link(arg[1],arg[2],arg[3],arg[4])
+                if len(arg) != 5:
+                    elog.info(h.help_function('link'))
+                else:
+                    self.add_link(arg[1],arg[2],arg[3],arg[4])
 
             elif arg[0] == 'showme':
-                if len(arg) == 1: print h.help_function('showme')
-                else: self.get_configuration_details(arg[1])
+                if len(arg) == 1:
+                    elog.info(h.help_function('showme'))
+                else:
+                    self.get_configuration_details(arg[1])
 
             elif arg[0] == 'connect_db':
-                if len(arg) == 1: print h.help_function('connect_db')
-                else: self.connect_to_db(arg[1:])
+                if len(arg) == 1:
+                    elog.info(h.help_function('connect_db'))
+                else:
+                    self.connect_to_db(arg[1:])
 
             elif arg[0] == 'default_db':
-                if len(arg) == 1: print h.help_function('default_db')
-                else: self.set_default_db(arg[1:])
+                if len(arg) == 1:
+                    elog.info(h.help_function('default_db'))
+                else:
+                    self.set_default_db(arg[1:])
 
             elif arg[0] == 'run':
-                print 'Running Simulation in Feed Forward Mode'
+                elog.info('Running Simulation in Feed Forward Mode')
                 self.run_simulation()
 
             elif arg[0] == 'load':
-                if len(arg) == 1: print h.help_function('load')
-                else: self.load_simulation(arg[1:])
+                if len(arg) == 1:
+                    elog.info(h.help_function('load'))
+                else:
+                    self.load_simulation(arg[1:])
 
             elif arg[0] == 'db':
-                if len(arg) == 1: print h.help_function('db')
-                else: self.show_db_results(arg[1:])
+                if len(arg) == 1:
+                    elog.info(h.help_function('db'))
+                else:
+                    self.show_db_results(arg[1:])
 
 
 

@@ -3,6 +3,7 @@ __author__ = 'tonycastronova'
 import wx
 import matplotlib.pyplot as plt
 from gui.views.viewSpatialPlot import ViewSpatialPlot
+from coordinator.emitLogging import elog
 
 class LogicSpatialPlot(ViewSpatialPlot):
 
@@ -20,7 +21,7 @@ class LogicSpatialPlot(ViewSpatialPlot):
         # self.outputCombo.Bind(wx.EVT_COMBOBOX, self.UpdatePlot)
 
     def log(self, fmt, *args):
-        print (fmt % args)
+        elog.info((fmt % args))
 
     def OnClick(self,event):
         self.log("button clicked, id#%d\n", event.GetId())

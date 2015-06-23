@@ -1,6 +1,6 @@
 __author__ = 'tonycastronova'
 
-
+from coordinator.emitLogging import elog
 
 class EventResponse:
     def __init__(self, **kwargs):
@@ -33,7 +33,8 @@ class EventManager(object):
             return self.__handlers[name]
         else:
             # ignore if no handlers are assigned, but print warning message to log
-            print 'WARNING|No handlers for event:', name
+            elog.warning('WARNING | No handlers for event: %s', name)
+
             # raise Exception("No handlers for event: ", name)
 
 class EventHook(object):

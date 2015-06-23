@@ -1,9 +1,6 @@
-__author__ = 'mario'
-
-
+__author__ = 'Tony'
 
 import time
-import pickle
 import coordinator.emitLogging as l
 import wx
 import json
@@ -39,7 +36,7 @@ def follow(logging, target):
                         record = json.loads(line)
 
                         # target is the rich text box
-                        wx.CallAfter(target.SetInsertionPoint,0)
+                        wx.CallAfter(target.SetInsertionPoint, 0)
                         if record['levelname'] == 'WARNING':
                             wx.CallAfter(target.BeginTextColour, (255, 140, 0))
                         elif record['levelname'] =='ERROR':
@@ -51,12 +48,17 @@ def follow(logging, target):
                         elif record['levelname'] == 'CRITICAL':
                             wx.CallAfter(target.BeginTextColour, (170, 57, 57))
 
-                        wx.CallAfter(target.WriteText, record['message']+'\n')
+                        if record['levelname'] != 'INFO':
+                            message = ''.join([record['levelname'], ": ", record['message']+'\n'])
+                        else:
+                            message = record['message'] + "\n"
+                        wx.CallAfter(target.WriteText, message)
+
                         wx.CallAfter(target.EndTextColour, )
                         wx.CallAfter(target.Refresh, )
                 last_processed = line_list
 
-def tail(f, lines=20 ):
+def tail(f, lines=20):
     total_lines_wanted = lines
 
     BLOCK_SIZE = 1024

@@ -10,6 +10,7 @@ from gui.views.viewLink import ViewLink
 import coordinator.engineAccessors as engine
 from gui.controller.logicSpatialPlot import LogicSpatialPlot
 # from gui.views.viewLinkSpatialPlot import ViewLinkSpatialPlot
+from coordinator.emitLogging import elog
 
 LinkUpdatedEvent, EVT_LINKUPDATED = ne.NewEvent()
 
@@ -287,7 +288,7 @@ class LogicLink(ViewLink):
                 deleteid = self.__link_ids[sel]
                 engine.removeLinkById(deleteid)
         except:
-            print 'ERROR|Could not remove link'
+            elog.error('ERROR|Could not remove link')
             return
 
         # remove the link name from the links list box
@@ -443,7 +444,7 @@ class LogicLink(ViewLink):
 
                     wx.PostEvent(self, LinkUpdatedEvent())
                 except:
-                    print 'ERROR|Could not save link: %s' % l.name
+                    elog.error('ERROR|Could not save link: %s' % l.name)
                     errors.append(l)
 
         if len(warnings) > 0:

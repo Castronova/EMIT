@@ -5,8 +5,9 @@ __author__ = 'mario'
 import time
 import pickle
 import coordinator.emitLogging as l
+import wx
+import json
 
-# TODO: threading is not working!!!
 def follow(logging, target):
     path = None
     handlers = logging.get_logger().handlers
@@ -22,38 +23,38 @@ def follow(logging, target):
         last_lines = None
         while True:
             lines = tail(thefile, lines=5)
-            # if lines == last_lines:
-            #     time.sleep(0.8)
-            # else:
-            last_lines = lines
-            line_list = lines.split('\n')
-            line_list = filter(lambda a: a != '', line_list) # remove blank entries
 
-            for line in line_list:
-                if line not in last_processed:
+            # need to include this sleep timer to ensure that CPU does not go to 100%
+            if lines == last_lines:
+                time.sleep(.01)
+            else:
+                last_lines = lines
+                line_list = lines.split('\n')
+                line_list = filter(lambda a: a != '', line_list) # remove blank entries
 
-                    # self.out.SetInsertionPoint(0)
-                    # target is the rich text box
-                    target.SetInsertionPoint(0)
-                    record = pickle.loads(line.replace('~~','\n').replace('!~!~','\r'))
-                    if record.levelname == 'WARNING':
-                        target.BeginTextColour((255, 140, 0))
-                    elif record.levelname =='ERROR':
-                        target.BeginTextColour((255, 0, 0))
-                    elif record.levelname == 'DEBUG':
-                        target.BeginTextColour((0, 0, 0))
-                    elif record.levelname == 'INFO':
-                        target.BeginTextColour((42, 78, 110))
-                    elif record.levelname == 'CRITICAL':
-                        target.BeginTextColour((170, 57, 57))
+                for line in line_list:
+                    if line not in last_processed:
 
-                    # self.out.Text =  self.out.Text.Insert(string+ "\n");
+                        # load record from json
+                        record = json.loads(line)
 
-                    target.WriteText(record.message+'\n')
-                    target.EndTextColour()
-                    target.Refresh()
-            last_processed = line_list
+                        # target is the rich text box
+                        wx.CallAfter(target.SetInsertionPoint,0)
+                        if record['levelname'] == 'WARNING':
+                            wx.CallAfter(target.BeginTextColour, (255, 140, 0))
+                        elif record['levelname'] =='ERROR':
+                            wx.CallAfter(target.BeginTextColour, (255, 0, 0))
+                        elif record['levelname'] == 'DEBUG':
+                            wx.CallAfter(target.BeginTextColour, (0, 0, 0))
+                        elif record['levelname'] == 'INFO':
+                            wx.CallAfter(target.BeginTextColour, (42, 78, 110))
+                        elif record['levelname'] == 'CRITICAL':
+                            wx.CallAfter(target.BeginTextColour, (170, 57, 57))
 
+                        wx.CallAfter(target.WriteText, record['message']+'\n')
+                        wx.CallAfter(target.EndTextColour, )
+                        wx.CallAfter(target.Refresh, )
+                last_processed = line_list
 
 def tail(f, lines=20 ):
     total_lines_wanted = lines

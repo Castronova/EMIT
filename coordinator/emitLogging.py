@@ -73,19 +73,22 @@ class _Log:
 
 class PickleHandler(logging.FileHandler):
 
-    def __init__(self, filename, mode='a', encoding=None, delay=0):
+    def __init__(self, filename, mode='a+b', encoding=None, delay=0):
         logging.FileHandler.__init__(self, filename, mode, encoding, delay)
 
 
     def emit(self, record):
         if self.stream is None:
             self.stream = self._open()
-        serialized = pickle.dumps(record, protocol=pickle.HIGHEST_PROTOCOL)
-        # serialized = json.dumps(record)
-        # s = serialized.replace('\n',' ')
-        s = serialized.replace('\n','~~')
-        s = s.replace('\r','!~!~')
-        self.stream.write('\n'+s)
+
+        # create dictionary to store record info
+        d = dict(message=record.message,
+                 levelname=record.levelname,
+                 asctime=record.asctime,
+        )
+
+        # dump record as json
+        self.stream.write('\n'+json.dumps(d))
         self.flush()
 
 

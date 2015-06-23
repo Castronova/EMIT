@@ -34,11 +34,31 @@ class SmoothLine(FC.Line):
     The SmoothLine class is identical to the Line class except that it uses a
     GC rather than a DC.
     """
+    def __init__(self, Points, LineColor = "Black", LineStyle = "Solid", LineWidth    = 1, InForeground = False):
+        FC.Line.__init__(self, Points, LineColor = "Black", LineStyle = "Solid", LineWidth = 1, InForeground = False)
+
+        midX = (Points[0][0]+Points[1][0])/2
+        midY = (Points[0][1]+Points[1][1])/2
+        self.MidPoint = (midX,midY)
+
     def _Draw(self, dc , WorldToPixel, ScaleWorldToPixel, HTdc=None):
         Points = WorldToPixel(self.Points)
         GC = wx.GraphicsContext.Create(dc)
         GC.SetPen(self.Pen)
         GC.DrawLines(Points)
+
+
+
+class ScaledBitmapWithRotation(FC.ScaledBitmap):
+
+    def __init__(self, Bitmap, XY, Height, Position = 'cc', InForeground = True):
+        FC.ScaledBitmap.__init__(self, Bitmap, XY, Height, Position = 'cc', InForeground = True)
+        self.RotationAngle = 0.0
+
+    def _Draw(self, dc , WorldToPixel, ScaleWorldToPixel, HTdc=None):
+
+        super(ScaledBitmapWithRotation,self)._Draw(dc , WorldToPixel, ScaleWorldToPixel, HTdc=None)
+
 
 class LogicCanvas(ViewCanvas):
     def __init__(self, parent):
@@ -181,7 +201,6 @@ class LogicCanvas(ViewCanvas):
             self.MovingObject.Move(dxy)
             self.MovingObject.Text.Move(dxy)
 
-
             for link in self.links.keys():
                 r1, r2 = self.links[link]
                 if r1 == self.MovingObject:
@@ -190,8 +209,8 @@ class LogicCanvas(ViewCanvas):
                     link.Points[1] = self.MovingObject.XY
 
             self.lastPos = cursorPos
-            self.RedrawConfiguration()
-            # self.FloatCanvas.Draw(True)
+            # self.RedrawConfiguration()
+            self.FloatCanvas.Draw(True)
 
     def onUpdateConsole(self, evt):
         """
@@ -222,9 +241,9 @@ class LogicCanvas(ViewCanvas):
             bitmap = self.DatabaseBox
 
         if name:
-            w, h = 180, 120
+            w, h = 221, 141
             x, y = xCoord, yCoord
-            FontSize = 14
+            FontSize = 15
 
             if self.getUniqueId() is not None and type == datatypes.ModelTypes.Data:
                 # Strip out last bit of the name (normally includes an id), e.g. "rainfall-5" -> "rainfall"
@@ -235,7 +254,8 @@ class LogicCanvas(ViewCanvas):
 
             # get the coordinates for the rounded rectangle
             rect_coords = LogicCanvasObjects.build_rounded_rectangle((x, y), width=w, height=h)
-
+            # boxBitmap = ScaledBitmapWithRotation(bitmap, (x,y), Height=h, Position='cc', InForeground=True)
+            # R = self.FloatCanvas.AddObject(boxBitmap)
             # R = self.FloatCanvas.AddObject(FC.Polygon(rect_coords, FillColor=color, InForeground=True))
             R = self.FloatCanvas.AddBitmap(bitmap, (x,y), Position="cc", InForeground=True)
             R.ID = id
@@ -303,7 +323,7 @@ class LogicCanvas(ViewCanvas):
 
         return (self.model_coords[id]['x'], self.model_coords[id]['y'])
 
-    def createLine(self, R1, R2):
+    def createLineOld(self, R1, R2):
         # print "creating link", R1, R2
         x1, y1 = (R1.BoundingBox[0] + (R1.wh[0] / 2, R1.wh[1] / 2))
         x2, y2 = (R2.BoundingBox[0] + (R2.wh[0] / 2, R2.wh[1] / 2))
@@ -333,7 +353,7 @@ class LogicCanvas(ViewCanvas):
 
         self.FloatCanvas.Draw()
 
-    def createLineNew(self, R1, R2):
+    def createLine(self, R1, R2):
         # Get the center of the objects
         x1,y1 = R1.XY
         x2,y2 = R2.XY
@@ -342,15 +362,15 @@ class LogicCanvas(ViewCanvas):
         self.links[line] = [R1, R2]
         line.type = LogicCanvasObjects.ShapeType.Link
 
-        arrow_shape = self.createArrow(line)
         # Calculate length of line, use to show/hide arrow
         self.linelength = math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2)
-        arrow_shape = self.createArrow(line)
+
 
         self.FloatCanvas.AddObject(line)
+        arrow_shape = self.createArrow(line)
         self.FloatCanvas.Draw()
 
-    def createArrow(self, line):
+    def createArrowOld(self, line):
 
         arrow = LogicCanvasObjects.build_arrow(line, arrow_length=6)
 
@@ -371,19 +391,20 @@ class LogicCanvas(ViewCanvas):
 
         return arrow_shape
 
-    def createArrowNew(self, line):
+    def createArrow(self, line):
 
-        arrow_shape = self.FloatCanvas.AddScaledBitmap(self.linkArrow,
-                                                 (0, 0),
-                                                 Height = self.linkArrow.GetHeight(),
-                                                 Position = 'tl',)
+        # arrow = LogicCanvasObjects.build_arrow(line, arrow_length=6)
+
+        arrow_shape = ScaledBitmapWithRotation(self.linkArrow, line.MidPoint, Height=self.linkArrow.Height, Position='cc', InForeground=True)
+
+        # arrow_shape = self.FloatCanvas.AddScaledBitmap(self.linkArrow,
+        #                                          (0, 0),
+        #                                          Height = self.linkArrow.GetHeight(),
+        #                                          Position = 'tl',)
         # if self.linelength > 230:
         #     arrow_shape.Show()
         # else:
         #     arrow_shape.Hide()
-
-        arrow_shape.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
-        arrow_shape.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
 
         # create the arrowhead object
         # arrow_shape = FC.Polygon(arrow, FillColor='Blue', InForeground=True)

@@ -3,7 +3,6 @@ import sys
 import logging
 import logging.handlers
 import os
-import pickle
 import json
 
 class _Log:
@@ -46,12 +45,6 @@ class _Log:
 
         else:
             self.__dict__ = _Log.__monostate
-
-    # def _set_stream_handler(self, stream):
-    #     sh_formatter = logging.Formatter('%(asctime)s - [%(levelname)s] --- %(message)s')
-    #     sh = StreamHandler(stream)
-    #     sh.setFormatter(sh_formatter)
-    #     self.__root.addHandler(sh)
 
     def _debug(self, text):
         self.__root.debug(text)
@@ -109,23 +102,6 @@ class StreamHandler(logging.StreamHandler):
         self.stream.write(msg+'\n')
         self.flush()
 
-        # # # suppresses debug messages
-        # # if lvl == 'DEBUG':
-        # #     return
-        #
-        # self.stream.SetInsertionPoint(0)
-        # if lvl == 'INFO':
-        #     self.stream.BeginTextColour((0, 0, 0))
-        # elif lvl == 'ERROR':
-        #     self.stream.BeginTextColour((255, 0, 0))
-        # elif lvl == 'WARNING':
-        #     self.stream.BeginTextColour((255, 140, 0))
-        # else:
-        #     self.stream.BeginTextColour((50, 50, 50))
-        #
-        # self.stream.WriteText(msg + '\n')
-        # self.stream.EndTextColour()
-        # self.flush()
 
 class Log(object):
 
@@ -153,8 +129,6 @@ class Log(object):
 
     def get_logger(self):
         return self.log._get_logger()
-    #
-    # def set_stream_handler(self, stream):
-    #     self.log._set_stream_handler(stream)
+
 
 elog = Log()

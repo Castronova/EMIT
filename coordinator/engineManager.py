@@ -5,8 +5,6 @@ import types
 from multiprocessing import Process
 import sys
 import time
-from threading import Thread
-import os
 from multiprocessing import Queue
 import events
 

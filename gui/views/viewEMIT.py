@@ -2,13 +2,11 @@ __author__ = 'Mario'
 from gui.controller.logicDirectory import LogicDirectory
 from gui.controller.logicToolbox import LogicToolbox
 from gui.controller.logicCanvas import LogicCanvas
-
 import wx
 import wx.html2
 import sys
 from wx.lib.pubsub import pub as Publisher
 import wx.lib.agw.aui as aui
-# import logging
 import threading
 from db import dbapi as dbapi
 from wx import richtext
@@ -18,25 +16,15 @@ import coordinator.engineAccessors as engine
 from utilities import db as dbUtilities
 from db import dbapi as dbapi
 import coordinator.events as engineEvent
-# import gui.controller.events as guiEvents
 from gui import events
-from coordinator.emitLogging import elog
-
-# todo: refactor
-# from .. import objectListViewDatabase as olv
-
 from wx.lib.newevent import NewEvent
-import time
+from coordinator.emitLogging import elog
+import ConsoleOutput
 
 # create custom events
 wxCreateBox, EVT_CREATE_BOX = NewEvent()
 wxStdOut, EVT_STDDOUT= NewEvent()
 wxDbChanged, EVT_DBCHANGED= NewEvent()
-
-import ConsoleOutput
-
-from logging import FileHandler
-from coordinator.emitLogging import elog
 
 
 class ViewEMIT(wx.Frame):

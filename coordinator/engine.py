@@ -376,17 +376,9 @@ class Coordinator(object):
             att['databaseid'] = databaseid
             thisModel.attrib(att)
 
-
-        # set type and attribute params
-        # thisModel.type(type)
-        # thisModel.attrib(attrib)
-
-
         # save the model
         self.__models[thisModel.get_name()] = thisModel
 
-        # return the model id
-        # return thisModel
         return {'id':thisModel.get_id(), 'name':thisModel.get_name(),'model_type':thisModel.type()}
 
     def remove_model(self, linkablecomponent):

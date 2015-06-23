@@ -19,7 +19,7 @@ import coordinator.events as engineEvent
 from gui import events
 from wx.lib.newevent import NewEvent
 from coordinator.emitLogging import elog
-import ConsoleOutput
+from gui.controller import logicConsoleOutput
 
 # create custom events
 wxCreateBox, EVT_CREATE_BOX = NewEvent()
@@ -55,7 +55,7 @@ class ViewEMIT(wx.Frame):
             # sys.stdout = redir
 
             #  Thread starts here to ensure its on the main thread
-        t = threading.Thread(target=ConsoleOutput.follow,args=(elog, self.Output.log))
+        t = threading.Thread(target=logicConsoleOutput.follow, args=(elog, self.Output.log))
         t.start()
 
         self.Toolbox.Hide()
@@ -83,8 +83,6 @@ class ViewEMIT(wx.Frame):
 
         self.m_mgr = aui.AuiManager()
         self.m_mgr.SetManagedWindow(self.pnlDocking)
-
-
 
         # seriesoutput = OutputTimeSeries(self.bnb)
         seriesselector = TimeSeries(self.bnb)

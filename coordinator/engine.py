@@ -25,8 +25,11 @@ import inspect
 # import coordinator.engineProcessor as engineProcessor
 from api.ODM2.Core.services import *
 from copy import deepcopy
-import coordinator.emitLogging as logging
-# import ODM2PythonAPI.src.api as odm2api
+import coordinator.emitLogging as l
+import ODM2PythonAPI.src.api as odm2api
+from datetime import datetime
+
+logging = l.Log()
 
 """
 Purpose: This file contains the logic used to run coupled model simulations
@@ -315,7 +318,7 @@ class Coordinator(object):
 
                 # make sure this model doesnt already exist
                 if name in self.__models:
-                    logging.log.warning('Model named '+name+' already exists in configuration')
+                    logging.warning('Model named '+name+' already exists in configuration')
                     # print 'WARNING | Model named '+name+' already exists in configuration'
                     return None
 
@@ -1044,22 +1047,32 @@ class Coordinator(object):
 
         import pyspatialite.dbapi2 as sqlite
 
+
         # create a memory database
-        conn = sqlite.connect(":memory:")
+        dbpath = os.path.abspath("../../data/databases/"+datetime.now().strftime('%Y-%m-%d|%H:%M:%S')+'.sqlite')
+        conn = sqlite.connect(dbpath)
 
         # load the blank odm2 database
-        old_db = sqlite.connect('../data/odm2_empty.sqlite')
+        old_db = sqlite.connect('../../data/odm2_empty.sqlite')
 
         query = "".join(line for line in old_db.iterdump())
 
         # Dump old database in the new one.
         conn.executescript(query)
 
+        del conn
+
+
+
 
         # todo:  Need to establish a SQLAlchemy connection with the in-memory database
-        # # connect to database
-        # odm2api.dbconnection.createConnection()
-        # session = dbconnection.createConnection('sqlite', "", name, user, pwd)
+        # connect to database
+        sessionFactory = odm2api.SessionFactory(connection_string='sqlite:///'+dbpath, echo=False)
+        session = sessionFactory.getSession()
+
+        print 'here'
+
+        # session = dbconnection.createConnection('sqlite', "", name, user, pwd)1
 
         # if session:
         # # adjusting timeout

@@ -8,7 +8,7 @@ import wx.html2
 import sys
 from wx.lib.pubsub import pub as Publisher
 import wx.lib.agw.aui as aui
-import logging
+# import logging
 import threading
 from db import dbapi as dbapi
 from wx import richtext
@@ -25,12 +25,18 @@ from gui import events
 # from .. import objectListViewDatabase as olv
 
 from wx.lib.newevent import NewEvent
+import time
 
 # create custom events
 wxCreateBox, EVT_CREATE_BOX = NewEvent()
 wxStdOut, EVT_STDDOUT= NewEvent()
 wxDbChanged, EVT_DBCHANGED= NewEvent()
 
+import ConsoleOutput
+
+from logging import FileHandler
+import coordinator.emitLogging as l
+logging = l.Log()
 
 
 class ViewEMIT(wx.Frame):
@@ -55,6 +61,8 @@ class ViewEMIT(wx.Frame):
         self.Canvas = LogicCanvas(self.pnlDocking)
         self.Output = consoleOutput(self.bnb)
 
+        t = threading.Thread(target=ConsoleOutput.follow,args=(logging, self.Output.log))
+        t.start()
 
         self.Toolbox.Hide()
         self.initAUIManager()
@@ -416,7 +424,7 @@ class TimeSeries(wx.Panel):
         self._databases = {}
         self._connection_added = True
 
-        self.__logger = logging.getLogger('root')
+        # self.__logger = logging.getLogger('root')
 
 
         connection_choices = []
@@ -839,8 +847,8 @@ class consoleOutput(wx.Panel):
 
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
-        self.logger = logging.getLogger('wxApp')
-        self.elogger= logging.getLogger('ENGINE_LOG')
+        # self.logger = logging.getLogger('wxApp')
+        # self.elogger= logging.getLogger('ENGINE_LOG')
 
         # Add a panel so it looks the correct on all platforms
         # self.log = wx.TextCtrl(self, -1, size=(100,100),

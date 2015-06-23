@@ -9,7 +9,9 @@ import imp
 from api.ODMconnection import  dbconnection
 # from ODMconnection import dbconnection
 import uuid
-import coordinator.emitLogging as logging
+import coordinator.emitLogging as l
+logging = l.Log()
+
 
 class multidict(dict):
     _unique = 0
@@ -354,12 +356,12 @@ def create_database_connections_from_file(ini):
                                      'description':d['desc'],
                                      'args': d}
 
-            logging.log.info('Connected to : %s [%s]'%(connection_string,db_id))
+            logging.info('Connected to : %s [%s]'%(connection_string,db_id))
 
 
 
         else:
-            print 'ERROR | Could not establish a connection with the database'
+            logging.error('ERROR | Could not establish a connection with the database')
             #return None
 
 

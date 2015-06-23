@@ -6,8 +6,16 @@ import wx.xrc
 import wx.aui
 from gui.controller.logicEMIT import LogicEMIT
 from coordinator import engineManager
+<<<<<<< HEAD
 import pickle
 import time
+=======
+# import coordinator.emitLogging as logging  # Remove this along with the single quotes
+
+import time
+# import coordinator.emitLogging as l
+
+>>>>>>> cc6f132a3b586a1bea07d02b6a1a852a3794993a
 
 from logging import FileHandler
 import coordinator.emitLogging as l

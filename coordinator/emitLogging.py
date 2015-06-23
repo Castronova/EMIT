@@ -1,5 +1,5 @@
 __author__ = 'tonycastronova'
-# import sys
+import sys
 import logging
 import logging.handlers
 import os
@@ -27,14 +27,14 @@ class _Log:
 
             # todo: setup streamhandler to handle std.out
             # todo: https://docs.python.org/2/library/logging.handlers.html
-# '''
-#             sh_formatter = logging.Formatter('%(asctime)s - [%(levelname)s] --- %(message)s')
-#             sh = StreamHandler(sys.stdout)
-#             sh.setFormatter(sh_formatter)
-#             self.__root.addHandler(sh)
-# '''
+
+            sh_formatter = logging.Formatter('%(asctime)s - [%(levelname)s] --- %(message)s')
+            sh = StreamHandler(sys.stdout)
+            sh.setFormatter(sh_formatter)
+            self.__root.addHandler(sh)
+
             # setup rotating log
-            rotating_log = logging.handlers.RotatingFileHandler(LOG_FILENAME, maxBytes=2000, backupCount=500)
+            rotating_log = logging.handlers.RotatingFileHandler(LOG_FILENAME, maxBytes=50000, backupCount=500)
             rotating_log.setFormatter(formatter)
             self.__root.addHandler(rotating_log)
 
@@ -71,6 +71,7 @@ class _Log:
     def _get_logger(self):
         return self.__root
 
+<<<<<<< HEAD
 class FileHandler(logging.FileHandler):
 
     def __init__(self, filename, mode='a', encoding=None, delay=0):
@@ -89,6 +90,8 @@ class FileHandler(logging.FileHandler):
         self.flush()
 
 
+=======
+>>>>>>> cc6f132a3b586a1bea07d02b6a1a852a3794993a
 class StreamHandler(logging.StreamHandler):
     """"""
 

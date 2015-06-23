@@ -13,6 +13,8 @@ import coordinator.emitLogging as l
 logging = l.Log()
 
 
+
+
 class multidict(dict):
     _unique = 0
 
@@ -314,6 +316,7 @@ def connect_to_db(title, desc, engine, address, name, user, pwd):
 
 def create_database_connections_from_file(ini):
 
+    l = logging.Log()
     # database connections dictionary
     db_connections = {}
 
@@ -357,7 +360,6 @@ def create_database_connections_from_file(ini):
                                      'args': d}
 
             logging.info('Connected to : %s [%s]'%(connection_string,db_id))
-
 
 
         else:

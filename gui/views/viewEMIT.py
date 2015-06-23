@@ -61,13 +61,13 @@ class ViewEMIT(wx.Frame):
         self.Output = consoleOutput(self.bnb)
 
         # deactivate the console if we are in debug mode
-        if not sys.gettrace():
+        # if not sys.gettrace():
             # redir = RedirectText(self.log)
             # sys.stdout = redir
 
             #  Thread starts here to ensure its on the main thread
-            t = threading.Thread(target=ConsoleOutput.follow,args=(elog, self.Output.log))
-            t.start()
+        t = threading.Thread(target=ConsoleOutput.follow,args=(elog, self.Output.log))
+        t.start()
 
         self.Toolbox.Hide()
         self.initAUIManager()

@@ -22,37 +22,37 @@ def follow(logging, target):
         last_lines = None
         while True:
             lines = tail(thefile, lines=5)
-            if lines == last_lines:
-                time.sleep(0.8)
-            else:
-                last_lines = lines
-                line_list = lines.split('\n')
-                line_list = filter(lambda a: a != '', line_list) # remove blank entries
+            # if lines == last_lines:
+            #     time.sleep(0.8)
+            # else:
+            last_lines = lines
+            line_list = lines.split('\n')
+            line_list = filter(lambda a: a != '', line_list) # remove blank entries
 
-                for line in line_list:
-                    if line not in last_processed:
+            for line in line_list:
+                if line not in last_processed:
 
-                        # self.out.SetInsertionPoint(0)
-                        # target is the rich text box
-                        target.SetInsertionPoint(0)
-                        record = pickle.loads(line.replace('~~','\n').replace('!~!~','\r'))
-                        if record.levelname == 'WARNING':
-                            target.BeginTextColour((255, 140, 0))
-                        elif record.levelname =='ERROR':
-                            target.BeginTextColour((255, 0, 0))
-                        elif record.levelname == 'DEBUG':
-                            target.BeginTextColour((0, 0, 0))
-                        elif record.levelname == 'INFO':
-                            target.BeginTextColour((42, 78, 110))
-                        elif record.levelname == 'CRITICAL':
-                            target.BeginTextColour((170, 57, 57))
+                    # self.out.SetInsertionPoint(0)
+                    # target is the rich text box
+                    target.SetInsertionPoint(0)
+                    record = pickle.loads(line.replace('~~','\n').replace('!~!~','\r'))
+                    if record.levelname == 'WARNING':
+                        target.BeginTextColour((255, 140, 0))
+                    elif record.levelname =='ERROR':
+                        target.BeginTextColour((255, 0, 0))
+                    elif record.levelname == 'DEBUG':
+                        target.BeginTextColour((0, 0, 0))
+                    elif record.levelname == 'INFO':
+                        target.BeginTextColour((42, 78, 110))
+                    elif record.levelname == 'CRITICAL':
+                        target.BeginTextColour((170, 57, 57))
 
-                        # self.out.Text =  self.out.Text.Insert(string+ "\n");
+                    # self.out.Text =  self.out.Text.Insert(string+ "\n");
 
-                        target.WriteText(record.message+'\n')
-                        target.EndTextColour()
-                        target.Refresh()
-                last_processed = line_list
+                    target.WriteText(record.message+'\n')
+                    target.EndTextColour()
+                    target.Refresh()
+            last_processed = line_list
 
 
 def tail(f, lines=20 ):

@@ -40,7 +40,7 @@ class _Log:
 
 
             # console log
-            console_log = FileHandler(CONSOLE_FILENAME)
+            console_log = PickleHandler(CONSOLE_FILENAME)
             console_log.setFormatter(formatter)
             self.__root.addHandler(console_log)
 
@@ -71,8 +71,7 @@ class _Log:
     def _get_logger(self):
         return self.__root
 
-<<<<<<< HEAD
-class FileHandler(logging.FileHandler):
+class PickleHandler(logging.FileHandler):
 
     def __init__(self, filename, mode='a', encoding=None, delay=0):
         logging.FileHandler.__init__(self, filename, mode, encoding, delay)
@@ -90,8 +89,6 @@ class FileHandler(logging.FileHandler):
         self.flush()
 
 
-=======
->>>>>>> cc6f132a3b586a1bea07d02b6a1a852a3794993a
 class StreamHandler(logging.StreamHandler):
     """"""
 
@@ -156,3 +153,5 @@ class Log(object):
     #
     # def set_stream_handler(self, stream):
     #     self.log._set_stream_handler(stream)
+
+elog = Log()

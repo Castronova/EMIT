@@ -9,9 +9,10 @@ import imp
 from api.ODMconnection import  dbconnection
 # from ODMconnection import dbconnection
 import uuid
-import coordinator.emitLogging as l
-logging = l.Log()
+# import coordinator.emitLogging as l
+# logging = l.Log()
 
+from coordinator.emitLogging import elog
 
 
 
@@ -316,7 +317,6 @@ def connect_to_db(title, desc, engine, address, name, user, pwd):
 
 def create_database_connections_from_file(ini):
 
-    l = logging.Log()
     # database connections dictionary
     db_connections = {}
 
@@ -358,12 +358,11 @@ def create_database_connections_from_file(ini):
                                      'connection_string':connection_string,
                                      'description':d['desc'],
                                      'args': d}
-
-            logging.info('Connected to : %s [%s]'%(connection_string,db_id))
+            elog.info('Connected to : %s [%s]'%(connection_string,db_id))
 
 
         else:
-            logging.error('ERROR | Could not establish a connection with the database')
+            elog.error('ERROR | Could not establish a connection with the database')
             #return None
 
 

@@ -23,7 +23,7 @@ def follow(logging, target):
     path = None
     handlers = logging.get_logger().handlers
     for handler in handlers:
-        if type(handler) == l.FileHandler:
+        if type(handler) == l.PickleHandler:
             path = handler.stream.name
             break
 

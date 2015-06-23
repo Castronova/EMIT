@@ -27,19 +27,28 @@ def follow(logging, target):
             path = handler.stream.name
             break
 
+    initial = True
     if path:
 
         thefile = open(path, 'r')
-        last_processed = None
+        last_processed = []
+        last_lines = None
         while True:
-            line = tail(thefile, lines=1)
-            if line == '' or line == last_processed:
+            lines = tail(thefile, lines=5)
+            if lines == last_lines:
                 time.sleep(0.2)
             else:
-                last_processed = line
-                record = pickle.loads(line.replace('~~','\n').replace('!~!~','\r'))
-                target.WriteText(record.message+'\n')
+                last_lines = lines
+                line_list = lines.split('\n')
+                line_list = filter(lambda a: a != '', line_list) # remove blank entries
+
+                for line in line_list:
+                    if line not in last_processed:
+                        record = pickle.loads(line.replace('~~','\n').replace('!~!~','\r'))
+                        target.WriteText(record.message+'\n')
                 target.Refresh()
+                last_processed = line_list
+
 
 def tail(f, lines=20 ):
     total_lines_wanted = lines

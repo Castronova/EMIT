@@ -62,7 +62,7 @@ class ScaledBitmapWithRotation(FC.ScaledBitmap):
     def _Draw(self, dc , WorldToPixel, ScaleWorldToPixel, HTdc=None):
 
         if self.LastRotationAngle != self.RotationAngle:
-            Img = self.Image.Rotate(self.RotationAngle, self.ImageMidPoint)
+            Img = self.Image.Rotate(self.RotationAngle, (0,0))
             self.ScaledBitmap = wx.BitmapFromImage(Img)
 
         self.LastRotationAngle = self.RotationAngle
@@ -214,7 +214,17 @@ class LogicCanvas(ViewCanvas):
                 r1, r2 = self.links[link]
                 xdiff = link.Points[1][0]-link.Points[0][0]
                 ydiff = link.Points[1][1]-link.Points[0][1]
+
+                # angle = math.atan2(ydiff, xdiff)
+                # if angle < 0:
+                #     angle += 2*math.pi
+
                 self.arrow_shape.RotationAngle = math.atan2(ydiff, xdiff)
+
+                # print "angle: " + str(self.arrow_shape.RotationAngle*180/math.pi)
+                #
+                # point = FC.Point((0,0), Diameter=5, InForeground=True)
+                # self.FloatCanvas.AddObject(point)
                 if r1 == self.MovingObject:
                     link.Points[0] = self.MovingObject.XY
                     # print self.links
@@ -274,7 +284,10 @@ class LogicCanvas(ViewCanvas):
             # boxBitmap = ScaledBitmapWithRotation(bitmap, (x,y), Height=h, Position='cc', InForeground=True)
             # R = self.FloatCanvas.AddObject(boxBitmap)
             # R = self.FloatCanvas.AddObject(FC.Polygon(rect_coords, FillColor=color, InForeground=True))
+
             R = self.FloatCanvas.AddBitmap(bitmap, (x,y), Position="cc", InForeground=True)
+            # self.FloatCanvas.AddB
+            # R = FC.ScaledBitmap(bitmap, (x,y), Height=bitmap.Height, Position='cc', InForeground=True)
             R.ID = id
             R.Name = name
             R.wh = (w, h)
@@ -303,9 +316,7 @@ class LogicCanvas(ViewCanvas):
 
             R.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit)
             R.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
-
             self.models[R] = id
-
             self.FloatCanvas.Draw()
 
     def draw_box(self, evt):
@@ -340,35 +351,35 @@ class LogicCanvas(ViewCanvas):
 
         return (self.model_coords[id]['x'], self.model_coords[id]['y'])
 
-    def createLineOld(self, R1, R2):
-        # print "creating link", R1, R2
-        x1, y1 = (R1.BoundingBox[0] + (R1.wh[0] / 2, R1.wh[1] / 2))
-        x2, y2 = (R2.BoundingBox[0] + (R2.wh[0] / 2, R2.wh[1] / 2))
-        x1,y1=x1-90,y1-64
-        x2,y2=x2-90,y2-64
-
-        cmap = cm.Blues
-        line = LogicCanvasObjects.get_line_pts((x1, y1), (x2, y2), order=4, num=200,)
-        linegradient = LogicCanvasObjects.get_hex_from_gradient(cmap, len(line))
-        linegradient.reverse()
-
-        for i in range(0, len(line) - 1):
-            l = FC.Line((line[i], line[i + 1]), LineColor=linegradient[i], LineWidth=2, InForeground=False)
-            l.type = LogicCanvasObjects.ShapeType.Link
-            self.FloatCanvas.AddObject(l)
-
-        # Calculate length of line, use to show/hide arrow
-        self.linelength = math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2)
-        arrow_shape = self.createArrow(line)
-
-        # store the link and rectangles in the self.links list
-        for k, v in self.links.iteritems():
-            if v == [R1, R2]:
-                self.links.pop(k)
-                break
-        self.links[arrow_shape] = [R1, R2]
-
-        self.FloatCanvas.Draw()
+    # def createLineOld(self, R1, R2):
+    #     # print "creating link", R1, R2
+    #     x1, y1 = (R1.BoundingBox[0] + (R1.wh[0] / 2, R1.wh[1] / 2))
+    #     x2, y2 = (R2.BoundingBox[0] + (R2.wh[0] / 2, R2.wh[1] / 2))
+    #     x1,y1=x1-90,y1-64
+    #     x2,y2=x2-90,y2-64
+    #
+    #     cmap = cm.Blues
+    #     line = LogicCanvasObjects.get_line_pts((x1, y1), (x2, y2), order=4, num=200,)
+    #     linegradient = LogicCanvasObjects.get_hex_from_gradient(cmap, len(line))
+    #     linegradient.reverse()
+    #
+    #     for i in range(0, len(line) - 1):
+    #         l = FC.Line((line[i], line[i + 1]), LineColor=linegradient[i], LineWidth=2, InForeground=False)
+    #         l.type = LogicCanvasObjects.ShapeType.Link
+    #         self.FloatCanvas.AddObject(l)
+    #
+    #     # Calculate length of line, use to show/hide arrow
+    #     self.linelength = math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2)
+    #     arrow_shape = self.createArrow(line)
+    #
+    #     # store the link and rectangles in the self.links list
+    #     for k, v in self.links.iteritems():
+    #         if v == [R1, R2]:
+    #             self.links.pop(k)
+    #             break
+    #     self.links[arrow_shape] = [R1, R2]
+    #
+    #     self.FloatCanvas.Draw()
 
     def createLine(self, R1, R2):
         # Get the center of the objects
@@ -391,7 +402,8 @@ class LogicCanvas(ViewCanvas):
 
         # arrow = LogicCanvasObjects.build_arrow(line, arrow_length=6)
         print "adding arrow to ", line.MidPoint
-        arrow_shape = ScaledBitmapWithRotation(self.linkArrow, line.MidPoint, Height=self.linkArrow.Height, Position='cc', InForeground=True)
+        # line.MidPoint
+        arrow_shape = ScaledBitmapWithRotation(self.linkArrow, line.MidPoint, Height=self.linkArrow.Height, Position='tl', InForeground=True)
 
         # create the arrowhead object
         # arrow_shape = FC.Polygon(arrow, FillColor='Blue', InForeground=True)

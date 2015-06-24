@@ -34,8 +34,8 @@ class SmoothLine(FC.Line):
     The SmoothLine class is identical to the Line class except that it uses a
     GC rather than a DC.
     """
-    def __init__(self, Points, LineColor = "Black", LineStyle = "Solid", LineWidth    = 1, InForeground = False):
-        FC.Line.__init__(self, Points, LineColor = "Black", LineStyle = "Solid", LineWidth = 1, InForeground = False)
+    def __init__(self, Points, LineColor = "Black", LineStyle = "Solid", LineWidth = 1, InForeground = False):
+        FC.Line.__init__(self, Points, LineColor, LineStyle, LineWidth, InForeground)
 
         midX = (Points[0][0]+Points[1][0])/2
         midY = (Points[0][1]+Points[1][1])/2
@@ -43,11 +43,12 @@ class SmoothLine(FC.Line):
 
     def _Draw(self, dc , WorldToPixel, ScaleWorldToPixel, HTdc=None):
         Points = WorldToPixel(self.Points)
+        midX = (self.Points[0][0]+self.Points[1][0])/2
+        midY = (self.Points[0][1]+self.Points[1][1])/2
+        self.MidPoint = (midX,midY)
         GC = wx.GraphicsContext.Create(dc)
         GC.SetPen(self.Pen)
         GC.DrawLines(Points)
-
-
 
 class ScaledBitmapWithRotation(FC.ScaledBitmap):
 
@@ -205,8 +206,12 @@ class LogicCanvas(ViewCanvas):
                 r1, r2 = self.links[link]
                 if r1 == self.MovingObject:
                     link.Points[0] = self.MovingObject.XY
+                    # print link.Points[0], " mid: " , link.MidPoint, " ", link.Points[1]
+                    self.arrow_shape.XY = link.MidPoint
                 elif r2 == self.MovingObject:
                     link.Points[1] = self.MovingObject.XY
+                    # print link.Points[0], " mid: " , link.MidPoint, " ", link.Points[1]
+                    self.arrow_shape.XY = link.MidPoint
 
             self.lastPos = cursorPos
             # self.RedrawConfiguration()
@@ -367,7 +372,7 @@ class LogicCanvas(ViewCanvas):
 
 
         self.FloatCanvas.AddObject(line)
-        arrow_shape = self.createArrow(line)
+        self.arrow_shape = self.createArrow(line)
         self.FloatCanvas.Draw()
 
     def createArrowOld(self, line):
@@ -394,7 +399,7 @@ class LogicCanvas(ViewCanvas):
     def createArrow(self, line):
 
         # arrow = LogicCanvasObjects.build_arrow(line, arrow_length=6)
-
+        print "adding arrow to ", line.MidPoint
         arrow_shape = ScaledBitmapWithRotation(self.linkArrow, line.MidPoint, Height=self.linkArrow.Height, Position='cc', InForeground=True)
 
         # arrow_shape = self.FloatCanvas.AddScaledBitmap(self.linkArrow,

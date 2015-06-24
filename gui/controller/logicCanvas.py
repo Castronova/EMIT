@@ -54,10 +54,18 @@ class ScaledBitmapWithRotation(FC.ScaledBitmap):
 
     def __init__(self, Bitmap, XY, Height, Position = 'cc', InForeground = True):
         FC.ScaledBitmap.__init__(self, Bitmap, XY, Height, Position = 'cc', InForeground = True)
+        self.ImageMidPoint = (self.Image.Width/2, self.Image.Height/2)
+        print "img mid: ", self.ImageMidPoint
         self.RotationAngle = 0.0
+        self.LastRotationAngle = 0.0
 
     def _Draw(self, dc , WorldToPixel, ScaleWorldToPixel, HTdc=None):
 
+        if self.LastRotationAngle != self.RotationAngle:
+            Img = self.Image.Rotate(self.RotationAngle, self.ImageMidPoint)
+            self.ScaledBitmap = wx.BitmapFromImage(Img)
+
+        self.LastRotationAngle = self.RotationAngle
         super(ScaledBitmapWithRotation,self)._Draw(dc , WorldToPixel, ScaleWorldToPixel, HTdc=None)
 
 
@@ -204,8 +212,12 @@ class LogicCanvas(ViewCanvas):
 
             for link in self.links.keys():
                 r1, r2 = self.links[link]
+                xdiff = link.Points[1][0]-link.Points[0][0]
+                ydiff = link.Points[1][1]-link.Points[0][1]
+                self.arrow_shape.RotationAngle = math.atan2(ydiff, xdiff)
                 if r1 == self.MovingObject:
                     link.Points[0] = self.MovingObject.XY
+                    # print self.links
                     # print link.Points[0], " mid: " , link.MidPoint, " ", link.Points[1]
                     self.arrow_shape.XY = link.MidPoint
                 elif r2 == self.MovingObject:
@@ -375,16 +387,18 @@ class LogicCanvas(ViewCanvas):
         self.arrow_shape = self.createArrow(line)
         self.FloatCanvas.Draw()
 
-    def createArrowOld(self, line):
+    def createArrow(self, line):
 
-        arrow = LogicCanvasObjects.build_arrow(line, arrow_length=6)
+        # arrow = LogicCanvasObjects.build_arrow(line, arrow_length=6)
+        print "adding arrow to ", line.MidPoint
+        arrow_shape = ScaledBitmapWithRotation(self.linkArrow, line.MidPoint, Height=self.linkArrow.Height, Position='cc', InForeground=True)
 
         # create the arrowhead object
-        arrow_shape = FC.Polygon(arrow, FillColor='Blue', InForeground=True)
-        if self.linelength > 230:
-            arrow_shape.Show()
-        else:
-            arrow_shape.Hide()
+        # arrow_shape = FC.Polygon(arrow, FillColor='Blue', InForeground=True)
+        # if self.linelength > 230:
+        #     arrow_shape.Show()
+        # else:
+        #     arrow_shape.Hide()
 
         # set the shape type so that we can identify it later
         arrow_shape.type = LogicCanvasObjects.ShapeType.ArrowHead
@@ -396,27 +410,16 @@ class LogicCanvas(ViewCanvas):
 
         return arrow_shape
 
-    def createArrow(self, line):
+    def createArrowOld(self, line):
 
-        # arrow = LogicCanvasObjects.build_arrow(line, arrow_length=6)
-        print "adding arrow to ", line.MidPoint
-        arrow_shape = ScaledBitmapWithRotation(self.linkArrow, line.MidPoint, Height=self.linkArrow.Height, Position='cc', InForeground=True)
-
-        # arrow_shape = self.FloatCanvas.AddScaledBitmap(self.linkArrow,
-        #                                          (0, 0),
-        #                                          Height = self.linkArrow.GetHeight(),
-        #                                          Position = 'tl',)
-        # if self.linelength > 230:
-        #     arrow_shape.Show()
-        # else:
-        #     arrow_shape.Hide()
+        arrow = LogicCanvasObjects.build_arrow(line, arrow_length=6)
 
         # create the arrowhead object
-        # arrow_shape = FC.Polygon(arrow, FillColor='Blue', InForeground=True)
-        # if self.linelength > 230:
-        #     arrow_shape.Show()
-        # else:
-        #     arrow_shape.Hide()
+        arrow_shape = FC.Polygon(arrow, FillColor='Blue', InForeground=True)
+        if self.linelength > 230:
+            arrow_shape.Show()
+        else:
+            arrow_shape.Hide()
 
         # set the shape type so that we can identify it later
         arrow_shape.type = LogicCanvasObjects.ShapeType.ArrowHead

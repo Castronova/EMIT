@@ -192,9 +192,9 @@ class ViewEMIT(wx.Frame):
 
         self.m_fileMenu = wx.Menu()
         #exit = wx.MenuItem(self.m_fileMenu, wx.ID_EXIT, '&Quit\tCtrl+Q')
+        Load = self.m_fileMenu.Append(wx.NewId(), '&Load\tCtrl+O', 'Load Configuration')
         Save = self.m_fileMenu.Append(wx.NewId(), '&Save Configuration\tCtrl+S', 'Save Configuration')
         SaveAs = self.m_fileMenu.Append(wx.NewId(), '&Save Configuration As', 'Save Configuration')
-        Open = self.m_fileMenu.Append(wx.NewId(), '&Load Configuration\tCtrl+O', 'Load Configuration')
         exit = self.m_fileMenu.Append(wx.NewId(), '&Quit\tCtrl+Q', 'Quit application')
 
         self.m_menubar.Append(self.m_fileMenu, "&File")
@@ -217,8 +217,7 @@ class ViewEMIT(wx.Frame):
         self.m_menubar.Append(self.m_optionMenu, "Options")
         ShowSim = self.m_optionMenu.Append(wx.NewId(), 'Show Configurations', 'Shows the saved configurations files in the toolbox', wx.ITEM_RADIO)
         HideSim = self.m_optionMenu.Append(wx.NewId(), 'Hide Configurations', 'Only shows Hydrology models in the toolbox', wx.ITEM_RADIO)
-        self.m_optionMenu.AppendSeparator()
-        setCustomDirectory = self.m_optionMenu.Append(wx.ID_ANY, "Set Custom Directory")
+
 
         self.m_runMenu = wx.Menu()
         self.applicationRun = self.m_runMenu.Append(wx.NewId(), '&Run Configuration', 'Runs the existing configurations')
@@ -236,7 +235,7 @@ class ViewEMIT(wx.Frame):
         #File MenuBar
         self.Bind(wx.EVT_MENU, self.SaveConfiguration, Save)
         self.Bind(wx.EVT_MENU, self.SaveConfigurationAs, SaveAs)
-        self.Bind(wx.EVT_MENU, self.LoadConfiguration, Open)
+        self.Bind(wx.EVT_MENU, self.LoadConfiguration, Load)
         self.Bind(wx.EVT_MENU, self.onClose, exit)
         events.onSaveFromCanvas += self.SaveConfigurationAs
 

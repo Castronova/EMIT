@@ -1,14 +1,11 @@
-from collections import OrderedDict
-import os
-import random
-
 __author__ = 'tonycastronova'
 
+import os
+import random
 from gui.views.viewToolbox import ViewToolbox
 from gui.views.viewContext import ToolboxContextMenu
 from gui.controller.logicModel import LogicModel
 from gui import events
-
 import wx
 from wx.lib.pubsub import pub as Publisher
 from os.path import join, dirname, abspath
@@ -58,7 +55,6 @@ class LogicToolbox(ViewToolbox):
         events.onSimulationSaved += self.loadSIMFile
 
     def loadToolbox(self, modelpaths):
-
         # add base-level folders
         self.simConfigurations = self.tree.AppendItem(self.root_mdl, "Configurations")
         self.tree.SetItemImage(self.simConfigurations, self.folderConfigIcon, which=wx.TreeItemIcon_Expanded)
@@ -302,7 +298,6 @@ class LogicToolbox(ViewToolbox):
             filepath = self.filepath.get(key)
             os.remove(filepath)
             self.tree.Delete(item)
-
 
 class multidict(dict):
     """

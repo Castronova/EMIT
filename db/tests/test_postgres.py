@@ -71,24 +71,25 @@ class test_simulation_services(unittest.TestCase):
         #endoffset=-6
 
         # build exchange items from file
-        config = os.path.realpath('../../tests/configuration.ini')
+        config = os.path.realpath('../../tests/test_data/configuration.ini')
         params = gui.parse_config(config)
         eitems = mdl.build_exchange_items_from_config(params)
 
         # add some data to simulate 'output' exchange items
         vals= [(dt.datetime(2014,1,1,0,0,0) + dt.timedelta(days=i), i) for i in range(0,100)]
-        output_item1 = eitems[1]
+        output_item1 = eitems['output'][0]
         output_item1.geometries()[0].datavalues().set_timeseries(vals)
+
         vals= [(dt.datetime(2014,1,1,0,0,0) + dt.timedelta(days=i), 2*i) for i in range(0,100)]
         output_item1.geometries()[1].datavalues().set_timeseries(vals)
 
         vals= [(dt.datetime(2014,1,1,0,0,0) + dt.timedelta(days=i), 2**i) for i in range(0,100)]
-        output_item2 = eitems[2]
+        output_item2 = eitems['output'][1]
         output_item2.geometries()[0].datavalues().set_timeseries(vals)
 
         outputs = [output_item1,output_item2]
 
-        sim = papi.create_simulation(preferences_path='/Users/tonycastronova/Documents/projects/iUtah/EMIT/data/preferences',
+        sim = papi.create_simulation(preferences_path='../../data/preferences',
                                config_params=params,
                                output_exchange_items= outputs)
 

@@ -61,7 +61,7 @@ class ScaledBitmapWithRotation(FC.ScaledBitmap):
     def _Draw(self, dc , WorldToPixel, ScaleWorldToPixel, HTdc=None):
         # Only update if there's a change
         if self.LastRotationAngle != self.RotationAngle:
-            # Using ImageMidPoint seems to do the same thing as (0,0)
+            # Using ImageMidPoint seems to do the same thing as (0,0) for the center of rotation
             Img = self.Image.Rotate(self.RotationAngle, (0,0))
             self.ScaledBitmap = wx.BitmapFromImage(Img)
 

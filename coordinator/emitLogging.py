@@ -12,8 +12,9 @@ class _Log:
         if not _Log.__monostate:
             _Log.__monostate = self.__dict__
 
-            LOG_FILENAME = os.path.abspath('./log/EmitEngine.log')
-            CONSOLE_FILENAME = os.path.abspath('./log/temp_console_log.log')
+            current_dir = os.path.dirname(__file__)
+            LOG_FILENAME = os.path.abspath(os.path.join(current_dir, '../log/EmitEngine.log'))
+            CONSOLE_FILENAME = os.path.abspath(os.path.join(current_dir, '../log/temp_console_log.log'))
 
             # remove the temp console log
             if os.path.exists(CONSOLE_FILENAME):

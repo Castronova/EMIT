@@ -7,6 +7,7 @@ import cPickle as pickle
 from osgeo import ogr, osr
 import utilities.spatial
 import stdlib
+from coordinator.emitLogging import elog
 
 def create_variable(variable_name_cv):
     """
@@ -103,7 +104,14 @@ def build_exchange_items_from_config(params):
                             geom = [geoms]
 
 
-                    except: raise Exception('Could not load WKT string: %s.'%value)
+                    except:
+                        elog.warning('Could not load component geometry from *.mdl file')
+
+                        # this is OK.  Just set the geoms to [] and assume that they will be populated during initialize.
+                        geom = []
+                        # raise Exception('Could not load WKT string: %s.'%value)
+
+
                     srs = utilities.spatial.get_srs_from_epsg(io['epsg_code'])
 
 

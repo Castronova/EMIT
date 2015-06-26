@@ -242,7 +242,7 @@ class postgresdb():
                                                                                                 description=None,
                                                                                                 geoType=geom.geom_type,
                                                                                                 elevation=None,
-                                                                                                elevationDatum=None,
+              ActionID                                                                                  elevationDatum=None,
                                                                                                 featureGeo=geom.wkt)
 
                 # create feature action

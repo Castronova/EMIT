@@ -6,6 +6,8 @@ import wx.aui
 from gui.controller.logicEMIT import LogicEMIT
 from coordinator import engineManager
 import coordinator.emitLogging as l
+import sys
+sys.path.append('./ODM2PythonAPI/src/api')
 logging = l.Log()
 
 

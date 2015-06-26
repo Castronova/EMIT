@@ -6,8 +6,12 @@ import wx.aui
 from gui.controller.logicEMIT import LogicEMIT
 from coordinator import engineManager
 import coordinator.emitLogging as l
-import sys
-sys.path.append('./ODM2PythonAPI/src/api')
+import os, sys
+
+odm2_api_path = os.path.abspath(os.path.join(__file__, './ODM2PythonAPI'))
+sys.path.append(odm2_api_path)
+import src.api.ODMconnection as odm2dbConnection
+
 logging = l.Log()
 
 

@@ -36,20 +36,57 @@ class SessionFactory():
 odm2_api_path = os.path.abspath(os.path.join(__file__, '../../../ODM2PythonAPI'))
 sys.path.append(odm2_api_path)
 import src.api.ODMconnection as odm2dbConnection
-import src.api.ODM2.services.readService as r
+import src.api.ODM2.services.readService as odmread
 import api.ODMconnection
 
 class test_sqlite_db(unittest.TestCase):
 
     def setUp(self):
-        dbpath = os.path.abspath('../scripts/odm2.sqlite')
 
-        connection_string = "sqlite:///"+dbpath
-        self.connection = odm2dbConnection.SessionFactory(connection_string,echo=False)
+        # define the paths for the empty and populated temp databases
+        self.empty_db_path = os.path.abspath('../scripts/temp_empty.db')
+        self.pop_db_path = os.path.abspath('../scripts/temp_pop.db')
+
+        # get the database dump files
+        empty_dump_script = open('../scripts/empty_dump.sql','r').read()
+        populated_dump_script = open('../scripts/populated_dump.sql','r').read()
+
+        # create temp databases
+        empty_odm2_db = sqlite3.connect(self.empty_db_path) # create a memory database
+        pop_odm2_db = sqlite3.connect(self.pop_db_path) # create a memory database
+
+        # load the dump files into the in-memory databases
+        empty_odm2_db.executescript(empty_dump_script)
+        pop_odm2_db.executescript(populated_dump_script)
+
+        # create database connections that will be used in test cases
+        self.empty_connection = odm2dbConnection.SessionFactory('sqlite:///'+self.empty_db_path, echo=False)
+        self.pop_connection = odm2dbConnection.SessionFactory('sqlite:///'+self.pop_db_path, echo=False)
+
+
+    def tearDown(self):
+
+        # remove temp databases
+        if os.path.exists(self.empty_db_path):
+            os.remove(self.empty_db_path)
+        if os.path.exists(self.pop_db_path):
+            os.remove(self.pop_db_path)
+
+
 
     def test_get_people(self):
+        people = odmread.People()
         people = r.People()
         print people.PersonFirstName
+
+    def test_get_simulations(self):
+
+        print '1'
+
+        s = odmread.readSimulation(self.pop_connection)
+
+        print '2'
+
 
     def test_connectToDB(self):
         print "starting test_connectToDB"

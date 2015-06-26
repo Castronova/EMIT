@@ -86,10 +86,14 @@ def build_exchange_items_from_config(params):
             elif key == 'elementset' :
                 # check if the value is a path
                 if os.path.dirname(value ) != '':
-                    if not os.path.isfile(value):
-                        raise Exception('Could not find file: %s'%value)
+                    gen_path = os.path.abspath(os.path.join(params['basedir'],value))
+                    if not os.path.isfile(gen_path):
+                        # get filepath relative to *.mdl
 
-                    geom,srs = utilities.spatial.read_shapefile(value)
+                        elog.critical('Could not find file at path %s, generated from relative path %s'%(gen_path, value))
+                        raise Exception('Could not find file at path %s, generated from relative path %s'%(gen_path, value))
+
+                    geom,srs = utilities.spatial.read_shapefile(gen_path)
 
 
                 # otherwise it must be a wkt

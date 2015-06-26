@@ -9,7 +9,7 @@ class test_topmodel(unittest.TestCase):
 
     def setUp(self):
         # add models
-        self.mdl = './topmodel.mdl'
+        self.mdl = '../topmodel.mdl'
 
     def test_initialize(self):
 
@@ -18,6 +18,19 @@ class test_topmodel(unittest.TestCase):
         top = topmodel.topmodel(config_params)
 
 
-        # check the input geometries
-        in_geoms = top.inputs()['some_value'].getGeometries2()
+        # check input geometries
+        in_items = top.inputs()#['some_value'].getGeometries2()
+        self.assertTrue(len(in_items.keys()) == 1)
+        self.assertTrue('precipitation' in in_items.keys())
+        precip = in_items['precipitation']
+
+        precip_geoms = precip.getGeometries2()
+        self.assertTrue(len(precip_geoms) > 0)
+
+
+
+
+        # check output geometries
+
+
         print 'done'

@@ -5,6 +5,8 @@ from wrappers import feed_forward
 import stdlib
 from utilities import mdl
 import math
+from shapely.geometry import Point
+from coordinator.emitLogging import elog
 
 #---- model inputs
 # double R;//subsurface Recharge rate [L/T]
@@ -46,7 +48,10 @@ class topmodel(feed_forward.feed_forward_wrapper):
 
         super(topmodel,self).__init__(config_params)
 
+        elog.info('Begin Component Initialization')
+
         # build inputs and outputs
+        elog.info('Building exchange items')
         io = mdl.build_exchange_items_from_config(config_params)
 
         # set inputs and outputs
@@ -61,6 +66,7 @@ class topmodel(feed_forward.feed_forward_wrapper):
         inputs = config_params['model inputs'][0]
 
         # read topographic input file
+        elog.info('Reading topographic indices')
         self.topo_input = inputs["ti"];
 
         #read model input parameters
@@ -100,7 +106,14 @@ class topmodel(feed_forward.feed_forward_wrapper):
         #//read topographic indices from input file
         self.read_topo_input()
 
+        ti_geom = self.calc_ti_geometries()
+
+        # set precipitation geometries
+        elog.info('Building input precipitation geometries')
+        self.inputs()['precipitation'].addGeometries2(ti_geom)
+
         # ---- calculate saturation deficit
+        elog.info('Calculating saturation deficit')
         # calculate lamda average for the watershed
         #double[] TI_freq = new double[TI.GetLength(0)];
         TI_freq = [x*y for x,y in zip(self.ti, self.freq)]
@@ -113,6 +126,7 @@ class topmodel(feed_forward.feed_forward_wrapper):
         # catchement average saturation deficit(S_bar)
         self.S_average = (-1.)*self.c * ((math.log10(self.R / self.Tmax)) + self.lamda_average)
 
+        elog.info('Component Initialization Complete')
 
     def run(self,inputs):
         """
@@ -158,7 +172,31 @@ class topmodel(feed_forward.feed_forward_wrapper):
     def save(self):
         return self.outputs()
 
+    def calc_ti_geometries(self):
 
+        geoms = []
+        with open(self.topo_input, 'r') as sr:
+
+            lines = sr.readlines()
+            ncols = int(lines[0].split(' ')[-1].strip())
+            nrows = int(lines[1].split(' ')[-1].strip())
+            lowerx = float(lines[2].split(' ')[-1].strip())
+            lowery = float(lines[3].split(' ')[-1].strip())
+            cellsize = float(lines[4].split(' ')[-1].strip())
+            nodata = lines[5].split(' ')[-1].strip()
+
+            # set start x, y
+            y = lowery + cellsize * nrows
+            for line in lines:
+                x = lowerx
+                l = line.strip().split(' ')
+                for element in l:
+                    if l != nodata:
+                        pt = Point(x,y)
+                        geoms.append(stdlib.Geometry(geom=pt))
+                    x += cellsize
+                y -= cellsize
+        return geoms
 
     def read_topo_input(self):
 
@@ -166,15 +204,12 @@ class topmodel(feed_forward.feed_forward_wrapper):
         with open(self.topo_input, 'r') as sr:
 
             lines = sr.readlines()
-
-            # -- get cellsize and nodata from header
             cellsize = float(lines[4].split(' ')[-1].strip())
             nodata = lines[5].split(' ')[-1].strip()
 
             # generate topolist by parsing cell data
             topoList = [item for sublist in lines[6:] for item in sublist.strip().split(' ') if item != nodata]
             self._watershedArea = len(topoList) * cellsize
-
 
 
         # ---- calculate frequency of each topographic index

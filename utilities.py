@@ -13,6 +13,7 @@ import imp
 from stdlib import Variable, Unit
 #from odm2.src.api import dbconnection
 from ODMconnection import dbconnection
+from coordinator.emitLogging import elog
 
 from db.dbapi import postgresdb
 import uuid
@@ -137,10 +138,10 @@ def validate_config_ini(ini_path):
                     module = imp.load_source(filename.split('.')[0], abspath)
                     m = getattr(module, classname)
                 except:
-                    print 'ERROR | Configuration Parsing Error: '+classname+' is not a valid class name'
+                    elog.error('Configuration Parsing Error: '+classname+' is not a valid class name')
 
     except Exception, e:
-        print 'ERROR | [Configuration Parsing Error] '+str(e)
+        elog.error('Configuration Parsing Error: '+str(e))
         return 0
 
 
@@ -451,9 +452,9 @@ def create_database_connections_from_args(title, desc, engine, address, db, user
                                  'description':d['desc'],
                                  'args': d}
 
-        print 'Connected to : %s [%s]'%(connection_string,db_id)
+        elog.info('Connected to : %s [%s]'%(connection_string,db_id))
     else:
-        print 'ERROR | Could not establish a connection with the database'
+        elog.error('Could not establish a connection with the database')
         return None
 
     return db_connections
@@ -527,9 +528,9 @@ def create_database_connections_from_file(ini):
                                      'description':d['desc'],
                                      'args': d}
 
-            print 'Connected to : %s [%s]'%(connection_string,db_id)
+            elog.info('Connected to : %s [%s]'%(connection_string,db_id))
         else:
-            print 'ERROR | Could not establish a connection with the database'
+            elog.error('Could not establish a connection with the database')
             #return None
 
 

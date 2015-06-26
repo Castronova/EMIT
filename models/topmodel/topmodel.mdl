@@ -1,5 +1,5 @@
 [software]
-filepath  = ../topmodel.py
+filepath  = ./topmodel.py
 classname = topmodel
 
 [model]
@@ -20,14 +20,14 @@ value = 1
 [output]
 variable_name_cv = Streamflow
 unit_type_cv = cubic feet per second
-elementset = ./gis/StreamNet.shp
+elementset = ./test/gis/StreamNet.shp
 
 [input]
 variable_name_cv = precipitation
 unit_type_cv = international inch
 
 [model inputs]
-ti = ./data/TI_raster.txt
+ti = ./test/data/TI_raster.txt
 m = 180
 tmax = 250000
 r = 9.66

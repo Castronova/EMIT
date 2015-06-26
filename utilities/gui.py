@@ -143,49 +143,17 @@ def validate_config_ini(ini_path):
 
     return 1
 
-def parse_config_without_validation(ini):
+def parse_config(ini, validate=False):
     """
     parses metadata stored in *.ini file
     """
-
-    config_params = {}
-    cparser = ConfigParser.ConfigParser(None, multidict)
-    cparser.read(ini)
-    sections = cparser.sections()
-
-    for s in sections:
-        # get the section key (minus the random number)
-        section = s.split('^')[0]
-
-        # get the section options
-        options = cparser.options(s)
-
-        # save ini options as dictionary
-        d = {}
-        for option in options:
-            d[option] = cparser.get(s,option)
-        d['type'] = section
+    isvalid = True
+    if validate:
+        isvalid = validate_config_ini(ini)
 
 
-        if section not in config_params:
-            config_params[section] = [d]
-        else:
-            config_params[section].append(d)
-
-    # save the base path of the model
-    config_params['basedir'] = basedir = os.path.realpath(os.path.dirname(ini))
-
-    return config_params
-
-def parse_config(ini):
-    """
-    parses metadata stored in *.ini file
-    """
-
-    isvalid = validate_config_ini(ini)
     if isvalid:
-        #raise Exception('Configuration file is not valid!')
-
+        basedir = os.path.realpath(os.path.dirname(ini))
         config_params = {}
         cparser = ConfigParser.ConfigParser(None, multidict)
         cparser.read(ini)
@@ -201,7 +169,13 @@ def parse_config(ini):
             # save ini options as dictionary
             d = {}
             for option in options:
-                d[option] = cparser.get(s,option)
+                value = cparser.get(s,option)
+
+                # convert anything that is recognized as a file path into an absolute paths
+                genpath = os.path.abspath(os.path.join(basedir, value))
+                if os.path.isfile(genpath):
+                    value = genpath
+                d[option] = value
             d['type'] = section
 
 
@@ -211,11 +185,52 @@ def parse_config(ini):
                 config_params[section].append(d)
 
         # save the base path of the model
-        config_params['basedir'] = basedir = os.path.realpath(os.path.dirname(ini))
+        config_params['basedir'] = basedir
 
         return config_params
     else:
         return None
+
+# def parse_config(ini):
+#     """
+#     parses metadata stored in *.ini file
+#     """
+#     basedir = os.path.realpath(os.path.dirname(ini))
+#
+#     isvalid = validate_config_ini(ini)
+#     if isvalid:
+#         #raise Exception('Configuration file is not valid!')
+#
+#         config_params = {}
+#         cparser = ConfigParser.ConfigParser(None, multidict)
+#         cparser.read(ini)
+#         sections = cparser.sections()
+#
+#         for s in sections:
+#             # get the section key (minus the random number)
+#             section = s.split('^')[0]
+#
+#             # get the section options
+#             options = cparser.options(s)
+#
+#             # save ini options as dictionary
+#             d = {}
+#             for option in options:
+#                 d[option] = cparser.get(s,option)
+#             d['type'] = section
+#
+#
+#             if section not in config_params:
+#                 config_params[section] = [d]
+#             else:
+#                 config_params[section].append(d)
+#
+#         # save the base path of the model
+#         config_params['basedir'] = basedir
+#
+#         return config_params
+#     else:
+#         return None
 
 def create_database_connections_from_args(title, desc, engine, address, db, user, pwd):
 

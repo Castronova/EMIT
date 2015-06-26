@@ -59,7 +59,7 @@ class postgresdb():
     def set_user_preferences(self, preferences):
 
         # parse user preferences file
-        prefs = gui.parse_config_without_validation(preferences)
+        prefs = gui.parse_config(preferences, validate=False)
 
         # create people
         for person in prefs['person']:

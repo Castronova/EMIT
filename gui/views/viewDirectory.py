@@ -106,7 +106,7 @@ class ViewDirectory(wx.Panel):
         if filepath.split('.')[-1] == 'mdl':
 
             # parse the mdl file
-            dic = gui.parse_config_without_validation(self.sb.GetValue())
+            dic = gui.parse_config(self.sb.GetValue())
 
             geom = []
             if type in dic:

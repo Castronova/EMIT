@@ -79,7 +79,7 @@ class LogicModel(ViewModel):
 
     def PopulateSummary(self, fileExtension):
 
-        d = gui.parse_config_without_validation(fileExtension)
+        d = gui.parse_config(fileExtension)
 
         sections = sorted(d.keys())
 
@@ -107,7 +107,7 @@ class LogicModel(ViewModel):
     def PopulateDetails(self, fileExtension):
 
         # get a dictionary of config parameters
-        d = gui.parse_config_without_validation(fileExtension)
+        d = gui.parse_config(fileExtension)
 
         root = self.DetailTree.AddRoot('Data')
         self.DetailTree.ExpandAll()

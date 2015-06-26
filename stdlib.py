@@ -390,11 +390,11 @@ class ExchangeItem(object):
             self.__description = value
 
     def geometries(self):
-        elog.warning('deprecated: Use getGeometries2 instead')
+        elog.warning('deprecated: stdlib.geometries use getGeometries2 instead')
         return self.__geoms
 
     def add_geometry(self, geom):
-        elog.warning('deprecated: Use addGeometries2 instead')
+        elog.warning('deprecated: stdlib.add_geometry use addGeometries2 instead')
         if isinstance(geom,list):
             self.__geoms.extend(geom)
             # for g in geom:
@@ -404,7 +404,7 @@ class ExchangeItem(object):
             # self.__calculate_start_and_end_times(geom.datavalues())
 
     def get_dataset(self,geometry):
-        elog.warning('deprecated: Use getValues2 instead')
+        elog.warning('deprecated: stdlib.get_dataset use getValues2 instead')
         for geom in self.__geoms:
             if geom.geom() == geometry:
                 return geometry.datavalues()
@@ -412,7 +412,7 @@ class ExchangeItem(object):
         #return self.__dataset
 
     def get_all_datasets(self):
-        elog.warning('deprecated: Use getValues2 instead')
+        elog.warning('deprecated: stdlib.get_all_datasets use getValues2 instead')
         """
         returns the input dataset as a dictionary of geometries
         """
@@ -426,21 +426,21 @@ class ExchangeItem(object):
         # return dict
 
     def get_geoms_and_timeseries(self):
-        elog.warning('deprecated: No replacement function')
+        elog.warning('deprecated: stdlib.get_geoms_and_timeseries')
         geom_dict = {}
         for geom in self.__geoms:
             geom_dict[geom] = geom.datavalues().get_dates_values()
         return geom_dict
 
     def get_timeseries_by_id(self, geom_id):
-        elog.warning('deprecated: No replacement function')
+        elog.warning('deprecated: stdlib.get_timeseries_by_id')
         # TODO: loop using integers to speed this up
         for geom in self.__geoms:
             if geom.id() == geom_id:
                 return geom.datavalues().get_dates_values()
 
     def set_timeseries_by_id(self, geom_id, timeseries):
-        elog.warning('deprecated: No replacement function')
+        elog.warning('deprecated: stdlib.set_timeseries_by_id')
         '''
         sets the timeseries for a geometry using the geometry id
         :param geom_id: id of the geometry
@@ -454,7 +454,7 @@ class ExchangeItem(object):
                 return
 
     def get_timeseries_by_geom(self,geom):
-        elog.warning('deprecated: No replacement function')
+        elog.warning('deprecated: stdlib.get_timeseries_by_geom')
         # """
         # geom = the geom of the desired timeseries
         # """
@@ -466,7 +466,7 @@ class ExchangeItem(object):
         pass
 
     def get_timeseries_by_element(self,element):
-        elog.warning('deprecated: No replacement function')
+        elog.warning('deprecated: stdlib.get_timeseries_by_element')
         # """
         # element = the element of the desired timeseries
         # """
@@ -487,7 +487,7 @@ class ExchangeItem(object):
             self.__variable = value
 
     def add_dataset(self,datavalues):
-        elog.warning('deprecated: No replacement function')
+        elog.warning('deprecated: stdlib.add_dataset')
         # """
         # datavalues = list of datavalue objects
         # """
@@ -511,7 +511,7 @@ class ExchangeItem(object):
     def set_dataset(self,value):
         # self.__dataset = value
         # self.__calculate_start_and_end_times(value)
-        elog.warning('deprecated: No replacement function')
+        elog.warning('deprecated: stdlib.set_dataset')
         pass
 
     # def __calculate_start_and_end_times(self,dv):

@@ -8,7 +8,7 @@ from coordinator import engineManager
 import coordinator.emitLogging as l
 import os, sys
 
-odm2_api_path = os.path.abspath(os.path.join(__file__, './ODM2PythonAPI'))
+odm2_api_path = os.path.abspath(os.path.join(os.path.dirname(__file__), './ODM2PythonAPI'))
 sys.path.append(odm2_api_path)
 import src.api.ODMconnection as odm2dbConnection
 

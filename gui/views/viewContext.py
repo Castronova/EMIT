@@ -162,7 +162,7 @@ class CanvasContextMenu(wx.Menu):
         self.AppendItem(addLink)
         self.Bind(wx.EVT_MENU, self.OnAddLink, addLink)
 
-        load = wx.MenuItem(self, wx.NewId(), 'Load Configuration')
+        load = wx.MenuItem(self, wx.NewId(), 'Load')
         self.AppendItem(load)
         self.Bind(wx.EVT_MENU, self.LoadConfiguration, load)
 
@@ -232,7 +232,7 @@ class CanvasContextMenu(wx.Menu):
         events.onSaveFromCanvas.fire(**e)  # calls SaveConfigurationsAs in ViewEMIT.py
 
     def LoadConfiguration(self, e):
-        load = wx.FileDialog(self.parent.GetTopLevelParent(), "Load Configuration", "", "",
+        load = wx.FileDialog(self.parent.GetTopLevelParent(), "Load File", "", "",
                              "Simulation Files (*.sim)|*.sim", wx.FD_OPEN)
         if load.ShowModal() == wx.ID_OK:
             path = load.GetPath()

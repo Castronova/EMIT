@@ -20,6 +20,8 @@ from gui import events
 from wx.lib.newevent import NewEvent
 from coordinator.emitLogging import elog
 from gui.controller import logicConsoleOutput
+import os
+
 
 # create custom events
 wxCreateBox, EVT_CREATE_BOX = NewEvent()
@@ -54,7 +56,7 @@ class ViewEMIT(wx.Frame):
             # redir = RedirectText(self.log)
             # sys.stdout = redir
 
-            #  Thread starts here to ensure its on the main thread
+        #  Thread starts here to ensure its on the main thread
         t = threading.Thread(target=logicConsoleOutput.follow, args=(elog, self.Output.log))
         t.start()
 
@@ -190,9 +192,9 @@ class ViewEMIT(wx.Frame):
 
         self.m_fileMenu = wx.Menu()
         #exit = wx.MenuItem(self.m_fileMenu, wx.ID_EXIT, '&Quit\tCtrl+Q')
+        Load = self.m_fileMenu.Append(wx.NewId(), '&Load\tCtrl+O', 'Load Configuration')
         Save = self.m_fileMenu.Append(wx.NewId(), '&Save Configuration\tCtrl+S', 'Save Configuration')
         SaveAs = self.m_fileMenu.Append(wx.NewId(), '&Save Configuration As', 'Save Configuration')
-        Open = self.m_fileMenu.Append(wx.NewId(), '&Load Configuration\tCtrl+O', 'Load Configuration')
         exit = self.m_fileMenu.Append(wx.NewId(), '&Quit\tCtrl+Q', 'Quit application')
 
         self.m_menubar.Append(self.m_fileMenu, "&File")
@@ -212,9 +214,10 @@ class ViewEMIT(wx.Frame):
         self.m_menubar.Append(self.m_viewMenu, "&View")
 
         self.m_optionMenu = wx.Menu()
+        self.m_menubar.Append(self.m_optionMenu, "Options")
         ShowSim = self.m_optionMenu.Append(wx.NewId(), 'Show Configurations', 'Shows the saved configurations files in the toolbox', wx.ITEM_RADIO)
         HideSim = self.m_optionMenu.Append(wx.NewId(), 'Hide Configurations', 'Only shows Hydrology models in the toolbox', wx.ITEM_RADIO)
-        self.m_menubar.Append(self.m_optionMenu, "&Options")
+
 
         self.m_runMenu = wx.Menu()
         self.applicationRun = self.m_runMenu.Append(wx.NewId(), '&Run Configuration', 'Runs the existing configurations')
@@ -232,7 +235,7 @@ class ViewEMIT(wx.Frame):
         #File MenuBar
         self.Bind(wx.EVT_MENU, self.SaveConfiguration, Save)
         self.Bind(wx.EVT_MENU, self.SaveConfigurationAs, SaveAs)
-        self.Bind(wx.EVT_MENU, self.LoadConfiguration, Open)
+        self.Bind(wx.EVT_MENU, self.LoadConfiguration, Load)
         self.Bind(wx.EVT_MENU, self.onClose, exit)
         events.onSaveFromCanvas += self.SaveConfigurationAs
 
@@ -243,6 +246,7 @@ class ViewEMIT(wx.Frame):
         self.Bind(wx.EVT_MENU, self.defaultview, defaultview)
         # self.Bind(wx.EVT)
 
+        #  Option MenuBar Bindings
 
     def onClose(self, event):
         dial = wx.MessageDialog(None, 'Are you sure to quit?', 'Question',
@@ -266,49 +270,27 @@ class ViewEMIT(wx.Frame):
 
     def LoadConfiguration(self,event):
 
+        openFileDialog = wx.FileDialog(self, "Load New File", "", "",
+                                       "Simulation Files (*.sim)|*.sim|MDL Files (*.mdl)|*.mdl", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
 
-        #if wx.MessageBox("This will overlay on the current configuration.", "Please confirm",
-        #                 wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
-        #    return
+        if openFileDialog.ShowModal() == wx.ID_OK:
+            filename = openFileDialog.GetFilename()
+            elog.info("Filename is: " + filename)
+            # proceed loading the file chosen by the user
+            # this can be done with e.g. wxPython input streams:
+            filepath = (openFileDialog.GetPath())
+            try:
+                Publisher.sendMessage('SetLoadPath',file=filepath)  # send message to canvascontroller
+            except:
+                elog.error("Could not load file")
 
-        # else: proceed asking to the user the new file to open
-
-        openFileDialog = wx.FileDialog(self, "Open SIM file", "", "",
-                                       "Simulation Files (*.sim)|*.sim", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
-
-        if openFileDialog.ShowModal() == wx.ID_CANCEL:
-            return     # the user changed idea...
-        elog.info("Filename is: ", openFileDialog.GetFilename())
-        # proceed loading the file chosen by the user
-        # this can be done with e.g. wxPython input streams:
-        input_stream = (openFileDialog.GetPath())
-        Publisher.sendMessage('SetLoadPath',file=input_stream) #send message to canvascontroller
-
-        self.filename = openFileDialog.GetFilename()
-        self.loadingpath = input_stream
-        #
-        # data = wx.FileDataObject()
-        # data.AddFile(input_stream)
-        #
-        # obj = event.GetSelection()
-        # data = wx.FileDataObject()
-        #
-        # dropSource = wx.DropSource(openFileDialog)
-        # dropSource.SetData(data)
-        # x = 0
-        # y = 0
-        # dropSource.DoDragDrop()
-
-        # if not input_stream.IsOk():
-        #
-        #     wx.LogError("Cannot open file '%s'."%openFileDialog.GetPath())
-        #     return
-        # pass
+            self.filename = openFileDialog.GetFilename()
+            self.loadingpath = filepath
 
     def SaveConfiguration(self,event):
         if self.loadingpath == None:
             save = wx.FileDialog(self.Canvas.GetTopLevelParent(), "Save Configuration","","",
-                                 "Simulation Files (*.sim)|*.sim", wx.FD_SAVE  | wx.FD_OVERWRITE_PROMPT)
+                                 "Simulation Files (*.sim)|*.sim", wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
 
             if save.ShowModal() == wx.ID_OK:
                 self.save_path = save.GetPath() + ".sim"

@@ -11,7 +11,7 @@ import os
 from coordinator import help as h
 from utilities.gui import *
 from utilities.mdl import *
-from api.ODM2.Core.services import readCore
+from api_old.ODM2.Core.services import readCore
 # from ODM2.Core.services import readCore
 #import wrappers
 from transform import space_base
@@ -23,7 +23,7 @@ import datatypes
 import run
 import inspect
 # import coordinator.engineProcessor as engineProcessor
-from api.ODM2.Core.services import *
+from api_old.ODM2.Core.services import *
 from copy import deepcopy
 from coordinator.emitLogging import elog
 # import ODM2PythonAPI.src.api as odm2api

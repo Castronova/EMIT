@@ -5,7 +5,7 @@ import os
 
 from ... import serviceBase
 from ..model import *
-from api.ODMconnection import SessionFactory
+from api_old.ODMconnection import SessionFactory
 
 
 class createResults(serviceBase):

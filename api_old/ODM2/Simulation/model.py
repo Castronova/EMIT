@@ -3,7 +3,7 @@ from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, Strin
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
-from api.ODM2.Core.model import Action, Dataset, Method, Organization, Base, Unit
+from api_old.ODM2.Core.model import Action, Dataset, Method, Organization, Base, Unit
 
 
 

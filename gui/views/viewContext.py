@@ -1,10 +1,10 @@
 __author__ = 'tonycastronova'
 import wx
 
-from api.ODM2.Core.services import readCore
-from api.ODM2.Results.services import readResults
+from api_old.ODM2.Core.services import readCore
+from api_old.ODM2.Results.services import readResults
 from utilities import spatial
-from api.ODM2.Simulation.services import readSimulation
+from api_old.ODM2.Simulation.services import readSimulation
 from wx.lib.pubsub import pub as Publisher, __all__
 from gui.controller.logicModel import LogicModel
 from gui.controller.logicPlot import LogicPlot

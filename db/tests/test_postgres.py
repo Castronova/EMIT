@@ -5,11 +5,11 @@ import unittest
 from db.dbapi import postgresdb
 from db.dbapi import utils
 
-import api
+import api_old
 import datetime as dt
 from utilities import gui, mdl
 
-from api.ODM2.Core.services import *
+from api_old.ODM2.Core.services import *
 
 class test_simulation_services(unittest.TestCase):
 
@@ -27,7 +27,7 @@ class test_simulation_services(unittest.TestCase):
         # db = 'odm2CamelCase'
         # user = 'tonycastronova'
         # pwd = 'water'
-        dbconn = api.dbconnection()
+        dbconn = api_old.dbconnection()
         self.session = dbconn.createConnection(engine,address,db,user,pwd)
         self.prefs = '/Users/tonycastronova/Documents/projects/iUtah/EMIT/data/preferences'
 

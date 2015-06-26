@@ -2,7 +2,7 @@ __author__ = 'tonycastronova'
 
 import uuid
 import ConfigParser
-from api.ODMconnection import  dbconnection, SessionFactory
+from api_old.ODMconnection import  dbconnection, SessionFactory
 
 
 def build_session_from_connection_string(connection_string):

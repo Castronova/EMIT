@@ -6,7 +6,7 @@ from stdlib import *
 from coordinator import main
 from utilities import gui
 import datatypes
-from api.ODMconnection import  dbconnection
+from api_old.ODMconnection import  dbconnection
 from wrappers import odm2_data
 from coordinator import main
 import time

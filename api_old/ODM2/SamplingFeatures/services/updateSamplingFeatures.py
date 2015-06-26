@@ -3,7 +3,7 @@ __author__ = 'Stephanie'
 import sys
 import os
 from ..model import *
-from api.ODMconnection import SessionFactory
+from api_old.ODMconnection import SessionFactory
 
 from ...base import serviceBase
 

@@ -10,11 +10,11 @@ from shapely.wkt import loads
 
 #from ODMconnection import dbconnection
 
-from api import dbconnection
+from api_old import dbconnection
 
 ## from ODMconnection import SessionFactory
 
-from api.ODM2.Core.model import *
+from api_old.ODM2.Core.model import *
 from sqlalchemy import func
 
 import matplotlib.pyplot as plt

@@ -33,11 +33,11 @@ class SessionFactory():
 
 '''
 
-odm2_api_path = os.path.abspath(os.path.join(__file__, '../../../ODM2PythonAPI'))
+# odm2_api_path = os.path.abspath(os.path.join(__file__, '../../../ODM2PythonAPI'))
+odm2_api_path = os.path.abspath(os.path.join(__file__, '../../../ODM2PythonAPI/src'))
 sys.path.append(odm2_api_path)
-import src.api.ODMconnection as odm2dbConnection
-import src.api.ODM2.services.readService as odmread
-import api.ODMconnection
+from api.ODMconnection import dbconnection
+from api.ODM2.services.readService import ReadODM2
 
 class test_sqlite_db(unittest.TestCase):
 
@@ -46,6 +46,13 @@ class test_sqlite_db(unittest.TestCase):
         # define the paths for the empty and populated temp databases
         self.empty_db_path = os.path.abspath('../scripts/temp_empty.db')
         self.pop_db_path = os.path.abspath('../scripts/temp_pop.db')
+
+        # remove temp databases
+        if os.path.exists(self.empty_db_path):
+            os.remove(self.empty_db_path)
+        if os.path.exists(self.pop_db_path):
+            os.remove(self.pop_db_path)
+
 
         # get the database dump files
         empty_dump_script = open('../scripts/empty_dump.sql','r').read()
@@ -60,8 +67,8 @@ class test_sqlite_db(unittest.TestCase):
         pop_odm2_db.executescript(populated_dump_script)
 
         # create database connections that will be used in test cases
-        self.empty_connection = odm2dbConnection.SessionFactory('sqlite:///'+self.empty_db_path, echo=False)
-        self.pop_connection = odm2dbConnection.SessionFactory('sqlite:///'+self.pop_db_path, echo=False)
+        self.empty_connection = dbconnection.createConnection('sqlite', self.empty_db_path)
+        self.pop_connection = dbconnection.createConnection('sqlite', self.pop_db_path)
 
 
     def tearDown(self):
@@ -75,17 +82,31 @@ class test_sqlite_db(unittest.TestCase):
 
 
     def test_get_people(self):
-        people = odmread.People()
-        people = r.People()
-        print people.PersonFirstName
+        r = ReadODM2(self.pop_connection)
+
+        people = r.getPeople()
+        self.assertTrue(len(people) == 4)
+
+        person = r.getPersonById(1)
+        self.assertTrue(person.PersonFirstName == 'tony')
+
+
 
     def test_get_simulations(self):
+        r = ReadODM2(self.pop_connection)
 
-        print '1'
+        # THIS SHOULD NOT RETURN NONE!!!!
+        simulations = r.getAllSimulations()
 
-        s = odmread.readSimulation(self.pop_connection)
+        self.assertTrue(len(simulations) == 1)
 
-        print '2'
+
+        # odmread.readODM2(self)
+
+
+        r.getPeople()
+
+        print 'here'
 
 
     def test_connectToDB(self):

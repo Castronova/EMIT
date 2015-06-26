@@ -117,7 +117,7 @@ class ModelContextMenu(wx.Menu):
                 name = i['name']
                 model_details.inputSelections.Append(name)
                 elog.info("input name: " + name)
-                geoms = [j['shape'] for j in o['geom']]
+                geoms = [j['shape'] for j in i['geom']]
                 igeoms[name] = geoms
 
         # todo: HACK! should all of this be in the LogicModel?

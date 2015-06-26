@@ -125,17 +125,33 @@ class LogicSpatialPlot(ViewSpatialPlot):
 
 
         i = 0
-        for geom in geom_list:
-            # todo: broken
-            if geom.geom_type == 'Point':
-                tuple_geomsin = [g[0] for g in geom]
-                x,y = zip(*tuple_geomsin)
-                self.ax.scatter(x,y,color=colors)
 
-            else:
+        # POINT
+        if geom_list[0].geom_type == 'Point':
+            tuple_geomsin = [(g.x,g.y) for g in geom_list]
+            x,y = zip(*tuple_geomsin)
+            self.ax.scatter(x,y,color=colors)
+
+        elif geom_list[0].geom_type == 'Polygon':
+            # POLYGON
+            for geom in geom_list:
                 x,y = geom.exterior.coords.xy
                 self.ax.plot(x,y,color=colors[i])
                 i += 1
+
+        elif geom_list[0].geom_type == 'LineString' or geom_list[0].geom_type == 'MultiLineString' :
+            # LINESTRING
+            for geom in geom_list:
+                if geom.geom_type == 'LineString':
+                    x,y = geom.xy
+                    self.ax.plot(x,y,color=colors[i])
+                    i += 1
+                elif geom.geom_type == 'MultiLineString':
+                    for g in geom.geoms:
+                        x,y = g.xy
+                        self.ax.plot(x,y,color=colors[i])
+                else:
+                    elog.critical('Unsupported line geometry found in logicSpatialPlot.SetPlotData')
 
         self.ax.grid()
         self.ax.axis('auto')

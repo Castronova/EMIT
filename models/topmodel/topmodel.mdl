@@ -18,7 +18,7 @@ unit_type_cv = hours
 value = 1
 
 [output]
-variable_name_cv = Streamflow
+variable_name_cv = streamflow
 unit_type_cv = cubic feet per second
 elementset = ./test/gis/StreamNet.shp
 

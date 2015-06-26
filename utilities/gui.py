@@ -173,7 +173,7 @@ def parse_config(ini, validate=False):
 
                 # convert anything that is recognized as a file path into an absolute paths
                 genpath = os.path.abspath(os.path.join(basedir, value))
-                if os.path.isfile(genpath):
+                if os.path.isfile(genpath): # and genpath[-3:] != '.py' :
                     value = genpath
                 d[option] = value
             d['type'] = section

@@ -17,20 +17,30 @@ class test_topmodel(unittest.TestCase):
         # load topmodel
         top = topmodel.topmodel(config_params)
 
-
-        # check input geometries
-        in_items = top.inputs()#['some_value'].getGeometries2()
+        # check input exchange items
+        in_items = top.inputs()
         self.assertTrue(len(in_items.keys()) == 1)
         self.assertTrue('precipitation' in in_items.keys())
         precip = in_items['precipitation']
 
+        # check that input geometries were created
         precip_geoms = precip.getGeometries2()
         self.assertTrue(len(precip_geoms) > 0)
 
+        # check input geometry type
+        geom_type = precip_geoms[0].geom().geometryType()
+        self.assertTrue(geom_type == 'Point')
 
+        # check output exchange items
+        out_items = top.outputs()
+        self.assertTrue(len(out_items.keys()) == 1)
+        self.assertTrue('streamflow' in out_items.keys())
+        flow = out_items['streamflow']
 
+        # check that output geoms exist
+        flow_geoms = flow.getGeometries2()
+        self.assertTrue(len(flow_geoms) > 0)
 
-        # check output geometries
-
-
-        print 'done'
+        # check output geometry type
+        geom_type = flow_geoms[0].geom().geometryType()
+        self.assertTrue(geom_type == 'LineString')

@@ -11,8 +11,7 @@ from shapely.wkt import loads
 import datetime
 import uuid
 import hashlib
-
-# import utilities
+from coordinator.emitLogging import elog
 
 class ElementType():
     Point = 'Point'
@@ -270,6 +269,13 @@ class ExchangeItem(object):
 
         self.__type = type
 
+
+        # new style data encapsulation (everything is appended with '2', temporarily)
+        self.__geoms2 = []
+        self.__times2 = []
+        self.__values2 = []
+
+
         # A dataset is a list of [one or more values per element,]
         # [[element1,[ts,]],[element2,[ts,,]],   ]
         #self.__dataset =  ds
@@ -295,10 +301,76 @@ class ExchangeItem(object):
         # for geom in self.__geoms:
         #     self.__calculate_start_and_end_times(geom.datavalues())
 
+    def getEarliestTime2(self):
+        return self.__times2[0]
+
+    def getLatestTime2(self):
+        return self.__times2[-1]
+
+    def getGeometries2(self, idx=None):
+        """
+        returns geometries for the exchange item
+        :param idx: index of the geometry
+        :return: geometry of idx.  If idx is None, all geometries are returned
+        """
+        if id is not None:
+            return self.__geoms2[idx]
+        else:
+            return self.__geoms2
+
+    def addGeometries2(self, geom):
+        """
+        adds geometries to the exchange item
+        :param geom: list of geometries or a single value
+        :return: None
+        """
+        if isinstance(geom,list):
+            self.__geoms2.extend(geom)
+        else:
+            self.__geoms2.append(geom)
+
+    def setValues2(self, values, idx=None):
+        """
+        sets data values for a geometry index
+        :param idx: index of the geometry for which datavalues are associated.  If idx is None, datavalues will be appended to the values list
+        :param values: list of datavalues
+        :return: values list index
+        """
+
+        if idx < len(self.__values2):
+            self.__values2[idx] = values
+        else:
+            self.__values2.append(values)
+            idx = len(self.__values2) - 1
+        return idx
+
+    def getValues2(self, idx=None, start_slice_idx=0, end_slice_idx=None):
+        """
+        gets datavalues of the exchange item for idx
+        :param idx: the datavalues index.  If idx is None, all data values will be returned
+        :param start_slice_idx: start index for selecting a data subset
+        :param end_slice_idx: end index for selecting a data subset
+        :return: datavalues
+        """
+
+        start_idx = 0
+        end_idx = len(self.__values2)
+        if idx is not None:
+            start_idx = idx
+            end_idx = idx + 1
+
+        values = []
+        for i in range(start_idx, end_idx):
+            values.append(self.__values2[start_slice_idx:end_slice_idx])
+
+
+
     def getStartTime(self):
+        elog.warning('deprecated: Use getEarliestTime2 instead')
         return min(g.datavalues().start() for g in self.__geoms)
 
     def getEndTime(self):
+        elog.warning('deprecated: Use getLatestTime2 instead')
         return max(g.datavalues().end() for g in self.__geoms)
 
     def get_id(self):
@@ -320,10 +392,11 @@ class ExchangeItem(object):
             self.__description = value
 
     def geometries(self):
+        elog.warning('deprecated: Use getGeometries2 instead')
         return self.__geoms
 
     def add_geometry(self, geom):
-
+        elog.warning('deprecated: Use addGeometries2 instead')
         if isinstance(geom,list):
             self.__geoms.extend(geom)
             # for g in geom:
@@ -333,6 +406,7 @@ class ExchangeItem(object):
             # self.__calculate_start_and_end_times(geom.datavalues())
 
     def get_dataset(self,geometry):
+        elog.warning('deprecated: Use getValues2 instead')
         for geom in self.__geoms:
             if geom.geom() == geometry:
                 return geometry.datavalues()
@@ -340,6 +414,7 @@ class ExchangeItem(object):
         #return self.__dataset
 
     def get_all_datasets(self):
+        elog.warning('deprecated: Use getValues2 instead')
         """
         returns the input dataset as a dictionary of geometries
         """
@@ -353,19 +428,21 @@ class ExchangeItem(object):
         # return dict
 
     def get_geoms_and_timeseries(self):
+        elog.warning('deprecated: No replacement function')
         geom_dict = {}
         for geom in self.__geoms:
             geom_dict[geom] = geom.datavalues().get_dates_values()
         return geom_dict
 
     def get_timeseries_by_id(self, geom_id):
-
+        elog.warning('deprecated: No replacement function')
         # TODO: loop using integers to speed this up
         for geom in self.__geoms:
             if geom.id() == geom_id:
                 return geom.datavalues().get_dates_values()
 
     def set_timeseries_by_id(self, geom_id, timeseries):
+        elog.warning('deprecated: No replacement function')
         '''
         sets the timeseries for a geometry using the geometry id
         :param geom_id: id of the geometry
@@ -379,6 +456,7 @@ class ExchangeItem(object):
                 return
 
     def get_timeseries_by_geom(self,geom):
+        elog.warning('deprecated: No replacement function')
         # """
         # geom = the geom of the desired timeseries
         # """
@@ -390,6 +468,7 @@ class ExchangeItem(object):
         pass
 
     def get_timeseries_by_element(self,element):
+        elog.warning('deprecated: No replacement function')
         # """
         # element = the element of the desired timeseries
         # """
@@ -410,6 +489,7 @@ class ExchangeItem(object):
             self.__variable = value
 
     def add_dataset(self,datavalues):
+        elog.warning('deprecated: No replacement function')
         # """
         # datavalues = list of datavalue objects
         # """
@@ -433,6 +513,7 @@ class ExchangeItem(object):
     def set_dataset(self,value):
         # self.__dataset = value
         # self.__calculate_start_and_end_times(value)
+        elog.warning('deprecated: No replacement function')
         pass
 
     # def __calculate_start_and_end_times(self,dv):

@@ -1,0 +1,3 @@
+[submodule "ODM2PythonAPI"]
+	path = ODM2PythonAPI
+	url = https://github.com/ODM2/ODM2PythonAPI.git

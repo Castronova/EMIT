@@ -36,7 +36,7 @@ class SessionFactory():
 odm2_api_path = os.path.abspath(os.path.join(__file__, '../../../ODM2PythonAPI'))
 sys.path.append(odm2_api_path)
 import src.api.ODMconnection as odm2dbConnection
-
+import src.api.ODM2.services.readService as r
 import api.ODMconnection
 
 class test_sqlite_db(unittest.TestCase):
@@ -46,6 +46,10 @@ class test_sqlite_db(unittest.TestCase):
 
         connection_string = "sqlite:///"+dbpath
         self.connection = odm2dbConnection.SessionFactory(connection_string,echo=False)
+
+    def test_get_people(self):
+        people = r.People()
+        print people.PersonFirstName
 
     def test_connectToDB(self):
         print "starting test_connectToDB"

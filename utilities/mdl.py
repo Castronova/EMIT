@@ -63,12 +63,12 @@ def build_exchange_items_from_config(params):
     itemid = 0
     items = {'input':[],'output':[]}
 
+
     # loop through each input/output and create an exchange item
     for io in eitems:
         variable = None
         unit = None
         elementset = []
-
 
         iotype = stdlib.ExchangeItemType.Output if io['type'].lower() == 'output' else stdlib.ExchangeItemType.Input
 
@@ -101,6 +101,7 @@ def build_exchange_items_from_config(params):
                                 geom  = [g for g in geoms]
                         else:
                             geom = [geoms]
+
 
                     except: raise Exception('Could not load WKT string: %s.'%value)
                     srs = utilities.spatial.get_srs_from_epsg(io['epsg_code'])
@@ -138,14 +139,14 @@ def build_exchange_items_from_config(params):
                                 type=iotype)
 
 
+        # add geometry to exchange item (NEW)
+        ei.addGeometries2(elementset)
+
+        # add datavalues to exchange item (NEW)
+        dv2 = [stdlib.DataValues() for i in range(0, len(elementset))]
+        ei.add_dataset(dv2)
+
         # save exchange items based on type
         items[ei.get_type()].append(ei)
 
-        # add to exchange item
-        #for ds in datasets:
-        #    ei.add_geometry(ds)
-
-        #exchange_items.append(ei)
-
-    #return exchange_items
     return items

@@ -17,4 +17,7 @@ class test_topmodel(unittest.TestCase):
         # load topmodel
         top = topmodel.topmodel(config_params)
 
+
+        # check the input geometries
+        in_geoms = top.inputs()['some_value'].getGeometries2()
         print 'done'

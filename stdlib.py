@@ -313,7 +313,7 @@ class ExchangeItem(object):
         :param idx: index of the geometry
         :return: geometry of idx.  If idx is None, all geometries are returned
         """
-        if id is not None:
+        if idx is not None:
             return self.__geoms2[idx]
         else:
             return self.__geoms2
@@ -362,8 +362,6 @@ class ExchangeItem(object):
         values = []
         for i in range(start_idx, end_idx):
             values.append(self.__values2[start_slice_idx:end_slice_idx])
-
-
 
     def getStartTime(self):
         elog.warning('deprecated: Use getEarliestTime2 instead')

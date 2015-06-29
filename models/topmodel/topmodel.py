@@ -7,6 +7,8 @@ from utilities import mdl
 import math
 from shapely.geometry import Point
 from coordinator.emitLogging import elog
+import numpy as np
+
 
 #---- model inputs
 # double R;//subsurface Recharge rate [L/T]
@@ -65,9 +67,10 @@ class topmodel(feed_forward.feed_forward_wrapper):
         # model_inputs
         inputs = config_params['model inputs'][0]
 
-        # read topographic input file
-        elog.info('Reading topographic indices')
+        # read input parameters
+        elog.info('Reading input parameters')
         self.topo_input = inputs["ti"];
+        self.fac_input = inputs["fac"];
 
         #read model input parameters
         self.c = float(inputs['m'])
@@ -77,6 +80,10 @@ class topmodel(feed_forward.feed_forward_wrapper):
         # self._watershedArea = float(inputs["watershed_area_square_meters"])
         self.ti = []
         self.freq = []
+
+        # read topographic input file
+        elog.info('Reading topographic input data')
+        self.read_topo_input()
 
         #//set OpenMI internal variables
         #this.SetVariablesFromConfigFile(configFile);
@@ -104,16 +111,23 @@ class topmodel(feed_forward.feed_forward_wrapper):
         #}
 
         #//read topographic indices from input file
-        self.read_topo_input()
 
-        ti_geom = self.calc_ti_geometries()
+
+        elog.info('Building input/output geometries')
+        self.input_ti_geoms = None
+        self.output_soil_moisture_geoms = None
+        self.calc_ti_geometries()
 
         # set precipitation geometries
-        elog.info('Building input precipitation geometries')
-        self.inputs()['precipitation'].addGeometries2(ti_geom)
+        elog.info('Setting input precipitation geometries')
+        self.inputs()['precipitation'].addGeometries2(self.input_ti_geoms)
+
+        # set saturation geometries
+        elog.info('Setting soil saturation geometries')
+        self.outputs()['soil moisture'].addGeometries2(self.output_soil_moisture_geoms)
 
         # ---- calculate saturation deficit
-        elog.info('Calculating saturation deficit')
+        elog.info('Calculating initial saturation deficit')
         # calculate lamda average for the watershed
         #double[] TI_freq = new double[TI.GetLength(0)];
         TI_freq = [x*y for x,y in zip(self.ti, self.freq)]
@@ -126,7 +140,7 @@ class topmodel(feed_forward.feed_forward_wrapper):
         # catchement average saturation deficit(S_bar)
         self.S_average = (-1.)*self.c * ((math.log10(self.R / self.Tmax)) + self.lamda_average)
 
-        elog.info('Component Initialization Complete')
+        elog.info('Component Initialization Completed Successfully')
 
     def run(self,inputs):
         """
@@ -174,7 +188,8 @@ class topmodel(feed_forward.feed_forward_wrapper):
 
     def calc_ti_geometries(self):
 
-        geoms = []
+        tigeoms = []
+        satgeoms = []
         with open(self.topo_input, 'r') as sr:
 
             lines = sr.readlines()
@@ -183,20 +198,47 @@ class topmodel(feed_forward.feed_forward_wrapper):
             lowerx = float(lines[2].split(' ')[-1].strip())
             lowery = float(lines[3].split(' ')[-1].strip())
             cellsize = float(lines[4].split(' ')[-1].strip())
-            nodata = lines[5].split(' ')[-1].strip()
+            nodata = float(lines[5].split(' ')[-1].strip())
 
-            # set start x, y
-            y = lowery + cellsize * nrows
-            for line in lines[6:]:
-                x = lowerx
-                l = line.strip().split(' ')
-                for element in l:
-                    if element != nodata:
-                        pt = Point(x,y)
-                        geoms.append(stdlib.Geometry(geom=pt))
-                    x += cellsize
-                y -= cellsize
-        return geoms
+        # read ti data
+        data = np.genfromtxt(self.topo_input, delimiter=' ', skip_header=6)
+
+        # set start x, y
+        y = lowery + cellsize * nrows
+        for row in data:
+
+        # for line in lines[6:]:
+            x = lowerx
+            # l = line.strip().split(' ')
+            for element in row:
+                if element != nodata:
+                    pt = Point(x,y)
+
+                    # save as ti geometry
+                    tigeoms.append(stdlib.Geometry(geom=pt))
+
+                x += cellsize
+            y += cellsize
+
+        # read ti data
+        fac_data = np.genfromtxt(self.fac_input, delimiter=' ', skip_header=6)
+
+        # set start x, y
+        y = lowery + cellsize * nrows
+        for row in fac_data:
+            x = lowerx
+            for element in row:
+                if element != nodata:
+                    pt = Point(x,y)
+                    if element >= 20.:
+                        # save as sat geometry
+                        satgeoms.append(stdlib.Geometry(geom=pt))
+                x += cellsize
+            y += cellsize
+
+        self.input_ti_geoms = tigeoms
+        self.output_soil_moisture_geoms = satgeoms
+
 
     def read_topo_input(self):
 

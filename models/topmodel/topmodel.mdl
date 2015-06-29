@@ -22,12 +22,17 @@ variable_name_cv = streamflow
 unit_type_cv = cubic feet per second
 elementset = ./test/gis/StreamNet.shp
 
+[output]
+variable_name_cv = soil moisture
+unit_type_cv = saturation percentage
+
 [input]
 variable_name_cv = precipitation
 unit_type_cv = international inch
 
 [model inputs]
-ti = ./test/data/TI_raster.txt
+ti = ./test/data/right_hand_fork_ti_trim.txt
+fac= ./test/data/fac_trim.txt
 m = 180
 tmax = 250000
 r = 9.66

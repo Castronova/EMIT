@@ -143,13 +143,13 @@ def validate_config_ini(ini_path):
 
     return 1
 
-def parse_config(ini, validate=False):
+def parse_config(ini):
     """
     parses metadata stored in *.ini file
     """
-    isvalid = True
-    if validate:
-        isvalid = validate_config_ini(ini)
+    # isvalid = True
+    # if validate:
+    isvalid = validate_config_ini(ini)
 
 
     if isvalid:

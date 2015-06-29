@@ -187,11 +187,11 @@ class topmodel(feed_forward.feed_forward_wrapper):
 
             # set start x, y
             y = lowery + cellsize * nrows
-            for line in lines:
+            for line in lines[6:]:
                 x = lowerx
                 l = line.strip().split(' ')
                 for element in l:
-                    if l != nodata:
+                    if element != nodata:
                         pt = Point(x,y)
                         geoms.append(stdlib.Geometry(geom=pt))
                     x += cellsize

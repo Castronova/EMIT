@@ -36,8 +36,14 @@ class SessionFactory():
 # odm2_api_path = os.path.abspath(os.path.join(__file__, '../../../ODM2PythonAPI'))
 odm2_api_path = os.path.abspath(os.path.join(__file__, '../../../ODM2PythonAPI/src'))
 sys.path.append(odm2_api_path)
-from api.ODMconnection import dbconnection
-from api.ODM2.services.readService import ReadODM2
+# from api.ODMconnection import dbconnection
+# from api.ODM2.services.readService import ReadODM2
+
+
+
+# from EM .src.api.ODMconnection import dbconnection
+# from ODM2PythonAPI_.src.api.ODM2.services.readService import ReadODM2
+
 
 class test_sqlite_db(unittest.TestCase):
 
@@ -70,6 +76,7 @@ class test_sqlite_db(unittest.TestCase):
         self.empty_connection = dbconnection.createConnection('sqlite', self.empty_db_path)
         self.pop_connection = dbconnection.createConnection('sqlite', self.pop_db_path)
 
+        print 'here'
 
     def tearDown(self):
 

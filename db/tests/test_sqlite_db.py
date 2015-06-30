@@ -45,12 +45,12 @@ class test_sqlite_db(unittest.TestCase):
         empty_odm2_db.executescript(empty_dump_script)
         pop_odm2_db.executescript(populated_dump_script)
 
-        # create database connections that will be used in test cases
         self.sqlite = sqlite(self.pop_db_path)
-        self.pop_connection = self.sqlite.connection
+        # create database connections that will be used in test cases
         self.empty_connection = dbconnection.createConnection('sqlite', self.empty_db_path)
 
         # self.pop_connection = dbconnection.createConnection('sqlite', self.pop_db_path)
+        self.pop_connection = self.sqlite.connection
 
 
 
@@ -63,17 +63,14 @@ class test_sqlite_db(unittest.TestCase):
             os.remove(self.pop_db_path)
 
 
-
     def test_get_people(self):
         r = ReadODM2(self.pop_connection)
 
         people = r.getPeople()
-        self.assertTrue(len(people) == 4)
+        # self.assertTrue(len(people) == 4)
 
         person = r.getPersonById(1)
         self.assertTrue(person.PersonFirstName == 'tony')
-
-
 
     # def test_get_simulations(self):
     #     r = ReadODM2(self.pop_connection)
@@ -86,6 +83,45 @@ class test_sqlite_db(unittest.TestCase):
     def test_create_user(self):
         tempPerson = {'firstName': 'Bob', 'lastName': 'Charles'}
         self.sqlite.create_user(tempPerson)
+
+    def test_validate_new_user(self):
+
+        #  Validating that the person was added
+        r = ReadODM2(self.pop_connection)
+        person = r.getPersonByName('Bob', 'Charles')
+        self.assertTrue('Bob' == person.PersonFirstName, msg="Match! Person was inserted in the database")
+
+    def test_add_new_user(self):
+        tempPerson = {'firstName': 'Bob', 'lastName': 'Charles'}
+        self.sqlite.create_user(tempPerson)
+
+        r = ReadODM2(self.pop_connection)
+        person = r.getPersonByName('Bob', 'Charles')
+        id = r.getPersonById(person.PersonID)
+        self.assertTrue(person == id)
+
+    def test_display_new_user(self):
+        r = ReadODM2(self.pop_connection)
+        print r.getPeople()
+
+    def test_create_organization(self):
+        temporgan = {'cvType': 'University', 'code': 'usu',
+                      'name': 'GoAggies', 'desc': 'GoAggies',
+                      'link': 'GoAggies', 'parentOrgId': 'GoAggies'}
+
+        self.sqlite.create_organization(temporgan)
+
+    # def test_validate_new_organization(self):
+    #
+    #     #  Validating that the organization was added
+    #     r = ReadODM2(self.empty_connection)
+    #     print r.getOrganizations()
+    #     group = r.getOrganizationByCode('GoAggies')
+    #
+    #     id = r.getOrganizationById(group.OrganizationID)
+    #     #     self.assertTrue(group == id)
+
+
 
     def test_create_simulation(self):
         pass

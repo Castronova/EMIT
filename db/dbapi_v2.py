@@ -26,6 +26,10 @@ class sqlite():
         self.write.createPerson(userInfo['firstName'], userInfo['lastName'])
         print "in create_user"
 
+    def create_organization(self, organInfo):
+        self.write.createOrganization(organInfo['cvType'], organInfo['code'], organInfo['name'],
+                                      organInfo['desc'], organInfo['link'], organInfo['parentOrgId'])
+
     def create_input_dataset(self, connection, resultids,type,code="",title="",abstract=""):
         pass
 

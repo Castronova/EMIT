@@ -60,10 +60,6 @@ class topmodel(feed_forward.feed_forward_wrapper):
         self.inputs(value=io['input'])
         self.outputs(value=io['output'])
 
-
-        # Get config file path defined in sample.omi
-        # string configFile = (string)properties["ConfigFile"];
-
         # model_inputs
         inputs = config_params['model inputs'][0]
 
@@ -77,41 +73,12 @@ class topmodel(feed_forward.feed_forward_wrapper):
         self.Tmax = float(inputs["tmax"])
         self.R = float(inputs["r"])
         self.interception = float(inputs["interception"])
-        # self._watershedArea = float(inputs["watershed_area_square_meters"])
         self.ti = []
         self.freq = []
 
         # read topographic input file
         elog.info('Reading topographic input data')
         self.read_topo_input()
-
-        #//set OpenMI internal variables
-        #this.SetVariablesFromConfigFile(configFile);
-
-        #// initialize a data structure to hold results
-        #this.SetValuesTableFields();
-
-        #//save input exchange item info
-        #int num_inputs = this.GetInputExchangeItemCount();
-        #_input_elementset = new string[num_inputs];
-        #_input_quantity = new string[num_inputs];
-        #for (int i = 0; i < num_inputs; i++)
-        #{
-        #    _input_elementset[i] = this.GetInputExchangeItem(i).ElementSet.ID;
-        #    _input_quantity[i] = this.GetInputExchangeItem(i).Quantity.ID;
-        #}
-        #int num_outputs = this.GetOutputExchangeItemCount();
-
-        #_output_elementset = new string[num_outputs];
-        #_output_quantity = new string[num_outputs];
-        #for (int i = 0; i < num_outputs; i++)
-        #{
-        #    _output_elementset[i] = this.GetOutputExchangeItem(i).ElementSet.ID;
-        #    _output_quantity[i] = this.GetOutputExchangeItem(i).Quantity.ID;
-        #}
-
-        #//read topographic indices from input file
-
 
         elog.info('Building input/output geometries')
         self.input_ti_geoms = None
@@ -128,28 +95,18 @@ class topmodel(feed_forward.feed_forward_wrapper):
 
         # ---- calculate saturation deficit
         elog.info('Calculating initial saturation deficit')
-        # calculate lamda average for the watershed
-        #double[] TI_freq = new double[TI.GetLength(0)];
         TI_freq = [x*y for x,y in zip(self.ti, self.freq)]
-
-        #for i in range(0, len(self.ti)):
-        #    TI_freq.append(self.ti[i] * self.freq[i])
 
         self.lamda_average = sum(TI_freq) / sum(self.freq)
 
-        # catchement average saturation deficit(S_bar)
+        # catchment average saturation deficit(S_bar)
         self.S_average = (-1.)*self.c * ((math.log10(self.R / self.Tmax)) + self.lamda_average)
 
         elog.info('Component Initialization Completed Successfully')
 
     def run(self,inputs):
-        """
-        This is an abstract method that must be implemented.
-        :param exchangeitems: list of input exchange items
-        :return: true
-        """
 
-        input_data = inputs['some_value'].get_geoms_and_timeseries()
+        input_data = inputs['precipitation'].get_geoms_and_timeseries()
 
         # loop through each geometry
         for geom, dataset in input_data.iteritems():

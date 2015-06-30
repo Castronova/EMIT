@@ -12,6 +12,7 @@ import datetime
 import uuid
 import hashlib
 from coordinator.emitLogging import elog
+from bisect import bisect_left, bisect_right
 
 class ElementType():
     Point = 'Point'
@@ -297,6 +298,9 @@ class ExchangeItem(object):
         self.__saved = False
         self.__seriesID = None
 
+        # no data values will be represented as None
+        self.__noData = None
+
         # # determine start and end times
         # for geom in self.__geoms:
         #     self.__calculate_start_and_end_times(geom.datavalues())
@@ -325,43 +329,176 @@ class ExchangeItem(object):
         :return: None
         """
         if isinstance(geom,list):
+            for g in geom:
+                if not isinstance(g, Geometry):
+                    return 0  # return failure code
             self.__geoms2.extend(geom)
         else:
+            if not isinstance(geom, Geometry):
+                return 0  # return failure code
             self.__geoms2.append(geom)
+        return 1
 
-    def setValues2(self, values, idx=None):
+    def setValues2(self, values, timevalue):
         """
-        sets data values for a geometry index
-        :param idx: index of the geometry for which datavalues are associated.  If idx is None, datavalues will be appended to the values list
-        :param values: list of datavalues
+        sets data values for all geometries at a given time index
+        :param timevalue: datetime object value for which the datavalues are associated
+        :param values: list of datavalues for all geometries at the given time
         :return: values list index
         """
 
-        if idx < len(self.__values2):
+
+        if isinstance(timevalue, list):
+
+            # make sure that the length of values matches the length of times
+            if len(timevalue) != len(values):
+                elog.critical('Could not set data values. Length of timevalues and datavalues lists must be equal.')
+                return 0
+
+            for i in range(0, len(timevalue)):
+                if isinstance(timevalue[i], datetime.datetime):
+                    self._setValues2(values[i], timevalue[i])
+
+            return 1
+
+        elif isinstance(timevalue, datetime.datetime):
+            self._setValues2(values, timevalue)
+
+            return 1
+
+        else:
+            elog.critical('Could not set data values.  Time value was not of type datetime.')
+            return 0
+
+        # if idx < len(self.__values2):
+        #     self.__values2[idx] = values
+        # else:
+        #     self.__values2.append(values)
+        #     idx = len(self.__values2) - 1
+        # return idx
+
+    def _setValues2(self, values, timevalue):
+
+         # insert by datetime need to get dates to determine which index to use
+        idx, date = self.getDates2(timevalue)
+        if date is not None and timevalue == self.__times2[idx]:
+            # replace the values for this time
             self.__values2[idx] = values
         else:
-            self.__values2.append(values)
-            idx = len(self.__values2) - 1
-        return idx
+            # insert new values at the specified index
+            self.__values2.insert(idx+1, values)
+            self.__times2.insert(idx+1, timevalue)
 
-    def getValues2(self, idx=None, start_slice_idx=0, end_slice_idx=None):
+            # self.__values2.append(values)
+            # idx = len(self.__values2) - 1
+            # self.setDates2(timevalue, idx)
+
+    def getValues2(self, idx_start=0, idx_end=None, start_time=None, end_time=None, time_idx=None):
         """
         gets datavalues of the exchange item for idx
-        :param idx: the datavalues index.  If idx is None, all data values will be returned
-        :param start_slice_idx: start index for selecting a data subset
-        :param end_slice_idx: end index for selecting a data subset
-        :return: datavalues
+        :param idx_start: the start value index to be returned.
+        :param idx_end: the end value index to be returned.
+        :param start_time: start index for selecting a data subset
+        :param end_time: end index for selecting a data subset
+        :return: datavalues between start_time and end_time.  If not given, entire time range will be returned.
         """
 
-        start_idx = 0
-        end_idx = len(self.__values2)
-        if idx is not None:
-            start_idx = idx
-            end_idx = idx + 1
+        # set initial value end index as the length of the geometery array
+        if idx_end is None:
+            idx_end = len(self.__geoms2)
+        else:
+            # add one to make return values from idx_start to idx_end inclusive
+            idx_end += 1
+
+        if time_idx is None:
+            start_time_slice_idx = 0
+            end_time_slice_idx = len(self.__times2)
+            if start_time is not None:
+                start_time_slice_idx = self._nearest(self.__times2, start_time, 'left')
+            if end_time is not None:
+                end_time_slice_idx = self._nearest(self.__times2, end_time, 'right') + 1
+        else:
+            start_time_slice_idx = time_idx
+            end_time_slice_idx = time_idx + 1
 
         values = []
-        for i in range(start_idx, end_idx):
-            values.append(self.__values2[start_slice_idx:end_slice_idx])
+        for i in range(start_time_slice_idx, end_time_slice_idx):
+            values.append(self.__values2[i][idx_start:idx_end])
+
+        return values
+
+    def setDates2(self, timevalue):
+        """
+        sets the data-times for a geometry index.  These should directly correspond with
+        :param timevalue: datetime object
+        :return: index of the datetime value
+        """
+
+        idx = self._nearest(self.__times2, timevalue, 'left') + 1
+        # idx = len(self.__times2.keys())
+        self.__times2.insert(idx+1, timevalue)
+        return idx
+
+    def getDates2(self, timevalue=None, start=None, end=None):
+        """
+        gets datavalue indices for a datetime
+        :param timevalue: datetime object
+        :return: returns the datavalue index, and the time value corresponding to the nearest requested datetime
+        """
+        if isinstance(timevalue, list):
+            times = []
+            for t in timevalue:
+                idx = self._nearest(self.__times2, timevalue, 'left')
+                if len(self.__times2) and idx <= len(self.__times2):
+                    times.append((idx, self.__times2[idx]))
+                else:
+                    times.append(0, None)
+            return times
+
+        elif start is not None and end is not None:
+            if not isinstance(start, datetime.datetime) or not isinstance(end, datetime.datetime):
+                elog.critical('Could not fetch date time from range because the "start" and/or "endtimes" are not valued datetime objects.')
+                return 0, None
+
+            st = self._nearest(self.__times2, start, 'left')
+            et = self._nearest(self.__times2, end, 'right') + 1
+            times = [(idx, self.__times2[idx]) for idx in range(st, et)]
+            return times
+
+
+        elif isinstance(timevalue, datetime.datetime):
+            idx = self._nearest(self.__times2, timevalue, 'left')
+            if len(self.__times2) and idx <= len(self.__times2):
+                return idx, self.__times2[idx]
+            else:
+                return 0, None
+
+        else: # return all known values
+            times = [(idx, self.__times2[idx]) for idx in range(0, len(self.__times2))]
+            return times
+
+
+    def _nearest(self, lst, time, direction='left'):
+        """
+        get the nearst datetime in list
+        :param lst: search list (sorted)
+        :param time: desired datetime
+        :param direction: the bisect direction.  'left' for start_time and 'right' for end_time
+        :return: list index
+        """
+
+        if len(lst) == 0:
+            return 0
+
+        if direction == 'left':
+            i = bisect_left(lst, time)
+            nearest = min(lst[max(0, i-1): i+2], key=lambda t: abs(time - t))
+            return lst.index(nearest)
+        elif direction == 'right':
+            i = bisect_right(lst, time)
+            nearest = min(lst[max(0, i-1): i+2], key=lambda t: abs(time - t))
+            return lst.index(nearest)
+
 
     def getStartTime(self):
         elog.warning('deprecated: Use getEarliestTime2 instead')

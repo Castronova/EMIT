@@ -91,3 +91,15 @@ class test_topmodel(unittest.TestCase):
                 y -= cellsize
             # plt.draw()
             print 'here'
+
+    def test_run(self):
+
+        # convert mdl into configuration parameters
+        config_params = parse_config(self.mdl)
+
+        # load topmodel
+        top = topmodel.topmodel(config_params)
+
+        # create some precipitation data at a random input location
+        precip_gauge = top.inputs()['precipitation'].getGeometries2(100)
+

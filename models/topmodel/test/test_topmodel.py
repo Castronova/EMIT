@@ -4,6 +4,11 @@ import unittest
 import time
 from models.topmodel import topmodel
 from utilities.gui import parse_config
+from utilities import mdl
+import stdlib
+from coordinator import engineAccessors as engine
+from transform.space import *
+from transform.time import *
 
 class test_topmodel(unittest.TestCase):
 
@@ -94,12 +99,34 @@ class test_topmodel(unittest.TestCase):
 
     def test_run(self):
 
-        # convert mdl into configuration parameters
-        config_params = parse_config(self.mdl)
+        import datatypes
+        from coordinator import engine
+        simulator = engine.Coordinator()
+
+
+
+        # load randomizer component
+        randomizer = simulator.add_model(id='randomizer',  attrib={'mdl':'../../test_models/randomizer/randomizer.mdl'})
 
         # load topmodel
-        top = topmodel.topmodel(config_params)
+        top = simulator.add_model(id='topmodel', attrib={'mdl':self.mdl})
 
-        # create some precipitation data at a random input location
-        precip_gauge = top.inputs()['precipitation'].getGeometries2(100)
+
+        # add link between randomizer and topmodel
+        link1 = simulator.add_link_by_name(from_id=randomizer['id'],
+                                  from_item_name='random POINT 1-10',
+                                  to_id=top['id'],
+                                  to_item_name='precipitation')
+
+        # set link tranformations
+        link1.spatial_interpolation(SpatialInterpolation.NearestNeighbor)
+        link1.temporal_interpolation(TemporalInterpolation.NearestNeighbor)
+
+        print 'Starting Simulation'
+        st = time.time()
+
+        # begin execution
+        simulator.run_simulation()
+
+        print 'Simulation Complete \n Elapsed time = %3.2f seconds'%(time.time() - st)
 

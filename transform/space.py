@@ -1,5 +1,6 @@
 __author__ = 'tonycastronova'
 
+import stdlib
 import space_base
 from shapely.geometry import LineString, MultiPoint, Point, Polygon
 
@@ -21,6 +22,11 @@ class spatial_nearest_neighbor(space_base.Space):
         return 'Nearest Neighbor'
 
     def transform(self, ingeoms, outgeoms):
+
+        if isinstance(ingeoms[0], stdlib.Geometry):
+            ingeoms = [i.geom() for i in ingeoms]  # convert Geometry objects into a list of shapely geometries
+        if isinstance(outgeoms[0], stdlib.Geometry):
+            outgeoms = [i.geom() for i in outgeoms]  # convert Geometry objects into a list of shapely geometries
 
         # get parameters
         max_distance = self.__params['max_distance']

@@ -74,8 +74,14 @@ def run_feed_forward(obj):
                 link.spatial_interpolation(spatial_exact_match())
 
             spatial_interp = link.spatial_interpolation()
-            spatial_maps[key] = spatial_interp.transform(source.get_all_datasets().keys(),
-                                                         target.get_all_datasets().keys())
+            source_geoms = source.getGeometries2()
+            target_geoms = target.getGeometries2()
+
+            # todo: remove these two lines b/c they use deprecated function calls!
+            if len(source_geoms) == 0: source_geoms = source.get_all_datasets().keys()
+            if len(target_geoms) == 0: target_geoms = target.get_all_datasets().keys()
+
+            spatial_maps[key] = spatial_interp.transform(source_geoms, target_geoms)
 
         # # store model db sessions
         # session = obj.get_model_by_id(modelid).get_instance().session()

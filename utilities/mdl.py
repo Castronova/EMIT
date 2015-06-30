@@ -115,8 +115,9 @@ def build_exchange_items_from_config(params):
                         geom = []
                         # raise Exception('Could not load WKT string: %s.'%value)
 
-
-                    srs = utilities.spatial.get_srs_from_epsg(io['epsg_code'])
+                    srs = None
+                    if 'espg_code' in io:
+                        srs = utilities.spatial.get_srs_from_epsg(io['epsg_code'])
 
 
                 for element in geom:

@@ -106,7 +106,12 @@ class topmodel(feed_forward.feed_forward_wrapper):
 
     def run(self,inputs):
 
+        precipitation = inputs['precipitation']
+        vals = precipitation.getValues2()
+        datetimes = precipitation.getDates2()
+
         input_data = inputs['precipitation'].get_geoms_and_timeseries()
+
 
         # loop through each geometry
         for geom, dataset in input_data.iteritems():

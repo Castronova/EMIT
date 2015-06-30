@@ -5,6 +5,7 @@ from api_old.ODM2.Core.services import *
 from api_old.ODM2.SamplingFeatures.services import *
 from api_old.ODM2.Results.services import *
 from api_old.ODM2.Simulation.services import *
+from utilities import gui
 
 from ODM2PythonAPI.src.api.ODMconnection import dbconnection
 from ODM2PythonAPI.src.api.ODM2.services.readService import ReadODM2
@@ -21,8 +22,9 @@ class sqlite():
         self.update = UpdateODM2(self.connection)
         self.delete = DeleteODM2(self.connection)
 
-    def set_user_preferences(self, preferences):
-        pass
+    def create_user(self, userInfo):
+        self.write.createPerson(userInfo['firstName'], userInfo['lastName'])
+        print "in create_user"
 
     def create_input_dataset(self, connection, resultids,type,code="",title="",abstract=""):
         pass

@@ -12,7 +12,7 @@ sys.path.append(odm2_api_path)
 # from api.ODM2.services.readService import ReadODM2
 from ODM2PythonAPI.src.api.ODMconnection import dbconnection
 from ODM2PythonAPI.src.api.ODM2.services.readService import ReadODM2
-from ..dbapi_v2 import sqlite
+from db.dbapi_v2 import sqlite
 
 # from EM.src.api.ODMconnection import dbconnection
 # from ODM2PythonAPI_.src.api.ODM2.services.readService import ReadODM2
@@ -46,10 +46,13 @@ class test_sqlite_db(unittest.TestCase):
         pop_odm2_db.executescript(populated_dump_script)
 
         # create database connections that will be used in test cases
+        self.sqlite = sqlite(self.pop_db_path)
+        self.pop_connection = self.sqlite.connection
         self.empty_connection = dbconnection.createConnection('sqlite', self.empty_db_path)
-        self.pop_connection = dbconnection.createConnection('sqlite', self.pop_db_path)
 
-        print 'here'
+        # self.pop_connection = dbconnection.createConnection('sqlite', self.pop_db_path)
+
+
 
     def tearDown(self):
 
@@ -72,24 +75,18 @@ class test_sqlite_db(unittest.TestCase):
 
 
 
-    def test_get_simulations(self):
-        r = ReadODM2(self.pop_connection)
+    # def test_get_simulations(self):
+    #     r = ReadODM2(self.pop_connection)
+    #
+    #     # THIS SHOULD NOT RETURN NONE!!!!
+    #     simulations = r.getAllSimulations()
+    #
+    #     self.assertTrue(len(simulations) == 1)
 
-        # THIS SHOULD NOT RETURN NONE!!!!
-        simulations = r.getAllSimulations()
-
-        self.assertTrue(len(simulations) == 1)
-
-
-        # odmread.readODM2(self)
-
-
-        r.getPeople()
-
-        print 'here'
-
+    def test_create_user(self):
+        tempPerson = {'firstName': 'Bob', 'lastName': 'Charles'}
+        self.sqlite.create_user(tempPerson)
 
     def test_create_simulation(self):
-
         pass
 

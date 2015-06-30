@@ -5,43 +5,16 @@ import os, sys
 import pyspatialite.dbapi2 as sqlite3
 import subprocess
 
-# This change needs to be made in ODM2PythonAPI/src/api/ODMconnection.py
-'''
-class SessionFactory():
-    def __init__(self, connection_string, echo):
-        if 'sqlite' in connection_string:
-            self.engine = create_engine(connection_string, encoding='utf-8', echo=echo)
-        else:
-            self.engine = create_engine(connection_string, encoding='utf-8', echo=echo, pool_recycle=3600, pool_timeout=5, pool_size=20,
-                                        max_overflow=0)
-            self.psql_test_engine = create_engine(connection_string, encoding='utf-8', echo=echo, pool_recycle=3600, pool_timeout=5,
-                                        max_overflow=0,  connect_args={'connect_timeout': 1})
-            self.ms_test_engine = create_engine(connection_string, encoding='utf-8', echo=echo, pool_recycle=3600, pool_timeout=5,
-                                        max_overflow=0,  connect_args={'timeout': 1})
-
-
-        # Create session maker
-        self.Session = sessionmaker(bind=self.engine)
-        # self.psql_test_Session = sessionmaker(bind=self.psql_test_engine)
-        # self.ms_test_Session = sessionmaker(bind=self.ms_test_engine)
-
-    def getSession(self):
-        return self.Session()
-
-    def __repr__(self):
-        return "<SessionFactory('%s')>" % (self.engine)
-
-'''
-
 # odm2_api_path = os.path.abspath(os.path.join(__file__, '../../../ODM2PythonAPI'))
 odm2_api_path = os.path.abspath(os.path.join(__file__, '../../../ODM2PythonAPI/src'))
 sys.path.append(odm2_api_path)
 # from api.ODMconnection import dbconnection
 # from api.ODM2.services.readService import ReadODM2
+from ODM2PythonAPI.src.api.ODMconnection import dbconnection
+from ODM2PythonAPI.src.api.ODM2.services.readService import ReadODM2
+from db.dbapi_v2 import sqlite
 
-
-
-# from EM .src.api.ODMconnection import dbconnection
+# from EM.src.api.ODMconnection import dbconnection
 # from ODM2PythonAPI_.src.api.ODM2.services.readService import ReadODM2
 
 
@@ -50,8 +23,8 @@ class test_sqlite_db(unittest.TestCase):
     def setUp(self):
 
         # define the paths for the empty and populated temp databases
-        self.empty_db_path = os.path.abspath('../scripts/temp_empty.db')
-        self.pop_db_path = os.path.abspath('../scripts/temp_pop.db')
+        self.empty_db_path = os.path.abspath('./data/temp_empty.db')
+        self.pop_db_path = os.path.abspath('./data/temp_pop.db')
 
         # remove temp databases
         if os.path.exists(self.empty_db_path):
@@ -61,8 +34,8 @@ class test_sqlite_db(unittest.TestCase):
 
 
         # get the database dump files
-        empty_dump_script = open('../scripts/empty_dump.sql','r').read()
-        populated_dump_script = open('../scripts/populated_dump.sql','r').read()
+        empty_dump_script = open('./data/empty_dump.sql','r').read()
+        populated_dump_script = open('./data/populated_dump.sql','r').read()
 
         # create temp databases
         empty_odm2_db = sqlite3.connect(self.empty_db_path) # create a memory database
@@ -73,10 +46,13 @@ class test_sqlite_db(unittest.TestCase):
         pop_odm2_db.executescript(populated_dump_script)
 
         # create database connections that will be used in test cases
+        self.sqlite = sqlite(self.pop_db_path)
+        self.pop_connection = self.sqlite.connection
         self.empty_connection = dbconnection.createConnection('sqlite', self.empty_db_path)
-        self.pop_connection = dbconnection.createConnection('sqlite', self.pop_db_path)
 
-        print 'here'
+        # self.pop_connection = dbconnection.createConnection('sqlite', self.pop_db_path)
+
+
 
     def tearDown(self):
 
@@ -99,28 +75,18 @@ class test_sqlite_db(unittest.TestCase):
 
 
 
-    def test_get_simulations(self):
-        r = ReadODM2(self.pop_connection)
+    # def test_get_simulations(self):
+    #     r = ReadODM2(self.pop_connection)
+    #
+    #     # THIS SHOULD NOT RETURN NONE!!!!
+    #     simulations = r.getAllSimulations()
+    #
+    #     self.assertTrue(len(simulations) == 1)
 
-        # THIS SHOULD NOT RETURN NONE!!!!
-        simulations = r.getAllSimulations()
+    def test_create_user(self):
+        tempPerson = {'firstName': 'Bob', 'lastName': 'Charles'}
+        self.sqlite.create_user(tempPerson)
 
-        self.assertTrue(len(simulations) == 1)
+    def test_create_simulation(self):
+        pass
 
-
-        # odmread.readODM2(self)
-
-
-        r.getPeople()
-
-        print 'here'
-
-
-    def test_connectToDB(self):
-        print "starting test_connectToDB"
-        print self.dbpath
-        if os.path.exists(self.dbpath):
-            print "yes2"
-        conn = sqlite3.connect(self.dbpath)
-        if conn:
-            print "yes"

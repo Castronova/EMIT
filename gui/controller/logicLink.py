@@ -553,11 +553,13 @@ class LinkInfo():
 
         # get output information
         outputs = engine.getOutputExchangeItems(self.source_id)
-        for output in outputs:
-            self.output_metadata[output['name']] = output
+        if outputs is not None:
+            for output in outputs:
+                self.output_metadata[output['name']] = output
 
         # get input information
         inputs = engine.getInputExchangeItems(self.target_id)
-        for input in inputs:
-            self.input_metadata[input['name']] = input
+        if inputs is not None:
+            for input in inputs:
+                self.input_metadata[input['name']] = input
 

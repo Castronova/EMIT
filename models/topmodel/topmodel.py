@@ -3,7 +3,7 @@ __author__ = 'tonycastronova'
 import os
 from wrappers import feed_forward
 import stdlib
-from utilities import mdl
+from utilities import mdl, spatial
 import math
 from shapely.geometry import Point
 from coordinator.emitLogging import elog
@@ -177,6 +177,7 @@ class topmodel(feed_forward.feed_forward_wrapper):
                     pt = Point(x,y)
 
                     # save as ti geometry
+                    # srs = spatial.get_srs_from_epsg(None)   # get default
                     tigeoms.append(stdlib.Geometry(geom=pt))
 
                 x += cellsize
@@ -194,6 +195,7 @@ class topmodel(feed_forward.feed_forward_wrapper):
                     pt = Point(x,y)
                     if element >= 20.:
                         # save as sat geometry
+                        # srs = spatial.get_srs_from_epsg(None)   # get default
                         satgeoms.append(stdlib.Geometry(geom=pt))
                 x += cellsize
             y += cellsize

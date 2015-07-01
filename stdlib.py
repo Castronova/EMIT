@@ -13,6 +13,7 @@ import uuid
 import hashlib
 from coordinator.emitLogging import elog
 from bisect import bisect_left, bisect_right
+from osgeo import osr
 
 class ElementType():
     Point = 'Point'
@@ -191,9 +192,8 @@ class DataValues(object):
 
 class Geometry(object):
 
-    def __init__(self,geom=None,srs=None,elev=None,datavalues=None,id=uuid.uuid4().hex[:5]):
+    def __init__(self,geom=None,srs=4269,elev=None,datavalues=None,id=uuid.uuid4().hex[:5]):
         self.__geom = geom
-        self.__srs = srs
         self.__elev = elev
         self.__datavalues = datavalues
         self.__id = id
@@ -206,10 +206,17 @@ class Geometry(object):
         # TODO: use enum
         self.__type = None
 
-        # todo: fix.  this is causing a circular dependency btwn utilities and stdlib
-        # if self.__srs is None:
-        #     # set default srs
-        #     self.__srs = utilities.get_srs_from_epsg('4269')
+
+
+        # set spatial reference
+        self.__srs = osr.SpatialReference()
+        try:
+            self.__srs.ImportFromEPSG(srs)
+        except:
+            # set default
+            elog.error('Could not create spatial reference object from code: %s. Using the default spatial reference system: North American Datum 1983.'% str(srs))
+            self.__srs.ImportFromEPSG(4269)
+
 
     def id(self):
         return self.__id

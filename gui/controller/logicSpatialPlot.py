@@ -37,9 +37,9 @@ class LogicSpatialPlot(ViewSpatialPlot):
             self.__iei = iei_name
         else:
             self.__iei = None
-
-    def set_selected_intput(self, selected_name):
-        self.__iei = selected_name
+    #
+    # def set_selected_intput(self, selected_name):
+    #     self.__iei = selected_name
 
 
     def set_input_data(self, value):

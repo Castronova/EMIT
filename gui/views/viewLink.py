@@ -285,7 +285,7 @@ class ViewLink(wx.Frame):
 
         PlottingButtonSizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.ButtonPlot = wx.Button(self.BottomPanel, wx.ID_ANY, u"SpatialPlot", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.ButtonPlot = wx.Button(self.BottomPanel, wx.ID_ANY, u"Plot Geometries", wx.DefaultPosition, wx.DefaultSize, 0)
         PlottingButtonSizer.Add(self.ButtonPlot, 0, wx.ALL, 5)
 
         ButtonSizerBottom.Add(PlottingButtonSizer, 1, wx.EXPAND, 5)

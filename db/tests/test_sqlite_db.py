@@ -124,5 +124,78 @@ class test_sqlite_db(unittest.TestCase):
 
 
     def test_create_simulation(self):
-        pass
+
+        import stdlib
+        from utilities import mdl
+        from shapely.geometry import Point
+        import random
+        from datetime import datetime as dt
+        from datetime import timedelta
+
+        # create an exchange item
+        unit = mdl.create_unit('cubic meters per second')
+        variable = mdl.create_variable('streamflow')
+
+        # create exchange item
+        item = stdlib.ExchangeItem(name='Test', desc='Test Exchange Item', unit=unit, variable=variable)
+
+        # set exchange item geometries
+        coords = [(1,2),(2,3),(3,4)]
+        geoms = []
+        for x,y in coords:
+            pt = Point(x,y)
+            geoms.append(stdlib.Geometry(pt))
+        item.addGeometries2(geoms)
+        self.assertTrue(len(item.getGeometries2()) == len(geoms))
+
+        # set exchange item values
+        st = dt.now()                   # set start time to 'now'
+        et = st + timedelta(days=100)   # set endtime to 100 days later
+        current_time = st               # initial time
+        dates = []                      # list to hold dates
+        values = []                     # list to hold values for each date
+        # populate dates list
+        while current_time <= et:
+
+            # add date
+            dates.append(current_time)
+
+            # add some random values for each geometry
+            values.append([random.random() for g in geoms] )
+
+            # increment time by 1 day
+            current_time += timedelta(days=1)
+
+
+        # set dates and values in the exchange item
+        item.setValues2(values, dates)
+
+        self.assertTrue(len(item.getDates2()) == len(item.getValues2()))
+        self.assertTrue(len(item.getGeometries2()) == len(item.getValues2()[0]))
+
+        # preferences
+        pref = None
+
+        # config_params
+        config = None
+
+        # list of exchange items
+        ei = [item]
+
+        # use numpy arrays to slice the data during insert
+        # import numpy as np
+        # array = np.array(my_list)
+        # array[:,2]  all datavalues for geometry index of 2
+        # self.sqlite.create_simulation(preferences_path=pref, config_params=config, output_exchange_items=item)
+
+
+
+
+
+
+
+
+
+
+
 

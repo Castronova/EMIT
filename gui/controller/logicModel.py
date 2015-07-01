@@ -103,6 +103,19 @@ class LogicModel(ViewModel):
                             except:
                                 pass
 
+    def PopulateProperties(self, modelid, iei=None, oei=None):
+        # Fills on the information for models from the database
+        # Also implement this to populate all models not only from database
+        # PopulateSummary works only for models not from database.
+        # iei = input exchange item.
+        # oei = output exchange item.
+        # not all models will have inputs & outputs so that's why their set to None by default.
+        print modelid
+        category = self.PropertyGrid.Append(wxpg.PropertyCategory("General"))
+        self.PropertyGrid.Append(wxpg.StringProperty(modelid.keys()[0], value=modelid.values()[0]))
+
+        pass
+
 
     def PopulateDetails(self, fileExtension):
 

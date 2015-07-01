@@ -134,6 +134,8 @@ class ModelContextMenu(wx.Menu):
         atts = engine.getModelById(self.model_obj.ID)['attrib']
         if 'mdl' in atts.keys():
             model_details.PopulateSummary(atts['mdl'])
+        else:  # This means the model is coming from a database.
+            model_details.PopulateProperties(engine.getModelById(self.model_obj.ID), iei=iei, oei=oei)
 
         model_details.Show()
 

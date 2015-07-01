@@ -742,6 +742,12 @@ class Coordinator(object):
                 # update the datavalues with the mapped dates and values
                 t_geom.datavalues().set_timeseries(from_geom_dict[f_geom])
 
+        # todo:
+        # loop through spatial map array
+        for f,t in from_to_spatial_map:
+            if t != None:
+                pass
+
     def update_links(self, model, exchangeitems):
         """
         Updates the model associated with the link.  This is necessary after the run phase to update the data

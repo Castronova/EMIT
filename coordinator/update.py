@@ -102,6 +102,7 @@ def update_links_feed_forward(obj, links, output_exchange_items, spatial_maps):
 
         # update links
         if len(mapped.keys()) > 0:
+            # get spatially mapped data for the current link
             spatial_mapping = spatial_maps[link_key] if link_key in spatial_maps else None
             if spatial_mapping is None:
                 raise Exception('Spatial Mapping was not set!')

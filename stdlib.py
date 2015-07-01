@@ -528,6 +528,9 @@ class ExchangeItem(object):
 
     def geometries(self):
         elog.warning('deprecated: stdlib.geometries use getGeometries2 instead')
+        g = self.getGeometries2()
+        if len(g) != 0:
+            return g
         return self.__geoms
 
     def add_geometry(self, geom):

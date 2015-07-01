@@ -81,6 +81,7 @@ def run_feed_forward(obj):
             if len(source_geoms) == 0: source_geoms = source.get_all_datasets().keys()
             if len(target_geoms) == 0: target_geoms = target.get_all_datasets().keys()
 
+            # save the spatial mapping based on link key
             spatial_maps[key] = spatial_interp.transform(source_geoms, target_geoms)
 
         # # store model db sessions

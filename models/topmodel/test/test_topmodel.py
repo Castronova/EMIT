@@ -119,7 +119,9 @@ class test_topmodel(unittest.TestCase):
                                   to_item_name='precipitation')
 
         # set link tranformations
-        link1.spatial_interpolation(SpatialInterpolation.NearestNeighbor)
+        spatial = SpatialInterpolation.NearestNeighbor
+        spatial.set_param('max_distance', 1000)
+        link1.spatial_interpolation(spatial)
         link1.temporal_interpolation(TemporalInterpolation.NearestNeighbor)
 
         print 'Starting Simulation'

@@ -438,9 +438,10 @@ class LogicCanvas(ViewCanvas):
                 # load the simulation
                 try:
                     self.loadsimulation(filepath)
-                except:
-                    dlg = wx.MessageDialog(None, 'Configuration failed to load', 'Error', wx.OK)
-                    dlg.ShowModal()
+                except Exception, e:
+                    elog.error('Configuration failed to load: %s'%e.message)
+                    # dlg = wx.MessageDialog(None, 'Configuration failed to load', 'Error', wx.OK)
+                    # dlg.ShowModal()
         else:
             # load data model
             # current_db_id = self._currentDb['id']
@@ -910,6 +911,7 @@ class LogicCanvas(ViewCanvas):
                 modelid = self.addModel(filepath=attrib['path'], x=attrib['xcoordinate'], y=attrib['ycoordinate'],
                                         uid=attrib['id'])
 
+            # todo: Link cannot be added until both models have finished loading!!!  This will throw exception on line 927
             if child.tag == 'Link':
                 attrib = self.appendChild(child)
 
@@ -922,7 +924,7 @@ class LogicCanvas(ViewCanvas):
                         R2 = R
 
                 if R1 is None or R2 is None:
-                    raise Exception('Could not find Model identifer in loaded models')
+                    raise Exception('Could not find Model identifier in loaded models')
 
                 temporal = None
                 spatial = None

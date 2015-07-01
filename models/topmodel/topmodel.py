@@ -10,35 +10,6 @@ from coordinator.emitLogging import elog
 import numpy as np
 
 
-#---- model inputs
-# double R;//subsurface Recharge rate [L/T]
-# double c; //recession parameter (m)
-# double Tmax; //Average effective transmissivity of the soil when the profile is just saturated
-# double interception;//intial interciption of the watershed
-# double[] TI;//topographic index
-# double[] freq;//topographic index frequency
-# double lamda_average;//average lamda
-# double PPT_daily;
-# double ET_daily;
-# double q_overland;
-# double q_subsurface;
-# double q_infiltration;
-# double S_average; //average saturation deficit
-# double _watershedArea = 0; //area of the watershed. used to convert runoff into streamflow
-# Dictionary<DateTime, double> Precip = new Dictionary<DateTime, double>();
-# Dictionary<DateTime, double> ET = new Dictionary<DateTime, double>();
-# Dictionary<DateTime, double> outputValues = new Dictionary<DateTime, double>();
-# string[] _input_elementset;
-# string[] _output_elementset;
-# string[] _output_quantity;
-# string[] _input_quantity;
-# ArrayList _DateTimes = new ArrayList();
-# ArrayList q_outputs = new ArrayList();
-# ArrayList q_infltration_outputs = new ArrayList();
-# string outputPath = System.IO.Directory.GetCurrentDirectory() + "/output";
-
-
-
 class topmodel(feed_forward.feed_forward_wrapper):
 
 

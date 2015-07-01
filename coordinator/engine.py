@@ -650,7 +650,7 @@ class Coordinator(object):
             )
         return models
 
-    def get_output_exchange_items_summary(self, id):
+    def get_output_exchange_items_summary(self, id, returnGeoms=True):
         """
         gets a serializable version of the output exchange items
         :param id: model id
@@ -660,22 +660,28 @@ class Coordinator(object):
             if self.__models[m].get_id() == id:
                 eitems = self.__models[m].get_output_exchange_items()
                 items_list = []
-                for ei in eitems:
-                    if ei.getGeometries2():
-                        geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.getGeometries2()]
-                    else:
-                        elog.warning('deprecated: this component is implementing old geometry and datavalues storage mechanisms which are obsolete and inefficient.')
-                        geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.geometries()]
 
-                    items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.get_id(), unit=ei.unit(),
-                                           variable=ei.variable(),type=ei.get_type(),geom=geoms))
+                for ei in eitems:
+                    if returnGeoms:
+                        if ei.getGeometries2():
+                            geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.getGeometries2()]
+                        else:
+                            elog.warning('deprecated: this component is implementing old geometry and datavalues storage mechanisms which are obsolete and inefficient.')
+                            geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.geometries()]
+
+                        items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.get_id(), unit=ei.unit(),
+                                               variable=ei.variable(),type=ei.get_type(),geom=geoms))
+                    else:
+                        items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.get_id(), unit=ei.unit(),
+                                            variable=ei.variable(),type=ei.get_type()))
                 return items_list
         return None
 
-    def get_input_exchange_items_summary(self, id):
+    def get_input_exchange_items_summary(self, id, returnGeoms=True):
         """
         gets a serializable version of the input exchange items
         :param id: model id
+        :param returnGeoms: indicates if geometries should be returned.  This will take longer.
         :return: dictionary of serializable objects
         """
         for m in self.__models:
@@ -684,14 +690,19 @@ class Coordinator(object):
                 items_list = []
 
                 for ei in eitems:
-                    if ei.getGeometries2():
-                        geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.getGeometries2()]
-                    else:
-                        elog.warning('deprecated: this component is implementing old geometry and datavalues storage mechanisms which are obsolete and inefficient.')
-                        geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.geometries()]
+                    if returnGeoms:
+                        if ei.getGeometries2():
+                            geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.getGeometries2()]
+                        else:
+                            elog.warning('deprecated: this component is implementing old geometry and datavalues storage mechanisms which are obsolete and inefficient.')
+                            geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.geometries()]
 
-                    items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.get_id(), unit=ei.unit(),
-                                               variable=ei.variable(),type=ei.get_type(),geom=geoms))
+
+                        items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.get_id(), unit=ei.unit(),
+                                            variable=ei.variable(),type=ei.get_type(),geom=geoms))
+                    else:
+                        items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.get_id(), unit=ei.unit(),
+                                            variable=ei.variable(),type=ei.get_type()))
                 return items_list
         return None
 
@@ -1093,9 +1104,6 @@ class Coordinator(object):
         # # save this session in the db_connections object
         # db_id = uuid.uuid4().hex[:5]
 
-
-
-
     def get_format_width(self,output_array):
         width = 0
         for line in output_array:
@@ -1153,6 +1161,135 @@ class Coordinator(object):
 
         else:
             elog.error('ERROR | Could not find path %s' % simulation_file)
+
+    def load_simulation2(self, file):
+        pass
+
+        # # TODO: This needs to be refactored to remove 'for' looping
+        # tree = et.parse(file)
+        #
+        # self.loadingpath = file
+        #
+        # tree = et.parse(file)
+        #
+        # # get the root
+        # root = tree.getroot()
+        #
+        # # make sure the required database connections are loaded
+        # connections = engine.getDbConnections()
+        # conn_ids = {}
+        #
+        # # get all known transformations
+        # space = SpatialInterpolation()
+        # time = TemporalInterpolation()
+        # spatial_transformations = {i.name(): i for i in space.methods()}
+        # temporal_transformations = {i.name(): i for i in time.methods()}
+        #
+        #
+        # for child in root._children:
+        #     if child.tag == 'DbConnection':
+        #         attrib = self.appendChild(child)
+        #
+        #         connection_string = attrib['connection_string']
+        #
+        #         database_exists = False
+        #         # db_elements = db_conn.getchildren()
+        #
+        #         for id, dic in connections.iteritems():
+        #
+        #             if str(dic['args']['connection_string']) == connection_string:
+        #                 # dic['args']['id'] = db_conn.attrib['id']
+        #                 database_exists = True
+        #
+        #                 # map the connection ids
+        #                 conn_ids[attrib['databaseid']] = dic['args']['id']
+        #                 break
+        #
+        #         # if database doesn't exist, then connect to it
+        #         if not database_exists:
+        #             connect = wx.MessageBox('This database connection does not currently exist.  Click OK to connect.',
+        #                                     'Info', wx.OK | wx.CANCEL)
+        #
+        #             if connect == wx.OK:
+        #
+        #                 # attempt to connect to the database
+        #                 title = dic['args']['name']
+        #                 desc = dic['args']['desc']
+        #                 db_engine = dic['args']['engine']
+        #                 address = dic['args']['address']
+        #                 name = dic['args']['db']
+        #                 user = dic['args']['user']
+        #                 pwd = dic['args']['pwd']
+        #
+        #                 if not self.AddDatabaseConnection(title, desc, db_engine, address, name, user, pwd):
+        #                     wx.MessageBox('I was unable to connect to the database with the information provided :(',
+        #                                   'Info', wx.OK | wx.ICON_ERROR)
+        #                     return
+        #
+        #                 # map the connection id
+        #                 conn_ids[attrib['databaseid']] = attrib['databaseid']
+        #
+        #             else:
+        #                 return
+        #
+        #     if child.tag == 'Model':
+        #         attrib = self.appendChild(child)
+        #
+        #         # load the model
+        #         self.addModel(filepath=attrib['path'], x=float(attrib['xcoordinate']), y=float(attrib['ycoordinate']),
+        #                       uid=attrib['id'])
+        #
+        #     if child.tag == 'DataModel':
+        #         attrib = self.appendChild(child)
+        #
+        #         databaseid = attrib['databaseid']
+        #         mappedid = conn_ids[databaseid]
+        #
+        #         attrib['databaseid'] = mappedid
+        #         modelid = self.addModel(filepath=attrib['path'], x=attrib['xcoordinate'], y=attrib['ycoordinate'],
+        #                                 uid=attrib['id'])
+        #
+        #     # todo: Link cannot be added until both models have finished loading!!!  This will throw exception on line 927
+        #     if child.tag == 'Link':
+        #         attrib = self.appendChild(child)
+        #
+        #         R1 = None
+        #         R2 = None
+        #         for R, id in self.models.iteritems():
+        #             if id == attrib['from_id']:
+        #                 R1 = R
+        #             elif id == attrib['to_id']:
+        #                 R2 = R
+        #
+        #         if R1 is None or R2 is None:
+        #             raise Exception('Could not find Model identifer in loaded models')
+        #
+        #         temporal = None
+        #         spatial = None
+        #         # set the temporal and spatial interpolations
+        #         transform = child.find("./transformation")
+        #         for transform_child in transform:
+        #             if transform_child.text.upper() != 'NONE':
+        #                 if transform_child.tag == 'temporal':
+        #                     temporal = temporal_transformations[transform_child.text]
+        #                 elif transform_child.tag == 'spatial':
+        #                     spatial = spatial_transformations[transform_child.text]
+        #
+        #         # create the link
+        #         l = engine.addLink(source_id=attrib['from_id'],
+        #                            source_item=attrib['from_item'],
+        #                            target_id=attrib['to_id'],
+        #                            target_item=attrib['to_item'],
+        #                            spatial_interpolation=spatial,
+        #                            temporal_interpolation=temporal
+        #                            )
+        #
+
+
+
+
+
+
 
     def show_db_results(self, args):
 

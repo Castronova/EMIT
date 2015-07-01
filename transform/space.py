@@ -99,6 +99,44 @@ class spatial_closest_object(space_base.Space):
             i += 1
         return mapped
 
+
+
+class spatial_intersect_polygon_point(space_base.Space):
+
+    def __init__(self):
+            super(spatial_intersect_polygon_point,self).__init__()
+
+    def name(self):
+        return 'Intersection - Polygon to Point'
+
+    def transform(self, ingeoms, outgeoms):
+
+        # isolate the shapely geometries
+        polygons = [geom.geom() for geom in ingeoms]
+        points = [geom.geom() for geom in outgeoms]
+
+        if len(polygons) ==  0 or len(points) == 0:
+            raise Exception('Number of geometries must be greater than 0.')
+
+        # todo: what about MultiPoint, MultiPolygon?
+        # assert that the correct shapes have been provided
+        if polygons[0].geom_type != 'Polygon':
+            raise Exception('Incorrect geometry type provided')
+        if points[0].geom_type != 'Point':
+            raise Exception('Incorrect geometry type provided')
+
+        mapped = []
+
+        i = 0
+
+        for polygon in polygons:
+
+            min_dist, min_index = min((polygon.distance(geom), k) for (k, geom) in enumerate(points))
+            mapped.append([ingeoms[min_index], outgeoms[i]])
+
+            i += 1
+        return mapped
+
 class spatial_exact_match(space_base.Space):
     def __init__(self):
         super(spatial_exact_match,self).__init__()
@@ -124,6 +162,7 @@ class SpatialInterpolation():
     NearestNeighbor = spatial_nearest_neighbor()
     NearestObject = spatial_closest_object()
     ExactMatch = spatial_exact_match()
+    IntersectPolygonPoint = spatial_intersect_polygon_point()
 
     def methods(self):
-        return [self.NearestNeighbor,self.NearestObject, self.ExactMatch]
+        return [self.NearestNeighbor,self.NearestObject, self.ExactMatch, self.IntersectPolygonPoint]

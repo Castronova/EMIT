@@ -90,7 +90,7 @@ class LogicLink(ViewLink):
         iei = engine.getInputExchangeItems(target_model_id)
         for i in iei:
             name = i['name']
-            geoms = [j['shape'] for j in o['geom']]
+            geoms = [j['shape'] for j in i['geom']]
             igeoms[name] = geoms
 
         # set input and output geometries
@@ -345,7 +345,7 @@ class LogicLink(ViewLink):
 
         # change the link name to reflect output -> input
         l.oei = output_name
-        l.refresh()
+        l.refresh('output')
 
         # update the name in the links list
         self.__links.insert(link_idx, l)
@@ -373,7 +373,7 @@ class LogicLink(ViewLink):
 
         # change the link name to reflect output -> input
         l.iei = input_name
-        l.refresh()
+        l.refresh('input')
 
         # update the name in the links list
         self.__links.insert(link_idx, l)
@@ -535,9 +535,9 @@ class LinkInfo():
 
         self.get_input_and_output_metadata()
 
-    def refresh(self):
+    def refresh(self, type):
 
-        self.get_input_and_output_metadata()
+        self.get_input_and_output_metadata(type)
 
 
     def name(self):
@@ -549,17 +549,18 @@ class LinkInfo():
         else:
             return '%s | %s -> %s ' % (self.uid, oei_name, iei_name)
 
-    def get_input_and_output_metadata(self):
+    def get_input_and_output_metadata(self, type=None):
 
-        # get output information
-        outputs = engine.getOutputExchangeItems(self.source_id)
-        if outputs is not None:
-            for output in outputs:
-                self.output_metadata[output['name']] = output
-
-        # get input information
-        inputs = engine.getInputExchangeItems(self.target_id)
-        if inputs is not None:
-            for input in inputs:
-                self.input_metadata[input['name']] = input
+        if type == 'output':
+            # get output information
+            outputs = engine.getOutputExchangeItems(self.source_id, returnGeoms=False)
+            if outputs is not None:
+                for output in outputs:
+                    self.output_metadata[output['name']] = output
+        if type == 'input':
+            # get input information
+            inputs = engine.getInputExchangeItems(self.target_id, returnGeoms=False)
+            if inputs is not None:
+                for input in inputs:
+                    self.input_metadata[input['name']] = input
 

@@ -117,17 +117,17 @@ def getModelById(modelid):
     result = e.processTasks()
     return result
 
-def getOutputExchangeItems(modelid):
+def getOutputExchangeItems(modelid, returnGeoms=True):
     e = Engine()
-    kwargs = dict(id=modelid)
+    kwargs = dict(id=modelid, returnGeoms=returnGeoms)
     task = [('get_output_exchange_items_summary', kwargs)]
     e.setTasks(task)
     result = e.processTasks()
     return result
 
-def getInputExchangeItems(modelid):
+def getInputExchangeItems(modelid, returnGeoms=True):
     e = Engine()
-    kwargs = dict(id=modelid)
+    kwargs = dict(id=modelid, returnGeoms=returnGeoms)
     task = [('get_input_exchange_items_summary', kwargs)]
     e.setTasks(task)
     result = e.processTasks()

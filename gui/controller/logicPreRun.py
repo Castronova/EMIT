@@ -48,9 +48,11 @@ class logicPreRun:
         e = dict()
         events.onClickRun.fire(**e)  # Calls onClickRun from viewContext.py
         self.OnCancel(e)
-        if self.viewprerun.page1.displayMessage.GetValue():
-            frm = viewPostRun()
-            frm.Show()
+
+        # todo:  this should be opened after simulation has completed, not right here.
+        # if self.viewprerun.page1.displayMessage.GetValue():
+            # frm = viewPostRun()
+            # frm.Show()
 
     def OnAddNew(self, e):
         self.dlg.CenterOnScreen()

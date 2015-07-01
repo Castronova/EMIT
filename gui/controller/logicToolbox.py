@@ -186,23 +186,23 @@ class LogicToolbox(ViewToolbox):
     def onDoubleClick(self, event):
         id = event.GetItem()
         filename = id.GetText()
-        fullpath = self.filepath[filename]
-        filenames = []
-        filenames.append(fullpath)
+        try:  # Its in a try because clicking on a folder returns an error.
+            fullpath = self.filepath[filename]
+            filenames = []
+            filenames.append(fullpath)
 
-        originx, originy = self.p.GetParent().FloatCanvas.WorldToPixel(self.p.GetParent().Canvas.GetPosition())
+            originx, originy = self.p.GetParent().FloatCanvas.WorldToPixel(self.p.GetParent().Canvas.GetPosition())
 
-        # Generate random coordinates about the center of the canvas
-        x = random.randint(-200, 200)
-        y = random.randint(-200, 200)
-        nx = (originx + x)
-        ny = (originy + y)
+            # Generate random coordinates about the center of the canvas
+            x = random.randint(-200, 200)
+            y = random.randint(-200, 200)
+            nx = (originx + x)
+            ny = (originy + y)
 
-
-
-
-        # Send the filepath to the FileDrop class in CanvasController
-        Publisher.sendMessage('toolboxclick', x=nx, y=ny, filenames=filenames)
+            # Send the filepath to the FileDrop class in CanvasController
+            Publisher.sendMessage('toolboxclick', x=nx, y=ny, filenames=filenames)
+        except:
+            pass
 
     def OnItemContextMenu(self, evt):
 

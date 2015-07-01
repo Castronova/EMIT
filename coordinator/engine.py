@@ -661,11 +661,12 @@ class Coordinator(object):
                 eitems = self.__models[m].get_output_exchange_items()
                 items_list = []
                 for ei in eitems:
-                    if not ei.geometries():
-                        geoms = [ dict(shape=g.geom(),srs_proj4=g.srs(),z=g.elev(),id=g.id()) for g in ei.getGeometries2()]
+                    if ei.getGeometries2():
+                        geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.getGeometries2()]
                     else:
                         elog.warning('deprecated: this component is implementing old geometry and datavalues storage mechanisms which are obsolete and inefficient.')
                         geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.geometries()]
+
                     items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.get_id(), unit=ei.unit(),
                                            variable=ei.variable(),type=ei.get_type(),geom=geoms))
                 return items_list
@@ -683,8 +684,8 @@ class Coordinator(object):
                 items_list = []
 
                 for ei in eitems:
-                    if not ei.geometries():
-                        geoms = [ dict(shape=g.geom(),srs_proj4=g.srs(),z=g.elev(),id=g.id()) for g in ei.getGeometries2()]
+                    if ei.getGeometries2():
+                        geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.getGeometries2()]
                     else:
                         elog.warning('deprecated: this component is implementing old geometry and datavalues storage mechanisms which are obsolete and inefficient.')
                         geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.geometries()]

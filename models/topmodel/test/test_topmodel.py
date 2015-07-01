@@ -98,6 +98,54 @@ class test_topmodel(unittest.TestCase):
             print 'here'
 
     def test_run(self):
+        from datetime import datetime as dt
+
+        # load topmodel
+        config_params = parse_config(self.mdl)
+        top = topmodel.topmodel(config_params)
+
+
+        # create exchange item
+        unit = mdl.create_unit('international inch')
+        variable = mdl.create_variable('Precipitation')
+        item = stdlib.ExchangeItem(name='Weather Reader', unit=unit, variable=variable)
+        data = '../data/precip_weather.csv'
+
+        # read weather data
+        incremental_precip = []
+        dates = []
+        with open(data, 'rU') as f:
+            lines = f.readlines()
+            # skip commented lines
+            skip = 0
+            for line in lines:
+                if line[0] == '#':
+                    skip += 1
+                else:
+                    # exit loop as soon as non-commented line is found
+                    break
+
+            # read all lines after header
+            for line in lines[skip:]:
+                data = line.split(',')
+
+                # exit if the data is empty
+                if data[0].strip() == '':
+                    break
+
+                # save dates to list
+                dates.append(dt.strptime(data[0], "%m/%d/%y %H:%M"))
+
+                # save incremental precipitation to list
+                incremental_precip.append(float(data[2]))
+
+
+        # set output data
+        item.setValues2(incremental_precip, dates)
+
+
+
+    def test_execute_simulation(self):
 
         import datatypes
         from coordinator import engine

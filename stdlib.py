@@ -386,6 +386,8 @@ class ExchangeItem(object):
             self.__values2[idx] = values
         else:
             # insert new values at the specified index
+            if not isinstance(values, list):
+                values = [values]
             self.__values2.insert(idx+1, values)
             self.__times2.insert(idx+1, timevalue)
 

@@ -63,6 +63,8 @@ class ScaledBitmapWithRotation(FC.ScaledBitmap):
         if self.LastRotationAngle != self.RotationAngle:
             # Using ImageMidPoint seems to do the same thing as (0,0) for the center of rotation
             Img = self.Image.Rotate(self.RotationAngle, (0,0))
+            self.ImageMidPoint = (Img.Width/2, Img.Height/2)
+            print self.ImageMidPoint
             self.ScaledBitmap = wx.BitmapFromImage(Img)
 
         self.LastRotationAngle = self.RotationAngle

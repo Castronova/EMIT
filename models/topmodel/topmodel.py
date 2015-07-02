@@ -170,6 +170,7 @@ class topmodel(feed_forward.feed_forward_wrapper):
 
     def calc_ti_geometries(self):
 
+        # elog.info('TOPMODEL: Building Geometry Objects')
         tigeoms = []
         satgeoms = []
         with open(self.topo_input, 'r') as sr:
@@ -187,8 +188,10 @@ class topmodel(feed_forward.feed_forward_wrapper):
 
         # set start x, y
         y = lowery + cellsize * nrows
-        for row in data:
+        i = 0
 
+        for row in data:
+            # elog.info('OVERWRITE:TOPMODEL: Building Geometry Objects [%d of %d]' % (i, nrows*ncols))
         # for line in lines[6:]:
             x = lowerx
             # l = line.strip().split(' ')
@@ -199,6 +202,7 @@ class topmodel(feed_forward.feed_forward_wrapper):
                     # save as ti geometry
                     # srs = spatial.get_srs_from_epsg(None)   # get default
                     tigeoms.append(stdlib.Geometry(geom=pt))
+                i += 1
 
                 x += cellsize
             y += cellsize

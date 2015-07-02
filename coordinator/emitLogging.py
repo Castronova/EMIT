@@ -125,8 +125,8 @@ class Log(object):
 
     def info(self, text):
         # todo: this is a hack
-        if not 'OVERWRITE:' in text:
-            self.log._info(text)
+        # if not 'OVERWRITE:' in text:
+        self.log._info(text)
 
     def critical(self, text):
         self.log._critical(text)

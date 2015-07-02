@@ -4,6 +4,8 @@ import time
 import coordinator.emitLogging as l
 import wx
 import json
+import wx.lib.newevent
+
 
 def follow(logging, target):
     path = None
@@ -12,6 +14,7 @@ def follow(logging, target):
         if type(handler) == l.PickleHandler:
             path = handler.stream.name
             break
+
 
     if path:
 
@@ -38,8 +41,10 @@ def follow(logging, target):
                         # todo: this is a hack
                         overwrite = False
                         if 'OVERWRITE' in record['message']:
-                            record['message'].replace('OVERWRITE','')
                             overwrite = True
+                            message = record['message'].replace('OVERWRITE:','')
+                        else:
+                            message = record['message']
 
                         # target is the rich text box
                         wx.CallAfter(target.SetInsertionPoint, 0)
@@ -55,20 +60,47 @@ def follow(logging, target):
                             wx.CallAfter(target.BeginTextColour, (170, 57, 57))
 
                         if record['levelname'] != 'INFO':
-                            message = ''.join([record['levelname'], ": ", record['message']])
-                        else:
-                            message = record['message']
+                            message = ''.join([record['levelname'], ": ", message])
 
+                        # hardcoded for now
+                        overwrite = False
                         if not overwrite:
-                            wx.CallAfter(target.WriteText, '\n' + message)
+                            wx.CallAfter(target.WriteText, message+'\n')
                         else:
-                            # wx.CallAfter(target.Remove, dict(from_=0, to_=100))
+                            res = AsyncCall(target.GetLineText, 0)
+                            line = res.result
+                            # line = wx.CallAfter(target.GetLineText, 0)
+                            # if line != '':
+                            wx.CallAfter(target.Remove, 0, len(line)+1)
                             # wx.CallAfter(target.Refresh, )
-                            wx.CallAfter(target.WriteText,message)
+                            wx.CallAfter(target.WriteText, message+'\n')
 
                         wx.CallAfter(target.EndTextColour, )
                         wx.CallAfter(target.Refresh, )
                 last_processed = line_list
+
+
+class AsyncCall:
+    from threading import Event
+    ''' Queues a func to run in thread of MainLoop.
+    Code may wait() on self.complete for self.result to contain
+    the result of func(*ar,**kwar).  It is set upon completion.
+    Wait() does this.'''
+    def __init__( self, func, *ar, **kwar ):
+        self.noresult= object()
+        self.result, self.complete= self.noresult, self.Event()
+        self.func, self.ar, self.kwar= func, ar, kwar
+        wx.CallAfter( self.TimeToRun )
+    def TimeToRun( self ):
+        self.result=self.func( *self.ar, **self.kwar )
+        self.complete.set()
+    def Wait( self, timeout= None, failval= None ):
+        self.complete.wait( timeout )
+        if self.result is self.noresult:
+            return failval
+        return self.result
+
+
 
 def tail(f, lines=20):
     total_lines_wanted = lines

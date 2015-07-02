@@ -978,6 +978,10 @@ class LogicCanvas(ViewCanvas):
             elif event.type == 'Model':
                 self.PopupMenu(ModelContextMenu(self, event), event.HitCoordsPixel.Get())
 
+        elif type(event) == wx.lib.floatcanvas.FloatCanvas.Polygon:
+            if event.type == "ArrowHead":
+                self.PopupMenu(LinkContextMenu(self, event), event.HitCoordsPixel.Get())
+
 
     # THREADME
     def run(self):

@@ -233,19 +233,23 @@ class LogicToolbox(ViewToolbox):
         obj = event.GetEventObject()
         id = event.GetItem()
         filename = id.GetText()
-        fullpath = self.filepath[filename]
+        try:
+            fullpath = self.filepath[filename]
 
-        # filepathclass = filepath()
-        # filepathclass.filepath = fullpath
-        Publisher.sendMessage('dragpathsent', path=fullpath)
-        dragCursor = wx.StockCursor(wx.CURSOR_LEFT_BUTTON)
-        self.SetCursor(dragCursor)
+            # filepathclass = filepath()
+            # filepathclass.filepath = fullpath
+            Publisher.sendMessage('dragpathsent', path=fullpath)
+            dragCursor = wx.StockCursor(wx.CURSOR_LEFT_BUTTON)
+            self.SetCursor(dragCursor)
 
 
-        # data.AddFile(fullpath)
-        # dropSource = wx.DropSource(obj)
-        # dropSource.SetData(data)
-        # dropSource.DoDragDrop()
+            # data.AddFile(fullpath)
+            # dropSource = wx.DropSource(obj)
+            # dropSource.SetData(data)
+            # dropSource.DoDragDrop()
+        except:
+            #  Can not drag folders unto the canvas
+            pass
 
     def OnSize(self, evt):
         self.tree.SetSize(self.GetSize())

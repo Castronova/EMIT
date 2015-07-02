@@ -15,6 +15,8 @@ def follow(logging, target):
             path = handler.stream.name
             break
 
+    # save the length of the previous message for overwriting via progress
+    last_message_length = 0
 
     if path:
 
@@ -62,44 +64,20 @@ def follow(logging, target):
                         if record['levelname'] != 'INFO':
                             message = ''.join([record['levelname'], ": ", message])
 
-                        # hardcoded for now
-                        overwrite = False
+
                         if not overwrite:
                             wx.CallAfter(target.WriteText, message+'\n')
                         else:
-                            res = AsyncCall(target.GetLineText, 0)
-                            line = res.result
-                            # line = wx.CallAfter(target.GetLineText, 0)
-                            # if line != '':
-                            wx.CallAfter(target.Remove, 0, len(line)+1)
-                            # wx.CallAfter(target.Refresh, )
-                            wx.CallAfter(target.WriteText, message+'\n')
+                            wx.CallAfter(target.Remove, 0, last_message_length)
+                            wx.CallAfter(target.WriteText, message)
 
                         wx.CallAfter(target.EndTextColour, )
                         wx.CallAfter(target.Refresh, )
+
+                    # store the last message length
+                    last_message_length = len(message)
+
                 last_processed = line_list
-
-
-class AsyncCall:
-    from threading import Event
-    ''' Queues a func to run in thread of MainLoop.
-    Code may wait() on self.complete for self.result to contain
-    the result of func(*ar,**kwar).  It is set upon completion.
-    Wait() does this.'''
-    def __init__( self, func, *ar, **kwar ):
-        self.noresult= object()
-        self.result, self.complete= self.noresult, self.Event()
-        self.func, self.ar, self.kwar= func, ar, kwar
-        wx.CallAfter( self.TimeToRun )
-    def TimeToRun( self ):
-        self.result=self.func( *self.ar, **self.kwar )
-        self.complete.set()
-    def Wait( self, timeout= None, failval= None ):
-        self.complete.wait( timeout )
-        if self.result is self.noresult:
-            return failval
-        return self.result
-
 
 
 def tail(f, lines=20):

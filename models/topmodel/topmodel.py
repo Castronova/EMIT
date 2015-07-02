@@ -170,7 +170,7 @@ class topmodel(feed_forward.feed_forward_wrapper):
 
     def calc_ti_geometries(self):
 
-        # elog.info('TOPMODEL: Building Geometry Objects')
+        elog.info('TOPMODEL: Building Geometry Objects')
         tigeoms = []
         satgeoms = []
         with open(self.topo_input, 'r') as sr:
@@ -191,7 +191,7 @@ class topmodel(feed_forward.feed_forward_wrapper):
         i = 0
 
         for row in data:
-            # elog.info('OVERWRITE:TOPMODEL: Building Geometry Objects [%d of %d]' % (i, nrows*ncols))
+            elog.info('OVERWRITE:TOPMODEL: Building Geometry Objects [%d of %d]' % (i, nrows*ncols))
         # for line in lines[6:]:
             x = lowerx
             # l = line.strip().split(' ')

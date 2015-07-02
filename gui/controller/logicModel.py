@@ -110,11 +110,25 @@ class LogicModel(ViewModel):
         # iei = input exchange item.
         # oei = output exchange item.
         # not all models will have inputs & outputs so that's why their set to None by default.
-        print modelid
-        category = self.PropertyGrid.Append(wxpg.PropertyCategory("General"))
-        self.PropertyGrid.Append(wxpg.StringProperty(modelid.keys()[0], value=modelid.values()[0]))
 
-        pass
+        self.PropertyGrid.Append(wxpg.PropertyCategory("General"))
+        for key, value in modelid.iteritems():
+            self.PropertyGrid.Append(wxpg.StringProperty(str(key), value=str(value)))
+
+        if iei:
+            self.PropertyGrid.Append(wxpg.PropertyCategory("Input"))
+            for key, value in iei[0].iteritems():
+                self.PropertyGrid.Append(wxpg.StringProperty(str(key), value=str(value)))
+
+        if oei:
+            self.PropertyGrid.Append(wxpg.PropertyCategory("Output"))
+            for key, value in oei[0].iteritems():
+                try:
+                    self.PropertyGrid.Append(wxpg.StringProperty(str(key), value=str(value)))
+                except:
+                    pass
+                    # print str(key) + " and " + str(value) + " already exist"
+
 
 
     def PopulateDetails(self, fileExtension):

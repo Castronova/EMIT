@@ -112,38 +112,35 @@ class LogicModel(ViewModel):
         # not all models will have inputs & outputs so that's why their set to None by default.
 
         self.PropertyGrid.Append(wxpg.PropertyCategory("General"))
-        for key, value in modelid.iteritems():
-            self.PropertyGrid.Append(wxpg.StringProperty(str(key).capitalize(), value=str(value)))
+        self.PopulatePropertyGrid(modelid)
 
         if iei:
             self.PropertyGrid.Append(wxpg.PropertyCategory("Input"))
-            for key, value in iei[0].iteritems():
-                self.PropertyGrid.Append(wxpg.StringProperty(str(key).capitalize(), value=str(value)))
+            self.PopulatePropertyGrid(iei[0])
 
         if oei:
             self.PropertyGrid.Append(wxpg.PropertyCategory("Output"))
-            for key, value in oei[0].iteritems():
+            self.PopulatePropertyGrid(oei[0])
+
+    def PopulatePropertyGrid(self, dictionary):
+        #  A recursive method, checks if there is a dictionary inside a dictionary.
+        if not dictionary:  # if empty dictionary than do nothing
+            return
+        for key, value in dictionary.iteritems():
+            if type(value) is dict:
+                self.PopulatePropertyGrid(value)
+            elif type(value) is list:
+                value = self.ExtractDictionary(value)
+                self.PopulatePropertyGrid(value)
+            else:
                 try:
-                    if key == 'geom':
-                        geom = value
-                        geom = geom[0]  # Take the dictionary out of the list
-                        shape = geom.values()[0]
-                        bounds = shape.bounds
-                        self.PropertyGrid.Append(wxpg.StringProperty(str("Bounds"), value=str(bounds)))
-                    elif key == 'unit':
-                        unit = value
-                        unitname = unit._Unit__unitName
-                        self.PropertyGrid.Append(wxpg.StringProperty(str("Unit"), value=str(unitname)))
-                    elif key == 'variable' or key == 'name' or key == 'description':
-                        #  This key has no useful information at the moment or it is duplicated from modelid.
-                        pass
-                    else:
-                        self.PropertyGrid.Append(wxpg.StringProperty(str(key).capitalize(), value=str(value)))
+                    self.PropertyGrid.Append(wxpg.StringProperty(str(key).capitalize(), value=str(value)))
                 except:
                     pass
-                    # print str(key) + " and " + str(value) + " already exist"
 
-
+    def ExtractDictionary(self, array):
+        dictionary = array[0]
+        return dictionary
 
     def PopulateDetails(self, fileExtension):
 

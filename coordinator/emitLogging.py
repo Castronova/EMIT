@@ -5,6 +5,7 @@ import logging.handlers
 import os
 import json
 
+
 class _Log:
     __monostate = None
 
@@ -123,7 +124,9 @@ class Log(object):
         self.log._error(text)
 
     def info(self, text):
-        self.log._info(text)
+        # todo: this is a hack
+        if not 'OVERWRITE:' in text:
+            self.log._info(text)
 
     def critical(self, text):
         self.log._critical(text)

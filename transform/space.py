@@ -129,9 +129,9 @@ class spatial_intersect_polygon_point(space_base.Space):
 
         i = 0
 
-        for polygon in polygons:
+        for point in points:
 
-            min_dist, min_index = min((polygon.distance(geom), k) for (k, geom) in enumerate(points))
+            min_dist, min_index = min((point.distance(geom), k) for (k, geom) in enumerate(polygons))
             mapped.append([ingeoms[min_index], outgeoms[i]])
 
             i += 1

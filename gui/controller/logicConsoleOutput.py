@@ -35,6 +35,12 @@ def follow(logging, target):
                         # load record from json
                         record = json.loads(line)
 
+                        # todo: this is a hack
+                        overwrite = False
+                        if 'OVERWRITE' in record['message']:
+                            record['message'].replace('OVERWRITE','')
+                            overwrite = True
+
                         # target is the rich text box
                         wx.CallAfter(target.SetInsertionPoint, 0)
                         if record['levelname'] == 'WARNING':
@@ -49,10 +55,16 @@ def follow(logging, target):
                             wx.CallAfter(target.BeginTextColour, (170, 57, 57))
 
                         if record['levelname'] != 'INFO':
-                            message = ''.join([record['levelname'], ": ", record['message']+'\n'])
+                            message = ''.join([record['levelname'], ": ", record['message']])
                         else:
-                            message = record['message'] + "\n"
-                        wx.CallAfter(target.WriteText, message)
+                            message = record['message']
+
+                        if not overwrite:
+                            wx.CallAfter(target.WriteText, '\n' + message)
+                        else:
+                            # wx.CallAfter(target.Remove, dict(from_=0, to_=100))
+                            # wx.CallAfter(target.Refresh, )
+                            wx.CallAfter(target.WriteText,message)
 
                         wx.CallAfter(target.EndTextColour, )
                         wx.CallAfter(target.Refresh, )

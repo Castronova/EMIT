@@ -55,7 +55,7 @@ def run_feed_forward(obj):
     spatial_maps = {}
 
     # todo:  move this into function
-    elog.info('[PRE-RUN] Performing spatial mapping... ')
+    elog.info('Generating spatial maps... ')
 
     for modelid in exec_order:
 

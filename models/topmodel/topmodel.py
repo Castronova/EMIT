@@ -52,17 +52,17 @@ class topmodel(feed_forward.feed_forward_wrapper):
         self.read_topo_input()
 
         elog.info('Building input/output geometries')
-        self.input_ti_geoms = None
+        self.ti_geoms = None
         self.output_soil_moisture_geoms = None
         self.calc_ti_geometries()
 
         # set precipitation geometries
-        elog.info('Setting input precipitation geometries')
-        self.inputs()['precipitation'].addGeometries2(self.input_ti_geoms)
+        elog.info('Setting excess precipitation geometries')
+        self.outputs()['excess'].addGeometries2(self.ti_geoms)
 
         # set saturation geometries
-        elog.info('Setting soil saturation geometries')
-        self.outputs()['soil moisture'].addGeometries2(self.output_soil_moisture_geoms)
+        # elog.info('Setting soil saturation geometries')
+        # self.outputs()['soil moisture'].addGeometries2(self.ti_geoms)
 
         # ---- calculate saturation deficit
         elog.info('Calculating initial saturation deficit')
@@ -71,49 +71,89 @@ class topmodel(feed_forward.feed_forward_wrapper):
         self.lamda_average = sum(TI_freq) / sum(self.freq)
 
         # catchment average saturation deficit(S_bar)
-        self.S_average = (-1.)*self.c * ((math.log10(self.R / self.Tmax)) + self.lamda_average)
+        self.s_average = (-1.)*self.c * ((math.log10(self.R / self.Tmax)) + self.lamda_average)
 
         elog.info('Component Initialization Completed Successfully')
 
     def run(self,inputs):
 
+
+
         precipitation = inputs['precipitation']
         vals = precipitation.getValues2()
         datetimes = precipitation.getDates2()
 
-        input_data = inputs['precipitation'].get_geoms_and_timeseries()
+        # get output exchange items
+        runoff = self.outputs()['excess']
+
+        et = 0.0   # todo: this should be an input
+        sat_deficit = np.zeros(len(self.ti))
+
+        # elog.debug('Executing TOPMODEL... timestep [0 of %s]'%str(len(datetimes)))
+
+        # loop through entire time horizon
+        for i in range (0, len(datetimes)):
+
+            # initialize arrays
+            overland_flow = np.zeros(len(self.ti))  #Infiltration excess
+            reduced_ET = np.zeros(len(self.ti)) #Reduced ET due to dryness
+            MM = np.zeros(len(self.ti))
+            NN = np.zeros(len(self.ti))
+
+            # get current datetime
+            idx, date = datetimes[i]
+
+            # get precip at the current time
+            precip = precipitation.getValues2(time_idx = i)
+            precip = precip[0][0][0] #todo: this is a hack because i'm running out of time before the demo
+
+            # calculate saturation deficit
+            sat_deficit = [self.s_average + self.c * (self.lamda_average - ti) for ti in self.ti]
+
+            # account for interception and et
+            p = max(0, (precip - et))
+            sat_deficit = [s - p + et for s in sat_deficit]
+
+            q_infiltration = p - et
+
+            if q_infiltration > 0:
+
+                for i in range(0, len(self.ti)):
+                    if sat_deficit[i] < 0:
+                        overland_flow[i] = -1*sat_deficit[i]
+                        sat_deficit[i] = 0
+                    else:
+                        overland_flow[i] = 0
+
+                    MM[i] = self.freq[i] * overland_flow[i]
+
+            else:
+                for i in range(0, len(self.ti)):
+                    if sat_deficit[i] > 5000:
+                        reduced_ET[i] = -5000 + sat_deficit[i]
+                        sat_deficit[i] = 5000
+                    else:
+                        reduced_ET[i] = 0
+
+                    NN[i] = self.freq[i] * reduced_ET[i]
+
+                # todo: calculate sum(freq) outside of this loop, possibly in initialize
+                q_infiltration += sum(NN) / sum(self.freq)
 
 
-        # loop through each geometry
-        for geom, dataset in input_data.iteritems():
+            q_subsurface = self.Tmax * (math.exp(-self.lamda_average)) * (math.exp(-self.s_average / self.c))
+            q_overland = sum(MM) / sum(self.freq);
 
-            time = self.current_time()
+            # calculate the new average deficit using catchment mass balance
+            self.s_average = self.s_average + q_subsurface + q_overland - q_infiltration
 
-            ts = []
-            while time <= self.simulation_end():
+            # calculating runoff q
+            q = q_overland + q_subsurface
 
-                dates = dataset[0]
-                values = dataset[1]
-
-                for i in range(0,len(dates)):
-                    # get value at this location / time
-                    value = values[i]
-
-                    # perform computation
-                    new_value = value**2
-
-                    # save this new value in a timeseries
-                    ts.append((time,new_value))
-
-                # increment time
-                time = self.increment_time(time)
-
-
-            # save results to this geometry as an output variable
-            #self.set_geom_values('multipliedValue',geom,ts)
-
-
-
+            # save these data
+            runoff.setValues2(q, date)
+            # elog.info('OVERWRITE:Executing TOPMODEL... timestep [%d of %d]'%(i, len(datetimes)), True)
+            print precip, q
 
 
     def save(self):
@@ -154,26 +194,25 @@ class topmodel(feed_forward.feed_forward_wrapper):
                 x += cellsize
             y += cellsize
 
-        # read ti data
-        fac_data = np.genfromtxt(self.fac_input, delimiter=' ', skip_header=6)
+        # # read ti data
+        # fac_data = np.genfromtxt(self.fac_input, delimiter=' ', skip_header=6)
+        #
+        # # set start x, y
+        # y = lowery + cellsize * nrows
+        # for row in fac_data:
+        #     x = lowerx
+        #     for element in row:
+        #         if element != nodata:
+        #             pt = Point(x,y)
+        #             if element >= 20.:
+        #                 # save as sat geometry
+        #                 # srs = spatial.get_srs_from_epsg(None)   # get default
+        #                 satgeoms.append(stdlib.Geometry(geom=pt))
+        #         x += cellsize
+        #     y += cellsize
 
-        # set start x, y
-        y = lowery + cellsize * nrows
-        for row in fac_data:
-            x = lowerx
-            for element in row:
-                if element != nodata:
-                    pt = Point(x,y)
-                    if element >= 20.:
-                        # save as sat geometry
-                        # srs = spatial.get_srs_from_epsg(None)   # get default
-                        satgeoms.append(stdlib.Geometry(geom=pt))
-                x += cellsize
-            y += cellsize
-
-        self.input_ti_geoms = tigeoms
-        self.output_soil_moisture_geoms = satgeoms
-
+        self.ti_geoms = tigeoms
+        # self.output_soil_moisture_geoms = satgeoms
 
     def read_topo_input(self):
 

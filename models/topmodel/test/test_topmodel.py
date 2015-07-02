@@ -97,54 +97,6 @@ class test_topmodel(unittest.TestCase):
             # plt.draw()
             print 'here'
 
-    def test_run(self):
-        from datetime import datetime as dt
-
-        # load topmodel
-        config_params = parse_config(self.mdl)
-        top = topmodel.topmodel(config_params)
-
-
-        # create exchange item
-        unit = mdl.create_unit('international inch')
-        variable = mdl.create_variable('Precipitation')
-        item = stdlib.ExchangeItem(name='Weather Reader', unit=unit, variable=variable)
-        data = '../data/precip_weather.csv'
-
-        # read weather data
-        incremental_precip = []
-        dates = []
-        with open(data, 'rU') as f:
-            lines = f.readlines()
-            # skip commented lines
-            skip = 0
-            for line in lines:
-                if line[0] == '#':
-                    skip += 1
-                else:
-                    # exit loop as soon as non-commented line is found
-                    break
-
-            # read all lines after header
-            for line in lines[skip:]:
-                data = line.split(',')
-
-                # exit if the data is empty
-                if data[0].strip() == '':
-                    break
-
-                # save dates to list
-                dates.append(dt.strptime(data[0], "%m/%d/%y %H:%M"))
-
-                # save incremental precipitation to list
-                incremental_precip.append(float(data[2]))
-
-
-        # set output data
-        item.setValues2(incremental_precip, dates)
-
-
-
     def test_execute_simulation(self):
 
         import datatypes
@@ -154,22 +106,20 @@ class test_topmodel(unittest.TestCase):
 
 
         # load randomizer component
-        randomizer = simulator.add_model(id='randomizer',  attrib={'mdl':'../../test_models/randomizer/randomizer.mdl'})
+        weather = simulator.add_model(id='weather',  attrib={'mdl':'../../test_models/weather/weatherReader.mdl'})
 
         # load topmodel
         top = simulator.add_model(id='topmodel', attrib={'mdl':self.mdl})
 
 
         # add link between randomizer and topmodel
-        link1 = simulator.add_link_by_name(from_id=randomizer['id'],
-                                  from_item_name='random POINT 1-10',
+        link1 = simulator.add_link_by_name(from_id=weather['id'],
+                                  from_item_name='Precipitation',
                                   to_id=top['id'],
                                   to_item_name='precipitation')
 
         # set link tranformations
-        spatial = SpatialInterpolation.NearestNeighbor
-        spatial.set_param('max_distance', 1000)
-        link1.spatial_interpolation(spatial)
+        link1.spatial_interpolation(SpatialInterpolation.ExactMatch)
         link1.temporal_interpolation(TemporalInterpolation.NearestNeighbor)
 
         print 'Starting Simulation'

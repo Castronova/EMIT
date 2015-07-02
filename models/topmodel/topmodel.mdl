@@ -18,17 +18,13 @@ unit_type_cv = hours
 value = 1
 
 [output]
-variable_name_cv = streamflow
-unit_type_cv = cubic feet per second
-elementset = ./test/gis/StreamNet.shp
-
-[output]
-variable_name_cv = soil moisture
-unit_type_cv = saturation percentage
+variable_name_cv = excess
+unit_type_cv = inches
 
 [input]
 variable_name_cv = precipitation
 unit_type_cv = international inch
+elementset = ./test/gis/rhf_watershed.shp
 
 [model inputs]
 ti = ./test/data/right_hand_fork_ti_trim.txt
@@ -36,7 +32,7 @@ fac= ./test/data/fac_trim.txt
 m = 180
 tmax = 250000
 r = 9.66
-interception = 3
+interception = 0.0
 
 [options]
 ignorecv = 1

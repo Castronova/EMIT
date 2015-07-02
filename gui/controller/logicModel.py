@@ -124,7 +124,18 @@ class LogicModel(ViewModel):
             self.PropertyGrid.Append(wxpg.PropertyCategory("Output"))
             for key, value in oei[0].iteritems():
                 try:
-                    self.PropertyGrid.Append(wxpg.StringProperty(str(key), value=str(value)))
+                    if key == 'geom':
+                        geom = value
+                        geom = geom[0]  # Take the dictionary out of the list
+                        shape = geom.values()[0]
+                        bounds = shape.bounds
+                        self.PropertyGrid.Append(wxpg.StringProperty(str("Bounds"), value=str(bounds)))
+                    elif key == 'unit':
+                        unit = value
+                        unitname = unit._Unit__unitName
+                        self.PropertyGrid.Append(wxpg.StringProperty(str("Unit"), value=str(unitname)))
+                    else:
+                        self.PropertyGrid.Append(wxpg.StringProperty(str(key), value=str(value)))
                 except:
                     pass
                     # print str(key) + " and " + str(value) + " already exist"

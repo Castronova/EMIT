@@ -113,12 +113,12 @@ class LogicModel(ViewModel):
 
         self.PropertyGrid.Append(wxpg.PropertyCategory("General"))
         for key, value in modelid.iteritems():
-            self.PropertyGrid.Append(wxpg.StringProperty(str(key), value=str(value)))
+            self.PropertyGrid.Append(wxpg.StringProperty(str(key).capitalize(), value=str(value)))
 
         if iei:
             self.PropertyGrid.Append(wxpg.PropertyCategory("Input"))
             for key, value in iei[0].iteritems():
-                self.PropertyGrid.Append(wxpg.StringProperty(str(key), value=str(value)))
+                self.PropertyGrid.Append(wxpg.StringProperty(str(key).capitalize(), value=str(value)))
 
         if oei:
             self.PropertyGrid.Append(wxpg.PropertyCategory("Output"))
@@ -134,8 +134,11 @@ class LogicModel(ViewModel):
                         unit = value
                         unitname = unit._Unit__unitName
                         self.PropertyGrid.Append(wxpg.StringProperty(str("Unit"), value=str(unitname)))
+                    elif key == 'variable' or key == 'name' or key == 'description':
+                        #  This key has no useful information at the moment or it is duplicated from modelid.
+                        pass
                     else:
-                        self.PropertyGrid.Append(wxpg.StringProperty(str(key), value=str(value)))
+                        self.PropertyGrid.Append(wxpg.StringProperty(str(key).capitalize(), value=str(value)))
                 except:
                     pass
                     # print str(key) + " and " + str(value) + " already exist"

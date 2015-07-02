@@ -12,6 +12,7 @@ from os.path import join, dirname, abspath
 import ConfigParser
 import fnmatch
 from logicFileDrop import filepath
+from coordinator.emitLogging import elog
 
 
 # todo: refactor
@@ -202,6 +203,7 @@ class LogicToolbox(ViewToolbox):
             # Send the filepath to the FileDrop class in CanvasController
             Publisher.sendMessage('toolboxclick', x=nx, y=ny, filenames=filenames)
         except:
+            elog.error("Cannot load folders unto the canvas")
             pass
 
     def OnItemContextMenu(self, evt):
@@ -248,7 +250,7 @@ class LogicToolbox(ViewToolbox):
             # dropSource.SetData(data)
             # dropSource.DoDragDrop()
         except:
-            #  Can not drag folders unto the canvas
+            elog.error("cannot not drag folders unto the canvas")
             pass
 
     def OnSize(self, evt):

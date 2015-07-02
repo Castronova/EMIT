@@ -130,6 +130,7 @@ class LogicCanvas(ViewCanvas):
                     self.addModel(filepath=filenames, x=nx, y=ny)
 
         except:
+            # elog.debug("onEnterWindow() in logicCanvas.py")
             pass
         self.path = None
 

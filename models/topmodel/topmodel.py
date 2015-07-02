@@ -105,7 +105,15 @@ class topmodel(feed_forward.feed_forward_wrapper):
 
             # get precip at the current time
             precip = precipitation.getValues2(time_idx = i)
-            precip = precip[0][0][0] #todo: this is a hack because i'm running out of time before the demo
+
+            #todo: this is a hack because i'm running out of time before the demo
+            # todo: something is wrong with the data interpolation!
+            p = precip[0][0]
+            if isinstance(p, np.ndarray):
+                precip = p[0]
+            else:
+                precip = p
+            # precip = precip[0][0][0]
 
             # calculate saturation deficit
             sat_deficit = [self.s_average + self.c * (self.lamda_average - ti) for ti in self.ti]
@@ -153,8 +161,9 @@ class topmodel(feed_forward.feed_forward_wrapper):
             # save these data
             runoff.setValues2(q, date)
             # elog.info('OVERWRITE:Executing TOPMODEL... timestep [%d of %d]'%(i, len(datetimes)), True)
-            print precip, q
+            # print precip, q
 
+        return 1
 
     def save(self):
         return self.outputs()

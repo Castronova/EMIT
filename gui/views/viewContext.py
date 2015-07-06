@@ -185,14 +185,15 @@ class CanvasContextMenu(wx.Menu):
         self.Bind(wx.EVT_MENU, self.OnClickClear, clear)
 
         # Disable certain options if there aren't any models present
-        if len(self.parent.models) < 2:
+        if len(self.parent.models) <= 1:
             addLink.Enable(False)
-            run.Enable(False)
+            if len(self.parent.models) <= 0:
+                save.Enable(False)
+                saveAs.Enable(False)
+                clear.Enable(False)
 
-        if len(self.parent.models) < 1:
-            save.Enable(False)
-            saveAs.Enable(False)
-            clear.Enable(False)
+        if len(self.parent.links) <= 0:
+            run.Enable(False)
 
     def OnAddLink(self, e):
         self.parent.FloatCanvas.SetMode(self.parent.GuiLink)

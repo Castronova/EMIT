@@ -31,9 +31,6 @@ class LogicDirectory(ViewDirectory):
         self.Bind(wx.EVT_TOOL, self.OnBackClick, id=PreviousID)
         self.Bind(wx.EVT_TOOL, self.OnUpClick, id=UpID)
         self.Bind(wx.EVT_TOOL, self.OnRefresh, id=RefreshID)
-
-        self.Bind(wx.EVT_LIST_BEGIN_DRAG, self.onDrag)
-
         self.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.OnRightClick)
 
     def OnClick(self, event):
@@ -98,20 +95,6 @@ class LogicDirectory(ViewDirectory):
             self.directoryStack.pop()
             os.chdir(self.directoryStack[-1])
             self.dirCtrl.clearItems()
-
-    def onDrag(self, event):
-        data = wx.FileDataObject()
-        obj = event.GetEventObject()
-        id = event.GetIndex()
-        filename = obj.GetItem(id).GetText()
-        dirname = self.dirCtrl.getcurrentdirectory()
-        fullpath = str(os.path.join(dirname, filename))
-
-        data.AddFile(fullpath)
-
-        dropSource = wx.DropSource(obj)
-        dropSource.SetData(data)
-        result = dropSource.DoDragDrop()
 
     def OnRightClick(self, event):
         self.dirCtrl.PopupMenu(DirectoryContextMenu(self, event), event.GetPosition())

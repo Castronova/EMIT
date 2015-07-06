@@ -51,7 +51,6 @@ class LogicToolbox(ViewToolbox):
     def initBinding(self):
         self.Bind(wx.EVT_SIZE, self.OnSize)
         self.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnItemContextMenu)
-        self.Bind(wx.EVT_TREE_BEGIN_DRAG, self.onDrag)
         self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.onDoubleClick)
         events.onSimulationSaved += self.loadSIMFile
 
@@ -228,30 +227,6 @@ class LogicToolbox(ViewToolbox):
 
         if not folder:
             self.tree.PopupMenu(ToolboxContextMenu(self, evt, removable, folder))
-
-    def onDrag(self, event):
-
-        data = wx.FileDataObject()
-        obj = event.GetEventObject()
-        id = event.GetItem()
-        filename = id.GetText()
-        try:
-            fullpath = self.filepath[filename]
-
-            # filepathclass = filepath()
-            # filepathclass.filepath = fullpath
-            Publisher.sendMessage('dragpathsent', path=fullpath)
-            dragCursor = wx.StockCursor(wx.CURSOR_LEFT_BUTTON)
-            self.SetCursor(dragCursor)
-
-
-            # data.AddFile(fullpath)
-            # dropSource = wx.DropSource(obj)
-            # dropSource.SetData(data)
-            # dropSource.DoDragDrop()
-        except:
-            elog.error("cannot not drag folders unto the canvas")
-            pass
 
     def OnSize(self, evt):
         self.tree.SetSize(self.GetSize())

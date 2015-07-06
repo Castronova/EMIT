@@ -18,7 +18,6 @@ class LogicDatabase(ViewDatabase):
         self.__list_id = None
         self.__context_menu = None
 
-        # self.Bind(wx.EVT_LIST_BEGIN_DRAG, self.onDrag)
         self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.onDoubleClick)
         self.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.LaunchContext)
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListItemSelect)

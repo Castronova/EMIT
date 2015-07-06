@@ -232,21 +232,29 @@ class ViewEMIT(wx.Frame):
         wx.CallAfter(self._postStart)
 
         ## Events
-        #File MenuBar
+        # File Option Bindings
         self.Bind(wx.EVT_MENU, self.SaveConfiguration, Save)
         self.Bind(wx.EVT_MENU, self.SaveConfigurationAs, SaveAs)
         self.Bind(wx.EVT_MENU, self.LoadConfiguration, Load)
         self.Bind(wx.EVT_MENU, self.onClose, exit)
         events.onSaveFromCanvas += self.SaveConfigurationAs
 
-        #View MenuBar
+        # View Option Bindings
         self.Bind(wx.EVT_MENU, self.onDirectory, ShowDir)
         self.Bind(wx.EVT_MENU, self.onAllFiles, ShowAll)
         self.Bind(wx.EVT_MENU, self.onConsole, MinimizeConsole)
         self.Bind(wx.EVT_MENU, self.defaultview, defaultview)
-        # self.Bind(wx.EVT)
 
-        #  Option MenuBar Bindings
+        # Run Option Bindings
+        self.Bind(wx.EVT_MENU_OPEN, self.onRunSelected)
+
+    def onRunSelected(self, event):
+        if event.GetMenu() == self.m_runMenu:
+            print len(self.Canvas.links)
+            if len(self.Canvas.links) > 0:
+                self.applicationRun.Enable(True)
+            else:
+                self.applicationRun.Enable(False)
 
     def onClose(self, event):
         dial = wx.MessageDialog(None, 'Are you sure to quit?', 'Question',

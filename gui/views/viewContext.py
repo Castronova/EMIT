@@ -53,10 +53,9 @@ class ConsoleContextMenu(wx.Menu):
 
     def OnClear(self, event):
         """
-        User clears the
+        User clears the gui console
         """
         self.log.Clear()
-        elog.info('RESET |')
 
     def OnMinimize(self, e):
         self.parent.Iconize()
@@ -215,6 +214,7 @@ class CanvasContextMenu(wx.Menu):
 
         if dlg.ShowModal() !=wx.ID_NO:
             self.parent.clear()
+            elog.info("Configurations have been cleared")
 
     def SaveConfiguration(self,e):
         if self.parent.GetLoadingPath() == None:

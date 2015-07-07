@@ -84,6 +84,7 @@ class test_sqlite_db(unittest.TestCase):
         tempPerson = {'firstName': 'Bob', 'lastName': 'Charles'}
         self.sqlite.create_user(tempPerson)
 
+        # TODO:  Must make sure that an affiliation is created otherwise the user entry will fail during actionby creation
     def test_validate_new_user(self):
 
         #  Validating that the person was added
@@ -91,18 +92,18 @@ class test_sqlite_db(unittest.TestCase):
         person = r.getPersonByName('Bob', 'Charles')
         self.assertTrue('Bob' == person.PersonFirstName, msg="Match! Person was inserted in the database")
 
+        # TODO:  Must make sure that an affiliation is created otherwise the user entry will fail during actionby creation
+
     def test_add_new_user(self):
         tempPerson = {'firstName': 'Bob', 'lastName': 'Charles'}
+
+        # TODO:  Must make sure that an affiliation is created otherwise the user entry will fail during actionby creation
         self.sqlite.create_user(tempPerson)
 
         r = ReadODM2(self.pop_connection)
         person = r.getPersonByName('Bob', 'Charles')
         id = r.getPersonById(person.PersonID)
         self.assertTrue(person == id)
-
-    def test_display_new_user(self):
-        r = ReadODM2(self.pop_connection)
-        print r.getPeople()
 
     def test_create_organization(self):
         temporgan = {'cvType': 'University', 'code': 'usu',
@@ -183,9 +184,21 @@ class test_sqlite_db(unittest.TestCase):
         # list of exchange items
         ei = [item]
 
-        self.sqlite.create_simulation(preferences_path=pref,
-                                      config_params=config,
-                                      output_exchange_items=item)
+        # model parameters that will be accessed via engine during simualtion (hardcoded for the test case)
+        params = dict(  name = 'test_simulation',
+                        description = 'this is a sample description',
+                        simulation_start = '03/01/2014 12:00:00',
+                        simulation_end = '03/01/2014 23:00:00',
+                        code = 'testmodel',
+                        unit_type_cv = 'hour',
+                        value = '1',
+        )
+
+
+        # get affiliation
+        r = ReadODM2(self.pop_connection)
+        affiliation = r.getAffiliationsByPerson('tony','castronova')
+        self.sqlite.create_simulation(affiliation, params, item)
 
 
 

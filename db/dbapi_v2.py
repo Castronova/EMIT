@@ -1,3 +1,8 @@
+import datetime
+import uuid
+import numpy
+import time
+
 __author__ = 'mike'
 # This is our API for simulation data that uses the latest ODM2PythonAPI code
 
@@ -12,6 +17,7 @@ from ODM2PythonAPI.src.api.ODM2.services.readService import ReadODM2
 from ODM2PythonAPI.src.api.ODM2.services.createService import CreateODM2
 from ODM2PythonAPI.src.api.ODM2.services.updateService import UpdateODM2
 from ODM2PythonAPI.src.api.ODM2.services.deleteService import DeleteODM2
+from ODM2PythonAPI.src.api.ODM2 import models
 
 class sqlite():
 
@@ -33,7 +39,7 @@ class sqlite():
     def create_input_dataset(self, connection, resultids,type,code="",title="",abstract=""):
         pass
 
-    def create_simulation(self, preferences_path, config_params, output_exchange_items):
+    def create_simulation(self, odm2_affiliation, config_params, ei):
 
         name = config_params['name']
         description = config_params['description']
@@ -46,7 +52,7 @@ class sqlite():
         timestepunittype = config_params['unit_type_cv']
 
         # create person / organization / affiliation
-        affiliation = self.set_user_preferences(preferences_path)
+        # affiliation = self.set_user_preferences(preferences_path)
 
         # get the timestep unit id
         #todo: This is not returning a timestepunit!!!  This may need to be added to the database
@@ -54,10 +60,11 @@ class sqlite():
 
         # create method
         method = self.read.getMethodByCode('simulation')
+        org_id = odm2_affiliation[0].OrganizationID if len(odm2_affiliation) > 0 else None
         if not method: method = self.write.createMethod(code= 'simulation',
                                                              name='simulation',
                                                              vType='calculated',
-                                                             orgId=affiliation.OrganizationID,
+                                                             orgId=org_id,
                                                              description='Model Simulation Results')
 
 
@@ -66,18 +73,20 @@ class sqlite():
                                               methodid=method.MethodID,
                                               begindatetime=datetime.datetime.now(),
                                               begindatetimeoffset=int((datetime.datetime.now() - datetime.datetime.utcnow() ).total_seconds()/3600))
+
         # create actionby
+        aff_id = odm2_affiliation[0].AffiliationID if len(odm2_affiliation) > 0 else None
         actionby = self.write.createActionBy(actionid=action.ActionID,
-                                             affiliationid=affiliation.AffiliationID)
+                                             affiliationid=aff_id)
 
         # create processing level
-        processinglevel = self._coreread.getProcessingLevelByCode(processingCode=2)
-        if not processinglevel: processinglevel = self._corewrite.createProcessingLevel(code=2,
+        processinglevel = self.read.getProcessingLevelByCode(processingCode=2)
+        if not processinglevel: processinglevel = self.write.createProcessingLevel(code=2,
                                                                       definition='Derived Product',
                                                                       explanation='Derived products require scientific and technical interpretation and include multiple-sensor data. An example might be basin average precipitation derived from rain gages using an interpolation procedure.')
 
         # create dataset
-        dataset = self._corewrite.createDataSet(dstype='Simulation Input',
+        dataset = self.write.createDataset(dstype='Simulation Input',
                                                 dscode='Input_%s'%name,
                                                 dstitle='Input for Simulation: %s'%name,
                                                 dsabstract=description)
@@ -86,46 +95,79 @@ class sqlite():
 
         tsvalues = []
 
+        # make sure the exchange item is represented as a list
+        if not hasattr(ei,'__len__'):
+            ei = [ei]
+
         # loop over output exchange items
-        for exchangeitem in output_exchange_items:
+        for e in ei:
+
+
+            geometries = numpy.array(e.getGeometries2())
+            dates = numpy.array(e.getDates2())
+            datavalues = numpy.array( e.getValues2())
 
             # create variable
             # TODO: This is not correct!
             # todo: implement variable vType
-            variable = self._coreread.getVariableByCode(exchangeitem.variable().VariableNameCV())
-            if not variable: variable = self._corewrite.createVariable(code=exchangeitem.variable().VariableNameCV(),
-                                                                       name=exchangeitem.variable().VariableDefinition(),
+            variable = self.read.getVariableByCode(e.variable().VariableNameCV())
+            if not variable: variable = self.write.createVariable(code=e.variable().VariableNameCV(),
+                                                                       name=e.variable().VariableDefinition(),
                                                                        vType='unknown',
                                                                        nodv=-999)
 
             # create unit
-            unit = self._coreread.getUnitByName(exchangeitem.unit().UnitName())
-            if not unit: unit = self._corewrite.createUnit(type=exchangeitem.unit().UnitTypeCV(),
-                                                           abbrev=exchangeitem.unit().UnitAbbreviation(),
-                                                           name=exchangeitem.unit().UnitName())
+            unit = self.read.getUnitByName(e.unit().UnitName())
+            if not unit: unit = self.write.createUnit(type=e.unit().UnitTypeCV(),
+                                                           abbrev=e.unit().UnitAbbreviation(),
+                                                           name=e.unit().UnitName())
 
             # create spatial reference
-            refcode = "%s:%s" %(exchangeitem.geometries()[0].srs().GetAttrValue("AUTHORITY", 0),exchangeitem.geometries()[0].srs().GetAttrValue("AUTHORITY", 1))
-            spatialref = self._sfread.getSpatialReferenceByCode(refcode)
-            if not spatialref: spatialref = self._sfwrite.createSpatialReference(srsCode=refcode,
-                                                                                 srsName=exchangeitem.geometries()[0].srs().GetAttrValue("GEOGCS", 0),
-                                                                                 srsDescription="%s|%s|%s"%(exchangeitem.geometries()[0].srs().GetAttrValue("PROJCS", 0),exchangeitem.geometries()[0].srs().GetAttrValue("GEOGCS", 0),exchangeitem.geometries()[0].srs().GetAttrValue("DATUM", 0)))
+            srs = geometries[0].srs()  # get the srs from the first element
+            # todo: Can geometries have difference srs in the same exchange item?  Something needs to check for this.  Should srs be at the exchange item level?
+            refcode = "%s:%s" %(srs.GetAttrValue("AUTHORITY", 0), srs.GetAttrValue("AUTHORITY", 1))
+            spatialref = self.read.getSpatialReferenceByCode(refcode)
+            if not spatialref:
+                spatialref = self.write.createSpatialReference(srsCode=refcode,
+                                                               srsName=srs.GetAttrValue("GEOGCS", 0),
+                                                               srsDescription="%s|%s|%s"%(srs.GetAttrValue("PROJCS", 0),
+                                                                                          srs.GetAttrValue("GEOGCS", 0),
+                                                                                          srs.GetAttrValue("DATUM", 0)))
 
 
+            '''
+            >>> exchangeitem.getGeometries2()
+            >>> exchangeitem.getDates2()
+            >>> didx, date = zip(*exchangeitem.getDates2())
+            >>> vals = exchangeitem.getValues2()
+
+            >>> import numpy
+            >>> v = numpy.array(vals)
+            >>> type(v)
+            <type 'numpy.ndarray'>
+            >>> v[:,0]
+            '''
+
+            # timer for benchmarking
             st = time.time()
+
             # loop over geometries
-            for geometry in exchangeitem.geometries():
+            for i in range(0, len(geometries)):
 
-                geom = geometry.geom()
 
-                dates,values = geometry.datavalues().get_dates_values()
+                geom = geometries[i].geom()
+                values = datavalues[:,i]   # all dates for geometry(i)
+
+
+
+                # dates,values = geometry.datavalues().get_dates_values()
 
 
 
 
                 # create sampling feature
-                samplingfeature = self._coreread.getSamplingFeatureByGeometry(geom.wkt)
-                if not samplingfeature: samplingfeature = self._corewrite.createSamplingFeature(code=uuid.uuid4().hex,
+                samplingfeature = self.read.getSamplingFeatureByGeometry(geom.wkt)
+                if not samplingfeature: samplingfeature = self.write.createSamplingFeature(code=uuid.uuid4().hex,
                                                                                                 vType="site",
                                                                                                 name=None,
                                                                                                 description=None,
@@ -134,8 +176,10 @@ class sqlite():
                                                                                                 elevationDatum=None,
                                                                                                 featureGeo=geom.wkt)
 
+
+
                 # create feature action
-                featureaction = self._corewrite.createFeatureAction(samplingfeatureid=samplingfeature.SamplingFeatureID,
+                featureaction = self.write.createFeatureAction(samplingfeatureid=samplingfeature.SamplingFeatureID,
                                                                     actionid=action.ActionID)
 
 
@@ -143,7 +187,7 @@ class sqlite():
 
 
 
-                result = Result()
+                result = models.Results
                 result.ResultUUID = uuid.uuid4().hex
                 result.FeatureActionID = featureaction.FeatureActionID
                 result.ResultTypeCV = 'time series'
@@ -155,7 +199,7 @@ class sqlite():
 
 
                 # create time series result
-                timeseriesresult = self._reswrite.createTimeSeriesResult(result=result, aggregationstatistic='unknown',
+                timeseriesresult = self.write.createTimeSeriesResult(result=result, aggregationstatistic='unknown',
                                                                          timespacing=timestepvalue,
                                                                          timespacing_unitid=timestepunit.UnitsID)
 
@@ -177,7 +221,7 @@ class sqlite():
 
                 #st = time.time()
                 for i in xrange(len(values)):
-                    tsrv = Timeseriesresultvalue()
+                    tsrv = models.TimeSeriesResultValues()
                     tsrv.ResultID = timeseriesresult.ResultID
                     tsrv.CensorCodeCV = 'nc'
                     tsrv.QualityCodeCV = 'unknown'
@@ -193,11 +237,11 @@ class sqlite():
 
         #st = time.time()
         # insert ts values
-        self._reswrite.createAllTimeSeriesResultValues(tsrv = tsvalues)
+        self.write.createTimeSeriesResultValues(tsrv = tsvalues)
 
         # create model
-        model = self._simread.getModelByCode(modelcode=modelcode)
-        if not model: model = self._simwrite.createModel(code=modelcode,
+        model = self.read.getModelByCode(modelcode=modelcode)
+        if not model: model = self.write.createModel(code=modelcode,
                                                            name=modelname,
                                                            description=modeldesc)
 
@@ -208,7 +252,7 @@ class sqlite():
         #end = max([i.getEndTime() for i in output_exchange_items])
 
         # TODO: remove hardcoded time offsets!
-        sim = self._simwrite.createSimulation(actionid=action.ActionID,
+        sim = self.write.createSimulation(actionid=action.ActionID,
                                               modelID=model.ModelID,
                                               simulationName=name,
                                               simulationDescription=description,
@@ -223,8 +267,8 @@ class sqlite():
         return sim
 
 
-    def get_simulation_results(self,simulationName, dbactions, from_variableName, from_unitName, to_variableName, startTime, endTime):
-        pass
+    # def get_simulation_results(self,simulationName, dbactions, from_variableName, from_unitName, to_variableName, startTime, endTime):
+    #     pass
 
 
 

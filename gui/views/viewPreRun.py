@@ -94,7 +94,7 @@ class PageOne(wx.Panel):
         self.boxsizer = wx.StaticBoxSizer(self.sizerStaticBox, wx.VERTICAL)
 
         self.displayMessage = wx.CheckBox(self, label="Display Simulation Message")
-        self.logMessage = wx.CheckBox(self, label="Log Simulation Message")
+        self.logMessage = wx.CheckBox(self, label="log Simulation Message")
         # self.checkbox3 = wx.CheckBox(self, label="Checkbox 3")
 
         self.displayMessage.SetValue(True)  # By default it is checked

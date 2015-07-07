@@ -1,13 +1,18 @@
 __author__ = 'Mario'
 
-import sys
 import wx
 import wx.xrc
 import wx.aui
 from gui.controller.logicEMIT import LogicEMIT
 from coordinator import engineManager
-import coordinator.emitLogging as logging
+import coordinator.emitLogging as l
+import os, sys
 
+# odm2_api_path = os.path.abspath(os.path.join(os.path.dirname(__file__), './ODM2PythonAPI/src'))
+# sys.path.append(odm2_api_path)
+# import api.ODMconnection as odm2dbConnection
+
+logging = l.Log()
 
 
 class EMITApp(wx.App):
@@ -19,25 +24,9 @@ class EMITApp(wx.App):
         # tends to add clutter to our console.
         wx.Log.SetLogLevel(0)
 
-        logging.log.debug('THIS IS A TEST FROM EMIT.py!!!')
-
         self.logicEmit = LogicEMIT(None)
-
         return True
-
-# class SysOutListener:
-#     def write(self, string):
-#         try:
-#             sys.__stdout__.write(string)
-#             evt = wxStdOut(text=string)
-#             wx.PostEvent(wx.GetApp().frame.output, evt)
-#         except:
-#             pass
 
 if __name__ == '__main__':
     app = EMITApp()
     app.MainLoop()
-
-
-
-

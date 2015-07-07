@@ -32,9 +32,12 @@ class randomizer(feed_forward.feed_forward_wrapper):
 
         # Note: this calculation requires no input timeseries
 
-        outputs = [self.get_output_by_name('random 1-10'),
-                   self.get_output_by_name('random 10-100'),
-                   self.get_output_by_name('random 100-1000')
+        outputs = [self.get_output_by_name('random POLYGON 1-10'),
+                   self.get_output_by_name('random POLYGON 10-100'),
+                   self.get_output_by_name('random POLYGON 100-1000'),
+                   self.get_output_by_name('random POINT 1-10'),
+                   self.get_output_by_name('random POINT 10-100'),
+                   self.get_output_by_name('random POINT 100-1000'),
                    ]
 
         for output in outputs:

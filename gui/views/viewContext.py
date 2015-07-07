@@ -1,16 +1,17 @@
 __author__ = 'tonycastronova'
 import wx
 
-from api.ODM2.Core.services import readCore
-from api.ODM2.Results.services import readResults
+from api_old.ODM2.Core.services import readCore
+from api_old.ODM2.Results.services import readResults
 from utilities import spatial
-from api.ODM2.Simulation.services import readSimulation
+from api_old.ODM2.Simulation.services import readSimulation
 from wx.lib.pubsub import pub as Publisher, __all__
 from gui.controller.logicModel import LogicModel
 from gui.controller.logicPlot import LogicPlot
 from gui.controller.logicPreRun import logicPreRun
 import coordinator.engineAccessors as engine
 from gui import events
+from coordinator.emitLogging import elog
 
 #todo:  this needs to be split up into view and logic code
 
@@ -52,10 +53,9 @@ class ConsoleContextMenu(wx.Menu):
 
     def OnClear(self, event):
         """
-        User clears the
+        User clears the gui console
         """
         self.log.Clear()
-        print 'RESET |'
 
     def OnMinimize(self, e):
         self.parent.Iconize()
@@ -115,8 +115,8 @@ class ModelContextMenu(wx.Menu):
             for i in iei:
                 name = i['name']
                 model_details.inputSelections.Append(name)
-                print "input name: " + name
-                geoms = [j['shape'] for j in o['geom']]
+                elog.info("input name: " + name)
+                geoms = [j['shape'] for j in i['geom']]
                 igeoms[name] = geoms
 
         # todo: HACK! should all of this be in the LogicModel?
@@ -133,6 +133,8 @@ class ModelContextMenu(wx.Menu):
         atts = engine.getModelById(self.model_obj.ID)['attrib']
         if 'mdl' in atts.keys():
             model_details.PopulateSummary(atts['mdl'])
+        else:  # This means the model is coming from a database.
+            model_details.PopulateProperties(engine.getModelById(self.model_obj.ID), iei=iei, oei=oei)
 
         model_details.Show()
 
@@ -161,7 +163,7 @@ class CanvasContextMenu(wx.Menu):
         self.AppendItem(addLink)
         self.Bind(wx.EVT_MENU, self.OnAddLink, addLink)
 
-        load = wx.MenuItem(self, wx.NewId(), 'Load Configuration')
+        load = wx.MenuItem(self, wx.NewId(), 'Load')
         self.AppendItem(load)
         self.Bind(wx.EVT_MENU, self.LoadConfiguration, load)
 
@@ -183,14 +185,15 @@ class CanvasContextMenu(wx.Menu):
         self.Bind(wx.EVT_MENU, self.OnClickClear, clear)
 
         # Disable certain options if there aren't any models present
-        if len(self.parent.models) < 2:
+        if len(self.parent.models) <= 1:
             addLink.Enable(False)
-            run.Enable(False)
+            if len(self.parent.models) <= 0:
+                save.Enable(False)
+                saveAs.Enable(False)
+                clear.Enable(False)
 
-        if len(self.parent.models) < 1:
-            save.Enable(False)
-            saveAs.Enable(False)
-            clear.Enable(False)
+        if len(self.parent.links) <= 0:
+            run.Enable(False)
 
     def OnAddLink(self, e):
         self.parent.FloatCanvas.SetMode(self.parent.GuiLink)
@@ -212,6 +215,7 @@ class CanvasContextMenu(wx.Menu):
 
         if dlg.ShowModal() !=wx.ID_NO:
             self.parent.clear()
+            elog.info("Configurations have been cleared")
 
     def SaveConfiguration(self,e):
         if self.parent.GetLoadingPath() == None:
@@ -231,7 +235,7 @@ class CanvasContextMenu(wx.Menu):
         events.onSaveFromCanvas.fire(**e)  # calls SaveConfigurationsAs in ViewEMIT.py
 
     def LoadConfiguration(self, e):
-        load = wx.FileDialog(self.parent.GetTopLevelParent(), "Load Configuration", "", "",
+        load = wx.FileDialog(self.parent.GetTopLevelParent(), "Load File", "", "",
                              "Simulation Files (*.sim)|*.sim", wx.FD_OPEN)
         if load.ShowModal() == wx.ID_OK:
             path = load.GetPath()

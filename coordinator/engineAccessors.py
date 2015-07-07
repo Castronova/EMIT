@@ -20,28 +20,36 @@ def addModel(id=None, attrib=None):
     e.thread.start()
     e.thread.join()
 
+def createSQLiteInMemory(dbtextfile=None):
+    e = Engine()
+    kwargs = dict(filepath=dbtextfile, event='onDatabaseConnected')
+    task = [('create_sqlite_in_memory_database',kwargs)]
+    e.setTasks(task)
 
+    e.thread = Thread(target = e.check_for_process_results)
+    e.thread.start()
+    e.thread.join()
 
 def connectToDbFromFile(dbtextfile=None):
-        e = Engine()
-        kwargs = dict(filepath=dbtextfile, event='onDatabaseConnected')
-        task = [('connect_to_db_from_file',kwargs)]
-        e.setTasks(task)
+    e = Engine()
+    kwargs = dict(filepath=dbtextfile, event='onDatabaseConnected')
+    task = [('connect_to_db_from_file',kwargs)]
+    e.setTasks(task)
 
-        e.thread = Thread(target = e.check_for_process_results)
-        e.thread.start()
-        e.thread.join()
+    e.thread = Thread(target = e.check_for_process_results)
+    e.thread.start()
+    e.thread.join()
 
 def connectToDb(**kwargs):
-        #engine=None, address=None, db=None, user=None, pwd=None):
-        e = Engine()
-        kwargs['event'] ='onDatabaseConnected'
-        task = [('connect_to_db',kwargs)]
-        e.setTasks(task)
+    #engine=None, address=None, db=None, user=None, pwd=None):
+    e = Engine()
+    kwargs['event'] ='onDatabaseConnected'
+    task = [('connect_to_db',kwargs)]
+    e.setTasks(task)
 
-        e.thread = Thread(target = e.check_for_process_results)
-        e.thread.start()
-        e.thread.join()
+    e.thread = Thread(target = e.check_for_process_results)
+    e.thread.start()
+    e.thread.join()
 
 def addLink(source_id=None, source_item=None, target_id=None, target_item=None, spatial_interpolation=None,
             temporal_interpolation=None,uid=None):
@@ -109,17 +117,17 @@ def getModelById(modelid):
     result = e.processTasks()
     return result
 
-def getOutputExchangeItems(modelid):
+def getOutputExchangeItems(modelid, returnGeoms=True):
     e = Engine()
-    kwargs = dict(id=modelid)
+    kwargs = dict(id=modelid, returnGeoms=returnGeoms)
     task = [('get_output_exchange_items_summary', kwargs)]
     e.setTasks(task)
     result = e.processTasks()
     return result
 
-def getInputExchangeItems(modelid):
+def getInputExchangeItems(modelid, returnGeoms=True):
     e = Engine()
-    kwargs = dict(id=modelid)
+    kwargs = dict(id=modelid, returnGeoms=returnGeoms)
     task = [('get_input_exchange_items_summary', kwargs)]
     e.setTasks(task)
     result = e.processTasks()

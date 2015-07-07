@@ -79,7 +79,7 @@ class LogicModel(ViewModel):
 
     def PopulateSummary(self, fileExtension):
 
-        d = gui.parse_config_without_validation(fileExtension)
+        d = gui.parse_config(fileExtension)
 
         sections = sorted(d.keys())
 
@@ -103,11 +103,49 @@ class LogicModel(ViewModel):
                             except:
                                 pass
 
+    def PopulateProperties(self, modelid, iei=None, oei=None):
+        # Fills on the information for models from the database
+        # Also implement this to populate all models not only from database
+        # PopulateSummary works only for models not from database.
+        # iei = input exchange item.
+        # oei = output exchange item.
+        # not all models will have inputs & outputs so that's why their set to None by default.
+
+        self.PropertyGrid.Append(wxpg.PropertyCategory("General"))
+        self.PopulatePropertyGrid(modelid)
+
+        if iei:
+            self.PropertyGrid.Append(wxpg.PropertyCategory("Input"))
+            self.PopulatePropertyGrid(iei[0])
+
+        if oei:
+            self.PropertyGrid.Append(wxpg.PropertyCategory("Output"))
+            self.PopulatePropertyGrid(oei[0])
+
+    def PopulatePropertyGrid(self, dictionary):
+        #  A recursive method, checks if there is a dictionary inside a dictionary.
+        if not dictionary:  # if empty dictionary than do nothing
+            return
+        for key, value in dictionary.iteritems():
+            if type(value) is dict:
+                self.PopulatePropertyGrid(value)
+            elif type(value) is list:
+                value = self.ExtractDictionary(value)
+                self.PopulatePropertyGrid(value)
+            else:
+                try:
+                    self.PropertyGrid.Append(wxpg.StringProperty(str(key).capitalize(), value=str(value)))
+                except:
+                    pass
+
+    def ExtractDictionary(self, array):
+        dictionary = array[0]
+        return dictionary
 
     def PopulateDetails(self, fileExtension):
 
         # get a dictionary of config parameters
-        d = gui.parse_config_without_validation(fileExtension)
+        d = gui.parse_config(fileExtension)
 
         root = self.DetailTree.AddRoot('Data')
         self.DetailTree.ExpandAll()

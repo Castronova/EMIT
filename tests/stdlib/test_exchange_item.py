@@ -2,9 +2,9 @@ __author__ = 'tonycastronova'
 
 import unittest
 
+from os.path import *
 from stdlib import *
-
-from utilities import mdl, spatial
+from utilities import mdl, spatial, gui
 import datetime
 from shapely.wkt import loads
 
@@ -145,3 +145,53 @@ class testExchangeItem(unittest.TestCase):
         item.clear()
         ds = item.get_all_datasets()
         self.assertTrue(len(ds.keys()) == 0)
+
+    def test_get_geoms(self):
+
+        # get a sample configuration path
+        current_dir = abspath(dirname(__file__))
+        config = abspath(join(current_dir, '../test_data/configuration.ini'))
+
+        # parse the configuration parameters
+        params = gui.parse_config(config)
+
+        # populate exchange items
+        eitems = mdl.build_exchange_items_from_config(params)
+        item = eitems['input'][0]
+
+        # get geoms
+        geoms = item.geometries()
+
+        self.assertTrue(len(geoms) == 1)
+
+    def test_add_geoms(self):
+
+        # get a sample configuration path
+        current_dir = abspath(dirname(__file__))
+        config = abspath(join(current_dir, '../test_data/configuration.ini'))
+
+        # parse the configuration parameters
+        params = gui.parse_config(config)
+
+        # populate exchange items
+        eitems = mdl.build_exchange_items_from_config(params)
+
+        item = eitems['input'][0]
+
+        # get geoms
+        geoms = item.geometries()
+
+        self.assertTrue(len(geoms) == 1)
+
+        # create geom
+        geometry = 'POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))'
+        geom = Geometry()
+        geom.set_geom_from_wkt(geometry)
+        geom.type(ElementType.Polygon)
+        geom.srs(spatial.get_srs_from_epsg(self.srscode))
+        geom.datavalues([])
+        item.add_geometry(geom)
+
+        geoms = item.geometries()
+        self.assertTrue(len(geoms) == 2)
+

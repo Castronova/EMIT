@@ -6,10 +6,15 @@ import ConfigParser
 import datetime
 import cPickle as pickle
 import imp
-from api.ODMconnection import  dbconnection
+from api_old.ODMconnection import  dbconnection
 # from ODMconnection import dbconnection
 import uuid
-import coordinator.emitLogging as logging
+# import coordinator.emitLogging as l
+# logging = l.log()
+
+from coordinator.emitLogging import elog
+
+
 
 class multidict(dict):
     _unique = 0
@@ -129,58 +134,26 @@ def validate_config_ini(ini_path):
                     module = imp.load_source(filename.split('.')[0], abspath)
                     m = getattr(module, classname)
                 except:
-                    print 'ERROR | Configuration Parsing Error: '+classname+' is not a valid class name'
+                    elog.error('ERROR | Configuration Parsing Error: '+classname+' is not a valid class name')
 
     except Exception, e:
-        print 'ERROR | [Configuration Parsing Error] '+str(e)
+        elog.error('ERROR | [Configuration Parsing Error] '+str(e))
         return 0
 
 
     return 1
 
-def parse_config_without_validation(ini):
-    """
-    parses metadata stored in *.ini file
-    """
-
-    config_params = {}
-    cparser = ConfigParser.ConfigParser(None, multidict)
-    cparser.read(ini)
-    sections = cparser.sections()
-
-    for s in sections:
-        # get the section key (minus the random number)
-        section = s.split('^')[0]
-
-        # get the section options
-        options = cparser.options(s)
-
-        # save ini options as dictionary
-        d = {}
-        for option in options:
-            d[option] = cparser.get(s,option)
-        d['type'] = section
-
-
-        if section not in config_params:
-            config_params[section] = [d]
-        else:
-            config_params[section].append(d)
-
-    # save the base path of the model
-    config_params['basedir'] = basedir = os.path.realpath(os.path.dirname(ini))
-
-    return config_params
-
 def parse_config(ini):
     """
     parses metadata stored in *.ini file
     """
-
+    # isvalid = True
+    # if validate:
     isvalid = validate_config_ini(ini)
-    if isvalid:
-        #raise Exception('Configuration file is not valid!')
 
+
+    if isvalid:
+        basedir = os.path.realpath(os.path.dirname(ini))
         config_params = {}
         cparser = ConfigParser.ConfigParser(None, multidict)
         cparser.read(ini)
@@ -196,7 +169,13 @@ def parse_config(ini):
             # save ini options as dictionary
             d = {}
             for option in options:
-                d[option] = cparser.get(s,option)
+                value = cparser.get(s,option)
+
+                # convert anything that is recognized as a file path into an absolute paths
+                genpath = os.path.abspath(os.path.join(basedir, value))
+                if os.path.isfile(genpath): # and genpath[-3:] != '.py' :
+                    value = genpath
+                d[option] = value
             d['type'] = section
 
 
@@ -206,11 +185,52 @@ def parse_config(ini):
                 config_params[section].append(d)
 
         # save the base path of the model
-        config_params['basedir'] = basedir = os.path.realpath(os.path.dirname(ini))
+        config_params['basedir'] = basedir
 
         return config_params
     else:
         return None
+
+# def parse_config(ini):
+#     """
+#     parses metadata stored in *.ini file
+#     """
+#     basedir = os.path.realpath(os.path.dirname(ini))
+#
+#     isvalid = validate_config_ini(ini)
+#     if isvalid:
+#         #raise Exception('Configuration file is not valid!')
+#
+#         config_params = {}
+#         cparser = ConfigParser.ConfigParser(None, multidict)
+#         cparser.read(ini)
+#         sections = cparser.sections()
+#
+#         for s in sections:
+#             # get the section key (minus the random number)
+#             section = s.split('^')[0]
+#
+#             # get the section options
+#             options = cparser.options(s)
+#
+#             # save ini options as dictionary
+#             d = {}
+#             for option in options:
+#                 d[option] = cparser.get(s,option)
+#             d['type'] = section
+#
+#
+#             if section not in config_params:
+#                 config_params[section] = [d]
+#             else:
+#                 config_params[section].append(d)
+#
+#         # save the base path of the model
+#         config_params['basedir'] = basedir
+#
+#         return config_params
+#     else:
+#         return None
 
 def create_database_connections_from_args(title, desc, engine, address, db, user, pwd):
 
@@ -250,9 +270,9 @@ def create_database_connections_from_args(title, desc, engine, address, db, user
                                  'description':d['desc'],
                                  'args': d}
 
-        print 'Connected to : %s [%s]'%(connection_string,db_id)
+        elog.info('Connected to : %s [%s]'%(connection_string,db_id))
     else:
-        print 'ERROR | Could not establish a connection with the database'
+        elog.error('ERROR | Could not establish a connection with the database')
         return None
 
     return db_connections
@@ -303,10 +323,10 @@ def connect_to_db(title, desc, engine, address, name, user, pwd):
                      'description':desc,
                      'args': d}
 
-        print 'Connected to : %s [%s]'%(connection_string,db_id)
+        elog.info('Connected to : %s [%s]'%(connection_string,db_id))
 
     else:
-        print 'ERROR | Could not establish a connection with the database'
+        elog.error('ERROR | Could not establish a connection with the database')
 
     return d
 
@@ -353,13 +373,11 @@ def create_database_connections_from_file(ini):
                                      'connection_string':connection_string,
                                      'description':d['desc'],
                                      'args': d}
-
-            logging.log.info('Connected to : %s [%s]'%(connection_string,db_id))
-
+            elog.info('Connected to : %s [%s]'%(connection_string,db_id))
 
 
         else:
-            print 'ERROR | Could not establish a connection with the database'
+            elog.error('ERROR | Could not establish a connection with the database')
             #return None
 
 

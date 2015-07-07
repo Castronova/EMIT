@@ -11,28 +11,23 @@ import os
 from coordinator import help as h
 from utilities.gui import *
 from utilities.mdl import *
-from api.ODM2.Core.services import readCore
-
+from api_old.ODM2.Core.services import readCore
 # from ODM2.Core.services import readCore
 #import wrappers
-
 from transform import space_base
 from transform import time_base
-
 from wrappers import odm2_data
 from wrappers import feed_forward
 from wrappers import time_step
-
-
 import datatypes
-
 import run
 import inspect
 # import coordinator.engineProcessor as engineProcessor
-from api.ODM2.Core.services import *
+from api_old.ODM2.Core.services import *
 from copy import deepcopy
-
-import coordinator.emitLogging as logging
+from coordinator.emitLogging import elog
+# import ODM2PythonAPI.src.api as odm2api
+from datetime import datetime
 
 
 """
@@ -58,11 +53,11 @@ class Link(object):
 
     # todo: this should be replaced by accessors for each of the from_lc,to_lc,from_item,to_item
     def get_link(self):
-        print 'ERROR |[Deprecated] This function has been deprecated...do not use! '
-        print 'ERROR | [Deprecated] main.py -> get_link()'
+        elog.error('ERROR |[Deprecated] This function has been deprecated...do not use! ')
+        elog.error('ERROR | [Deprecated] main.py -> get_link()')
         for caller in inspect.stack():
             if 'EMIT' in caller[1]:
-                print 'ERROR | [Deprecated Call Stack] ',caller[1],caller[3],caller[2]
+                elog.error('ERROR | [Deprecated Call Stack] ',caller[1],caller[3],caller[2])
 
         return [self.__from_lc,self.__from_item], [self.__to_lc,self.__to_item]
 
@@ -148,7 +143,7 @@ class Model(object):
                 ii = self.__iei[k]
 
         if ii is None:
-            print 'ERROR | Could not find Input Exchange Item: '+value
+            elog.error('ERROR | Could not find Input Exchange Item: '+value)
 
         return ii
 
@@ -160,7 +155,7 @@ class Model(object):
                 oi = self.__oei[k]
 
         if oi is None:
-            print 'ERROR | Could not find Output Exchange Item: '+value
+            elog.error('ERROR | Could not find Output Exchange Item: '+value)
 
         return oi
 
@@ -173,7 +168,7 @@ class Model(object):
                 ii = self.__iei[k]
 
         if ii is None:
-            print 'ERROR |Could not find Input Exchange Item: '+value
+            elog.error('ERROR |Could not find Input Exchange Item: '+value)
 
         return ii
 
@@ -185,7 +180,7 @@ class Model(object):
                 oi = self.__oei[k]
 
         if oi is None:
-            print 'ERROR | Could not find Output Exchange Item: '+value
+            elog.error('ERROR | Could not find Output Exchange Item: '+value)
 
         return oi
 
@@ -284,9 +279,9 @@ class Coordinator(object):
         try:
             self.__default_db = self._db[db_id]
             self.__default_db['id'] = db_id
-            print 'Default database : %s'%self._db[db_id]['connection_string']
+            elog.info('Default database : %s'%self._db[db_id]['connection_string'])
         except:
-            print 'ERROR | could not find database: %s'%db_id
+            elog.error('ERROR | could not find database: %s'%db_id)
 
     def get_new_id(self):
         self.__incr += 1
@@ -322,8 +317,7 @@ class Coordinator(object):
 
                 # make sure this model doesnt already exist
                 if name in self.__models:
-                    logging.log.warning('Model named '+name+' already exists in configuration')
-                    # print 'WARNING | Model named '+name+' already exists in configuration'
+                    elog.warning('Model named '+name+' already exists in configuration')
                     return None
 
                 iei = model_inst.inputs().values()
@@ -361,7 +355,7 @@ class Coordinator(object):
             # Make sure the series is not already in the canvas
             # List of canvas models are kept as a dict with keys in the format of 'NAME-ID'
             if inst.name()+'-'+resultid in self.__models:
-                print 'WARNING | Series named '+inst.name()+' already exists in configuration'
+                elog.warning('WARNING | Series named '+inst.name()+' already exists in configuration')
                 return None
 
             if id is None:
@@ -382,17 +376,9 @@ class Coordinator(object):
             att['databaseid'] = databaseid
             thisModel.attrib(att)
 
-
-        # set type and attribute params
-        # thisModel.type(type)
-        # thisModel.attrib(attrib)
-
-
         # save the model
         self.__models[thisModel.get_name()] = thisModel
 
-        # return the model id
-        # return thisModel
         return {'id':thisModel.get_id(), 'name':thisModel.get_name(),'model_type':thisModel.type()}
 
     def remove_model(self, linkablecomponent):
@@ -464,7 +450,7 @@ class Coordinator(object):
             if self.get_model_by_id(from_id) is None: raise Exception('> '+from_id+' does not exist in configuration')
             if self.get_model_by_id(to_id) is None: raise Exception('> ' + to_id+' does not exist in configuration')
         except Exception, e:
-            print e
+            elog.error(e)
             return None
 
         # check that input and output exchange items exist
@@ -493,7 +479,7 @@ class Coordinator(object):
             # return link
             return link.get_id()
         else:
-            print 'WARNING | Could Not Create Link :('
+            elog.warning('WARNING | Could Not Create Link :(')
             return None
 
     def add_link_by_name(self,from_id, from_item_name, to_id, to_item_name):
@@ -509,7 +495,7 @@ class Coordinator(object):
             if self.get_model_by_id(from_id) is None: raise Exception(from_id+' does not exist in configuration')
             if self.get_model_by_id(to_id) is None: raise Exception(to_id+' does not exist in configuration')
         except Exception, e:
-            print e
+            elog.error(e)
             return None
 
         # check that input and output exchange items exist
@@ -527,7 +513,7 @@ class Coordinator(object):
 
             return link
         else:
-            print 'WARNING | Could Not Create Link :('
+            elog.warning('WARNING | Could Not Create Link :(')
 
     def get_from_links_by_model(self, model_id):
 
@@ -555,7 +541,7 @@ class Coordinator(object):
 
 
         if len(links) == 0:
-            print 'ERROR |  Could not find any links associated with model id: '+str(model_id)
+            elog.error('ERROR |  Could not find any links associated with model id: '+str(model_id))
 
         # todo: this should return a dict of link objects, NOT some random list
 
@@ -664,9 +650,7 @@ class Coordinator(object):
             )
         return models
 
-
-
-    def get_output_exchange_items_summary(self, id):
+    def get_output_exchange_items_summary(self, id, returnGeoms=True):
         """
         gets a serializable version of the output exchange items
         :param id: model id
@@ -676,27 +660,49 @@ class Coordinator(object):
             if self.__models[m].get_id() == id:
                 eitems = self.__models[m].get_output_exchange_items()
                 items_list = []
+
                 for ei in eitems:
-                    geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.geometries()]
-                    items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.get_id(), unit=ei.unit(),
-                                           variable=ei.variable(),type=ei.get_type(),geom=geoms))
+                    if returnGeoms:
+                        if ei.getGeometries2():
+                            geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.getGeometries2()]
+                        else:
+                            elog.warning('deprecated: this component is implementing old geometry and datavalues storage mechanisms which are obsolete and inefficient.')
+                            geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.geometries()]
+
+                        items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.get_id(), unit=ei.unit(),
+                                               variable=ei.variable(),type=ei.get_type(),geom=geoms))
+                    else:
+                        items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.get_id(), unit=ei.unit(),
+                                            variable=ei.variable(),type=ei.get_type()))
                 return items_list
         return None
 
-    def get_input_exchange_items_summary(self, id):
+    def get_input_exchange_items_summary(self, id, returnGeoms=True):
         """
         gets a serializable version of the input exchange items
         :param id: model id
+        :param returnGeoms: indicates if geometries should be returned.  This will take longer.
         :return: dictionary of serializable objects
         """
         for m in self.__models:
             if self.__models[m].get_id() == id:
                 eitems = self.__models[m].get_input_exchange_items()
                 items_list = []
+
                 for ei in eitems:
-                    geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.geometries()]
-                    items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.get_id(), unit=ei.unit(),
-                                           variable=ei.variable(),type=ei.get_type(),geom=geoms))
+                    if returnGeoms:
+                        if ei.getGeometries2():
+                            geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.getGeometries2()]
+                        else:
+                            elog.warning('deprecated: this component is implementing old geometry and datavalues storage mechanisms which are obsolete and inefficient.')
+                            geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.geometries()]
+
+
+                        items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.get_id(), unit=ei.unit(),
+                                            variable=ei.variable(),type=ei.get_type(),geom=geoms))
+                    else:
+                        items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.get_id(), unit=ei.unit(),
+                                            variable=ei.variable(),type=ei.get_type()))
                 return items_list
         return None
 
@@ -747,6 +753,12 @@ class Coordinator(object):
 
                 # update the datavalues with the mapped dates and values
                 t_geom.datavalues().set_timeseries(from_geom_dict[f_geom])
+
+        # todo:
+        # loop through spatial map array
+        for f,t in from_to_spatial_map:
+            if t != None:
+                pass
 
     def update_links(self, model, exchangeitems):
         """
@@ -876,10 +888,10 @@ class Coordinator(object):
     def get_configuration_details(self,arg):
 
         if len(self.__models.keys()) == 0:
-            print 'WARNING | no models found in configuration.'
+            elog.warning('WARNING | no models found in configuration.')
 
         if arg.strip() == 'summary':
-            print '\n   Here is everything I know about the current simulation...\n'
+            elog.info('Here is everything I know about the current simulation...\n')
 
         # print model info
         if arg.strip() == 'models' or arg.strip() == 'summary':
@@ -919,15 +931,16 @@ class Coordinator(object):
                 w = self.get_format_width(model_output)
 
                 # print model info
-                print '  |'+(w)*'-'+'|'
-                print '  *'+self.format_text(model_output[0], w,'center')+'*'
-                print '  |'+(w)*'='+'|'
-                print '  |'+self.format_text(model_output[1], w,'left')+'|'
-                print '  |'+self.format_text(model_output[2], w,'left')+'|'
-                print '  |'+(w)*'-'+'|'
-                for l in model_output[3:]: print '  |'+self.format_text(l,w,'left')+'|'
-                print '  |'+(w)*'-'+'|'
-                print ' '
+                elog.info('  |'+(w)*'-'+'|')
+                elog.info('  *'+self.format_text(model_output[0], w,'center')+'*')
+                elog.info('  |'+(w)*'='+'|')
+                elog.info('  |'+self.format_text(model_output[1], w,'left')+'|')
+                elog.info('  |'+self.format_text(model_output[2], w,'left')+'|')
+                elog.info('  |'+(w)*'-'+'|')
+                for l in model_output[3:]:
+                    elog.info('  |'+self.format_text(l,w,'left')+'|')
+                elog.info('  |'+(w)*'-'+'|')
+                elog.info(' ')
 
         # print link info
         if arg.strip() == 'links' or arg.strip() == 'summary':
@@ -951,16 +964,17 @@ class Coordinator(object):
                 #w += 4 if w % 2 == 0 else 5
 
                 # print the output
-                print '  |'+(w)*'-'+'|'
-                print '  *'+self.format_text(link_output[0], w,'center')+'*'
-                print '  |'+(w)*'='+'|'
-                for l in link_output[1:]: print '  |'+self.format_text(l,w,'left')+'|'
-                print '  |'+(w)*'-'+'|'
+                elog.info('  |'+(w)*'-'+'|')
+                elog.info('  *'+self.format_text(link_output[0], w,'center')+'*')
+                elog.info('  |'+(w)*'='+'|')
+                for l in link_output[1:]:
+                    elog.info('  |'+self.format_text(l,w,'left')+'|')
+                elog.info('  |' + w * '-' + '|')
 
         # print database info
         if arg.strip() == 'db' or arg.strip() == 'summary':
 
-            for id,db_dict in self._db.iteritems():
+            for id, db_dict in self._db.iteritems():
 
                 # string to store db output
                 db_output = []
@@ -990,11 +1004,12 @@ class Coordinator(object):
                 w = self.get_format_width(db_output)
 
                 # print the output
-                print '  |'+(w)*'-'+'|'
-                print '  *'+self.format_text(db_output[0], w,'center')+'*'
-                print '  |'+(w)*'='+'|'
-                for l in db_output[1:]: print '  |'+self.format_text(l,w,'left')+'|'
-                print '  |'+(w)*'-'+'|'
+                elog.info('  |'+(w)*'-'+'|')
+                elog.info('  *'+self.format_text(db_output[0], w,'center')+'*')
+                elog.info('  |'+(w)*'='+'|')
+                for l in db_output[1:]:
+                    elog.info('  |'+self.format_text(l,w,'left')+'|')
+                elog.info('  |'+(w)*'-'+'|')
 
     def discover_timeseries(self,db_connection_name):
 
@@ -1010,7 +1025,7 @@ class Coordinator(object):
         #     result_query = read.read(self._db[db_connection_name]['args']['connection_string'])
         #     ts = result_query.getAllTimeSeriesResults()
 
-            print 'test'
+            elog.info('test')
 
     def connect_to_db(self, title, desc, engine, address, name, user, pwd):
 
@@ -1021,7 +1036,6 @@ class Coordinator(object):
             return {'success':True}
         else:
             return {'success':False}
-
 
     def connect_to_db_from_file(self,filepath=None):
 
@@ -1042,13 +1056,53 @@ class Coordinator(object):
                     self.set_default_database()
 
                 return {'success':True}
-            except Exception,e:
-                print e
-                print 'ERROR | Could not create connections from file '+filepath
+            except Exception, e:
+                elog.error(e)
+                elog.error('ERROR | Could not create connections from file ' + filepath)
                 return {'success':False}
 
         else:
             return {'success':False}
+
+    def create_sqlite_in_memory_database(self):
+
+        import pyspatialite.dbapi2 as sqlite
+
+
+        # create a memory database
+        dbpath = os.path.abspath("../../data/databases/"+datetime.now().strftime('%Y-%m-%d|%H:%M:%S')+'.sqlite')
+        conn = sqlite.connect(dbpath)
+
+        # load the blank odm2 database
+        old_db = sqlite.connect('../../data/odm2_empty.sqlite')
+
+        query = "".join(line for line in old_db.iterdump())
+
+        # Dump old database in the new one.
+        conn.executescript(query)
+
+        del conn
+
+
+
+
+        # todo:  Need to establish a SQLAlchemy connection with the in-memory database
+        # connect to database
+        sessionFactory = odm2api.SessionFactory(connection_string='sqlite:///'+dbpath, echo=False)
+        session = sessionFactory.getSession()
+
+        elog.info('here')
+
+        # session = dbconnection.createConnection('sqlite', "", name, user, pwd)1
+
+        # if session:
+        # # adjusting timeout
+        # session.engine.pool._timeout = 30
+        #
+        # connection_string = session.engine.url
+        #
+        # # save this session in the db_connections object
+        # db_id = uuid.uuid4().hex[:5]
 
     def get_format_width(self,output_array):
         width = 0
@@ -1105,7 +1159,137 @@ class Coordinator(object):
             # return the models and links created
             return self.__models.values(), self.__links.values(), link_objs
 
-        else: print 'ERROR | Could not find path %s'%simulation_file
+        else:
+            elog.error('ERROR | Could not find path %s' % simulation_file)
+
+    def load_simulation2(self, file):
+        pass
+
+        # # TODO: This needs to be refactored to remove 'for' looping
+        # tree = et.parse(file)
+        #
+        # self.loadingpath = file
+        #
+        # tree = et.parse(file)
+        #
+        # # get the root
+        # root = tree.getroot()
+        #
+        # # make sure the required database connections are loaded
+        # connections = engine.getDbConnections()
+        # conn_ids = {}
+        #
+        # # get all known transformations
+        # space = SpatialInterpolation()
+        # time = TemporalInterpolation()
+        # spatial_transformations = {i.name(): i for i in space.methods()}
+        # temporal_transformations = {i.name(): i for i in time.methods()}
+        #
+        #
+        # for child in root._children:
+        #     if child.tag == 'DbConnection':
+        #         attrib = self.appendChild(child)
+        #
+        #         connection_string = attrib['connection_string']
+        #
+        #         database_exists = False
+        #         # db_elements = db_conn.getchildren()
+        #
+        #         for id, dic in connections.iteritems():
+        #
+        #             if str(dic['args']['connection_string']) == connection_string:
+        #                 # dic['args']['id'] = db_conn.attrib['id']
+        #                 database_exists = True
+        #
+        #                 # map the connection ids
+        #                 conn_ids[attrib['databaseid']] = dic['args']['id']
+        #                 break
+        #
+        #         # if database doesn't exist, then connect to it
+        #         if not database_exists:
+        #             connect = wx.MessageBox('This database connection does not currently exist.  Click OK to connect.',
+        #                                     'Info', wx.OK | wx.CANCEL)
+        #
+        #             if connect == wx.OK:
+        #
+        #                 # attempt to connect to the database
+        #                 title = dic['args']['name']
+        #                 desc = dic['args']['desc']
+        #                 db_engine = dic['args']['engine']
+        #                 address = dic['args']['address']
+        #                 name = dic['args']['db']
+        #                 user = dic['args']['user']
+        #                 pwd = dic['args']['pwd']
+        #
+        #                 if not self.AddDatabaseConnection(title, desc, db_engine, address, name, user, pwd):
+        #                     wx.MessageBox('I was unable to connect to the database with the information provided :(',
+        #                                   'Info', wx.OK | wx.ICON_ERROR)
+        #                     return
+        #
+        #                 # map the connection id
+        #                 conn_ids[attrib['databaseid']] = attrib['databaseid']
+        #
+        #             else:
+        #                 return
+        #
+        #     if child.tag == 'Model':
+        #         attrib = self.appendChild(child)
+        #
+        #         # load the model
+        #         self.addModel(filepath=attrib['path'], x=float(attrib['xcoordinate']), y=float(attrib['ycoordinate']),
+        #                       uid=attrib['id'])
+        #
+        #     if child.tag == 'DataModel':
+        #         attrib = self.appendChild(child)
+        #
+        #         databaseid = attrib['databaseid']
+        #         mappedid = conn_ids[databaseid]
+        #
+        #         attrib['databaseid'] = mappedid
+        #         modelid = self.addModel(filepath=attrib['path'], x=attrib['xcoordinate'], y=attrib['ycoordinate'],
+        #                                 uid=attrib['id'])
+        #
+        #     # todo: Link cannot be added until both models have finished loading!!!  This will throw exception on line 927
+        #     if child.tag == 'Link':
+        #         attrib = self.appendChild(child)
+        #
+        #         R1 = None
+        #         R2 = None
+        #         for R, id in self.models.iteritems():
+        #             if id == attrib['from_id']:
+        #                 R1 = R
+        #             elif id == attrib['to_id']:
+        #                 R2 = R
+        #
+        #         if R1 is None or R2 is None:
+        #             raise Exception('Could not find Model identifer in loaded models')
+        #
+        #         temporal = None
+        #         spatial = None
+        #         # set the temporal and spatial interpolations
+        #         transform = child.find("./transformation")
+        #         for transform_child in transform:
+        #             if transform_child.text.upper() != 'NONE':
+        #                 if transform_child.tag == 'temporal':
+        #                     temporal = temporal_transformations[transform_child.text]
+        #                 elif transform_child.tag == 'spatial':
+        #                     spatial = spatial_transformations[transform_child.text]
+        #
+        #         # create the link
+        #         l = engine.addLink(source_id=attrib['from_id'],
+        #                            source_item=attrib['from_item'],
+        #                            target_id=attrib['to_id'],
+        #                            target_item=attrib['to_item'],
+        #                            spatial_interpolation=spatial,
+        #                            temporal_interpolation=temporal
+        #                            )
+        #
+
+
+
+
+
+
 
     def show_db_results(self, args):
 
@@ -1113,7 +1297,7 @@ class Coordinator(object):
         db_id = args[0]
 
         if db_id not in self._db:
-            print 'ERROR | could not find database id: %s'%db_id
+            elog.error('ERROR | could not find database id: %s' % db_id)
             return
 
 
@@ -1123,55 +1307,73 @@ class Coordinator(object):
         results = self._coreread.getAllResult()
 
         if results:
-            print 'Id   Type     Variable    Unit    ValueCount'
+            elog.info('Id   Type     Variable    Unit    ValueCount')
             for result in results:
-                print '%s    %s   %s  %s  %s '%(result.ResultID, result.ResultTypeCV,result.VariableObj.VariableCode,
-                                         result.UnitObj.UnitsName,result.ValueCount)
+                elog('%s    %s   %s  %s  %s '%(result.ResultID, result.ResultTypeCV,result.VariableObj.VariableCode,
+                                         result.UnitObj.UnitsName,result.ValueCount))
         else:
-            print 'No results found'
+            elog.info('No results found')
 
     def parse_args(self, arg):
 
         if ''.join(arg).strip() != '':
             if arg[0] == 'help':
-                if len(arg) == 1: print h.help()
-                else: print h.help_function(arg[1])
+                if len(arg) == 1:
+                    elog.info(h.help())
+                else:
+                    elog.info(h.help_function(arg[1]))
 
             elif arg[0] == 'add' :
-                if len(arg) == 1: print h.help_function('add')
-                else: self.add_model(arg[1])
+                if len(arg) == 1:
+                    elog.info(h.help_function('add'))
+                else:
+                    self.add_model(arg[1])
 
             elif arg[0] == 'remove':
-                if len(arg) == 1: print h.help_function('remove')
-                else: self.remove_model_by_id(arg[1])
+                if len(arg) == 1:
+                    elog.info(h.help_function('remove'))
+                else:
+                    self.remove_model_by_id(arg[1])
 
             elif arg[0] == 'link':
-                if len(arg) != 5: print h.help_function('link')
-                else: self.add_link(arg[1],arg[2],arg[3],arg[4])
+                if len(arg) != 5:
+                    elog.info(h.help_function('link'))
+                else:
+                    self.add_link(arg[1],arg[2],arg[3],arg[4])
 
             elif arg[0] == 'showme':
-                if len(arg) == 1: print h.help_function('showme')
-                else: self.get_configuration_details(arg[1])
+                if len(arg) == 1:
+                    elog.info(h.help_function('showme'))
+                else:
+                    self.get_configuration_details(arg[1])
 
             elif arg[0] == 'connect_db':
-                if len(arg) == 1: print h.help_function('connect_db')
-                else: self.connect_to_db(arg[1:])
+                if len(arg) == 1:
+                    elog.info(h.help_function('connect_db'))
+                else:
+                    self.connect_to_db(arg[1:])
 
             elif arg[0] == 'default_db':
-                if len(arg) == 1: print h.help_function('default_db')
-                else: self.set_default_db(arg[1:])
+                if len(arg) == 1:
+                    elog.info(h.help_function('default_db'))
+                else:
+                    self.set_default_db(arg[1:])
 
             elif arg[0] == 'run':
-                print 'Running Simulation in Feed Forward Mode'
+                elog.info('Running Simulation in Feed Forward Mode')
                 self.run_simulation()
 
             elif arg[0] == 'load':
-                if len(arg) == 1: print h.help_function('load')
-                else: self.load_simulation(arg[1:])
+                if len(arg) == 1:
+                    elog.info(h.help_function('load'))
+                else:
+                    self.load_simulation(arg[1:])
 
             elif arg[0] == 'db':
-                if len(arg) == 1: print h.help_function('db')
-                else: self.show_db_results(arg[1:])
+                if len(arg) == 1:
+                    elog.info(h.help_function('db'))
+                else:
+                    self.show_db_results(arg[1:])
 
 
 

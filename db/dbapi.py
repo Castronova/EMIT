@@ -7,11 +7,11 @@ import stdlib
 from shapely.wkt import loads
 
 
-from api.ODM2.Core.services import *
-from api.ODM2.SamplingFeatures.services import *
-from api.ODM2.Results.services import *
-from api.ODM2.Simulation.services import *
-from api.ODM2.Core.model import *
+from api_old.ODM2.Core.services import *
+from api_old.ODM2.SamplingFeatures.services import *
+from api_old.ODM2.Results.services import *
+from api_old.ODM2.Simulation.services import *
+from api_old.ODM2.Core.model import *
 
 
 # from odm2.api.ODM2.Core.services import *
@@ -59,7 +59,7 @@ class postgresdb():
     def set_user_preferences(self, preferences):
 
         # parse user preferences file
-        prefs = gui.parse_config_without_validation(preferences)
+        prefs = gui.parse_config(preferences, validate=False)
 
         # create people
         for person in prefs['person']:
@@ -412,10 +412,10 @@ class postgresdb():
 
 
 
-from api.ODM2 import serviceBase
-from api.ODM2.Core.model import *
-from api.ODM2.Results.model import *
-from api.ODM2.Simulation.model import *
+from api_old.ODM2 import serviceBase
+from api_old.ODM2.Core.model import *
+from api_old.ODM2.Results.model import *
+from api_old.ODM2.Simulation.model import *
 
 class utils(serviceBase):
 

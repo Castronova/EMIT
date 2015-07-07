@@ -1,14 +1,14 @@
+__author__ = 'tonycastronova'
+
+
 import os
 from gui.views.viewDirectory import ViewDirectory, HomeID, PreviousID, UpID, RefreshID
 from gui.views.viewContext import DirectoryContextMenu
 from gui.views.viewModel import ViewModel
 from gui.controller.logicModel import LogicModel
-
 from wx.lib.pubsub import pub as Publisher
-
-__author__ = 'tonycastronova'
-
 import wx
+from coordinator.emitLogging import elog
 
 
 class LogicDirectory(ViewDirectory):
@@ -31,9 +31,6 @@ class LogicDirectory(ViewDirectory):
         self.Bind(wx.EVT_TOOL, self.OnBackClick, id=PreviousID)
         self.Bind(wx.EVT_TOOL, self.OnUpClick, id=UpID)
         self.Bind(wx.EVT_TOOL, self.OnRefresh, id=RefreshID)
-
-        self.Bind(wx.EVT_LIST_BEGIN_DRAG, self.onDrag)
-
         self.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.OnRightClick)
 
     def OnClick(self, event):
@@ -55,7 +52,7 @@ class LogicDirectory(ViewDirectory):
             except Exception, e:
                 self.directoryStack.append(os.getcwd())
                 os.chdir('..')
-                print "ERROR|", e
+                elog.error("ERROR|", e)
 
         elif os.path.isfile(dirpath):
 
@@ -83,7 +80,7 @@ class LogicDirectory(ViewDirectory):
             # print "You have returned home: ", dirpath
             self.dirCtrl.clearItems()
         except:
-            print 'ERROR | Home Not Defined'
+            elog.error('ERROR | Home Not Defined')
 
     def OnUpClick(self, event):
         parent = os.path.abspath(os.path.join(self.dirCtrl.getcurrentdirectory(), os.pardir))
@@ -98,20 +95,6 @@ class LogicDirectory(ViewDirectory):
             self.directoryStack.pop()
             os.chdir(self.directoryStack[-1])
             self.dirCtrl.clearItems()
-
-    def onDrag(self, event):
-        data = wx.FileDataObject()
-        obj = event.GetEventObject()
-        id = event.GetIndex()
-        filename = obj.GetItem(id).GetText()
-        dirname = self.dirCtrl.getcurrentdirectory()
-        fullpath = str(os.path.join(dirname, filename))
-
-        data.AddFile(fullpath)
-
-        dropSource = wx.DropSource(obj)
-        dropSource.SetData(data)
-        result = dropSource.DoDragDrop()
 
     def OnRightClick(self, event):
         self.dirCtrl.PopupMenu(DirectoryContextMenu(self, event), event.GetPosition())

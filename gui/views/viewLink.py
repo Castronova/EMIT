@@ -285,7 +285,7 @@ class ViewLink(wx.Frame):
 
         PlottingButtonSizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.ButtonPlot = wx.Button(self.BottomPanel, wx.ID_ANY, u"SpatialPlot", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.ButtonPlot = wx.Button(self.BottomPanel, wx.ID_ANY, u"Plot Geometries", wx.DefaultPosition, wx.DefaultSize, 0)
         PlottingButtonSizer.Add(self.ButtonPlot, 0, wx.ALL, 5)
 
         ButtonSizerBottom.Add(PlottingButtonSizer, 1, wx.EXPAND, 5)
@@ -315,14 +315,14 @@ class ViewLink(wx.Frame):
 
 
     def OutputComboBoxChoices(self):
-        self.output_items = engine.getOutputExchangeItems(self.output_component['id'])
+        self.output_items = engine.getOutputExchangeItems(self.output_component['id'], returnGeoms=False)
         if self.output_items is not None:
             return [item['name'] for item in self.output_items]
         else:
             return [" "]
 
     def InputComboBoxChoices(self):
-        self.input_items = engine.getInputExchangeItems(self.input_component['id'])
+        self.input_items = engine.getInputExchangeItems(self.input_component['id'], returnGeoms=False)
         if self.input_items is not None:
             return [item['name'] for item in self.input_items]
         else:

@@ -7,6 +7,7 @@ import cPickle as pickle
 from osgeo import ogr, osr
 import utilities.spatial
 import stdlib
+from coordinator.emitLogging import elog
 
 def create_variable(variable_name_cv):
     """
@@ -63,12 +64,12 @@ def build_exchange_items_from_config(params):
     itemid = 0
     items = {'input':[],'output':[]}
 
+
     # loop through each input/output and create an exchange item
     for io in eitems:
         variable = None
         unit = None
         elementset = []
-
 
         iotype = stdlib.ExchangeItemType.Output if io['type'].lower() == 'output' else stdlib.ExchangeItemType.Input
 
@@ -85,10 +86,14 @@ def build_exchange_items_from_config(params):
             elif key == 'elementset' :
                 # check if the value is a path
                 if os.path.dirname(value ) != '':
-                    if not os.path.isfile(value):
-                        raise Exception('Could not find file: %s'%value)
+                    gen_path = os.path.abspath(os.path.join(params['basedir'],value))
+                    if not os.path.isfile(gen_path):
+                        # get filepath relative to *.mdl
 
-                    geom,srs = utilities.spatial.read_shapefile(value)
+                        elog.critical('Could not find file at path %s, generated from relative path %s'%(gen_path, value))
+                        raise Exception('Could not find file at path %s, generated from relative path %s'%(gen_path, value))
+
+                    geom,srs = utilities.spatial.read_shapefile(gen_path)
 
 
                 # otherwise it must be a wkt
@@ -102,8 +107,17 @@ def build_exchange_items_from_config(params):
                         else:
                             geom = [geoms]
 
-                    except: raise Exception('Could not load WKT string: %s.'%value)
-                    srs = utilities.spatial.get_srs_from_epsg(io['epsg_code'])
+
+                    except:
+                        elog.warning('Could not load component geometry from *.mdl file')
+
+                        # this is OK.  Just set the geoms to [] and assume that they will be populated during initialize.
+                        geom = []
+                        # raise Exception('Could not load WKT string: %s.'%value)
+
+                    srs = None
+                    if 'espg_code' in io:
+                        srs = utilities.spatial.get_srs_from_epsg(io['epsg_code'])
 
 
                 for element in geom:
@@ -138,14 +152,14 @@ def build_exchange_items_from_config(params):
                                 type=iotype)
 
 
+        # add geometry to exchange item (NEW)
+        ei.addGeometries2(elementset)
+
+        # add datavalues to exchange item (NEW)
+        dv2 = [stdlib.DataValues() for i in range(0, len(elementset))]
+        ei.add_dataset(dv2)
+
         # save exchange items based on type
         items[ei.get_type()].append(ei)
 
-        # add to exchange item
-        #for ds in datasets:
-        #    ei.add_geometry(ds)
-
-        #exchange_items.append(ei)
-
-    #return exchange_items
     return items

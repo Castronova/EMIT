@@ -1,0 +1,29 @@
+[software]
+filepath  = ./weather.py
+classname = weatherReader
+
+[model]
+code = Test Component: Weather reader
+name = Weather Reading Component
+description = This is a model component that reads weather data from locally stored files
+
+[general]
+name = Weather Reader
+description = This is a model component that reads weather data from locally stored files
+simulation_start = 03/01/2014 12:00:00
+simulation_end = 05/01/2014 13:00:00
+
+[time_step]
+unit_type_cv = hours
+value = 1
+
+[output]
+variable_name_cv = Precipitation
+unit_type_cv = international inch
+elementset = ./test/gis/rhf_watershed.shp
+
+[model inputs]
+weather_csv = ./test/data/weather.csv
+
+[options]
+ignorecv = 1

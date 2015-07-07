@@ -4,21 +4,25 @@
 ; Folder_Path must include the entire hierarchy of the folder
 
 
-[Tests]
-folder_path = Components
-path = /models/test_models
 
-[Tests]
-folder_path = Configurations
-path = /models
 
-[Hydrology]
-folder_path = Components
+
 
 [My Components]
 folder_path = Components
-path = /models/MyComponents
+
+[Tests]
+folder_path = Components/My Components
+path = /models/test_models
+
+[Hydrology]
+folder_path = Components/My Components
+path = /models/topmodel;/models/swmm_timestep_1
 
 [My Configurations]
 folder_path = Configurations
-path = /models/swmm_timestep_1;/models/swmm_timestep_1;/models/MyConfigurations
+path = /models/MyConfigurations
+
+[Tests]
+folder_path = Configurations/My Configurations
+path = /models

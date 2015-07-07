@@ -1,6 +1,10 @@
 __author__ = 'tonycastronova'
+import sys
 import logging
 import logging.handlers
+import os
+import json
+
 
 class _Log:
     __monostate = None
@@ -9,45 +13,126 @@ class _Log:
         if not _Log.__monostate:
             _Log.__monostate = self.__dict__
 
-            LOG_FILENAME = './Log/EmitEngine.log'
+            current_dir = os.path.dirname(__file__)
+            LOG_FILENAME = os.path.abspath(os.path.join(current_dir, '../log/EmitEngine.log'))
+            CONSOLE_FILENAME = os.path.abspath(os.path.join(current_dir, '../log/temp_console_log.log'))
+
+            # remove the temp console log
+            if os.path.exists(CONSOLE_FILENAME):
+                os.remove(CONSOLE_FILENAME)
 
             self.__root = logging.getLogger('EMIT ENGINE')
             self.__root.setLevel(logging.DEBUG)
 
             formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-            # setup file handler
-            # fh = logging.FileHandler(LOG_FILENAME)
-            # fh.setFormatter(formatter)
-            # self.__root.addHandler(fh)
-
             # todo: setup streamhandler to handle std.out
             # todo: https://docs.python.org/2/library/logging.handlers.html
-            # todo:
+
+            sh_formatter = logging.Formatter('%(asctime)s - [%(levelname)s] --- %(message)s')
+            sh = StreamHandler(sys.stdout)
+            sh.setFormatter(sh_formatter)
+            self.__root.addHandler(sh)
 
             # setup rotating log
-            rotating_log = logging.handlers.RotatingFileHandler(LOG_FILENAME, maxBytes=2000, backupCount=500)
+            rotating_log = logging.handlers.RotatingFileHandler(LOG_FILENAME, maxBytes=50000, backupCount=500)
             rotating_log.setFormatter(formatter)
             self.__root.addHandler(rotating_log)
 
 
+            # console log
+            console_log = PickleHandler(CONSOLE_FILENAME)
+            console_log.setFormatter(formatter)
+            self.__root.addHandler(console_log)
+
         else:
             self.__dict__ = _Log.__monostate
 
-    def debug(self, text):
+    def _debug(self, text):
         self.__root.debug(text)
 
-    def warning(self, text):
+    def _warning(self, text):
         self.__root.warning(text)
 
-    def error(self, text):
+    def _error(self, text):
         self.__root.error(text)
 
-    def info(self, text):
+    def _info(self, text):
         self.__root.info(text)
 
-    def critical(self, text):
+    def _critical(self, text):
         self.__root.critical(text)
 
-log = _Log()
+    def _get_logger(self):
+        return self.__root
 
+class PickleHandler(logging.FileHandler):
+
+    def __init__(self, filename, mode='a+b', encoding=None, delay=0):
+        logging.FileHandler.__init__(self, filename, mode, encoding, delay)
+
+
+    def emit(self, record):
+        if self.stream is None:
+            self.stream = self._open()
+
+        # create dictionary to store record info
+        d = dict(message=record.message,
+                 levelname=record.levelname,
+                 asctime=record.asctime,
+        )
+
+        # dump record as json
+        self.stream.write('\n'+json.dumps(d))
+        self.flush()
+
+
+class StreamHandler(logging.StreamHandler):
+    """"""
+
+    def __init__(self, stream):
+
+        logging.StreamHandler.__init__(self)
+        self.stream = stream
+
+
+    def emit(self, record):
+        """Constructor"""
+        msg = self.format(record)
+        lvl = record.levelname
+
+        self.stream.write(msg+'\n')
+        self.flush()
+
+
+class Log(object):
+
+    def __init__(self):
+        '''
+        :param target_control: Target control should be a wx.RichTextBox
+        :return:
+        '''
+        self.log = _Log()
+
+    def debug(self, text):
+        self.log._debug(text)
+
+    def warning(self, text):
+        self.log._warning(text)
+
+    def error(self, text):
+        self.log._error(text)
+
+    def info(self, text):
+        # todo: this is a hack
+        # if not 'OVERWRITE:' in text:
+        self.log._info(text)
+
+    def critical(self, text):
+        self.log._critical(text)
+
+    def get_logger(self):
+        return self.log._get_logger()
+
+
+elog = Log()

@@ -1,20 +1,18 @@
-from collections import OrderedDict
-import os
-import random
-
 __author__ = 'tonycastronova'
 
+import os
+import random
 from gui.views.viewToolbox import ViewToolbox
 from gui.views.viewContext import ToolboxContextMenu
 from gui.controller.logicModel import LogicModel
 from gui import events
-
 import wx
 from wx.lib.pubsub import pub as Publisher
 from os.path import join, dirname, abspath
 import ConfigParser
 import fnmatch
 from logicFileDrop import filepath
+from coordinator.emitLogging import elog
 
 
 # todo: refactor
@@ -53,12 +51,10 @@ class LogicToolbox(ViewToolbox):
     def initBinding(self):
         self.Bind(wx.EVT_SIZE, self.OnSize)
         self.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnItemContextMenu)
-        self.Bind(wx.EVT_TREE_BEGIN_DRAG, self.onDrag)
         self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.onDoubleClick)
         events.onSimulationSaved += self.loadSIMFile
 
     def loadToolbox(self, modelpaths):
-
         # add base-level folders
         self.simConfigurations = self.tree.AppendItem(self.root_mdl, "Configurations")
         self.tree.SetItemImage(self.simConfigurations, self.folderConfigIcon, which=wx.TreeItemIcon_Expanded)
@@ -190,23 +186,24 @@ class LogicToolbox(ViewToolbox):
     def onDoubleClick(self, event):
         id = event.GetItem()
         filename = id.GetText()
-        fullpath = self.filepath[filename]
-        filenames = []
-        filenames.append(fullpath)
+        try:  # Its in a try because clicking on a folder returns an error.
+            fullpath = self.filepath[filename]
+            filenames = []
+            filenames.append(fullpath)
 
-        originx, originy = self.p.GetParent().FloatCanvas.WorldToPixel(self.p.GetParent().Canvas.GetPosition())
+            originx, originy = self.p.GetParent().FloatCanvas.WorldToPixel(self.p.GetParent().Canvas.GetPosition())
 
-        # Generate random coordinates about the center of the canvas
-        x = random.randint(-200, 200)
-        y = random.randint(-200, 200)
-        nx = (originx + x)
-        ny = (originy + y)
+            # Generate random coordinates about the center of the canvas
+            x = random.randint(-200, 200)
+            y = random.randint(-200, 200)
+            nx = (originx + x)
+            ny = (originy + y)
 
-
-
-
-        # Send the filepath to the FileDrop class in CanvasController
-        Publisher.sendMessage('toolboxclick', x=nx, y=ny, filenames=filenames)
+            # Send the filepath to the FileDrop class in CanvasController
+            Publisher.sendMessage('toolboxclick', x=nx, y=ny, filenames=filenames)
+        except:
+            elog.error("Cannot load folders unto the canvas")
+            pass
 
     def OnItemContextMenu(self, evt):
 
@@ -230,26 +227,6 @@ class LogicToolbox(ViewToolbox):
 
         if not folder:
             self.tree.PopupMenu(ToolboxContextMenu(self, evt, removable, folder))
-
-    def onDrag(self, event):
-
-        data = wx.FileDataObject()
-        obj = event.GetEventObject()
-        id = event.GetItem()
-        filename = id.GetText()
-        fullpath = self.filepath[filename]
-
-        # filepathclass = filepath()
-        # filepathclass.filepath = fullpath
-        Publisher.sendMessage('dragpathsent', path=fullpath)
-        dragCursor = wx.StockCursor(wx.CURSOR_LEFT_BUTTON)
-        self.SetCursor(dragCursor)
-
-
-        # data.AddFile(fullpath)
-        # dropSource = wx.DropSource(obj)
-        # dropSource.SetData(data)
-        # dropSource.DoDragDrop()
 
     def OnSize(self, evt):
         self.tree.SetSize(self.GetSize())
@@ -302,7 +279,6 @@ class LogicToolbox(ViewToolbox):
             filepath = self.filepath.get(key)
             os.remove(filepath)
             self.tree.Delete(item)
-
 
 class multidict(dict):
     """

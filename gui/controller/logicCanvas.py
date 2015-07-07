@@ -25,6 +25,7 @@ import coordinator.engineAccessors as engine
 import utilities.db as dbUtilities
 import coordinator.events as engineEvent
 from gui import events
+from coordinator.emitLogging import elog
 
 # Not sure if this should be here
 # This creates an anti-aliased line
@@ -129,6 +130,7 @@ class LogicCanvas(ViewCanvas):
                     self.addModel(filepath=filenames, x=nx, y=ny)
 
         except:
+            # elog.debug("onEnterWindow() in logicCanvas.py")
             pass
         self.path = None
 
@@ -142,7 +144,6 @@ class LogicCanvas(ViewCanvas):
         self._dbid = event.dbid
 
     def onClose(self, event):
-        print "In close"
         dlg = wx.MessageDialog(None, 'Are you sure you want to exit?', 'Question',
                                wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
 
@@ -197,7 +198,7 @@ class LogicCanvas(ViewCanvas):
         Updates the output console
         """
         if evt.message:
-            print "DEBUG|", evt.message
+            elog.debug("DEBUG|", evt.message)
 
     def onCreateBox(self, evt):
         name = evt.name
@@ -261,7 +262,7 @@ class LogicCanvas(ViewCanvas):
             # add this text as an attribute of the rectangle
             R.Text = label
 
-            print name + ' has been added to the canvas.'
+            elog.info(name + ' has been added to the canvas.')
 
             R.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit)
             R.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
@@ -303,7 +304,6 @@ class LogicCanvas(ViewCanvas):
         return (self.model_coords[id]['x'], self.model_coords[id]['y'])
 
     def createLine(self, R1, R2):
-        # print "creating link", R1, R2
         x1, y1 = (R1.BoundingBox[0] + (R1.wh[0] / 2, R1.wh[1] / 2))
         x2, y2 = (R2.BoundingBox[0] + (R2.wh[0] / 2, R2.wh[1] / 2))
         x1,y1=x1-90,y1-64
@@ -439,9 +439,10 @@ class LogicCanvas(ViewCanvas):
                 # load the simulation
                 try:
                     self.loadsimulation(filepath)
-                except:
-                    dlg = wx.MessageDialog(None, 'Configuration failed to load', 'Error', wx.OK)
-                    dlg.ShowModal()
+                except Exception, e:
+                    elog.error('Configuration failed to load: %s'%e.message)
+                    # dlg = wx.MessageDialog(None, 'Configuration failed to load', 'Error', wx.OK)
+                    # dlg.ShowModal()
         else:
             # load data model
             # current_db_id = self._currentDb['id']
@@ -476,7 +477,7 @@ class LogicCanvas(ViewCanvas):
             for link in links:
                 success = engine.removeLinkById(link['id'])
                 if not success:
-                    print 'ERROR|Could not remove link: %s' % link['id']
+                    elog.error('ERROR|Could not remove link: %s' % link['id'])
 
             # redraw the canvas
             self.RedrawConfiguration()
@@ -658,7 +659,7 @@ class LogicCanvas(ViewCanvas):
     def SaveSimulation(self, path):
 
         if len(self.models.keys()) == 0:
-            print 'WARNING | Nothing to save!'
+            elog.warning('WARNING | Nothing to save!')
             return
 
         # create an xml tree
@@ -809,11 +810,11 @@ class LogicCanvas(ViewCanvas):
             with open(path, 'w') as f:
                 f.write(prettyxml)
         except Exception, e:
-            print 'ERROR | An error occurred when attempting to save the project '
-            print 'ERROR | EXECPTION MESSAGE '
-            print e
+            elog.error('ERROR | An error occurred when attempting to save the project ')
+            elog.error('ERROR | EXECPTION MESSAGE ')
+            elog.error(e)
 
-        print 'Configuration Saved Successfully! '
+        elog.info('Configuration Saved Successfully! ')
 
     def appendChild(self, child):
         taglist = []
@@ -911,6 +912,7 @@ class LogicCanvas(ViewCanvas):
                 modelid = self.addModel(filepath=attrib['path'], x=attrib['xcoordinate'], y=attrib['ycoordinate'],
                                         uid=attrib['id'])
 
+            # todo: Link cannot be added until both models have finished loading!!!  This will throw exception on line 927
             if child.tag == 'Link':
                 attrib = self.appendChild(child)
 
@@ -923,7 +925,7 @@ class LogicCanvas(ViewCanvas):
                         R2 = R
 
                 if R1 is None or R2 is None:
-                    raise Exception('Could not find Model identifer in loaded models')
+                    raise Exception('Could not find Model identifier in loaded models')
 
                 temporal = None
                 spatial = None
@@ -960,7 +962,6 @@ class LogicCanvas(ViewCanvas):
         return self._Cursor
 
     def setCursor(self, value=None):
-        # print "Cursor was set to value ", dir(value), value.GetHandle()
         self._Cursor = value
 
     def LaunchContext(self, event):
@@ -978,6 +979,10 @@ class LogicCanvas(ViewCanvas):
             elif event.type == 'Model':
                 self.PopupMenu(ModelContextMenu(self, event), event.HitCoordsPixel.Get())
 
+        elif type(event) == wx.lib.floatcanvas.FloatCanvas.Polygon:
+            if event.type == "ArrowHead":
+                self.PopupMenu(LinkContextMenu(self, event), event.HitCoordsPixel.Get())
+
 
     # THREADME
     def run(self):
@@ -990,9 +995,8 @@ class LogicCanvas(ViewCanvas):
 
 
     def simulation_finished(self, evt):
-
         # todo: this should open a dialog box showing the execution summary
-        print 'Simulation finished'
+        elog.info('Simulation finished')
 
 # DELETEME
 menu_titles = ["Open",

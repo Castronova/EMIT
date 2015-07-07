@@ -172,7 +172,7 @@ class swmm(feed_forward_wrapper):
                 # build elementset
                 geometries = geoms[key]
                 elementset = []
-                for i, geom in geometries:
+                for i, geom in geometries.iteritems():
                     dv = DataValues()
                     elem = Geometry(geom=geom,id=i)
                     elem.type(geom.geom_type)

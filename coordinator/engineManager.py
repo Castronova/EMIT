@@ -5,8 +5,6 @@ import types
 from multiprocessing import Process
 import sys
 import time
-from threading import Thread
-import os
 from multiprocessing import Queue
 import events
 
@@ -152,8 +150,6 @@ class Engine:
 
         # get output
         return self.dispatcher.getResult()
-
-        #print "In ProcessTasks: ", pickle.loads(model)
 
     def processStop(self, resfunc=None):
         """

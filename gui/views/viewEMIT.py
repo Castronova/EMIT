@@ -109,7 +109,7 @@ class ViewEMIT(wx.Frame):
                            PinButton(False).
                            Movable(False).
                            Floatable(False).
-                           BestSize(wx.Size(1200, 200))
+                           BestSize(wx.Size(1200, 225)).CaptionVisible(False)
                            )
 
         self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnSelect)

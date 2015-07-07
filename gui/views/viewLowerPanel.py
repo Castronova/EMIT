@@ -136,14 +136,16 @@ class TimeSeriesTab(wx.Panel):
         # Sizers
         seriesSelectorSizer = wx.BoxSizer(wx.VERTICAL)
         buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
+        # seriesSelectorSizer = wx.BoxSizer(wx.HORIZONTAL)
+        # buttonSizer = wx.BoxSizer(wx.VERTICAL)
         buttonSizer.SetMinSize(wx.Size(-1, 45))
 
-        buttonSizer.Add(self.connection_combobox, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 5)
-        buttonSizer.Add(self.addConnectionButton, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 5)
+        buttonSizer.Add(self.connection_combobox, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 1)
+        buttonSizer.Add(self.addConnectionButton, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 1)
         buttonSizer.AddSpacer((0, 0), 1, wx.EXPAND, 5)
-        buttonSizer.Add(self.connection_refresh_button, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 5)
-        seriesSelectorSizer.Add( buttonSizer, 0, wx.ALL|wx.EXPAND, 5)
-        seriesSelectorSizer.Add(self.m_olvSeries, 1, wx.ALL | wx.EXPAND, 5)
+        buttonSizer.Add(self.connection_refresh_button, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 1)
+        seriesSelectorSizer.Add( buttonSizer, 0, wx.ALL|wx.EXPAND, 0)
+        seriesSelectorSizer.Add(self.m_olvSeries, 1, wx.ALL | wx.EXPAND, 0)
 
         self.SetSizer(seriesSelectorSizer)
         self.Layout()

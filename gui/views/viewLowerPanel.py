@@ -97,7 +97,6 @@ class ConsoleTab(wx.Panel):
         sizer.Add(self.log, 1, wx.ALL|wx.EXPAND, 5)
         self.SetSizer(sizer)
 
-
         self.SetSizerAndFit(sizer)
 
     def onRightUp(self, event):
@@ -136,14 +135,15 @@ class TimeSeriesTab(wx.Panel):
         # Sizers
         seriesSelectorSizer = wx.BoxSizer(wx.VERTICAL)
         buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
+        #  These two comments below will stack the buttons on the left side of the datatable. For visualization only.
         # seriesSelectorSizer = wx.BoxSizer(wx.HORIZONTAL)
         # buttonSizer = wx.BoxSizer(wx.VERTICAL)
         buttonSizer.SetMinSize(wx.Size(-1, 45))
 
-        buttonSizer.Add(self.connection_combobox, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 1)
-        buttonSizer.Add(self.addConnectionButton, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 1)
+        buttonSizer.Add(self.connection_combobox, 0, flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=2)
+        buttonSizer.Add(self.addConnectionButton, 0, flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=10)
         buttonSizer.AddSpacer((0, 0), 1, wx.EXPAND, 5)
-        buttonSizer.Add(self.connection_refresh_button, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 1)
+        buttonSizer.Add(self.connection_refresh_button, 0, flag=wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, border=2)
         seriesSelectorSizer.Add( buttonSizer, 0, wx.ALL|wx.EXPAND, 0)
         seriesSelectorSizer.Add(self.m_olvSeries, 1, wx.ALL | wx.EXPAND, 0)
 
@@ -498,15 +498,15 @@ class DataSeries(wx.Panel):
 
         # Sizers
         seriesSelectorSizer = wx.BoxSizer(wx.VERTICAL)
-        buttonSizer = wx.BoxSizer( wx.HORIZONTAL)
+        buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
         buttonSizer.SetMinSize(wx.Size(-1, 45))
 
-        buttonSizer.Add(self.connection_combobox, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
-        buttonSizer.Add(self.addConnectionButton, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
-        buttonSizer.AddSpacer((0, 0), 1, wx.EXPAND, 5 )
-        buttonSizer.Add(self.connection_refresh_button, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
-        seriesSelectorSizer.Add( buttonSizer, 0, wx.ALL|wx.EXPAND, 5)
-        seriesSelectorSizer.Add(self.table, 1, wx.ALL|wx.EXPAND, 5)
+        buttonSizer.Add(self.connection_combobox, 0, flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=2)
+        buttonSizer.Add(self.addConnectionButton, 0, flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=10)
+        buttonSizer.AddSpacer((0, 0), 1, wx.EXPAND, 5)
+        buttonSizer.Add(self.connection_refresh_button, 0, flag=wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, border=2)
+        seriesSelectorSizer.Add( buttonSizer, 0, wx.ALL|wx.EXPAND, 0)
+        seriesSelectorSizer.Add(self.table, 1, wx.ALL|wx.EXPAND, 0)
 
         self.SetSizer(seriesSelectorSizer)
         self.Layout()

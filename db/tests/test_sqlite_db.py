@@ -143,19 +143,20 @@ class test_sqlite_db(unittest.TestCase):
         coords = [(1,2),(2,3),(3,4)]
         geoms = []
         for x,y in coords:
-            pt = Point(x,y)
-            geoms.append(stdlib.Geometry(pt))
+            point = Point(x,y)
+            geoms.append(stdlib.Geometry(point))
         item.addGeometries2(geoms)
         self.assertTrue(len(item.getGeometries2()) == len(geoms))
 
         # set exchange item values
-        st = dt.now()                   # set start time to 'now'
-        et = st + timedelta(days=100)   # set endtime to 100 days later
-        current_time = st               # initial time
-        dates = []                      # list to hold dates
-        values = []                     # list to hold values for each date
+        start_time = dt.now()                       # set start time to 'now'
+        end_time = start_time + timedelta(days=100) # set endtime to 100 days later
+        current_time = start_time                   # initial time
+        dates = []                                  # list to hold dates
+        values = []                                 # list to hold values for each date
+
         # populate dates list
-        while current_time <= et:
+        while current_time <= end_time:
 
             # add date
             dates.append(current_time)
@@ -182,11 +183,9 @@ class test_sqlite_db(unittest.TestCase):
         # list of exchange items
         ei = [item]
 
-        # use numpy arrays to slice the data during insert
-        # import numpy as np
-        # array = np.array(my_list)
-        # array[:,2]  all datavalues for geometry index of 2
-        # self.sqlite.create_simulation(preferences_path=pref, config_params=config, output_exchange_items=item)
+        self.sqlite.create_simulation(preferences_path=pref,
+                                      config_params=config,
+                                      output_exchange_items=item)
 
 
 

@@ -6,7 +6,7 @@ import random
 from wrappers import feed_forward
 import stdlib
 from utilities import mdl
-
+import numpy
 
 class randomizer(feed_forward.feed_forward_wrapper):
     def __init__(self, config_params):
@@ -41,6 +41,16 @@ class randomizer(feed_forward.feed_forward_wrapper):
                    ]
 
         for output in outputs:
+
+            geoms = output.getGeometries2()
+            dates = output.getDates2()
+            values = output.getValues2()
+
+            # generate random numbers
+            Min,Max = output.name().split(' ')[-1].split('-')
+            vals = numpy.random.randint(low=Min, high=Max, size=(len(geoms),1))
+
+
 
             geoms = output.geometries()
 

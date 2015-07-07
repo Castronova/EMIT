@@ -61,7 +61,6 @@ def build_exchange_items_from_config(params):
     oitems = params['output'] if 'output' in params else []
     eitems = iitems + oitems
 
-    itemid = 0
     items = {'input':[],'output':[]}
 
 
@@ -69,12 +68,10 @@ def build_exchange_items_from_config(params):
     for io in eitems:
         variable = None
         unit = None
-        elementset = []
+        geoms_list = []
 
+        # get all input and output exchange items as a list
         iotype = stdlib.ExchangeItemType.Output if io['type'].lower() == 'output' else stdlib.ExchangeItemType.Input
-
-        #if 'output' in io.keys(): type = stlib.ExchangeItemType.Output
-        #else: type = stlib.ExchangeItemType.Input
 
         for key,value in io.iteritems():
 
@@ -89,12 +86,11 @@ def build_exchange_items_from_config(params):
                     gen_path = os.path.abspath(os.path.join(params['basedir'],value))
                     if not os.path.isfile(gen_path):
                         # get filepath relative to *.mdl
-
                         elog.critical('Could not find file at path %s, generated from relative path %s'%(gen_path, value))
                         raise Exception('Could not find file at path %s, generated from relative path %s'%(gen_path, value))
 
+                    # parse the geometry from the shapefile
                     geom,srs = utilities.spatial.read_shapefile(gen_path)
-
 
                 # otherwise it must be a wkt
                 else:
@@ -106,58 +102,43 @@ def build_exchange_items_from_config(params):
                                 geom  = [g for g in geoms]
                         else:
                             geom = [geoms]
-
-
                     except:
                         elog.warning('Could not load component geometry from *.mdl file')
-
                         # this is OK.  Just set the geoms to [] and assume that they will be populated during initialize.
                         geom = []
-                        # raise Exception('Could not load WKT string: %s.'%value)
 
                     srs = None
                     if 'espg_code' in io:
                         srs = utilities.spatial.get_srs_from_epsg(io['epsg_code'])
 
-
+                # create Geometry objects for each shape
                 for element in geom:
-                    # define initial dataset for element
-                    dv = stdlib.DataValues()
-
-                    if srs is None:
+                    # if srs is None:
                         # set default srs
-                        srs = utilities.spatial.get_srs_from_epsg('4269')
+                        # srs = utilities.spatial.get_srs_from_epsg('4269')
 
                     # create element
                     elem = stdlib.Geometry()
                     elem.geom(element)
                     elem.type(element.geom_type)
                     elem.srs(srs)
-                    elem.datavalues(dv)
-                    elementset.append(elem)
+                    geoms_list.append(elem)
 
 
-        # increment item id
-        itemid += 1
-        #id = iotype.upper()+str(itemid)
-        id = uuid.uuid4().hex[:5]
+        # generate a unique uuid for this exchange item
+        id = uuid.uuid4().hex
 
         # create exchange item
         ei = stdlib.ExchangeItem(id,
                                 name=variable.VariableNameCV(),
                                 desc=variable.VariableDefinition(),
-                                geometry=elementset,
                                 unit= unit,
                                 variable=variable,
                                 type=iotype)
 
 
         # add geometry to exchange item (NEW)
-        ei.addGeometries2(elementset)
-
-        # add datavalues to exchange item (NEW)
-        dv2 = [stdlib.DataValues() for i in range(0, len(elementset))]
-        ei.add_dataset(dv2)
+        ei.addGeometries2(geoms_list)
 
         # save exchange items based on type
         items[ei.get_type()].append(ei)

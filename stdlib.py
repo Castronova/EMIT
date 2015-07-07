@@ -103,6 +103,8 @@ class Element(object):
         # TODO: use enum
         self.__type = None
 
+        elog.warning('deprecated: The Element class should no longer be used')
+
     def geom(self,value=None):
         if value is None:
             return self.__geom
@@ -156,6 +158,8 @@ class DataValues(object):
         # start and end are the defined by the date range of the dataset
         if timeseries is not None:
             self.update_start_end_times()
+
+        elog.warning('deprecated: The DataValues class should no longer be used')
 
     def timeseries(self):
         return self.__timeseries

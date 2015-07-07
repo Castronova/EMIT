@@ -14,6 +14,7 @@ import hashlib
 from coordinator.emitLogging import elog
 from bisect import bisect_left, bisect_right
 from osgeo import osr
+import numpy
 
 class ElementType():
     Point = 'Point'
@@ -359,16 +360,22 @@ class ExchangeItem(object):
         """
 
 
-        if isinstance(timevalue, list):
+        if  hasattr(timevalue, "__len__"):
 
             # make sure that the length of values matches the length of times
             if len(timevalue) != len(values):
                 elog.critical('Could not set data values. Length of timevalues and datavalues lists must be equal.')
                 return 0
 
+            invalid_dates = False
             for i in range(0, len(timevalue)):
                 if isinstance(timevalue[i], datetime.datetime):
                     self._setValues2(values[i], timevalue[i])
+                else: invalid_dates = True
+
+            if invalid_dates:
+                elog.warning('Invalid datetimes were found while setting values.  Data values may not be set correctly.')
+
 
             return 1
 
@@ -397,7 +404,7 @@ class ExchangeItem(object):
             self.__values2[idx] = values
         else:
             # insert new values at the specified index
-            if not isinstance(values, list):
+            if not hasattr(values, "__len__"):
                 values = [values]
             self.__values2.insert(idx+1, values)
             self.__times2.insert(idx+1, timevalue)
@@ -431,8 +438,7 @@ class ExchangeItem(object):
             if end_time is not None:
                 end_time_slice_idx = self._nearest(self.__times2, end_time, 'right') + 1
         else:
-            start_time_slice_idx = time_idx
-            end_time_slice_idx = time_idx + 1
+            return self.__values2[time_idx][idx_start:idx_end]  # return a single time index of values
 
         values = []
         for i in range(start_time_slice_idx, end_time_slice_idx):

@@ -71,7 +71,7 @@ def run_feed_forward(obj):
 
             # set default spatial interpolation to ExactMatch
             if link.spatial_interpolation() is None:
-                link.spatial_interpolation(spatial_exact_match())
+                link.spatial_interpolation(spatial_index())
 
             spatial_interp = link.spatial_interpolation()
             source_geoms = source.getGeometries2()

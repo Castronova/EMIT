@@ -121,6 +121,7 @@ def update_links_feed_forward(obj, links, output_exchange_items, spatial_maps):
             # set mapped dates in temp array
             # nvals[:, gidx] = mapped_values
 
+        # todo: remove loop to improve efficiency
         # set these data in the iei
         for i in range(0, len(nvals)):
             iei.setValues2(values=nvals[i], timevalue=mdates[i])

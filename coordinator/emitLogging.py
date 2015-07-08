@@ -113,12 +113,15 @@ class Log(object):
         :return:
         '''
         self.log = _Log()
+        self.showinfo = True
+        self.showwarning = True
 
     def debug(self, text):
         self.log._debug(text)
 
     def warning(self, text):
-        self.log._warning(text)
+        if self.showwarning:
+            self.log._warning(text)
 
     def error(self, text):
         self.log._error(text)
@@ -126,7 +129,8 @@ class Log(object):
     def info(self, text):
         # todo: this is a hack
         # if not 'OVERWRITE:' in text:
-        self.log._info(text)
+        if self.showinfo:
+            self.log._info(text)
 
     def critical(self, text):
         self.log._critical(text)

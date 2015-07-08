@@ -145,6 +145,7 @@ class ViewEMIT(wx.Frame):
         Load = self.m_fileMenu.Append(wx.NewId(), '&Load\tCtrl+O', 'Load Configuration')
         Save = self.m_fileMenu.Append(wx.NewId(), '&Save Configuration\tCtrl+S', 'Save Configuration')
         SaveAs = self.m_fileMenu.Append(wx.NewId(), '&Save Configuration As', 'Save Configuration')
+        Settings = self.m_fileMenu.Append(wx.NewId(), "Settings...")
         exit = self.m_fileMenu.Append(wx.NewId(), '&Quit\tCtrl+Q', 'Quit application')
 
         self.m_menubar.Append(self.m_fileMenu, "&File")
@@ -186,6 +187,7 @@ class ViewEMIT(wx.Frame):
         self.Bind(wx.EVT_MENU, self.SaveConfiguration, Save)
         self.Bind(wx.EVT_MENU, self.SaveConfigurationAs, SaveAs)
         self.Bind(wx.EVT_MENU, self.LoadConfiguration, Load)
+        self.Bind(wx.EVT_MENU, self.Settings, Settings)
         self.Bind(wx.EVT_MENU, self.onClose, exit)
         events.onSaveFromCanvas += self.SaveConfigurationAs
 
@@ -198,6 +200,11 @@ class ViewEMIT(wx.Frame):
 
         # Run Option Bindings
         self.Bind(wx.EVT_MENU_OPEN, self.onRunSelected)
+
+    def Settings(self, event):
+        settings = viewMenuBar()
+        settings.Show()
+        pass
 
     def onRunSelected(self, event):
         if event.GetMenu() == self.m_runMenu:
@@ -345,4 +352,55 @@ class ModelView(wx.Panel):
 class AllFileView(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
+
+
+class viewMenuBar(wx.Frame):
+    def __init__(self):
+        self.cfg = wx.Config('myconfig')
+        if self.cfg.Exists('width'):
+            w, h = self.cfg.ReadInt('width'), self.cfg.ReadInt('height')
+        else:
+            w, h = 250, 250
+
+        self.infoIsChecked = self.cfg.ReadBool("info")
+        self.warningIsChecked = self.cfg.ReadBool("warning")
+
+        wx.Frame.__init__(self, parent=None, id=-1, title="Settings...", pos=wx.DefaultPosition, size=wx.Size(w, h))
+        self.panel = wx.Panel(self)
+
+        wx.StaticText(self.panel, -1, 'Width:', (20, 20))
+        wx.StaticText(self.panel, -1, 'Height:', (20, 70))
+        self.sc1 = wx.SpinCtrl(self.panel, -1, str(w), (80, 15), (60, -1), min=200, max=500)
+        self.sc2 = wx.SpinCtrl(self.panel, -1, str(h), (80, 65), (60, -1), min=200, max=500)
+        wx.Button(self.panel, 1, 'Save', pos=(20, 120))
+
+        self.c1 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Info Messages", pos=(50, 200))
+        self.c2 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Warning Messages", pos=(50, 225))
+
+        self.c1.SetValue(self.infoIsChecked)
+        self.c2.SetValue(self.warningIsChecked)
+
+        self.Bind(wx.EVT_BUTTON, self.OnSave, id=1)
+        self.statusbar = self.CreateStatusBar()
+        self.Centre()
+
+    def OnSave(self, event):
+        self.cfg.WriteInt("width", self.sc1.GetValue())
+        self.cfg.WriteInt("height", self.sc2.GetValue())
+        self.cfg.WriteBool("info", self.c1.GetValue())
+        self.cfg.WriteBool("warning", self.c2.GetValue())
+        self.statusbar.SetStatusText('Configuration saved, %s ' % wx.Now())
+        self.RefreshSettings()
+
+    def teststatusbar(self, event):
+        for i in range(1, 1000):
+            self.statusbar.SetStatusText("Progress %d" % i)
+
+    def RefreshSettings(self):
+        elog.showinfo = self.c1.GetValue()
+        elog.showwarning = self.c2.GetValue()
+        print self.c1.GetValue()
+        print self.c2.GetValue()
+
+
 

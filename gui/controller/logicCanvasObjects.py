@@ -5,9 +5,11 @@ __author__ = 'Mario'
 
 import sys
 import numpy as np
+import wx
 from math import *
 from numpy import linspace
 import matplotlib.colors as mcolors
+from wx.lib.floatcanvas import FloatCanvas as FC
 
 sys.path.append("..")
 
@@ -233,3 +235,77 @@ class bezier():
             pts.append(tuple(bez(val)))
 
         return pts
+
+class ScaledBitmapWithRotation(FC.ScaledBitmap):
+
+    def __init__(self, Bitmap, XY, Height, Position = 'cc', InForeground = True):
+        FC.ScaledBitmap.__init__(self, Bitmap, XY, Height, Position = 'cc', InForeground = True)
+        self.ImageMidPoint = (self.Image.Width/2, self.Image.Height/2)
+        self.RotationAngle = 0.0
+        self.LastRotationAngle = 0.0
+
+    def _Draw(self, dc , WorldToPixel, ScaleWorldToPixel, HTdc=None):
+        # Only update if there's a change
+        if self.LastRotationAngle != self.RotationAngle:
+            # Using ImageMidPoint seems to do the same thing as (0,0) for the center of rotation
+            Img = self.Image.Rotate(self.RotationAngle, (0,0))
+            self.Height = Img.Height
+            self.ImageMidPoint = (Img.Width/2, Img.Height/2)
+            self.ScaledBitmap = wx.BitmapFromImage(Img)
+
+        # XY = WorldToPixel(self.XY)
+        # H = ScaleWorldToPixel(self.Height)[0]
+        # W = H * (self.bmpWidth / self.bmpHeight)
+        #
+        # self.ScaledHeight = H
+        # Img = self.Image.Scale(W, H)
+        # self.ScaledBitmap = wx.BitmapFromImage(Img)
+        #
+        # XY = self.ShiftFun(XY[0], XY[1], W, H)
+        # dc.DrawBitmapPoint(self.ScaledBitmap, XY, True)
+        # if HTdc and self.HitAble:
+        #     HTdc.SetPen(self.HitPen)
+        #     HTdc.SetBrush(self.HitBrush)
+        #     HTdc.DrawRectanglePointSize(XY, (W, H) )
+
+        self.LastRotationAngle = self.RotationAngle
+        super(ScaledBitmapWithRotation,self)._Draw(dc , WorldToPixel, ScaleWorldToPixel, HTdc=None)
+
+
+# class SmoothLineWithArrow(FC.TextObjectMixin, FC.DrawObject, FC.PointsObjectMixin, FC.LineOnlyMixin):
+#     '''
+#     Based on FloatCanvas Line and ScaledBitmap. This simply integrates
+#     the two and adds the rotation feature that we need.
+#     '''
+#     def __init__(self, Points,
+#                  LineColor = "Black",
+#                  LineStyle = "Solid",
+#                  LineWidth    = 1,
+#                  InForeground = False):
+#         FC.DrawObject.__init__(self, InForeground)
+#
+#         self.Points = np.array(Points,np.float)
+#         self.CalcBoundingBox()
+#         self.LineColor = LineColor
+#         self.LineStyle = LineStyle
+#         self.LineWidth = LineWidth
+#         self.SetPen(LineColor,LineStyle,LineWidth)
+#         self.HitLineWidth = max(LineWidth,self.MinHitLineWidth)
+#         midX = (Points[0][0]+Points[1][0])/2
+#         midY = (Points[0][1]+Points[1][1])/2
+#         self.MidPoint = (midX,midY)
+#
+#
+#     def _Draw(self, dc , WorldToPixel, ScaleWorldToPixel, HTdc=None):
+#         Points = WorldToPixel(self.Points)
+#         GC = wx.GraphicsContext.Create(dc)
+#         GC.SetPen(self.Pen)
+#         dc.DrawLines(Points)
+#         if HTdc and self.HitAble:
+#             HTdc.SetPen(self.HitPen)
+#             HTdc.DrawLines(Points)
+#
+#     def _UpdateMidPoint(self):
+#         midX = (self.Points[0][0]+self.Points[1][0])/2
+#         midY = (self.Points[0][1]+self.Points[1][1])/2
+#         self.MidPoint = (midX,midY)

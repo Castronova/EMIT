@@ -49,41 +49,56 @@ class SmoothLine(FC.Line):
         GC.SetPen(self.Pen)
         GC.DrawLines(Points)
 
+    def GetAngleRadians(self):
+        # Calculate the angle of the line and set the arrow to that angle
+        xdiff = self.Points[1][0]-self.Points[0][0]
+        ydiff = self.Points[1][1]-self.Points[0][1]
+        return math.atan2(ydiff, xdiff)
+
+
 class ScaledBitmapWithRotation(FC.ScaledBitmap):
 
-    def __init__(self, Bitmap, XY, Height, Position = 'cc', InForeground = True):
+    def __init__(self, Bitmap, XY, Height, Angle=0.0, Position = 'cc', InForeground = True):
         FC.ScaledBitmap.__init__(self, Bitmap, XY, Height, Position = 'cc', InForeground = True)
         self.ImageMidPoint = (self.Image.Width/2, self.Image.Height/2)
         print "img mid: ", self.ImageMidPoint
-        self.RotationAngle = 0.0
+        self.RotationAngle = Angle
+        if Angle != 0.0:
+            Img = self.Image.Rotate(self.RotationAngle, (0,0))
+            self.ScaledBitmap = wx.BitmapFromImage(Img)
         self.LastRotationAngle = 0.0
 
     def _Draw(self, dc , WorldToPixel, ScaleWorldToPixel, HTdc=None):
         # Only update if there's a change
-        if self.LastRotationAngle != self.RotationAngle:
+        # if self.LastRotationAngle != self.RotationAngle:
+        #     pass
             # Using ImageMidPoint seems to do the same thing as (0,0) for the center of rotation
-            Img = self.Image.Rotate(self.RotationAngle, (0,0))
-            self.Height = Img.Height
-            self.ImageMidPoint = (Img.Width/2, Img.Height/2)
+        Img = self.Image.Rotate(self.RotationAngle, (0,0))
+        self.Height = Img.Height
+        self.ImageMidPoint = (Img.Width/2, Img.Height/2)
+
+        XY = WorldToPixel(self.XY)
+        H = ScaleWorldToPixel(self.Height)[0]
+        W = H * (self.bmpWidth / self.bmpHeight)
+
+        if (self.ScaledBitmap is None) or (H <> self.ScaledHeight) :
+            self.ScaledHeight = H
             self.ScaledBitmap = wx.BitmapFromImage(Img)
 
-        # XY = WorldToPixel(self.XY)
-        # H = ScaleWorldToPixel(self.Height)[0]
-        # W = H * (self.bmpWidth / self.bmpHeight)
-        #
-        # self.ScaledHeight = H
-        # Img = self.Image.Scale(W, H)
-        # self.ScaledBitmap = wx.BitmapFromImage(Img)
-        #
-        # XY = self.ShiftFun(XY[0], XY[1], W, H)
-        # dc.DrawBitmapPoint(self.ScaledBitmap, XY, True)
-        # if HTdc and self.HitAble:
-        #     HTdc.SetPen(self.HitPen)
-        #     HTdc.SetBrush(self.HitBrush)
-        #     HTdc.DrawRectanglePointSize(XY, (W, H) )
+        XY = self.ShiftFun(XY[0], XY[1], W, H)
+        dc.DrawBitmapPoint(self.ScaledBitmap, XY, True)
+        if HTdc and self.HitAble:
+            HTdc.SetPen(self.HitPen)
+            HTdc.SetBrush(self.HitBrush)
+            HTdc.DrawRectanglePointSize(XY, (W, H))
 
         self.LastRotationAngle = self.RotationAngle
-        super(ScaledBitmapWithRotation,self)._Draw(dc , WorldToPixel, ScaleWorldToPixel, HTdc=None)
+
+    def RotateArrow(self, angle):
+        pass
+
+class SmoothLineWithArrow(SmoothLine):
+
 
 
 class LogicCanvas(ViewCanvas):
@@ -230,10 +245,7 @@ class LogicCanvas(ViewCanvas):
 
             # Iterate through all links on the canvas
             for link in self.links.keys():
-                # Calculate the angle of the line and set the arrow to that angle
-                xdiff = link.Points[1][0]-link.Points[0][0]
-                ydiff = link.Points[1][1]-link.Points[0][1]
-                self.arrow_shape.RotationAngle = math.atan2(ydiff, xdiff)
+                self.arrow_shape.RotationAngle = link.GetAngleRadians()
 
                 # Grab both boxes on the ends of the line/link
                 # Update their endpoints and set the arrow to the center of the line

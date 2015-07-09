@@ -58,10 +58,9 @@ class SmoothLine(FC.Line):
 
 class ScaledBitmapWithRotation(FC.ScaledBitmap):
 
-    def __init__(self, Bitmap, XY, Height, Angle=0.0, Position = 'cc', InForeground = True):
-        FC.ScaledBitmap.__init__(self, Bitmap, XY, Height, Position = 'cc', InForeground = True)
+    def __init__(self, Bitmap, XY, Angle=0.0, Position = 'cc', InForeground = True):
+        FC.ScaledBitmap.__init__(self, Bitmap, XY, Height=Bitmap.Height, Position = 'cc', InForeground = True)
         self.ImageMidPoint = (self.Image.Width/2, self.Image.Height/2)
-        print "img mid: ", self.ImageMidPoint
         self.RotationAngle = Angle
         if Angle != 0.0:
             Img = self.Image.Rotate(self.RotationAngle, (0,0))
@@ -69,10 +68,7 @@ class ScaledBitmapWithRotation(FC.ScaledBitmap):
         self.LastRotationAngle = 0.0
 
     def _Draw(self, dc , WorldToPixel, ScaleWorldToPixel, HTdc=None):
-        # Only update if there's a change
-        # if self.LastRotationAngle != self.RotationAngle:
-        #     pass
-            # Using ImageMidPoint seems to do the same thing as (0,0) for the center of rotation
+
         Img = self.Image.Rotate(self.RotationAngle, (0,0))
         self.Height = Img.Height
         self.ImageMidPoint = (Img.Width/2, Img.Height/2)
@@ -94,12 +90,26 @@ class ScaledBitmapWithRotation(FC.ScaledBitmap):
 
         self.LastRotationAngle = self.RotationAngle
 
-    def RotateArrow(self, angle):
-        pass
+    def Rotate(self, angle):
+        self.RotationAngle = angle
 
 class SmoothLineWithArrow(SmoothLine):
+    '''
+    Based on FloatCanvas Line and ScaledBitmap. This simply integrates
+    the two and adds the rotation feature that we need.
+    '''
+    def __init__(self, Points, ArrowBitmap, LineColor="Blue", LineStyle="Solid", LineWidth = 4):
+        super(SmoothLineWithArrow, self).__init__(Points, LineColor, LineStyle, LineWidth)
 
+        self.Arrow = ScaledBitmapWithRotation(Angle=self.GetAngleRadians(), Bitmap=ArrowBitmap, XY=self.MidPoint)
+        # self.lol = ScaledBitmapWithRotation(ArrowBitmap, self.blah.MidPoint)
 
+    def _Draw(self, dc , WorldToPixel, ScaleWorldToPixel, HTdc=None):
+        # _Draw(dc , WorldToPixel, ScaleWorldToPixel, HTdc=None)
+        # _Draw(dc , WorldToPixel, ScaleWorldToPixel, HTdc=None)
+        super(SmoothLineWithArrow,self)._Draw(dc , WorldToPixel, ScaleWorldToPixel, HTdc=None)
+        # super(ScaledBitmapWithRotation,self)._Draw(dc , WorldToPixel, ScaleWorldToPixel, HTdc=None)
+        self.Arrow._Draw(dc, WorldToPixel, ScaleWorldToPixel, HTdc=None)
 
 class LogicCanvas(ViewCanvas):
     def __init__(self, parent):
@@ -245,17 +255,17 @@ class LogicCanvas(ViewCanvas):
 
             # Iterate through all links on the canvas
             for link in self.links.keys():
-                self.arrow_shape.RotationAngle = link.GetAngleRadians()
+                link.Arrow.Rotate(link.GetAngleRadians())
 
                 # Grab both boxes on the ends of the line/link
                 # Update their endpoints and set the arrow to the center of the line
                 r1, r2 = self.links[link]
                 if r1 == self.MovingObject:
                     link.Points[0] = self.MovingObject.XY
-                    self.arrow_shape.XY = link.MidPoint
+                    link.Arrow.XY = link.MidPoint
                 elif r2 == self.MovingObject:
                     link.Points[1] = self.MovingObject.XY
-                    self.arrow_shape.XY = link.MidPoint
+                    link.Arrow.XY = link.MidPoint
 
             self.lastPos = cursorPos
             # self.RedrawConfiguration()
@@ -372,21 +382,22 @@ class LogicCanvas(ViewCanvas):
         x1,y1 = R1.XY
         x2,y2 = R2.XY
         points = [(x1,y1),(x2,y2)]
-        line = SmoothLine(points, LineColor="Blue", LineStyle="Solid", LineWidth=4, InForeground=False)
+        # line = SmoothLine(points, LineColor="Blue", LineStyle="Solid", LineWidth=4, InForeground=False)
+        line = SmoothLineWithArrow(points, self.linkArrow)
         self.links[line] = [R1, R2]
         line.type = LogicCanvasObjects.ShapeType.Link
 
         # Calculate length of line, use to show/hide arrow
         self.linelength = math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2)
-
         self.FloatCanvas.AddObject(line)
-        self.arrow_shape = self.createArrow(line)
+        # self.arrow_shape = self.createArrow(line)
         self.FloatCanvas.Draw()
 
     def createArrow(self, line):
 
         print "adding arrow to ", line.MidPoint
-        arrow_shape = ScaledBitmapWithRotation(self.linkArrow, line.MidPoint, Height=self.linkArrow.Height, Position='tl', InForeground=True)
+        angle = line.GetAngleRadians()
+        arrow_shape = ScaledBitmapWithRotation(self.linkArrow, line.MidPoint, Angle=angle, Position='tl', InForeground=True)
 
         # set the shape type so that we can identify it later
         arrow_shape.type = LogicCanvasObjects.ShapeType.ArrowHead

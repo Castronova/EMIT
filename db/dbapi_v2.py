@@ -1,9 +1,11 @@
+__author__ = 'mike'
+
 import datetime
 import uuid
 import numpy
 import time
+import pyspatialite.dbapi2 as spatialite
 
-__author__ = 'mike'
 # This is our API for simulation data that uses the latest ODM2PythonAPI code
 
 from api_old.ODM2.Core.services import *
@@ -22,11 +24,19 @@ from ODM2PythonAPI.src.api.ODM2 import models
 class sqlite():
 
     def __init__(self, sqlitepath):
+
+        # build sqlalchemy connection
         self.connection = dbconnection.createConnection('sqlite', sqlitepath)
+
+        # create read, write, update, and delete ODM2PythonAPI instances
         self.read = ReadODM2(self.connection)
         self.write = CreateODM2(self.connection)
         self.update = UpdateODM2(self.connection)
         self.delete = DeleteODM2(self.connection)
+
+        # create connection using spatialite for custom sql queries
+        self.spatial_connection = spatialite.connect(sqlitepath)
+        self.spatialDb = self.spatial_connection.cursor()
 
     def create_user(self, userInfo):
         self.write.createPerson(userInfo['firstName'], userInfo['lastName'])
@@ -167,14 +177,24 @@ class sqlite():
 
                 # create sampling feature
                 samplingfeature = self.read.getSamplingFeatureByGeometry(geom.wkt)
-                if not samplingfeature: samplingfeature = self.write.createSamplingFeature(code=uuid.uuid4().hex,
-                                                                                                vType="site",
-                                                                                                name=None,
-                                                                                                description=None,
-                                                                                                geoType=geom.geom_type,
-                                                                                                elevation=None,
-                                                                                                elevationDatum=None,
-                                                                                                featureGeo=geom.wkt)
+
+
+                if not samplingfeature:
+
+                    sfid = self.insert_sampling_feature(type='site',geometryType=geom.geom_type, geometry=geom)
+
+                    # test
+                    test = self.read.getSamplingFeatureById(sfid)
+                    samplingfeature = self.read.getSamplingFeatureByGeometry(geom.wkt)
+
+                    # samplingfeature = self.write.createSamplingFeature(code=uuid.uuid4().hex,
+                    #                                                                             vType="site",
+                    #                                                                             name=None,
+                    #                                                                             description=None,
+                    #                                                                             geoType=geom.geom_type,
+                    #                                                                             elevation=None,
+                    #                                                                             elevationDatum=None,
+                    #                                                                             featureGeo=geom.wkt)
 
 
 
@@ -265,6 +285,61 @@ class sqlite():
                                               inputDatasetID=dataset.DataSetID)
 
         return sim
+
+
+
+    ############ Custom SQL QUERIES ############
+
+    def insert_sampling_feature(self, type='site',code='',name=None,description=None,geometryType=None,elevation=None,elevationDatum=None,geometry=None):
+        '''
+        Inserts a sampling feature.  This function was created to support the insertion of Geometry object since this
+        functionality is currently lacking from the ODM2PythonAPI.
+        :param type: Type of sampling feature.  Must match FeatureTypeCV, e.g. "site"
+        :param name: Name of sampling feature (optional)
+        :param description: Description of sampling feature (optional)
+        :param geometryType: String representation of the geometry type, e.g. Polygon, Point, etc.
+        :param elevation: Elevation of the sampling feature (float)
+        :param elevationDatum: String representation of the spatial datum used for the elevation
+        :param geometry: Geometry of the sampling feature (Shapely Geometry object)
+        :return: ID of the sampling feature which was inserted into the database
+        '''
+        UUID=str(uuid.uuid4())
+        FeatureTypeCV=type
+        FeatureCode = code
+        FeatureName=name
+        FeatureDescription=description
+        FeatureGeoTypeCV=geometryType
+        FeatureGeometry=geometry.wkt  # convert geometry to wkt
+        Elevation=elevation
+        ElevationDatumCV=elevationDatum
+        # featureGeo=geometry.wkt  # convert geometry to wkt
+
+        # get the last record index
+        res = self.spatialDb.execute('SELECT SamplingFeatureID FROM SamplingFeatures ORDER BY SamplingFeatureID DESC LIMIT 1').fetchall()
+        ID = res[0][0]  # get the last id value
+        ID += 1 # increment the last id
+
+        values = [ID,UUID,FeatureTypeCV,FeatureCode,FeatureName,FeatureDescription, FeatureGeoTypeCV, FeatureGeometry, Elevation,ElevationDatumCV]
+        self.spatialDb.execute('INSERT INTO SamplingFeatures VALUES (?, ?, ?, ?, ?, ?, ?, geomFromText(?), ?, ?)'
+                               ,values)
+
+        self.spatial_connection.commit()
+
+        pts = self.spatial_connection.execute('SELECT ST_AsText(FeatureGeometry) from SamplingFeatures').fetchall()
+
+        return ID
+
+
+# todo: add a function to insert many records to speed up execution
+#         # Larger example that inserts many records at a time
+# purchases = [('2006-03-28', 'BUY', 'IBM', 1000, 45.00),
+#              ('2006-04-05', 'BUY', 'MSFT', 1000, 72.00),
+#              ('2006-04-06', 'SELL', 'IBM', 500, 53.00),
+#             ]
+# c.executemany('INSERT INTO stocks VALUES (?,?,?,?,?)', purchases)
+#
+
+
 
 
     # def get_simulation_results(self,simulationName, dbactions, from_variableName, from_unitName, to_variableName, startTime, endTime):

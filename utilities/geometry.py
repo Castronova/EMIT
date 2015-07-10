@@ -6,6 +6,7 @@ from shapely.geometry import Point
 
 from coordinator.emitLogging import elog
 
+
 def build_point_geometries(x, y, geometryType='gdal'):
     """
     Converts x and y coordinate lists into point geometries
@@ -17,11 +18,19 @@ def build_point_geometries(x, y, geometryType='gdal'):
 
     gtype = geometryType.lower()
     if gtype != 'gdal' and gtype != 'shapely':
-        elog.error("Could not build point geometries: invalid geometryType detected, %s"%geometryType)
+        elog.error("Could not build point geometries: invalid geometryType detected, %s" % geometryType)
         return 0
 
     elif gtype == 'shapely':
-        return [ Point(x,y) for x,y in numpy.nditer([x,y])]
+        geoms = numpy.empty((x.shape), dtype=object)
+        for i in xrange(0, len(x)):
+            geoms[i] = Point(x[i], y[i])
 
     else:
-        return [ ogr.Geometry(ogr.wkbPoint).AddPoint(float(x),float(y)) for x,y in numpy.nditer([x,y])]
+        geoms = numpy.empty((x.shape), dtype=object)
+        for i in xrange(0, len(x)):
+            point = ogr.Geometry(ogr.wkbPoint)
+            point.AddPoint(float(x[i]), float(y[i]))
+            geoms[i] = point
+
+    return geoms

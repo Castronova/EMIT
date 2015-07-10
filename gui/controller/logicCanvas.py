@@ -48,6 +48,9 @@ class SmoothLine(FC.Line):
         GC = wx.GraphicsContext.Create(dc)
         GC.SetPen(self.Pen)
         GC.DrawLines(Points)
+        if HTdc and self.HitAble:
+            HTdc.SetPen(self.HitPen)
+            HTdc.DrawLines(Points)
 
     def GetAngleRadians(self):
         # Calculate the angle of the line and set the arrow to that angle
@@ -59,7 +62,7 @@ class SmoothLine(FC.Line):
 class ScaledBitmapWithRotation(FC.ScaledBitmap):
 
     def __init__(self, Bitmap, XY, Angle=0.0, Position = 'cc', InForeground = True):
-        FC.ScaledBitmap.__init__(self, Bitmap, XY, Height=Bitmap.Height, Position = 'cc', InForeground = True)
+        FC.ScaledBitmap.__init__(self, Bitmap, XY, Height=Bitmap.Height, Position = 'cc', InForeground = True, Quality='high')
         self.ImageMidPoint = (self.Image.Width/2, self.Image.Height/2)
         self.RotationAngle = Angle
         if Angle != 0.0:
@@ -100,15 +103,10 @@ class SmoothLineWithArrow(SmoothLine):
     '''
     def __init__(self, Points, ArrowBitmap, LineColor="Blue", LineStyle="Solid", LineWidth = 4):
         super(SmoothLineWithArrow, self).__init__(Points, LineColor, LineStyle, LineWidth)
-
         self.Arrow = ScaledBitmapWithRotation(Angle=self.GetAngleRadians(), Bitmap=ArrowBitmap, XY=self.MidPoint)
-        # self.lol = ScaledBitmapWithRotation(ArrowBitmap, self.blah.MidPoint)
 
     def _Draw(self, dc , WorldToPixel, ScaleWorldToPixel, HTdc=None):
-        # _Draw(dc , WorldToPixel, ScaleWorldToPixel, HTdc=None)
-        # _Draw(dc , WorldToPixel, ScaleWorldToPixel, HTdc=None)
         super(SmoothLineWithArrow,self)._Draw(dc , WorldToPixel, ScaleWorldToPixel, HTdc=None)
-        # super(ScaledBitmapWithRotation,self)._Draw(dc , WorldToPixel, ScaleWorldToPixel, HTdc=None)
         self.Arrow._Draw(dc, WorldToPixel, ScaleWorldToPixel, HTdc=None)
 
 class LogicCanvas(ViewCanvas):
@@ -135,6 +133,7 @@ class LogicCanvas(ViewCanvas):
 
         self.linkRects = []
         self.links = {}
+        self.arrows = {}
         self.models = {}
 
         self.link_clicks = 0
@@ -385,11 +384,17 @@ class LogicCanvas(ViewCanvas):
         # line = SmoothLine(points, LineColor="Blue", LineStyle="Solid", LineWidth=4, InForeground=False)
         line = SmoothLineWithArrow(points, self.linkArrow)
         self.links[line] = [R1, R2]
+        self.arrows[line.Arrow] = [R1, R2]
         line.type = LogicCanvasObjects.ShapeType.Link
 
         # Calculate length of line, use to show/hide arrow
         self.linelength = math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2)
         self.FloatCanvas.AddObject(line)
+        # For some reason I have to add line.Arrow in order to bind to it
+        self.FloatCanvas.AddObject(line.Arrow)
+
+        line.Arrow.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
+        line.Arrow.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
         # self.arrow_shape = self.createArrow(line)
         self.FloatCanvas.Draw()
 
@@ -592,7 +597,7 @@ class LogicCanvas(ViewCanvas):
     def ArrowClicked(self, event):
 
         # get the models associated with the link
-        models = self.links[event]
+        models = self.arrows[event]
 
         # get r1 and r2
         r1 = models[0]

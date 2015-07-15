@@ -10,6 +10,7 @@ from gui import events
 from wx.lib.newevent import NewEvent
 from coordinator.emitLogging import elog
 from viewLowerPanel import viewLowerPanel
+import os
 
 # create custom events
 wxCreateBox, EVT_CREATE_BOX = NewEvent()
@@ -353,54 +354,161 @@ class AllFileView(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
 
-
 class viewMenuBar(wx.Frame):
-    def __init__(self):
-        self.cfg = wx.Config('myconfig')
-        if self.cfg.Exists('width'):
-            w, h = self.cfg.ReadInt('width'), self.cfg.ReadInt('height')
-        else:
-            w, h = 250, 250
 
-        self.infoIsChecked = self.cfg.ReadBool("info")
-        self.warningIsChecked = self.cfg.ReadBool("warning")
+    def __init__(self):
+        #  Read the settings file
+        currentdir = os.path.dirname(os.path.abspath(__file__))
+        self.settingspath = os.path.abspath(os.path.join(currentdir, '../../data/settings'))
+        file = open(self.settingspath, 'r')
+        fileinfo = file.readlines()
+
+        value = fileinfo[1].split(' = ')
+        value = value[1].split('\n')
+        w = value[0]
+        w = int(w)
+        value = fileinfo[2].split(' = ')
+        value = value[1].split('\n')
+        h = value[0]
+        h = int(h)
+
+        # info = fileinfo[3].split(' = ')
+        # info = info[1].split('\n')
+        # if info[0] == 'True':
+        #     self.infoIsChecked = True
+        # else:
+        #     self.infoIsChecked = False
+
+        # warn = fileinfo[4].split(' = ')
+        # warn = warn[1].split('\n')
+        # if warn[0] == 'True':
+        #     self.warningIsChecked = True
+        # else:
+        #     self.warningIsChecked = False
+
+        # critical = fileinfo[5].split(' = ')
+        # critical = critical[1].split('\n')
+        # if critical[0] == 'True':
+        #     self.criticalIsChecked = True
+        # else:
+        #     self.criticalIsChecked = False
+
+        # error = fileinfo[6].split(' = ')
+        # error = error[1].split('\n')
+        # if error[0] == 'True':
+        #     self.errorIsChecked = True
+        # else:
+        #     self.errorIsChecked = False
+
+        boolist = []
+
+        for i in range(3, len(fileinfo)):
+            value = fileinfo[i].split(' = ')
+            value = value[1].split('\n')
+            if value[0] == 'True':
+                boolist.append(True)
+            else:
+                boolist.append(False)
+
+        self.infoIsChecked = boolist[0]
+        self.warningIsChecked = boolist[1]
+        self.criticalIsChecked = boolist[2]
+        self.errorIsChecked = boolist[3]
+
+        file.close()
+
 
         wx.Frame.__init__(self, parent=None, id=-1, title="Settings...", pos=wx.DefaultPosition, size=wx.Size(w, h))
         self.panel = wx.Panel(self)
+        self.Show()
 
-        wx.StaticText(self.panel, -1, 'Width:', (20, 20))
-        wx.StaticText(self.panel, -1, 'Height:', (20, 70))
-        self.sc1 = wx.SpinCtrl(self.panel, -1, str(w), (80, 15), (60, -1), min=200, max=500)
-        self.sc2 = wx.SpinCtrl(self.panel, -1, str(h), (80, 65), (60, -1), min=200, max=500)
-        wx.Button(self.panel, 1, 'Save', pos=(20, 120))
-
-        self.c1 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Info Messages", pos=(50, 200))
-        self.c2 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Warning Messages", pos=(50, 225))
+        self.c1 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Info Messages", pos=(50, 175))
+        self.c2 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Warning Messages", pos=(50, 200))
+        self.c3 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Critical Messages", pos=(50, 225))
+        self.c4 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Error Messages", pos=(50, 250))
 
         self.c1.SetValue(self.infoIsChecked)
         self.c2.SetValue(self.warningIsChecked)
+        self.c3.SetValue(self.criticalIsChecked)
+        self.c4.SetValue(self.errorIsChecked)
+
+        wx.Button(self.panel, 1, 'Save', pos=(20, 120))
 
         self.Bind(wx.EVT_BUTTON, self.OnSave, id=1)
+
         self.statusbar = self.CreateStatusBar()
         self.Centre()
 
     def OnSave(self, event):
-        self.cfg.WriteInt("width", self.sc1.GetValue())
-        self.cfg.WriteInt("height", self.sc2.GetValue())
-        self.cfg.WriteBool("info", self.c1.GetValue())
-        self.cfg.WriteBool("warning", self.c2.GetValue())
-        self.statusbar.SetStatusText('Configuration saved, %s ' % wx.Now())
-        self.RefreshSettings()
+        cb = self.getCheckboxValue()
+        file = open(self.settingspath, 'w')
+        file.writelines(['0\n',
+                         'w = 350\n',
+                         'h = 350\n',
+                         'showinfo = '+str(cb.values()[0])+'\n',
+                         'showwarning = '+str(cb.values()[1])+'\n',
+                         'showcritical = '+str(cb.values()[2]+'\n'),
+                         'showerror = '+str(cb.values()[3]+'\n')])
+        file.close()
+        self.statusbar.SetStatusText('Settings saved, %s ' % wx.Now())
 
-    def teststatusbar(self, event):
-        for i in range(1, 1000):
-            self.statusbar.SetStatusText("Progress %d" % i)
-
-    def RefreshSettings(self):
-        elog.showinfo = self.c1.GetValue()
-        elog.showwarning = self.c2.GetValue()
-        print self.c1.GetValue()
-        print self.c2.GetValue()
+    def getCheckboxValue(self):
+        info = self.c1.GetValue()
+        warn = self.c2.GetValue()
+        critical = self.c3.GetValue()
+        error = self.c4.GetValue()
+        cb = {'info': str(info), 'warn': str(warn), 'critical': str(critical), 'error': str(error)}
+        return cb
 
 
-
+# class viewMenuBar(wx.Frame):
+#     def __init__(self):
+#         self.cfg = wx.Config('myconfig')
+#         currentdir = os.path.dirname(os.path.abspath(__file__))
+#         self.settingspath = os.path.abspath(os.path.join(currentdir, '../../data/settings'))
+#         self.cfg.SetPath(self.settingspath)
+#         if self.cfg.Exists('width'):
+#             w, h = self.cfg.ReadInt('width'), self.cfg.ReadInt('height')
+#         else:
+#             w, h = 250, 250
+#
+#         self.infoIsChecked = self.cfg.ReadBool("info")
+#         self.warningIsChecked = self.cfg.ReadBool("warning")
+#
+#         wx.Frame.__init__(self, parent=None, id=-1, title="Settings...", pos=wx.DefaultPosition, size=wx.Size(w, h))
+#         self.panel = wx.Panel(self)
+#
+#         wx.StaticText(self.panel, -1, 'Width:', (20, 20))
+#         wx.StaticText(self.panel, -1, 'Height:', (20, 70))
+#         self.sc1 = wx.SpinCtrl(self.panel, -1, str(w), (80, 15), (60, -1), min=200, max=500)
+#         self.sc2 = wx.SpinCtrl(self.panel, -1, str(h), (80, 65), (60, -1), min=200, max=500)
+#         wx.Button(self.panel, 1, 'Save', pos=(20, 120))
+#
+#         self.c1 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Info Messages", pos=(50, 200))
+#         self.c2 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Warning Messages", pos=(50, 225))
+#
+#         self.c1.SetValue(self.infoIsChecked)
+#         self.c2.SetValue(self.warningIsChecked)
+#         print self.cfg.GetPath()
+#
+#         self.Bind(wx.EVT_BUTTON, self.OnSave, id=1)
+#         self.statusbar = self.CreateStatusBar()
+#         self.Centre()
+#
+#     def OnSave(self, event):
+#         self.cfg.WriteInt("width", self.sc1.GetValue())
+#         self.cfg.WriteInt("height", self.sc2.GetValue())
+#         self.cfg.WriteBool("info", self.c1.GetValue())
+#         self.cfg.WriteBool("warning", self.c2.GetValue())
+#         self.statusbar.SetStatusText('Configuration saved, %s ' % wx.Now())
+#         self.RefreshSettings()
+#
+#     def teststatusbar(self, event):
+#         for i in range(1, 1000):
+#             self.statusbar.SetStatusText("Progress %d" % i)
+#
+#     def RefreshSettings(self):
+#         elog.showinfo = self.c1.GetValue()
+#         elog.showwarning = self.c2.GetValue()
+#         print self.c1.GetValue()
+#         print self.c2.GetValue()

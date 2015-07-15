@@ -34,8 +34,7 @@ class ViewCanvas(wx.Panel):
         import sys, os
         curPath = sys.path[0]
         imagesPath = os.path.join(curPath, 'gui/images/')
-        self.linkArrow = wx.Image(imagesPath+'rightArrowBlue84.png', wx.BITMAP_TYPE_PNG)
-        self.linkArrow = wx.Image(imagesPath+'rightChevron128.png', wx.BITMAP_TYPE_PNG)
+        self.linkArrow = wx.Image(imagesPath+'rightArrowBlue40.png', wx.BITMAP_TYPE_PNG)
         self.UnassignedBox4 = wx.Image(imagesPath+'rectBlue.png', wx.BITMAP_TYPE_PNG)
         self.TimeseriesBox = wx.Image(imagesPath+'rectGreen.png', wx.BITMAP_TYPE_PNG)
         self.DatabaseBox = wx.Image(imagesPath+'rectPurple.png', wx.BITMAP_TYPE_PNG)

@@ -72,7 +72,6 @@ class ScaledBitmapWithRotation(FC.ScaledBitmap):
         self.LastRotationAngle = 0.0
 
     def _Draw(self, dc , WorldToPixel, ScaleWorldToPixel, HTdc=None):
-
         Img = self.Image.Rotate(self.RotationAngle, (0,0))
         self.Height = Img.Height
         self.ImageMidPoint = (Img.Width/2, Img.Height/2)
@@ -95,6 +94,7 @@ class ScaledBitmapWithRotation(FC.ScaledBitmap):
         self.LastRotationAngle = self.RotationAngle
 
     def Rotate(self, angle):
+
         self.RotationAngle = angle
 
 class SmoothLineWithArrow(SmoothLine):
@@ -645,7 +645,6 @@ class LogicCanvas(ViewCanvas):
         self.FloatCanvas.Draw(True)
 
     def OnLeftUp(self, event, path=None):
-
         if self.Moving:
             self.Moving = False
             if self.MoveObject is not None:

@@ -5,6 +5,7 @@ import os
 import xml.etree.ElementTree as et
 from xml.dom import minidom
 import uuid
+import threading, time
 
 import wx
 from wx.lib.floatcanvas import FloatCanvas as FC
@@ -62,7 +63,7 @@ class SmoothLine(FC.Line):
 class ScaledBitmapWithRotation(FC.ScaledBitmap):
 
     def __init__(self, Bitmap, XY, Angle=0.0, Position = 'cc', InForeground = True):
-        FC.ScaledBitmap.__init__(self, Bitmap, XY, Height=Bitmap.Height, Position = 'cc', InForeground = True, Quality='high')
+        FC.ScaledBitmap.__init__(self, Bitmap, XY, Height=Bitmap.Height, Position = 'cc', InForeground = True)
         self.ImageMidPoint = (self.Image.Width/2, self.Image.Height/2)
         self.RotationAngle = Angle
         if Angle != 0.0:
@@ -101,7 +102,7 @@ class SmoothLineWithArrow(SmoothLine):
     Based on FloatCanvas Line and ScaledBitmap. This simply integrates
     the two and adds the rotation feature that we need.
     '''
-    def __init__(self, Points, ArrowBitmap, LineColor="Blue", LineStyle="Solid", LineWidth = 4):
+    def __init__(self, Points, ArrowBitmap, LineColor="#3F51B5", LineStyle="Solid", LineWidth = 4):
         super(SmoothLineWithArrow, self).__init__(Points, LineColor, LineStyle, LineWidth)
         self.Arrow = ScaledBitmapWithRotation(Angle=self.GetAngleRadians(), Bitmap=ArrowBitmap, XY=self.MidPoint)
 
@@ -277,6 +278,7 @@ class LogicCanvas(ViewCanvas):
         if evt.message:
             print "DEBUG|", evt.message
 
+
     def onCreateBox(self, evt):
         name = evt.name
         id = evt.id
@@ -294,6 +296,7 @@ class LogicCanvas(ViewCanvas):
             color = '#A2CAF5'
             # bitmap = self.ModelsBox
             bitmap = self.UnassignedBox4
+            # bitmap = bitmap.AdjustChannels(factor_red=1.0, factor_green=1.0, factor_blue=1.0, factor_alpha=0.5)
         elif type == datatypes.ModelTypes.Data:
             color = '#A2BGA5'
             bitmap = self.DatabaseBox
@@ -329,7 +332,6 @@ class LogicCanvas(ViewCanvas):
                                                       Alignment="center",
                                                       Weight=wx.BOLD, Style=wx.ITALIC, InForeground=True, Font=font,
                                                       LineWidth=0, LineColor=None)
-
 
             # set the type of this object so that we can find it later
             label.type = LogicCanvasObjects.ShapeType.Label

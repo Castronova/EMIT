@@ -5,9 +5,11 @@ __author__ = 'Mario'
 
 import sys
 import numpy as np
+import wx
 from math import *
 from numpy import linspace
 import matplotlib.colors as mcolors
+from wx.lib.floatcanvas import FloatCanvas as FC
 
 sys.path.append("..")
 

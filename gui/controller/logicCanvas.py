@@ -5,6 +5,7 @@ import os
 import xml.etree.ElementTree as et
 from xml.dom import minidom
 import uuid
+import threading, time
 
 import wx
 from wx.lib.floatcanvas import FloatCanvas as FC
@@ -34,11 +35,80 @@ class SmoothLine(FC.Line):
     The SmoothLine class is identical to the Line class except that it uses a
     GC rather than a DC.
     """
+    def __init__(self, Points, LineColor = "Black", LineStyle = "Solid", LineWidth = 1, InForeground = False):
+        FC.Line.__init__(self, Points, LineColor, LineStyle, LineWidth, InForeground)
+        midX = (Points[0][0]+Points[1][0])/2
+        midY = (Points[0][1]+Points[1][1])/2
+        self.MidPoint = (midX,midY)
+
     def _Draw(self, dc , WorldToPixel, ScaleWorldToPixel, HTdc=None):
         Points = WorldToPixel(self.Points)
+        midX = (self.Points[0][0]+self.Points[1][0])/2
+        midY = (self.Points[0][1]+self.Points[1][1])/2
+        self.MidPoint = (midX,midY)
         GC = wx.GraphicsContext.Create(dc)
         GC.SetPen(self.Pen)
         GC.DrawLines(Points)
+        if HTdc and self.HitAble:
+            HTdc.SetPen(self.HitPen)
+            HTdc.DrawLines(Points)
+
+    def GetAngleRadians(self):
+        # Calculate the angle of the line and set the arrow to that angle
+        xdiff = self.Points[1][0]-self.Points[0][0]
+        ydiff = self.Points[1][1]-self.Points[0][1]
+        return math.atan2(ydiff, xdiff)
+
+
+class ScaledBitmapWithRotation(FC.ScaledBitmap):
+
+    def __init__(self, Bitmap, XY, Angle=0.0, Position = 'cc', InForeground = True):
+        FC.ScaledBitmap.__init__(self, Bitmap, XY, Height=Bitmap.Height, Position = 'cc', InForeground = True)
+        self.ImageMidPoint = (self.Image.Width/2, self.Image.Height/2)
+        self.RotationAngle = Angle
+        if Angle != 0.0:
+            Img = self.Image.Rotate(self.RotationAngle, (0,0))
+            self.ScaledBitmap = wx.BitmapFromImage(Img)
+        self.LastRotationAngle = 0.0
+
+    def _Draw(self, dc , WorldToPixel, ScaleWorldToPixel, HTdc=None):
+
+        Img = self.Image.Rotate(self.RotationAngle, (0,0))
+        self.Height = Img.Height
+        self.ImageMidPoint = (Img.Width/2, Img.Height/2)
+
+        XY = WorldToPixel(self.XY)
+        H = ScaleWorldToPixel(self.Height)[0]
+        W = H * (self.bmpWidth / self.bmpHeight)
+
+        if (self.ScaledBitmap is None) or (H <> self.ScaledHeight) :
+            self.ScaledHeight = H
+            self.ScaledBitmap = wx.BitmapFromImage(Img)
+
+        XY = self.ShiftFun(XY[0], XY[1], W, H)
+        dc.DrawBitmapPoint(self.ScaledBitmap, XY, True)
+        if HTdc and self.HitAble:
+            HTdc.SetPen(self.HitPen)
+            HTdc.SetBrush(self.HitBrush)
+            HTdc.DrawRectanglePointSize(XY, (W, H))
+
+        self.LastRotationAngle = self.RotationAngle
+
+    def Rotate(self, angle):
+        self.RotationAngle = angle
+
+class SmoothLineWithArrow(SmoothLine):
+    '''
+    Based on FloatCanvas Line and ScaledBitmap. This simply integrates
+    the two and adds the rotation feature that we need.
+    '''
+    def __init__(self, Points, ArrowBitmap, LineColor="#3F51B5", LineStyle="Solid", LineWidth = 4):
+        super(SmoothLineWithArrow, self).__init__(Points, LineColor, LineStyle, LineWidth)
+        self.Arrow = ScaledBitmapWithRotation(Angle=self.GetAngleRadians(), Bitmap=ArrowBitmap, XY=self.MidPoint)
+
+    def _Draw(self, dc , WorldToPixel, ScaleWorldToPixel, HTdc=None):
+        super(SmoothLineWithArrow,self)._Draw(dc , WorldToPixel, ScaleWorldToPixel, HTdc=None)
+        self.Arrow._Draw(dc, WorldToPixel, ScaleWorldToPixel, HTdc=None)
 
 class LogicCanvas(ViewCanvas):
     def __init__(self, parent):
@@ -64,6 +134,7 @@ class LogicCanvas(ViewCanvas):
 
         self.linkRects = []
         self.links = {}
+        self.arrows = {}
         self.models = {}
 
         self.link_clicks = 0
@@ -178,20 +249,27 @@ class LogicCanvas(ViewCanvas):
             deltaY = self.lastPos.y - cursorPos.y
             dxy = (deltaX,deltaY)
 
+            # This moves the boxes and the label together
             self.MovingObject.Move(dxy)
             self.MovingObject.Text.Move(dxy)
 
-
+            # Iterate through all links on the canvas
             for link in self.links.keys():
+                link.Arrow.Rotate(link.GetAngleRadians())
+
+                # Grab both boxes on the ends of the line/link
+                # Update their endpoints and set the arrow to the center of the line
                 r1, r2 = self.links[link]
                 if r1 == self.MovingObject:
                     link.Points[0] = self.MovingObject.XY
+                    link.Arrow.XY = link.MidPoint
                 elif r2 == self.MovingObject:
                     link.Points[1] = self.MovingObject.XY
+                    link.Arrow.XY = link.MidPoint
 
             self.lastPos = cursorPos
-            self.RedrawConfiguration()
-            # self.FloatCanvas.Draw(True)
+            # self.RedrawConfiguration()
+            self.FloatCanvas.Draw(True)
 
     def onUpdateConsole(self, evt):
         """
@@ -199,6 +277,7 @@ class LogicCanvas(ViewCanvas):
         """
         if evt.message:
             elog.debug("DEBUG|", evt.message)
+
 
     def onCreateBox(self, evt):
         name = evt.name
@@ -217,14 +296,15 @@ class LogicCanvas(ViewCanvas):
             color = '#A2CAF5'
             # bitmap = self.ModelsBox
             bitmap = self.UnassignedBox4
+            # bitmap = bitmap.AdjustChannels(factor_red=1.0, factor_green=1.0, factor_blue=1.0, factor_alpha=0.5)
         elif type == datatypes.ModelTypes.Data:
             color = '#A2BGA5'
             bitmap = self.DatabaseBox
 
         if name:
-            w, h = 180, 120
+            w, h = 221, 141
             x, y = xCoord, yCoord
-            FontSize = 14
+            FontSize = 15
 
             if self.getUniqueId() is not None and type == datatypes.ModelTypes.Data:
                 # Strip out last bit of the name (normally includes an id), e.g. "rainfall-5" -> "rainfall"
@@ -233,10 +313,8 @@ class LogicCanvas(ViewCanvas):
                 name = name.replace("_", "  ")
                 name = name + "\n" + "ID = " + self.getUniqueId()
 
-            # get the coordinates for the rounded rectangle
-            rect_coords = LogicCanvasObjects.build_rounded_rectangle((x, y), width=w, height=h)
-
-            # R = self.FloatCanvas.AddObject(FC.Polygon(rect_coords, FillColor=color, InForeground=True))
+            # boxBitmap = ScaledBitmapWithRotation(bitmap, (x,y), Height=h, Position='cc', InForeground=True)
+            # R = self.FloatCanvas.AddObject(boxBitmap)
             R = self.FloatCanvas.AddBitmap(bitmap, (x,y), Position="cc", InForeground=True)
             R.ID = id
             R.Name = name
@@ -255,7 +333,6 @@ class LogicCanvas(ViewCanvas):
                                                       Weight=wx.BOLD, Style=wx.ITALIC, InForeground=True, Font=font,
                                                       LineWidth=0, LineColor=None)
 
-
             # set the type of this object so that we can find it later
             label.type = LogicCanvasObjects.ShapeType.Label
 
@@ -263,12 +340,12 @@ class LogicCanvas(ViewCanvas):
             R.Text = label
 
             elog.info(name + ' has been added to the canvas.')
+            elog.debug(name + ' has been added to the canvas.')
 
             R.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit)
             R.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
-
             self.models[R] = id
-
+            # self.FloatCanvas.AddObject(R)
             self.FloatCanvas.Draw()
 
     def draw_box(self, evt):
@@ -304,102 +381,66 @@ class LogicCanvas(ViewCanvas):
         return (self.model_coords[id]['x'], self.model_coords[id]['y'])
 
     def createLine(self, R1, R2):
-        x1, y1 = (R1.BoundingBox[0] + (R1.wh[0] / 2, R1.wh[1] / 2))
-        x2, y2 = (R2.BoundingBox[0] + (R2.wh[0] / 2, R2.wh[1] / 2))
-        x1,y1=x1-90,y1-64
-        x2,y2=x2-90,y2-64
 
-        cmap = cm.Blues
-        line = LogicCanvasObjects.get_line_pts((x1, y1), (x2, y2), order=4, num=200,)
-        linegradient = LogicCanvasObjects.get_hex_from_gradient(cmap, len(line))
-        linegradient.reverse()
-
-        for i in range(0, len(line) - 1):
-            l = FC.Line((line[i], line[i + 1]), LineColor=linegradient[i], LineWidth=2, InForeground=False)
-            l.type = LogicCanvasObjects.ShapeType.Link
-            self.FloatCanvas.AddObject(l)
-
-        # Calculate length of line, use to show/hide arrow
-        self.linelength = math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2)
-        arrow_shape = self.createArrow(line)
-
-        # store the link and rectangles in the self.links list
-        for k, v in self.links.iteritems():
-            if v == [R1, R2]:
-                self.links.pop(k)
-                break
-        self.links[arrow_shape] = [R1, R2]
-
-        self.FloatCanvas.Draw()
-
-    def createLineNew(self, R1, R2):
-        # Get the center of the objects
+        # Get the center of the objects on the canvas
         x1,y1 = R1.XY
         x2,y2 = R2.XY
         points = [(x1,y1),(x2,y2)]
-        line = SmoothLine(points, LineColor="Blue", LineStyle="Solid", LineWidth=4, InForeground=False)
+        # line = SmoothLine(points, LineColor="Blue", LineStyle="Solid", LineWidth=4, InForeground=False)
+        line = SmoothLineWithArrow(points, self.linkArrow)
         self.links[line] = [R1, R2]
+        self.arrows[line.Arrow] = [R1, R2]
         line.type = LogicCanvasObjects.ShapeType.Link
 
-        arrow_shape = self.createArrow(line)
         # Calculate length of line, use to show/hide arrow
         self.linelength = math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2)
-        arrow_shape = self.createArrow(line)
-
         self.FloatCanvas.AddObject(line)
+        # For some reason I have to add line.Arrow in order to bind to it
+        self.FloatCanvas.AddObject(line.Arrow)
+
+        line.Arrow.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
+        line.Arrow.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
+        # self.arrow_shape = self.createArrow(line)
         self.FloatCanvas.Draw()
 
     def createArrow(self, line):
 
-        arrow = LogicCanvasObjects.build_arrow(line, arrow_length=6)
-
-        # create the arrowhead object
-        arrow_shape = FC.Polygon(arrow, FillColor='Blue', InForeground=True)
-        if self.linelength > 230:
-            arrow_shape.Show()
-        else:
-            arrow_shape.Hide()
+        print "adding arrow to ", line.MidPoint
+        angle = line.GetAngleRadians()
+        arrow_shape = ScaledBitmapWithRotation(self.linkArrow, line.MidPoint, Angle=angle, Position='tl', InForeground=True)
 
         # set the shape type so that we can identify it later
         arrow_shape.type = LogicCanvasObjects.ShapeType.ArrowHead
         self.FloatCanvas.AddObject(arrow_shape)
 
         # bind the arrow to left click
+        # this doesn't work
         arrow_shape.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
         arrow_shape.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
 
         return arrow_shape
 
-    def createArrowNew(self, line):
 
-        arrow_shape = self.FloatCanvas.AddScaledBitmap(self.linkArrow,
-                                                 (0, 0),
-                                                 Height = self.linkArrow.GetHeight(),
-                                                 Position = 'tl',)
-        # if self.linelength > 230:
-        #     arrow_shape.Show()
-        # else:
-        #     arrow_shape.Hide()
-
-        arrow_shape.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
-        arrow_shape.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
-
-        # create the arrowhead object
-        # arrow_shape = FC.Polygon(arrow, FillColor='Blue', InForeground=True)
-        # if self.linelength > 230:
-        #     arrow_shape.Show()
-        # else:
-        #     arrow_shape.Hide()
-
-        # set the shape type so that we can identify it later
-        arrow_shape.type = LogicCanvasObjects.ShapeType.ArrowHead
-        self.FloatCanvas.AddObject(arrow_shape)
-
-        # bind the arrow to left click
-        arrow_shape.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
-        arrow_shape.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
-
-        return arrow_shape
+    # def createArrowOld(self, line):
+    #
+    #     arrow = LogicCanvasObjects.build_arrow(line, arrow_length=6)
+    #
+    #     # create the arrowhead object
+    #     arrow_shape = FC.Polygon(arrow, FillColor='Blue', InForeground=True)
+    #     if self.linelength > 230:
+    #         arrow_shape.Show()
+    #     else:
+    #         arrow_shape.Hide()
+    #
+    #     # set the shape type so that we can identify it later
+    #     arrow_shape.type = LogicCanvasObjects.ShapeType.ArrowHead
+    #     self.FloatCanvas.AddObject(arrow_shape)
+    #
+    #     # bind the arrow to left click
+    #     arrow_shape.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
+    #     arrow_shape.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
+    #
+    #     return arrow_shape
 
     def getUniqueId(self):
         return self.uniqueId
@@ -562,7 +603,7 @@ class LogicCanvas(ViewCanvas):
     def ArrowClicked(self, event):
 
         # get the models associated with the link
-        models = self.links[event]
+        models = self.arrows[event]
 
         # get r1 and r2
         r1 = models[0]

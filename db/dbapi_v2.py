@@ -168,47 +168,20 @@ class sqlite():
                 geom = geometries[i].geom()
                 values = datavalues[:,i]   # all dates for geometry(i)
 
-
-
-                # dates,values = geometry.datavalues().get_dates_values()
-
-
-
-
                 # create sampling feature
                 samplingfeature = self.read.getSamplingFeatureByGeometry(geom.wkt)
-
-
                 if not samplingfeature:
-
-                    sfid = self.insert_sampling_feature(type='site',geometryType=geom.geom_type, geometry=geom)
-
-                    # test
-                    test = self.read.getSamplingFeatureById(sfid)
-                    samplingfeature = self.read.getSamplingFeatureByGeometry(geom.wkt)
-
-                    # samplingfeature = self.write.createSamplingFeature(code=uuid.uuid4().hex,
-                    #                                                                             vType="site",
-                    #                                                                             name=None,
-                    #                                                                             description=None,
-                    #                                                                             geoType=geom.geom_type,
-                    #                                                                             elevation=None,
-                    #                                                                             elevationDatum=None,
-                    #                                                                             featureGeo=geom.wkt)
-
+                    samplingFeatureID = self.insert_sampling_feature(type='site',geometryType=geom.type, WKTgeometry=geom.wkt)
 
 
                 # create feature action
-                featureaction = self.write.createFeatureAction(samplingfeatureid=samplingfeature.SamplingFeatureID,
+                featureaction = self.write.createFeatureAction(samplingfeatureid=samplingFeatureID,
                                                                     actionid=action.ActionID)
 
 
-
-
-
-
+                # create a result record
                 result = models.Results
-                result.ResultUUID = uuid.uuid4().hex
+                result.ResultUUID = uuid.uuid4()
                 result.FeatureActionID = featureaction.FeatureActionID
                 result.ResultTypeCV = 'time series'
                 result.VariableID = variable.VariableID
@@ -219,6 +192,7 @@ class sqlite():
 
 
                 # create time series result
+                # fixme: FlushError: Instance <TimeSeriesResults at 0x1174b5fd0> has a NULL identity key.
                 timeseriesresult = self.write.createTimeSeriesResult(result=result, aggregationstatistic='unknown',
                                                                          timespacing=timestepvalue,
                                                                          timespacing_unitid=timestepunit.UnitsID)
@@ -229,17 +203,7 @@ class sqlite():
                 # todo: get timezone based on geometry, use this to determine utc offset
                 # todo: implement censorcodecv
                 # todo: implement qualitycodecv
-                # timeseriesresultvalues = self._reswrite.createTimeSeriesResultValues(resultid=timeseriesresult.ResultID,
-                #                                                                      datavalues=values,
-                #                                                                      datetimes=dates,
-                #                                                                      datetimeoffsets=[-6 for i in range(len(dates))],
-                #                                                                      censorcodecv='nc',
-                #                                                                      qualitycodecv='unknown',
-                #                                                                      timeaggregationinterval=timestepvalue,
-                #                                                                      timeaggregationunit=timestepunit.UnitsID)
 
-
-                #st = time.time()
                 for i in xrange(len(values)):
                     tsrv = models.TimeSeriesResultValues()
                     tsrv.ResultID = timeseriesresult.ResultID
@@ -251,11 +215,7 @@ class sqlite():
                     tsrv.ValueDateTime = dates[i]
                     tsrv.ValueDateTimeUTCOffset = -6
                     tsvalues.append(tsrv)
-                #print '\nBuilding TSRV: %3.5f sec' % (time.time() - st)
 
-        #print '\nBuilding All Exchange Item TSRV:  %3.5f sec' % (time.time() - st)
-
-        #st = time.time()
         # insert ts values
         self.write.createTimeSeriesResultValues(tsrv = tsvalues)
 
@@ -290,7 +250,7 @@ class sqlite():
 
     ############ Custom SQL QUERIES ############
 
-    def insert_sampling_feature(self, type='site',code='',name=None,description=None,geometryType=None,elevation=None,elevationDatum=None,geometry=None):
+    def insert_sampling_feature(self, type='site',code='',name=None,description=None,geometryType=None,elevation=None,elevationDatum=None,WKTgeometry=None):
         '''
         Inserts a sampling feature.  This function was created to support the insertion of Geometry object since this
         functionality is currently lacking from the ODM2PythonAPI.
@@ -309,10 +269,9 @@ class sqlite():
         FeatureName=name
         FeatureDescription=description
         FeatureGeoTypeCV=geometryType
-        FeatureGeometry=geometry.wkt  # convert geometry to wkt
+        FeatureGeometry=WKTgeometry
         Elevation=elevation
         ElevationDatumCV=elevationDatum
-        # featureGeo=geometry.wkt  # convert geometry to wkt
 
         # get the last record index
         res = self.spatialDb.execute('SELECT SamplingFeatureID FROM SamplingFeatures ORDER BY SamplingFeatureID DESC LIMIT 1').fetchall()

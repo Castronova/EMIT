@@ -198,6 +198,7 @@ class DataValues(object):
 class Geometry(object):
 
     def __init__(self,geom=None,srs=4269,elev=None,datavalues=None,id=uuid.uuid4().hex[:5]):
+        elog.warning('deprecated: The Geometries class should no longer be used')
         self.__geom = geom
         self.__elev = elev
         self.__datavalues = datavalues
@@ -270,52 +271,46 @@ class Geometry(object):
 
         self.__datavalues.get_dates_values()
 
-
 class ExchangeItem(object):
-    def __init__(self, id=None, name=None, desc=None, geometry=[], unit=None, variable=None, type=ExchangeItemType.Input):
+    def __init__(self, id=None, name=None, desc=None, geometry=[], unit=None, variable=None, srs_epsg=4269, type=ExchangeItemType.Input):
+
         self.__name = name
         self.__description = desc
 
         # variable and unit come from Variable and Unit standard classes
         self.__unit = unit
         self.__variable = variable
-
         self.__type = type
-
 
         # new style data encapsulation (everything is appended with '2', temporarily)
         self.__geoms2 = []
         self.__times2 = []
         self.__values2 = []
 
-
-        # A dataset is a list of [one or more values per element,]
-        # [[element1,[ts,]],[element2,[ts,,]],   ]
-        #self.__dataset =  ds
-
-        #self.StartTime = datetime.datetime(2999,1,1,1,0,0)
-        #self.EndTime = datetime.datetime(1900,1,1,1,0,0)
+        # no data values will be represented as None
+        self.__noData = None
 
         self.__id = uuid.uuid4().hex[:5]
         if id is not None:
             if isinstance(id, str):
                 self.__id = id
 
+        self.__srs = osr.SpatialReference()
+        try:
+            self.__srs.ImportFromEPSG(srs_epsg)
+        except:
+            # set default
+            elog.error('Could not create spatial reference object from code: %s. Using the default spatial reference system: North American Datum 1983.'% str(srs_epsg))
+            self.__srs.ImportFromEPSG(4269)
 
 
+        # todo: REMOVE THE DEPRECATED VARIABLES BELOW
         self.__geoms = geometry
-
         # variables for saving/retrieving values from database
         self.__session = None
         self.__saved = False
         self.__seriesID = None
 
-        # no data values will be represented as None
-        self.__noData = None
-
-        # # determine start and end times
-        # for geom in self.__geoms:
-        #     self.__calculate_start_and_end_times(geom.datavalues())
 
     def getEarliestTime2(self):
         return self.__times2[0]
@@ -496,6 +491,35 @@ class ExchangeItem(object):
             times = [(idx, self.__times2[idx]) for idx in range(0, len(self.__times2))]
             return times
 
+    def unit(self,value=None):
+        if value is None:
+            return self.__unit
+        else:
+            self.__unit = value
+
+    def variable(self,value=None):
+        if value is None:
+            return self.__variable
+        else:
+            self.__variable = value
+
+    def get_id(self):
+        return self.__id
+
+    def get_type(self):
+        return self.__type
+
+    def name(self,value=None):
+        if value is None:
+            return self.__name
+        else:
+            self.__name = value
+
+    def description(self,value=None):
+        if value is None:
+            return self.__description
+        else:
+            self.__description = value
 
     def _nearest(self, lst, time, direction='left'):
         """
@@ -519,6 +543,9 @@ class ExchangeItem(object):
             return lst.index(nearest)
 
 
+
+    # todo: REMOVE DEPRECATED FUNCTIONS BELOW
+
     def getStartTime(self):
         elog.warning('deprecated: Use getEarliestTime2 instead')
         return min(g.datavalues().start() for g in self.__geoms)
@@ -526,24 +553,6 @@ class ExchangeItem(object):
     def getEndTime(self):
         elog.warning('deprecated: Use getLatestTime2 instead')
         return max(g.datavalues().end() for g in self.__geoms)
-
-    def get_id(self):
-        return self.__id
-
-    def get_type(self):
-        return self.__type
-
-    def name(self,value=None):
-        if value is None:
-            return self.__name
-        else:
-            self.__name = value
-
-    def description(self,value=None):
-        if value is None:
-            return self.__description
-        else:
-            self.__description = value
 
     def geometries(self):
         elog.warning('deprecated: stdlib.geometries use getGeometries2 instead')
@@ -633,17 +642,7 @@ class ExchangeItem(object):
         # return dict[element]
         pass
 
-    def unit(self,value=None):
-        if value is None:
-            return self.__unit
-        else:
-            self.__unit = value
 
-    def variable(self,value=None):
-        if value is None:
-            return self.__variable
-        else:
-            self.__variable = value
 
     def add_dataset(self,datavalues):
         elog.warning('deprecated: stdlib.add_dataset')
@@ -662,6 +661,7 @@ class ExchangeItem(object):
         pass
 
     def clear(self):
+        elog.warning('deprecated: stdlib.add_dataset')
         #self.__dataset = []
         self.__geoms = []
         # self.StartTime = datetime.datetime(2999,1,1,1,0,0)
@@ -673,20 +673,13 @@ class ExchangeItem(object):
         elog.warning('deprecated: stdlib.set_dataset')
         pass
 
-    # def __calculate_start_and_end_times(self,dv):
-    #     #for dv in datavalues:
-    #     if dv.earliest_date() is not None and dv.latest_date() is not None:
-    #         if dv.earliest_date() < self.StartTime:
-    #             self.StartTime = dv.earliest_date()
-    #         if dv.latest_date() > self.EndTime:
-    #             self.EndTime = dv.latest_date()
-
     def session(self,value=None):
         """
         gets/sets the database session for this exchange item
         :param value: database session object
         :return: database session object
         """
+        elog.warning('deprecated: stdlib.session')
         if value is not None:
             self.__session == value
         else:
@@ -698,6 +691,7 @@ class ExchangeItem(object):
         :param value: Boolean type indicated if the exchange item has been saved to db
         :return: Boolean
         """
+        elog.warning('deprecated: stdlib.is_saved')
         if value is not None:
             self.__saved = value
         else:
@@ -709,6 +703,7 @@ class ExchangeItem(object):
         :param value: ODM2 resultID
         :return: ODM2 resultID
         """
+        elog.warning('deprecated: stdlib.resultid')
         if value is not None:
             return self.__seriesID
         else:

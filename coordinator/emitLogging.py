@@ -113,30 +113,62 @@ class Log(object):
         :return:
         '''
         self.log = _Log()
+        self.verbosity()
+
         self.showinfo = True
         self.showwarning = True
+        self.showcritical = True
+        self.showerror = True
 
     def debug(self, text):
         self.log._debug(text)
 
     def warning(self, text):
+        self.verbosity()
         if self.showwarning:
             self.log._warning(text)
 
     def error(self, text):
-        self.log._error(text)
+        self.verbosity()
+        if self.showerror:
+            self.log._error(text)
 
     def info(self, text):
         # todo: this is a hack
         # if not 'OVERWRITE:' in text:
+        self.verbosity()
         if self.showinfo:
             self.log._info(text)
 
     def critical(self, text):
-        self.log._critical(text)
+        self.verbosity()
+        if self.showcritical:
+            self.log._critical(text)
 
     def get_logger(self):
         return self.log._get_logger()
+
+    def verbosity(self):
+        currentdir = os.path.dirname(os.path.abspath(__file__))
+        self.settingspath = os.path.abspath(os.path.join(currentdir, '../data/settings'))
+        file = open(self.settingspath, 'r')
+        fileinfo = file.readlines()
+        boolist = []
+
+        for i in range(3, len(fileinfo)):
+            value = fileinfo[i].split(' = ')
+            value = value[1].split('\n')
+            if value[0] == 'True':
+                boolist.append(True)
+            else:
+                boolist.append(False)
+
+        self.showinfo = boolist[0]
+        self.showwarning = boolist[1]
+        self.showcritical = boolist[2]
+        self.showerror = boolist[3]
+
+        file.close()
 
 
 elog = Log()

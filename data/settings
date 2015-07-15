@@ -4,4 +4,4 @@ h = 350
 showinfo = True
 showwarning = True
 showcritical = True
-showerror = True
+showerror = False

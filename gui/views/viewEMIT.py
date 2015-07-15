@@ -393,6 +393,9 @@ class viewMenuBar(wx.Frame):
         self.panel = wx.Panel(self)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
+        self.statusbar = self.CreateStatusBar()
+        # self.statusbar = wx.StatusBar(parent=self, id=wx.ID_ANY, style=wx.STB_DEFAULT_STYLE)
+        self.SettingsStatusBar()
 
         self.c1 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Info Messages")
         self.c2 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Warning Messages")
@@ -406,20 +409,25 @@ class viewMenuBar(wx.Frame):
 
         self.saveButton = wx.Button(self.panel, 1, 'Save')
 
-        sizer.Add(self.c1, 1, flag=wx.wx.ALL | wx.ALIGN_CENTER, border=5)
-        sizer.Add(self.c2, 1, flag=wx.wx.ALL | wx.ALIGN_CENTER, border=5)
-        sizer.Add(self.c3, 1, flag=wx.wx.ALL | wx.ALIGN_CENTER, border=5)
-        sizer.Add(self.c4, 1, flag=wx.wx.ALL | wx.ALIGN_CENTER, border=5)
+        sizer.Add(self.c1, 1, flag=wx.ALL | wx.ALIGN_CENTER, border=5)
+        sizer.Add(self.c2, 1, flag=wx.ALL | wx.ALIGN_CENTER, border=5)
+        sizer.Add(self.c3, 1, flag=wx.ALL | wx.ALIGN_CENTER, border=5)
+        sizer.Add(self.c4, 1, flag=wx.ALL | wx.ALIGN_CENTER, border=5)
         sizer.Add(self.saveButton, 1, flag=wx.wx.ALL | wx.ALIGN_CENTER, border=5)
+        # sizer.Add(self.gauge, proportion=0, flag=wx.ALL | wx.ALIGN_CENTER, border=0)
 
         self.Bind(wx.EVT_BUTTON, self.OnSave, id=1)
 
-        self.statusbar = self.CreateStatusBar()
+
+
+
         self.panel.SetSizer(sizer)
         self.Centre()
         self.Show()
 
     def OnSave(self, event):
+        self.timer.Start(25)
+        # self.OnTimer()
         cb = self.getCheckboxValue()
         file = open(self.settingspath, 'w')
         file.writelines(['0\n',
@@ -430,7 +438,8 @@ class viewMenuBar(wx.Frame):
                          'showcritical = '+str(cb.values()[2]+'\n'),
                          'showerror = '+str(cb.values()[3]+'\n')])
         file.close()
-        self.statusbar.SetStatusText('Settings saved, %s ' % wx.Now())
+        # self.timer.Stop()
+        # self.statusbar.SetStatusText('Settings saved, %s ' % wx.Now())
 
     def getCheckboxValue(self):
         info = self.c1.GetValue()
@@ -439,6 +448,28 @@ class viewMenuBar(wx.Frame):
         error = self.c4.GetValue()
         cb = {'info': str(info), 'warn': str(warn), 'critical': str(critical), 'error': str(error)}
         return cb
+
+    def SettingsStatusBar(self):
+        self.count = 0
+        self.timer = wx.Timer(self, 1)
+        self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
+        self.gauge = wx.Gauge(self.statusbar, range=50, size=(100, 10))
+
+    def OnTimer(self, e):
+        self.count += 1
+        self.gauge.Show()
+        self.gauge.SetValue(self.count)
+
+        if self.count >= 50:
+            self.timer.Stop()
+            self.statusbar.SetStatusText('Settings saved, %s ' % wx.Now())
+            self.count = 0
+            self.gauge.Hide()
+        else:
+            #  This will show the number the gauge is at.
+            # self.statusbar.SetStatusText(str(self.gauge.GetValue()))
+            # self.OnTimer()
+            pass
 
 
 # class viewMenuBar(wx.Frame):

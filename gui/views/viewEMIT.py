@@ -372,34 +372,6 @@ class viewMenuBar(wx.Frame):
         h = value[0]
         h = int(h)
 
-        # info = fileinfo[3].split(' = ')
-        # info = info[1].split('\n')
-        # if info[0] == 'True':
-        #     self.infoIsChecked = True
-        # else:
-        #     self.infoIsChecked = False
-
-        # warn = fileinfo[4].split(' = ')
-        # warn = warn[1].split('\n')
-        # if warn[0] == 'True':
-        #     self.warningIsChecked = True
-        # else:
-        #     self.warningIsChecked = False
-
-        # critical = fileinfo[5].split(' = ')
-        # critical = critical[1].split('\n')
-        # if critical[0] == 'True':
-        #     self.criticalIsChecked = True
-        # else:
-        #     self.criticalIsChecked = False
-
-        # error = fileinfo[6].split(' = ')
-        # error = error[1].split('\n')
-        # if error[0] == 'True':
-        #     self.errorIsChecked = True
-        # else:
-        #     self.errorIsChecked = False
-
         boolist = []
 
         for i in range(3, len(fileinfo)):
@@ -417,27 +389,35 @@ class viewMenuBar(wx.Frame):
 
         file.close()
 
-
         wx.Frame.__init__(self, parent=None, id=-1, title="Settings...", pos=wx.DefaultPosition, size=wx.Size(w, h))
         self.panel = wx.Panel(self)
-        self.Show()
 
-        self.c1 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Info Messages", pos=(50, 175))
-        self.c2 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Warning Messages", pos=(50, 200))
-        self.c3 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Critical Messages", pos=(50, 225))
-        self.c4 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Error Messages", pos=(50, 250))
+        sizer = wx.BoxSizer(wx.VERTICAL)
+
+        self.c1 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Info Messages")
+        self.c2 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Warning Messages")
+        self.c3 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Critical Messages")
+        self.c4 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Error Messages")
 
         self.c1.SetValue(self.infoIsChecked)
         self.c2.SetValue(self.warningIsChecked)
         self.c3.SetValue(self.criticalIsChecked)
         self.c4.SetValue(self.errorIsChecked)
 
-        wx.Button(self.panel, 1, 'Save', pos=(20, 120))
+        self.saveButton = wx.Button(self.panel, 1, 'Save')
+
+        sizer.Add(self.c1, 1, flag=wx.wx.ALL | wx.ALIGN_CENTER, border=5)
+        sizer.Add(self.c2, 1, flag=wx.wx.ALL | wx.ALIGN_CENTER, border=5)
+        sizer.Add(self.c3, 1, flag=wx.wx.ALL | wx.ALIGN_CENTER, border=5)
+        sizer.Add(self.c4, 1, flag=wx.wx.ALL | wx.ALIGN_CENTER, border=5)
+        sizer.Add(self.saveButton, 1, flag=wx.wx.ALL | wx.ALIGN_CENTER, border=5)
 
         self.Bind(wx.EVT_BUTTON, self.OnSave, id=1)
 
         self.statusbar = self.CreateStatusBar()
+        self.panel.SetSizer(sizer)
         self.Centre()
+        self.Show()
 
     def OnSave(self, event):
         cb = self.getCheckboxValue()

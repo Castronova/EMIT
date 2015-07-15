@@ -153,35 +153,6 @@ class Log(object):
         self.settingspath = os.path.abspath(os.path.join(currentdir, '../data/settings'))
         file = open(self.settingspath, 'r')
         fileinfo = file.readlines()
-
-        # info = fileinfo[3].split(' = ')
-        # info = info[1].split('\n')
-        # if info[0] == 'True':
-        #     self.showinfo = True
-        # else:
-        #     self.showinfo = False
-        #
-        # warn = fileinfo[4].split(' = ')
-        # warn = warn[1].split('\n')
-        # if warn[0] == 'True':
-        #     self.showwarning = True
-        # else:
-        #     self.showwarning = False
-        #
-        # critical = fileinfo[5].split(' = ')
-        # critical = critical[1].split('\n')
-        # if critical[0] == 'True':
-        #     self.showcritical = True
-        # else:
-        #     self.showcritical = False
-        #
-        # error = fileinfo[6].split(' = ')
-        # error = error[1].split('\n')
-        # if error[0] == 'True':
-        #     self.showerror = True
-        # else:
-        #     self.showerror = False
-
         boolist = []
 
         for i in range(3, len(fileinfo)):
@@ -198,7 +169,6 @@ class Log(object):
         self.showerror = boolist[3]
 
         file.close()
-        pass
 
 
 elog = Log()

@@ -947,6 +947,7 @@ class ObjectListView(wx.ListCtrl):
             self.modelObjects = modelObjects[:]
 
         self.RepopulateList()
+        self.UpdateColumnSize(models=modelObjects)
 
         if preserveSelection:
             self.SelectObjects(selection)
@@ -954,6 +955,73 @@ class ObjectListView(wx.ListCtrl):
 
     # Synonym as per many wxWindows widgets
     SetValue = SetObjects
+
+    def UpdateColumnSize(self, models):
+        if len(models) <= 1:
+            return
+        else:
+            for i in range(len(models)):
+                try:
+                    self.TimeSeriesColumns(i, models)
+                except:
+                    self.SimulationCoumns(i, models)
+
+            #  The last column will expand all the way out.
+            self.SetColumnWidth(6, 1800)
+
+    def SimulationCoumns(self, i, models):
+        itemsize = len(str(models[i].simulation_id))
+        itemsize = self.SizeColumn(itemsize)
+        self.SetColumnWidth(0, itemsize)
+        itemsize = len(str(models[i].simulation_name))
+        itemsize = self.SizeColumn(itemsize)
+        self.SetColumnWidth(1, itemsize)
+        itemsize = len(str(models[i].model_name))
+        itemsize = self.SizeColumn(itemsize)
+        self.SetColumnWidth(2, itemsize)
+        itemsize = len(str(models[i].simulation_start))
+        itemsize = self.SizeColumn(itemsize)
+        self.SetColumnWidth(3, itemsize)
+        itemsize = len(str(models[i].simulation_end))
+        itemsize = self.SizeColumn(itemsize)
+        self.SetColumnWidth(4, itemsize)
+        itemsize = len(str(models[i].date_created))
+        itemsize = self.SizeColumn(itemsize)
+        self.SetColumnWidth(5, itemsize)
+
+    def TimeSeriesColumns(self, i, models):
+        #  i is the index
+        itemsize = len(str(models[i].resultid))
+        itemsize = self.SizeColumn(itemsize)
+        self.SetColumnWidth(0, itemsize)
+        itemsize = len(str(models[i].featurecode))
+        itemsize = self.SizeColumn(itemsize)
+        self.SetColumnWidth(1, itemsize)
+        itemsize = len(str(models[i].variable))
+        itemsize = self.SizeColumn(itemsize)
+        self.SetColumnWidth(2, itemsize)
+        itemsize = len(str(models[i].unit))
+        itemsize = self.SizeColumn(itemsize)
+        self.SetColumnWidth(3, itemsize)
+        itemsize = len(str(models[i].type))
+        itemsize = self.SizeColumn(itemsize)
+        self.SetColumnWidth(4, itemsize)
+        itemsize = len(str(models[i].organization))
+        itemsize = self.SizeColumn(itemsize)
+        self.SetColumnWidth(5, itemsize)
+
+    def SizeColumn(self, col):
+        min = 100
+        max = 350
+        col *= 10  #  This is the best ratio for the column size
+        if col < min:
+            col = min
+            return col
+        elif col > max:
+            col = max
+            return col
+        else:
+            return col
 
 
     def _BuildInnerList(self):

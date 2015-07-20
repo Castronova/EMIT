@@ -2,6 +2,9 @@ __author__ = 'Francisco'
 
 import wx
 import os
+import wx.grid
+from gui import events
+from coordinator.engineAccessors import getAllLinks
 
 
 class viewPreRun(wx.Frame):
@@ -24,12 +27,12 @@ class viewPreRun(wx.Frame):
         self.page1 = PageOne(self.notebook)
 
         #  Uncomment this two bottom lines to show a second or third tab.
-        # self.page2 = PageTwo(self.notebook)
+        self.page2 = PageTwo(self.notebook)
         # self.page3 = PageThree(self.notebook)
 
         # add the pages to the notebook with the label to show on the tab
         self.notebook.AddPage(self.page1, "Summary")
-        # self.notebook.AddPage(self.page2, "Details")
+        self.notebook.AddPage(self.page2, "Data")
         # self.notebook.AddPage(self.page3, "Page 3")
 
         # finally, put the notebook in a sizer for the panel to manage
@@ -159,21 +162,47 @@ class PageTwo(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
 
-        # Variables
-        self.parent = parent
-        self.sizer = ""
-        self.modelsLabel = ""
-        self.modellistbox = ""
+        # # Variables
+        # self.parent = parent
+        # self.sizer = ""
+        # self.modelsLabel = ""
+        # self.modellistbox = ""
+        #
+        # self.gridbagsizer = wx.GridBagSizer(vgap=5, hgap=5)
+        #
+        # self.modelsLabel = wx.StaticText(self, id=-1, label="Models:", style=wx.ALIGN_LEFT)
+        # self.modellistbox = wx.ListBox(self, id=-1, size=(340, 100), choices=['testing a really looooooooooooooooooooooooooooooooooooooong name', 'model 2', 'models from the canvas', 'go here'])
+        #
+        # self.gridbagsizer.Add(self.modelsLabel, pos=(1, 1), flag=wx.ALL, border=5)
+        # self.gridbagsizer.Add(self.modellistbox, pos=(1, 2), flag=wx.ALL, border=5)
+        #
+        # self.SetSizer(self.gridbagsizer)
+        grid = wx.grid.Grid(parent=self, id=wx.ID_ANY, pos=(0, 0), size=(325, 150))
+        grid.CreateGrid(5, 4)  # Row, Col
+        grid.RowLabelSize = 0
+        grid.ColLabelSize = 20
 
-        self.gridbagsizer = wx.GridBagSizer(vgap=5, hgap=5)
+        grid.SetColLabelValue(0, "Links")
+        grid.SetColLabelValue(1, "Name")
+        grid.SetColLabelValue(2, "Input")
+        grid.SetColLabelValue(3, "Output")
 
-        self.modelsLabel = wx.StaticText(self, id=-1, label="Models:", style=wx.ALIGN_LEFT)
-        self.modellistbox = wx.ListBox(self, id=-1, size=(340, 100), choices=['testing a really looooooooooooooooooooooooooooooooooooooong name', 'model 2', 'models from the canvas', 'go here'])
+        attr = wx.grid.GridCellAttr()
+        attr.SetEditor(wx.grid.GridCellBoolEditor())
+        attr.SetRenderer(wx.grid.GridCellBoolRenderer())
+        grid.SetColAttr(0, attr)
 
-        self.gridbagsizer.Add(self.modelsLabel, pos=(1, 1), flag=wx.ALL, border=5)
-        self.gridbagsizer.Add(self.modellistbox, pos=(1, 2), flag=wx.ALL, border=5)
+        grid.SetCellValue(row=1, col=1, s="Hello Cell")
 
-        self.SetSizer(self.gridbagsizer)
+
+        grid.Fit()
+
+        # events.onLinkSaveClose += self.PopulateGrid
+        self.PopulateGrid()
+
+    def PopulateGrid(self):
+        print "here i am , this happened"
+        links = getAllLinks()
 
 
 class PageThree(wx.Panel):

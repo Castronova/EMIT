@@ -76,6 +76,7 @@ class LogicCanvas(ViewCanvas):
         self.Unbind(FC.EVT_RIGHT_DCLICK)
 
     def initBindings(self):
+        self.FloatCanvas.Bind(FC.EVT_LEAVE_WINDOW, self.LeaveWindow)
         self.FloatCanvas.Bind(FC.EVT_MOTION, self.OnMove)
         self.FloatCanvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp)
         self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.LaunchContext)
@@ -162,9 +163,24 @@ class LogicCanvas(ViewCanvas):
         else:
             pass
 
+    def LeaveWindow(self):
+        print "outside window"
+
     def OnMove(self, event):
         if self.Moving:
+
             cursorPos = event.GetPosition()
+            if cursorPos.x > self.FloatCanvas.PanelSize[0] - self.MovingObject.Width/2:
+                # Right
+                cursorPos.x = self.FloatCanvas.PanelSize[0] - self.MovingObject.Width/2
+
+            # elif cursorPos.x > self.FloatCanvas.PanelSize[1]:
+            #     print "upper"
+            #
+            # elif any(event.GetPosition() < N.array([0,0])):
+            #     print "lower"
+
+
             deltaX = cursorPos.x - self.lastPos.x
             deltaY = self.lastPos.y - cursorPos.y
             dxy = (deltaX,deltaY)
@@ -188,8 +204,7 @@ class LogicCanvas(ViewCanvas):
                     link.Arrow.XY = link.MidPoint
 
             self.lastPos = cursorPos
-            # self.RedrawConfiguration()
-            self.FloatCanvas.Draw(True)
+            self.FloatCanvas.Draw()
 
     def onUpdateConsole(self, evt):
         """
@@ -312,32 +327,40 @@ class LogicCanvas(ViewCanvas):
         self.arrows[line.Arrow] = [R1, R2]
         line.type = LogicCanvasObjects.ShapeType.Link
 
+        line.Arrow.type = LogicCanvasObjects.ShapeType.ArrowHead
         # Calculate length of line, use to show/hide arrow
         self.linelength = math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2)
         self.FloatCanvas.AddObject(line)
-        # For some reason I have to add line.Arrow in order to bind to it
+
+        # For some reason we have to add line.Arrow in order to bind to it
         self.FloatCanvas.AddObject(line.Arrow)
+
+        # We need to add this since we're binding to line's attribute and not
+        # the line itself. This fixed an issue seen in the last commit from 7/15/2015
+        # line.Arrow.line = line
 
         line.Arrow.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
         line.Arrow.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
-        # self.arrow_shape = self.createArrow(line)
+        # line.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
+        # line.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
+
         self.FloatCanvas.Draw()
 
-    def createArrow(self, line):
-
-        print "adding arrow to ", line.MidPoint
-        angle = line.GetAngleRadians()
-        arrow_shape = ScaledBitmapWithRotation(self.linkArrow, line.MidPoint, Angle=angle, Position='tl', InForeground=True)
-
-        # set the shape type so that we can identify it later
-        arrow_shape.type = LogicCanvasObjects.ShapeType.ArrowHead
-        self.FloatCanvas.AddObject(arrow_shape)
-
-        # bind the arrow to left click
-        arrow_shape.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
-        arrow_shape.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
-
-        return arrow_shape
+    # def createArrow(self, line):
+    #
+    #     print "adding arrow to ", line.MidPoint
+    #     angle = line.GetAngleRadians()
+    #     arrow_shape = ScaledBitmapWithRotation(self.linkArrow, line.MidPoint, Angle=angle, Position='tl', InForeground=True)
+    #
+    #     # set the shape type so that we can identify it later
+    #     arrow_shape.type = LogicCanvasObjects.ShapeType.ArrowHead
+    #     self.FloatCanvas.AddObject(arrow_shape)
+    #
+    #     # bind the arrow to left click
+    #     arrow_shape.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
+    #     arrow_shape.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
+    #
+    #     return arrow_shape
 
     def getUniqueId(self):
         return self.uniqueId
@@ -417,8 +440,9 @@ class LogicCanvas(ViewCanvas):
                 if not success:
                     elog.error('ERROR|Could not remove link: %s' % link['id'])
 
-            # redraw the canvas
-            self.RedrawConfiguration()
+            # Using SmoothLineWithArrow's builtin remove helper function
+            link_obj.Remove(self.FloatCanvas)
+            self.FloatCanvas.Draw()
 
     def RemoveModel(self, model_obj):
         """
@@ -428,20 +452,28 @@ class LogicCanvas(ViewCanvas):
         """
 
         updated_links = {}
-        for k, v in self.links.iteritems():
-            if model_obj not in v:
-                updated_links[k] = v
+        links_to_remove = []
+        for link, models in self.links.iteritems():
+            if model_obj in models:
+                links_to_remove.append(link)
+            elif model_obj not in models:
+                updated_links[link] = models
+
         self.links = updated_links
 
-        # remove the model from the engine
+        # Remove the model from the engine
         success = engine.removeModelById(model_obj.ID)
-
         if success:
-            # remove the model from the canvas
+            # Update models list
             self.models.pop(model_obj)
 
-            # redraw the canvas
-            self.RedrawConfiguration()
+            # Remove selected model and text box from FloatCanvas
+            self.FloatCanvas.RemoveObjects([model_obj, model_obj.Text])
+            # Remove the model's SmoothLineWithArrow obj with builtin remove function
+            for link in links_to_remove:
+                link.Remove(self.FloatCanvas)
+
+            self.FloatCanvas.Draw()
 
     def clear(self, link_obj=None, model_obj=None):
 
@@ -453,8 +485,7 @@ class LogicCanvas(ViewCanvas):
             self.links.clear()
             self.models.clear()
             self.FloatCanvas.ClearAll()
-
-            self.RedrawConfiguration()
+            self.FloatCanvas.Draw()
 
     def ObjectHit(self, object):
         cur = self.getCursor()
@@ -515,31 +546,6 @@ class LogicCanvas(ViewCanvas):
         linkstart = LogicLink(self.FloatCanvas, from_model, to_model)
 
         linkstart.Show()
-
-
-    def RedrawConfiguration(self):
-        # clear lines from drawlist
-        self.FloatCanvas._DrawList = [obj for obj in self.FloatCanvas._DrawList if
-                                      obj.type != LogicCanvasObjects.ShapeType.Link]
-
-        # remove any arrowheads from the _ForeDrawList
-        self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList if
-                                          obj.type != LogicCanvasObjects.ShapeType.ArrowHead]
-
-        # remove any models
-        modelids = [model.ID for model in self.models]
-        modellabels = [model.Name for model in self.models]
-        self.FloatCanvas._ForeDrawList = [obj for obj in self.FloatCanvas._ForeDrawList
-                                          if (obj.type == LogicCanvasObjects.ShapeType.Model and obj.ID in modelids)
-                                          or (
-                                              obj.type == LogicCanvasObjects.ShapeType.Label and obj.String in modellabels)]
-
-        # redraw links
-        for link in self.links.keys():
-            r1, r2 = self.links[link]
-            self.createLine(r1, r2)
-
-        self.FloatCanvas.Draw(True)
 
     def OnLeftUp(self, event, path=None):
         if self.Moving:
@@ -907,23 +913,16 @@ class LogicCanvas(ViewCanvas):
         if type(event) == wx.lib.floatcanvas.FloatCanvas._MouseEvent:
             self.PopupMenu(CanvasContextMenu(self), event.GetPosition())
 
-        # Get working with ScaledBitmapWithRotation
-        # elif type(event) == gui.controller.logicCanvasObjects.ScaledBitmapWithRotation:
-        #     print "here"
+        elif type(event) == LogicCanvasObjects.ScaledBitmapWithRotation:
+            # if object is link
+            # event should be SmoothLineWithArrow...
+            if event.type == "ArrowHead":
+                self.PopupMenu(LinkContextMenu(self, event.line), event.HitCoordsPixel.Get())
 
         elif type(event) == wx.lib.floatcanvas.FloatCanvas.Bitmap:
-            # if object is link
-            if event.type == "ArrowHead":
-                self.PopupMenu(LinkContextMenu(self, event), event.HitCoordsPixel.Get())
-
             # if object is model
-            elif event.type == 'Model':
+            if event.type == "Model":
                 self.PopupMenu(ModelContextMenu(self, event), event.HitCoordsPixel.Get())
-
-        elif type(event) == wx.lib.floatcanvas.FloatCanvas.Polygon:
-            if event.type == "ArrowHead":
-                self.PopupMenu(LinkContextMenu(self, event), event.HitCoordsPixel.Get())
-
 
     # THREADME
     def run(self):

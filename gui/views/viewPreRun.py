@@ -3,8 +3,8 @@ __author__ = 'Francisco'
 import wx
 import os
 import wx.grid
-from gui import events
 from coordinator.engineAccessors import getAllLinks
+from coordinator.emitLogging import elog
 
 
 class viewPreRun(wx.Frame):
@@ -177,32 +177,59 @@ class PageTwo(wx.Panel):
         # self.gridbagsizer.Add(self.modellistbox, pos=(1, 2), flag=wx.ALL, border=5)
         #
         # self.SetSizer(self.gridbagsizer)
-        grid = wx.grid.Grid(parent=self, id=wx.ID_ANY, pos=(0, 0), size=(325, 150))
-        grid.CreateGrid(5, 4)  # Row, Col
+        grid = wx.grid.Grid(parent=self, id=wx.ID_ANY, pos=(0, 0), size=(450, 150))
+        grid.CreateGrid(5, 6)  # Row, Col
         grid.RowLabelSize = 0
         grid.ColLabelSize = 20
 
-        grid.SetColLabelValue(0, "Links")
-        grid.SetColLabelValue(1, "Name")
-        grid.SetColLabelValue(2, "Input")
-        grid.SetColLabelValue(3, "Output")
+        grid.SetColLabelValue(0, "")
+        grid.SetColLabelValue(1, "ID")
+        grid.SetColLabelValue(2, "Input Name")
+        grid.SetColLabelValue(3, "Output Name")
+        grid.SetColLabelValue(4, "Source Component Name")
+        grid.SetColLabelValue(5, "Target Component Name")
 
         attr = wx.grid.GridCellAttr()
         attr.SetEditor(wx.grid.GridCellBoolEditor())
         attr.SetRenderer(wx.grid.GridCellBoolRenderer())
         grid.SetColAttr(0, attr)
 
-        grid.SetCellValue(row=1, col=1, s="Hello Cell")
+        # grid.SetCellValue(row=1, col=1, s="Hello Cell")
 
 
-        grid.Fit()
+        # grid.Fit()
 
-        # events.onLinkSaveClose += self.PopulateGrid
-        self.PopulateGrid()
+        self.PopulateGrid(grid)
+        grid.AutoSizeColumn(0)
+        grid.AutoSizeColumn(1)
+        grid.AutoSizeColumn(2)
+        grid.AutoSizeColumn(3)
+        grid.AutoSizeColumn(4)
+        grid.AutoSizeColumn(5)
+        grid.EnableEditing(False)
 
-    def PopulateGrid(self):
+    def PopulateGrid(self, grid):
         print "here i am , this happened"
-        links = getAllLinks()
+        row = 0
+
+        if len(getAllLinks()) > 0:
+            for i in getAllLinks():
+                for key, value in i.iteritems():
+                    if key == 'id':
+                        grid.SetCellValue(row=row, col=1, s=value)
+                    elif key == 'input_name':
+                        grid.SetCellValue(row=row, col=2, s=value)
+                    elif key == 'output_name':
+                        grid.SetCellValue(row=row, col=3, s=value)
+                    elif key == 'source_component_name':
+                        grid.SetCellValue(row=row, col=4, s=value)
+                    elif key == 'target_component_name':
+                        grid.SetCellValue(row=row, col=5, s=value)
+                row += 1
+        else:
+            elog.info("No Links have been added")
+
+        # print getAllLinks()
 
 
 class PageThree(wx.Panel):

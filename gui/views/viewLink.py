@@ -13,7 +13,7 @@ import os
 class ViewLink(wx.Frame):
     def __init__(self, parent, output, input):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=wx.EmptyString, pos=wx.DefaultPosition,
-                          size=wx.Size(700, 600),
+                          size=wx.Size(700, 650),
                           style=wx.DEFAULT_FRAME_STYLE
                           ^(wx.RESIZE_BORDER | wx.MINIMIZE_BOX | wx.MAXIMIZE_BOX))
 

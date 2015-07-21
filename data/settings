@@ -1,7 +1,7 @@
 0
 w = 350
 h = 350
-showinfo = False
+showinfo = True
 showwarning = False
 showcritical = True
 showerror = True

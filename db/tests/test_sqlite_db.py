@@ -168,7 +168,6 @@ class test_sqlite_db(unittest.TestCase):
             # increment time by 1 day
             current_time += timedelta(days=1)
 
-
         # set dates and values in the exchange item
         item.setValues2(values, dates)
 
@@ -193,7 +192,6 @@ class test_sqlite_db(unittest.TestCase):
                         unit_type_cv = 'hour',
                         value = '1',
         )
-
 
         # get affiliation
         r = ReadODM2(self.pop_connection)

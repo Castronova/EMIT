@@ -5,6 +5,7 @@ import uuid
 import numpy
 import time
 import pyspatialite.dbapi2 as spatialite
+import pandas
 
 # This is our API for simulation data that uses the latest ODM2PythonAPI code
 
@@ -53,8 +54,8 @@ class sqlite():
 
         name = config_params['name']
         description = config_params['description']
-        simstart = config_params['simulation_start']
-        simend = config_params['simulation_end']
+        simstart = datetime.datetime.strptime(config_params['simulation_start'], '%m/%d/%Y %H:%M:%S' )
+        simend = datetime.datetime.strptime(config_params['simulation_end'], '%m/%d/%Y %H:%M:%S' )
         modelcode = config_params['code']
         modelname = config_params['name']
         modeldesc = config_params['description']
@@ -101,9 +102,6 @@ class sqlite():
                                                 dsabstract=description)
 
 
-
-        tsvalues = []
-
         # make sure the exchange item is represented as a list
         if not hasattr(ei,'__len__'):
             ei = [ei]
@@ -132,8 +130,7 @@ class sqlite():
                                                            name=e.unit().UnitName())
 
             # create spatial reference
-            srs = geometries[0].srs()  # get the srs from the first element
-            # todo: Can geometries have difference srs in the same exchange item?  Something needs to check for this.  Should srs be at the exchange item level?
+            srs = e.srs()
             refcode = "%s:%s" %(srs.GetAttrValue("AUTHORITY", 0), srs.GetAttrValue("AUTHORITY", 1))
             spatialref = self.read.getSpatialReferenceByCode(refcode)
             if not spatialref:
@@ -142,23 +139,6 @@ class sqlite():
                                                                srsDescription="%s|%s|%s"%(srs.GetAttrValue("PROJCS", 0),
                                                                                           srs.GetAttrValue("GEOGCS", 0),
                                                                                           srs.GetAttrValue("DATUM", 0)))
-
-
-            '''
-            >>> exchangeitem.getGeometries2()
-            >>> exchangeitem.getDates2()
-            >>> didx, date = zip(*exchangeitem.getDates2())
-            >>> vals = exchangeitem.getValues2()
-
-            >>> import numpy
-            >>> v = numpy.array(vals)
-            >>> type(v)
-            <type 'numpy.ndarray'>
-            >>> v[:,0]
-            '''
-
-            # timer for benchmarking
-            st = time.time()
 
             # loop over geometries
             for i in range(0, len(geometries)):
@@ -177,19 +157,6 @@ class sqlite():
                 featureaction = self.write.createFeatureAction(samplingfeatureid=samplingFeatureID,
                                                                     actionid=action.ActionID)
 
-
-                # create a result record
-                # result = models.Results
-                # result.ResultUUID = uuid.uuid4()
-                # result.FeatureActionID = featureaction.FeatureActionID
-                # result.ResultTypeCV = 'time series'
-                # result.VariableID = variable.VariableID
-                # result.UnitsID = unit.UnitsID
-                # result.ProcessingLevelID = processinglevel.ProcessingLevelID
-                # result.ValueCount = len(dates)
-                # result.SampledMediumCV = 'unknown'
-
-
                 # create a result record
                 result = self.write.createResult(featureactionid=featureaction.FeatureActionID,
                                               variableid=variable.VariableID,
@@ -207,32 +174,35 @@ class sqlite():
                                               )
 
                 # create time series result
-                # fixme: FlushError: Instance <TimeSeriesResults at 0x1174b5fd0> has a NULL identity key.
-                # timeseriesresult = self.write.createTimeSeriesResult(result=result, aggregationstatistic='unknown',
-                #                                                          timespacing=timestepvalue,
-                #                                                          timespacing_unitid=timestepunit.UnitsID)
+                # using the sqlalchemy function results in: FlushError: Instance <TimeSeriesResults at 0x1174b5fd0> has a NULL identity key.
                 timeseriesresult = self.insert_timeseries_result(resultid=result.ResultID, timespacing=timestepvalue, timespacing_unitid=timestepunit.UnitsID)
 
-                # create time series result values
                 # todo: consider utc offset for each result value.
                 # todo: get timezone based on geometry, use this to determine utc offset
                 # todo: implement censorcodecv
                 # todo: implement qualitycodecv
 
-                for i in xrange(len(values)):
-                    tsrv = models.TimeSeriesResultValues()
-                    tsrv.ResultID = timeseriesresult.ResultID
-                    tsrv.CensorCodeCV = 'nc'
-                    tsrv.QualityCodeCV = 'unknown'
-                    tsrv.TimeAggregationInterval = timestepvalue
-                    tsrv.TimeAggregationIntervalUnitsID = timestepunit.UnitsID
-                    tsrv.DataValue = values[i]
-                    tsrv.ValueDateTime = dates[i]
-                    tsrv.ValueDateTimeUTCOffset = -6
-                    tsvalues.append(tsrv)
 
-        # insert ts values
-        self.write.createTimeSeriesResultValues(tsrv = tsvalues)
+                # assemble the timeseriesresultvalues into a dictionary that will be used to build a pandas dataframe object
+                data = []
+                for i in xrange(len(values)):
+                    d = dict(ResultID = result.ResultID,
+                             CensorCodeCV = 'nc',
+                             QualityCodeCV = 'unknown',
+                             TimeAggregationInterval = timestepvalue,
+                             TimeAggregationIntervalUnitsID = timestepunit.UnitsID,
+                             DataValue = values[i],
+                             ValueDateTime = dates[i][1],
+                             ValueDateTimeUTCOffset = -6)
+                    data.append(d)
+
+                # create pandas dataframe
+                df = pandas.DataFrame(data=data)
+
+                # strftime datetime objects (required for SQLite bc lack of datetime64 support)
+                df['ValueDateTime'] = df['ValueDateTime'].apply(lambda x: x.strftime('%m/%d/%y %H:%M:%S'))
+                self.insert_timeseries_result_values(dataframe=df)
+
 
         # create model
         model = self.read.getModelByCode(modelcode=modelcode)
@@ -299,11 +269,13 @@ class sqlite():
 
         self.spatial_connection.commit()
 
-        pts = self.spatial_connection.execute('SELECT ST_AsText(FeatureGeometry) from SamplingFeatures').fetchall()
+        # return the id of the inserted record
+        return self.spatialDb.lastrowid
 
-        return ID
+        # pts = self.spatial_connection.execute('SELECT ST_AsText(FeatureGeometry) from SamplingFeatures').fetchall()
+        # return ID
 
-    def insert_timeseries_result(self, resultid, aggregationstatistic='unknown', xloc=None, xloc_unitid=None, yloc=None,yloc_unitid=None, zloc=None, zloc_unitid=None, srsID=None, timespacing=None, timespacing_unitid=None):
+    def insert_timeseries_result(self, resultid, aggregationstatistic='Unknown', xloc=None, xloc_unitid=None, yloc=None,yloc_unitid=None, zloc=None, zloc_unitid=None, srsID=None, timespacing=None, timespacing_unitid=None):
         """
         Inserts a timeseries result value
         :param resultid: An ID corresponding to a result record (must exist) (int, not null)
@@ -320,49 +292,29 @@ class sqlite():
         :return: Time series result id
         """
 
-
-
         # insert these data
         values = [resultid, xloc, xloc_unitid, yloc, yloc_unitid, zloc, zloc_unitid, srsID, timespacing, timespacing_unitid, aggregationstatistic]
-        query = 'INSERT INTO TimeSeriesResults VALUES (%d %s %3.5f %d %3.5f %d %3.5f %d %d %3.5f %d ?)', values
-        self.spatialDb.execute('INSERT INTO TimeSeriesResults VALUES (? ? ? ? ? ? ? ? ? ? ?)', values)
+        self.spatialDb.execute('INSERT INTO TimeSeriesResults VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', values)
         self.spatial_connection.commit()
 
-        # return the id
-        ID = self.spatialDb.lastrowid()
-        return ID
-
-# todo: add a function to insert many records to speed up execution
-#         # Larger example that inserts many records at a time
-# purchases = [('2006-03-28', 'BUY', 'IBM', 1000, 45.00),
-#              ('2006-04-05', 'BUY', 'MSFT', 1000, 72.00),
-#              ('2006-04-06', 'SELL', 'IBM', 500, 53.00),
-#             ]
-# c.executemany('INSERT INTO stocks VALUES (?,?,?,?,?)', purchases)
-#
+        # return the id of the inserted record
+        return self.spatialDb.lastrowid
 
 
 
+    def insert_timeseries_result_values(self, dataframe):
+        """
+        Inserts timeseries result values using the Pandas library
+        :param dataframe: a pandas datatable consisting of all records that will be inserted into the ODM2 database
+        :return: true
+        """
 
-    # def get_simulation_results(self,simulationName, dbactions, from_variableName, from_unitName, to_variableName, startTime, endTime):
-    #     pass
+        # convert pandas table into an insert_many query
+        dataframe.to_sql(name='TimeSeriesResultValues', con=self.spatial_connection, flavor='sqlite', if_exists='append', index=False)
+        self.spatial_connection.commit()
 
-
-
-# from api_old.ODM2 import serviceBase
-# from api_old.ODM2.Core.model import *
-# from api_old.ODM2.Results.model import *
-# from api_old.ODM2.Simulation.model import *
-
-# class utils(serviceBase):
-#
-#     def getAllSeries(self):
-#         pass
-#
-#     def getAllSimulations(self):
-#         pass
-
-
+        # return true
+        return 1
 
 
 

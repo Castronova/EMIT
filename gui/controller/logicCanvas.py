@@ -76,7 +76,6 @@ class LogicCanvas(ViewCanvas):
         self.Unbind(FC.EVT_RIGHT_DCLICK)
 
     def initBindings(self):
-        self.FloatCanvas.Bind(FC.EVT_LEAVE_WINDOW, self.LeaveWindow)
         self.FloatCanvas.Bind(FC.EVT_MOTION, self.OnMove)
         self.FloatCanvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp)
         self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.LaunchContext)
@@ -163,23 +162,21 @@ class LogicCanvas(ViewCanvas):
         else:
             pass
 
-    def LeaveWindow(self):
-        print "outside window"
-
     def OnMove(self, event):
         if self.Moving:
-
             cursorPos = event.GetPosition()
-            if cursorPos.x > self.FloatCanvas.PanelSize[0] - self.MovingObject.Width/2:
-                # Right
-                cursorPos.x = self.FloatCanvas.PanelSize[0] - self.MovingObject.Width/2
-
-            # elif cursorPos.x > self.FloatCanvas.PanelSize[1]:
-            #     print "upper"
-            #
-            # elif any(event.GetPosition() < N.array([0,0])):
-            #     print "lower"
-
+            # Right
+            if cursorPos.x < self.boxBoundaries[0]:
+                cursorPos.x = self.boxBoundaries[0]
+            # Left
+            elif cursorPos.x > self.Size.x - self.boxBoundaries[1]:
+                cursorPos.x = self.Size.x - self.boxBoundaries[1]
+            # Top
+            if cursorPos.y < self.boxBoundaries[2]:
+                cursorPos.y = self.boxBoundaries[2]
+            # Bottom
+            elif cursorPos.y > self.Size.y - self.boxBoundaries[3]:
+                cursorPos.y = self.Size.y - self.boxBoundaries[3]
 
             deltaX = cursorPos.x - self.lastPos.x
             deltaY = self.lastPos.y - cursorPos.y
@@ -505,8 +502,8 @@ class LogicCanvas(ViewCanvas):
             obj_id = object.ID
             model = engine.getModelById(obj_id)
 
-
         if not self.Moving:
+
             self.Moving = True
             self.StartPoint = object.HitCoordsPixel
 
@@ -518,6 +515,16 @@ class LogicCanvas(ViewCanvas):
             self.MoveObject = None
             self.MovingObject = object
             self.lastPos = object.HitCoordsPixel
+
+            mouse = self.ScreenToClient(wx.GetMousePosition().Get())
+            mouseCenterOrigin = self.FloatCanvas.PixelToWorld(mouse)
+            distFromCenter = mouseCenterOrigin - self.MovingObject.XY
+            overlap = 40
+            # Order: X-left, X-right, Y-top, Y-bottom
+            self.boxBoundaries = N.array([self.MovingObject.Width/2 + distFromCenter[0],
+                                    self.MovingObject.Width/2 - distFromCenter[0],
+                                    self.MovingObject.Height/2 - distFromCenter[1],
+                                    self.MovingObject.Height/2 + distFromCenter[1]]) - overlap
 
     def AddinkCursorClick(self):
         self.link_clicks += 1

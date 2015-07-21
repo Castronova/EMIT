@@ -289,7 +289,7 @@ class ScaledBitmapWithRotation(FC.ScaledBitmap):
         H = ScaleWorldToPixel(self.Height)[0]
         W = H * (self.bmpWidth / self.bmpHeight)
 
-        if (self.ScaledBitmap is None) or (H <> self.ScaledHeight) :
+        if (self.ScaledBitmap is None) or (H != self.ScaledHeight):
             self.ScaledHeight = H
             self.ScaledBitmap = wx.BitmapFromImage(Img)
 

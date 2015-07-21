@@ -18,7 +18,7 @@ def addModel(id=None, attrib=None):
 
     e.thread = Thread(target=e.check_for_process_results)
     e.thread.start()
-    e.thread.join()
+    # e.thread.join()
 
 def createSQLiteInMemory(dbtextfile=None):
     e = Engine()

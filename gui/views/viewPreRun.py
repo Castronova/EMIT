@@ -194,9 +194,6 @@ class PageTwo(wx.Panel):
         attr.SetRenderer(wx.grid.GridCellBoolRenderer())
         self.grid.SetColAttr(0, attr)
 
-        # grid.SetCellValue(row=1, col=1, s="Hello Cell")
-
-
         # grid.Fit()
 
         self.PopulateGrid(self.grid)
@@ -250,6 +247,7 @@ class PageTwo(wx.Panel):
                 self.grid.DisableCellEditControl()
                 self.grid.MoveCursorRight(False)
         else:
+
             event.Skip()
 
     def onCellSelected(self, event):
@@ -265,13 +263,9 @@ class PageTwo(wx.Panel):
 
     def AlternateRowColor(self, grid):
         color = "#AFFFBE"
-        for i in range(0, 5, 2):
-            grid.SetCellBackgroundColour(i, 0, color)  # row, col, color
-            grid.SetCellBackgroundColour(i, 1, color)
-            grid.SetCellBackgroundColour(i, 2, color)
-            grid.SetCellBackgroundColour(i, 3, color)
-            grid.SetCellBackgroundColour(i, 4, color)
-            grid.SetCellBackgroundColour(i, 5, color)
+        for row in range(1, grid.GetNumberRows(), 2):
+            for col in range(0, grid.GetNumberCols()):
+                grid.SetCellBackgroundColour(row, col, color)  # Row, Col, color
 
     def PopulateGrid(self, grid):
         row = 0

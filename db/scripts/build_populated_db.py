@@ -1,10 +1,11 @@
 import os
 import pyspatialite.dbapi2 as sqlite3
 import subprocess
+import cvload
 
 # remove db file if it already exists
 print 'Removing existing odm2.sqlite database...',
-dbpath = os.path.abspath('odm2.sqlite')
+dbpath = os.path.abspath('odm2_pop.sqlite')
 if os.path.exists(dbpath):
     os.remove(dbpath)
 print 'done'
@@ -22,7 +23,8 @@ conn.commit()
 print 'done'
 
 # load controlled vocabularies
-subprocess.call(["python cvload.py sqlite:///"+dbpath], shell=True)
+cvload.load_cv("sqlite:///"+dbpath)
+# subprocess.call(["python cvload.py sqlite:///"+dbpath], shell=True)
 
 # load some data
 subprocess.call(["python load_wof_to_ODM2.py"], shell=True)

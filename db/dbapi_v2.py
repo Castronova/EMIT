@@ -77,7 +77,6 @@ class sqlite():
                                                              orgId=org_id,
                                                              description='Model Simulation Results')
 
-
         # create action
         action = self.write.createAction(type='Simulation',
                                               methodid=method.MethodID,
@@ -180,23 +179,39 @@ class sqlite():
 
 
                 # create a result record
-                result = models.Results
-                result.ResultUUID = uuid.uuid4()
-                result.FeatureActionID = featureaction.FeatureActionID
-                result.ResultTypeCV = 'time series'
-                result.VariableID = variable.VariableID
-                result.UnitsID = unit.UnitsID
-                result.ProcessingLevelID = processinglevel.ProcessingLevelID
-                result.ValueCount = len(dates)
-                result.SampledMediumCV = 'unknown'
+                # result = models.Results
+                # result.ResultUUID = uuid.uuid4()
+                # result.FeatureActionID = featureaction.FeatureActionID
+                # result.ResultTypeCV = 'time series'
+                # result.VariableID = variable.VariableID
+                # result.UnitsID = unit.UnitsID
+                # result.ProcessingLevelID = processinglevel.ProcessingLevelID
+                # result.ValueCount = len(dates)
+                # result.SampledMediumCV = 'unknown'
 
+
+                # create a result record
+                result = self.write.createResult(featureactionid=featureaction.FeatureActionID,
+                                              variableid=variable.VariableID,
+                                              unitid=unit.UnitsID,
+                                              processinglevelid=processinglevel.ProcessingLevelID,
+                                              valuecount=len(dates),
+                                              sampledmedium='unknown',          # todo: this should be determined from variable/unit
+                                              resulttypecv='time series',       # todo: this should be determined from unit/variable
+                                              taxonomicclass=None,
+                                              resultdatetime=None,
+                                              resultdatetimeutcoffset=None,
+                                              validdatetime=None,
+                                              validdatetimeutcoffset=None,
+                                              statuscv=None
+                                              )
 
                 # create time series result
                 # fixme: FlushError: Instance <TimeSeriesResults at 0x1174b5fd0> has a NULL identity key.
-                timeseriesresult = self.write.createTimeSeriesResult(result=result, aggregationstatistic='unknown',
-                                                                         timespacing=timestepvalue,
-                                                                         timespacing_unitid=timestepunit.UnitsID)
-
+                # timeseriesresult = self.write.createTimeSeriesResult(result=result, aggregationstatistic='unknown',
+                #                                                          timespacing=timestepvalue,
+                #                                                          timespacing_unitid=timestepunit.UnitsID)
+                timeseriesresult = self.insert_timeseries_result(resultid=result.ResultID, aggregationstatistic='none', timespacing=timestepvalue, timespacing_unitid=timestepunit.UnitsID)
 
                 # create time series result values
                 # todo: consider utc offset for each result value.
@@ -288,6 +303,33 @@ class sqlite():
 
         return ID
 
+    def insert_timeseries_result(self, resultid, aggregationstatistic='unknown', xloc=None, xloc_unitid=None, yloc=None,yloc_unitid=None, zloc=None, zloc_unitid=None, srsID=None, timespacing=None, timespacing_unitid=None):
+        """
+        Inserts a timeseries result value
+        :param resultid: An ID corresponding to a result record (must exist) (int, not null)
+        :param aggregationstatistic:  The time interval over which the recorded value represents an aggregation (varchar, not null)
+        :param xloc: XLocation, numeric values and Units can be specified for all three dimensions (float, nullable)
+        :param xloc_unitid: The unit id for the xloc (int, nullable)
+        :param yloc: YLocation, numeric values and Units can be specified for all three dimensions (float, , nullable)
+        :param yloc_unitid: The unit id for the yloc (int, nullable)
+        :param zloc: ZLocation, numeric values and Units can be specified for all three dimensions (float, nullable)
+        :param zloc_unitid: The unit id for the zloc (int, nullable)
+        :param srsID: Spatial reference id for used for the x,y,z locations (int, nullable)
+        :param timespacing:  Spacing of the time series values (float, nullable)
+        :param timespacing_unitid: Unit of the spacing variable (int, nullable)
+        :return: Time series result id
+        """
+
+
+
+        # insert these data
+        values = [resultid, xloc, xloc_unitid, yloc, yloc_unitid, zloc, zloc_unitid, srsID, timespacing, timespacing_unitid, aggregationstatistic]
+        self.spatialDb.execute('INSERT INTO TimeSeriesResults VALUES (? ? ? ? ? ? ? ? ? ? ?)', values)
+        self.spatial_connection.commit()
+
+        # return the id
+        ID = self.spatialDb.lastrowid()
+        return ID
 
 # todo: add a function to insert many records to speed up execution
 #         # Larger example that inserts many records at a time

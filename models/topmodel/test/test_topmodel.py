@@ -149,11 +149,14 @@ class test_topmodel(unittest.TestCase):
         points = utilities.geometry.build_point_geometries(x,y,geometryType='gdal')
         # self.create_point_shapefile(points, data)
 
-        return points
-        # plt.scatter(x,y)
-        # plt.draw()
-        # plt.show()
+        # return points
+        X = x[::4]
+        Y = y[::4]
+        plt.scatter(X, Y, s=.5, edgecolors='none',color='blue')
+        plt.draw()
+        plt.show()
 
+        print 'done'
     def test_execute_simulation(self):
 
         import datatypes
@@ -280,7 +283,6 @@ class test_topmodel(unittest.TestCase):
         freq = numpy.round(freq, 10)        # round the frequencies
 
         return ti, freq
-
 
     def test_benchmark(self):
         benchmarks = []

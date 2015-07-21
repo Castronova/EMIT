@@ -331,7 +331,7 @@ BEGIN TRANSACTION;CREATE TABLE ActionAnnotations (
 	Definition VARCHAR (1000)  NULL,
 	Category VARCHAR (255)  NULL,
 	SourceVocabularyURI VARCHAR (255)  NULL
-);CREATE TABLE CV_AnnotationType (
+);INSERT INTO "CV_AggregationStatistic" VALUES('none', 'None', 'No aggregation statistic', NULL, NULL);CREATE TABLE CV_AnnotationType (
 	Term VARCHAR (255)  NOT NULL,
 	Name VARCHAR (255)  NOT NULL PRIMARY KEY,
 	Definition VARCHAR (1000)  NULL,

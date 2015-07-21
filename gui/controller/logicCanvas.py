@@ -317,34 +317,39 @@ class LogicCanvas(ViewCanvas):
 
     def createLine(self, R1, R2):
 
-        # Get the center of the objects on the canvas
-        x1,y1 = R1.XY
-        x2,y2 = R2.XY
-        points = [(x1,y1),(x2,y2)]
-        # line = SmoothLine(points, LineColor="Blue", LineStyle="Solid", LineWidth=4, InForeground=False)
-        line = SmoothLineWithArrow(points, self.linkArrow)
-        self.links[line] = [R1, R2]
-        self.arrows[line.Arrow] = [R1, R2]
-        line.type = LogicCanvasObjects.ShapeType.Link
+        if R1 == R2:
+            elog.error('Cannot link a model to itself')
+            return
+        else:
 
-        line.Arrow.type = LogicCanvasObjects.ShapeType.ArrowHead
-        # Calculate length of line, use to show/hide arrow
-        self.linelength = math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2)
-        self.FloatCanvas.AddObject(line)
+            # Get the center of the objects on the canvas
+            x1,y1 = R1.XY
+            x2,y2 = R2.XY
+            points = [(x1,y1),(x2,y2)]
+            # line = SmoothLine(points, LineColor="Blue", LineStyle="Solid", LineWidth=4, InForeground=False)
+            line = SmoothLineWithArrow(points, self.linkArrow)
+            self.links[line] = [R1, R2]
+            self.arrows[line.Arrow] = [R1, R2]
+            line.type = LogicCanvasObjects.ShapeType.Link
 
-        # For some reason we have to add line.Arrow in order to bind to it
-        self.FloatCanvas.AddObject(line.Arrow)
+            line.Arrow.type = LogicCanvasObjects.ShapeType.ArrowHead
+            # Calculate length of line, use to show/hide arrow
+            self.linelength = math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2)
+            self.FloatCanvas.AddObject(line)
 
-        # We need to add this since we're binding to line's attribute and not
-        # the line itself. This fixed an issue seen in the last commit from 7/15/2015
-        # line.Arrow.line = line
+            # For some reason we have to add line.Arrow in order to bind to it
+            self.FloatCanvas.AddObject(line.Arrow)
 
-        line.Arrow.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
-        line.Arrow.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
-        # line.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
-        # line.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
+            # We need to add this since we're binding to line's attribute and not
+            # the line itself. This fixed an issue seen in the last commit from 7/15/2015
+            # line.Arrow.line = line
 
-        self.FloatCanvas.Draw()
+            line.Arrow.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
+            line.Arrow.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
+            # line.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
+            # line.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
+
+            self.FloatCanvas.Draw()
 
     # def createArrow(self, line):
     #

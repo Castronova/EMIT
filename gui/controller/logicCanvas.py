@@ -204,7 +204,7 @@ class LogicCanvas(ViewCanvas):
                     link.Arrow.XY = link.MidPoint
 
             self.lastPos = cursorPos
-            self.FloatCanvas.Draw()
+            self.FloatCanvas.Draw(True)
 
     def onUpdateConsole(self, evt):
         """

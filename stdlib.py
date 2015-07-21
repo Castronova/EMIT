@@ -300,7 +300,8 @@ class ExchangeItem(object):
             self.__srs.ImportFromEPSG(srs_epsg)
         except:
             # set default
-            elog.error('Could not create spatial reference object from code: %s. Using the default spatial reference system: North American Datum 1983.'% str(srs_epsg))
+            elog.error('Could not create spatial reference object from code: %s. '
+                       'Using the default spatial reference system: North American Datum 1983.'% str(srs_epsg))
             self.__srs.ImportFromEPSG(4269)
 
 
@@ -311,6 +312,19 @@ class ExchangeItem(object):
         self.__saved = False
         self.__seriesID = None
 
+
+    def srs(self, srs_epsg=None):
+        if srs_epsg is not None:
+            self.__srs = osr.SpatialReference()
+            try:
+                self.__srs.ImportFromEPSG(srs_epsg)
+            except:
+                # set default
+                elog.error('Could not create spatial reference object from code: %s. '
+                           'Using the default spatial reference system: North American Datum 1983.'% str(srs_epsg))
+                self.__srs.ImportFromEPSG(4269)
+
+        return self.__srs
 
     def getEarliestTime2(self):
         return self.__times2[0]

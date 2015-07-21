@@ -177,41 +177,98 @@ class PageTwo(wx.Panel):
         # self.gridbagsizer.Add(self.modellistbox, pos=(1, 2), flag=wx.ALL, border=5)
         #
         # self.SetSizer(self.gridbagsizer)
-        grid = wx.grid.Grid(parent=self, id=wx.ID_ANY, pos=(0, 0), size=(450, 150))
-        grid.CreateGrid(5, 6)  # Row, Col
-        grid.RowLabelSize = 0
-        grid.ColLabelSize = 20
+        self.grid = wx.grid.Grid(parent=self, id=wx.ID_ANY, pos=(0, 0), size=(450, 150))
+        self.grid.CreateGrid(5, 6)  # Row, Col
+        self.grid.RowLabelSize = 0
+        self.grid.ColLabelSize = 20
 
-        grid.SetColLabelValue(0, "")
-        grid.SetColLabelValue(1, "ID")
-        grid.SetColLabelValue(2, "Input Name")
-        grid.SetColLabelValue(3, "Output Name")
-        grid.SetColLabelValue(4, "Source Component Name")
-        grid.SetColLabelValue(5, "Target Component Name")
+        self.grid.SetColLabelValue(0, "")
+        self.grid.SetColLabelValue(1, "ID")
+        self.grid.SetColLabelValue(2, "Input Name")
+        self.grid.SetColLabelValue(3, "Output Name")
+        self.grid.SetColLabelValue(4, "Source Component Name")
+        self.grid.SetColLabelValue(5, "Target Component Name")
 
         attr = wx.grid.GridCellAttr()
         attr.SetEditor(wx.grid.GridCellBoolEditor())
         attr.SetRenderer(wx.grid.GridCellBoolRenderer())
-        grid.SetColAttr(0, attr)
-
-        # grid.SetCellValue(row=1, col=1, s="Hello Cell")
-
+        self.grid.SetColAttr(0, attr)
 
         # grid.Fit()
 
-        self.PopulateGrid(grid)
-        grid.AutoSizeColumn(0)
-        grid.AutoSizeColumn(1)
-        grid.AutoSizeColumn(2)
-        grid.AutoSizeColumn(3)
-        grid.AutoSizeColumn(4)
-        grid.AutoSizeColumn(5)
-        grid.EnableEditing(False)
+        self.PopulateGrid(self.grid)
+        self.grid.AutoSizeColumn(0)
+        self.grid.AutoSizeColumn(1)
+        self.grid.AutoSizeColumn(2)
+        self.grid.AutoSizeColumn(3)
+        self.grid.AutoSizeColumn(4)
+        self.grid.AutoSizeColumn(5)
+        # grid.EnableEditing(True)
+        # attr.SetReadOnly(isReadOnly=False)
+        self.AlternateRowColor(self.grid)  # In case we want to alternate the row color.
+
+
+        self.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.onMouse)
+        self.Bind(wx.grid.EVT_GRID_SELECT_CELL, self.onCellSelected)
+        self.Bind(wx.grid.EVT_GRID_EDITOR_CREATED, self.onEditorCreated)
+
+    def onMouse(self, event):
+        if event.Col == 0:
+            wx.CallLater(100, self.toggleCheckbox)
+        event.Skip()
+
+    def toggleCheckbox(self):
+        self.checkbox.Value = not self.checkbox.Value
+        self.afterCheckbox(self.checkbox.Value)
+
+    def onEditorCreated(self, event):
+        print "hello there"
+        if event.Col == 0:
+            self.checkbox = event.Control
+            self.checkbox.WindowStyle |= wx.WANTS_CHARS
+            self.checkbox.Bind(wx.EVT_KEY_DOWN, self.onKeyDown)
+            self.checkbox.Bind(wx.EVT_CHECKBOX, self.onCheckbox)
+
+    def onKeyDown(self, event):
+        if event.KeyCode == wx.WXK_UP:
+            if self.grid.GridCursorRow > 0:
+                self.grid.DisableCellEditControl()
+                self.grid.MoveCursorUp(False)
+            elif event.KeyCode == wx.WXK_DOWN:
+                if self.grid.GridCursorRow < (self.grid.NumberRows-1):
+                    self.grid.DisableCellEditControl()
+                    self.grid.MoveCursorDown(False)
+            elif event.KeyCode == wx.WXK_LEFT:
+                if self.grid.GridCursorCol > 0:
+                    self.grid.DisableCellEditControl()
+                    self.grid.MoveCursorLeft(False)
+        elif event.KeyCode == wx.WXK_RIGHT:
+            if self.grid.GridCursorCol < (self.grid.NumberCols-1):
+                self.grid.DisableCellEditControl()
+                self.grid.MoveCursorRight(False)
+        else:
+
+            event.Skip()
+
+    def onCellSelected(self, event):
+        if event.Col == 0:
+            wx.CallAfter(self.grid.EnableCellEditControl)
+        event.Skip()
+
+    def onCheckbox(self, event):
+        self.afterCheckbox(event.IsChecked())
+
+    def afterCheckbox(self, checked):
+        print "You checked a box. Row = ", self.grid.GridCursorRow, checked
+
+    def AlternateRowColor(self, grid):
+        color = "#AFFFBE"
+        for row in range(1, grid.GetNumberRows(), 2):
+            for col in range(0, grid.GetNumberCols()):
+                grid.SetCellBackgroundColour(row, col, color)  # Row, Col, color
 
     def PopulateGrid(self, grid):
-        print "here i am , this happened"
         row = 0
-
         if len(getAllLinks()) > 0:
             for i in getAllLinks():
                 for key, value in i.iteritems():
@@ -228,8 +285,6 @@ class PageTwo(wx.Panel):
                 row += 1
         else:
             elog.info("No Links have been added")
-
-        # print getAllLinks()
 
 
 class PageThree(wx.Panel):

@@ -211,7 +211,7 @@ class sqlite():
                 # timeseriesresult = self.write.createTimeSeriesResult(result=result, aggregationstatistic='unknown',
                 #                                                          timespacing=timestepvalue,
                 #                                                          timespacing_unitid=timestepunit.UnitsID)
-                timeseriesresult = self.insert_timeseries_result(resultid=result.ResultID, aggregationstatistic='none', timespacing=timestepvalue, timespacing_unitid=timestepunit.UnitsID)
+                timeseriesresult = self.insert_timeseries_result(resultid=result.ResultID, timespacing=timestepvalue, timespacing_unitid=timestepunit.UnitsID)
 
                 # create time series result values
                 # todo: consider utc offset for each result value.
@@ -324,6 +324,7 @@ class sqlite():
 
         # insert these data
         values = [resultid, xloc, xloc_unitid, yloc, yloc_unitid, zloc, zloc_unitid, srsID, timespacing, timespacing_unitid, aggregationstatistic]
+        query = 'INSERT INTO TimeSeriesResults VALUES (%d %s %3.5f %d %3.5f %d %3.5f %d %d %3.5f %d ?)', values
         self.spatialDb.execute('INSERT INTO TimeSeriesResults VALUES (? ? ? ? ? ? ? ? ? ? ?)', values)
         self.spatial_connection.commit()
 

@@ -6,9 +6,9 @@ import pyspatialite.dbapi2 as sqlite3
 print 'This script will perform the following tasks: '
 print '1. Create an ODM2 database '
 print '2. Load the ODM2 CV terms '
-print '3. Create a database load script containing no sample data (odm2_empty.sql)'
+print '3. Create a database load script containing no sample data (../tests/data/empty_dump.sql)'
 print '4. Load sample data into the ODM2 database '
-print '5. Create a database load script containing sample data (odm2_pop.sql) \n\n'
+print '5. Create a database load script containing sample data (../tests/data/populated_dump.sql) \n\n'
 
 
 # cannot get in-memory, shared cache to work!
@@ -35,7 +35,7 @@ print 'done'
 cvload.load_cv("sqlite:///"+dbpath)
 
 # create empty database SQL dump file
-with open('odm2_empty.sql', 'w') as f:
+with open('../tests/data/empty_dump.sql', 'w') as f:
     for line in conn.iterdump():
         f.write('%s\n' % line)
 
@@ -64,7 +64,7 @@ conn.commit()
 print 'done'
 
 # create populated database SQL dump file
-with open('odm2_pop.sql', 'w') as f:
+with open('../tests/data/populated_dump.sql', 'w') as f:
     for line in conn.iterdump():
         f.write('%s\n' % line)
 

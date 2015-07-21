@@ -2,6 +2,6 @@
 w = 350
 h = 350
 showinfo = True
-showwarning = True
+showwarning = False
 showcritical = True
 showerror = True

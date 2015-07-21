@@ -314,7 +314,14 @@ class SmoothLineWithArrow(SmoothLine):
     def __init__(self, Points, ArrowBitmap, LineColor="#3F51B5", LineStyle="Solid", LineWidth = 4):
         super(SmoothLineWithArrow, self).__init__(Points, LineColor, LineStyle, LineWidth)
         self.Arrow = ScaledBitmapWithRotation(Angle=self.GetAngleRadians(), Bitmap=ArrowBitmap, XY=self.MidPoint)
+        self.Arrow.line = self  # This allows us to remove the entire object given a reference to just the arrow
 
     def _Draw(self, dc , WorldToPixel, ScaleWorldToPixel, HTdc=None):
         super(SmoothLineWithArrow,self)._Draw(dc , WorldToPixel, ScaleWorldToPixel, HTdc=None)
         self.Arrow._Draw(dc, WorldToPixel, ScaleWorldToPixel, HTdc=None)
+
+    # FloatCanvas' RemoveObject function does not remove the arrow,
+    # so we use this helper function instead which takes a FloatCanvas obj
+    def Remove(self, FC):
+        FC.RemoveObject(self)
+        FC.RemoveObject(self.Arrow)

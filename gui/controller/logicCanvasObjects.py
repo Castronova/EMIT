@@ -281,7 +281,7 @@ class ScaledBitmapWithRotation(FC.ScaledBitmap):
         self.LastRotationAngle = 0.0
 
     def _Draw(self, dc , WorldToPixel, ScaleWorldToPixel, HTdc=None):
-        Img = self.Image.Rotate(self.RotationAngle, (0,0))
+        Img = self.Image.Rotate(self.RotationAngle, (0,0), interpolating=True)
         self.Height = Img.Height
         self.ImageMidPoint = (Img.Width/2, Img.Height/2)
 

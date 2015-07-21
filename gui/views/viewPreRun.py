@@ -206,7 +206,18 @@ class PageTwo(wx.Panel):
         grid.AutoSizeColumn(3)
         grid.AutoSizeColumn(4)
         grid.AutoSizeColumn(5)
-        grid.EnableEditing(False)
+        # grid.EnableEditing(True)
+        # attr.SetReadOnly(isReadOnly=False)
+        # self.AlternateRowColor(grid)  # In case we want to alternate the row color.
+
+    def AlternateRowColor(self, grid):
+        for i in range(1, 5, 2):
+            grid.SetCellBackgroundColour(i, 0, wx.GREEN)
+            grid.SetCellBackgroundColour(i, 1, wx.GREEN)
+            grid.SetCellBackgroundColour(i, 2, wx.GREEN)
+            grid.SetCellBackgroundColour(i, 3, wx.GREEN)
+            grid.SetCellBackgroundColour(i, 4, wx.GREEN)
+            grid.SetCellBackgroundColour(i, 5, wx.GREEN)
 
     def PopulateGrid(self, grid):
         print "here i am , this happened"

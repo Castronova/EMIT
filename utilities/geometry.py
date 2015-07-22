@@ -16,6 +16,15 @@ def build_point_geometries(x, y, geometryType='gdal'):
     :return: numpy array of Point objects
     """
 
+    # try to convert x,y coordinates into numpy arrays
+    try:
+        if not isinstance(x, numpy.ndarray):
+            x = numpy.array(x)
+        if not isinstance(y, numpy.ndarray):
+            y = numpy.array(y)
+    except:
+        elog.critical('Could not convert the x,y coordinates into numpy array objects!')
+
     gtype = geometryType.lower()
     if gtype != 'gdal' and gtype != 'shapely':
         elog.error("Could not build point geometries: invalid geometryType detected, %s" % geometryType)
@@ -34,3 +43,7 @@ def build_point_geometries(x, y, geometryType='gdal'):
             geoms[i] = point
 
     return geoms
+
+def build_polygon_geometries(xlist, ylist, geometruType='gdal'):
+    # todo: need to implement this!
+    pass

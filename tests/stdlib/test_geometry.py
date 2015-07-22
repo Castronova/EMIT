@@ -8,6 +8,7 @@ from stdlib import *
 import datetime
 from utilities import spatial
 from advanced_geometry import *
+import random
 
 class testGeometry(unittest.TestCase):
 
@@ -19,7 +20,6 @@ class testGeometry(unittest.TestCase):
 
     def test_point_grid(self):
 
-        import random
 
         # generate point geometries
         pt_geoms = []
@@ -41,4 +41,4 @@ class testGeometry(unittest.TestCase):
 
 
 
-        print grid.get_time_slice(datetime.datetime(2014,1,10,6,0,0))
+        # print grid.get_time_slice(datetime.datetime(2014,1,10,6,0,0))

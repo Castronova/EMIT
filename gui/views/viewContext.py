@@ -349,7 +349,12 @@ class ContextMenu(wx.Menu):
         id = self.parent.GetFirstSelected()
         resultID = obj.GetItem(id, 0).GetText()
         x, y, resobj = self.getData(resultID)
-        data = [[x], [y], [resobj]]
+        data = []
+        j = 0  # j acts like i but its for the y variable
+        for i in x:
+            data.append([i, y[j]])
+            j += 1
+
         convert.writerows(data)
 
 

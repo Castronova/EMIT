@@ -554,28 +554,29 @@ class ObjectListView(wx.ListCtrl):
         """
         Resize our auto sizing columns to match the data
         """
-        # for (iCol, col) in enumerate(self.columns):
-        #     if col.width == wx.LIST_AUTOSIZE:
-        #         self.SetColumnWidth(iCol, wx.LIST_AUTOSIZE)
-        #
-        #         # The new width must be within our minimum and maximum
-        #         colWidth = self.GetColumnWidth(iCol)
-        #         boundedWidth = col.CalcBoundedWidth(colWidth)
-        #         if colWidth != boundedWidth:
-        #             self.SetColumnWidth(iCol, boundedWidth)
-        #
-        #     if iCol == 6:
-        #         # This is the only place that really lets you resize the columns
-        #         self.SetColumnWidth(6, 1800)
+        # todo: the try gives error when clicking on plot from database, fix this.
+        try:
+            self.SetColumnWidth(0, 100)
+            self.SetColumnWidth(1, 175)
+            self.SetColumnWidth(2, 275)
+            self.SetColumnWidth(3, 150)
+            self.SetColumnWidth(4, 150)
+            self.SetColumnWidth(5, 250)
+            self.SetColumnWidth(6, 1800)
+        except:
+            for (iCol, col) in enumerate(self.columns):
+                if col.width == wx.LIST_AUTOSIZE:
+                    self.SetColumnWidth(iCol, wx.LIST_AUTOSIZE)
 
-        self.SetColumnWidth(0, 100)
-        self.SetColumnWidth(1, 175)
-        self.SetColumnWidth(2, 275)
-        self.SetColumnWidth(3, 150)
-        self.SetColumnWidth(4, 150)
-        self.SetColumnWidth(5, 250)
-        self.SetColumnWidth(6, 1800)
+                    # The new width must be within our minimum and maximum
+                    colWidth = self.GetColumnWidth(iCol)
+                    boundedWidth = col.CalcBoundedWidth(colWidth)
+                    if colWidth != boundedWidth:
+                        self.SetColumnWidth(iCol, boundedWidth)
 
+                if iCol == 6:
+                    # This is the only place that really lets you resize the columns
+                    self.SetColumnWidth(6, 1800)
 
 
     def Check(self, modelObject):

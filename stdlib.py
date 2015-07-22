@@ -434,7 +434,7 @@ class ExchangeItem(object):
 
         # set initial value end index as the length of the geometery array
         if idx_end is None:
-            idx_end = len(self.__geoms2)
+            idx_end = len(self.__geoms2) + 1
         else:
             # add one to make return values from idx_start to idx_end inclusive
             idx_end += 1

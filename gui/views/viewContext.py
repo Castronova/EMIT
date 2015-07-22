@@ -12,6 +12,8 @@ from gui.controller.logicPreRun import logicPreRun
 import coordinator.engineAccessors as engine
 from gui import events
 from coordinator.emitLogging import elog
+import csv
+import os
 
 #todo:  this needs to be split up into view and logic code
 
@@ -329,9 +331,27 @@ class ContextMenu(wx.Menu):
         self.AppendItem(mmi)
         self.Bind(wx.EVT_MENU, self.OnDelete, mmi)
 
+        mmi = wx.MenuItem(self, wx.NewId(), 'Export')
+        self.AppendItem(mmi)
+        self.Bind(wx.EVT_MENU, self.onExport, mmi)
+
         # this is the list event from the right click
         self.__list_obj = None
         self.__list_id = None
+
+    def onExport(self, event):
+        currentdir = os.path.dirname(os.path.abspath(__file__))
+        connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/test_csv.csv'))
+
+        file = open(connections_txt, 'w')
+        convert = csv.writer(file, delimiter=',')
+        obj = self.__list_obj
+        id = self.parent.GetFirstSelected()
+        resultID = obj.GetItem(id, 0).GetText()
+        x, y, resobj = self.getData(resultID)
+        data = [[x], [y], [resobj]]
+        convert.writerows(data)
+
 
     def Selected(self, list_obj=None, list_id=None):
         if list_id is not None and list_obj is not None:
@@ -381,7 +401,7 @@ class ContextMenu(wx.Menu):
         id = self.parent.GetFirstSelected()
         while id != -1:
             # get the result
-            resultID = obj.GetItem(id,0).GetText()
+            resultID = obj.GetItem(id, 0).GetText()
 
             # get data for this row
             x,y, resobj = self.getData(resultID)

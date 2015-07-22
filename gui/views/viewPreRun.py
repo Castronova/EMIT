@@ -182,7 +182,7 @@ class PageTwo(wx.Panel):
 
                 if i['target_component_name'] not in model_name_list:
                     model_name_list.append(i['target_component_name'])
-                    for item in engineAccessors.getOutputExchangeItems(i['source_component_id'], returnGeoms=False):
+                    for item in engineAccessors.getOutputExchangeItems(i['target_component_id'], returnGeoms=False):
                         temp_list.append(item['name'])
                     output_name_list[i['target_component_name']] = temp_list
                     temp_list = []

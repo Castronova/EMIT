@@ -161,37 +161,46 @@ class PageOne(wx.Panel):
 class PageTwo(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
+        scrollWin = wx.ScrolledWindow(self, -1, size=(440, 325))
 
-        label = ""
         if len(engineAccessors.getAllLinks()) < 1:
-            label = "No links have been added"
+            wx.StaticText(scrollWin, id=wx.ID_ANY, label="No links have been added", pos=(10, 10))
         else:
-            label = "Specify data sets to be saved"
+            wx.StaticText(scrollWin, id=wx.ID_ANY, label="Specify output data sets to be saved", pos=(10, 10))
 
-        wx.StaticText(self, id=wx.ID_ANY, label=label, pos=(10, 10))
+            model_name_list = []
+            output_name_list = {}
+            temp_list = []
+            for i in engineAccessors.getAllLinks():
+                if i['source_component_name'] not in model_name_list:  # Outputs only
+                    model_name_list.append(i['source_component_name'])
+                    for item in engineAccessors.getOutputExchangeItems(i['source_component_id'], returnGeoms=False):
+                        item['name']
+                        temp_list.append(item['name'])
+                    output_name_list[i['source_component_name']] = temp_list
+                    temp_list = []
 
-        pos_y = 20
-        checkbox_list, outputs_list = [], []
-        left, right = "", ""
+                if i['target_component_name'] not in model_name_list:
+                    model_name_list.append(i['target_component_name'])
+                    for item in engineAccessors.getOutputExchangeItems(i['source_component_id'], returnGeoms=False):
+                        temp_list.append(item['name'])
+                    output_name_list[i['target_component_name']] = temp_list
+                    temp_list = []
 
-        #  Getting whats going to be displayed
-        for i in engineAccessors.getAllLinks():
-            for key, value in i.iteritems():
-                if key == 'output_name':
-                    left = value
-                elif key == 'source_component_name':
-                    right = value
+            y_pos = 30
+            count_checkboxes = 0
 
-            outputs_list.append({left: right})
+            for key, value in output_name_list.iteritems():
+                wx.StaticText(scrollWin, id=wx.ID_ANY, label=key, pos=(30, y_pos))
+                y_pos += 20
 
-        #  Create checkboxes dynamically, i is id and used for identifying each checkbox
-        i = 0
-        for j in outputs_list:
-            pos_y += 25
-            cb = wx.CheckBox(self, id=i, label=j.keys()[0] + " (" + j.values()[0] + ")", pos=(20, pos_y))
-            checkbox_list.append(cb)
-            i += 1
+                for i in value:
+                    cb = wx.CheckBox(scrollWin, id=count_checkboxes, label=i, pos=(50, y_pos))
+                    count_checkboxes += 1
+                    y_pos += 20
 
+            scrollWin.SetScrollbars(0, 30, 0, y_pos/30+1)
+            scrollWin.SetScrollRate(0, 15)  # Scroll speed
 
 
 class PageThree(wx.Panel):

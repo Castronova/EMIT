@@ -16,8 +16,8 @@ class slowloading(feed_forward.feed_forward_wrapper):
 
         cnt = 0
         for i in range(0, 50000000):
-            if cnt % 1000000 == 0:
-                elog.info("here")
+            # if cnt % 1000000 == 0:
+                # elog.info("here")
             cnt += i
         print "Done loading module"
 

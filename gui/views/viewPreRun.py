@@ -3,13 +3,14 @@ __author__ = 'Francisco'
 import wx
 import os
 import wx.grid
-from coordinator.engineAccessors import getAllLinks
-from coordinator.emitLogging import elog
+# from coordinator.engineAccessors import getAllLinks
+# from coordinator.emitLogging import elog
+from coordinator import engineAccessors
 
 
 class viewPreRun(wx.Frame):
-    def __init__(self):                                                         # this style makes the window non-resizable
-        wx.Frame.__init__(self, None, title="Pre Run", size=(450, 400), style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER)
+    def __init__(self):                                                     # this style makes the window non-resizable
+        wx.Frame.__init__(self, None, title="Pre Run", size=(450, 400), style=wx.DEFAULT_FRAME_STYLE & ~wx.RESIZE_BORDER)
 
         #  Variables
         self.panel = ""
@@ -157,134 +158,40 @@ class PageOne(wx.Panel):
         return loginfo
 
 
-
 class PageTwo(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
 
-        # # Variables
-        # self.parent = parent
-        # self.sizer = ""
-        # self.modelsLabel = ""
-        # self.modellistbox = ""
-        #
-        # self.gridbagsizer = wx.GridBagSizer(vgap=5, hgap=5)
-        #
-        # self.modelsLabel = wx.StaticText(self, id=-1, label="Models:", style=wx.ALIGN_LEFT)
-        # self.modellistbox = wx.ListBox(self, id=-1, size=(340, 100), choices=['testing a really looooooooooooooooooooooooooooooooooooooong name', 'model 2', 'models from the canvas', 'go here'])
-        #
-        # self.gridbagsizer.Add(self.modelsLabel, pos=(1, 1), flag=wx.ALL, border=5)
-        # self.gridbagsizer.Add(self.modellistbox, pos=(1, 2), flag=wx.ALL, border=5)
-        #
-        # self.SetSizer(self.gridbagsizer)
-        self.grid = wx.grid.Grid(parent=self, id=wx.ID_ANY, pos=(0, 0), size=(450, 150))
-        self.grid.CreateGrid(5, 6)  # Row, Col
-        self.grid.RowLabelSize = 0
-        self.grid.ColLabelSize = 20
-
-        self.grid.SetColLabelValue(0, "")
-        self.grid.SetColLabelValue(1, "ID")
-        self.grid.SetColLabelValue(2, "Input Name")
-        self.grid.SetColLabelValue(3, "Output Name")
-        self.grid.SetColLabelValue(4, "Source Component Name")
-        self.grid.SetColLabelValue(5, "Target Component Name")
-
-        attr = wx.grid.GridCellAttr()
-        attr.SetEditor(wx.grid.GridCellBoolEditor())
-        attr.SetRenderer(wx.grid.GridCellBoolRenderer())
-        self.grid.SetColAttr(0, attr)
-
-        # grid.Fit()
-
-        self.PopulateGrid(self.grid)
-        self.grid.AutoSizeColumn(0)
-        self.grid.AutoSizeColumn(1)
-        self.grid.AutoSizeColumn(2)
-        self.grid.AutoSizeColumn(3)
-        self.grid.AutoSizeColumn(4)
-        self.grid.AutoSizeColumn(5)
-        # grid.EnableEditing(True)
-        # attr.SetReadOnly(isReadOnly=False)
-        self.AlternateRowColor(self.grid)  # In case we want to alternate the row color.
-
-
-        self.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.onMouse)
-        self.Bind(wx.grid.EVT_GRID_SELECT_CELL, self.onCellSelected)
-        self.Bind(wx.grid.EVT_GRID_EDITOR_CREATED, self.onEditorCreated)
-
-    def onMouse(self, event):
-        if event.Col == 0:
-            wx.CallLater(100, self.toggleCheckbox)
-        event.Skip()
-
-    def toggleCheckbox(self):
-        self.checkbox.Value = not self.checkbox.Value
-        self.afterCheckbox(self.checkbox.Value)
-
-    def onEditorCreated(self, event):
-        print "hello there"
-        if event.Col == 0:
-            self.checkbox = event.Control
-            self.checkbox.WindowStyle |= wx.WANTS_CHARS
-            self.checkbox.Bind(wx.EVT_KEY_DOWN, self.onKeyDown)
-            self.checkbox.Bind(wx.EVT_CHECKBOX, self.onCheckbox)
-
-    def onKeyDown(self, event):
-        if event.KeyCode == wx.WXK_UP:
-            if self.grid.GridCursorRow > 0:
-                self.grid.DisableCellEditControl()
-                self.grid.MoveCursorUp(False)
-            elif event.KeyCode == wx.WXK_DOWN:
-                if self.grid.GridCursorRow < (self.grid.NumberRows-1):
-                    self.grid.DisableCellEditControl()
-                    self.grid.MoveCursorDown(False)
-            elif event.KeyCode == wx.WXK_LEFT:
-                if self.grid.GridCursorCol > 0:
-                    self.grid.DisableCellEditControl()
-                    self.grid.MoveCursorLeft(False)
-        elif event.KeyCode == wx.WXK_RIGHT:
-            if self.grid.GridCursorCol < (self.grid.NumberCols-1):
-                self.grid.DisableCellEditControl()
-                self.grid.MoveCursorRight(False)
+        label = ""
+        if len(engineAccessors.getAllLinks()) < 1:
+            label = "No links have been added"
         else:
+            label = "Specify data sets to be saved"
 
-            event.Skip()
+        wx.StaticText(self, id=wx.ID_ANY, label=label, pos=(10, 10))
 
-    def onCellSelected(self, event):
-        if event.Col == 0:
-            wx.CallAfter(self.grid.EnableCellEditControl)
-        event.Skip()
+        pos_y = 20
+        checkbox_list, outputs_list = [], []
+        left, right = "", ""
 
-    def onCheckbox(self, event):
-        self.afterCheckbox(event.IsChecked())
+        #  Getting whats going to be displayed
+        for i in engineAccessors.getAllLinks():
+            for key, value in i.iteritems():
+                if key == 'output_name':
+                    left = value
+                elif key == 'source_component_name':
+                    right = value
 
-    def afterCheckbox(self, checked):
-        print "You checked a box. Row = ", self.grid.GridCursorRow, checked
+            outputs_list.append({left: right})
 
-    def AlternateRowColor(self, grid):
-        color = "#AFFFBE"
-        for row in range(1, grid.GetNumberRows(), 2):
-            for col in range(0, grid.GetNumberCols()):
-                grid.SetCellBackgroundColour(row, col, color)  # Row, Col, color
+        #  Create checkboxes dynamically, i is id and used for identifying each checkbox
+        i = 0
+        for j in outputs_list:
+            pos_y += 25
+            cb = wx.CheckBox(self, id=i, label=j.keys()[0] + " (" + j.values()[0] + ")", pos=(20, pos_y))
+            checkbox_list.append(cb)
+            i += 1
 
-    def PopulateGrid(self, grid):
-        row = 0
-        if len(getAllLinks()) > 0:
-            for i in getAllLinks():
-                for key, value in i.iteritems():
-                    if key == 'id':
-                        grid.SetCellValue(row=row, col=1, s=value)
-                    elif key == 'input_name':
-                        grid.SetCellValue(row=row, col=2, s=value)
-                    elif key == 'output_name':
-                        grid.SetCellValue(row=row, col=3, s=value)
-                    elif key == 'source_component_name':
-                        grid.SetCellValue(row=row, col=4, s=value)
-                    elif key == 'target_component_name':
-                        grid.SetCellValue(row=row, col=5, s=value)
-                row += 1
-        else:
-            elog.info("No Links have been added")
 
 
 class PageThree(wx.Panel):

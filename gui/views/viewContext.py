@@ -526,7 +526,6 @@ class SimulationContextMenu(ContextMenu):
                 # todo: plot more than just this first variable
                 key = results.keys()[0]
 
-
                 resobj = results[key][0][2]
 
                 # set metadata based on first series
@@ -576,20 +575,8 @@ class SimulationContextMenu(ContextMenu):
             obj, id = self.Selected()
             id = self.parent.GetFirstSelected()
             simulationID = obj.GetItem(id, 0).GetText()
-            # results = self.getData(simulationID)# This returns a dictionary with an array of arrays as the dictionary value
 
-            # dates, values = [], []
-            # dates = results['streamflow'][-1][0]
-            # values = results['streamflow'][-1][1]
-            #
-            # data = []
-            # j = 0  # j acts like i but its for the values variable
-            # for i in dates:
-            #     data.append([i, values[j]])  # its done this way to dates and values are two different columns
-            #     j += 1
-            #
-            # convert.writerows(data)
-
+            #  The if below was taken from self.getData
             session = self.parent.getDbSession()
             if session is not None:
 
@@ -608,12 +595,16 @@ class SimulationContextMenu(ContextMenu):
                         dates.append(val.ValueDateTime)
                         values.append(val.DataValue)
 
+                    #  Organzing data so its in two columns
                     data = []
-                    j = 0
+                    j = 0  # j acts like i but its for the values variable
                     for i in dates:
                         data.append([i, values[j]])
                         j += 1
 
+                    #  Writing to CSV file
                     convert.writerows([[variable_name]])
                     convert.writerows(data)
+
+            file.close()
 

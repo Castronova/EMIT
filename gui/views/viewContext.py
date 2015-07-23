@@ -340,22 +340,28 @@ class ContextMenu(wx.Menu):
         self.__list_id = None
 
     def onExport(self, event):
-        currentdir = os.path.dirname(os.path.abspath(__file__))
-        connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/test_csv.csv'))
+        #  User will choose where to save the csv file
+        save = wx.FileDialog(self.parent.GetTopLevelParent(), message="Choose Path",
+                             wildcard="CSV Files (*.csv)|*.csv", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+        if save.ShowModal() == wx.ID_OK:
+            path = save.GetPath()
+            if path[-4] != '.':
+                path += '.csv'
+            file = open(path, 'w')
+            convert = csv.writer(file, delimiter=',')
 
-        file = open(connections_txt, 'w')
-        convert = csv.writer(file, delimiter=',')
-        obj = self.__list_obj
-        id = self.parent.GetFirstSelected()
-        resultID = obj.GetItem(id, 0).GetText()
-        x, y, resobj = self.getData(resultID)
-        data = []
-        j = 0  # j acts like i but its for the y variable
-        for i in x:
-            data.append([i, y[j]])
-            j += 1
+            obj = self.__list_obj
+            id = self.parent.GetFirstSelected()
+            resultID = obj.GetItem(id, 0).GetText()
 
-        convert.writerows(data)
+            dates, values, resobj = self.getData(resultID)
+            data = []
+            j = 0  # j acts like i but its for the values variable
+            for i in dates:
+                data.append([i, values[j]])  # its done this way to dates and values are two different columns
+                j += 1
+            convert.writerows(data)
+            file.close()
 
 
     def Selected(self, list_obj=None, list_id=None):
@@ -370,7 +376,7 @@ class ContextMenu(wx.Menu):
         id = self.__list_id
         filename = obj.GetItem(id).GetText()
 
-        Publisher.sendMessage('AddModel',filepath=filename, x = 0, y = 0) # sends message to CanvasController
+        Publisher.sendMessage('AddModel', filepath=filename, x=0, y=0) # sends message to CanvasController
 
     def getData(self,resultID):
         session = self.parent.getDbSession()
@@ -555,3 +561,59 @@ class SimulationContextMenu(ContextMenu):
         # plot the data
         PlotFrame.plot(xlist=x_series, ylist=y_series, labels=labels)
         PlotFrame.Show()
+
+    def onExport(self, event):
+        #  User will choose where to save the csv file
+        save = wx.FileDialog(self.parent.GetTopLevelParent(), message="Choose Path",
+                             wildcard="CSV Files (*.csv)|*.csv", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+        if save.ShowModal() == wx.ID_OK:
+            path = save.GetPath()
+            if path[-4] != '.':
+                path += '.csv'
+            file = open(path, 'w')
+            convert = csv.writer(file, delimiter=',')
+
+            obj, id = self.Selected()
+            id = self.parent.GetFirstSelected()
+            simulationID = obj.GetItem(id, 0).GetText()
+            # results = self.getData(simulationID)# This returns a dictionary with an array of arrays as the dictionary value
+
+            # dates, values = [], []
+            # dates = results['streamflow'][-1][0]
+            # values = results['streamflow'][-1][1]
+            #
+            # data = []
+            # j = 0  # j acts like i but its for the values variable
+            # for i in dates:
+            #     data.append([i, values[j]])  # its done this way to dates and values are two different columns
+            #     j += 1
+            #
+            # convert.writerows(data)
+
+            session = self.parent.getDbSession()
+            if session is not None:
+
+                readsim = readSimulation(session)
+                readres = readResults(session)
+                results = readsim.getResultsBySimulationID(simulationID)
+
+                for r in results:
+
+                    variable_name = r.VariableObj.VariableCode
+                    result_values = readres.getTimeSeriesValuesByResultId(int(r.ResultID))
+
+                    dates = []
+                    values = []
+                    for val in result_values:
+                        dates.append(val.ValueDateTime)
+                        values.append(val.DataValue)
+
+                    data = []
+                    j = 0
+                    for i in dates:
+                        data.append([i, values[j]])
+                        j += 1
+
+                    convert.writerows([[variable_name]])
+                    convert.writerows(data)
+

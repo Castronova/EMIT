@@ -13,7 +13,7 @@ import coordinator.engineAccessors as engine
 from gui import events
 from coordinator.emitLogging import elog
 import csv
-import datetime
+import time
 
 #todo:  this needs to be split up into view and logic code
 
@@ -358,13 +358,12 @@ class ContextMenu(wx.Menu):
 
             writer.writerow(["#-------------------------Disclaimer:  This is a data set that was exported by EMIT ... use at your own risk..."])
             writer.writerow(["#"])
-            try:
-                writer.writerow(["#Date Created: %s" % str(resobj.ResultDateTime.date().isoformat())])
-            except:
-                writer.writerow(["#Date Created: %s" % str("Unavailable")])
-            writer.writerow(["#Date Exported: %s" % str(datetime.date.today().isoformat())])
-            writer.writerow(["#Variable: %s" % str(resobj.VariableObj.VariableNameCV)])
+            writer.writerow(["#Date Created: %s" % str(resobj.FeatureActionObj.ActionObj.BeginDateTime.strftime("%m/%d/%Y"))])
+            writer.writerow(["#Date Exported: %s" % str(getTodayDate())])
+            writer.writerow(["Result ID: %s" % str(resobj.ResultID)])
+            writer.writerow(["#Variable: %s" % str(resobj.VariableObj.VariableCode)])
             writer.writerow(["#Unit: %s" % str(resobj.UnitObj.UnitsAbbreviation)])
+            writer.writerow(["#Organization: %s" % str(resobj.FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName)])
             writer.writerow(["#"])
             writer.writerow(["#-------------------------End Disclaimer"])
             writer.writerow(["#"])
@@ -624,3 +623,5 @@ class SimulationContextMenu(ContextMenu):
 
             file.close()
 
+def getTodayDate():
+    return time.strftime("%m/%d/%Y")

@@ -348,19 +348,32 @@ class ContextMenu(wx.Menu):
             if path[-4] != '.':
                 path += '.csv'
             file = open(path, 'w')
-            convert = csv.writer(file, delimiter=',')
+
+            writer = csv.writer(file, delimiter=',')
 
             obj = self.__list_obj
             id = self.parent.GetFirstSelected()
             resultID = obj.GetItem(id, 0).GetText()
-
             dates, values, resobj = self.getData(resultID)
+
+            writer.writerow(["#-------------------------Disclaimer:  This is a data set that was exported by EMIT ... use at your own risk..."])
+            writer.writerow(["#"])
+            writer.writerow(["#Date Created: %s" % str(resobj.ResultDateTime.date().isoformat())])
+            writer.writerow(["#Date Exported: %s" % str(resobj.ResultDateTime.date().today().isoformat())])
+            writer.writerow(["#Variable: %s" % str(resobj.VariableObj.VariableNameCV)])
+            writer.writerow(["#Unit: %s" % str(resobj.UnitObj.UnitsAbbreviation)])
+            writer.writerow(["#"])
+            writer.writerow(["#-------------------------End Disclaimer"])
+            writer.writerow(["#"])
+            writer.writerow(["Dates", "Values"])
+
             data = []
             j = 0  # j acts like i but its for the values variable
             for i in dates:
                 data.append([i, values[j]])  # its done this way to dates and values are two different columns
                 j += 1
-            convert.writerows(data)
+            writer.writerows(data)
+
             file.close()
 
 

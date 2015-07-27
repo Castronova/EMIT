@@ -13,7 +13,7 @@ import coordinator.engineAccessors as engine
 from gui import events
 from coordinator.emitLogging import elog
 import csv
-import os
+import datetime
 
 #todo:  this needs to be split up into view and logic code
 
@@ -358,8 +358,11 @@ class ContextMenu(wx.Menu):
 
             writer.writerow(["#-------------------------Disclaimer:  This is a data set that was exported by EMIT ... use at your own risk..."])
             writer.writerow(["#"])
-            writer.writerow(["#Date Created: %s" % str(resobj.ResultDateTime.date().isoformat())])
-            writer.writerow(["#Date Exported: %s" % str(resobj.ResultDateTime.date().today().isoformat())])
+            try:
+                writer.writerow(["#Date Created: %s" % str(resobj.ResultDateTime.date().isoformat())])
+            except:
+                writer.writerow(["#Date Created: %s" % str("Unavailable")])
+            writer.writerow(["#Date Exported: %s" % str(datetime.date.today().isoformat())])
             writer.writerow(["#Variable: %s" % str(resobj.VariableObj.VariableNameCV)])
             writer.writerow(["#Unit: %s" % str(resobj.UnitObj.UnitsAbbreviation)])
             writer.writerow(["#"])

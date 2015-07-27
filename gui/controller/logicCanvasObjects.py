@@ -318,7 +318,8 @@ class SmoothLineWithArrow(SmoothLine):
 
     def _Draw(self, dc , WorldToPixel, ScaleWorldToPixel, HTdc=None):
         super(SmoothLineWithArrow,self)._Draw(dc , WorldToPixel, ScaleWorldToPixel, HTdc=None)
-        self.Arrow._Draw(dc, WorldToPixel, ScaleWorldToPixel, HTdc=None)
+        # Uncomment the line below if we figure out how to bind to the entire SmoothLineWithArrow object
+        # self.Arrow._Draw(dc, WorldToPixel, ScaleWorldToPixel, HTdc=None)
 
     # FloatCanvas' RemoveObject function does not remove the arrow,
     # so we use this helper function instead which takes a FloatCanvas obj

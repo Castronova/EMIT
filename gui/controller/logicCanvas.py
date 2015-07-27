@@ -165,6 +165,7 @@ class LogicCanvas(ViewCanvas):
     def OnMove(self, event):
         if self.Moving:
             cursorPos = event.GetPosition()
+            # The following keeps the box within the canvas
             # Right
             if cursorPos.x < self.boxBoundaries[0]:
                 cursorPos.x = self.boxBoundaries[0]
@@ -180,7 +181,7 @@ class LogicCanvas(ViewCanvas):
 
             deltaX = cursorPos.x - self.lastPos.x
             deltaY = self.lastPos.y - cursorPos.y
-            dxy = (deltaX,deltaY)
+            dxy = (deltaX, deltaY)
 
             # This moves the boxes and the label together
             self.MovingObject.Move(dxy)

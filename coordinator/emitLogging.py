@@ -155,7 +155,7 @@ class Log(object):
         fileinfo = file.readlines()
         boolist = []
 
-        for i in range(3, len(fileinfo)):
+        for i in range(0, len(fileinfo)):
             value = fileinfo[i].split(' = ')
             value = value[1].split('\n')
             if value[0] == 'True':
@@ -169,6 +169,5 @@ class Log(object):
         self.showerror = boolist[3]
 
         file.close()
-
 
 elog = Log()

@@ -5,7 +5,8 @@ import wx
 from gui.views.viewEMIT import ViewEMIT
 import coordinator.engineAccessors as engine
 from gui.controller.logicFileDrop import LogicFileDrop
-
+from environment import env_vars
+from ODM2PythonAPI.src.api.ODMconnection import dbconnection
 
 class LogicEMIT(ViewEMIT):
     def __init__(self, parent):
@@ -19,6 +20,15 @@ class LogicEMIT(ViewEMIT):
         engine.connectToDbFromFile(dbtextfile=connections_txt)
 
         # engine.createSQLiteInMemory()
+        # Create or connect to local database
+        db_path = os.path.abspath(os.path.join(currentdir, '../../db/odm2.db'))
+        if os.path.exists(db_path):
+            pass
+        else:
+            # Create
+            empty_dump_script = open('../../data/empty_dump.sql','r').read()
+            
+
 
         dropTarget = LogicFileDrop(self.Canvas, self.FloatCanvas)
         self.SetDropTarget(dropTarget)

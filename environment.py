@@ -2,6 +2,7 @@ __author__ = 'mike'
 import os
 from coordinator.emitLogging import elog
 import ast
+import ConfigParser
 
 # This is an interface for the settings file in the data directory
 class EnvironmentVars(object):
@@ -17,10 +18,20 @@ class EnvironmentVars(object):
             self.__dict__ = EnvironmentVars.__monostate
 
     def parse_settings_file(self):
+        '''
+        showinfo = True
+        showwarning = False
+        showcritical = True
+        showerror = True
+        '''
+
         currentdir = os.path.dirname(os.path.abspath(__file__))
-        self.settingspath = os.path.abspath(os.path.join(currentdir, './data/settings'))
+        self.settingsfile = os.path.abspath(os.path.join(currentdir, './app_data/config/.settings.ini'))
+        config = ConfigParser.ConfigParser()
+        config.read(self.settingsfile)
+
         d = {}
-        with open(self.settingspath, 'r') as f:
+        with open(self.settingsfile, 'r') as f:
             lines = f.readlines()
             for line in lines:
                 if '=' in line:
@@ -38,6 +49,12 @@ class EnvironmentVars(object):
     def set_environment_variable(self, var, value):
         try:
             setattr(self, var, value)
+            if os.path.exists(self.settingsfile):
+                print "here"
+            if var not in open(self.settingsfile).read():
+                with open(self.settingsfile, "w+") as f:
+                    pass
+                    # f.write("\n" + var + " = " + value)
         except Exception:
             elog.warning("Invalid environment variable or value.")
 

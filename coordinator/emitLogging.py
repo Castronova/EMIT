@@ -150,7 +150,7 @@ class Log(object):
 
     def verbosity(self):
         currentdir = os.path.dirname(os.path.abspath(__file__))
-        self.settingspath = os.path.abspath(os.path.join(currentdir, '../data/settings'))
+        self.settingspath = os.path.abspath(os.path.join(currentdir, '../app_data/config/.settings.ini'))
         file = open(self.settingspath, 'r')
         fileinfo = file.readlines()
         boolist = []

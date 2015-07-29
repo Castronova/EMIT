@@ -363,18 +363,9 @@ class viewMenuBar(wx.Frame):
         file = open(self.settingspath, 'r')
         fileinfo = file.readlines()
 
-        value = fileinfo[1].split(' = ')
-        value = value[1].split('\n')
-        w = value[0]
-        w = int(w)
-        value = fileinfo[2].split(' = ')
-        value = value[1].split('\n')
-        h = value[0]
-        h = int(h)
-
         boolist = []
 
-        for i in range(3, len(fileinfo)):
+        for i in range(0, len(fileinfo)):
             value = fileinfo[i].split(' = ')
             value = value[1].split('\n')
             if value[0] == 'True':
@@ -389,7 +380,7 @@ class viewMenuBar(wx.Frame):
 
         file.close()
 
-        wx.Frame.__init__(self, parent=None, id=-1, title="Settings...", pos=wx.DefaultPosition, size=wx.Size(w, h))
+        wx.Frame.__init__(self, parent=None, id=-1, title="Settings...", pos=wx.DefaultPosition, size=wx.Size(350, 350))
         self.panel = wx.Panel(self)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -430,10 +421,7 @@ class viewMenuBar(wx.Frame):
         # self.OnTimer()
         cb = self.getCheckboxValue()
         file = open(self.settingspath, 'w')
-        file.writelines(['0\n',
-                         'w = 350\n',
-                         'h = 350\n',
-                         'showinfo = '+str(cb.values()[0])+'\n',
+        file.writelines(['showinfo = '+str(cb.values()[0])+'\n',
                          'showwarning = '+str(cb.values()[1])+'\n',
                          'showcritical = '+str(cb.values()[2]+'\n'),
                          'showerror = '+str(cb.values()[3]+'\n')])

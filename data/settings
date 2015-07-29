@@ -1,4 +1,4 @@
 showinfo = True
 showwarning = False
-showcritical = True
-showerror = True
+showcritical = False
+showerror = False

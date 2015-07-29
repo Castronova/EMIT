@@ -5,7 +5,7 @@ import wx
 from gui.views.viewEMIT import ViewEMIT
 import coordinator.engineAccessors as engine
 from gui.controller.logicFileDrop import LogicFileDrop
-import pyspatialite.dbapi2 as sqlite3
+# import pyspatialite.dbapi2 as sqlite3
 from environment import env_vars
 from ODM2PythonAPI.src.api.ODMconnection import dbconnection
 

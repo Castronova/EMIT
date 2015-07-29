@@ -9,7 +9,6 @@ def Close():
     e.setTasks(task)
     return 1
 
-
 def addModel(id=None, attrib=None):
     e = Engine()
     kwargs = dict(attrib=attrib, id=id, event='onModelAdded')
@@ -18,7 +17,7 @@ def addModel(id=None, attrib=None):
 
     e.thread = Thread(target=e.check_for_process_results)
     e.thread.start()
-    # e.thread.join()
+    e.thread.join()
 
 def createSQLiteInMemory(dbtextfile=None):
     e = Engine()

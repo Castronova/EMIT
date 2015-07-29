@@ -785,8 +785,6 @@ class LogicCanvas(ViewCanvas):
     def loadsimulation(self, file):
 
         # TODO: This needs to be refactored to remove 'for' looping
-        tree = et.parse(file)
-
         self.loadingpath = file
 
         tree = et.parse(file)

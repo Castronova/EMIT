@@ -25,18 +25,19 @@ class LogicEMIT(ViewEMIT):
         # todo: Delete this
         # engine.createSQLiteInMemory()
         # Create or connect to local database, create local folder in db
-        # env_vars.set_environment_variable('LOCAL_DB_BASE', 'test')
-        # db_path = os.path.abspath(os.path.join(currentdir, '../../db/local.db'))
-        # if os.path.exists(env_vars.LOCAL_DB_PATH):
-        #     odm2_db = sqlite3.connect(db_path)
-        #
-        # elif os.path.exists(env_vars.LOCAL_DB_BASE+"/local.db"):
-        #     odm2_db = sqlite3.connect(db_path)
-        # else:
-        #     # Create local.db
-        #     odm2_db = sqlite3.connect(env_vars.LOCAL_DB_BASE+"/local.db")
-        #     empty_dump_script = open(env_vars.LOCAL_DB_BASE+".dbload",'r').read()
-        #     odm2_db.executescript(empty_dump_script)
+        env_vars.set_environment_variable('LOCAL_DB_PATH', 'test')
+        db_path = os.path.abspath(os.path.join(currentdir, '../../db/local.db'))
+
+        if os.path.exists(env_vars.LOCAL_DB_PATH):
+            odm2_db = sqlite3.connect(db_path)
+
+        elif os.path.exists(env_vars.LOCAL_DB_PATH+"/local.db"):
+            odm2_db = sqlite3.connect(db_path)
+        else:
+            # Create local.db
+            odm2_db = sqlite3.connect(env_vars.LOCAL_DB_PATH+"/local.db")
+            empty_dump_script = open(env_vars.LOCAL_DB_PATH+".dbload",'r').read()
+            odm2_db.executescript(empty_dump_script)
 
         # todo: this path should come from the app settings file, not hardcoded
         filepath = os.getcwd() + "/app_data/db/local.db" # The path of where the database is created

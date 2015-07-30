@@ -4,10 +4,10 @@ import os
 import wx
 from gui.views.viewEMIT import ViewEMIT
 import coordinator.engineAccessors as engine
-from gui.controller.logicFileDrop import LogicFileDrop
+# from gui.controller.logicFileDrop import LogicFileDrop
 # import pyspatialite.dbapi2 as sqlite3
 from environment import env_vars
-from ODM2PythonAPI.src.api.ODMconnection import dbconnection
+# from ODM2PythonAPI.src.api.ODMconnection import dbconnection
 
 class LogicEMIT(ViewEMIT):
     def __init__(self, parent):
@@ -36,8 +36,8 @@ class LogicEMIT(ViewEMIT):
         #     odm2_db.executescript(empty_dump_script)
 
 
-        dropTarget = LogicFileDrop(self.Canvas, self.FloatCanvas)
-        self.SetDropTarget(dropTarget)
+        # dropTarget = LogicFileDrop(self.Canvas, self.FloatCanvas)
+        # self.SetDropTarget(dropTarget)
 
         self.binding()
 

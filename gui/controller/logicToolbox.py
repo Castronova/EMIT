@@ -11,7 +11,7 @@ from wx.lib.pubsub import pub as Publisher
 from os.path import join, dirname, abspath
 import ConfigParser
 import fnmatch
-from logicFileDrop import filepath
+# from logicFileDrop import filepath
 from coordinator.emitLogging import elog
 
 
@@ -187,22 +187,20 @@ class LogicToolbox(ViewToolbox):
         id = event.GetItem()
         filename = id.GetText()
         try:  # Its in a try because clicking on a folder returns an error.
-            fullpath = self.filepath[filename]
-            filenames = []
-            filenames.append(fullpath)
 
-            originx, originy = self.p.GetParent().FloatCanvas.WorldToPixel(self.p.GetParent().Canvas.GetPosition())
+            filename = self.filepath[filename]
 
             # Generate random coordinates about the center of the canvas
+            originx, originy = self.p.GetParent().FloatCanvas.WorldToPixel(self.p.GetParent().Canvas.GetPosition())
             x = random.randint(-200, 200)
             y = random.randint(-200, 200)
-            nx = (originx + x)
-            ny = (originy + y)
 
-            # Send the filepath to the FileDrop class in CanvasController
-            Publisher.sendMessage('toolboxclick', x=nx, y=ny, filenames=filenames)
-        except:
-            elog.error("Cannot load folders unto the canvas")
+            # Send the message to logicCanvas
+            # todo: replace with custom event
+            Publisher.sendMessage('AddModel', filepath=filename, x=x, y=y, uniqueId = None, title = None)
+
+        except Exception, e:
+            elog.error(e)
             pass
 
     def OnItemContextMenu(self, evt):

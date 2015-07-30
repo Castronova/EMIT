@@ -155,18 +155,26 @@ class Log(object):
         fileinfo = file.readlines()
         boolist = []
 
-        for i in range(0, len(fileinfo)):
-            value = fileinfo[i].split(' = ')
-            value = value[1].split('\n')
-            if value[0] == 'True':
-                boolist.append(True)
-            else:
-                boolist.append(False)
+        # for i in range(0, len(fileinfo)):
+        #     value = fileinfo[i].split(' = ')
+        #     value = value[1].split('\n')
+        #     if value[0] == 'True':
+        #         boolist.append(True)
+        #     else:
+        #         boolist.append(False)
 
-        self.showinfo = boolist[0]
-        self.showwarning = boolist[1]
-        self.showcritical = boolist[2]
-        self.showerror = boolist[3]
+        # self.showinfo = boolist[0]
+        # self.showwarning = boolist[1]
+        # self.showcritical = boolist[2]
+        # self.showerror = boolist[3]
+        # TODO: CHANGE THIS BACK !!!!
+        # TODO: CHANGE THIS BACK
+        self.showinfo = True
+        self.showwarning = False
+        self.showcritical = True
+        self.showerror = True
+        # TODO: CHANGE THIS BACK
+        # TODO: CHANGE THIS BACK !!!!
 
         file.close()
 

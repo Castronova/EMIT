@@ -80,7 +80,7 @@ class LogicDirectory(ViewDirectory):
             # print "You have returned home: ", dirpath
             self.dirCtrl.clearItems()
         except:
-            elog.error('ERROR | Home Not Defined')
+            elog.error('Home Not Defined')
 
     def OnUpClick(self, event):
         parent = os.path.abspath(os.path.join(self.dirCtrl.getcurrentdirectory(), os.pardir))

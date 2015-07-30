@@ -33,7 +33,7 @@ class EventManager(object):
             return self.__handlers[name]
         else:
             # ignore if no handlers are assigned, but print warning message to log
-            elog.warning('WARNING | No handlers for event: %s', name)
+            elog.warning('No handlers for event: %s', name)
 
             # raise Exception("No handlers for event: ", name)
 

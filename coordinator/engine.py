@@ -53,11 +53,11 @@ class Link(object):
 
     # todo: this should be replaced by accessors for each of the from_lc,to_lc,from_item,to_item
     def get_link(self):
-        elog.error('ERROR |[Deprecated] This function has been deprecated...do not use! ')
-        elog.error('ERROR | [Deprecated] main.py -> get_link()')
+        elog.error('[Deprecated] This function has been deprecated...do not use! ')
+        elog.error('[Deprecated] main.py -> get_link()')
         for caller in inspect.stack():
             if 'EMIT' in caller[1]:
-                elog.error('ERROR | [Deprecated Call Stack] ',caller[1],caller[3],caller[2])
+                elog.error('[Deprecated Call Stack] ',caller[1],caller[3],caller[2])
 
         return [self.__from_lc,self.__from_item], [self.__to_lc,self.__to_item]
 
@@ -143,7 +143,7 @@ class Model(object):
                 ii = self.__iei[k]
 
         if ii is None:
-            elog.error('ERROR | Could not find Input Exchange Item: '+value)
+            elog.error('Could not find Input Exchange Item: '+value)
 
         return ii
 
@@ -155,7 +155,7 @@ class Model(object):
                 oi = self.__oei[k]
 
         if oi is None:
-            elog.error('ERROR | Could not find Output Exchange Item: '+value)
+            elog.error('Could not find Output Exchange Item: '+value)
 
         return oi
 
@@ -168,7 +168,7 @@ class Model(object):
                 ii = self.__iei[k]
 
         if ii is None:
-            elog.error('ERROR |Could not find Input Exchange Item: '+value)
+            elog.error('Could not find Input Exchange Item: '+value)
 
         return ii
 
@@ -180,7 +180,7 @@ class Model(object):
                 oi = self.__oei[k]
 
         if oi is None:
-            elog.error('ERROR | Could not find Output Exchange Item: '+value)
+            elog.error('Could not find Output Exchange Item: '+value)
 
         return oi
 
@@ -281,7 +281,7 @@ class Coordinator(object):
             self.__default_db['id'] = db_id
             elog.info('Default database : %s'%self._db[db_id]['connection_string'])
         except:
-            elog.error('ERROR | could not find database: %s'%db_id)
+            elog.error('Could not find database: %s'%db_id)
 
     def get_new_id(self):
         self.__incr += 1
@@ -355,7 +355,7 @@ class Coordinator(object):
             # Make sure the series is not already in the canvas
             # List of canvas models are kept as a dict with keys in the format of 'NAME-ID'
             if inst.name()+'-'+resultid in self.__models:
-                elog.warning('WARNING | Series named '+inst.name()+' already exists in configuration')
+                elog.warning('Series named '+inst.name()+' already exists in configuration')
                 return None
 
             if id is None:
@@ -479,7 +479,7 @@ class Coordinator(object):
             # return link
             return link.get_id()
         else:
-            elog.warning('WARNING | Could Not Create Link :(')
+            elog.warning('Could Not Create Link :(')
             return None
 
     def add_link_by_name(self,from_id, from_item_name, to_id, to_item_name):
@@ -513,7 +513,7 @@ class Coordinator(object):
 
             return link
         else:
-            elog.warning('WARNING | Could Not Create Link :(')
+            elog.warning('Could Not Create Link :(')
 
     def get_from_links_by_model(self, model_id):
 
@@ -541,7 +541,7 @@ class Coordinator(object):
 
 
         if len(links) == 0:
-            elog.error('ERROR |  Could not find any links associated with model id: '+str(model_id))
+            elog.error('Could not find any links associated with model id: '+str(model_id))
 
         # todo: this should return a dict of link objects, NOT some random list
 
@@ -888,7 +888,7 @@ class Coordinator(object):
     def get_configuration_details(self,arg):
 
         if len(self.__models.keys()) == 0:
-            elog.warning('WARNING | no models found in configuration.')
+            elog.warning('No models found in configuration.')
 
         if arg.strip() == 'summary':
             elog.info('Here is everything I know about the current simulation...\n')
@@ -1058,7 +1058,7 @@ class Coordinator(object):
                 return {'success':True}
             except Exception, e:
                 elog.error(e)
-                elog.error('ERROR | Could not create connections from file ' + filepath)
+                elog.error('Could not create connections from file ' + filepath)
                 return {'success':False}
 
         else:
@@ -1160,7 +1160,7 @@ class Coordinator(object):
             return self.__models.values(), self.__links.values(), link_objs
 
         else:
-            elog.error('ERROR | Could not find path %s' % simulation_file)
+            elog.error('Could not find path %s' % simulation_file)
 
     def load_simulation2(self, file):
         pass
@@ -1297,7 +1297,7 @@ class Coordinator(object):
         db_id = args[0]
 
         if db_id not in self._db:
-            elog.error('ERROR | could not find database id: %s' % db_id)
+            elog.error('could not find database id: %s' % db_id)
             return
 
 
@@ -1382,7 +1382,7 @@ class Coordinator(object):
             elif arg[0] == 'info': print h.info()
 
             else:
-                print 'ERROR | command not recognized.  Type "help" for a complete list of commands.'
+                print 'Command not recognized.  Type "help" for a complete list of commands.'
 
 def main(argv):
     print '|-------------------------------------------------|'

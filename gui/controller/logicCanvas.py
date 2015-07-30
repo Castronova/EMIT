@@ -615,7 +615,7 @@ class LogicCanvas(ViewCanvas):
     def SaveSimulation(self, path):
 
         if len(self.models.keys()) == 0:
-            elog.warning('WARNING | Nothing to save!')
+            elog.warning('Nothing to save!')
             return
 
         # create an xml tree
@@ -766,8 +766,7 @@ class LogicCanvas(ViewCanvas):
             with open(path, 'w') as f:
                 f.write(prettyxml)
         except Exception, e:
-            elog.error('ERROR | An error occurred when attempting to save the project ')
-            elog.error('ERROR | EXECPTION MESSAGE ')
+            elog.error('An error occurred when attempting to save the project ')
             elog.error(e)
 
         elog.info('Configuration Saved Successfully! ')

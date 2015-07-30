@@ -134,10 +134,10 @@ def validate_config_ini(ini_path):
                     module = imp.load_source(filename.split('.')[0], abspath)
                     m = getattr(module, classname)
                 except:
-                    elog.error('ERROR | Configuration Parsing Error: '+classname+' is not a valid class name')
+                    elog.error('Configuration Parsing Error: '+classname+' is not a valid class name')
 
     except Exception, e:
-        elog.error('ERROR | [Configuration Parsing Error] '+str(e))
+        elog.error('Configuration Parsing Error: '+str(e))
         return 0
 
 
@@ -272,7 +272,7 @@ def create_database_connections_from_args(title, desc, engine, address, db, user
 
         elog.info('Connected to : %s [%s]'%(connection_string,db_id))
     else:
-        elog.error('ERROR | Could not establish a connection with the database')
+        elog.error('Could not establish a connection with the database')
         return None
 
     return db_connections
@@ -326,7 +326,7 @@ def connect_to_db(title, desc, engine, address, name, user, pwd):
         elog.info('Connected to : %s [%s]'%(connection_string,db_id))
 
     else:
-        elog.error('ERROR | Could not establish a connection with the database')
+        elog.error('Could not establish a connection with the database')
 
     return d
 
@@ -377,7 +377,7 @@ def create_database_connections_from_file(ini):
 
 
         else:
-            elog.error('ERROR | Could not establish a connection with the database')
+            elog.error('Could not establish a connection with the database')
             #return None
 
 

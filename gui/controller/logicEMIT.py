@@ -12,8 +12,10 @@ from environment import env_vars
 
 class LogicEMIT(ViewEMIT):
     def __init__(self, parent):
+        import threading
+        print "before", threading.activeCount()
+        # print threading.enumerate()
         ViewEMIT.__init__(self, parent)
-
         self.FloatCanvas = self.Canvas.FloatCanvas
 
         # todo: the connections file should be a binary object (pickle)

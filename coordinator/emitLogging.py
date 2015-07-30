@@ -4,6 +4,7 @@ import logging
 import logging.handlers
 import os
 import json
+from environment import env_vars
 
 
 class _Log:
@@ -172,10 +173,10 @@ class Log(object):
         # self.showerror = boolist[3]
         # TODO: CHANGE THIS BACK !!!!
         # TODO: CHANGE THIS BACK
-        self.showinfo = True
-        self.showwarning = False
-        self.showcritical = True
-        self.showerror = True
+        self.showinfo = env_vars.showinfo
+        self.showwarning = env_vars.showwarning
+        self.showcritical = env_vars.showcritical
+        self.showerror = env_vars.showerror
         # TODO: CHANGE THIS BACK
         # TODO: CHANGE THIS BACK !!!!
 

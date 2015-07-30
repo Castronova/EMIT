@@ -5,16 +5,18 @@ import wx
 from gui.views.viewEMIT import ViewEMIT
 import coordinator.engineAccessors as engine
 from gui.controller.logicFileDrop import LogicFileDrop
-# import pyspatialite.dbapi2 as sqlite3
+import pyspatialite.dbapi2 as sqlite3
 from environment import env_vars
 from ODM2PythonAPI.src.api.ODMconnection import dbconnection
 
 class LogicEMIT(ViewEMIT):
     def __init__(self, parent):
+        import threading
+        print "before", threading.activeCount()
+        # print threading.enumerate()
         ViewEMIT.__init__(self, parent)
-
         self.FloatCanvas = self.Canvas.FloatCanvas
-
+        print "after", threading.activeCount()
         # connect to known databases
         currentdir = os.path.dirname(os.path.abspath(__file__))
         connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/connections'))

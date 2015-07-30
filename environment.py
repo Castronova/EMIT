@@ -1,7 +1,7 @@
 __author__ = 'mike'
 import os
-from coordinator.emitLogging import elog
-import ast
+# from coordinator.emitLogging import elog
+from ast import literal_eval as Eval
 import ConfigParser
 
 # This is an interface for the settings file in the data directory
@@ -31,19 +31,10 @@ class EnvironmentVars(object):
         '''
 
         d = {}
-        with open(self.settings_path, 'r') as f:
-            lines = f.readlines()
-            for line in lines:
-                if '=' in line:
-                    data = line.split('=')
-                    try:
-                        val = ast.literal_eval(data[1].strip())
-                        d[data[0].strip()] = val
-
-                    except Exception:
-                        elog.warning("Invalid environment parameter found in settings.")
-                else:
-                    elog.warning("Invalid environment parameter found in settings.")
+        for section in self.config.sections():
+            for option in self.config.options(section):
+                value = self.config.get(section, option)
+                d[option] = value
         return d
 
     def set_environment_variable(self, var, value):

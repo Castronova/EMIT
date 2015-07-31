@@ -119,9 +119,12 @@ class Log(object):
         self.showwarning = True
         self.showcritical = True
         self.showerror = True
+        self.showdebug = True
 
     def debug(self, text):
-        self.log._debug(text)
+        self.verbosity()
+        if self.showdebug:
+            self.log._debug(text)
 
     def warning(self, text):
         self.verbosity()
@@ -163,10 +166,18 @@ class Log(object):
             else:
                 boolist.append(False)
 
-        self.showinfo = boolist[0]
-        self.showwarning = boolist[1]
-        self.showcritical = boolist[2]
-        self.showerror = boolist[3]
+        try:
+            self.showinfo = boolist[0]
+            self.showwarning = boolist[1]
+            self.showcritical = boolist[2]
+            self.showerror = boolist[3]
+            self.showdebug = boolist[4]
+        except:  # If the settings file is empty it will set them all to True
+            self.showinfo = True
+            self.showwarning = True
+            self.showcritical = True
+            self.showerror= True
+            self.showdebug = True
 
         file.close()
 

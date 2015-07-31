@@ -373,10 +373,18 @@ class viewMenuBar(wx.Frame):
             else:
                 boolist.append(False)
 
-        self.infoIsChecked = boolist[0]
-        self.warningIsChecked = boolist[1]
-        self.criticalIsChecked = boolist[2]
-        self.errorIsChecked = boolist[3]
+        try:
+            self.infoIsChecked = boolist[0]
+            self.warningIsChecked = boolist[1]
+            self.criticalIsChecked = boolist[2]
+            self.errorIsChecked = boolist[3]
+            self.debugIsChecked = boolist[4]
+        except:  # if the settings file is empty it will set them to true
+            self.infoIsChecked = True
+            self.warningIsChecked = True
+            self.criticalIsChecked = True
+            self.errorIsChecked = True
+            self.debugIsChecked = True
 
         file.close()
 
@@ -392,11 +400,13 @@ class viewMenuBar(wx.Frame):
         self.c2 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Warning Messages")
         self.c3 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Critical Messages")
         self.c4 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Error Messages")
+        self.c5 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Debug Messages")
 
         self.c1.SetValue(self.infoIsChecked)
         self.c2.SetValue(self.warningIsChecked)
         self.c3.SetValue(self.criticalIsChecked)
         self.c4.SetValue(self.errorIsChecked)
+        self.c5.SetValue(self.debugIsChecked)
 
         self.saveButton = wx.Button(self.panel, 1, 'Save')
 
@@ -404,13 +414,11 @@ class viewMenuBar(wx.Frame):
         sizer.Add(self.c2, 1, flag=wx.ALL | wx.ALIGN_CENTER, border=5)
         sizer.Add(self.c3, 1, flag=wx.ALL | wx.ALIGN_CENTER, border=5)
         sizer.Add(self.c4, 1, flag=wx.ALL | wx.ALIGN_CENTER, border=5)
+        sizer.Add(self.c5, 1, flag=wx.ALL | wx.ALIGN_CENTER, border=5)
         sizer.Add(self.saveButton, 1, flag=wx.wx.ALL | wx.ALIGN_CENTER, border=5)
         # sizer.Add(self.gauge, proportion=0, flag=wx.ALL | wx.ALIGN_CENTER, border=0)
 
         self.Bind(wx.EVT_BUTTON, self.OnSave, id=1)
-
-
-
 
         self.panel.SetSizer(sizer)
         self.Centre()
@@ -424,7 +432,9 @@ class viewMenuBar(wx.Frame):
         file.writelines(['showinfo = '+str(cb.values()[0])+'\n',
                          'showwarning = '+str(cb.values()[1])+'\n',
                          'showcritical = '+str(cb.values()[2]+'\n'),
-                         'showerror = '+str(cb.values()[3]+'\n')])
+                         'showerror = '+str(cb.values()[4]+'\n'),
+                         'showdebug = '+str(cb.values()[3]+'\n')])
+                         # for some reason the position of the error and debug are switched
         file.close()
         # self.timer.Stop()
         # self.statusbar.SetStatusText('Settings saved, %s ' % wx.Now())
@@ -434,7 +444,8 @@ class viewMenuBar(wx.Frame):
         warn = self.c2.GetValue()
         critical = self.c3.GetValue()
         error = self.c4.GetValue()
-        cb = {'info': str(info), 'warn': str(warn), 'critical': str(critical), 'error': str(error)}
+        debug = self.c5.GetValue()
+        cb = {'info': str(info), 'warn': str(warn), 'critical': str(critical), 'error': str(error), 'debug': str(debug)}
         return cb
 
     def SettingsStatusBar(self):

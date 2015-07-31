@@ -8,7 +8,7 @@ import math
 from shapely.geometry import Point
 from coordinator.emitLogging import elog
 import numpy as np
-
+from distutils.version import LooseVersion
 
 class topmodel(feed_forward.feed_forward_wrapper):
 
@@ -20,6 +20,12 @@ class topmodel(feed_forward.feed_forward_wrapper):
         """
 
         super(topmodel,self).__init__(config_params)
+
+        if LooseVersion(np.__version__) < LooseVersion('1.9.0'):
+            elog.error('Could not load TOPMODEL, NumPY version 1.9.0 or greater required')
+            raise Exception('Could not load TOPMODEL, NumPY version 1.9.0 or greater required')
+
+
 
         elog.info('Begin Component Initialization')
 

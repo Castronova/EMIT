@@ -33,7 +33,7 @@ class viewLowerPanel:
             # sys.stdout = redir
 
         #  Thread starts here to ensure its on the main thread
-        t = threading.Thread(target=logicConsoleOutput.follow, args=(elog, console.log))
+        t = threading.Thread(target=logicConsoleOutput.follow, name='CONSOLE THREAD' args=(elog, console.log))
         t.start()
 
 class RedirectText(object):
@@ -309,7 +309,7 @@ class TimeSeriesTab(wx.Panel):
 
     def OLVRefresh(self, event):
 
-        thr = threading.Thread(target=self.refresh_database, args=(), kwargs={})
+        thr = threading.Thread(target=self.refresh_database, name='DATABASE REFRESH THREAD', args=(), kwargs={})
         thr.start()
 
 class AddConnectionDialog(wx.Dialog):

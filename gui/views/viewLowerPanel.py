@@ -33,7 +33,7 @@ class viewLowerPanel:
             # sys.stdout = redir
 
         #  Thread starts here to ensure its on the main thread
-        t = threading.Thread(target=logicConsoleOutput.follow, name='CONSOLE THREAD' args=(elog, console.log))
+        t = threading.Thread(target=logicConsoleOutput.follow, name='CONSOLE THREAD', args=(elog, console.log))
         t.start()
 
 class RedirectText(object):

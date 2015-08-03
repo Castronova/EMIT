@@ -120,11 +120,6 @@ class ViewEMIT(wx.Frame):
 
         self._default_perspective = self.m_mgr.SavePerspective()
 
-    # def OnPageChange(self, page):
-    #
-    #     index = self.notebook_pages[page]
-    #     self.bnb.SetSelection(index)
-
     def OnSelect(self, event):
 
         try:
@@ -136,13 +131,11 @@ class ViewEMIT(wx.Frame):
         except: pass
 
     def initMenu(self):
-        ## Menu stuff
-        #self.m_statusBar2 = self.CreateStatusBar(1, wx.ST_SIZEGRIP, wx.ID_ANY)
+        # Menu stuff
 
         self.m_menubar = wx.MenuBar()
 
         self.m_fileMenu = wx.Menu()
-        #exit = wx.MenuItem(self.m_fileMenu, wx.ID_EXIT, '&Quit\tCtrl+Q')
         Load = self.m_fileMenu.Append(wx.NewId(), '&Load\tCtrl+O', 'Load Configuration')
         Save = self.m_fileMenu.Append(wx.NewId(), '&Save Configuration\tCtrl+S', 'Save Configuration')
         SaveAs = self.m_fileMenu.Append(wx.NewId(), '&Save Configuration As', 'Save Configuration')
@@ -152,7 +145,6 @@ class ViewEMIT(wx.Frame):
         self.m_menubar.Append(self.m_fileMenu, "&File")
 
         self.m_toolMenu = wx.Menu()
-        # self.m_menubar.Append(self.m_toolMenu, "&Tools")
 
 
         self.m_viewMenu = wx.Menu()
@@ -172,7 +164,6 @@ class ViewEMIT(wx.Frame):
 
 
         self.m_runMenu = wx.Menu()
-        self.applicationRun = self.m_runMenu.Append(wx.NewId(), '&Run Configuration', 'Runs the existing configurations')
         separator = self.m_runMenu.Append(wx.NewId(), 'separate', 'separate', wx.ITEM_SEPARATOR)
         databaseSave = self.m_runMenu.Append(wx.NewId(), '&Save Results to Database', 'Saves the result to the default database', wx.ITEM_CHECK)
         viewResult = self.m_runMenu.Append(wx.NewId(), '&View Results', 'View the result', wx.ITEM_CHECK)
@@ -200,20 +191,11 @@ class ViewEMIT(wx.Frame):
 
 
         # Run Option Bindings
-        self.Bind(wx.EVT_MENU_OPEN, self.onRunSelected)
 
     def Settings(self, event):
         settings = viewMenuBar()
         settings.Show()
         pass
-
-    def onRunSelected(self, event):
-        if event.GetMenu() == self.m_runMenu:
-            print len(self.Canvas.links)
-            if len(self.Canvas.links) > 0:
-                self.applicationRun.Enable(True)
-            else:
-                self.applicationRun.Enable(False)
 
     def onClose(self, event):
         dial = wx.MessageDialog(None, 'Are you sure to quit?', 'Question',
@@ -229,7 +211,7 @@ class ViewEMIT(wx.Frame):
 
 
     def _postStart(self):
-        ## Starts stuff after program has initiated
+        # Starts stuff after program has initiated
         self.Canvas.ZoomToFit(event=None)
 
     def __del__(self):
@@ -315,29 +297,6 @@ class ViewEMIT(wx.Frame):
         self.m_mgr.Update()
         pass
 
-    # todo: temporarily disabled until we fix the AUI manager bugs
-    # def defaultview(self, event):
-    #     self.onAllFiles(event)
-    #     ConsolePane = self.m_mgr.GetPane(self.bnb)
-    #     ConsolePane.Show(show=True)
-    #     # self.m_mgr.ClosePane(self.bnb)
-    #     # self.m_mgr.AddPane(self.bnb,
-    #     #                    aui.AuiPaneInfo().
-    #     #                    Center().
-    #     #                    Name("Console").
-    #     #                    Position(1).
-    #     #                    CloseButton(False).
-    #     #                    MaximizeButton(True)
-    #     #                    .Movable()
-    #     #                    .MinimizeButton(True).
-    #     #                    PinButton(True).
-    #     #                    Resizable().
-    #     #                    Floatable().
-    #     #                    MinSize(wx.Size(1200, 200)))
-    #     self.m_mgr.Update()
-    #
-    #     pass
-
 class ModelView(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
@@ -393,7 +352,6 @@ class viewMenuBar(wx.Frame):
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.statusbar = self.CreateStatusBar()
-        # self.statusbar = wx.StatusBar(parent=self, id=wx.ID_ANY, style=wx.STB_DEFAULT_STYLE)
         self.SettingsStatusBar()
 
         self.c1 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Info Messages")
@@ -464,61 +422,3 @@ class viewMenuBar(wx.Frame):
             self.statusbar.SetStatusText('Settings saved, %s ' % wx.Now())
             self.count = 0
             self.gauge.Hide()
-        else:
-            #  This will show the number the gauge is at.
-            # self.statusbar.SetStatusText(str(self.gauge.GetValue()))
-            # self.OnTimer()
-            pass
-
-
-# class viewMenuBar(wx.Frame):
-#     def __init__(self):
-#         self.cfg = wx.Config('myconfig')
-#         currentdir = os.path.dirname(os.path.abspath(__file__))
-#         self.settingspath = os.path.abspath(os.path.join(currentdir, '../../data/settings'))
-#         self.cfg.SetPath(self.settingspath)
-#         if self.cfg.Exists('width'):
-#             w, h = self.cfg.ReadInt('width'), self.cfg.ReadInt('height')
-#         else:
-#             w, h = 250, 250
-#
-#         self.infoIsChecked = self.cfg.ReadBool("info")
-#         self.warningIsChecked = self.cfg.ReadBool("warning")
-#
-#         wx.Frame.__init__(self, parent=None, id=-1, title="Settings...", pos=wx.DefaultPosition, size=wx.Size(w, h))
-#         self.panel = wx.Panel(self)
-#
-#         wx.StaticText(self.panel, -1, 'Width:', (20, 20))
-#         wx.StaticText(self.panel, -1, 'Height:', (20, 70))
-#         self.sc1 = wx.SpinCtrl(self.panel, -1, str(w), (80, 15), (60, -1), min=200, max=500)
-#         self.sc2 = wx.SpinCtrl(self.panel, -1, str(h), (80, 65), (60, -1), min=200, max=500)
-#         wx.Button(self.panel, 1, 'Save', pos=(20, 120))
-#
-#         self.c1 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Info Messages", pos=(50, 200))
-#         self.c2 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Warning Messages", pos=(50, 225))
-#
-#         self.c1.SetValue(self.infoIsChecked)
-#         self.c2.SetValue(self.warningIsChecked)
-#         print self.cfg.GetPath()
-#
-#         self.Bind(wx.EVT_BUTTON, self.OnSave, id=1)
-#         self.statusbar = self.CreateStatusBar()
-#         self.Centre()
-#
-#     def OnSave(self, event):
-#         self.cfg.WriteInt("width", self.sc1.GetValue())
-#         self.cfg.WriteInt("height", self.sc2.GetValue())
-#         self.cfg.WriteBool("info", self.c1.GetValue())
-#         self.cfg.WriteBool("warning", self.c2.GetValue())
-#         self.statusbar.SetStatusText('Configuration saved, %s ' % wx.Now())
-#         self.RefreshSettings()
-#
-#     def teststatusbar(self, event):
-#         for i in range(1, 1000):
-#             self.statusbar.SetStatusText("Progress %d" % i)
-#
-#     def RefreshSettings(self):
-#         elog.showinfo = self.c1.GetValue()
-#         elog.showwarning = self.c2.GetValue()
-#         print self.c1.GetValue()
-#         print self.c2.GetValue()

@@ -35,22 +35,3 @@ class LogicEMIT(ViewEMIT):
         #     empty_dump_script = open(env_vars.LOCAL_DB_BASE+".dbload",'r').read()
         #     odm2_db.executescript(empty_dump_script)
 
-
-        # dropTarget = LogicFileDrop(self.Canvas, self.FloatCanvas)
-        # self.SetDropTarget(dropTarget)
-
-        self.binding()
-
-    def binding(self):
-        #Run MenuBar
-        self.Bind(wx.EVT_MENU, self.run, self.applicationRun)
-
-
-    def run(self, e):
-        try:
-            # self.cmd.run_simulation()
-            engine.runSimulation()
-        except Exception as e:
-            wx.MessageBox(str(e.args[0]), 'Error', wx.OK | wx.ICON_ERROR)
-
-

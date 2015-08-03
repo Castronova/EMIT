@@ -4,6 +4,7 @@ import os
 import wx
 from gui.views.viewEMIT import ViewEMIT
 import coordinator.engineAccessors as engine
+import sqlite3 as lite
 # from gui.controller.logicFileDrop import LogicFileDrop
 # import pyspatialite.dbapi2 as sqlite3
 from environment import env_vars
@@ -35,3 +36,17 @@ class LogicEMIT(ViewEMIT):
         #     empty_dump_script = open(env_vars.LOCAL_DB_BASE+".dbload",'r').read()
         #     odm2_db.executescript(empty_dump_script)
 
+        filepath = os.getcwd() + "/db/local.db"
+        removedb(filepath)  # Its going to delete the file, than recreate it to avoid errors
+        con = lite.connect(filepath)
+        script = open(os.getcwd() + "/app_data/db/.dbload")
+
+        with con:
+            cur = con.cursor()
+            cur.executescript(script.read())
+
+def removedb(file):
+    try:
+        os.remove(file)
+    except OSError:
+        pass

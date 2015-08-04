@@ -36,7 +36,7 @@ class LogicEMIT(ViewEMIT):
         #     empty_dump_script = open(env_vars.LOCAL_DB_BASE+".dbload",'r').read()
         #     odm2_db.executescript(empty_dump_script)
 
-        filepath = os.getcwd() + "/db/local.db"
+        filepath = os.getcwd() + "/app_data/db/local.db" # The path of where the database is created
         removedb(filepath)  # Its going to delete the file, than recreate it to avoid errors
         con = lite.connect(filepath)
         script = open(os.getcwd() + "/app_data/db/.dbload")

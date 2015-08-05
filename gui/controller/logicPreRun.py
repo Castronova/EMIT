@@ -12,6 +12,7 @@ class logicPreRun:
     def __init__(self):
         self.viewprerun = viewPreRun()
         self.dlg = self.viewprerun.page1.onAddUser()
+        self.logfilename = "prerunlog.txt"
 
         self.initBinding()
 
@@ -85,7 +86,7 @@ class logicPreRun:
 
     def LogSimulation(self):
         currentdir = os.path.dirname(os.path.abspath(__file__))
-        connections_txt = os.path.abspath(os.path.join(currentdir, '../../log/log'))
+        connections_txt = os.path.abspath(os.path.join(currentdir, '../../log/' + self.logfilename))
         file = open(connections_txt, 'a')
         loginfo = self.viewprerun.page1.GetLogValues()
         logtxt = "[Simulation]\n" + \
@@ -99,10 +100,21 @@ class logicPreRun:
         file.close()
 
     def CheckSimulationName(self, simname):
-        currentdir = os.path.dirname(os.path.abspath(__file__))
-        connections_txt = os.path.abspath(os.path.join(currentdir, '../../log/log'))
-        file = open(connections_txt, 'r')
+        filepath = self.CreatePreRunLogFile()
+        file = open(filepath, 'r')
         if simname in file.read():
+            file.close()
             return True
         else:
+            file.close()
             return False
+
+    def CreatePreRunLogFile(self):
+        currentdir = os.path.dirname(os.path.abspath(__file__))
+        filepath = os.path.abspath(os.path.join(currentdir, '../../log/' + self.logfilename))
+        if os.path.exists(filepath):
+            return filepath
+        else:
+            file = open(filepath, 'w')
+            file.close()
+            return filepath

@@ -44,6 +44,7 @@ class LogicEMIT(ViewEMIT):
         with conn:
             cur = conn.cursor()
             cur.executescript(script.read())
+        script.close()
 
 def removedb(file):
     try:

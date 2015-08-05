@@ -13,6 +13,7 @@ import threading
 from wx import richtext
 from coordinator.emitLogging import elog
 from gui.controller import logicConsoleOutput
+import os
 
 class viewLowerPanel:
     def __init__(self, notebook):
@@ -170,6 +171,11 @@ class TimeSeriesTab(wx.Panel):
         # self refresh_database
         self.OLVRefresh(event)
 
+    def loadLocalDB(self, choices):
+        if os.path.isfile(os.getcwd() + "/app_data/db/local.db"):
+            return choices.append("Local")
+
+
     def refreshConnectionsListBox(self, connection_added):
 
         if connection_added:
@@ -178,6 +184,7 @@ class TimeSeriesTab(wx.Panel):
             choices = ['---']
             for k,v in self._databases.iteritems():
                 choices.append(self._databases[k]['name'])
+            self.loadLocalDB(choices)
             self.connection_combobox.SetItems(choices)
 
             # set the selected choice

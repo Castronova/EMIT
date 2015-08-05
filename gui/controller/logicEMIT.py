@@ -38,11 +38,11 @@ class LogicEMIT(ViewEMIT):
 
         filepath = os.getcwd() + "/app_data/db/local.db" # The path of where the database is created
         removedb(filepath)  # Its going to delete the file, than recreate it to avoid errors
-        con = lite.connect(filepath)
+        conn = lite.connect(filepath)
         script = open(os.getcwd() + "/app_data/db/.dbload")
 
-        with con:
-            cur = con.cursor()
+        with conn:
+            cur = conn.cursor()
             cur.executescript(script.read())
 
 def removedb(file):

@@ -2,9 +2,6 @@ __author__ = 'Francisco'
 
 import wx
 import os
-import wx.grid
-# from coordinator.engineAccessors import getAllLinks
-# from coordinator.emitLogging import elog
 from coordinator import engineAccessors
 
 
@@ -134,7 +131,9 @@ class PageOne(wx.Panel):
         file = open(connections_txt, 'r')
         data = file.readlines()
         file.close()
-        return self.getFromFile(data, "name")
+        combobox = self.getFromFile(data, "name")
+        self.loadLocalDB(combobox)
+        return combobox
 
     def loadAccounts(self):
         currentdir = os.path.dirname(os.path.abspath(__file__))  # Get the directory
@@ -156,6 +155,10 @@ class PageOne(wx.Panel):
     def GetLogValues(self):
         loginfo = [self.simulationNameTextBox.GetValue(), self.databaseCombo.GetValue(), self.accountCombo.GetValue()]
         return loginfo
+
+    def loadLocalDB(self, choices):
+        if os.path.isfile(os.getcwd() + "/app_data/db/local.db"):
+            return choices.append("Local")
 
 
 class PageTwo(wx.Panel):

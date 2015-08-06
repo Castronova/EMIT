@@ -368,7 +368,7 @@ class LogicCanvas(ViewCanvas):
     def getUniqueId(self):
         return self.uniqueId
 
-    def addModel(self, filepath, x, y, uid=None, uniqueId = None, title = None):
+    def addModel(self, filepath, x, y, uid=None, uniqueId=None, title=None):
         """
         Adds a model to the canvas using x,y.  This is useful if adding by file click/dialog
         :param filename:  filename / path
@@ -388,8 +388,6 @@ class LogicCanvas(ViewCanvas):
         if uid is None:
             uid = uuid.uuid4().hex[:5]
 
-
-
         # save these coordinates for drawing once the model is loaded
         self.set_model_coords(uid, x=x, y=y)
 
@@ -405,13 +403,8 @@ class LogicCanvas(ViewCanvas):
                     self.loadsimulation(filepath)
                 except Exception, e:
                     elog.error('Configuration failed to load: %s'%e.message)
-                    # dlg = wx.MessageDialog(None, 'Configuration failed to load', 'Error', wx.OK)
-                    # dlg.ShowModal()
         else:
-            # load data model
-            # current_db_id = self._currentDb['id']
-            # attrib = dict(databaseid=current_db_id, resultid=name)
-
+            #  Model is from a database
             attrib = dict(databaseid=self._dbid, resultid=name)
             engine.addModel(id=uid, attrib=attrib)
 
@@ -848,6 +841,7 @@ class LogicCanvas(ViewCanvas):
                     else:
                         return
 
+        for child in root._children:
             if child.tag == 'Model':
                 attrib = self.appendChild(child)
 
@@ -855,6 +849,7 @@ class LogicCanvas(ViewCanvas):
                 self.addModel(filepath=attrib['path'], x=float(attrib['xcoordinate']), y=float(attrib['ycoordinate']),
                               uid=attrib['id'])
 
+        for child in root._children:
             if child.tag == 'DataModel':
                 attrib = self.appendChild(child)
 
@@ -862,10 +857,12 @@ class LogicCanvas(ViewCanvas):
                 mappedid = conn_ids[databaseid]
 
                 attrib['databaseid'] = mappedid
-                modelid = self.addModel(filepath=attrib['path'], x=attrib['xcoordinate'], y=attrib['ycoordinate'],
-                                        uid=attrib['id'])
+                self._dbid = attrib['databaseid']
 
-            # todo: Link cannot be added until both models have finished loading!!!  This will throw exception on line 927
+                self.addModel(filepath=attrib['resultid'], x=150, y=150,  uid=attrib['databaseid'], title=attrib['name'], uniqueId=attrib['resultid'])
+
+        for child in root._children:
+            # todo: Link cannot be added until both models have finished loading!!!  This will throw the exception below
             if child.tag == 'Link':
                 attrib = self.appendChild(child)
 

@@ -263,7 +263,7 @@ class Coordinator(object):
             db[db_id] = {'name': self._db[db_id]['name'],
                          'description': self._db[db_id]['description'],
                          'connection_string': self._db[db_id]['connection_string'],
-                         'id': db_id}
+                         'id': db_id, 'args': self._db[db_id]['args']}
         return db
 
     def set_default_database(self,db_id=None):

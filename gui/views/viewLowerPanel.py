@@ -13,7 +13,7 @@ import threading
 from wx import richtext
 from coordinator.emitLogging import elog
 from gui.controller import logicConsoleOutput
-import os
+import os, sys
 
 class viewLowerPanel:
     def __init__(self, notebook):
@@ -29,13 +29,13 @@ class viewLowerPanel:
         notebook.AddPage(simulations, "Simulations")
 
         # deactivate the console if we are in debug mode
-        # if not sys.gettrace():
+        if not sys.gettrace():
             # redir = RedirectText(self.log)
             # sys.stdout = redir
 
-        #  Thread starts here to ensure its on the main thread
-        t = threading.Thread(target=logicConsoleOutput.follow, name='CONSOLE THREAD', args=(elog, console.log))
-        t.start()
+            #  Thread starts here to ensure its on the main thread
+            t = threading.Thread(target=logicConsoleOutput.follow, name='CONSOLE THREAD', args=(elog, console.log))
+            t.start()
 
 class RedirectText(object):
 

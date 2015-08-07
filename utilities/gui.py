@@ -6,7 +6,9 @@ import ConfigParser
 import datetime
 import cPickle as pickle
 import imp
-from api_old.ODMconnection import  dbconnection
+from api_old.ODMconnection import dbconnection
+from ODM2PythonAPI.src.api.ODMconnection import dbconnection as dbconnection2
+
 # from ODMconnection import dbconnection
 import uuid
 # import coordinator.emitLogging as l
@@ -232,8 +234,41 @@ def parse_config(ini):
 #     else:
 #         return None
 
+def connect_to_ODM2_db(title, desc, engine, address, db, user, pwd):
+
+    # create a db session
+    session = dbconnection2.createConnection(engine, address, db, user, pwd)
+
+    db_connections = {}
+    if session:
+
+        # get the connection string
+        connection_string = session.engine.url
+
+        # save this session in the db_connections object
+        db_id = uuid.uuid4().hex[:5]
+        d['id'] = db_id
+        db_connections[db_id] = {'name':title,
+                                 'session': session,
+                                 'connection_string':connection_string,
+                                 'description':desc,
+                                 'args': {'name':title,'desc':desc ,'engine':engine,'address':address,'db': db, 'user': user,'pwd': pwd}}
+
+        elog.info('Connected to : %s [%s]'%(connection_string,db_id))
+    else:
+        elog.error('Could not establish a connection with the database')
+        return None
+
+    return db_connections
+
+
 def create_database_connections_from_args(title, desc, engine, address, db, user, pwd):
 
+    # fixme: all database connections should use the updated ODM library
+    if engine == 'sqlite':
+        return connect_to_db(title, desc, engine, address, db, user, pwd)
+
+    # old database connection api
 
     d = {'name':title,
          'desc':desc ,
@@ -306,7 +341,12 @@ def load_model(config_params):
 def connect_to_db(title, desc, engine, address, name, user, pwd):
 
     d = {}
-    session = dbconnection.createConnection(engine, address, name, user, pwd)
+
+    # fixme: all database connections should use the updated ODM library
+    if engine == 'sqlite':
+        session = dbconnection2.createConnection(engine, address)
+    else:
+        session = dbconnection.createConnection(engine, address, name, user, pwd)
 
     if session:
         # adjusting timeout

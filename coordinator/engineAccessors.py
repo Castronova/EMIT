@@ -14,11 +14,11 @@ def addModel(id=None, attrib=None):
     kwargs = dict(attrib=attrib, id=id, event='onModelAdded')
     task = [('add_model', kwargs)]
     e.setTasks(task)
-    e.check_for_process_results()
-
-    # e.thread = Thread(target=e.check_for_process_results)
-    # e.thread.start()
-    # e.thread.join()
+    # DO NOT MODIFY THIS CODE!
+    ############################
+    e.thread = Thread(target=e.check_for_process_results)
+    e.thread.start()
+    ############################
 
 def createSQLiteInMemory(dbtextfile=None):
     e = Engine()
@@ -40,16 +40,31 @@ def connectToDbFromFile(dbtextfile=None):
     e.thread.start()
     e.thread.join()
 
-def connectToDb(**kwargs):
+
+def connectToDb(title, desc, engine, address, name, user, pwd):
+    #def connectToDb(**kwargs):
     #engine=None, address=None, db=None, user=None, pwd=None):
+    kwargs = dict(title=title, desc=desc, engine=engine, address=address, name=name, user=user, pwd=pwd)
     e = Engine()
+    # e.thread = Thread(target = e.check_for_process_results)
+    # e.thread.start()
     kwargs['event'] ='onDatabaseConnected'
     task = [('connect_to_db',kwargs)]
     e.setTasks(task)
+    result = e.processTasks()
+    return result
+    # e.thread.join()
 
-    e.thread = Thread(target = e.check_for_process_results)
-    e.thread.start()
-    e.thread.join()
+# def addDbConnection(**kwargs):
+#     #engine=None, address=None, db=None, user=None, pwd=None):
+#
+#     e = Engine()
+#     kwargs['event'] ='onDatabaseConnected'
+#     task = [('add_db_connection',kwargs)]
+#     e.setTasks(task)
+#     result = e.processTasks()
+#     return result
+
 
 def addLink(source_id=None, source_item=None, target_id=None, target_item=None, spatial_interpolation=None,
             temporal_interpolation=None,uid=None):

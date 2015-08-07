@@ -48,6 +48,8 @@ class ViewEMIT(wx.Frame):
 
         self.Show()
 
+        self.defaultLoadDirectory = os.getcwd()
+
 
     def _init_sizers(self):
         self.s = wx.BoxSizer(wx.VERTICAL)
@@ -219,8 +221,8 @@ class ViewEMIT(wx.Frame):
 
     def LoadConfiguration(self,event):
 
-        openFileDialog = wx.FileDialog(self, "Load New File", "", "",
-                                       "Simulation Files (*.sim)|*.sim|MDL Files (*.mdl)|*.mdl", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+        openFileDialog = wx.FileDialog(self, message="Load New File", defaultDir=self.defaultLoadDirectory, defaultFile="",
+                                       wildcard="Simulation Files (*.sim)|*.sim|MDL Files (*.mdl)|*.mdl", style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
 
         if openFileDialog.ShowModal() == wx.ID_OK:
             filename = openFileDialog.GetFilename()
@@ -235,6 +237,7 @@ class ViewEMIT(wx.Frame):
 
             self.filename = openFileDialog.GetFilename()
             self.loadingpath = filepath
+            self.defaultLoadDirectory = os.path.dirname(filepath)
 
     def SaveConfiguration(self,event):
         if self.loadingpath == None:
@@ -254,14 +257,16 @@ class ViewEMIT(wx.Frame):
 
     def SaveConfigurationAs(self,event):
         # Executes from File ->Save As
-        save = wx.FileDialog(self.Canvas.GetTopLevelParent(), "Save Configuration","","",
-                             "Simulation Files (*.sim)|*.sim", wx.FD_SAVE  | wx.FD_OVERWRITE_PROMPT)
+        save = wx.FileDialog(self.Canvas.GetTopLevelParent(), message="Save Configuration",
+                             defaultDir=self.defaultLoadDirectory, defaultFile="",
+                             wildcard="Simulation Files (*.sim)|*.sim", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
 
         if save.ShowModal() == wx.ID_OK:
             self.save_path = save.GetPath()
             if self.save_path[-4] != '.':  # check if extension was added
                 self.save_path += '.sim'
             self.loadingpath = self.save_path
+            self.defaultLoadDirectory = os.path.dirname(self.loadingpath)
             Publisher.sendMessage('SetSavePath',path=self.save_path) #send message to canvascontroller.SaveSimulation
             txt = save.Filename.split('.sim')[0]
             e = dict(cat=self.Toolbox.cat, txt=txt, fullpath=save.Path)

@@ -14,6 +14,7 @@ from gui import events
 from coordinator.emitLogging import elog
 import csv
 import time
+import os
 
 #todo:  this needs to be split up into view and logic code
 
@@ -197,6 +198,8 @@ class CanvasContextMenu(wx.Menu):
         if len(self.parent.links) <= 0:
             run.Enable(False)
 
+        self.defaultLoadDirectory = os.getcwd()
+
     def OnAddLink(self, e):
         self.parent.FloatCanvas.SetMode(self.parent.GuiLink)
 
@@ -221,13 +224,15 @@ class CanvasContextMenu(wx.Menu):
 
     def SaveConfiguration(self,e):
         if self.parent.GetLoadingPath() == None:
-            save = wx.FileDialog(self.parent.GetTopLevelParent(), "Save Configuration","","",
-                                 "Simulation Files (*.sim)|*.sim", wx.FD_SAVE  | wx.FD_OVERWRITE_PROMPT)
+            save = wx.FileDialog(self.parent.GetTopLevelParent(), message="Save Configuration",
+                                 defaultDir=self.parent.defaultLoadDirectory, defaultFile="",
+                                 wildcard="Simulation Files (*.sim)|*.sim", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
 
             if save.ShowModal() == wx.ID_OK:
                 path = save.GetPath()
                 self.parent.SaveSimulation(path)
                 self.parent.SetLoadingPath(path)
+                self.parent.defaultLoadDirectory = os.path.dirname(path)
         else:
             self.parent.SaveSimulation(self.parent.GetLoadingPath())
 
@@ -237,12 +242,14 @@ class CanvasContextMenu(wx.Menu):
         events.onSaveFromCanvas.fire(**e)  # calls SaveConfigurationsAs in ViewEMIT.py
 
     def LoadConfiguration(self, e):
-        load = wx.FileDialog(self.parent.GetTopLevelParent(), "Load File", "", "",
-                             "Simulation Files (*.sim)|*.sim", wx.FD_OPEN)
+        load = wx.FileDialog(self.parent.GetTopLevelParent(), message="Load File",
+                             defaultDir=self.parent.defaultLoadDirectory, defaultFile="",
+                             wildcard="Simulation Files (*.sim)|*.sim", style=wx.FD_OPEN)
         if load.ShowModal() == wx.ID_OK:
             path = load.GetPath()
             self.parent.loadsimulation(path)
             self.parent.SetLoadingPath(path)
+            self.parent.defaultLoadDirectory = os.path.dirname(path)
 
     def OnMinimize(self, e):
         self.parent.Iconize()

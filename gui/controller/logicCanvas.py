@@ -63,6 +63,7 @@ class LogicCanvas(ViewCanvas):
         self.loadingpath = None
         self.model_coords = {}
         self.uniqueId = None
+        self.defaultLoadDirectory = os.getcwd()
 
     def UnBindAllMouseEvents(self):
         self.Unbind(FC.EVT_LEFT_DOWN)

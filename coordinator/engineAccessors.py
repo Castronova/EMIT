@@ -42,29 +42,13 @@ def connectToDbFromFile(dbtextfile=None):
 
 
 def connectToDb(title, desc, engine, address, name, user, pwd):
-    #def connectToDb(**kwargs):
-    #engine=None, address=None, db=None, user=None, pwd=None):
     kwargs = dict(title=title, desc=desc, engine=engine, address=address, name=name, user=user, pwd=pwd)
     e = Engine()
-    # e.thread = Thread(target = e.check_for_process_results)
-    # e.thread.start()
     kwargs['event'] ='onDatabaseConnected'
     task = [('connect_to_db',kwargs)]
     e.setTasks(task)
     result = e.processTasks()
     return result
-    # e.thread.join()
-
-# def addDbConnection(**kwargs):
-#     #engine=None, address=None, db=None, user=None, pwd=None):
-#
-#     e = Engine()
-#     kwargs['event'] ='onDatabaseConnected'
-#     task = [('add_db_connection',kwargs)]
-#     e.setTasks(task)
-#     result = e.processTasks()
-#     return result
-
 
 def addLink(source_id=None, source_item=None, target_id=None, target_item=None, spatial_interpolation=None,
             temporal_interpolation=None,uid=None):

@@ -361,7 +361,8 @@ def connect_to_db(title, desc, engine, address, name, user, pwd):
                      'session': session,
                      'connection_string':connection_string,
                      'description':desc,
-                     'args': d}
+                     'args': dict(address=connection_string, desc=desc, engine=engine,id=db_id,name=name,
+                                  user=None, pwd=None,default=False,db=None)}
 
         elog.info('Connected to : %s [%s]'%(connection_string,db_id))
 

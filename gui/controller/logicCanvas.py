@@ -850,7 +850,6 @@ class LogicCanvas(ViewCanvas):
                               uid=attrib['id'])
 
 
-        xpos, ypos = -350, 0
         for child in root._children:
             if child.tag == 'DataModel':
                 attrib = self.appendChild(child)
@@ -861,9 +860,9 @@ class LogicCanvas(ViewCanvas):
                 attrib['databaseid'] = mappedid
                 self._dbid = attrib['databaseid']
 
-                self.addModel(filepath=attrib['resultid'], x=xpos, y=ypos,  uid=attrib['databaseid'], title=attrib['name'], uniqueId=attrib['resultid'])
-                xpos += 100
-                ypos -= 100
+                self.addModel(filepath=attrib['resultid'], x=float(attrib['xcoordinate']),
+                              y=float(attrib['ycoordinate']),  uid=attrib['databaseid'],
+                              title=attrib['name'], uniqueId=attrib['resultid'])
 
         for child in root._children:
             # todo: Link cannot be added until both models have finished loading!!!  This will throw the exception below

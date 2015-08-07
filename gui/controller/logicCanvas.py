@@ -840,70 +840,98 @@ class LogicCanvas(ViewCanvas):
 
                     else:
                         return
+        models = tree.findall("./Model")  # Returns a list of all models in the file
+        datamodels = tree.findall("./DataModel")  # Returns a list of all data models in the file
+        links = tree.findall("./Link")  # Returns a list of all links in the file
+        transform = tree.findall("./transformation")
+        total = len(models) + len(datamodels)
 
-        for child in root._children:
-            if child.tag == 'Model':
-                attrib = self.appendChild(child)
+        elog.debug("There are " + str(total) + " models in the file")
 
-                # load the model
-                self.addModel(filepath=attrib['path'], x=float(attrib['xcoordinate']), y=float(attrib['ycoordinate']),
+        #  Models from database and non database will load async.
+        # self.LoadModels(models)
+        t1 = threading.Thread(target=self.LoadModels, args=(models,), name="Load Models")
+        t1.start()
+
+        # self.LoadDataModels(datamodels, conn_ids)
+        t2 = threading.Thread(target=self.LoadDataModels, args=(datamodels, conn_ids,), name="Load Data Model")
+        t2.start()
+
+        t1.join()
+        t2.join()
+        #  By using join() the next thread will not start until t1 and t2 finish.
+
+        t3 = threading.Thread(target=self.LoadLinks, args=(links, transform, temporal_transformations, spatial_transformations,), name="Load Links")
+
+
+        t3.start()
+        t3.join()
+        # self.LoadLinks(links, transform, temporal_transformations, spatial_transformations)
+        elog.debug(str(len(self.models)) + " were models loaded")
+
+        self.FloatCanvas.Draw()
+
+
+
+    def LoadModels(self, models):
+        for model in models:
+            attrib = self.appendChild(model)
+
+            self.addModel(filepath=attrib['path'], x=float(attrib['xcoordinate']), y=float(attrib['ycoordinate']),
                               uid=attrib['id'])
+        self.FloatCanvas.Draw()
 
+    def LoadDataModels(self, datamodels, conn_ids):
+        for model in datamodels:
+            attrib = self.appendChild(model)
 
-        for child in root._children:
-            if child.tag == 'DataModel':
-                attrib = self.appendChild(child)
+            # Swapping the database id with conn_ids
+            attrib['databaseid'] = conn_ids[attrib['databaseid']]
+            self._dbid = attrib['databaseid']
 
-                databaseid = attrib['databaseid']
-                mappedid = conn_ids[databaseid]
-
-                attrib['databaseid'] = mappedid
-                self._dbid = attrib['databaseid']
-
-                self.addModel(filepath=attrib['resultid'], x=float(attrib['xcoordinate']),
+            self.addModel(filepath=attrib['resultid'], x=float(attrib['xcoordinate']),
                               y=float(attrib['ycoordinate']),  uid=attrib['databaseid'],
                               title=attrib['name'], uniqueId=attrib['resultid'])
+        self.FloatCanvas.Draw()
 
-        for child in root._children:
-            # todo: Link cannot be added until both models have finished loading!!!  This will throw the exception below
-            if child.tag == 'Link':
-                attrib = self.appendChild(child)
+    def LoadLinks(self, links, transformation, temp_trans, spat_trans):
+        for link in links:
+            attrib = self.appendChild(link)
 
-                R1 = None
-                R2 = None
-                for R, id in self.models.iteritems():
-                    if id == attrib['from_id']:
-                        R1 = R
-                    elif id == attrib['to_id']:
-                        R2 = R
+            R1, R2 = None, None  # Rename R1 to From Model and R2 to To Model
+            for key, value in self.models.iteritems():
+                if value == attrib['from_id']:
+                        R1 = key
+                elif value == attrib['to_id']:
+                        R2 = key
+            if R1 is None or R2 is None:
+                # raise Exception('Could not find Model identifier in loaded models')
+                elog.error("Could not find model id in loaded models")
+                return
 
-                if R1 is None or R2 is None:
-                    raise Exception('Could not find Model identifier in loaded models')
-
-                temporal = None
-                spatial = None
-                # set the temporal and spatial interpolations
-                transform = child.find("./transformation")
-                for transform_child in transform:
+            temporal = None
+            spatial = None
+            # set the temporal and spatial interpolation
+            for transform_child in transformation:
                     if transform_child.text.upper() != 'NONE':
                         if transform_child.tag == 'temporal':
-                            temporal = temporal_transformations[transform_child.text]
+                            temporal = temp_trans[transform_child.text]
                         elif transform_child.tag == 'spatial':
-                            spatial = spatial_transformations[transform_child.text]
+                            spatial = spat_trans[transform_child.text]
 
-                # create the link
-                l = engine.addLink(source_id=attrib['from_id'],
-                                   source_item=attrib['from_item'],
-                                   target_id=attrib['to_id'],
-                                   target_item=attrib['to_item'],
-                                   spatial_interpolation=spatial,
-                                   temporal_interpolation=temporal
-                                   )
+            # create the link
+            l = engine.addLink(source_id=attrib['from_id'],
+                               source_item=attrib['from_item'],
+                               target_id=attrib['to_id'],
+                               target_item=attrib['to_item'],
+                               spatial_interpolation=spatial,
+                               temporal_interpolation=temporal
+                               )
 
-                # this draws the line
-                self.createLine(R1, R2)
+            # this draws the line
+            self.createLine(R1, R2)
 
-            self.FloatCanvas.Draw()
+
 
     def SetLoadingPath(self, path):
         self.loadingpath = path

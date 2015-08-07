@@ -14,9 +14,10 @@ def addModel(id=None, attrib=None):
     kwargs = dict(attrib=attrib, id=id, event='onModelAdded')
     task = [('add_model', kwargs)]
     e.setTasks(task)
+    e.check_for_process_results()
 
-    e.thread = Thread(target=e.check_for_process_results)
-    e.thread.start()
+    # e.thread = Thread(target=e.check_for_process_results)
+    # e.thread.start()
     # e.thread.join()
 
 def createSQLiteInMemory(dbtextfile=None):

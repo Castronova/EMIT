@@ -6,6 +6,7 @@ from gui import events
 import os
 from gui.views.viewPostRun import viewPostRun
 import time
+import coordinator.engineAccessors as engine
 
 
 class logicPreRun(viewPreRun):
@@ -13,8 +14,18 @@ class logicPreRun(viewPreRun):
         viewPreRun.__init__(self)
         self.dlg = self.summary_page.onAddUser()
         self.logfilename = "prerunlog.txt"
-
         self.initBinding()
+
+
+
+        # load data
+        dbs = self.getDatabases()
+        db_names = [db['args']['name'] for db in dbs.itervalues()]
+        self.summary_page.databaseCombo.AppendItems(db_names)
+        self.summary_page.databaseCombo.SetSelection(0)
+        if 'Local' in db_names:  # change the selection to the index of the local db, if it exists
+            self.summary_page.databaseCombo.SetSelection(db_names.index('Local'))
+        # self.accountComboChoices = self.loadAccounts()
 
     def initBinding(self):
         self.summary_page.cancelButton.Bind(wx.EVT_BUTTON, self.OnCancel)
@@ -56,6 +67,7 @@ class logicPreRun(viewPreRun):
 
     def RunSim(self):
 
+        # todo: this should use engine accessor call, not event call
         e = dict()
         events.onClickRun.fire(**e)  # Calls onClickRun from viewContext.py
         self.OnCancel(e)
@@ -64,6 +76,17 @@ class logicPreRun(viewPreRun):
         # if self.page1.displayMessage.GetValue():
             # frm = viewPostRun()
             # frm.Show()
+
+    def getDatabases(self):
+        '''
+        Queries the engine for the known databases
+        :return: a list of databases that are loaded into the engine
+        '''
+
+        available_connections = engine.getDbConnections()
+
+        return available_connections
+        print 'done'
 
     def OnAddNew(self, e):
         self.dlg.CenterOnScreen()

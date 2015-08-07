@@ -58,7 +58,7 @@ class SummaryPage(wx.Panel):
         self.boxsizer = ""
         self.cancelButton = ""
         self.runButton = ""
-        self.databaseComboChoices = self.loadDatabase()
+        # self.databaseComboChoices = self.loadDatabase()
         self.accountComboChoices = self.loadAccounts()
 
         self.sizer = wx.GridBagSizer(vgap=5, hgap=5)
@@ -72,7 +72,8 @@ class SummaryPage(wx.Panel):
         self.databaseName = wx.StaticText(self, label="Database: ")
         self.sizer.Add(self.databaseName, pos=(2, 0), flag=wx.LEFT|wx.TOP, border=10)
 
-        self.databaseCombo = wx.ComboBox(self, value=self.databaseComboChoices[0], choices=self.databaseComboChoices, style=wx.CB_READONLY)
+        # self.databaseCombo = wx.ComboBox(self, value=self.databaseComboChoices[0], choices=self.databaseComboChoices, style=wx.CB_READONLY)
+        self.databaseCombo = wx.ComboBox(self, choices=[], style=wx.CB_READONLY)
         self.sizer.Add(self.databaseCombo, pos=(2, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND, border=5)
 
         # browseDataBaseButton = wx.Button(self, label="Browse...")
@@ -81,6 +82,7 @@ class SummaryPage(wx.Panel):
         self.accountName = wx.StaticText(self, label="User Account: ")
         self.sizer.Add(self.accountName, pos=(3, 0), flag=wx.TOP|wx.LEFT, border=10)
 
+        # todo: move this into logicPreRun
         self.accountCombo = wx.ComboBox(self, value=self.accountComboChoices[0], choices=self.accountComboChoices, style=wx.CB_READONLY)
         self.sizer.Add(self.accountCombo, pos=(3, 1), span=(1, 2), flag=wx.TOP | wx.EXPAND, border=5)
 
@@ -127,6 +129,9 @@ class SummaryPage(wx.Panel):
 
     def loadDatabase(self):
         # todo: this should be looking at the databases loaded into the engine only
+
+        self.g
+
         currentdir = os.path.dirname(os.path.abspath(__file__))  # Get the directory
         connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/connections'))  # finds the file
         file = open(connections_txt, 'r')

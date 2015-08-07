@@ -209,7 +209,7 @@ class CanvasContextMenu(wx.Menu):
 
     def OnRunModel(self, e):
         preRunDialog = logicPreRun()
-        preRunDialog.viewprerun.Show()
+        preRunDialog.Show()
 
 
     def OnClickClear(self, e):

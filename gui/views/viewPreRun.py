@@ -11,8 +11,8 @@ class viewPreRun(wx.Frame):
 
         #  Variables
         self.panel = ""
-        self.page1 = ""
-        self.page2 = ""
+        self.summary_page = ""
+        self.data_page = ""
         self.page3 = ""
         self.notebook = ""
         self.sizer = ""
@@ -22,15 +22,15 @@ class viewPreRun(wx.Frame):
         self.notebook = wx.Notebook(self.panel)
 
         # create the page windows as children of the notebook
-        self.page1 = PageOne(self.notebook)
+        self.summary_page = SummaryPage(self.notebook)
 
         #  Uncomment this two bottom lines to show a second or third tab.
-        self.page2 = PageTwo(self.notebook)
+        self.data_page = DataPage(self.notebook)
         # self.page3 = PageThree(self.notebook)
 
         # add the pages to the notebook with the label to show on the tab
-        self.notebook.AddPage(self.page1, "Summary")
-        self.notebook.AddPage(self.page2, "Data")
+        self.notebook.AddPage(self.summary_page, "Summary")
+        self.notebook.AddPage(self.data_page, "Data")
         # self.notebook.AddPage(self.page3, "Page 3")
 
         # finally, put the notebook in a sizer for the panel to manage
@@ -40,7 +40,7 @@ class viewPreRun(wx.Frame):
         self.panel.SetSizer(self.sizer)
 
 
-class PageOne(wx.Panel):
+class SummaryPage(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent=parent, id=wx.ID_ANY)
 
@@ -126,6 +126,7 @@ class PageOne(wx.Panel):
         return dlg
 
     def loadDatabase(self):
+        # todo: this should be looking at the databases loaded into the engine only
         currentdir = os.path.dirname(os.path.abspath(__file__))  # Get the directory
         connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/connections'))  # finds the file
         file = open(connections_txt, 'r')
@@ -136,6 +137,7 @@ class PageOne(wx.Panel):
         return combobox
 
     def loadAccounts(self):
+        # todo: read from object that is parsed when databases are created
         currentdir = os.path.dirname(os.path.abspath(__file__))  # Get the directory
         connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/preferences'))  # finds the file
         file = open(connections_txt, 'r')
@@ -157,11 +159,12 @@ class PageOne(wx.Panel):
         return loginfo
 
     def loadLocalDB(self, choices):
+        # todo: make sure 'Local' database is the first option
         if os.path.isfile(os.getcwd() + "/app_data/db/local.db"):
             return choices.append("Local")
 
 
-class PageTwo(wx.Panel):
+class DataPage(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
         scrollWin = wx.ScrolledWindow(self, -1, size=(440, 325))

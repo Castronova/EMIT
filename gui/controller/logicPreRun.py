@@ -8,50 +8,60 @@ from gui.views.viewPostRun import viewPostRun
 import time
 
 
-class logicPreRun:
+class logicPreRun(viewPreRun):
     def __init__(self):
-        self.viewprerun = viewPreRun()
-        self.dlg = self.viewprerun.page1.onAddUser()
+        viewPreRun.__init__(self)
+        self.dlg = self.summary_page.onAddUser()
         self.logfilename = "prerunlog.txt"
 
         self.initBinding()
 
     def initBinding(self):
-        self.viewprerun.page1.cancelButton.Bind(wx.EVT_BUTTON, self.OnCancel)
-        self.viewprerun.page1.runButton.Bind(wx.EVT_BUTTON, self.OnRun)
-        self.viewprerun.page1.addAccountButton.Bind(wx.EVT_BUTTON, self.OnAddNew)
+        self.summary_page.cancelButton.Bind(wx.EVT_BUTTON, self.OnCancel)
+        self.summary_page.runButton.Bind(wx.EVT_BUTTON, self.OnRun)
+        self.summary_page.addAccountButton.Bind(wx.EVT_BUTTON, self.OnAddNew)
         self.dlg.okbutton.Bind(wx.EVT_BUTTON, self.OnOkButton)
 
     def OnCancel(self, e):
-        self.viewprerun.Close(True)
+        self.Close(True)
 
 
     def OnRun(self, e):
-        if self.viewprerun.page1.logMessage.GetValue():  # If log Message Checkbox is checked
-            exist = self.CheckSimulationName(self.viewprerun.page1.simulationNameTextBox.GetValue())  # Check if sim name exist
+        # if self.page1.logMessage.GetValue():  # If log Message Checkbox is checked
+        #     exist = self.CheckSimulationName(self.page1.simulationNameTextBox.GetValue())  # Check if sim name exist
+        #
+        #     if exist:
+        #         message = wx.MessageDialog(None, "Simulation name already exist\nWould you like to save and continue?",
+        #                                    "Question", wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
+        #         if message.ShowModal() == wx.ID_YES:
+        #             self.LogSimulation()
+        #             self.RunSim()
+        #         else:
+        #             self.page1.simulationName.SetForegroundColour((200, 60, 0))
+        #     else:
+        #         self.LogSimulation()
+        #         self.RunSim()
 
-            if exist:
-                message = wx.MessageDialog(None, "Simulation name already exist\nWould you like to save and continue?",
-                                           "Question", wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
-                if message.ShowModal() == wx.ID_YES:
-                    self.LogSimulation()
-                    self.RunSim()
-                else:
-                    self.viewprerun.page1.simulationName.SetForegroundColour((200, 60, 0))
-            else:
-                self.LogSimulation()
-                self.RunSim()
+        # else:
 
-        else:
-            self.RunSim()
+        # send database info into the engine
+        name = self.summary_page.simulationNameTextBox.GetValue()
+        db = self.summary_page.databaseCombo.GetValue()
+        user = self.summary_page.accountCombo.GetValue()
+
+        # data = self.page2.
+
+        # execute the simulation
+        self.RunSim()
 
     def RunSim(self):
+
         e = dict()
         events.onClickRun.fire(**e)  # Calls onClickRun from viewContext.py
         self.OnCancel(e)
 
         # todo:  this should be opened after simulation has completed, not right here.
-        # if self.viewprerun.page1.displayMessage.GetValue():
+        # if self.page1.displayMessage.GetValue():
             # frm = viewPostRun()
             # frm.Show()
 
@@ -82,13 +92,13 @@ class logicPreRun:
 
     def RefreshCombo(self):
         # Simply appends the item to the combobox
-        self.viewprerun.page1.accountCombo.AppendItems([self.accountinfo[1]])
+        self.summary_page.accountCombo.AppendItems([self.accountinfo[1]])
 
     def LogSimulation(self):
         currentdir = os.path.dirname(os.path.abspath(__file__))
         connections_txt = os.path.abspath(os.path.join(currentdir, '../../log/' + self.logfilename))
         file = open(connections_txt, 'a')
-        loginfo = self.viewprerun.page1.GetLogValues()
+        loginfo = self.summary_page.GetLogValues()
         logtxt = "[Simulation]\n" + \
                  "Simulation Name = " + loginfo[0] + "\n" + \
                  "Database = " + loginfo[1] + "\n" + \

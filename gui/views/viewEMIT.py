@@ -48,7 +48,7 @@ class ViewEMIT(wx.Frame):
 
         self.Show()
 
-        self.defaultLoadDirectory = os.getcwd()
+        self.defaultLoadDirectory = os.getcwd() + "/models/MyConfigurations/"
 
 
     def _init_sizers(self):

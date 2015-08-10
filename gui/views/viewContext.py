@@ -198,8 +198,6 @@ class CanvasContextMenu(wx.Menu):
         if len(self.parent.links) <= 0:
             run.Enable(False)
 
-        self.defaultLoadDirectory = os.getcwd()
-
     def OnAddLink(self, e):
         self.parent.FloatCanvas.SetMode(self.parent.GuiLink)
 

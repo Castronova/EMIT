@@ -777,7 +777,6 @@ class LogicCanvas(ViewCanvas):
 
     def loadsimulation(self, file):
 
-        # TODO: This needs to be refactored to remove 'for' looping
         self.loadingpath = file
 
         tree = et.parse(file)
@@ -796,6 +795,7 @@ class LogicCanvas(ViewCanvas):
         temporal_transformations = {i.name(): i for i in time.methods()}
 
 
+        # TODO: This needs to be refactored to remove 'for' looping!
         for child in root._children:
             if child.tag == 'DbConnection':
                 attrib = self.appendChild(child)
@@ -841,6 +841,8 @@ class LogicCanvas(ViewCanvas):
 
                     else:
                         return
+
+
         models = tree.findall("./Model")  # Returns a list of all models in the file
         datamodels = tree.findall("./DataModel")  # Returns a list of all data models in the file
         links = tree.findall("./Link")  # Returns a list of all links in the file

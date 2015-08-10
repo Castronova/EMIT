@@ -16,16 +16,16 @@ class logicPreRun(viewPreRun):
         self.logfilename = "prerunlog.txt"
         self.initBinding()
 
-
-
         # load data
         dbs = self.getDatabases()
-        db_names = [db['args']['name'] for db in dbs.itervalues()]
+        db_names = [db['name'] for db in dbs.itervalues()]
         self.summary_page.databaseCombo.AppendItems(db_names)
         self.summary_page.databaseCombo.SetSelection(0)
-        if 'Local' in db_names:  # change the selection to the index of the local db, if it exists
-            self.summary_page.databaseCombo.SetSelection(db_names.index('Local'))
-        # self.accountComboChoices = self.loadAccounts()
+
+        # change the selection to the index of the first local db that is found
+        for i in range(0,len(db_names)):
+            if '(local)' in db_names[i]:
+                self.summary_page.databaseCombo.SetSelection(i)
 
     def initBinding(self):
         self.summary_page.cancelButton.Bind(wx.EVT_BUTTON, self.OnCancel)
@@ -55,6 +55,7 @@ class logicPreRun(viewPreRun):
 
         # else:
 
+        # fixme: this doesn't look like it is setting anything in the engine.
         # send database info into the engine
         name = self.summary_page.simulationNameTextBox.GetValue()
         db = self.summary_page.databaseCombo.GetValue()
@@ -83,10 +84,9 @@ class logicPreRun(viewPreRun):
         :return: a list of databases that are loaded into the engine
         '''
 
+        # query the engine to get all available database connections
         available_connections = engine.getDbConnections()
-
         return available_connections
-        print 'done'
 
     def OnAddNew(self, e):
         self.dlg.CenterOnScreen()

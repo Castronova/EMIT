@@ -115,6 +115,14 @@ class LogicToolbox(ViewToolbox):
                                 e = dict(cat=self.cat, txt=txt, fullpath=fullpath)
                                 events.onSimulationSaved.fire(**e)
 
+    def RefreshToolbox(self):
+        self.tree.DeleteChildren(self.tree.GetRootItem())
+        self.loadToolbox(self.getModelPath())
+
+        self.root_mdl.Expand()
+        self.componentBranch.Expand()
+        self.simConfigurations.Expand()
+
     def getModelPath(self):
         return self.modelpaths
 

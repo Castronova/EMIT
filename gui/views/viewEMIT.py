@@ -271,6 +271,7 @@ class ViewEMIT(wx.Frame):
             txt = save.Filename.split('.sim')[0]
             e = dict(cat=self.Toolbox.cat, txt=txt, fullpath=save.Path)
             events.onSimulationSaved.fire(**e)  # calls loadSIMFile from logicToolBox
+            self.Toolbox.RefreshToolbox()
         else:
             save.Destroy()
 

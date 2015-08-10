@@ -491,11 +491,11 @@ class LogicCanvas(ViewCanvas):
             self.linkRects.append(object)
 
         # populate model view
-        if cur.Name == 'default':
-
-            # get the model object from the engine
-            obj_id = object.ID
-            model = engine.getModelById(obj_id)
+        # if cur.Name == 'default':
+        #
+        #     # get the model object from the engine
+        #     obj_id = object.ID
+        #     model = engine.getModelById(obj_id)
 
         if not self.Moving:
 

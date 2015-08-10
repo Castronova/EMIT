@@ -7,6 +7,7 @@ import sys
 import time
 from multiprocessing import Queue
 import events
+import wx
 
 class EngineBorg:
     """
@@ -235,4 +236,6 @@ class Engine:
             if 'event' in result.keys():
                 evt_name= result.pop('event')
                 evt = getattr(events, evt_name)
-                evt.fire(**result)
+                wx.CallAfter(evt.fire, **result)
+                # evt.fire(**result)
+

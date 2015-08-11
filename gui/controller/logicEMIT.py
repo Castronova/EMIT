@@ -54,14 +54,9 @@ class LogicEMIT(ViewEMIT):
                 cur.executescript(script.read())
             script.close()
 
-        # cons = engine.getDbConnections()
-        # print cons
         # load the local database into the engine
         engine.connectToDb(title='ODM2 SQLite (local)',desc='Local SQLite database',engine='sqlite',address=filepath, name=None, user=None, pwd=None)
 
-        # cons = engine.getDbConnections()
-        # print cons
-        # print 'done'
 
 def removedb(file):
     try:

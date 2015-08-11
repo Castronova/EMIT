@@ -171,11 +171,6 @@ class TimeSeriesTab(wx.Panel):
         # self refresh_database
         self.OLVRefresh(event)
 
-    def loadLocalDB(self, choices):
-        if os.path.isfile(os.getcwd() + "/app_data/db/local.db"):
-            return choices.append("Local")
-
-
     def refreshConnectionsListBox(self, connection_added):
 
         if connection_added:
@@ -184,7 +179,6 @@ class TimeSeriesTab(wx.Panel):
             choices = ['---']
             for k,v in self._databases.iteritems():
                 choices.append(self._databases[k]['name'])
-            self.loadLocalDB(choices)
             self.connection_combobox.SetItems(choices)
 
             # set the selected choice
@@ -234,8 +228,6 @@ class TimeSeriesTab(wx.Panel):
                 params = dlg.getConnectionParams()
 
                 dlg.Destroy()
-
-
 
                 # create the database connection
                 Publisher.sendMessage('DatabaseConnection',
@@ -583,8 +575,6 @@ class DataSeries(wx.Panel):
                 params = dlg.getConnectionParams()
 
                 dlg.Destroy()
-
-
 
                 # create the database connection
                 Publisher.sendMessage('DatabaseConnection',

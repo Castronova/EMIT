@@ -65,6 +65,10 @@ class LogicCanvas(ViewCanvas):
         self.uniqueId = None
         self.defaultLoadDirectory = os.getcwd() + "/models/MyConfigurations/"
 
+        # todo: implement a method to keep track of the models that fail loading.  A failed model event must be fired inside the engine
+        self.failed_models = 0
+        self.logicCanvasThreads = {}
+
     def UnBindAllMouseEvents(self):
         self.Unbind(FC.EVT_LEFT_DOWN)
         self.Unbind(FC.EVT_LEFT_UP)
@@ -842,47 +846,41 @@ class LogicCanvas(ViewCanvas):
                     else:
                         return
 
-
         models = tree.findall("./Model")  # Returns a list of all models in the file
         datamodels = tree.findall("./DataModel")  # Returns a list of all data models in the file
         links = tree.findall("./Link")  # Returns a list of all links in the file
         transform = tree.findall("./transformation")
-        total = len(models) + len(datamodels)
+        total = len(models) + len(datamodels) + len(self.models) + self.failed_models
 
         elog.debug("There are " + str(total) + " models in the file")
+        waitingThread = threading.Thread(target=self.waiting, args=(total, links, transform, temporal_transformations, spatial_transformations), name="LoadLinks")
+        self.logicCanvasThreads[waitingThread.name] = waitingThread
+        waitingThread.start()
 
         #  Models from database and non database will load async.
-        # self.LoadModels(models)
-        t1 = threading.Thread(target=self.LoadModels, args=(models,), name="Load Models")
+        t1 = threading.Thread(target=self.LoadModels, args=(models,), name="LoadModels")
+        self.logicCanvasThreads[t1.name] = t1
         t1.start()
 
-        # self.LoadDataModels(datamodels, conn_ids)
-        t2 = threading.Thread(target=self.LoadDataModels, args=(datamodels, conn_ids,), name="Load Data Model")
+        t2 = threading.Thread(target=self.LoadDataModels, args=(datamodels, conn_ids,), name="LoadDataModel")
+        self.logicCanvasThreads[t2.name] = t2
         t2.start()
 
-        t1.join()
-        t2.join()
-        #  By using join() the next thread will not start until t1 and t2 finish.
-
-        t3 = threading.Thread(target=self.LoadLinks, args=(links, transform, temporal_transformations, spatial_transformations,), name="Load Links")
-
-
-        t3.start()
-        t3.join()
-        # self.LoadLinks(links, transform, temporal_transformations, spatial_transformations)
         elog.debug(str(len(self.models)) + " were models loaded")
 
-        self.FloatCanvas.Draw()
-
-
+    def waiting(self, total, links, transform, temporal_transformations, spatial_transformations):
+        #  This method waits for all the models in the file to be loaded before linking
+        while len(self.models) < total:
+            time.sleep(0.5)
+        self.LoadLinks(links, transform, temporal_transformations, spatial_transformations)
+        return
 
     def LoadModels(self, models):
         for model in models:
             attrib = self.appendChild(model)
-
             self.addModel(filepath=attrib['path'], x=float(attrib['xcoordinate']), y=float(attrib['ycoordinate']),
                               uid=attrib['id'])
-        self.FloatCanvas.Draw()
+        wx.CallAfter(self.FloatCanvas.Draw)
 
     def LoadDataModels(self, datamodels, conn_ids):
         for model in datamodels:
@@ -895,7 +893,7 @@ class LogicCanvas(ViewCanvas):
             self.addModel(filepath=attrib['resultid'], x=float(attrib['xcoordinate']),
                               y=float(attrib['ycoordinate']),  uid=attrib['databaseid'],
                               title=attrib['name'], uniqueId=attrib['resultid'])
-        self.FloatCanvas.Draw()
+        wx.CallAfter(self.FloatCanvas.Draw)
 
     def LoadLinks(self, links, transformation, temp_trans, spat_trans):
         for link in links:
@@ -932,9 +930,7 @@ class LogicCanvas(ViewCanvas):
                                )
 
             # this draws the line
-            self.createLine(R1, R2)
-
-
+            wx.CallAfter(self.createLine, R1, R2)
 
     def SetLoadingPath(self, path):
         self.loadingpath = path

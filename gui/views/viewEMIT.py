@@ -316,6 +316,8 @@ class AllFileView(wx.Panel):  # todo: Delete this
 class viewMenuBar(wx.Frame):
 
     def __init__(self):
+        wx.Frame.__init__(self, parent=None, id=-1, title="Settings...", pos=wx.DefaultPosition, size=wx.Size(350, 250))
+
         #  Read the settings file
         currentdir = os.path.dirname(os.path.abspath(__file__))
         self.settingspath = os.path.abspath(os.path.join(currentdir, '../../data/settings'))
@@ -347,12 +349,16 @@ class viewMenuBar(wx.Frame):
 
         file.close()
 
-        wx.Frame.__init__(self, parent=None, id=-1, title="Settings...", pos=wx.DefaultPosition, size=wx.Size(350, 350))
+
         self.panel = wx.Panel(self)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        self.statusbar = self.CreateStatusBar()
-        self.SettingsStatusBar()
+        # self.statusbar = self.CreateStatusBar()
+        # self.SettingsStatusBar()
+
+        console_title = wx.StaticText(self.panel, id=wx.ID_ANY, label="Configure Console Verbosity",pos=(20, 100))
+        font = wx.Font(16, wx.NORMAL, wx.NORMAL, wx.BOLD)
+        console_title.SetFont(font)
 
         self.c1 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Info Messages")
         self.c2 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Warning Messages")
@@ -365,22 +371,27 @@ class viewMenuBar(wx.Frame):
         self.c3.SetValue(self.criticalIsChecked)
         self.c4.SetValue(self.errorIsChecked)
         self.c5.SetValue(self.debugIsChecked)
-
         self.saveButton = wx.Button(self.panel, 1, 'Save')
 
-        sizer.Add(self.c1, 1, flag=wx.ALL | wx.ALIGN_CENTER, border=5)
-        sizer.Add(self.c2, 1, flag=wx.ALL | wx.ALIGN_CENTER, border=5)
-        sizer.Add(self.c3, 1, flag=wx.ALL | wx.ALIGN_CENTER, border=5)
-        sizer.Add(self.c4, 1, flag=wx.ALL | wx.ALIGN_CENTER, border=5)
-        sizer.Add(self.c5, 1, flag=wx.ALL | wx.ALIGN_CENTER, border=5)
-        sizer.Add(self.saveButton, 1, flag=wx.wx.ALL | wx.ALIGN_CENTER, border=5)
+        sizer.Add(console_title, .1, flag=wx.ALL | wx.ALIGN_LEFT, border=20)
+        sizer.Add(self.c1, 0, flag=wx.LEFT | wx.ALIGN_LEFT, border=20)
+        sizer.Add(self.c2, 0, flag=wx.LEFT | wx.ALIGN_LEFT, border=20)
+        sizer.Add(self.c3, 0, flag=wx.LEFT | wx.ALIGN_LEFT, border=20)
+        sizer.Add(self.c4, 0, flag=wx.LEFT | wx.ALIGN_LEFT, border=20)
+        sizer.Add(self.c5, 0, flag=wx.LEFT | wx.ALIGN_LEFT, border=20)
+        sizer.Add(self.saveButton, 1, flag=wx.RIGHT | wx.ALIGN_RIGHT, border=20)
         # sizer.Add(self.gauge, proportion=0, flag=wx.ALL | wx.ALIGN_CENTER, border=0)
 
-        self.Bind(wx.EVT_BUTTON, self.OnSave, id=1)
+        # self.Bind(wx.EVT_BUTTON, self.OnSave, id=1)
 
         self.panel.SetSizer(sizer)
-        self.Centre()
+        self.Layout()
+        self.Refresh()
         self.Show()
+
+
+        print 'here'
+
 
     def OnSave(self, event):
         self.timer.Start(25)

@@ -176,7 +176,7 @@ class ViewEMIT(wx.Frame):
 
         wx.CallAfter(self._postStart)
 
-        ## Events
+        # Events
         # View Option Bindings
         self.Bind(wx.EVT_MENU, self.SaveConfiguration, Save)
         self.Bind(wx.EVT_MENU, self.SaveConfigurationAs, SaveAs)
@@ -190,9 +190,6 @@ class ViewEMIT(wx.Frame):
         self.Bind(wx.EVT_MENU, self.onAllFiles, ShowAll)
         self.Bind(wx.EVT_MENU, self.onConsole, MinimizeConsole)
         self.Bind(wx.EVT_MENU, self.defaultview, defaultview)
-
-
-        # Run Option Bindings
 
     def Settings(self, event):
         settings = viewMenuBar()
@@ -293,13 +290,10 @@ class ViewEMIT(wx.Frame):
 
     def onConsole(self, event):
         ConsolePane = self.m_mgr.GetPane(self.bnb)
-        Toggle = 1
         if event.Selection == 0:
             ConsolePane.Show(show=True)
-            Toggle = 1
         if event.Selection == 1:
             ConsolePane.Hide()
-            Toggle = 0
         self.m_mgr.Update()
         pass
 
@@ -315,7 +309,7 @@ class ModelView(wx.Panel):
     def setText(self, value=None):
         self.contents.SetPage(value, "")
 
-class AllFileView(wx.Panel):
+class AllFileView(wx.Panel):  # todo: Delete this
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
 
@@ -390,7 +384,6 @@ class viewMenuBar(wx.Frame):
 
     def OnSave(self, event):
         self.timer.Start(25)
-        # self.OnTimer()
         cb = self.getCheckboxValue()
         file = open(self.settingspath, 'w')
         file.writelines(['showinfo = '+str(cb.values()[0])+'\n',

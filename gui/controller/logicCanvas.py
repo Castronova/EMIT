@@ -84,11 +84,11 @@ class LogicCanvas(ViewCanvas):
         self.FloatCanvas.Bind(FC.EVT_MOTION, self.OnMove)
         self.FloatCanvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp)
         self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.LaunchContext)
-        self.Bind(wx.EVT_CLOSE, self.onClose)
+        # self.Bind(wx.EVT_CLOSE, self.onClose) todo: delete this
         self.Bind(EVT_CREATE_BOX, self.onCreateBox)
         self.Bind(EVT_UPDATE_CONSOLE, self.onUpdateConsole)
-        self.Bind(wx.EVT_ENTER_WINDOW, self.onEnterWindow)
-        self.FloatCanvas.Bind(FC.EVT_ENTER_WINDOW,self.onEnterWindow)
+        # self.Bind(wx.EVT_ENTER_WINDOW, self.onEnterWindow) todo: delete this
+        # self.FloatCanvas.Bind(FC.EVT_ENTER_WINDOW,self.onEnterWindow) todo: delete this
 
         # engine bindings
         engineEvent.onModelAdded += self.draw_box
@@ -112,23 +112,23 @@ class LogicCanvas(ViewCanvas):
     def OnSetFilepath(self, path):
         self.path = path
 
-    def onEnterWindow(self, event):
-        try:
-            filenames = self.path
-            x,y = event.Position
-            if filenames:
-                name, ext = os.path.splitext(filenames)
-
-                if ext == '.mdl' or ext == '.sim':
-                    originx, originy = self.FloatCanvas.WorldToPixel(self.GetPosition())
-                    nx = (x - originx)+300
-                    ny = (originy - y)
-                    self.addModel(filepath=filenames, x=nx, y=ny)
-
-        except:
-            # elog.debug("onEnterWindow() in logicCanvas.py")
-            pass
-        self.path = None
+    # def onEnterWindow(self, event):  # todo: Delete this
+    #     try:
+    #         filenames = self.path
+    #         x,y = event.Position
+    #         if filenames:
+    #             name, ext = os.path.splitext(filenames)
+    #
+    #             if ext == '.mdl' or ext == '.sim':
+    #                 originx, originy = self.FloatCanvas.WorldToPixel(self.GetPosition())
+    #                 nx = (x - originx)+300
+    #                 ny = (originy - y)
+    #                 self.addModel(filepath=filenames, x=nx, y=ny)
+    #
+    #     except:
+    #         # elog.debug("onEnterWindow() in logicCanvas.py")
+    #         pass
+    #     self.path = None
 
     def onDbChanged(self, event):
         """
@@ -139,33 +139,34 @@ class LogicCanvas(ViewCanvas):
         self._currentDbSession = event.dbsession
         self._dbid = event.dbid
 
-    def onClose(self, event):
-        dlg = wx.MessageDialog(None, 'Are you sure you want to exit?', 'Question',
-                               wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
-
-        if dlg.ShowModal() != wx.ID_NO:
-
-            windowsRemaining = len(wx.GetTopLevelWindows())
-            if windowsRemaining > 0:
-                import wx.lib.agw.aui.framemanager as aui
-
-                for item in wx.GetTopLevelWindows():
-                    if not isinstance(item, self.frame.__class__):
-                        if isinstance(item, aui.AuiFloatingFrame):
-                            item.Destroy()
-                        elif isinstance(item, aui.AuiSingleDockingGuide):
-                            item.Destroy()
-                        elif isinstance(item, aui.AuiDockingHintWindow):
-                            item.Destroy()
-                        elif isinstance(item, wx.Dialog):
-                            item.Destroy()
-                        item.Close()
-
-            self.frame.Destroy()
-            wx.GetApp().ExitMainLoop()
-
-        else:
-            pass
+    # todo: Delete this
+    # def onClose(self, event):
+    #     dlg = wx.MessageDialog(None, 'Are you sure you want to exit?', 'Question',
+    #                            wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
+    #
+    #     if dlg.ShowModal() != wx.ID_NO:
+    #
+    #         windowsRemaining = len(wx.GetTopLevelWindows())
+    #         if windowsRemaining > 0:
+    #             import wx.lib.agw.aui.framemanager as aui
+    #
+    #             for item in wx.GetTopLevelWindows():
+    #                 if not isinstance(item, self.frame.__class__):
+    #                     if isinstance(item, aui.AuiFloatingFrame):
+    #                         item.Destroy()
+    #                     elif isinstance(item, aui.AuiSingleDockingGuide):
+    #                         item.Destroy()
+    #                     elif isinstance(item, aui.AuiDockingHintWindow):
+    #                         item.Destroy()
+    #                     elif isinstance(item, wx.Dialog):
+    #                         item.Destroy()
+    #                     item.Close()
+    #
+    #         self.frame.Destroy()
+    #         wx.GetApp().ExitMainLoop()
+    #
+    #     else:
+    #         pass
 
     def OnMove(self, event):
         if self.Moving:
@@ -308,8 +309,6 @@ class LogicCanvas(ViewCanvas):
         # this draws the line
         self.createLine(R1, R2)
 
-        # self.FloatCanvas.Draw()
-
     def set_model_coords(self, id, x, y):
 
         self.model_coords[id] = {'x': x, 'y': y}
@@ -354,6 +353,7 @@ class LogicCanvas(ViewCanvas):
 
             self.FloatCanvas.Draw()
 
+    # todo: Delete this
     # def createArrow(self, line):
     #
     #     print "adding arrow to ", line.MidPoint
@@ -494,6 +494,7 @@ class LogicCanvas(ViewCanvas):
         if cur.Name == 'link':
             self.linkRects.append(object)
 
+        # todo: Delete this, this was breaking many things
         # populate model view
         # if cur.Name == 'default':
         #
@@ -606,9 +607,10 @@ class LogicCanvas(ViewCanvas):
         kwargs = dict(title=title, desc=desc, engine=dbengine, address=address, name=name, user=user, pwd=pwd)
         engine.connectToDb(**kwargs)
 
-    def DetailView(self):
-        # DCV.ShowDetails()
-        pass
+    # todo: Delete this
+    # def DetailView(self):
+    #     DCV.ShowDetails()
+    #     pass
 
     def SaveSimulation(self, path):
 
@@ -975,7 +977,7 @@ class LogicCanvas(ViewCanvas):
         # todo: this should open a dialog box showing the execution summary
         elog.info('Simulation finished')
 
-# DELETEME
+# todo: DELETEME
 menu_titles = ["Open",
                "Properties",
                "Rename",

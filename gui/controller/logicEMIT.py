@@ -22,7 +22,7 @@ class LogicEMIT(ViewEMIT):
         connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/connections'))
         engine.connectToDbFromFile(dbtextfile=connections_txt)
 
-
+        # todo: Delete this
         # engine.createSQLiteInMemory()
         # Create or connect to local database, create local folder in db
         # env_vars.set_environment_variable('LOCAL_DB_BASE', 'test')

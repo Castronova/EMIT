@@ -33,12 +33,12 @@ class LinkContextMenu(wx.Menu):
     def RemoveLink(self, e):
         self.parent.RemoveLink(self.arrow_obj)
 
-
-    def OnMinimize(self, e):
-        self.parent.Iconize()
-
-    def OnClose(self, e):
-        self.parent.Close()
+    # todo: Delete this
+    # def OnMinimize(self, e):
+    #     self.parent.Iconize()
+    # todo: Delete this
+    # def OnClose(self, e):
+    #     self.parent.Close()
 
 class ConsoleContextMenu(wx.Menu):
     """
@@ -59,12 +59,12 @@ class ConsoleContextMenu(wx.Menu):
         User clears the gui console
         """
         self.log.Clear()
-
-    def OnMinimize(self, e):
-        self.parent.Iconize()
-
-    def OnClose(self, e):
-        self.parent.Close()
+    # todo: Delete this
+    # def OnMinimize(self, e):
+    #     self.parent.Iconize()
+    # todo: Delete this
+    # def OnClose(self, e):
+    #     self.parent.Close()
 
 class ModelContextMenu(wx.Menu):
 
@@ -140,18 +140,18 @@ class ModelContextMenu(wx.Menu):
             model_details.PopulateProperties(engine.getModelById(self.model_obj.ID), iei=iei, oei=oei)
 
         model_details.Show()
-
-    def PopupDisplay(self, e):
-        self.parent.DetailView(e)
-
-    def OnAddLink(self, e):
-        self.parent.ArrowClicked(e)
-
-    def OnMinimize(self, e):
-        self.parent.Iconize()
-
-    def OnClose(self, e):
-        self.parent.Close()
+    # todo: Delete this
+    # def PopupDisplay(self, e):
+    #     self.parent.DetailView(e)
+    # todo: Delete this
+    # def OnAddLink(self, e):
+    #     self.parent.ArrowClicked(e)
+    # todo: Delete this
+    # def OnMinimize(self, e):
+    #     self.parent.Iconize()
+    # todo: Delete this
+    # def OnClose(self, e):
+    #     self.parent.Close()
 
     def RemoveModel(self, e):
         self.parent.RemoveModel(self.model_obj)
@@ -274,12 +274,12 @@ class DirectoryContextMenu(wx.Menu):
 
     def OnViewDetails(self, e):
         self.parent.ShowDetails()
-
-    def OnMinimize(self, e):
-        self.parent.Iconize()
-
-    def OnClose(self, e):
-        self.parent.Close()
+    # todo: Delete this
+    # def OnMinimize(self, e):
+    #     self.parent.Iconize()
+    # todo: Delete this
+    # def OnClose(self, e):
+    #     self.parent.Close()
 
 class ToolboxContextMenu(wx.Menu):
 
@@ -307,12 +307,12 @@ class ToolboxContextMenu(wx.Menu):
 
     def OnCollapseAll(self, e):
         self.parent.OnCollapseAll()
-
-    def OnMinimize(self, e):
-        self.parent.Iconize()
-
-    def OnClose(self, e):
-        self.parent.Close()
+    # todo: Delete this
+    # def OnMinimize(self, e):
+    #     self.parent.Iconize()
+    # todo: Delete this
+    # def OnClose(self, e):
+    #     self.parent.Close()
 
     def OnRemove(self, e):
         self.parent.Remove(e)

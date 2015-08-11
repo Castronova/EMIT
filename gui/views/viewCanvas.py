@@ -35,7 +35,7 @@ class ViewCanvas(wx.Panel):
 
         currentWorkDirectory = os.getcwd()
         imagesPath = os.path.join(currentWorkDirectory, 'gui/images/')
-        self.linkArrow = wx.Image(imagesPath+'rightArrowBlue40.png', wx.BITMAP_TYPE_PNG)
+        self.linkArrow = wx.Image(imagesPath+'rightArrowBlue60.png', wx.BITMAP_TYPE_PNG)
         self.UnassignedBox4 = wx.Image(imagesPath+'rectBlue.png', wx.BITMAP_TYPE_PNG)
         self.TimeseriesBox = wx.Image(imagesPath+'rectGreen.png', wx.BITMAP_TYPE_PNG)
         self.DatabaseBox = wx.Image(imagesPath+'rectPurple.png', wx.BITMAP_TYPE_PNG)

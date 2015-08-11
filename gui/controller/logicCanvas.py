@@ -85,7 +85,7 @@ class LogicCanvas(ViewCanvas):
         self.FloatCanvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp)
         self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.LaunchContext)
         # self.Bind(wx.EVT_CLOSE, self.onClose) todo: delete this
-        self.Bind(EVT_CREATE_BOX, self.onCreateBox)
+        # self.Bind(EVT_CREATE_BOX, self.onCreateBox) todo: delete this
         self.Bind(EVT_UPDATE_CONSOLE, self.onUpdateConsole)
         # self.Bind(wx.EVT_ENTER_WINDOW, self.onEnterWindow) todo: delete this
         # self.FloatCanvas.Bind(FC.EVT_ENTER_WINDOW,self.onEnterWindow) todo: delete this
@@ -97,7 +97,7 @@ class LogicCanvas(ViewCanvas):
         events.onDbChanged += self.onDbChanged
 
     def initSubscribers(self):
-        Publisher.subscribe(self.createBox, "createBox")
+        # Publisher.subscribe(self.createBox, "createBox") todo: delete this
         Publisher.subscribe(self.setCursor, "setCursor")
         Publisher.subscribe(self.run, "run")
         Publisher.subscribe(self.clear, "clear")
@@ -218,12 +218,12 @@ class LogicCanvas(ViewCanvas):
             elog.debug("DEBUG|", evt.message)
 
 
-    def onCreateBox(self, evt):
-        name = evt.name
-        id = evt.id
-        x = evt.xCoord
-        y = evt.yCoord
-        self.createBox(xCoord=x, yCoord=y, id=id, name=name)
+    # def onCreateBox(self, evt):  # todo: delete this
+    #     name = evt.name
+    #     id = evt.id
+    #     x = evt.xCoord
+    #     y = evt.yCoord
+    #     self.createBox(xCoord=x, yCoord=y, id=id, name=name)
 
     def createBox(self, xCoord, yCoord, id=None, name=None, type=datatypes.ModelTypes.TimeStep):
 
@@ -603,7 +603,6 @@ class LogicCanvas(ViewCanvas):
         return self._currentDbSession
 
     def AddDatabaseConnection(self, title, desc, dbengine, address, name, user, pwd):
-
         kwargs = dict(title=title, desc=desc, engine=dbengine, address=address, name=name, user=user, pwd=pwd)
         engine.connectToDb(**kwargs)
 
@@ -756,7 +755,6 @@ class LogicCanvas(ViewCanvas):
                 connectionconnectionstringelement.text = attributes['connection_string']
 
         try:
-
             # format the xml nicely
             rough_string = et.tostring(tree, 'utf-8')
             reparsed = minidom.parseString(rough_string)
@@ -812,14 +810,16 @@ class LogicCanvas(ViewCanvas):
                 # db_elements = db_conn.getchildren()
 
                 for id, dic in connections.iteritems():
+                    try:
+                        if str(dic['args']['connection_string']) == connection_string:
+                            # dic['args']['id'] = db_conn.attrib['id']
+                            database_exists = True
 
-                    if str(dic['args']['connection_string']) == connection_string:
-                        # dic['args']['id'] = db_conn.attrib['id']
-                        database_exists = True
-
-                        # map the connection ids
-                        conn_ids[attrib['databaseid']] = dic['args']['id']
-                        break
+                            # map the connection ids
+                            conn_ids[attrib['databaseid']] = dic['args']['id']
+                            break
+                    except Exception, e:
+                        elog.error(e.message)
 
                 # if database doesn't exist, then connect to it
                 if not database_exists:
@@ -868,13 +868,15 @@ class LogicCanvas(ViewCanvas):
         self.logicCanvasThreads[t2.name] = t2
         t2.start()
 
-        elog.debug(str(len(self.models)) + " were models loaded")
+
 
     def waiting(self, total, links, transform, temporal_transformations, spatial_transformations):
         #  This method waits for all the models in the file to be loaded before linking
+        elog.info("Waiting for all models to be loaded before creating link")
         while len(self.models) < total:
             time.sleep(0.5)
         self.LoadLinks(links, transform, temporal_transformations, spatial_transformations)
+        elog.debug(str(len(self.models)) + " were models loaded")
         return
 
     def LoadModels(self, models):

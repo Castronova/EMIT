@@ -149,10 +149,7 @@ class LogicToolbox(ViewToolbox):
                 kvp[option] = cparser.get(s, option)
             d.append(kvp)
 
-        # if section not in self.modelpaths:
         self.modelpaths = d
-        # else:
-        #     self.modelpaths[section].append(d)
 
     def loadMDLFile(self, cat, txt, fullpath):
         mdl_parser = ConfigParser.ConfigParser(None, multidict)
@@ -187,9 +184,6 @@ class LogicToolbox(ViewToolbox):
             if i == item:
                 self.__currently_selected_item_path = os.path.abspath(self.items[i])
                 break
-
-    # def OnActivate(self, evt):
-    # item = self.tree.GetSelection()
 
     def onDoubleClick(self, event):
         id = event.GetItem()

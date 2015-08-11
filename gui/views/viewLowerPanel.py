@@ -130,7 +130,7 @@ class TimeSeriesTab(wx.Panel):
 
         self.connection_refresh_button.Bind(wx.EVT_LEFT_DOWN, self.OLVRefresh)
         self.connection_combobox.Bind(wx.EVT_CHOICE, self.DbChanged)
-        self.connection_combobox.Bind(wx.EVT_COMBOBOX_DROPDOWN, self.RefreshComboBox)
+        # self.connection_combobox.Bind(wx.EVT_COMBOBOX_DROPDOWN, self.RefreshComboBox) todo: delete this
 
 
         # Sizers
@@ -162,8 +162,8 @@ class TimeSeriesTab(wx.Panel):
         # object to hold the current session
         self.__current_session = None
 
-    def RefreshComboBox(self, event):
-        pass
+    # def RefreshComboBox(self, event):  # todo: delete this
+    #     pass
 
 
     def DbChanged(self, event):
@@ -232,12 +232,12 @@ class TimeSeriesTab(wx.Panel):
                 # create the database connection
                 Publisher.sendMessage('DatabaseConnection',
                                       title=params[0],
-                                      desc = params[1],
-                                      dbengine = params[2],
-                                      address = params[3],
-                                      name = params[4],
-                                      user = params[5],
-                                      pwd = params[6])
+                                      desc=params[1],
+                                      dbengine=params[2],
+                                      address=params[3],
+                                      name=params[4],
+                                      user=params[5],
+                                      pwd=params[6])
 
                 if self.connection_added_status():
                     Publisher.sendMessage('getDatabases')

@@ -2,9 +2,7 @@ __author__ = 'Francisco'
 
 import wx
 from gui.views.viewPreRun import viewPreRun
-from gui import events
 import os
-from gui.views.viewPostRun import viewPostRun
 import time
 import coordinator.engineAccessors as engine
 
@@ -22,6 +20,11 @@ class logicPreRun(viewPreRun):
         self.summary_page.databaseCombo.AppendItems(db_names)
         self.summary_page.databaseCombo.SetSelection(0)
 
+        # Load account drop down
+        accounts = self.summary_page.loadAccounts()
+        self.summary_page.accountCombo.AppendItems(accounts)
+        self.summary_page.accountCombo.SetSelection(0)
+
         # change the selection to the index of the first local db that is found
         for i in range(0,len(db_names)):
             if '(local)' in db_names[i]:
@@ -36,24 +39,7 @@ class logicPreRun(viewPreRun):
     def OnCancel(self, e):
         self.Close(True)
 
-
     def OnRun(self, e):
-        # if self.page1.logMessage.GetValue():  # If log Message Checkbox is checked
-        #     exist = self.CheckSimulationName(self.page1.simulationNameTextBox.GetValue())  # Check if sim name exist
-        #
-        #     if exist:
-        #         message = wx.MessageDialog(None, "Simulation name already exist\nWould you like to save and continue?",
-        #                                    "Question", wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
-        #         if message.ShowModal() == wx.ID_YES:
-        #             self.LogSimulation()
-        #             self.RunSim()
-        #         else:
-        #             self.page1.simulationName.SetForegroundColour((200, 60, 0))
-        #     else:
-        #         self.LogSimulation()
-        #         self.RunSim()
-
-        # else:
 
         # fixme: this doesn't look like it is setting anything in the engine.
         # send database info into the engine
@@ -61,22 +47,22 @@ class logicPreRun(viewPreRun):
         db = self.summary_page.databaseCombo.GetValue()
         user = self.summary_page.accountCombo.GetValue()
 
-        # data = self.page2.
-
         # execute the simulation
-        self.RunSim()
+        engine.runSimulation()
+        self.data_page.GetMarkedBoxes()
+        self.Close()
 
-    def RunSim(self):
-
-        # todo: this should use engine accessor call, not event call
-        e = dict()
-        events.onClickRun.fire(**e)  # Calls onClickRun from viewContext.py
-        self.OnCancel(e)
-
-        # todo:  this should be opened after simulation has completed, not right here.
-        # if self.page1.displayMessage.GetValue():
-            # frm = viewPostRun()
-            # frm.Show()
+    # def RunSim(self):
+    #
+    #     # todo: this should use engine accessor call, not event call
+    #     e = dict()
+    #     events.onClickRun.fire(**e)  # Calls onClickRun from viewContext.py
+    #     self.OnCancel(e)
+    #
+    #     # todo:  this should be opened after simulation has completed, not right here.
+    #     # if self.page1.displayMessage.GetValue():
+    #         # frm = viewPostRun()
+    #         # frm.Show()
 
     def getDatabases(self):
         '''
@@ -127,7 +113,6 @@ class logicPreRun(viewPreRun):
                  "Database = " + loginfo[1] + "\n" + \
                  "User = " + loginfo[2] + "\n" +\
                  "Date = " + time.strftime("%m/%d/%Y") + "\n" + \
-                 "Message = " + viewPostRun().runsummary + \
                  "\n\n"
         file.write(logtxt)
         file.close()

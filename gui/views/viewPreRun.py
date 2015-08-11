@@ -3,6 +3,7 @@ __author__ = 'Francisco'
 import wx
 import os
 from coordinator import engineAccessors
+from coordinator.emitLogging import elog
 
 
 class viewPreRun(wx.Frame):
@@ -58,8 +59,6 @@ class SummaryPage(wx.Panel):
         self.boxsizer = ""
         self.cancelButton = ""
         self.runButton = ""
-        # self.databaseComboChoices = self.loadDatabase()
-        self.accountComboChoices = self.loadAccounts()
 
         self.sizer = wx.GridBagSizer(vgap=5, hgap=5)
 
@@ -70,20 +69,15 @@ class SummaryPage(wx.Panel):
         self.sizer.Add(self.simulationNameTextBox, pos=(1, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND)
 
         self.databaseName = wx.StaticText(self, label="Database: ")
-        self.sizer.Add(self.databaseName, pos=(2, 0), flag=wx.LEFT|wx.TOP, border=10)
+        self.sizer.Add(self.databaseName, pos=(2, 0), flag=wx.LEFT | wx.TOP, border=10)
 
-        # self.databaseCombo = wx.ComboBox(self, value=self.databaseComboChoices[0], choices=self.databaseComboChoices, style=wx.CB_READONLY)
         self.databaseCombo = wx.ComboBox(self, choices=[], style=wx.CB_READONLY)
         self.sizer.Add(self.databaseCombo, pos=(2, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND, border=5)
 
-        # browseDataBaseButton = wx.Button(self, label="Browse...")
-        # sizer.Add(browseDataBaseButton, pos=(2, 4), flag=wx.TOP|wx.RIGHT, border=5)
-
         self.accountName = wx.StaticText(self, label="User Account: ")
-        self.sizer.Add(self.accountName, pos=(3, 0), flag=wx.TOP|wx.LEFT, border=10)
+        self.sizer.Add(self.accountName, pos=(3, 0), flag=wx.TOP | wx.LEFT, border=10)
 
-        # todo: move this into logicPreRun
-        self.accountCombo = wx.ComboBox(self, value=self.accountComboChoices[0], choices=self.accountComboChoices, style=wx.CB_READONLY)
+        self.accountCombo = wx.ComboBox(self, choices=[], style=wx.CB_READONLY)
         self.sizer.Add(self.accountCombo, pos=(3, 1), span=(1, 2), flag=wx.TOP | wx.EXPAND, border=5)
 
         self.addAccountButton = wx.Button(self, label="Add New")
@@ -127,19 +121,6 @@ class SummaryPage(wx.Panel):
         dlg = AddNewUserDialog(self, id=-1, title="Add New User", style=wx.DEFAULT_DIALOG_STYLE)
         return dlg
 
-    def loadDatabase(self):
-        # todo: this should be looking at the databases loaded into the engine only
-
-        self.g
-
-        currentdir = os.path.dirname(os.path.abspath(__file__))  # Get the directory
-        connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/connections'))  # finds the file
-        file = open(connections_txt, 'r')
-        data = file.readlines()
-        file.close()
-        combobox = self.getFromFile(data, "name")
-        self.loadLocalDB(combobox)
-        return combobox
 
     def loadAccounts(self):
         # todo: read from object that is parsed when databases are created
@@ -162,11 +143,6 @@ class SummaryPage(wx.Panel):
     def GetLogValues(self):
         loginfo = [self.simulationNameTextBox.GetValue(), self.databaseCombo.GetValue(), self.accountCombo.GetValue()]
         return loginfo
-
-    def loadLocalDB(self, choices):
-        # todo: make sure 'Local' database is the first option
-        if os.path.isfile(os.getcwd() + "/app_data/db/local.db"):
-            return choices.append("Local")
 
 
 class DataPage(wx.Panel):
@@ -201,17 +177,28 @@ class DataPage(wx.Panel):
             y_pos = 30
             count_checkboxes = 0
 
+            self.cb_list = []
             for key, value in output_name_list.iteritems():
                 wx.StaticText(scrollWin, id=wx.ID_ANY, label=key, pos=(30, y_pos))
                 y_pos += 20
 
                 for i in value:
-                    cb = wx.CheckBox(scrollWin, id=count_checkboxes, label=i, pos=(50, y_pos))
+                    cb = wx.CheckBox(scrollWin, id=count_checkboxes, label=i, pos=(50, y_pos), name=i)
                     count_checkboxes += 1
                     y_pos += 20
+                    self.cb_list.append(cb)
 
             scrollWin.SetScrollbars(0, 30, 0, y_pos/30+1)
             scrollWin.SetScrollRate(0, 15)  # Scroll speed
+
+    def GetMarkedBoxes(self):
+        if len(self.cb_list) > 0:
+            for i, cb in enumerate(self.cb_list):
+                if cb.GetValue():
+                    elog.info("{} selected" . format(cb.GetName()))
+        else:
+            elog.info("No links created")
+            return
 
 
 class PageThree(wx.Panel):

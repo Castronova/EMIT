@@ -309,9 +309,9 @@ class ModelView(wx.Panel):
     def setText(self, value=None):
         self.contents.SetPage(value, "")
 
-class AllFileView(wx.Panel):  # todo: Delete this
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent)
+# class AllFileView(wx.Panel):  # todo: Delete this
+#     def __init__(self, parent):
+#         wx.Panel.__init__(self, parent)
 
 class viewMenuBar(wx.Frame):
 
@@ -349,12 +349,9 @@ class viewMenuBar(wx.Frame):
 
         file.close()
 
-
         self.panel = wx.Panel(self)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        # self.statusbar = self.CreateStatusBar()
-        # self.SettingsStatusBar()
 
         console_title = wx.StaticText(self.panel, id=wx.ID_ANY, label="Configure Console Verbosity",pos=(20, 100))
         font = wx.Font(16, wx.NORMAL, wx.NORMAL, wx.BOLD)
@@ -380,9 +377,8 @@ class viewMenuBar(wx.Frame):
         sizer.Add(self.c4, 0, flag=wx.LEFT | wx.ALIGN_LEFT, border=20)
         sizer.Add(self.c5, 0, flag=wx.LEFT | wx.ALIGN_LEFT, border=20)
         sizer.Add(self.saveButton, 1, flag=wx.RIGHT | wx.ALIGN_RIGHT, border=20)
-        # sizer.Add(self.gauge, proportion=0, flag=wx.ALL | wx.ALIGN_CENTER, border=0)
 
-        # self.Bind(wx.EVT_BUTTON, self.OnSave, id=1)
+        self.Bind(wx.EVT_BUTTON, self.OnSave, id=1)
 
         self.panel.SetSizer(sizer)
         self.Layout()
@@ -390,11 +386,7 @@ class viewMenuBar(wx.Frame):
         self.Show()
 
 
-        print 'here'
-
-
     def OnSave(self, event):
-        self.timer.Start(25)
         cb = self.getCheckboxValue()
         file = open(self.settingspath, 'w')
         file.writelines(['showinfo = '+str(cb.values()[0])+'\n',
@@ -404,8 +396,7 @@ class viewMenuBar(wx.Frame):
                          'showdebug = '+str(cb.values()[3]+'\n')])
                          # for some reason the position of the error and debug are switched
         file.close()
-        # self.timer.Stop()
-        # self.statusbar.SetStatusText('Settings saved, %s ' % wx.Now())
+        self.Close()
 
     def getCheckboxValue(self):
         info = self.c1.GetValue()
@@ -415,20 +406,3 @@ class viewMenuBar(wx.Frame):
         debug = self.c5.GetValue()
         cb = {'info': str(info), 'warn': str(warn), 'critical': str(critical), 'error': str(error), 'debug': str(debug)}
         return cb
-
-    def SettingsStatusBar(self):
-        self.count = 0
-        self.timer = wx.Timer(self, 1)
-        self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
-        self.gauge = wx.Gauge(self.statusbar, range=50, size=(100, 10))
-
-    def OnTimer(self, e):
-        self.count += 1
-        self.gauge.Show()
-        self.gauge.SetValue(self.count)
-
-        if self.count >= 50:
-            self.timer.Stop()
-            self.statusbar.SetStatusText('Settings saved, %s ' % wx.Now())
-            self.count = 0
-            self.gauge.Hide()

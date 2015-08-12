@@ -304,6 +304,7 @@ class LogicCanvas(ViewCanvas):
                 R2 = R
 
         if R1 is None or R2 is None:
+            elog.warning("Could not find Model identifier in loaded models")
             raise Exception('Could not find Model identifier in loaded models')
 
         # this draws the line

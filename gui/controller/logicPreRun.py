@@ -4,7 +4,7 @@ import wx
 from gui.views.viewPreRun import viewPreRun
 import os
 import time
-import coordinator.engineAccessors as engine
+from coordinator import engineAccessors
 
 
 class logicPreRun(viewPreRun):
@@ -48,7 +48,7 @@ class logicPreRun(viewPreRun):
         user = self.summary_page.accountCombo.GetValue()
 
         # execute the simulation
-        engine.runSimulation()
+        engineAccessors.runSimulation()
         self.data_page.GetMarkedBoxes()
         self.Close()
 
@@ -71,7 +71,7 @@ class logicPreRun(viewPreRun):
         '''
 
         # query the engine to get all available database connections
-        available_connections = engine.getDbConnections()
+        available_connections = engineAccessors.getDbConnections()
         return available_connections
 
     def OnAddNew(self, e):

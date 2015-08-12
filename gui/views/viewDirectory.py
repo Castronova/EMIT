@@ -1,18 +1,14 @@
 import os
-
 import wx
 import wx.xrc
 from shapely import wkt
-
 from utilities import gui, spatial
 from gui.views.viewModel import ViewModel
-
-
-
 # todo: refactor
 # from ..DirectoryLstCtrl import DirectoryListCtrl
 from gui.controller.logicDirectoryListControl import LogicDirectoryListControl
 from gui.Resources import icons
+from coordinator.emitLogging import elog
 
 [PreviousID, UpID, HomeID, SaveID, RefreshID, TerminalID, HelpID] = [wx.NewId() for _init_ctrls in range(7)]
 
@@ -121,7 +117,8 @@ class ViewDirectory(wx.Panel):
                     # check if the value is a path
                     if os.path.dirname(eset ) != '':
                         if not os.path.isfile(eset):
-                            raise Exception('Could not find file: %s'%eset)
+                            elog.warning('Could not find file: %s' % eset)
+                            raise Exception('Could not find file: %s' % eset)
 
                         geom,srs = spatial.read_shapefile(eset)
 
@@ -138,7 +135,8 @@ class ViewDirectory(wx.Panel):
                                 geom = [geoms]
 
                         except:
-                            raise Exception('Could not load WKT string: %s.'%value)
+                            elog.warning('Could not load WKT string: %s.' % value)
+                            raise Exception('Could not load WKT string: %s.' % value)
 
 
 

@@ -594,6 +594,7 @@ class DataSeries(wx.Panel):
                     wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
 
     def load_data(self):
+        elog.error('Abstract method. Must be overridden!')
         raise Exception('Abstract method. Must be overridden!')
 
     def database_refresh(self, event):

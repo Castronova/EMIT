@@ -48,6 +48,7 @@ class LogicLink(ViewLink):
         self.ButtonNew.Bind(wx.EVT_BUTTON, self.OnSave)
         self.ButtonNew.Bind(wx.EVT_BUTTON, self.NewButton)
         self.ButtonDelete.Bind(wx.EVT_BUTTON, self.OnDelete)
+        self.ButtonSwap.Bind(wx.EVT_BUTTON, self.OnSwap)
         self.ButtonCancel.Bind(wx.EVT_BUTTON, self.OnCancel)
         self.ButtonSave.Bind(wx.EVT_BUTTON, self.OnSave)
         self.ButtonPlot.Bind(wx.EVT_BUTTON, self.OnPlot)
@@ -231,6 +232,7 @@ class LogicLink(ViewLink):
             self.InputComboBox.Enable()
             self.OutputComboBox.Enable()
             self.ButtonPlot.Enable()
+            self.ButtonSwap.Enable()
         else:
             self.ButtonSave.Disable()
             self.ComboBoxSpatial.Disable()
@@ -238,6 +240,7 @@ class LogicLink(ViewLink):
             self.InputComboBox.Disable()
             self.OutputComboBox.Disable()
             self.ButtonPlot.Disable()
+            self.ButtonSwap.Disable()
 
     def refreshLinkNameBox(self):
 
@@ -269,11 +272,52 @@ class LogicLink(ViewLink):
         self.LinkNameListBox.SetSelection(self.LinkNameListBox.GetCount() - 1)
 
         self.OnChange(None)
+        self.outputLabel.SetLabel("Output of " + self.GetModelFrom())
+        self.inputLabel.SetLabel("Input of " + self.GetModelTo())
 
-    # def GetName(self, event):
-    # dlg = NameDialog(self)
-    #     dlg.ShowModal()
-    #     self.LinkNameListBox.Append(str(dlg.result))
+    def OnSwap(self, event):
+        #  Swapping components of models
+        temp = self.output_component
+        self.output_component = self.input_component
+        self.input_component = temp
+
+        #  Swapping static text
+        self.outputLabel.SetLabel("Output of " + self.GetModelFrom())
+        self.inputLabel.SetLabel("Input of " + self.GetModelTo())
+
+        #  Swapping grids
+        temp = self.outputGrid
+        self.outputGrid = self.inputGrid
+        self.inputGrid = temp
+
+        #  Swapping the combo boxes
+        self.InputComboBox.SetItems(['---'] + self.InputComboBoxChoices())
+        self.OutputComboBox.SetItems(['---'] + self.OutputComboBoxChoices())
+        self.InputComboBox.SetSelection(0)
+        self.OutputComboBox.SetSelection(0)
+
+        #  Reloading the grid
+        self.populate_input_metadata(self.__selected_link)
+        self.populate_output_metadata(self.__selected_link)
+
+        self.__selected_link.oei = self.OutputComboBox.GetValue()
+        self.__selected_link.iei = self.InputComboBox.GetValue()
+
+
+        self.__links = []
+        self.__links.append(self.__selected_link)
+
+    def GetModelFrom(self):
+        if 'name' in self.output_component:
+            return self.output_component['name']
+        else:
+            return None
+
+    def GetModelTo(self):
+        if 'name' in self.input_component:
+            return self.input_component['name']
+        else:
+            return None
 
     def OnDelete(self, event):
         # First try to delete the item from the cmd, if it has not yet been saved, it will just
@@ -385,7 +429,7 @@ class LogicLink(ViewLink):
         self.populate_input_metadata(l)
 
     def on_select_spatial(self, event):
-        # get the current link
+        # get the current link---
         l = self.__selected_link
 
         spatial_value = self.ComboBoxSpatial.GetValue()

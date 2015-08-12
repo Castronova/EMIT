@@ -53,6 +53,9 @@ class ViewLink(wx.Frame):
         self.ButtonDelete = wx.Button(self.LinkStartPanel, wx.ID_ANY, u"Delete", wx.DefaultPosition, wx.DefaultSize, 0)
         ButtonSizer.Add(self.ButtonDelete, 0, wx.ALL, 5)
 
+        self.ButtonSwap = wx.Button(parent=self.LinkStartPanel, id=wx.ID_ANY, label="Swap", pos=wx.DefaultPosition, size=wx.DefaultSize, style=0)
+        ButtonSizer.Add(self.ButtonSwap, 0, wx.ALL, 5)
+
 
         LinkStartSizer.Add(ButtonSizer, 1, wx.EXPAND, 5)
 
@@ -75,10 +78,10 @@ class ViewLink(wx.Frame):
         # self.OutputComboBox = wx.ComboBox(self.ExchangeItemSizer, wx.ID_ANY, OutChoice[0],
         #                                   wx.DefaultPosition, wx.Size(320, -1), OutChoice, 0)
 
-        self.outputLabel = wx.StaticText(self.ExchangeItemPanel, wx.ID_ANY, u"Output", wx.DefaultPosition,
-                                        wx.DefaultSize, 0)
-        self.OutputComboBox = wx.ComboBox(self.ExchangeItemPanel, wx.ID_ANY, '',
-                                          wx.DefaultPosition, wx.Size(320, -1), [''], 0)
+        self.outputLabel = wx.StaticText(parent=self.ExchangeItemPanel, id=wx.ID_ANY, label=u"Output",
+                                         pos=wx.DefaultPosition, size=wx.DefaultSize, style=0)
+        self.OutputComboBox = wx.ComboBox(parent=self.ExchangeItemPanel, id=wx.ID_ANY, value='',
+                                          pos=wx.DefaultPosition, size=wx.Size(320, -1), choices=[''], style=0)
 
         OutputSizer.Add(self.outputLabel, 0, wx.ALL, 5)
         OutputSizer.Add(self.OutputComboBox, 0, wx.ALL, 5)
@@ -92,48 +95,46 @@ class ViewLink(wx.Frame):
         self.outputGrid = wx.grid.Grid( self.ExchangeItemPanel, wx.ID_ANY, wx.DefaultPosition, wx.Size(325,-1), 0 )
 
         # Grid
-        self.outputGrid.CreateGrid( 7, 2 )
-        self.outputGrid.EnableEditing( False )
-        self.outputGrid.EnableGridLines( True )
-        self.outputGrid.SetGridLineColour( wx.Colour( 0, 0, 0 ) )
-        self.outputGrid.EnableDragGridSize( False )
-        self.outputGrid.SetMargins( 0, 0 )
+        self.outputGrid.CreateGrid(7, 2)
+        self.outputGrid.EnableEditing(False)
+        self.outputGrid.EnableGridLines(True)
+        self.outputGrid.SetGridLineColour(wx.Colour(0, 0, 0))
+        self.outputGrid.EnableDragGridSize(False)
+        self.outputGrid.SetMargins(0, 0)
 
         # Columns
-        self.outputGrid.EnableDragColMove( False )
-        self.outputGrid.EnableDragColSize( True )
-        self.outputGrid.SetColLabelSize( 0 )
-        self.outputGrid.SetColLabelAlignment( wx.ALIGN_CENTRE, wx.ALIGN_CENTRE )
+        self.outputGrid.EnableDragColMove(False)
+        self.outputGrid.EnableDragColSize(True)
+        self.outputGrid.SetColLabelSize(0)
+        self.outputGrid.SetColLabelAlignment(wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
 
 
         # Rows
-        self.outputGrid.EnableDragRowSize( True )
-        self.outputGrid.SetRowLabelSize( 0 )
-        self.outputGrid.SetRowLabelAlignment( wx.ALIGN_CENTRE, wx.ALIGN_CENTRE )
+        self.outputGrid.EnableDragRowSize(True)
+        self.outputGrid.SetRowLabelSize(0)
+        self.outputGrid.SetRowLabelAlignment(wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
 
 
         # Label Appearance
 
         # Cell Defaults
-        self.outputGrid.SetDefaultCellBackgroundColour( wx.Colour(255,255,255) )
-        self.outputGrid.SetDefaultCellAlignment( wx.ALIGN_LEFT, wx.ALIGN_TOP )
+        self.outputGrid.SetDefaultCellBackgroundColour(wx.Colour(255,255,255))
+        self.outputGrid.SetDefaultCellAlignment(wx.ALIGN_LEFT, wx.ALIGN_TOP)
         OutputSizer.Add(self.outputGrid, 0, wx.ALL, 5)
 
         # Set Cell Values
-        self.outputGrid.SetCellValue(0,0, " Variable")
-        self.outputGrid.SetCellValue(1,0, " Name")
-        self.outputGrid.SetCellValue(2,0, " Description")
-        self.outputGrid.SetCellValue(3,0, " Unit")
-        self.outputGrid.SetCellValue(4,0, " Name")
-        self.outputGrid.SetCellValue(5,0, " Type")
-        self.outputGrid.SetCellValue(6,0, " Abbreviation")
+        self.outputGrid.SetCellValue(0, 0, " Variable")
+        self.outputGrid.SetCellValue(1, 0, " Name")
+        self.outputGrid.SetCellValue(2, 0, " Description")
+        self.outputGrid.SetCellValue(3, 0, " Unit")
+        self.outputGrid.SetCellValue(4, 0, " Name")
+        self.outputGrid.SetCellValue(5, 0, " Type")
+        self.outputGrid.SetCellValue(6, 0, " Abbreviation")
 
-
-
-        self.outputGrid.SetCellBackgroundColour(0,0,wx.Colour(195,195,195))
-        self.outputGrid.SetCellBackgroundColour(0,1,wx.Colour(195,195,195))
-        self.outputGrid.SetCellBackgroundColour(3,0,wx.Colour(195,195,195))
-        self.outputGrid.SetCellBackgroundColour(3,1,wx.Colour(195,195,195))
+        self.outputGrid.SetCellBackgroundColour(0, 0, wx.Colour(195, 195, 195))
+        self.outputGrid.SetCellBackgroundColour(0, 1, wx.Colour(195, 195, 195))
+        self.outputGrid.SetCellBackgroundColour(3, 0, wx.Colour(195, 195, 195))
+        self.outputGrid.SetCellBackgroundColour(3, 1, wx.Colour(195, 195, 195))
         self.outputGrid.SetGridLineColour(wx.Colour(195,195,195))
 
         self.outputGrid.AutoSizeColumn(0)
@@ -144,12 +145,11 @@ class ViewLink(wx.Frame):
         ###########################################
         # SPATIAL AND TEMPORAL INTERPOLATION LABELS
         ###########################################
-        textSizer = wx.BoxSizer( wx.HORIZONTAL )
+        textSizer = wx.BoxSizer(wx.HORIZONTAL)
 
+        textSizer.AddSpacer((0, 0), 1, wx.EXPAND, 5)
 
-        textSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
-
-        rightAlignSizer = wx.BoxSizer( wx.VERTICAL )
+        rightAlignSizer = wx.BoxSizer(wx.VERTICAL)
         # textSizer = wx.BoxSizer(wx.HORIZONTAL)
         # textSizerRightAlign = wx.BoxSizer(wx.VERTICAL)
         #
@@ -164,8 +164,7 @@ class ViewLink(wx.Frame):
         self.Temporal_staticText.Wrap(-1)
         rightAlignSizer.Add(self.Temporal_staticText, 0, wx.ALL, 5)
 
-        rightAlignSizer.AddSpacer((0, 12), 0, wx.EXPAND,
-                              5)  # This is to make sure that the static text stays the same distance apart
+        rightAlignSizer.AddSpacer((0, 12), 0, wx.EXPAND, 5)  # This is to make sure that the static text stays the same distance apart
 
         self.Spatial_staticText = wx.StaticText(self.ExchangeItemPanel, wx.ID_ANY, u"    Spatial Interpolation",
                                                 wx.DefaultPosition, wx.DefaultSize, 0) #The space before the word Spatial is to help it align Right
@@ -201,31 +200,29 @@ class ViewLink(wx.Frame):
         self.inputGrid = wx.grid.Grid( self.ExchangeItemPanel, wx.ID_ANY, wx.DefaultPosition, wx.Size(325,-1), 0 )
 
         # Grid
-        self.inputGrid.CreateGrid( 7, 2 )
-        self.inputGrid.EnableEditing( False )
-        self.inputGrid.EnableGridLines( True )
-        self.inputGrid.SetGridLineColour( wx.Colour(255,255,255) )
-        self.inputGrid.EnableDragGridSize( False )
-        self.inputGrid.SetMargins( 0, 0 )
+        self.inputGrid.CreateGrid(7, 2)
+        self.inputGrid.EnableEditing(False)
+        self.inputGrid.EnableGridLines(True)
+        self.inputGrid.SetGridLineColour(wx.Colour(255, 255, 255))
+        self.inputGrid.EnableDragGridSize(False)
+        self.inputGrid.SetMargins(0, 0)
 
         # Columns
-        self.inputGrid.EnableDragColMove( False )
-        self.inputGrid.EnableDragColSize( True )
-        self.inputGrid.SetColLabelSize( 0 )
-        self.inputGrid.SetColLabelAlignment( wx.ALIGN_CENTRE, wx.ALIGN_CENTRE )
-
+        self.inputGrid.EnableDragColMove(False)
+        self.inputGrid.EnableDragColSize(True)
+        self.inputGrid.SetColLabelSize(0)
+        self.inputGrid.SetColLabelAlignment(wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
 
         # Rows
-        self.inputGrid.EnableDragRowSize( True )
-        self.inputGrid.SetRowLabelSize( 0 )
-        self.inputGrid.SetRowLabelAlignment( wx.ALIGN_CENTRE, wx.ALIGN_CENTRE )
-
+        self.inputGrid.EnableDragRowSize(True)
+        self.inputGrid.SetRowLabelSize(0)
+        self.inputGrid.SetRowLabelAlignment(wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
 
         # Label Appearance
 
         # Cell Defaults
-        self.inputGrid.SetDefaultCellBackgroundColour( wx.Colour(255,255,255) )
-        self.inputGrid.SetDefaultCellAlignment( wx.ALIGN_LEFT, wx.ALIGN_TOP )
+        self.inputGrid.SetDefaultCellBackgroundColour(wx.Colour(255, 255, 255))
+        self.inputGrid.SetDefaultCellAlignment(wx.ALIGN_LEFT, wx.ALIGN_TOP)
         InputSizer.Add(self.inputGrid, 0, wx.ALL, 5)
 
         # Set Cell Values
@@ -237,19 +234,16 @@ class ViewLink(wx.Frame):
         self.inputGrid.SetCellValue(5,0, " Type")
         self.inputGrid.SetCellValue(6,0, " Abbreviation")
 
-
-
-        self.inputGrid.SetCellBackgroundColour(0,0,wx.Colour(195,195,195))
-        self.inputGrid.SetCellBackgroundColour(0,1,wx.Colour(195,195,195))
-        self.inputGrid.SetCellBackgroundColour(3,0,wx.Colour(195,195,195))
-        self.inputGrid.SetCellBackgroundColour(3,1,wx.Colour(195,195,195))
-        self.inputGrid.SetGridLineColour(wx.Colour(195,195,195))
+        self.inputGrid.SetCellBackgroundColour(0, 0, wx.Colour(195, 195, 195))
+        self.inputGrid.SetCellBackgroundColour(0, 1, wx.Colour(195, 195, 195))
+        self.inputGrid.SetCellBackgroundColour(3, 0, wx.Colour(195, 195, 195))
+        self.inputGrid.SetCellBackgroundColour(3, 1, wx.Colour(195, 195, 195))
+        self.inputGrid.SetGridLineColour(wx.Colour(195, 195, 195))
 
         self.inputGrid.AutoSizeColumn(0)
         inputcolsize = self.inputGrid.GetColSize(0)
         C,R = self.inputGrid.GetSize()
         self.inputGrid.SetColSize(1,C-inputcolsize)
-
 
         #####################################
         # SPATIAL AND TEMPORAL INTERPOLATIONS
@@ -266,12 +260,6 @@ class ViewLink(wx.Frame):
                                            wx.DefaultPosition, wx.Size(320, -1),
                                            SpatialChoices, 0)
         InputSizer.Add(self.ComboBoxSpatial, 0, wx.ALL, 5)
-
-
-
-
-
-
 
         ExchangeItemSizer.Add(InputSizer, 1, wx.EXPAND, 5)
 
@@ -312,7 +300,6 @@ class ViewLink(wx.Frame):
         self.Layout()
 
         self.Centre(wx.BOTH)
-
 
     def OutputComboBoxChoices(self):
         self.output_items = engine.getOutputExchangeItems(self.output_component['id'], returnGeoms=False)

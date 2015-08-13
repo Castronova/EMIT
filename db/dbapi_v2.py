@@ -22,12 +22,41 @@ from ODM2PythonAPI.src.api.ODM2.services.updateService import UpdateODM2
 from ODM2PythonAPI.src.api.ODM2.services.deleteService import DeleteODM2
 from ODM2PythonAPI.src.api.ODM2 import models
 
+from coordinator.emitLogging import elog
+
+
+def connect(session):
+
+    driver = session.engine.url.drivername
+
+    if 'sqlite' in driver:
+        return sqlite(session)
+
+    # todo: implement MsSQL in dbapi_v2
+    elif 'mssql' in driver:
+        elog.error('MsSQL not supported yet')
+        return None
+
+    # todo: implement postgres in dbapi_v2
+    elif 'postgresql' in driver:
+        elog.error('PostgreSQL not supported yet')
+        return None
+
+    # todo: implement mysql in dbapi_v2
+    elif 'mysql' in driver:
+        elog.error('MySQL not supported yet')
+        return None
+
+
+
 class sqlite():
 
-    def __init__(self, sqlitepath):
+    def __init__(self, session):
 
         # build sqlalchemy connection
-        self.connection = dbconnection.createConnection('sqlite', sqlitepath)
+        # self.connection = dbconnection.createConnection('sqlite', sqlitepath)
+        self.connection = session
+        sqlitepath = session.engine.url.database
 
         # create read, write, update, and delete ODM2PythonAPI instances
         self.read = ReadODM2(self.connection)

@@ -153,33 +153,9 @@ class Log(object):
         return self.log._get_logger()
 
     def verbosity(self):
-        currentdir = os.path.dirname(os.path.abspath(__file__))
-        self.settingspath = os.path.abspath(os.path.join(currentdir, '../app_data/config/.settings.ini'))
-        file = open(self.settingspath, 'r')
-        fileinfo = file.readlines()
-        boolist = []
-
-        # for i in range(0, len(fileinfo)):
-        #     value = fileinfo[i].split(' = ')
-        #     value = value[1].split('\n')
-        #     if value[0] == 'True':
-        #         boolist.append(True)
-        #     else:
-        #         boolist.append(False)
-
-        # self.showinfo = boolist[0]
-        # self.showwarning = boolist[1]
-        # self.showcritical = boolist[2]
-        # self.showerror = boolist[3]
-        # TODO: CHANGE THIS BACK !!!!
-        # TODO: CHANGE THIS BACK
-        self.showinfo = env_vars.showinfo
-        self.showwarning = env_vars.showwarning
-        self.showcritical = env_vars.showcritical
-        self.showerror = env_vars.showerror
-        # TODO: CHANGE THIS BACK
-        # TODO: CHANGE THIS BACK !!!!
-
-        file.close()
+        self.showinfo = env_vars.SHOWINFO
+        self.showwarning = env_vars.SHOWWARNING
+        self.showcritical = env_vars.SHOWCRITICAL
+        self.showerror = env_vars.SHOWERROR
 
 elog = Log()

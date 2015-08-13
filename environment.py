@@ -1,13 +1,17 @@
 __author__ = 'mike'
 import os
 # from coordinator.emitLogging import elog
-from ast import literal_eval as Eval
 import ConfigParser
 
 # This is an interface for the settings file in the data directory
 class EnvironmentVars(object):
-    __monostate = None
+    '''
+    Implemented as singleton with 'from environment import env_vars'
+    Variables can be accessed like 'env_vars.SHOWERROR'. All settings
+    are parsed from app_data/config/.settings.ini using ConfigParser.
 
+    '''
+    __monostate = None
     def __init__(self):
         if not EnvironmentVars.__monostate:
             currentdir = os.path.dirname(os.path.abspath(__file__))
@@ -18,41 +22,40 @@ class EnvironmentVars(object):
             EnvironmentVars.__monostate = self.__dict__
             settings_dict = self.parse_settings_file()
             for k, v in settings_dict.iteritems():
-                setattr(self, k, v)
+                setattr(self, k.upper(), v)
         else:
             self.__dict__ = EnvironmentVars.__monostate
 
-    def parse_settings_file(self):
-        '''
-        showinfo = True
-        showwarning = False
-        showcritical = True
-        showerror = True
-        '''
-
-        d = {}
-        for section in self.config.sections():
-            for option in self.config.options(section):
-                value = self.config.get(section, option)
-                d[option] = value
-        return d
-
-    def set_environment_variable(self, var, value):
+    def set_environment_variable(self, section, var, value):
         try:
-            setattr(self, var, value)
-            if os.path.exists(self.settings_path):
-                print "here"
-            if var not in open(self.settings_path).read():
-                with open(self.settings_path, "w+") as f:
-                    pass
-                    # f.write("\n" + var + " = " + value)
+            setattr(self, var.upper(), value)
+            self.config.set(section, var, value)
+            settings_file = open(self.settings_path, 'w+')
+            self.config.write(settings_file)
+            settings_file.close()
+
         except Exception:
             elog.warning("Invalid environment variable or value.")
 
-    def get_settings_section(self):
-        pass
+    def parse_settings_file(self):
+        '''
+        The settings file is divided into sections, such as logging
+        and local_db. In each section there are options, which contain
+        the variables and values. Parsing with ConfigParser, all values
+        are considered STRINGS and need to be converted if necessary to
+        booleans or ints.
+        '''
+        d = {}
+        logging = self.config.options("LOGGING")
+        for option in logging:
+            value = self.config.getboolean("LOGGING", option)
+            d[option] = value
 
+        localdb = self.config.options("LOCAL_DB")
+        for option in localdb:
+            value = self.config.get("LOCAL_DB", option)
+            d[option] = value
 
-# from environment import env_vars
-# env_vars.set_environment_variable('settingspath', 'home/name...')
+        return d
+
 env_vars = EnvironmentVars()

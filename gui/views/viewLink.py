@@ -8,7 +8,6 @@ from transform.time import *
 from transform.space import *
 import coordinator.engineAccessors as engine
 import sys
-import os
 
 class ViewLink(wx.Frame):
     def __init__(self, parent, output, input):
@@ -280,10 +279,9 @@ class ViewLink(wx.Frame):
 
         RightAlignSizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        RightAlignSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+        RightAlignSizer.AddSpacer((0, 0), 1, wx.EXPAND, 5)
 
         self.ButtonSave = wx.Button(self.BottomPanel, wx.ID_ANY, u"Save and Close", wx.DefaultPosition, wx.DefaultSize, 0)
-        # self.ButtonSave.Disable()
         RightAlignSizer.Add(self.ButtonSave, 0, wx.ALL, 5)
 
         self.ButtonCancel = wx.Button(self.BottomPanel, wx.ID_ANY, u"Cancel", wx.DefaultPosition, wx.DefaultSize, 0)

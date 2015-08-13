@@ -19,12 +19,12 @@ class LogicLink(ViewLink):
 
     odesc = ""
     idesc = ""
-    def __init__(self, parent, outputs, inputs):
 
+    def __init__(self, parent, outputs, inputs, swap=False):
         ViewLink.__init__(self, parent, outputs, inputs)
 
         # self.l = None
-        self.parent = parent
+        self.swap = swap
 
         # class link variables used to save link
         self.__selected_link = None
@@ -221,6 +221,12 @@ class LogicLink(ViewLink):
             # deactivate controls if nothing is selected
             self.activateControls(False)
 
+    def activateSwap(self):
+        if self.swap == True:
+            self.ButtonSwap.Enable()
+        else:
+            self.ButtonSwap.Disable()
+
     def activateControls(self, activate=True):
 
         # todo: this needs to be expanded to check if any forms have been changed
@@ -232,7 +238,7 @@ class LogicLink(ViewLink):
             self.InputComboBox.Enable()
             self.OutputComboBox.Enable()
             self.ButtonPlot.Enable()
-            self.ButtonSwap.Enable()
+            self.activateSwap()
         else:
             self.ButtonSave.Disable()
             self.ComboBoxSpatial.Disable()
@@ -272,6 +278,7 @@ class LogicLink(ViewLink):
         self.LinkNameListBox.SetSelection(self.LinkNameListBox.GetCount() - 1)
 
         self.OnChange(None)
+
         self.outputLabel.SetLabel("Output of " + self.GetModelFrom())
         self.inputLabel.SetLabel("Input of " + self.GetModelTo())
 
@@ -479,6 +486,7 @@ class LogicLink(ViewLink):
                                   spatial_interpolation=l.spatial_interpolation,
                                   temporal_interpolation=l.temporal_interpolation,
                                   uid=l.uid)
+                    print elog.info(kwargs)
 
                     # remove the existing link, if there is one
                     engine.removeLinkById(l.uid)

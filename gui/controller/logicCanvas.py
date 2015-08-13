@@ -6,14 +6,12 @@ import xml.etree.ElementTree as et
 from xml.dom import minidom
 import uuid
 import threading, time
-
 import wx
 from wx.lib.floatcanvas import FloatCanvas as FC
 from wx.lib.floatcanvas.NavCanvas import NavCanvas
 from wx.lib.pubsub import pub as Publisher
 import numpy as N
 from matplotlib.pyplot import cm
-
 from gui.views.viewContext import LinkContextMenu, ModelContextMenu, CanvasContextMenu
 from transform.space import SpatialInterpolation
 from transform.time import TemporalInterpolation
@@ -56,6 +54,7 @@ class LogicCanvas(ViewCanvas):
         self.links = {}
         self.arrows = {}
         self.models = {}
+        self.pairedModels = []
 
         self.link_clicks = 0
         self._currentDbSession = None
@@ -333,6 +332,7 @@ class LogicCanvas(ViewCanvas):
             line = SmoothLineWithArrow(points, self.linkArrow)
             self.links[line] = [R1, R2]
             self.arrows[line.Arrow] = [R1, R2]
+            self.pairedModels.append([R1.Name, R2.Name])
             line.type = LogicCanvasObjects.ShapeType.Link
 
             line.Arrow.type = LogicCanvasObjects.ShapeType.ArrowHead
@@ -433,6 +433,8 @@ class LogicCanvas(ViewCanvas):
             from_id = link[0].ID
             to_id = link[1].ID
 
+            self.RemovePairedLinkList(link)
+
             # get the link id
             links = engine.getLinksBtwnModels(from_id, to_id)
 
@@ -446,6 +448,9 @@ class LogicCanvas(ViewCanvas):
             link_obj.Remove(self.FloatCanvas)
             self.FloatCanvas.Draw()
 
+    def RemovePairedLinkList(self, link):
+        self.pairedModels.remove([link[0].Name, link[1].Name])
+
     def RemoveModel(self, model_obj):
         """
         Removes a model component from the modeling canvas
@@ -458,6 +463,7 @@ class LogicCanvas(ViewCanvas):
         for link, models in self.links.iteritems():
             if model_obj in models:
                 links_to_remove.append(link)
+                self.RemovePairedLinkList(models)
             elif model_obj not in models:
                 updated_links[link] = models
 
@@ -486,6 +492,7 @@ class LogicCanvas(ViewCanvas):
             # clear links and model in gui
             self.links.clear()
             self.models.clear()
+            self.pairedModels = []
             self.FloatCanvas.ClearAll()
             self.FloatCanvas.Draw()
 
@@ -542,6 +549,7 @@ class LogicCanvas(ViewCanvas):
             self.FloatCanvas.SetMode(self.GuiMouse)
 
     def ArrowClicked(self, event):
+        bidirectional = False
 
         # get the models associated with the link
         models = self.arrows[event]
@@ -556,9 +564,22 @@ class LogicCanvas(ViewCanvas):
         # get output items from r1
         to_model = engine.getModelById(r2.ID)
 
-        linkstart = LogicLink(self.FloatCanvas, from_model, to_model)
+        if len(self.links) > 1:
+            bidirectional = self.CheckIfBidirectionalLink(r1.Name, r2.Name)
 
+        linkstart = LogicLink(self.FloatCanvas, from_model, to_model, bidirectional)
         linkstart.Show()
+
+    def CheckIfBidirectionalLink(self, r1, r2):
+        count = 0
+        for pair in self.pairedModels:
+            if r1 in pair and r2 in pair:
+                count += 1
+
+        if count >= 2:
+            return True
+        else:
+            return False
 
     def OnLeftUp(self, event, path=None):
         if self.Moving:

@@ -905,6 +905,7 @@ class Coordinator(object):
             return dict(success=True, message='')
 
         except Exception as e:
+            elog.debug(e)
             return dict(success=False, message=e)
             # raise Exception(e.args[0])
 

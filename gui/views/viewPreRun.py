@@ -2,6 +2,7 @@ __author__ = 'Francisco'
 
 import wx
 import os
+import dill
 from coordinator import engineAccessors
 from coordinator.emitLogging import elog
 
@@ -123,13 +124,12 @@ class SummaryPage(wx.Panel):
 
 
     def loadAccounts(self):
-        # todo: read from object that is parsed when databases are created
+        # todo: get path from environment variables
         currentdir = os.path.dirname(os.path.abspath(__file__))  # Get the directory
-        connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/preferences'))  # finds the file
-        file = open(connections_txt, 'r')
-        data = file.readlines()
-        file.close()
-        return self.getFromFile(data, "lastname")
+        users = []
+        with open(os.path.abspath(os.path.join(currentdir, '../../app_data/configuration/users.dill')),'rb') as f:
+            users.extend(dill.load(f))
+        return users
 
     def getFromFile(self, data, search):
         combobox = []
@@ -154,51 +154,64 @@ class DataPage(wx.Panel):
             wx.StaticText(scrollWin, id=wx.ID_ANY, label="No links have been added", pos=(10, 10))
         else:
             wx.StaticText(scrollWin, id=wx.ID_ANY, label="Specify output data sets to be saved", pos=(10, 10))
-
+            # query the engine for all output exchange items for each model in each link. store these in a dictionary
             model_name_list = []
-            output_name_list = {}
+            self.output_name_list = {}
             temp_list = []
-            for i in engineAccessors.getAllLinks():
-                if i['source_component_name'] not in model_name_list:  # Outputs only
-                    model_name_list.append(i['source_component_name'])
-                    for item in engineAccessors.getOutputExchangeItems(i['source_component_id'], returnGeoms=False):
-                        item['name']
-                        temp_list.append(item['name'])
-                    output_name_list[i['source_component_name']] = temp_list
-                    temp_list = []
 
-                if i['target_component_name'] not in model_name_list:
-                    model_name_list.append(i['target_component_name'])
-                    for item in engineAccessors.getOutputExchangeItems(i['target_component_id'], returnGeoms=False):
-                        temp_list.append(item['name'])
-                    output_name_list[i['target_component_name']] = temp_list
-                    temp_list = []
 
+            # compile a list of model ids and names that exist in the configuration
+            models = {}
+            links = engineAccessors.getAllLinks()
+            for link in links:
+                s_id = link['source_component_id']
+                t_id = link['target_component_id']
+                if s_id not in models.keys():
+                    models[s_id] = link['source_component_name']
+                if t_id not in models.keys():
+                    models[t_id] = link['target_component_name']
+
+            # sort models and loop over them to populate checkboxes
+            for model_id, model_name in sorted(models.items(), key=lambda x: x[1]):
+                oei = engineAccessors.getOutputExchangeItems(model_id, returnGeoms=False)
+                self.output_name_list[model_name] = [ei['name'] for ei in oei]
+
+            # for i in engineAccessors.getAllLinks():
+            #
+            #
+            #
+            #     # get output exchange items from all source components
+            #     if i['source_component_name'] not in model_name_list:  # Outputs only
+            #         model_name_list.append(i['source_component_name'])
+            #         oei = engineAccessors.getOutputExchangeItems(i['source_component_id'], returnGeoms=False)
+            #         temp_list = [ei['name'] for ei in oei] #temp_list.append(item['name'])
+            #         self.output_name_list[i['source_component_name']] = temp_list
+            #         temp_list = []
+            #
+            #     if i['target_component_name'] not in model_name_list:
+            #         model_name_list.append(i['target_component_name'])
+            #         for item in engineAccessors.getOutputExchangeItems(i['target_component_id'], returnGeoms=False):
+            #             temp_list.append(item['name'])
+            #         self.output_name_list[i['target_component_name']] = temp_list
+            #         temp_list = []
+
+            # build checkbox elements for each output exchange item found above
             y_pos = 30
-            count_checkboxes = 0
-
             self.cb_list = []
-            for key, value in output_name_list.iteritems():
+            for key, value in self.output_name_list.iteritems():
                 wx.StaticText(scrollWin, id=wx.ID_ANY, label=key, pos=(30, y_pos))
                 y_pos += 20
 
                 for i in value:
-                    cb = wx.CheckBox(scrollWin, id=count_checkboxes, label=i, pos=(50, y_pos), name=i)
-                    count_checkboxes += 1
+                    # todo: cb_id should be modelID_itemID to provide easy lookup in engine.
+                    cb_id = key + '_' + i
+                    cb = wx.CheckBox(scrollWin, id=wx.ID_ANY, label=i, pos=(50, y_pos), name=cb_id)
+                    cb.SetValue(True)
                     y_pos += 20
                     self.cb_list.append(cb)
 
             scrollWin.SetScrollbars(0, 30, 0, y_pos/30+1)
             scrollWin.SetScrollRate(0, 15)  # Scroll speed
-
-    def GetMarkedBoxes(self):
-        if len(self.cb_list) > 0:
-            for i, cb in enumerate(self.cb_list):
-                if cb.GetValue():
-                    elog.info("{} selected" . format(cb.GetName()))
-        else:
-            elog.info("No links created")
-            return
 
 
 class PageThree(wx.Panel):

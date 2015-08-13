@@ -21,8 +21,9 @@ class logicPreRun(viewPreRun):
         self.summary_page.databaseCombo.SetSelection(0)
 
         # Load account drop down
-        accounts = self.summary_page.loadAccounts()
-        self.summary_page.accountCombo.AppendItems(accounts)
+        self.accounts = self.summary_page.loadAccounts()
+        account_names = [' '.join([affil.person.lastname,'['+affil.organization.code+']']) for affil in self.accounts]
+        self.summary_page.accountCombo.AppendItems(account_names)
         self.summary_page.accountCombo.SetSelection(0)
 
         # change the selection to the index of the first local db that is found
@@ -45,11 +46,16 @@ class logicPreRun(viewPreRun):
         # send database info into the engine
         name = self.summary_page.simulationNameTextBox.GetValue()
         db = self.summary_page.databaseCombo.GetValue()
-        user = self.summary_page.accountCombo.GetValue()
+        user_name = self.summary_page.accountCombo.GetValue()
 
+
+        # todo: pass simulation name, database id, and user info into the engine
+        datasets = self.GetDataToSave()
+
+
+        kwargs = dict(simulationName=name, dbName=db, user=self.accounts, datasets=datasets)
         # execute the simulation
-        engine.runSimulation()
-        self.data_page.GetMarkedBoxes()
+        engine.runSimulation(**kwargs)
         self.Close()
 
     # def RunSim(self):
@@ -63,6 +69,21 @@ class logicPreRun(viewPreRun):
     #     # if self.page1.displayMessage.GetValue():
     #         # frm = viewPostRun()
     #         # frm.Show()
+
+    def GetDataToSave(self):
+
+        # eitems = {model name: [item1, ], ]
+        eitems = {}
+        if len(self.data_page.cb_list) > 0:
+            model_item_tuples = [(c.GetName().split('_')) for c in self.data_page.cb_list if c.GetValue()]
+
+
+        for model, item in model_item_tuples:
+            if model not in eitems.keys():
+                eitems[model] = [item]
+            else:
+                eitems[model].append(item)
+        return eitems
 
     def getDatabases(self):
         '''

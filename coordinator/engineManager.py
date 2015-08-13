@@ -8,6 +8,7 @@ import time
 from multiprocessing import Queue
 import events
 import wx
+from coordinator.emitLogging import elog
 
 class EngineBorg:
     """
@@ -122,7 +123,8 @@ class Engine:
 
                 try:
                     result = task(**next_task_args)
-                except:
+                except Exception, e:
+                    elog.error(e)
                     result = None
 
                 if evt is not None:

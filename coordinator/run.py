@@ -13,9 +13,27 @@ from transform.space import *
 from utilities.status import Status
 import update
 from coordinator.emitLogging import elog
+from ODM2PythonAPI.src.api.ODMconnection import dbconnection
+
+import db.dbapi_v2 as dbv2
+
+class dataSaveInfo():
+    def __init__(self, simulationName, database_args, user, datasets):
+        self.simulationName = simulationName
+        self.database_args = database_args
+        self.user = user
+        self.datasets = datasets
+
+        # self, engine, address, db=None, user=None, password=None, dbtype = 2.0):
+        self.session = dbconnection.createConnection(engine=database_args['engine'],
+                                                     address=database_args['address'],
+                                                     db=database_args['db'],
+                                                     user=database_args['user'],
+                                                     password=database_args['pwd'])
 
 
-def run_feed_forward(obj):
+
+def run_feed_forward(obj, ds=None):
     # store db sessions
     db_sessions = {}
 
@@ -31,6 +49,7 @@ def run_feed_forward(obj):
     exec_order = obj.determine_execution_order()
     for i in range(0, len(exec_order)):
         elog.info('%d.) %s' % (i + 1, obj.get_model_by_id(exec_order[i]).get_name()))
+
 
 
     # # store model db sessions
@@ -172,7 +191,16 @@ def run_feed_forward(obj):
               'Simulation duration: %3.2f seconds\n' % (time.time() - sim_st) +
               '------------------------------------------')
 
-def run_time_step(obj):
+
+    elog.info('Saving Simulation Results...')
+
+    # build an instance of dbv22
+    db = dbv2.connect(ds.session)
+
+    # insert data!
+    db.create_simulation()
+
+def run_time_step(obj, ds=None):
     # store db sessions
     db_sessions = {}
 

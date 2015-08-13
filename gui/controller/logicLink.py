@@ -284,6 +284,9 @@ class LogicLink(ViewLink):
 
     def OnSwap(self, event):
         #  Swapping components of models
+
+        engine.removeLinkById(self.__selected_link.source_id)
+
         temp = self.output_component
         self.output_component = self.input_component
         self.input_component = temp
@@ -310,9 +313,16 @@ class LogicLink(ViewLink):
         self.__selected_link.oei = self.OutputComboBox.GetValue()
         self.__selected_link.iei = self.InputComboBox.GetValue()
 
-
         self.__links = []
         self.__links.append(self.__selected_link)
+
+        oei = self.OutputComboBox.GetValue()
+        iei = self.InputComboBox.GetValue()
+
+        # create a link object and save it at the class level
+        l = LinkInfo(oei, iei, self.__link_source_id, self.__link_target_id)
+        index = self.__links.index(self.__selected_link)
+        self.__links.insert(index, l)  # Replacing the old link with the swapped link
 
     def GetModelFrom(self):
         if 'name' in self.output_component:
@@ -486,7 +496,6 @@ class LogicLink(ViewLink):
                                   spatial_interpolation=l.spatial_interpolation,
                                   temporal_interpolation=l.temporal_interpolation,
                                   uid=l.uid)
-                    print elog.info(kwargs)
 
                     # remove the existing link, if there is one
                     engine.removeLinkById(l.uid)

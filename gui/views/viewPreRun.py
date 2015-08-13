@@ -127,7 +127,7 @@ class SummaryPage(wx.Panel):
         # todo: get path from environment variables
         currentdir = os.path.dirname(os.path.abspath(__file__))  # Get the directory
         users = []
-        with open(os.path.abspath(os.path.join(currentdir, '../../app_data/configuration/users.dill')),'rb') as f:
+        with open(os.path.abspath(os.path.join(currentdir, '../../app_data/configuration/users.pkl')),'rb') as f:
             users.extend(dill.load(f))
         return users
 

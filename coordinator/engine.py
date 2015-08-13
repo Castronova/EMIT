@@ -274,17 +274,6 @@ class Coordinator(object):
         return db
 
 
-
-        for db_id in self._db.iterkeys():
-            d = self._db[db_id]
-            args =  self._db[db_id]['args']
-            args['address'] = c['database']
-            db[db_id] = {'name': d['name'],
-                         'description': d['description'],
-                         'connection_string': d['connection_string'],
-                         'id': db_id, 'args': args}
-        return db
-
     def get_db_args_by_name(self, db_name):
         # return the database args dictionary for a given name
         db = {}

@@ -5,7 +5,7 @@ __author__ = 'tonycastronova'
 
 
 import threading
-
+import sqlalchemy
 import networkx as net
 import os
 from coordinator import help as h
@@ -260,11 +260,39 @@ class Coordinator(object):
         # return the database connection dictionary without sqlalchemy objects
         db = {}
         for db_id in self._db.iterkeys():
+            args =  self._db[db_id]['args']
+
+            # todo: remove this by migrating all databases to the latest ODM2 and use ODM2PythonAPI exclusively
+            # make sure address is the string location of the database (this is necessary to be compatible with the old ODM2 and ODM2PythonAPI)(
+            if isinstance(args['address'], sqlalchemy.engine.url.URL):
+                args['address'] = self._db[db_id]['connection_string'].database
+
             db[db_id] = {'name': self._db[db_id]['name'],
                          'description': self._db[db_id]['description'],
                          'connection_string': self._db[db_id]['connection_string'],
-                         'id': db_id, 'args': self._db[db_id]['args']}
+                         'id': db_id, 'args': args}
         return db
+
+
+
+        for db_id in self._db.iterkeys():
+            d = self._db[db_id]
+            args =  self._db[db_id]['args']
+            args['address'] = c['database']
+            db[db_id] = {'name': d['name'],
+                         'description': d['description'],
+                         'connection_string': d['connection_string'],
+                         'id': db_id, 'args': args}
+        return db
+
+    def get_db_args_by_name(self, db_name):
+        # return the database args dictionary for a given name
+        db = {}
+        for db_id in self._db.iterkeys():
+            database = self._db[db_id]
+            if database['name'] == db_name:
+                return database['args']
+        return None
 
     def set_default_database(self,db_id=None):
 
@@ -851,10 +879,16 @@ class Coordinator(object):
         """
         pass
 
-    def run_simulation(self):
+    def run_simulation(self, simulationName=None, dbName=None, user=None, datasets=None):
         """
         coordinates the simulation effort
         """
+
+        # create data info instance if all the necessary info is provided
+        ds = None
+        if None not in [simulationName, dbName, user, datasets]:
+            db = self.get_db_args_by_name(dbName)
+            ds = run.dataSaveInfo(simulationName, db, user, datasets)
 
         try:
             # determine if the simulation is feed-forward or time-step
@@ -870,12 +904,12 @@ class Coordinator(object):
             else:
                 # threadManager = ThreadManager()
                 if feed_forward.feed_forward_wrapper in types:
-                    t = threading.Thread(target=run.run_feed_forward, args=(self,))
+                    t = threading.Thread(target=run.run_feed_forward, args=(self,ds))
                     t.start()
                     # run.run_feed_forward(self)
                 elif time_step.time_step_wrapper in types:
 
-                    t = threading.Thread(target=run.run_time_step, args=(self,))
+                    t = threading.Thread(target=run.run_time_step, args=(self,ds))
                     t.start()
                     #run.run_time_step(self)
 

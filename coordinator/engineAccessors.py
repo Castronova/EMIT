@@ -172,9 +172,9 @@ def getAllModels():
     result = e.processTasks()
     return result
 
-def runSimulation():
+def runSimulation(simulationName=None, dbName=None, user=None, datasets=None):
     e = Engine()
-    kwargs = dict(event='onSimulationFinished')
+    kwargs = dict(simulationName=simulationName, dbName=dbName, user=user, datasets=datasets, event='onSimulationFinished')
     task = [('run_simulation', kwargs)]
     e.setTasks(task)
 

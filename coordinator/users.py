@@ -3,6 +3,7 @@ __author__ = 'tonycastronova'
 import json
 import yaml
 import copy
+import datetime
 
 '''
  These are a set of classes for encapsulating user/affiliation data.  This should replace the preferences.txt file and
@@ -34,6 +35,9 @@ class Affiliation(object):
 
         if None in [email, startDate, organization, person]:
             raise Exception('Required parameter not given')
+
+        if not isinstance(startDate, datetime.datetime) and (not isinstance(affiliationEnd, datetime.datetime) or affiliationEnd is None):
+            raise Exception('startDate and affiliationEnd must be python datetimes')
 
         self.email = email
         self.startDate = startDate
@@ -108,7 +112,7 @@ if __name__ == "__main__":
     import cPickle as pickle
     import dill
     import yaml
-
+    import datetime
 
     p = Person('tony', 'castronova')
     o1 = Organization(typeCV='university',
@@ -120,8 +124,8 @@ if __name__ == "__main__":
                       description='description = research laboratory Affiliated with utah state university',
                       parent='usu')
 
-    affilations = [Affiliation(email='tony.castronova@usu.edu', startDate='03-10-2014', organization=o1, person=p, phone='435-797-0853', address='8200 old main, logan ut, 84322'),
-                   Affiliation(email='tony.castronova@usu.edu', startDate='03-10-2014', organization=o2, person=p, address='8200 old main, logan ut, 84322')]
+    affilations = [Affiliation(email='tony.castronova@usu.edu', startDate=datetime.datetime(2014,03,10), organization=o1, person=p, phone='435-797-0853', address='8200 old main, logan ut, 84322'),
+                   Affiliation(email='tony.castronova@usu.edu', startDate=datetime.datetime(2014,03,10), organization=o2, person=p, address='8200 old main, logan ut, 84322')]
 
     # test custom YAML dump
     with open('../../app_data/configuration/users.yaml', 'w') as f:

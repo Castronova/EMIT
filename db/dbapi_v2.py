@@ -69,30 +69,50 @@ class sqlite():
         self.spatialDb = self.spatial_connection.cursor()
 
     def create_user(self, userInfo):
-        self.write.createPerson(userInfo['firstName'], userInfo['lastName'])
-        print "in create_user"
+        person = self.write.createPerson(userInfo['firstName'], userInfo['lastName'])
+        return person.PersonID
 
     def create_organization(self, organInfo):
-        self.write.createOrganization(organInfo['cvType'], organInfo['code'], organInfo['name'],
+        org = self.write.createOrganization(organInfo['cvType'], organInfo['code'], organInfo['name'],
                                       organInfo['desc'], organInfo['link'], organInfo['parentOrgId'])
+        return org.OrganizationID
 
     def create_input_dataset(self, connection, resultids,type,code="",title="",abstract=""):
         pass
 
-    def create_simulation(self, odm2_affiliation, config_params, ei):
+    def create_simulation(self, coupledSimulationName, user_obj, config_params, ei):
+        """
+        Inserts a simulation record into the database
+        :param simulationName: user provided name for simulation
+        :param user_obj: engine.users.Affiliation object
+        :param config_params: Simulation configuration parameters (from engine)
+        :param ei: list of exchange item objects (stdlib.ExchangeItem)
+        """
 
-        name = config_params['name']
-        description = config_params['description']
-        simstart = datetime.datetime.strptime(config_params['simulation_start'], '%m/%d/%Y %H:%M:%S' )
-        simend = datetime.datetime.strptime(config_params['simulation_end'], '%m/%d/%Y %H:%M:%S' )
-        modelcode = config_params['code']
-        modelname = config_params['name']
-        modeldesc = config_params['description']
-        timestepvalue = config_params['value']
-        timestepunittype = config_params['unit_type_cv']
+        # parse simulation configuration parameters
+        description = config_params['general'][0]['description']
+        simstart = datetime.datetime.strptime(config_params['general'][0]['simulation_start'], '%m/%d/%Y %H:%M:%S' )
+        simend = datetime.datetime.strptime(config_params['general'][0]['simulation_end'], '%m/%d/%Y %H:%M:%S' )
+        modelcode = config_params['model'][0]['code']
+        modelname = config_params['model'][0]['name']
+        modeldesc = config_params['model'][0]['description']
+        timestepvalue = config_params['time_step'][0]['value']
+        timestepunittype = config_params['time_step'][0]['unit_type_cv']
+
+        # name = config_params['name']
+        simulationName = coupledSimulationName
 
         # create person / organization / affiliation
         # affiliation = self.set_user_preferences(preferences_path)
+        person = self.write.createPerson(user_obj.person.firstname, user_obj.person.lastname, user_obj.person.middlename)
+        organization = self.write.createOrganization(user_obj.organization.typeCV, user_obj.organization.code,
+                                                     user_obj.organization.name,user_obj.organization.description,
+                                                     user_obj.organization.link, user_obj.organization.parent)
+        affiliation = self.write.createAffiliation(person.PersonID, organization.OrganizationID, user_obj.email, user_obj.phone, user_obj.address, user_obj.personLink, user_obj.isPrimaryOrganizationContact, user_obj.startDate, user_obj.affiliationEnd)
+
+        #organizationID = self.create_organization(user_obj.organization)
+        # userID = self.create_user(user_obj.person)
+
 
         # get the timestep unit id
         #todo: This is not returning a timestepunit!!!  This may need to be added to the database
@@ -100,11 +120,11 @@ class sqlite():
 
         # create method
         method = self.read.getMethodByCode('simulation')
-        org_id = odm2_affiliation[0].OrganizationID if len(odm2_affiliation) > 0 else None
+        # org_id = odm2_affiliation[0].OrganizationID if len(odm2_affiliation) > 0 else None
         if not method: method = self.write.createMethod(code= 'simulation',
                                                              name='simulation',
                                                              vType='calculated',
-                                                             orgId=org_id,
+                                                             orgId=organization.OrganizationID,
                                                              description='Model Simulation Results')
 
         # create action
@@ -114,9 +134,9 @@ class sqlite():
                                               begindatetimeoffset=int((datetime.datetime.now() - datetime.datetime.utcnow() ).total_seconds()/3600))
 
         # create actionby
-        aff_id = odm2_affiliation[0].AffiliationID if len(odm2_affiliation) > 0 else None
+        # aff_id = odm2_affiliation[0].AffiliationID if len(odm2_affiliation) > 0 else None
         actionby = self.write.createActionBy(actionid=action.ActionID,
-                                             affiliationid=aff_id)
+                                             affiliationid=affiliation.AffiliationID)
 
         # create processing level
         processinglevel = self.read.getProcessingLevelByCode(processingCode=2)
@@ -126,8 +146,8 @@ class sqlite():
 
         # create dataset
         dataset = self.write.createDataset(dstype='Simulation Input',
-                                                dscode='Input_%s'%name,
-                                                dstitle='Input for Simulation: %s'%name,
+                                                dscode='Input_%s'%modelname,
+                                                dstitle='Input for Simulation: %s'%modelname,
                                                 dsabstract=description)
 
 
@@ -248,7 +268,7 @@ class sqlite():
         # TODO: remove hardcoded time offsets!
         sim = self.write.createSimulation(actionid=action.ActionID,
                                               modelID=model.ModelID,
-                                              simulationName=name,
+                                              simulationName=modelname,
                                               simulationDescription=description,
                                               simulationStartDateTime=simstart ,
                                               simulationStartOffset=-6,

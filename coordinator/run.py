@@ -103,14 +103,14 @@ def run_feed_forward(obj, ds=None):
             # save the spatial mapping based on link key
             spatial_maps[key] = spatial_interp.transform(source_geoms, target_geoms)
 
-        # # store model db sessions
-        # session = obj.get_model_by_id(modelid).get_instance().session()
-        # if session is None:
-        #     try:  # this is necessary if no db connection exists
-        #         session = obj.get_default_db()['session']
-        #     except:
-        #         pass
-        # db_sessions[modelid] = postgresdb(session)
+            # # store model db sessions
+            # session = obj.get_model_by_id(modelid).get_instance().session()
+            # if session is None:
+            #     try:  # this is necessary if no db connection exists
+            #         session = obj.get_default_db()['session']
+            #     except:
+            #         pass
+            # db_sessions[modelid] = postgresdb(session)
 
 
     # todo:  move this into function
@@ -131,9 +131,9 @@ def run_feed_forward(obj, ds=None):
         model_obj = obj.get_model_by_id(modelid)
         model_inst = model_obj.get_instance()
         elog.info('\n' + \
-              '------------------' + len(model_inst.name()) * '-' + '\n' + \
-              'Executing module: %s \n' % model_inst.name() + \
-              '------------------' + len(model_inst.name()) * '-')
+                  '------------------' + len(model_inst.name()) * '-' + '\n' + \
+                  'Executing module: %s \n' % model_inst.name() + \
+                  '------------------' + len(model_inst.name()) * '-')
 
         #  retrieve inputs from database
         elog.info('[1 of 4] Retrieving input data... ')
@@ -193,12 +193,33 @@ def run_feed_forward(obj, ds=None):
 
 
     elog.info('Saving Simulation Results...')
+    st = time.time()
 
     # build an instance of dbv22
     db = dbv2.connect(ds.session)
 
     # insert data!
-    db.create_simulation()
+    for modelid in exec_order:
+
+        # get the current model instance
+        model_obj = obj.get_model_by_id(modelid)
+        model_inst = model_obj.get_instance()
+        model_name = model_inst.name()
+
+        # get the output exchange items to save for this model
+        oeis =  ds.datasets[model_name]
+        items = []
+        for oei in oeis:
+            items.extend(model_inst.outputs(name=oei).values())
+
+        # get config parameters
+        config_params=model_obj.get_config_params()
+
+
+        db.create_simulation(coupledSimulationName=ds.simulationName,
+                             user_obj=ds.user,
+                             config_params=config_params,
+                             ei=items)
 
 def run_time_step(obj, ds=None):
     # store db sessions

@@ -24,19 +24,17 @@ class Organization(object):
         self.link = link
         self.parent = parent
 
-# isPrimaryOrganizationContact
-# affiliationEnd
-# address
-# personLink
 class Affiliation(object):
-    def __init__(self, email, startDate, organization, person, phone=None, address=None):
+    def __init__(self, email, startDate, organization, person, phone=None, address=None, isPrimaryOrganizationContact=False, affiliationEnd=None, personLink=None):
 
         self.email = email
         self.startDate = startDate
         self.phone = phone
         self.organization = organization
         self.person = person
-
+        self.isPrimaryOrganizationContact=isPrimaryOrganizationContact
+        self.affiliationEnd=affiliationEnd
+        self.personLink=personLink
 
 # def user_load(str):
 #     import cPickle

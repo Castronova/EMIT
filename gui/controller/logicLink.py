@@ -35,7 +35,9 @@ class LogicLink(ViewLink):
         self.__links = []
         self.link_obj_hit = False
 
-        self.OnStartUp()
+        #  Loaded twice for when links go both ways
+        self.OnStartUp(self.output_component, self.input_component)
+        self.OnStartUp(self.input_component, self.output_component)
         self.InitBindings()
 
         self.__checkbox_states = [None,None]
@@ -283,35 +285,27 @@ class LogicLink(ViewLink):
         self.inputLabel.SetLabel("Input of " + self.GetModelTo())
 
     def OnSwap(self, event):
+        try:
+            self.OnDelete(1)
+        except Exception as e:
+            elog.debug(e)
+            elog.warning("Please select which link to swap")
+            return
+
         #  Swapping components of models
         temp = self.output_component
         self.output_component = self.input_component
         self.input_component = temp
 
-        #  Swapping static text
-        self.outputLabel.SetLabel("Output of " + self.GetModelFrom())
-        self.inputLabel.SetLabel("Input of " + self.GetModelTo())
+        self.__link_source_id = self.output_component['id']
+        self.__link_target_id = self.input_component['id']
 
-        #  Swapping grids
-        temp = self.outputGrid
-        self.outputGrid = self.inputGrid
-        self.inputGrid = temp
-
-        #  Swapping the combo boxes
         self.InputComboBox.SetItems(['---'] + self.InputComboBoxChoices())
         self.OutputComboBox.SetItems(['---'] + self.OutputComboBoxChoices())
         self.InputComboBox.SetSelection(0)
         self.OutputComboBox.SetSelection(0)
 
-        #  Reloading the grid
-        self.populate_input_metadata(self.__selected_link)
-        self.populate_output_metadata(self.__selected_link)
-
-        self.__selected_link.oei = self.OutputComboBox.GetValue()
-        self.__selected_link.iei = self.InputComboBox.GetValue()
-
-        self.__links = []
-        self.__links.append(self.__selected_link)
+        self.NewButton(1)
 
     def GetModelFrom(self):
         if 'name' in self.output_component:
@@ -362,6 +356,15 @@ class LogicLink(ViewLink):
             self.outputGrid.SetCellValue(4, 1, o['unit'].UnitName())
             self.outputGrid.SetCellValue(5, 1, o['unit'].UnitTypeCV())
             self.outputGrid.SetCellValue(6, 1, o['unit'].UnitAbbreviation())
+        else:
+            self.outputGrid.SetCellValue(1, 1, "")
+            self.outputGrid.SetCellValue(2, 1, "")
+            self.odesc = ""
+
+            self.outputGrid.SetCellValue(4, 1, "")
+            self.outputGrid.SetCellValue(5, 1, "")
+            self.outputGrid.SetCellValue(6, 1, "")
+
 
     def populate_input_metadata(self, l):
 
@@ -377,6 +380,14 @@ class LogicLink(ViewLink):
             self.inputGrid.SetCellValue(4, 1, i['unit'].UnitName())
             self.inputGrid.SetCellValue(5, 1, i['unit'].UnitTypeCV())
             self.inputGrid.SetCellValue(6, 1, i['unit'].UnitAbbreviation())
+        else:
+            self.inputGrid.SetCellValue(1, 1, "")
+            self.inputGrid.SetCellValue(2, 1, "")
+            self.idesc = ""
+
+            self.inputGrid.SetCellValue(4, 1, "")
+            self.inputGrid.SetCellValue(5, 1, "")
+            self.inputGrid.SetCellValue(6, 1, "")
 
     def on_select_output(self, event):
         """
@@ -513,18 +524,13 @@ class LogicLink(ViewLink):
 
         self.Destroy()
 
-    def OnStartUp(self):
-        # set splitter location for the gridviews.  This needs to be done after the view is rendered
-        # self.inputProperties.SetSplitterPosition(130)
-        # self.outputProperties.SetSplitterPosition(130)
-
-        # initialize the exchangeitem listboxes
+    def OnStartUp(self, component1, component2):
         self.InputComboBox.SetItems(['---'] + self.InputComboBoxChoices())
         self.OutputComboBox.SetItems(['---'] + self.OutputComboBoxChoices())
         self.InputComboBox.SetSelection(0)
         self.OutputComboBox.SetSelection(0)
 
-        links = engine.getLinksBtwnModels(self.output_component['id'], self.input_component['id'])
+        links = engine.getLinksBtwnModels(component1['id'], component2['id'])
         if links:
             for l in links:
                 link = LinkInfo(l['source_item'],

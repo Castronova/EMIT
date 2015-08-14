@@ -1,0 +1,13 @@
+bc73ef2f-c502-428a-b51f-ed7fd7b47bca:
+  affiliation: {address: '8200 old main, logan ut, 84322', affiliationEnd: null, email: tony.castronova@usu.edu,
+    isPrimaryOrganizationContact: false, personLink: null, phone: 435-797-0853, startDate: 03-10-2014}
+  organization: {code: usu, description: null, link: null, name: Utah State University,
+    parent: null, typeCV: university}
+  person: {firstname: tony, lastname: castronova, middlename: null}
+c5edab89-e739-489d-ac13-fcbbffc0e1cf:
+  affiliation: {address: '8200 old main, logan ut, 84322', affiliationEnd: null, email: tony.castronova@usu.edu,
+    isPrimaryOrganizationContact: false, personLink: null, phone: null, startDate: 03-10-2014}
+  organization: {code: uwrl, description: description = research laboratory Affiliated
+      with utah state university, link: null, name: Utah Water Research Laboratory,
+    parent: usu, typeCV: university}
+  person: {firstname: tony, lastname: castronova, middlename: null}

@@ -1,10 +1,11 @@
 __author__ = 'Francisco'
 
-import wx
 import os
-import dill
+
+import wx
+
+import coordinator.users as Users
 from coordinator import engineAccessors
-from coordinator.emitLogging import elog
 
 
 class viewPreRun(wx.Frame):
@@ -126,10 +127,15 @@ class SummaryPage(wx.Panel):
     def loadAccounts(self):
         # todo: get path from environment variables
         currentdir = os.path.dirname(os.path.abspath(__file__))  # Get the directory
-        users = []
-        with open(os.path.abspath(os.path.join(currentdir, '../../app_data/configuration/users.pkl')),'rb') as f:
-            users.extend(dill.load(f))
-        return users
+        known_users = []
+        # with open(os.path.abspath(os.path.join(currentdir, '../../app_data/configuration/users.pkl')),'rb') as f:
+        #     users.extend(dill.load(f))
+
+        # build affiliation/person/org objects from the users.yaml file
+        with open(os.path.abspath(os.path.join(currentdir, '../../app_data/configuration/users.yaml')),'r') as f:
+            known_users.extend(Users.BuildAffiliationfromYAML(f.read()))
+
+        return known_users
 
     def getFromFile(self, data, search):
         combobox = []

@@ -6,7 +6,6 @@ import os
 import time
 from coordinator import engineAccessors
 
-
 class logicPreRun(viewPreRun):
     def __init__(self):
         viewPreRun.__init__(self)
@@ -52,10 +51,26 @@ class logicPreRun(viewPreRun):
         # todo: pass simulation name, database id, and user info into the engine
         datasets = self.GetDataToSave()
 
+        # get the user account from selected user_name
+        user_info = None
+        for affil in self.accounts:
+            if affil.ID() == user_name:
+                user_info_yaml = affil.toYAML()
+                # user_info = json.dumps(affil)
 
-        kwargs = dict(simulationName=name, dbName=db, user=self.accounts, datasets=datasets)
-        # execute the simulation
-        engine.runSimulation(**kwargs)
+        # todo: check all constraints before executing a simulation
+        # raise exceptions before executing the simulation
+        if user_info_yaml is None:
+            raise Exception('Cannot execute simulation if no user account is provided')
+        if name.strip() == '':
+            raise Exception('Cannot execute simulation if no simulation name is provided')
+
+        # build kwargs to pass to engineAccessors
+        kwargs = dict(simulationName=name, dbName=db, user_yaml=user_info_yaml, datasets=datasets)
+
+        # initiate simulation
+        engineAccessors.runSimulation(**kwargs)
+
         self.Close()
 
     # def RunSim(self):

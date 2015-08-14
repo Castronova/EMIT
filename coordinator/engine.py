@@ -28,7 +28,7 @@ from copy import deepcopy
 from coordinator.emitLogging import elog
 # import ODM2PythonAPI.src.api as odm2api
 from datetime import datetime
-
+import users as Users
 
 """
 Purpose: This file contains the logic used to run coupled model simulations
@@ -868,16 +868,17 @@ class Coordinator(object):
         """
         pass
 
-    def run_simulation(self, simulationName=None, dbName=None, user=None, datasets=None):
+    def run_simulation(self, simulationName=None, dbName=None, user_yaml=None, datasets=None):
         """
         coordinates the simulation effort
         """
 
         # create data info instance if all the necessary info is provided
         ds = None
-        if None not in [simulationName, dbName, user, datasets]:
+        if None not in [simulationName, dbName, user_yaml, datasets]:
             db = self.get_db_args_by_name(dbName)
-            ds = run.dataSaveInfo(simulationName, db, user, datasets)
+            user_list= Users.BuildAffiliationfromYAML(user_yaml)
+            ds = run.dataSaveInfo(simulationName, db, user_list[0], datasets)
 
         try:
             # determine if the simulation is feed-forward or time-step

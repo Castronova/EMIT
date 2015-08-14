@@ -35,7 +35,9 @@ class LogicLink(ViewLink):
         self.__links = []
         self.link_obj_hit = False
 
-        self.OnStartUp()
+        #  Loaded twice for when links go both ways
+        self.OnStartUp(self.output_component, self.input_component)
+        self.OnStartUp(self.input_component, self.output_component)
         self.InitBindings()
 
         self.__checkbox_states = [None,None]
@@ -522,16 +524,13 @@ class LogicLink(ViewLink):
 
         self.Destroy()
 
-    def OnStartUp(self):
-        # initialize the exchangeitem listboxes
+    def OnStartUp(self, component1, component2):
         self.InputComboBox.SetItems(['---'] + self.InputComboBoxChoices())
         self.OutputComboBox.SetItems(['---'] + self.OutputComboBoxChoices())
         self.InputComboBox.SetSelection(0)
         self.OutputComboBox.SetSelection(0)
 
-        self.LoadBiDirectionalOnStartup()
-
-        links = engine.getLinksBtwnModels(self.output_component['id'], self.input_component['id'])
+        links = engine.getLinksBtwnModels(component1['id'], component2['id'])
         if links:
             for l in links:
                 link = LinkInfo(l['source_item'],
@@ -552,31 +551,6 @@ class LogicLink(ViewLink):
 
         # if no links are found, need to deactivate controls
         self.activateControls(False)
-
-    def LoadBiDirectionalOnStartup(self):
-        links = engine.getLinksBtwnModels(self.input_component['id'], self.output_component['id'])
-        # links = engine.getAllLinks()
-        if links:
-            for l in links:
-                link = LinkInfo(l['source_item'],
-                                l['target_item'],
-                                l['source_id'],
-                                l['target_id'],
-                                l['id'],
-                                l['spatial_interpolation'],
-                                l['temporal_interpolation'])
-
-                self.__links.append(link)
-
-            # select the first value
-            self.refreshLinkNameBox()
-            self.LinkNameListBox.SetSelection(0)
-            self.__selected_link = self.__links[0]
-            self.OnChange(None)
-
-        # if no links are found, need to deactivate controls
-        self.activateControls(False)
-
 
     def OutputGridHover(self, e):
         self.OutGridToolTip(e)

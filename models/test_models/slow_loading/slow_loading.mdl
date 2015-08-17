@@ -26,7 +26,8 @@ elementset = POLYGON ((15 20, 20 20, 25 30, 15 25, 15 20))
 epsg_code = 2921
 
 [time_step]
-unit_type_cv = hours
+name = hours
+abbreviation = hr
 value = 1
 
 [options]

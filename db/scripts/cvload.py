@@ -396,61 +396,36 @@ class CVVariableType(Base):
         return "<CV('%s', '%s', '%s', '%s')>" %(self.Term, self.Name, self.Definition, self.Category)
 
 
-# -----------------------------------------------------------------------------
-# handles customizing the error messages from Argparse
-# -----------------------------------------------------------------------------
-# class MyParser(argparse.ArgumentParser):
-# # def load_cv();
-#         def error(self, message):
-#             sys.stderr.write("------------------------------\n")
-#             sys.stderr.write('error: %s\n' % message)
-#             sys.stderr.write("------------------------------\n")
-#             self.print_help()
-#             sys.exit(2)
-#
-# # handle argument parsing
-# info = "A simple script that loads up cvterms into a blank ODM2 database"
-# parser = MyParser(description=info, add_help=True)
-# parser.add_argument(
-#         help="Format: {engine}+{driver}://{user}:{pass}@{address}/{db}\n"
-#         "mysql+pymysql://ODM:odm@localhost/odm2\n"
-#         "mssql+pyodbc://ODM:123@localhost/odm2\n"
-#         "postgresql+psycopg2://ODM:odm@test.uwrl.usu.edu/odm2\n",
-#         default=True, type=str, dest='conn_string')
-# parser.add_argument('-d', '--debug',
-#         help="Debugging program without commiting anything to"
-#         " remote database",
-#         action="store_true")
-# args = parser.parse_args()
-
-
-vocab= [("actiontype", CVActionType),
-            ("qualitycode", CVQualityCode),
-            ("samplingfeaturegeotype", CVSamplingFeatureGeoType),
-            ("elevationdatum", CVElevationDatum),
-            ("resulttype", CVResultType),
-            ("sampledmedium", CVSampledMedium),
-            ("speciation", CVSpeciation),
-            ("aggregationstatistic", CVAggregationStatistic),
-            ("methodtype", CVMethodType),
-            ("taxonomicclassifiertype", CVTaxonomicClassifierType),
-            ("sitetype", CVSiteType),
-            ("censorcode", CVCensorCode),
-            ("directivetype", CVDirectiveType),
-            ("datasettype",CVDatasetType),
-            ("organizationtype", CVOrganizationType),
-            ("status", CVStatus),
-            ("annotationtype", CVAnnotationType),
-            ("samplingfeaturetype", CVSamplingFeatureType),
-            ("equipmenttype", CVEquipmentType),
-            ("specimenmedium", CVSpecimenMedium),
-            ("spatialoffsettype", CVSpatialOffsetType),
-            ("referencematerialmedium", CVReferenceMaterialMedium),
-            ("specimentype", CVSpecimenType),
-            ("variabletype", CVVariableType),
-            ("variablename", CVVariableName),
-            ("propertydatatype", CVPropertyDataType),
-            ("relationshiptype", CVRelationshipType)]
+vocab= [
+            # ("actiontype", CVActionType),
+            # ("qualitycode", CVQualityCode),
+            # ("samplingfeaturegeotype", CVSamplingFeatureGeoType),
+            # ("elevationdatum", CVElevationDatum),
+            # ("resulttype", CVResultType),
+            # ("medium", CVSampledMedium),
+            # ("speciation", CVSpeciation),
+            # ("aggregationstatistic", CVAggregationStatistic),
+            # ("methodtype", CVMethodType),
+            # ("taxonomicclassifiertype", CVTaxonomicClassifierType),
+            # ("sitetype", CVSiteType),
+            # ("censorcode", CVCensorCode),
+            # ("directivetype", CVDirectiveType),
+            # ("datasettype",CVDatasetType),
+            # ("organizationtype", CVOrganizationType),
+            # ("status", CVStatus),
+            # ("annotationtype", CVAnnotationType),
+            # ("samplingfeaturetype", CVSamplingFeatureType),
+            # ("equipmenttype", CVEquipmentType),
+            # ("medium", CVSpecimenMedium),
+            # ("spatialoffsettype", CVSpatialOffsetType),
+            # ("medium", CVReferenceMaterialMedium),
+            # ("specimentype", CVSpecimenType),
+            # ("variabletype", CVVariableType),
+            # ("variablename", CVVariableName),
+            # ("propertydatatype", CVPropertyDataType),
+            # ("relationshiptype", CVRelationshipType),
+            ("unitstype", CVUnitsType)
+            ]
 
 
 
@@ -508,14 +483,19 @@ def load_cv(connection_string):
                 try:
                     obj = CVObject()
                     obj.Term = voc.attrib[rdf%"about"].split('/')[-1]
+
                     if voc.find(skos%"prefLabel") is not None:
                         obj.Name = voc.find(skos%"prefLabel").text
                     else: break
                     if voc.find(skos%"definition") is not None:
                         obj.Definition = voc.find(skos%"definition").text
-                    else: break
+                    else:
+                        # obj.Definition = 'None provided'
+                        pass
+                        # break
                     obj.Category = category = voc.find(odm2%"category").text if voc.find(odm2 % "category") is not None else None
                     obj.SourceVocabularyUri = voc.attrib[rdf%"about"]
+                    # if None not in obj:
                     objs.append(obj)
                 except Exception, e:
                     print e

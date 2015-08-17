@@ -97,7 +97,11 @@ class sqlite():
         modelname = config_params['model'][0]['name']
         modeldesc = config_params['model'][0]['description']
         timestepvalue = config_params['time_step'][0]['value']
-        timestepunittype = config_params['time_step'][0]['unit_type_cv']
+
+        # default to a timestep of seconds
+        timestepname = config_params['time_step'][0].get('name') or 'seconds'
+        timestepabbv = config_params['time_step'][0].get('abbreviation') or ' '
+
 
         # name = config_params['name']
         simulationName = coupledSimulationName
@@ -116,7 +120,10 @@ class sqlite():
 
         # get the timestep unit id
         #todo: This is not returning a timestepunit!!!  This may need to be added to the database
-        timestepunit = self.read.getUnitByName(timestepunittype)
+        timestepunit = self.read.getUnitByName(timestepname)
+        if timestepunit is None:
+            timestepunit = self.write.createUnit('time', timestepname, timestepabbv)
+
 
         # create method
         method = self.read.getMethodByCode('simulation')

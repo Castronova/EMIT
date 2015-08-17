@@ -37,7 +37,12 @@ cvload.load_cv("sqlite:///"+dbpath)
 # create empty database SQL dump file
 with open('../tests/data/empty_dump.sql', 'w') as f:
     for line in conn.iterdump():
-        f.write('%s\n' % line)
+        try:
+            # handle unicode characters such as greek letters
+            line = line.encode('ascii', 'ignore')
+            f.write('%s\n' % line)
+        except Exception, e:
+            print e
 
 # load some data
 load_wof_to_ODM2.load_wof(dbpath)
@@ -66,7 +71,12 @@ print 'done'
 # create populated database SQL dump file
 with open('../tests/data/populated_dump.sql', 'w') as f:
     for line in conn.iterdump():
-        f.write('%s\n' % line)
+        try:
+            # handle unicode characters such as greek letters
+            line = line.encode('ascii', 'ignore')
+            f.write('%s\n' % line)
+        except Exception, e:
+            print e
 
 # close database connection
 c.close()

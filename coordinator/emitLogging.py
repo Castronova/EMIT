@@ -4,6 +4,7 @@ import logging
 import logging.handlers
 import os
 import json
+from environment import env_vars
 
 
 class _Log:
@@ -152,33 +153,9 @@ class Log(object):
         return self.log._get_logger()
 
     def verbosity(self):
-        currentdir = os.path.dirname(os.path.abspath(__file__))
-        self.settingspath = os.path.abspath(os.path.join(currentdir, '../data/settings'))
-        file = open(self.settingspath, 'r')
-        fileinfo = file.readlines()
-        boolist = []
-
-        for i in range(0, len(fileinfo)):
-            value = fileinfo[i].split(' = ')
-            value = value[1].split('\n')
-            if value[0] == 'True':
-                boolist.append(True)
-            else:
-                boolist.append(False)
-
-        try:
-            self.showinfo = boolist[0]
-            self.showwarning = boolist[1]
-            self.showcritical = boolist[2]
-            self.showerror = boolist[3]
-            self.showdebug = boolist[4]
-        except:  # If the settings file is empty it will set them all to True
-            self.showinfo = True
-            self.showwarning = True
-            self.showcritical = True
-            self.showerror= True
-            self.showdebug = True
-
-        file.close()
+        self.showinfo = env_vars.SHOWINFO
+        self.showwarning = env_vars.SHOWWARNING
+        self.showcritical = env_vars.SHOWCRITICAL
+        self.showerror = env_vars.SHOWERROR
 
 elog = Log()

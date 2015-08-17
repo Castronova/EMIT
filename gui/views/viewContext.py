@@ -475,9 +475,13 @@ class ContextMenu(wx.Menu):
         PlotFrame.Show()
 
     def OnDelete(self,event):
-        dlg = wx.MessageDialog(self.parent, 'Unfortunately, delete has not been implemented yet.', '', wx.OK | wx.ICON_WARNING)
-        dlg.ShowModal()
+        dlg = wx.MessageDialog(self.parent, 'Are you sure you want to delete this record?', 'Question',
+                               wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
+        if dlg.ShowModal() == wx.ID_YES:
+            self.parent.Parent.m_olvSeries.RemoveObject(self.parent.GetSelectedObject())  # Deleting
+            self.parent.Parent.m_olvSeries.SortBy(self.parent.Parent.m_olvSeries.GetPrimaryColumnIndex())  # Sorting
         dlg.Destroy()
+
 
 class TimeSeriesContextMenu(ContextMenu):
     def __init__(self, parent):

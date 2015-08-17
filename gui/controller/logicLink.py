@@ -337,10 +337,15 @@ class LogicLink(ViewLink):
 
         # remove the link name from the links list box
         index = self.LinkNameListBox.GetSelection()
-        self.LinkNameListBox.Delete(index)
+        try:
+            self.LinkNameListBox.Delete(index)
+            # remove link from __links list so that it isn't repopulated on page refresh
+            self.__links.pop(index)
+        except Exception as e:
+            elog.debug(e)
+            elog.warning("Please select a link to delete")
 
-        # remove link from __links list so that it isn't repopulated on page refresh
-        self.__links.pop(index)
+
 
     def populate_output_metadata(self, l):
 

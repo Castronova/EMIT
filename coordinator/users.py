@@ -61,12 +61,16 @@ class Affiliation(object):
         aff_dict = copy.deepcopy(self.__dict__)
         aff_dict.pop('person')
         aff_dict.pop('organization')
+
+        aff_dict['startDate'] = aff_dict['startDate'].strftime("%m/%d/%Y %M:%H:%S")
+        if aff_dict['affiliationEnd'] is not None:
+            aff_dict['affiliationEnd'] = aff_dict['affiliationEnd'].strftime("%m/%d/%Y %M:%H:%S")
         return {str(uuid.uuid4()):dict(person=self.person.__dict__,
                     organization=self.organization.__dict__,
                     affiliation=aff_dict)}
 
     def toJSON(self):
-        return json.dumps(self._affilationToDict())
+        return json.dumps(self._affilationToDict(), sort_keys=True, indent=4, separators=(',', ': '))
 
     def toYAML(self):
         return yaml.dump(self._affilationToDict())
@@ -94,6 +98,9 @@ def BuildAffiliationfromYAML(y):
         p = Person(**entry['person'])
         o = Organization(**entry['organization'])
         entry['affiliation'].update(dict(person=p,organization=o))
+        entry['affiliation']['startDate'] = datetime.datetime.strptime(entry['affiliation']['startDate'], "%m/%d/%Y %M:%H:%S")
+        if entry['affiliation']['affiliationEnd'] is not None:
+            entry['affiliation']['affiliationEnd'] = datetime.datetime.strptime(entry['affiliation']['affliliationEnd'], "%m/%d/%Y %M:%H:%S")
         a = Affiliation(**entry['affiliation'])
         affiliations.append(a)
 
@@ -108,9 +115,9 @@ def BuildAffiliationfromYAML(y):
 #     the object must be accessible globally via a module and must inherit from object (AKA new-style classes).
 if __name__ == "__main__":
 
-    import jsonpickle
-    import cPickle as pickle
-    import dill
+    # import jsonpickle
+    # import cPickle as pickle
+    # import dill
     import yaml
     import datetime
 
@@ -128,19 +135,25 @@ if __name__ == "__main__":
                    Affiliation(email='tony.castronova@usu.edu', startDate=datetime.datetime(2014,03,10), organization=o2, person=p, address='8200 old main, logan ut, 84322')]
 
     # test custom YAML dump
-    with open('../../app_data/configuration/users.yaml', 'w') as f:
+    with open('../app_data/configuration/users.yaml', 'w') as f:
         for a in affilations:
             y = a.toYAML()
             f.write(y)
 
-    # test fromYaml
-    with open('../../app_data/configuration/users.yaml', 'r') as f:
+    # # test fromYaml
+    with open('../app_data/configuration/users.yaml', 'r') as f:
         yobj = BuildAffiliationfromYAML(f.read())
 
     # write object to json
     # jp = jsonpickle.encode(affilations)
-    # with open('../../app_data/configuration/users.json', 'w') as f:
-    #     f.write(jp)
+    j = []
+    with open('../app_data/configuration/users.json', 'w') as f:
+       for a in affilations:
+           j.append(a._affilationToDict())
+
+       j = json.dumps(j, sort_keys=True, indent=4, separators=(',', ': '))
+       f.write(j)
+
 
     # just using pickle
     # with open('../../app_data/configuration/users.pkl', 'wb') as f:

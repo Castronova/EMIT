@@ -608,9 +608,8 @@ class DataSeries(wx.Panel):
 
     def database_refresh(self, event):
 
-        # thr = threading.Thread(target=self.load_data, args=(), kwargs={})
-        # thr.start()
-        self.load_data()
+        thr = threading.Thread(target=self.load_data, args=(), kwargs={})
+        thr.start()
 
 class SimulationDataTab(DataSeries):
     def __init__(self, parent):

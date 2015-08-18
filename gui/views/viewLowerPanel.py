@@ -659,6 +659,10 @@ class SimulationDataTab(DataSeries):
                     from ODM2PythonAPI.src.api.ODMconnection import dbconnection
                     session = dbconnection.createConnection(engine=db['args']['engine'], address=db['args']['address'])
                     s = db2.connect(session)
+                    # self.cur = s
+                    # self.cur.displayTable('Simulations')
+                    # self.cur.deleteRecordFromTable('Simulations', 'myMod')
+                    # self.cur.displayTable('Simulations')
                     simulations = s.getAllSimulations()
                     isSqlite = True
                 else:
@@ -725,5 +729,4 @@ class SimulationDataTab(DataSeries):
                 self.table.SetObjects(data)
 
                 # set the current database in canvas controller
-                Publisher.sendMessage('SetCurrentDb',value=selected_db)  # sends to CanvasController.getCurrentDbSession
-
+                Publisher.sendMessage('SetCurrentDb', value=selected_db)  # sends to CanvasController.getCurrentDbSession

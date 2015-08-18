@@ -478,8 +478,14 @@ class ContextMenu(wx.Menu):
         dlg = wx.MessageDialog(self.parent, 'Are you sure you want to delete this record?', 'Question',
                                wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
         if dlg.ShowModal() == wx.ID_YES:
-            self.parent.Parent.m_olvSeries.RemoveObject(self.parent.GetSelectedObject())  # Deleting
-            self.parent.Parent.m_olvSeries.SortBy(self.parent.Parent.m_olvSeries.GetPrimaryColumnIndex())  # Sorting
+            try:
+                # From Time Series
+                self.parent.Parent.m_olvSeries.RemoveObject(self.parent.GetSelectedObject())  # Deleting
+                self.parent.Parent.m_olvSeries.SortBy(self.parent.Parent.m_olvSeries.GetPrimaryColumnIndex())  # Sorting
+            except:
+                # From Simulations
+                self.parent.Parent.table.RemoveObject(self.parent.GetSelectedObject())
+                self.parent.Parent.table.SortBy(self.parent.Parent.table.GetPrimaryColumnIndex())
         dlg.Destroy()
 
 

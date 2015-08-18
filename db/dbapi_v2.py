@@ -459,3 +459,26 @@ class sqlite():
             return res
         except Exception, e:
             print e
+
+    def getAllTables(self):
+        self.spatialDb.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        tables = self.spatialDb.fetchall()
+        for table in tables:
+            print table
+
+    def getTableInfo(self, table):
+        # This shows the column info of the table
+        self.spatialDb.execute("PRAGMA table_info({})".format(table))
+        data = self.spatialDb.fetchall()
+        for d in data:
+            print d[0], d[1], d[2], d[3]
+
+    def deleteRecordFromTable(self, table, name):
+        self.spatialDb.execute("DELETE FROM '{}' WHERE SimulationName='{}'".format(table, name))
+
+    def displayTable(self, table):
+        print "Table = " + str(table)
+        self.spatialDb.execute("SELECT * FROM {}".format(table))
+        rows = self.spatialDb.fetchall()
+        for r in rows:
+            print r

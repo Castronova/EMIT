@@ -272,7 +272,7 @@ class sqlite():
         # TODO: remove hardcoded time offsets!
         sim = self.write.createSimulation(actionid=action.ActionID,
                                               modelID=model.ModelID,
-                                              simulationName=modelname,
+                                              simulationName=coupledSimulationName,
                                               simulationDescription=description,
                                               simulationStartDateTime=simstart ,
                                               simulationStartOffset=-6,
@@ -453,7 +453,7 @@ class sqlite():
             res = self.connection.getSession().query(models.Simulations, models.Models, models.Actions, models.People). \
                 join(models.Models). \
                 join(models.Actions).\
-                join(models.Actionby). \
+                join(models.ActionBy). \
                 join(models.Affiliations).\
                 join(models.People).all()
             return res

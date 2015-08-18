@@ -608,8 +608,9 @@ class DataSeries(wx.Panel):
 
     def database_refresh(self, event):
 
-        thr = threading.Thread(target=self.load_data, args=(), kwargs={})
-        thr.start()
+        # thr = threading.Thread(target=self.load_data, args=(), kwargs={})
+        # thr.start()
+        self.load_data()
 
 class SimulationDataTab(DataSeries):
     def __init__(self, parent):
@@ -641,14 +642,33 @@ class SimulationDataTab(DataSeries):
             #     sys.stdout = redir
 
             # get the database session associated with the selected name
+            isSqlite = False
+
             if db['name'] == selected_db:
+                simulations = None
+
+                if db['args']['engine'] == 'sqlite':
+                    import db.dbapi_v2 as db2
+                    from ODM2PythonAPI.src.api.ODMconnection import dbconnection
+                    session = dbconnection.createConnection(engine=db['args']['engine'], address=db['args']['address'])
+                    s = db2.connect(session)
+                    simulations = s.getAllSimulations()
+                    isSqlite = True
+                else:
+                    session = dbUtilities.build_session_from_connection_string(db['connection_string'])
+                    # build the database session
+
+                    u = dbapi.utils(session)
+                    simulations = u.getAllSimulations()
 
 
-                # build the database session
-                session = dbUtilities.build_session_from_connection_string(db['connection_string'])
-
-                u = dbapi.utils(session)
-                simulations = u.getAllSimulations()
+                #     # gui_utils.connect_to_db()
+                #
+                #
+                # else: # fixme: this is old api for postgresql and mysql (need to update to dbapi_v2)
+                #     session = dbUtilities.build_session_from_connection_string(db['connection_string'])
+                #     u = dbapi.utils(session)
+                #     series = u.getAllSeries()
 
 
                 sim_ids = []
@@ -663,21 +683,32 @@ class SimulationDataTab(DataSeries):
                     # loop through all of the returned data
 
                     for s in simulations:
+                        simulation = None
+                        if isSqlite:
+                            simulation = s.Simulations
+                            person = s.People
+                            action = s.Actions
+                            model = s.Models
+                        else:
+                            simulation = s.Simulation
+                            person = s.Person
+                            action = s.Action
+                            model = s.Model
 
-                        simulation_id = s.Simulation.SimulationID
+                        simulation_id = simulation.SimulationID
 
                         # only add if the simulation id doesn't already exist in sim_ids
                         if simulation_id not in sim_ids:
                             sim_ids.append(simulation_id)
 
                             d = {
-                                'simulation_id': s.Simulation.SimulationID,
-                                'simulation_name': s.Simulation.SimulationName,
-                                'model_name': s.Model.ModelName,
-                                'date_created': s.Action.BeginDateTime,
-                                'owner': s.Person.PersonLastName,
-                                'simulation_start': s.Simulation.SimulationStartDateTime,
-                                'simulation_end': s.Simulation.SimulationEndDateTime,
+                                'simulation_id': simulation.SimulationID,
+                                'simulation_name': simulation.SimulationName,
+                                'model_name': model.ModelName,
+                                'date_created': action.BeginDateTime,
+                                'owner': person.PersonLastName,
+                                'simulation_start': simulation.SimulationStartDateTime,
+                                'simulation_end': simulation.SimulationEndDateTime,
                             }
 
                             record_object = type('DataRecord', (object,), d)

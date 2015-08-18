@@ -38,10 +38,10 @@ class test_sqlite_db(unittest.TestCase):
         populated_dump_script = open('./data/populated_dump.sql','r').read()
 
         # create temp databases
-        empty_odm2_db = sqlite3.connect(self.empty_db_path) # create a memory database
-        pop_odm2_db = sqlite3.connect(self.pop_db_path) # create a memory database
+        empty_odm2_db = sqlite3.connect(self.empty_db_path)
+        pop_odm2_db = sqlite3.connect(self.pop_db_path)
 
-        # load the dump files into the in-memory databases
+        # load the dump files into the databases
         empty_odm2_db.executescript(empty_dump_script)
         pop_odm2_db.executescript(populated_dump_script)
 

@@ -204,13 +204,12 @@ class sqlite():
                 values = datavalues[:,i]   # all dates for geometry(i)
 
                 # create sampling feature
-                samplingfeature = self.read.getSamplingFeatureByGeometry(geom.wkt)
-                if not samplingfeature:
-                    samplingFeatureID = self.insert_sampling_feature(type='site',geometryType=geom.type, WKTgeometry=geom.wkt)
-
+                samplingFeature = self.getSamplingFeatureID__Geometry_EQUALS(geom.wkt)
+                if not samplingFeature:
+                    samplingFeature = self.insert_sampling_feature(type='site',geometryType=geom.type, WKTgeometry=geom.wkt)
 
                 # create feature action
-                featureaction = self.write.createFeatureAction(samplingfeatureid=samplingFeatureID,
+                featureaction = self.write.createFeatureAction(samplingfeatureid=samplingFeature.SamplingFeatureID,
                                                                     actionid=action.ActionID)
 
                 # create a result record
@@ -262,10 +261,8 @@ class sqlite():
 
         # create model
         model = self.read.getModelByCode(modelcode=modelcode)
-        if not model: model = self.write.createModel(code=modelcode,
-                                                           name=modelname,
-                                                           description=modeldesc)
-
+        if not model:
+            model = self.write.createModel(code=modelcode, name=modelname, description=modeldesc)
 
         # create simulation
 
@@ -315,9 +312,9 @@ class sqlite():
         ElevationDatumCV=elevationDatum
 
         # get the last record index
-        res = self.spatialDb.execute('SELECT SamplingFeatureID FROM SamplingFeatures ORDER BY SamplingFeatureID DESC LIMIT 1').fetchall()
-        ID = res[0][0]  # get the last id value
-        ID += 1 # increment the last id
+        res = self.spatialDb.execute('SELECT last_insert_rowid() FROM SamplingFeatures')
+        ID = res.fetchone() or (-1,)
+        ID = ID[0] + 1 # increment the last id
 
         values = [ID,UUID,FeatureTypeCV,FeatureCode,FeatureName,FeatureDescription, FeatureGeoTypeCV, FeatureGeometry, Elevation,ElevationDatumCV]
         self.spatialDb.execute('INSERT INTO SamplingFeatures VALUES (?, ?, ?, ?, ?, ?, ?, geomFromText(?), ?, ?)'
@@ -325,11 +322,20 @@ class sqlite():
 
         self.spatial_connection.commit()
 
-        # return the id of the inserted record
-        return self.spatialDb.lastrowid
+        featureObj = models.SamplingFeatures()
+        featureObj.SamplingFeatureID = ID
+        featureObj.SamplingFeatureUUID = UUID
+        featureObj.SamplingFeatureTypeCV = FeatureTypeCV
+        featureObj.SamplingFeatureCode = FeatureName
+        featureObj.SamplingFeatureName = FeatureCode
+        featureObj.SamplingFeatureDescription = FeatureDescription
+        featureObj.SamplingFeatureGeotypeCV = FeatureGeoTypeCV
+        featureObj.Elevation_m = Elevation
+        featureObj.ElevationDatumCV = ElevationDatumCV
+        featureObj.FeatureGeometry = FeatureGeometry
 
-        # pts = self.spatial_connection.execute('SELECT ST_AsText(FeatureGeometry) from SamplingFeatures').fetchall()
-        # return ID
+        return featureObj
+
 
     def insert_timeseries_result(self, resultid, aggregationstatistic='Unknown', xloc=None, xloc_unitid=None, yloc=None,yloc_unitid=None, zloc=None, zloc_unitid=None, srsID=None, timespacing=None, timespacing_unitid=None):
         """
@@ -372,6 +378,50 @@ class sqlite():
         # return true
         return 1
 
+
+
+
+    ###################
+    #### GETTERS ######
+    ###################
+
+    def getSamplingFeatureID__Geometry_EQUALS(self, wkt_geometry):
+
+        try:
+            res = self.spatialDb.execute('SELECT SamplingFeatureID,'
+                                         'SamplingFeatureUUID,'
+                                         'SamplingFeatureTypeCV,'
+                                         'SamplingFeatureCode,'
+                                         'SamplingFeatureName,'
+                                         'SamplingFeatureDescription,'
+                                         'SamplingFeatureGeotypeCV,'
+                                         'Elevation_m,'
+                                         'ElevationDatumCV,'
+                                         'AsText(FeatureGeometry) '
+                                         'FROM SamplingFeatures '
+                                         'WHERE Equals ( geomFromText(?) , SamplingFeatures.FeatureGeometry )', [wkt_geometry])
+
+            sf = res.fetchone()
+            if sf is None:
+                return None
+
+            featureObj = models.SamplingFeatures()
+            featureObj.SamplingFeatureID =sf[0]
+            featureObj.SamplingFeatureUUID = sf[1]
+            featureObj.SamplingFeatureTypeCV = sf[2]
+            featureObj.SamplingFeatureCode = sf[3]
+            featureObj.SamplingFeatureName = sf[4]
+            featureObj.SamplingFeatureDescription = sf[5]
+            featureObj.SamplingFeatureGeotypeCV = sf[6]
+            featureObj.Elevation_m = sf[7]
+            featureObj.ElevationDatumCV = sf[8]
+            featureObj.FeatureGeometry = sf[9]
+
+            return featureObj
+
+        except Exception, e:
+            print e
+            return None
 
 
     def getAllSeries(self):

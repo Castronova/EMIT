@@ -316,9 +316,13 @@ class TimeSeriesTab(wx.Panel):
         return
 
     def OLVRefresh(self, event):
-
-        thr = threading.Thread(target=self.refresh_database, name='DATABASE REFRESH THREAD', args=(), kwargs={})
-        thr.start()
+        if sys.gettrace():
+            #  In debug mode
+            self.refresh_database()
+        else:
+            # Not in debug mode
+            thr = threading.Thread(target=self.refresh_database, name='DATABASE REFRESH THREAD', args=(), kwargs={})
+            thr.start()
 
 class AddConnectionDialog(wx.Dialog):
     def __init__(
@@ -607,9 +611,13 @@ class DataSeries(wx.Panel):
         raise Exception('Abstract method. Must be overridden!')
 
     def database_refresh(self, event):
-
-        thr = threading.Thread(target=self.load_data, args=(), kwargs={})
-        thr.start()
+        if sys.gettrace():
+            #  In debug mode
+            self.load_data()
+        else:
+            # Not in debug mode
+            thr = threading.Thread(target=self.load_data, args=(), kwargs={})
+            thr.start()
 
 class SimulationDataTab(DataSeries):
     def __init__(self, parent):

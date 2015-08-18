@@ -374,3 +374,38 @@ class sqlite():
 
 
 
+    def getAllSeries(self):
+        """ General select statement for retrieving many results.  This is intended to be used when populating gui tables
+
+        :return :
+            :type list:
+        """
+        try:
+            res = self.connection.getSession().query(models.Results).\
+                    join(models.Variables). \
+                    join(models.Units). \
+                    join(models.FeatureActions). \
+                    join(models.Actions). \
+                    join(models.TimeSeriesResultValues, models.TimeSeriesResultValues.ResultID == models.Results.ResultID).\
+                    filter(models.Actions.ActionTypeCV != 'Simulation').\
+                    all()
+            return res
+        except Exception, e:
+            print e
+
+    def getAllSimulations(self):
+        """
+        General select statement for retrieving many simulations.  This is intended to be used for populating gui tables
+        :return:
+        """
+
+        try:
+            res = self.connection.getSession().query(models.Simulations, models.Models, models.Actions, models.People). \
+                join(models.Models). \
+                join(models.Actions).\
+                join(models.Actionby). \
+                join(models.Affiliations).\
+                join(models.People).all()
+            return res
+        except Exception, e:
+            print e

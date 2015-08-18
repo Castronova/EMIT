@@ -261,11 +261,20 @@ class TimeSeriesTab(wx.Panel):
 
                 # query the database and get basic series info
 
-                # TODO : session wont exist here anymore!!!
-                session = dbUtilities.build_session_from_connection_string(db['connection_string'])
+                series = None
+                # fixme: This breaks for SQLite since it is implemented in dbapi_v2
+                if db['args']['engine'] == 'sqlite':
+                    import db.dbapi_v2 as db2
+                    from ODM2PythonAPI.src.api.ODMconnection import dbconnection
+                    session = dbconnection.createConnection(engine=db['args']['engine'], address=db['args']['address'])
+                    # gui_utils.connect_to_db()
+                    s = db2.connect(session)
+                    series = s.getAllSeries()
 
-                u = dbapi.utils(session)
-                series = u.getAllSeries()
+                else: # fixme: this is old api for postgresql and mysql (need to update to dbapi_v2)
+                    session = dbUtilities.build_session_from_connection_string(db['connection_string'])
+                    u = dbapi.utils(session)
+                    series = u.getAllSeries()
 
                 if series is None:
                     d = {key: value for (key, value) in

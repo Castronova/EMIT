@@ -92,6 +92,17 @@ class Engine:
             self.engine = get_engine()
 
             for n in range(self.numprocesses):
+
+                ######################################################################
+                # the following lines are necessary to solve a multiprocessing crash
+                # see: http://stackoverflow.com/a/29893338/886133
+                ######################################################################
+                if not hasattr(sys.stdin, 'close'):
+                    def dummy_close():
+                        pass
+                    sys.stdin.close = dummy_close
+                ######################################################################
+
                 process = Process(target=Engine.worker, args=(self.dispatcher,self.engine))
                 process.start()
                 self.Processes.append(process)

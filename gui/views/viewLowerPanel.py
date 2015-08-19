@@ -634,7 +634,6 @@ class SimulationDataTab(DataSeries):
 
         # build custom context menu
         menu = SimulationContextMenu(self.table)
-        self.menu = menu
         self.table.setContextMenu(menu)
         self.conn = None
 
@@ -667,7 +666,7 @@ class SimulationDataTab(DataSeries):
 
                     simulations = self.conn.getAllSimulations()
                     isSqlite = True
-                    self.conn.x.close()
+                    self.conn.getCurrentSession()
                 else:
                     session = dbUtilities.build_session_from_connection_string(db['connection_string'])
                     # build the database session
@@ -718,7 +717,7 @@ class SimulationDataTab(DataSeries):
                             d = {
                                 'simulation_id': simulation.SimulationID,
                                 'simulation_name': simulation.SimulationName,
-                                'modelcur_name': model.ModelName,
+                                'model_name': model.ModelName,
                                 'date_created': action.BeginDateTime,
                                 'owner': person.PersonLastName,
                                 'simulation_start': simulation.SimulationStartDateTime,
@@ -733,6 +732,3 @@ class SimulationDataTab(DataSeries):
 
                 # set the current database in canvas controller
                 Publisher.sendMessage('SetCurrentDb', value=selected_db)  # sends to CanvasController.getCurrentDbSession
-
-    def getLocalDatabase(self):
-        return self.conn

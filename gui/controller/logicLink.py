@@ -322,6 +322,10 @@ class LogicLink(ViewLink):
     def OnDelete(self, event):
         # First try to delete the item from the cmd, if it has not yet been saved, it will just
         # remove itself from the ListBox.
+        if self.LinkNameListBox.GetSelection() < 0:
+            elog.info("Please select a link to delete")
+            return
+
         try:
             sel = self.LinkNameListBox.GetStringSelection()
             if sel not in self.__link_ids.keys():
@@ -337,15 +341,9 @@ class LogicLink(ViewLink):
 
         # remove the link name from the links list box
         index = self.LinkNameListBox.GetSelection()
-        try:
-            self.LinkNameListBox.Delete(index)
-            # remove link from __links list so that it isn't repopulated on page refresh
-            self.__links.pop(index)
-        except Exception as e:
-            elog.debug(e)
-            elog.warning("Please select a link to delete")
-
-
+        self.LinkNameListBox.Delete(index)
+        # remove link from __links list so that it isn't repopulated on page refresh
+        self.__links.pop(index)
 
     def populate_output_metadata(self, l):
 

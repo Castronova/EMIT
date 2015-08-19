@@ -894,12 +894,12 @@ class Coordinator(object):
             else:
                 # threadManager = ThreadManager()
                 if feed_forward.feed_forward_wrapper in types:
-                    t = threading.Thread(target=run.run_feed_forward, args=(self,ds))
+                    t = threading.Thread(target=run.run_feed_forward, args=(self,ds), name='Engine_RunFeedForward')
                     t.start()
                     # run.run_feed_forward(self)
                 elif time_step.time_step_wrapper in types:
 
-                    t = threading.Thread(target=run.run_time_step, args=(self,ds))
+                    t = threading.Thread(target=run.run_time_step, args=(self,ds), name='Engine_RunTimeStep')
                     t.start()
                     #run.run_time_step(self)
 

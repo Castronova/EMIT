@@ -12,9 +12,13 @@ from environment import env_vars
 
 class LogicEMIT(ViewEMIT):
     def __init__(self, parent):
+
         import threading
-        print "before", threading.activeCount()
-        # print threading.enumerate()
+        print "You have %d threads started: " % threading.activeCount()
+        for t in threading.enumerate():
+            print t
+
+
         ViewEMIT.__init__(self, parent)
         self.FloatCanvas = self.Canvas.FloatCanvas
 

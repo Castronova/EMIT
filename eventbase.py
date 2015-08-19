@@ -1,5 +1,6 @@
 __author__ = 'tonycastronova'
 
+import sys
 from coordinator.emitLogging import elog
 
 class EventResponse:
@@ -56,13 +57,17 @@ class EventHook(object):
     #     return self
 
     def fire(self, **kwargs):
-        count = 0  # to prevent event firing twice.
+
+        if sys.gettrace():
+            elog.debug('Event fired: %s' % self.__name)
+
+        # count = 0  # to prevent event firing twice.
         evt_mgr = EventManager()
         handlers = evt_mgr.get_handlers(self.__name)
         if handlers is not None:
             for handler in handlers:
-                if count == 0:
-                    count = 1
-                    evt_obj = EventResponse(**kwargs)
-                    handler(evt_obj)
+                # if count == 0:
+                #     count = 1
+                evt_obj = EventResponse(**kwargs)
+                handler(evt_obj)
 

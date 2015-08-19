@@ -135,7 +135,7 @@ class Engine:
                 try:
                     result = task(**next_task_args)
                 except Exception, e:
-                    elog.error(e)
+                    elog.error(e.message)
                     result = None
 
                 if evt is not None:

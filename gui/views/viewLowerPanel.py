@@ -153,7 +153,7 @@ class TimeSeriesTab(wx.Panel):
 
         # Publisher.subscribe(self.connection_added_status, "connectionAddedStatus")
 
-        engineEvent.onDatabaseConnected += self.refreshConnectionsListBox
+        engineEvent.onDatabaseConnected += self.refreshConnectionsListBoxTS
 
         # build custom context menu
         menu = TimeSeriesContextMenu(self.m_olvSeries)
@@ -171,7 +171,7 @@ class TimeSeriesTab(wx.Panel):
         # self refresh_database
         self.OLVRefresh(event)
 
-    def refreshConnectionsListBox(self, connection_added):
+    def refreshConnectionsListBoxTS(self, connection_added):
 
         if connection_added:
             self._databases = engine.getDbConnections()
@@ -616,7 +616,7 @@ class DataSeries(wx.Panel):
             self.load_data()
         else:
             # Not in debug mode
-            thr = threading.Thread(target=self.load_data, args=(), kwargs={})
+            thr = threading.Thread(target=self.load_data, args=(), kwargs={}, name='DataSeriesRefresh')
             thr.start()
 
 class SimulationDataTab(DataSeries):

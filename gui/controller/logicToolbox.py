@@ -113,6 +113,8 @@ class LogicToolbox(ViewToolbox):
                                 fullpath = join(root, filename)
                                 txt = filename.split('.sim')[0]
                                 e = dict(cat=self.cat, txt=txt, fullpath=fullpath)
+
+                                # fixme: this should not call onSimulationSaved
                                 events.onSimulationSaved.fire(**e)
 
     def RefreshToolbox(self):

@@ -473,8 +473,9 @@ class sqlite():
         for d in data:
             print d[0], d[1], d[2], d[3]
 
-    def deleteRecordFromTable(self, table, name):
-        self.spatialDb.execute("DELETE FROM '{}' WHERE SimulationName='{}'".format(table, name))
+    # def deleteRecordFromTable(self, table, name):
+    #     self.spatialDb.execute("DELETE FROM '{}' WHERE SimulationName='{}'".format(table, name))
+    #     self.connection.getSession().commit()
 
     def displayTable(self, table):
         print "Table = " + str(table)
@@ -482,3 +483,31 @@ class sqlite():
         rows = self.spatialDb.fetchall()
         for r in rows:
             print r
+
+    # def deleteModel(self, id):
+    #     self.getSession()
+    #     # self.spatialDb.execute("DELETE FROM Models WHERE ModelID='{}'".format(id))
+    #     self.x.execute("DELETE FROM Models WHERE ModelID='{}'".format(id))
+    #     self.x.commit()
+    #
+    # def deleteAction(self, id):
+    #     # self.spatialDb.execute("DELETE FROM Actions WHERE ActionID='{}'".format(id))
+    #     self.connection.getSession().execute("DELETE FROM Actions WHERE ActionID='{}'".format(id))
+    #     self.connection.getSession().commit()
+    #
+    # def deletePerson(self, id):
+    #     # self.spatialDb.execute("DELETE FROM People WHERE PersonID='{}'".format(id))
+    #     self.connection.getSession().execute("DELETE FROM People WHERE PersonID='{}'".format(id))
+    #     self.connection.getSession().commit()
+
+    def deleteByID(self, id):
+        self.getSession()
+        self.x.execute("DELETE FROM Simulations WHERE SimulationID='{}'".format(id))
+        self.x.commit()
+
+
+    def getSession(self):
+        self.x = self.connection.getSession()
+
+
+

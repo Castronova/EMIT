@@ -482,7 +482,7 @@ class AddConnectionDialog(wx.Dialog):
             self.btnok.Enable()
 
 class DataSeries(wx.Panel):
-    def __init__( self, parent ):
+    def __init__(self, parent):
         wx.Panel.__init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.Size(500, 500),
                           style=wx.TAB_TRAVERSAL)
 
@@ -623,7 +623,8 @@ class SimulationDataTab(DataSeries):
     def __init__(self, parent):
         #  wx.Panel.__init__(self, parent)
 
-        super(SimulationDataTab, self ).__init__(parent)
+        super(SimulationDataTab, self).__init__(parent)
+        self.parent = parent
 
         self.table_columns = ["Simulation ID", "Simulation Name", "Model Name", "Simulation Start", "Simulation End", "Date Created","Owner"]
         #  table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
@@ -633,7 +634,9 @@ class SimulationDataTab(DataSeries):
 
         # build custom context menu
         menu = SimulationContextMenu(self.table)
+        self.menu = menu
         self.table.setContextMenu(menu)
+        self.conn = None
 
     def load_data(self):
 
@@ -658,13 +661,13 @@ class SimulationDataTab(DataSeries):
                     import db.dbapi_v2 as db2
                     from ODM2PythonAPI.src.api.ODMconnection import dbconnection
                     session = dbconnection.createConnection(engine=db['args']['engine'], address=db['args']['address'])
-                    s = db2.connect(session)
-                    # self.cur = s
-                    # self.cur.displayTable('Simulations')
-                    # self.cur.deleteRecordFromTable('Simulations', 'myMod')
-                    # self.cur.displayTable('Simulations')
-                    simulations = s.getAllSimulations()
+                    self.conn = db2.connect(session)
+
+                    self.conn.deleteByID(7)
+
+                    simulations = self.conn.getAllSimulations()
                     isSqlite = True
+                    self.conn.x.close()
                 else:
                     session = dbUtilities.build_session_from_connection_string(db['connection_string'])
                     # build the database session
@@ -715,7 +718,7 @@ class SimulationDataTab(DataSeries):
                             d = {
                                 'simulation_id': simulation.SimulationID,
                                 'simulation_name': simulation.SimulationName,
-                                'model_name': model.ModelName,
+                                'modelcur_name': model.ModelName,
                                 'date_created': action.BeginDateTime,
                                 'owner': person.PersonLastName,
                                 'simulation_start': simulation.SimulationStartDateTime,
@@ -730,3 +733,6 @@ class SimulationDataTab(DataSeries):
 
                 # set the current database in canvas controller
                 Publisher.sendMessage('SetCurrentDb', value=selected_db)  # sends to CanvasController.getCurrentDbSession
+
+    def getLocalDatabase(self):
+        return self.conn

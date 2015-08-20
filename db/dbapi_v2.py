@@ -466,6 +466,16 @@ class sqlite():
     ###################
 
     def deleteByID(self, id):
-        session = self.getCurrentSession()
-        session.execute("DELETE FROM Simulations WHERE SimulationID='{}'".format(id))
-        session.commit()
+        #  Some of the tables have no relationship with another,
+        #  for this reason each table that information about a model,
+        #  needs to be deleted individually.
+        self.delete.deleteActionBy_ByID(id)
+        self.delete.deleteActionByID(id)
+        self.delete.deleteAffiliationByID(id)
+        self.delete.deleteModelByID(id)
+        self.delete.deleteOrganizationByID(id)
+        self.delete.deletePeopleByID(id)
+        self.delete.deleteSimulationByID(id)
+        self.delete.deleteUnitByID(id)
+
+

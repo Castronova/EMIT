@@ -661,9 +661,6 @@ class SimulationDataTab(DataSeries):
                     from ODM2PythonAPI.src.api.ODMconnection import dbconnection
                     session = dbconnection.createConnection(engine=db['args']['engine'], address=db['args']['address'])
                     self.conn = db2.connect(session)
-
-                    self.conn.deleteByID(7)
-
                     simulations = self.conn.getAllSimulations()
                     isSqlite = True
                     self.conn.getCurrentSession()

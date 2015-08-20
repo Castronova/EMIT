@@ -379,8 +379,6 @@ class sqlite():
         return 1
 
 
-
-
     ###################
     #### GETTERS ######
     ###################
@@ -460,31 +458,14 @@ class sqlite():
         except Exception, e:
             print e
 
-    def getAllTables(self):
-        self.spatialDb.execute("SELECT name FROM sqlite_master WHERE type='table'")
-        tables = self.spatialDb.fetchall()
-        for table in tables:
-            print table
+    def getCurrentSession(self):
+        return self.connection.getSession()
 
-    def getTableInfo(self, table):
-        # This shows the column info of the table
-        self.spatialDb.execute("PRAGMA table_info({})".format(table))
-        data = self.spatialDb.fetchall()
-        for d in data:
-            print d[0], d[1], d[2], d[3]
-
-    def displayTable(self, table):
-        #  This displays everything that is inside the given table
-        print "Table = " + str(table)
-        self.spatialDb.execute("SELECT * FROM {}".format(table))
-        rows = self.spatialDb.fetchall()
-        for r in rows:
-            print r
+    ###################
+    #### DELETES ######
+    ###################
 
     def deleteByID(self, id):
         session = self.getCurrentSession()
         session.execute("DELETE FROM Simulations WHERE SimulationID='{}'".format(id))
         session.commit()
-
-    def getCurrentSession(self):
-        return self.connection.getSession()

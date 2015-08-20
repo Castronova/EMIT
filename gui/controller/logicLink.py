@@ -320,19 +320,17 @@ class LogicLink(ViewLink):
             return None
 
     def OnDelete(self, event):
-        # First try to delete the item from the cmd, if it has not yet been saved, it will just
-        # remove itself from the ListBox.
         if self.LinkNameListBox.GetSelection() < 0:
             elog.info("Please select a link to delete")
             return
 
+        # First try to delete the item from the cmd, if it has not yet been saved, it will just
+        # remove itself from the ListBox.
         try:
             sel = self.LinkNameListBox.GetStringSelection()
             if sel not in self.__link_ids.keys():
-                # link has not been added yet
-                pass
+                pass  # link has not been added yet
             else:
-                # remove the link from the engine
                 deleteid = self.__link_ids[sel]
                 engine.removeLinkById(deleteid)
         except:

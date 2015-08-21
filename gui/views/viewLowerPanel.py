@@ -719,6 +719,7 @@ class SimulationDataTab(DataSeries):
                                 'owner': person.PersonLastName,
                                 'simulation_start': simulation.SimulationStartDateTime,
                                 'simulation_end': simulation.SimulationEndDateTime,
+                                'model_id': simulation.ModelID
                             }
 
                             record_object = type('DataRecord', (object,), d)

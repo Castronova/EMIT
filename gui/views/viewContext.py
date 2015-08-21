@@ -476,7 +476,7 @@ class ContextMenu(wx.Menu):
 
     def OnDelete(self,event):
         if 'local' in self.parent.Parent.connection_combobox.GetStringSelection():
-            dlg = wx.MessageDialog(self.parent, 'Are you sure you want to delete this record?', 'Question',
+            dlg = wx.MessageDialog(self.parent, 'Are you sure you want to delete this simulation?', 'Question',
                                    wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
             if dlg.ShowModal() == wx.ID_YES:
                 try:
@@ -485,7 +485,7 @@ class ContextMenu(wx.Menu):
                     self.parent.Parent.m_olvSeries.SortBy(self.parent.Parent.m_olvSeries.GetPrimaryColumnIndex())  # Sorting
                 except:
                     # From Simulations
-                    self.parent.Parent.conn.deleteByID(self.parent.GetSelectedObject().simulation_id)
+                    self.parent.Parent.conn.deleteSimulation(self.parent.GetSelectedObject())
                     self.parent.Parent.table.RemoveObject(self.parent.GetSelectedObject())
                     self.parent.Parent.table.SortBy(self.parent.Parent.table.GetPrimaryColumnIndex())
             dlg.Destroy()

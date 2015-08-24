@@ -220,7 +220,7 @@ class ExchangeItem(object):
     def getLatestTime2(self):
         return self.__times2[-1]
 
-    def getGeometries2(self, idx=None):
+    def getGeometries2(self, idx=None, ndarray=False):
         """
         returns geometries for the exchange item
         :param idx: index of the geometry
@@ -229,6 +229,8 @@ class ExchangeItem(object):
         if idx is not None:
             return self.__geoms2[idx]
         else:
+            if ndarray:
+                return numpy.array(self.__geoms2)
             return self.__geoms2
 
     def addGeometries2(self, geom):
@@ -312,7 +314,7 @@ class ExchangeItem(object):
             # idx = len(self.__values2) - 1
             # self.setDates2(timevalue, idx)
 
-    def getValues2(self, idx_start=0, idx_end=None, start_time=None, end_time=None, time_idx=None):
+    def getValues2(self, idx_start=0, idx_end=None, start_time=None, end_time=None, time_idx=None, ndarray=False):
         """
         gets datavalues of the exchange item for idx
         :param idx_start: the start value index to be returned.
@@ -343,7 +345,10 @@ class ExchangeItem(object):
         for i in range(start_time_slice_idx, end_time_slice_idx):
             values.append(self.__values2[i][idx_start:idx_end])
 
-        return values
+        if ndarray:
+            return numpy.array(values)
+        else:
+            return values
 
     def setDates2(self, timevalue):
         """
@@ -357,7 +362,7 @@ class ExchangeItem(object):
         self.__times2.insert(idx+1, timevalue)
         return idx
 
-    def getDates2(self, timevalue=None, start=None, end=None):
+    def getDates2(self, timevalue=None, start=None, end=None, ndarray=False):
         """
         gets datavalue indices for a datetime
         :param timevalue: datetime object
@@ -371,7 +376,10 @@ class ExchangeItem(object):
                     times.append((idx, self.__times2[idx]))
                 else:
                     times.append(0, None)
-            return times
+            if ndarray:
+                return numpy.array(times)
+            else:
+                return times
 
         elif start is not None and end is not None:
             if not isinstance(start, datetime.datetime) or not isinstance(end, datetime.datetime):
@@ -381,8 +389,11 @@ class ExchangeItem(object):
             st = self._nearest(self.__times2, start, 'left')
             et = self._nearest(self.__times2, end, 'right') + 1
             times = [(idx, self.__times2[idx]) for idx in range(st, et)]
-            return times
 
+            if ndarray:
+                return numpy.array(times)
+            else:
+                return times
 
         elif isinstance(timevalue, datetime.datetime):
             idx = self._nearest(self.__times2, timevalue, 'left')
@@ -393,7 +404,11 @@ class ExchangeItem(object):
 
         else: # return all known values
             times = [(idx, self.__times2[idx]) for idx in range(0, len(self.__times2))]
-            return times
+
+            if ndarray:
+                return numpy.array(times)
+            else:
+                return times
 
     def unit(self,value=None):
         if value is None:

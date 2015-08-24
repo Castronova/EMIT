@@ -10,6 +10,8 @@ class EnvironmentVars(object):
     Variables can be accessed like 'env_vars.SHOWERROR'. All settings
     are parsed from app_data/config/.settings.ini using ConfigParser.
 
+    IMPORTANT: All instance variables are in UPPERCASE, but are stored
+    as lowercase in the settings.ini (ConfigParser does this).
     '''
     __monostate = None
     def __init__(self):
@@ -29,13 +31,17 @@ class EnvironmentVars(object):
     def set_environment_variable(self, section, var, value):
         try:
             setattr(self, var.upper(), value)
-            self.config.set(section, var, value)
+            if not self.config.has_section(section.upper()):
+                self.config.add_section(section.upper())
+            self.config.set(section.upper(), var, value)
             settings_file = open(self.settings_path, 'w+')
             self.config.write(settings_file)
             settings_file.close()
 
         except Exception:
-            elog.warning("Invalid environment variable or value.")
+            print "Error setting environment variable"
+            # elog doesn't work here for some reason
+            # elog.warning("Invalid environment variable or value.")
 
     def parse_settings_file(self):
         '''

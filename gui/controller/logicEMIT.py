@@ -28,7 +28,7 @@ class LogicEMIT(ViewEMIT):
         # engine.createSQLiteInMemory()
         # Create or connect to local database, create local folder in db
         db_path = os.path.abspath(os.path.join(currentdir, '../../db/local.db'))
-        env_vars.set_environment_variable('LOCAL_DB', 'PATH', db_path)
+        env_vars.set_environment_variable('LOCAL_DB', 'DB_PATH', db_path)
 
         # if os.path.exists(env_vars.LOCAL_DB_PATH):
         #     odm2_db = sqlite3.connect(db_path)

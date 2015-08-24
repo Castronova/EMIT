@@ -19,7 +19,7 @@ import datatypes
 from utilities.threading import EVT_CREATE_BOX, EVT_UPDATE_CONSOLE, ThreadManager
 from gui.views.viewCanvas import ViewCanvas
 import gui.controller.logicCanvasObjects as LogicCanvasObjects
-from gui.controller.logicCanvasObjects import SmoothLineWithArrow
+from gui.controller.logicCanvasObjects import SmoothLineWithArrow, ModelBox
 from gui.controller.logicLink import LogicLink
 import coordinator.engineAccessors as engine
 import utilities.db as dbUtilities
@@ -111,24 +111,6 @@ class LogicCanvas(ViewCanvas):
     def OnSetFilepath(self, path):
         self.path = path
 
-    # def onEnterWindow(self, event):  # todo: Delete this
-    #     try:
-    #         filenames = self.path
-    #         x,y = event.Position
-    #         if filenames:
-    #             name, ext = os.path.splitext(filenames)
-    #
-    #             if ext == '.mdl' or ext == '.sim':
-    #                 originx, originy = self.FloatCanvas.WorldToPixel(self.GetPosition())
-    #                 nx = (x - originx)+300
-    #                 ny = (originy - y)
-    #                 self.addModel(filepath=filenames, x=nx, y=ny)
-    #
-    #     except:
-    #         # elog.debug("onEnterWindow() in logicCanvas.py")
-    #         pass
-    #     self.path = None
-
     def onDbChanged(self, event):
         """
         This function sets current database attributes locally whenever the database is changed
@@ -137,35 +119,6 @@ class LogicCanvas(ViewCanvas):
         """
         self._currentDbSession = event.dbsession
         self._dbid = event.dbid
-
-    # todo: Delete this
-    # def onClose(self, event):
-    #     dlg = wx.MessageDialog(None, 'Are you sure you want to exit?', 'Question',
-    #                            wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
-    #
-    #     if dlg.ShowModal() != wx.ID_NO:
-    #
-    #         windowsRemaining = len(wx.GetTopLevelWindows())
-    #         if windowsRemaining > 0:
-    #             import wx.lib.agw.aui.framemanager as aui
-    #
-    #             for item in wx.GetTopLevelWindows():
-    #                 if not isinstance(item, self.frame.__class__):
-    #                     if isinstance(item, aui.AuiFloatingFrame):
-    #                         item.Destroy()
-    #                     elif isinstance(item, aui.AuiSingleDockingGuide):
-    #                         item.Destroy()
-    #                     elif isinstance(item, aui.AuiDockingHintWindow):
-    #                         item.Destroy()
-    #                     elif isinstance(item, wx.Dialog):
-    #                         item.Destroy()
-    #                     item.Close()
-    #
-    #         self.frame.Destroy()
-    #         wx.GetApp().ExitMainLoop()
-    #
-    #     else:
-    #         pass
 
     def OnMove(self, event):
         if self.Moving:
@@ -190,7 +143,7 @@ class LogicCanvas(ViewCanvas):
 
             # This moves the boxes and the label together
             self.MovingObject.Move(dxy)
-            self.MovingObject.Text.Move(dxy)
+            # self.MovingObject.Text.Move(dxy)
 
             # Iterate through all links on the canvas
             for link in self.links.keys():
@@ -251,39 +204,43 @@ class LogicCanvas(ViewCanvas):
                 name = name.replace("_", "  ")
                 name = name + "\n" + "ID = " + self.getUniqueId()
 
-            # boxBitmap = ScaledBitmapWithRotation(bitmap, (x,y), Height=h, Position='cc', InForeground=True)
-            # R = self.FloatCanvas.AddObject(boxBitmap)
-            R = self.FloatCanvas.AddBitmap(bitmap, (x,y), Position="cc", InForeground=True)
-            R.ID = id
-            R.Name = name
-            R.wh = (w, h)
-            R.xy = (x, y)
+            B = ModelBox(type, (x,y), unicode(name))
+            self.FloatCanvas.AddObject(B)
+            # R = self.FloatCanvas.AddBitmap(bitmap, (x,y), Position="cc", InForeground=True)
+            # R.ID = id
+            # R.Name = name
+            # R.wh = (w, h)
+            # R.xy = (x, y)
 
             # set the shape type so that we can identify it later
-            R.type = LogicCanvasObjects.ShapeType.Model
+            # R.type = LogicCanvasObjects.ShapeType.Model
 
             # define the font
-            font = wx.Font(16, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
-
-            label = self.FloatCanvas.AddScaledTextBox(unicode(name), (x,y),  # (x+1, y+h/2),
-                                                      Color="Black", Size=FontSize, Width=w - 10, Position="cc",
-                                                      Alignment="center",
-                                                      Weight=wx.BOLD, Style=wx.ITALIC, InForeground=True, Font=font,
-                                                      LineWidth=0, LineColor=None)
+            # font = wx.Font(16, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+            #
+            # label = self.FloatCanvas.AddScaledTextBox(unicode(name), (x,y),  # (x+1, y+h/2),
+            #                                           Color="Black", Size=FontSize, Width=w - 10, Position="cc",
+            #                                           Alignment="center",
+            #                                           Weight=wx.BOLD, Style=wx.ITALIC, InForeground=True, Font=font,
+            #                                           LineWidth=0, LineColor=None)
 
             # set the type of this object so that we can find it later
-            label.type = LogicCanvasObjects.ShapeType.Label
+            # label.type = LogicCanvasObjects.ShapeType.Label
 
             # add this text as an attribute of the rectangle
-            R.Text = label
+            # R.Text = label
 
             elog.info(name + ' has been added to the canvas.')
             elog.debug(name + ' has been added to the canvas.')
 
-            R.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit)
-            R.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
-            self.models[R] = id
-            # self.FloatCanvas.AddObject(R)
+            # R.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit)
+            # R.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
+            # self.models[R] = id
+
+            B.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit)
+            B.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
+            self.models[B] = id
+            #
             self.FloatCanvas.Draw()
 
     def draw_box(self, evt):
@@ -353,23 +310,6 @@ class LogicCanvas(ViewCanvas):
             # line.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
 
             self.FloatCanvas.Draw()
-
-    # todo: Delete this
-    # def createArrow(self, line):
-    #
-    #     print "adding arrow to ", line.MidPoint
-    #     angle = line.GetAngleRadians()
-    #     arrow_shape = ScaledBitmapWithRotation(self.linkArrow, line.MidPoint, Angle=angle, Position='tl', InForeground=True)
-    #
-    #     # set the shape type so that we can identify it later
-    #     arrow_shape.type = LogicCanvasObjects.ShapeType.ArrowHead
-    #     self.FloatCanvas.AddObject(arrow_shape)
-    #
-    #     # bind the arrow to left click
-    #     arrow_shape.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
-    #     arrow_shape.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
-    #
-    #     return arrow_shape
 
     def getUniqueId(self):
         return self.uniqueId
@@ -502,37 +442,35 @@ class LogicCanvas(ViewCanvas):
         if cur.Name == 'link':
             self.linkRects.append(object)
 
-        # todo: Delete this, this was breaking many things
-        # populate model view
-        # if cur.Name == 'default':
-        #
-        #     # get the model object from the engine
-        #     obj_id = object.ID
-        #     model = engine.getModelById(obj_id)
-
         if not self.Moving:
 
             self.Moving = True
             self.StartPoint = object.HitCoordsPixel
 
-            BB = object.BoundingBox
+            BB = object.box.BoundingBox
             OutlinePoints = N.array(
                 ( (BB[0, 0], BB[0, 1]), (BB[0, 0], BB[1, 1]), (BB[1, 0], BB[1, 1]), (BB[1, 0], BB[0, 1]),
                   ))
+            # print BB
             self.StartObject = self.FloatCanvas.WorldToPixel(OutlinePoints)
             self.MoveObject = None
             self.MovingObject = object
             self.lastPos = object.HitCoordsPixel
 
+            # Now we get the distance from the click to the edges of the model box
+            # This is stored as a numpy array, and overlap is what sets how far the
+            # edges of boxes can be dragged across the borders.
             mouse = self.ScreenToClient(wx.GetMousePosition().Get())
             mouseCenterOrigin = self.FloatCanvas.PixelToWorld(mouse)
             distFromCenter = mouseCenterOrigin - self.MovingObject.XY
+
             overlap = 40
             # Order: X-left, X-right, Y-top, Y-bottom
             self.boxBoundaries = N.array([self.MovingObject.Width/2 + distFromCenter[0],
                                     self.MovingObject.Width/2 - distFromCenter[0],
                                     self.MovingObject.Height/2 - distFromCenter[1],
                                     self.MovingObject.Height/2 + distFromCenter[1]]) - overlap
+            print self.boxBoundaries
 
     def AddinkCursorClick(self):
         self.link_clicks += 1

@@ -11,6 +11,8 @@ import math
 from numpy import linspace
 import matplotlib.colors as mcolors
 from wx.lib.floatcanvas import FloatCanvas as FC
+from environment import env_vars
+import datatypes
 
 sys.path.append("..")
 
@@ -237,8 +239,6 @@ class bezier():
 
         return pts
 
-# Not sure if this should be here
-# This creates an anti-aliased line
 class SmoothLine(FC.Line):
     """
     The SmoothLine class is identical to the Line class except that it uses a
@@ -280,7 +280,7 @@ class ScaledBitmapWithRotation(FC.ScaledBitmap):
             self.ScaledBitmap = wx.BitmapFromImage(Img)
         self.LastRotationAngle = 0.0
 
-    def _Draw(self, dc , WorldToPixel, ScaleWorldToPixel, HTdc=None):
+    def _Draw(self, dc, WorldToPixel, ScaleWorldToPixel, HTdc=None):
         Img = self.Image.Rotate(self.RotationAngle, (0,0), interpolating=True)
         self.Height = Img.Height
         self.ImageMidPoint = (Img.Width/2, Img.Height/2)
@@ -326,3 +326,62 @@ class SmoothLineWithArrow(SmoothLine):
     def Remove(self, FC):
         FC.RemoveObject(self)
         FC.RemoveObject(self.Arrow)
+
+class ModelBox(FC.Group):
+    def __init__(self, type, XY, text):
+        self.Links = []
+        self.XY = XY
+
+        # Set box color based on model type
+        imgs_path = env_vars.IMGS_PATH
+        bmp = None
+        if type == datatypes.ModelTypes.TimeStep:
+            bmp = wx.Image(imgs_path+'rectGreen.png', wx.BITMAP_TYPE_PNG)
+        elif type == datatypes.ModelTypes.FeedForward:
+            bmp = wx.Image(imgs_path+'rectBlue.png', wx.BITMAP_TYPE_PNG)
+        elif type == datatypes.ModelTypes.Data:
+            bmp = wx.Image(imgs_path+'rectPurple.png', wx.BITMAP_TYPE_PNG)
+
+        self.box = FC.Bitmap(bmp, XY, Position="cc", InForeground=True)
+        self.Width = bmp.Width
+        self.Height = bmp.Height
+
+        font = wx.Font(16, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+        font_size = 15
+        self.label = FC.ScaledTextBox(text, XY, Color="Black", Size=font_size,
+                                      Width=bmp.Width-10, Position="cc",
+                                      Alignment="center", Weight=wx.BOLD,
+                                      InForeground=True, Font=font, LineWidth=0,
+                                      LineColor=None)
+
+        FC.Group.__init__(self, [self.box, self.label], InForeground=True)
+
+
+# class ModelBox(FC.Bitmap):
+#     def __init__(self, type, XY, text):
+#         # Set box color based on model type
+#         imgs_path = env_vars.IMGS_PATH
+#         bmp = None
+#         if type == datatypes.ModelTypes.TimeStep:
+#             bmp = wx.Image(imgs_path+'rectGreen.png', wx.BITMAP_TYPE_PNG)
+#         elif type == datatypes.ModelTypes.FeedForward:
+#             bmp = wx.Image(imgs_path+'rectBlue.png', wx.BITMAP_TYPE_PNG)
+#         elif type == datatypes.ModelTypes.Data:
+#             bmp = wx.Image(imgs_path+'rectPurple.png', wx.BITMAP_TYPE_PNG)
+#
+#         self.links = []
+#         FC.Bitmap.__init__(self, bmp, XY, Position="cc", InForeground="True")
+#
+#         # Label
+#         font = wx.Font(16, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+#         font_size = 15
+#         self.label = FC.ScaledTextBox(text, XY, Color="Black", Size=font_size,
+#                                       Width=bmp.Width-10, Position="cc",
+#                                       Alignment="center", Weight=wx.BOLD,
+#                                       InForeground=True, Font=font, LineWidth=0,
+#                                       LineColor=None)
+#
+#     def move(self, delta):
+#         pass
+
+

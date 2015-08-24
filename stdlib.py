@@ -172,9 +172,9 @@ class ExchangeItem(object):
         self.__type = type
 
         # new style data encapsulation (everything is appended with '2', temporarily)
-        self.__geoms2 = numpy.array()
-        self.__times2 = numpy.array()
-        self.__values2 = numpy.array()
+        self.__geoms2 = []
+        self.__times2 = []
+        self.__values2 = []
 
         # no data values will be represented as None
         self.__noData = None
@@ -242,10 +242,12 @@ class ExchangeItem(object):
                 if not isinstance(g, Geometry):
                     return 0  # return failure code
             self.__geoms2.extend(geom)
+            # self.__geoms2 = numpy.concatenate((self.__geoms2, geom))
         else:
             if not isinstance(geom, Geometry):
                 return 0  # return failure code
             self.__geoms2.append(geom)
+            # self.__geoms2 = numpy.concatenate((self.__geoms2, [geom]))
         return 1
 
     def setValues2(self, values, timevalue):

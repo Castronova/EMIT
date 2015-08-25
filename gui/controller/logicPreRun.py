@@ -63,7 +63,8 @@ class logicPreRun(viewPreRun):
         if user_info_yaml is None:
             raise Exception('Cannot execute simulation if no user account is provided')
         if name.strip() == '':
-            raise Exception('Cannot execute simulation if no simulation name is provided')
+            name = "Simulation_run_" + time.strftime('%m-%d-%Y__%H:%M:%S')
+            # raise Exception('Cannot execute simulation if no simulation name is provided')
 
         # build kwargs to pass to engineAccessors
         kwargs = dict(simulationName=name, dbName=db, user_yaml=user_info_yaml, datasets=datasets)
@@ -73,32 +74,19 @@ class logicPreRun(viewPreRun):
 
         self.Close()
 
-    # def RunSim(self):
-    #
-    #     # todo: this should use engine accessor call, not event call
-    #     e = dict()
-    #     events.onClickRun.fire(**e)  # Calls onClickRun from viewContext.py
-    #     self.OnCancel(e)
-    #
-    #     # todo:  this should be opened after simulation has completed, not right here.
-    #     # if self.page1.displayMessage.GetValue():
-    #         # frm = viewPostRun()
-    #         # frm.Show()
-
     def GetDataToSave(self):
 
-        # eitems = {model name: [item1, ], ]
-        eitems = {}
-        if len(self.data_page.cb_list) > 0:
+        if len(self.data_page.cb_list) < 1:
+            return
+        else:
+            eitems = {}
             model_item_tuples = [(c.GetName().split('_')) for c in self.data_page.cb_list if c.GetValue()]
-
-
-        for model, item in model_item_tuples:
-            if model not in eitems.keys():
-                eitems[model] = [item]
-            else:
-                eitems[model].append(item)
-        return eitems
+            for model, item in model_item_tuples:
+                if model not in eitems.keys():
+                    eitems[model] = [item]
+                else:
+                    eitems[model].append(item)
+            return eitems
 
     def getDatabases(self):
         '''

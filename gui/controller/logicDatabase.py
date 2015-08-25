@@ -79,6 +79,7 @@ class LogicDatabase(ViewDatabase):
             # get the database session associated with the selected name
             if db['name'] == selected_db:
                 session = dbutils.build_session_from_connection_string(db['connection_string'])
+                # session = dbutils.buildSession(db['args']['engine'], db['args']['address'], db['args']['db'], db['args']['user'], db['args']['pwd'])
                 return session
 
                 # return db['session']

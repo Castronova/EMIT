@@ -262,7 +262,7 @@ class sqlite():
     def createTimeStepUnit(self, timestepabbv, timestepname):
         timestepunit = self.read.getUnitByName(timestepname)
         if timestepunit is None:
-            timestepunit = self.write.createUnit('time', timestepname, timestepabbv)
+            timestepunit = self.write.createUnit('time', timestepabbv, timestepname)
         return timestepunit
 
     def createModel(self, modelcode, modeldesc, modelname):
@@ -482,7 +482,7 @@ class sqlite():
     ###################
 
     def deleteSimulation(self, record):
-        self.delete.deleteSimulationByID(record.simulation_id)
+        self.delete.deleteRecord(record.simulation_id)
         if not self.delete.isModelConstraint(record.model_id):
             self.delete.deleteModelByName(record.model_name)
 

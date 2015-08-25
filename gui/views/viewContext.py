@@ -485,7 +485,7 @@ class ContextMenu(wx.Menu):
                     self.parent.Parent.m_olvSeries.SortBy(self.parent.Parent.m_olvSeries.GetPrimaryColumnIndex())  # Sorting
                 except:
                     # From Simulations
-                    self.parent.Parent.conn.deleteSimulation(self.parent.GetSelectedObject())
+                    self.parent.Parent.conn.deleteRecord(self.parent.GetSelectedObject())
                     self.parent.Parent.table.RemoveObject(self.parent.GetSelectedObject())
                     self.parent.Parent.table.SortBy(self.parent.Parent.table.GetPrimaryColumnIndex())
             dlg.Destroy()

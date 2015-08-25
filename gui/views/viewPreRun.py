@@ -155,6 +155,7 @@ class DataPage(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
         scrollWin = wx.ScrolledWindow(self, -1, size=(440, 325))
+        self.cb_list = []
 
         if len(engineAccessors.getAllLinks()) < 1:
             wx.StaticText(scrollWin, id=wx.ID_ANY, label="No links have been added", pos=(10, 10))
@@ -203,7 +204,6 @@ class DataPage(wx.Panel):
 
             # build checkbox elements for each output exchange item found above
             y_pos = 30
-            self.cb_list = []
             for key, value in self.output_name_list.iteritems():
                 wx.StaticText(scrollWin, id=wx.ID_ANY, label=key, pos=(30, y_pos))
                 y_pos += 20

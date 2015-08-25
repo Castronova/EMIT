@@ -118,6 +118,9 @@ class PlotPanel(wx.Panel):
     def Figure(self):
         return self.figure
 
+
+
+
 class ViewPlot(wx.Frame):
     def __init__(self, parent, title='', xlabel='', ylabel='', selector=True):
 

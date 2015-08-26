@@ -1,7 +1,7 @@
 __author__ = 'tonycastronova'
 
 import json
-#import yaml
+import yaml
 import copy
 import datetime
 
@@ -118,7 +118,6 @@ if __name__ == "__main__":
     # import jsonpickle
     # import cPickle as pickle
     # import dill
-    import yaml
     import datetime
 
     p = Person('tony', 'castronova')

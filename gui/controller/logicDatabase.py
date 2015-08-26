@@ -78,9 +78,15 @@ class LogicDatabase(ViewDatabase):
         for key, db in self.Parent._databases.iteritems():
             # get the database session associated with the selected name
             if db['name'] == selected_db:
-                session = dbutils.build_session_from_connection_string(db['connection_string'])
-                # session = dbutils.buildSession(db['args']['engine'], db['args']['address'], db['args']['db'], db['args']['user'], db['args']['pwd'])
-                return session
+                if db['args']['engine'] == 'sqlite':
+                    import db.dbapi_v2 as db2
+                    from ODM2PythonAPI.src.api.ODMconnection import dbconnection
+                    session = dbconnection.createConnection(engine=db['args']['engine'], address=db['args']['address'])
+                    conn = db2.connect(session)
+                    return conn
+                else:
+                    session = dbutils.build_session_from_connection_string(db['connection_string'])
+                    return session
 
                 # return db['session']
         return None

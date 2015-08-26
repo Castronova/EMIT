@@ -63,7 +63,7 @@ class logicPreRun(viewPreRun):
         if user_info_yaml is None:
             raise Exception('Cannot execute simulation if no user account is provided')
         if name.strip() == '':
-            name = "Simulation_run_" + time.strftime('%m-%d-%Y__%H:%M:%S')
+            name = "Simulation_run_" + time.strftime('%m-%d-%Y')
             # raise Exception('Cannot execute simulation if no simulation name is provided')
 
         # build kwargs to pass to engineAccessors

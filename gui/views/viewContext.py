@@ -505,30 +505,46 @@ class SimulationContextMenu(ContextMenu):
 
         session = self.parent.getDbSession()
         if session is not None:
+            if session.__module__ == 'db.dbapi_v2':
+                conn = session
+                results = conn.read.getResultsBySimulationID(simulationID)
 
-            readsim = readSimulation(session)
-            readres = readResults(session)
-            results = readsim.getResultsBySimulationID(simulationID)
+                for r in results:
+                    variable_name = r.VariableObj.VariableCode
+                    result_values = conn.read.getTimeSeriesResultValuesByResultId(r.ResultID)
+                    if result_values is None:
+                        elog.debug("No datetime object in table")
+                        return
+                    dates = []
+                    values = []
+                    for val in result_values:
+                        dates.append(val.ValueDateTime)
+                        values.append(val.DataValue)
 
-            res = {}
-            for r in results:
+            else:
+                readsim = readSimulation(session)
+                readres = readResults(session)
+                results = readsim.getResultsBySimulationID(simulationID)
 
-                variable_name = r.VariableObj.VariableCode
-                result_values = readres.getTimeSeriesValuesByResultId(int(r.ResultID))
+                res = {}
+                for r in results:
 
-                dates = []
-                values = []
-                for val in result_values:
-                    dates.append(val.ValueDateTime)
-                    values.append(val.DataValue)
+                    variable_name = r.VariableObj.VariableCode
+                    result_values = readres.getTimeSeriesValuesByResultId(int(r.ResultID))
 
-                # save data series based on variable
-                if variable_name in res:
-                    res[variable_name].append([dates,values,r])
-                else:
-                    res[variable_name] = [[dates,values,r]]
+                    dates = []
+                    values = []
+                    for val in result_values:
+                        dates.append(val.ValueDateTime)
+                        values.append(val.DataValue)
 
-            return res
+                    # save data series based on variable
+                    if variable_name in res:
+                        res[variable_name].append([dates,values,r])
+                    else:
+                        res[variable_name] = [[dates,values,r]]
+
+                return res
 
     def OnPlot(self, event):
 
@@ -550,10 +566,12 @@ class SimulationContextMenu(ContextMenu):
             # get the result
             simulationID = obj.GetItem(id,0).GetText()
 
-            name = obj.GetItem(id,1).GetText()
+            name = obj.GetItem(id, 1).GetText()
 
             # get data for this row
             results = self.getData(simulationID)
+            if results is None:
+                return
 
             if PlotFrame is None:
 

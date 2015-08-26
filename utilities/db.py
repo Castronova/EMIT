@@ -4,15 +4,6 @@ import uuid
 import ConfigParser
 from api_old.ODMconnection import  dbconnection, SessionFactory
 
-def buildSession(engine, address, db=None, user=None, pwd=None):
-
-    # self, engine, address, db=None, user=None, password=None, dbtype = 2.0):
-    return dbconnection.createConnection(engine=engine,
-                                                 address=address,
-                                                 db=db,
-                                                 user=user,
-                                                 password=pwd)
-
 
 def build_session_from_connection_string(connection_string):
 

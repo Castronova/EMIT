@@ -509,17 +509,18 @@ class SimulationContextMenu(ContextMenu):
                 conn = session
                 results = conn.read.getResultsBySimulationID(simulationID)
 
-                for r in results:
-                    variable_name = r.VariableObj.VariableCode
-                    result_values = conn.read.getTimeSeriesResultValuesByResultId(r.ResultID)
-                    if result_values is None:
-                        elog.debug("No datetime object in table")
-                        return
-                    dates = []
-                    values = []
-                    for val in result_values:
-                        dates.append(val.ValueDateTime)
-                        values.append(val.DataValue)
+                # for r in results:
+                #     variable_name = r.VariableObj.VariableCode
+                #     result_values = conn.read.getTimeSeriesResultValuesByResultId(r.ResultID)
+                #     # if result_values is None:
+                #     #     elog.debug("No datetime object in table")
+                #     #     return
+                #     dates = []
+                #     values = []
+                #     for val in result_values:
+                #         dates.append(val.ValueDateTime)
+                #         values.append(val.DataValue)
+                pass
 
             else:
                 readsim = readSimulation(session)

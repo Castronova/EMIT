@@ -233,8 +233,8 @@ class sqlite():
                 # create pandas dataframe
                 df = pandas.DataFrame(data=data)
 
-                # strftime datetime objects (required for SQLite bc lack of datetime64 support)
-                df['ValueDateTime'] = df['ValueDateTime'].apply(lambda x: x.strftime('%m/%d/%y %H:%M:%S'))
+                # strftime datetime objects (required for SQLite bc lack of datetime64 support) YYYY-MM-DD HH:MM:SS
+                df['ValueDateTime'] = df['ValueDateTime'].apply(lambda x: x.strftime('%Y-%m-%d %H:%M:%S'))
                 self.insert_timeseries_result_values(dataframe=df)
 
         model = self.createModel(modelcode, modeldesc, modelname)

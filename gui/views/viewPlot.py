@@ -1,6 +1,7 @@
 __author__ = 'Mario'
 
 from matplotlib.dates import date2num
+import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg as NavToolbar

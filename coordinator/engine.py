@@ -868,16 +868,16 @@ class Coordinator(object):
         """
         pass
 
-    def run_simulation(self, simulationName=None, dbName=None, user_yaml=None, datasets=None):
+    def run_simulation(self, simulationName=None, dbName=None, user_json=None, datasets=None):
         """
         coordinates the simulation effort
         """
 
         # create data info instance if all the necessary info is provided
         ds = None
-        if None not in [simulationName, dbName, user_yaml, datasets]:
+        if None not in [simulationName, dbName, user_json, datasets]:
             db = self.get_db_args_by_name(dbName)
-            user_list= Users.BuildAffiliationfromYAML(user_yaml)
+            user_list= Users.BuildAffiliationfromJSON(user_json)
             ds = run.dataSaveInfo(simulationName, db, user_list[0], datasets)
 
         try:

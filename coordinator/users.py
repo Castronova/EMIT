@@ -1,8 +1,9 @@
 __author__ = 'tonycastronova'
 
+import os
 import json
-import yaml
 import copy
+import uuid
 import datetime
 
 '''
@@ -36,6 +37,7 @@ class Affiliation(object):
         if None in [email, startDate, organization, person]:
             raise Exception('Required parameter not given')
 
+
         if not isinstance(startDate, datetime.datetime) and (not isinstance(affiliationEnd, datetime.datetime) or affiliationEnd is None):
             raise Exception('startDate and affiliationEnd must be python datetimes')
 
@@ -56,15 +58,14 @@ class Affiliation(object):
         return self.person.lastname+' ['+self.organization.code+']'
 
     def _affilationToDict(self):
-        import uuid
 
         aff_dict = copy.deepcopy(self.__dict__)
         aff_dict.pop('person')
         aff_dict.pop('organization')
 
-        aff_dict['startDate'] = aff_dict['startDate'].strftime("%m/%d/%Y %M:%H:%S")
+        aff_dict['startDate'] = aff_dict['startDate'].strftime("%Y-%m-%dT%H:%M:%S")
         if aff_dict['affiliationEnd'] is not None:
-            aff_dict['affiliationEnd'] = aff_dict['affiliationEnd'].strftime("%m/%d/%Y %M:%H:%S")
+            aff_dict['affiliationEnd'] = aff_dict['affiliationEnd'].strftime("%Y-%m-%dT%H:%M:%S")
         return {str(uuid.uuid4()):dict(person=self.person.__dict__,
                     organization=self.organization.__dict__,
                     affiliation=aff_dict)}
@@ -72,41 +73,29 @@ class Affiliation(object):
     def toJSON(self):
         return json.dumps(self._affilationToDict(), sort_keys=True, indent=4, separators=(',', ': '))
 
-    def toYAML(self):
-        return yaml.dump(self._affilationToDict())
+def date_hook(json_dict):
+    for (key, value) in json_dict.items():
+        try:
+            json_dict[key] = datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S")
+        except:
+            pass
+    return json_dict
 
 def BuildAffiliationfromJSON(j):
     affiliations = []
-    if not isinstance(j, list):
-        j = list(j)
 
-    for entry in j:
-        json_dict = json.loads(entry)
-        p = Person(**json_dict['person'])
-        o = Organization(**json_dict['organization'])
-        json_dict['affiliation'].update(dict(person=p,organization=o))
-        a = Affiliation(**json_dict['affiliation'])
+    json_dict = json.loads(j, object_hook=date_hook)
+    print json_dict
+
+    for key, value in json_dict.iteritems():
+
+        p = Person(**value['person'])
+        o = Organization(**value['organization'])
+        value['affiliation'].update(dict(person=p,organization=o))
+        a = Affiliation(**value['affiliation'])
         affiliations.append(a)
 
     return affiliations
-
-def BuildAffiliationfromYAML(y):
-    affiliations = []
-    yaml_dict = yaml.safe_load(y)
-
-    for entry in yaml_dict.values():
-        p = Person(**entry['person'])
-        o = Organization(**entry['organization'])
-        entry['affiliation'].update(dict(person=p,organization=o))
-        entry['affiliation']['startDate'] = datetime.datetime.strptime(entry['affiliation']['startDate'], "%m/%d/%Y %M:%H:%S")
-        if entry['affiliation']['affiliationEnd'] is not None:
-            entry['affiliation']['affiliationEnd'] = datetime.datetime.strptime(entry['affiliation']['affliliationEnd'], "%m/%d/%Y %M:%H:%S")
-        a = Affiliation(**entry['affiliation'])
-        affiliations.append(a)
-
-    return affiliations
-
-
 
 
 # NOTE: classes must inherit from object in order to be decoded properly
@@ -115,65 +104,34 @@ def BuildAffiliationfromYAML(y):
 #     the object must be accessible globally via a module and must inherit from object (AKA new-style classes).
 if __name__ == "__main__":
 
-    # import jsonpickle
-    # import cPickle as pickle
-    # import dill
-    import datetime
-
-    p = Person('tony', 'castronova')
-    o1 = Organization(typeCV='university',
-                      name='Utah State University',
-                      code='usu')
-    o2 = Organization(typeCV='university',
-                      name='Utah Water Research Laboratory',
-                      code='uwrl',
-                      description='description = research laboratory Affiliated with utah state university',
-                      parent='usu')
-
-    affilations = [Affiliation(email='tony.castronova@usu.edu', startDate=datetime.datetime(2014,03,10), organization=o1, person=p, phone='435-797-0853', address='8200 old main, logan ut, 84322'),
-                   Affiliation(email='tony.castronova@usu.edu', startDate=datetime.datetime(2014,03,10), organization=o2, person=p, address='8200 old main, logan ut, 84322')]
-
-    # test custom YAML dump
-    with open('../app_data/configuration/users.yaml', 'w') as f:
-        for a in affilations:
-            y = a.toYAML()
-            f.write(y)
-
-    # # test fromYaml
-    with open('../app_data/configuration/users.yaml', 'r') as f:
-        yobj = BuildAffiliationfromYAML(f.read())
-
-    # write object to json
-    # jp = jsonpickle.encode(affilations)
-    j = []
-    with open('../app_data/configuration/users.json', 'w') as f:
-       for a in affilations:
-           j.append(a._affilationToDict())
-
-       j = json.dumps(j, sort_keys=True, indent=4, separators=(',', ': '))
-       f.write(j)
 
 
-    # just using pickle
-    # with open('../../app_data/configuration/users.pkl', 'wb') as f:
-    #     f.write(pickle.dumps(affilations))
-
-    # using dill
-    # with open('../../app_data/configuration/users.pkl', 'wb') as f:
-    #     dill.dump(affilations, f)
+    # p = Person('tony', 'castronova')
+    # o1 = Organization(typeCV='university',
+    #                   name='Utah State University',
+    #                   code='usu')
+    # o2 = Organization(typeCV='university',
+    #                   name='Utah Water Research Laboratory',
+    #                   code='uwrl',
+    #                   description='description = research laboratory Affiliated with utah state university',
+    #                   parent='usu')
+    #
+    # affilations = [Affiliation(email='tony.castronova@usu.edu', startDate=datetime.datetime(2014,03,10), organization=o1, person=p, phone='435-797-0853', address='8200 old main, logan ut, 84322'),
+    #                Affiliation(email='tony.castronova@usu.edu', startDate=datetime.datetime(2014,03,10), organization=o2, person=p, address='8200 old main, logan ut, 84322')]
     #
 
-
-    # # test custom JSON dump
-    # with open('../../app_data/configuration/test.json', 'w') as f:
+    # # write object to json
+    settings_path = os.path.abspath(os.path.join(os.path.dirname(__file__),'../app_data/configuration/'))
+    # with open(settings_path + '/users.json', 'w') as f:
+    #     j = {}
     #     for a in affilations:
-    #         j = a.toJSON()
-    #         f.write(j)
-
+    #         affil = a._affilationToDict()
+    #         j.update(affil)
+    #     j = json.dumps(j, sort_keys=True, indent=4, separators=(',', ': '))
+    #     f.write(j)
 
     # test fromJson
-    # with open('../../app_data/configuration/test.json', 'r') as f:
-    #     jobj = BuildAffiliationfromJSON(f.read())
-
+    with open(settings_path + '/users.json', 'r') as f:
+        jobj = BuildAffiliationfromJSON(f.read())
 
 

@@ -509,18 +509,23 @@ class SimulationContextMenu(ContextMenu):
                 conn = session
                 results = conn.read.getResultsBySimulationID(simulationID)
 
-                # for r in results:
-                #     variable_name = r.VariableObj.VariableCode
-                #     result_values = conn.read.getTimeSeriesResultValuesByResultId(r.ResultID)
-                #     # if result_values is None:
-                #     #     elog.debug("No datetime object in table")
-                #     #     return
-                #     dates = []
-                #     values = []
-                #     for val in result_values:
-                #         dates.append(val.ValueDateTime)
-                #         values.append(val.DataValue)
-                pass
+                res = {}
+                for r in results:
+                    variable_name = r.VariableObj.VariableCode
+                    result_values = conn.read.getTimeSeriesResultValuesByResultID(r.ResultID)
+
+                    dates = []
+                    values = []
+                    for val in result_values:
+                        dates.append(val.ValueDateTime)
+                        values.append(val.DataValue)
+
+                    if variable_name in res:
+                        res[variable_name].append([dates, values, r])
+                    else:
+                        res[variable_name] = [[dates, values, r]]
+
+                return res
 
             else:
                 readsim = readSimulation(session)
@@ -529,7 +534,6 @@ class SimulationContextMenu(ContextMenu):
 
                 res = {}
                 for r in results:
-
                     variable_name = r.VariableObj.VariableCode
                     result_values = readres.getTimeSeriesValuesByResultId(int(r.ResultID))
 
@@ -541,9 +545,9 @@ class SimulationContextMenu(ContextMenu):
 
                     # save data series based on variable
                     if variable_name in res:
-                        res[variable_name].append([dates,values,r])
+                        res[variable_name].append([dates, values, r])
                     else:
-                        res[variable_name] = [[dates,values,r]]
+                        res[variable_name] = [[dates, values, r]]
 
                 return res
 
@@ -565,7 +569,7 @@ class SimulationContextMenu(ContextMenu):
         while id != -1:
 
             # get the result
-            simulationID = obj.GetItem(id,0).GetText()
+            simulationID = obj.GetItem(id, 0).GetText()
 
             name = obj.GetItem(id, 1).GetText()
 
@@ -583,12 +587,11 @@ class SimulationContextMenu(ContextMenu):
 
                 # set metadata based on first series
                 ylabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
-                title = '%s' % (resobj.VariableObj.VariableCode)
 
                 # save the variable and units to validate future time series
                 variable = resobj.VariableObj.VariableNameCV
                 units = resobj.UnitObj.UnitsName
-                title = '%s: %s [%s]' % (name, variable,units)
+                title = '%s: %s [%s]' % (name, variable, units)
 
                 PlotFrame = LogicPlot(self.Parent, ylabel=ylabel, title=title)
 

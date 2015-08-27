@@ -55,19 +55,18 @@ class logicPreRun(viewPreRun):
         user_info = None
         for affil in self.accounts:
             if affil.ID() == user_name:
-                user_info_yaml = affil.toYAML()
-                # user_info = json.dumps(affil)
+                user_info_json = affil.toJSON()
 
         # todo: check all constraints before executing a simulation
         # raise exceptions before executing the simulation
-        if user_info_yaml is None:
+        if user_info_json is None:
             raise Exception('Cannot execute simulation if no user account is provided')
         if name.strip() == '':
             name = "Simulation_run_" + time.strftime('%m-%d-%Y')
             # raise Exception('Cannot execute simulation if no simulation name is provided')
 
         # build kwargs to pass to engineAccessors
-        kwargs = dict(simulationName=name, dbName=db, user_yaml=user_info_yaml, datasets=datasets)
+        kwargs = dict(simulationName=name, dbName=db, user_json=user_info_json, datasets=datasets)
 
         # initiate simulation
         engineAccessors.runSimulation(**kwargs)

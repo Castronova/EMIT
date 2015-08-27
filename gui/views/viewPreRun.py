@@ -131,10 +131,10 @@ class SummaryPage(wx.Panel):
         # with open(os.path.abspath(os.path.join(currentdir, '../../app_data/configuration/users.pkl')),'rb') as f:
         #     users.extend(dill.load(f))
 
+        # todo: get from environments
         # build affiliation/person/org objects from the users.yaml file
-        with open(os.path.abspath(os.path.join(currentdir, '../../app_data/configuration/users.yaml')),'r') as f:
-            known_users.extend(Users.BuildAffiliationfromYAML(f.read()))
-
+        with open(os.path.abspath(os.path.join(currentdir, '../../app_data/configuration/users.json')),'r') as f:
+            known_users.extend(Users.BuildAffiliationfromJSON(f.read()))
         return known_users
 
     def getFromFile(self, data, search):

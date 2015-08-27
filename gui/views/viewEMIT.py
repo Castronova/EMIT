@@ -12,7 +12,8 @@ from coordinator.emitLogging import elog
 from viewLowerPanel import viewLowerPanel
 import os
 import ConfigParser
-
+import sys
+import os
 # create custom events
 wxCreateBox, EVT_CREATE_BOX = NewEvent()
 wxStdOut, EVT_STDDOUT= NewEvent()
@@ -338,8 +339,8 @@ class viewMenuBar(wx.Frame):
             self.infoIsChecked = self.config.getboolean("LOGGING", 'showinfo')
             self.warningIsChecked = self.config.getboolean("LOGGING", 'showwarning')
             self.criticalIsChecked = self.config.getboolean("LOGGING", 'showcritical')
-            self.errorIsChecked = False #self.config.get("LOGGING", 'showerror')
-            self.debugIsChecked = False #self.config.get("LOGGING", 'showdebug')
+            self.errorIsChecked = self.config.getboolean("LOGGING", 'showerror')
+            self.debugIsChecked = self.config.getboolean("LOGGING", 'showdebug')
         except:  # if the settings file is empty it will set them to true
             self.infoIsChecked = True
             self.warningIsChecked = True

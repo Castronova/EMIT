@@ -135,7 +135,7 @@ class SummaryPage(wx.Panel):
         # build affiliation/person/org objects from the users.yaml file
         # with open(os.path.abspath(os.path.join(currentdir, '../../app_data/configuration/users.json')),'r') as f:
 
-        userjson = env_vars.USERS_USERSJSON
+        userjson = env_vars.USER_JSON
         print userjson
         with open(userjson,'r') as f:
             known_users.extend(Users.BuildAffiliationfromJSON(f.read()))

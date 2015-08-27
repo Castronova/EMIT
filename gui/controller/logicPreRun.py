@@ -108,7 +108,7 @@ class logicPreRun(viewPreRun):
         # connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/preferences'))
         # file = open(connections_txt, 'a')
 
-        usersjson = env_vars.USERS_USERSJSON
+        usersjson = env_vars.USERS_JSON
         with open(usersjson, 'a') as f:
             self.accountinfo = self.dlg.GetTextBoxValues()
             accounttxt = "[person]\n" \

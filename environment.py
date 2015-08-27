@@ -95,7 +95,7 @@ class EnvironmentVars(object):
             self.set_environment_variable('LOCAL_DB', 'path', os.path.abspath(os.path.join(os.path.dirname (self.settings_path),'../db/local.db')))
 
             self.set_environment_variable('USER','; Settings associated with user profile')
-            self.set_environment_variable('USER', 'usersjson', os.path.abspath(os.path.join(os.path.dirname (self.settings_path),'../configuration/users.json')))
+            self.set_environment_variable('USER', 'json', os.path.abspath(os.path.join(os.path.dirname (self.settings_path),'../configuration/users.json')))
 
 
 

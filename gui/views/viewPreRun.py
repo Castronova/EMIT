@@ -6,7 +6,7 @@ import wx
 
 import coordinator.users as Users
 from coordinator import engineAccessors
-
+from environment import env_vars
 
 class viewPreRun(wx.Frame):
     def __init__(self):                                                     # this style makes the window non-resizable
@@ -133,8 +133,13 @@ class SummaryPage(wx.Panel):
 
         # todo: get from environments
         # build affiliation/person/org objects from the users.yaml file
-        with open(os.path.abspath(os.path.join(currentdir, '../../app_data/configuration/users.json')),'r') as f:
+        # with open(os.path.abspath(os.path.join(currentdir, '../../app_data/configuration/users.json')),'r') as f:
+
+        userjson = env_vars.USERS_USERSJSON
+        print userjson
+        with open(userjson,'r') as f:
             known_users.extend(Users.BuildAffiliationfromJSON(f.read()))
+
         return known_users
 
     def getFromFile(self, data, search):

@@ -147,10 +147,10 @@ class Log(object):
         return self.log._get_logger()
 
     def verbosity(self):
-        self.showinfo = env_vars.SHOWINFO
-        self.showwarning = env_vars.SHOWWARNING
-        self.showcritical = env_vars.SHOWCRITICAL
-        self.showerror = env_vars.SHOWERROR
-        self.showdebug = env_vars.SHOWDEBUG
+        self.showinfo = env_vars.LOGGING_SHOWINFO
+        self.showwarning = env_vars.LOGGING_SHOWWARNING
+        self.showcritical = env_vars.LOGGING_SHOWCRITICAL
+        self.showerror = env_vars.LOGGING_SHOWERROR
+        self.showdebug = env_vars.LOGGING_SHOWDEBUG
 
 elog = Log()

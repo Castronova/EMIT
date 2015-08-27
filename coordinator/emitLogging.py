@@ -116,12 +116,6 @@ class Log(object):
         self.log = _Log()
         self.verbosity()
 
-        self.showinfo = True
-        self.showwarning = True
-        self.showcritical = True
-        self.showerror = True
-        self.showdebug = True
-
     def debug(self, text):
         self.verbosity()
         if self.showdebug:
@@ -157,5 +151,6 @@ class Log(object):
         self.showwarning = env_vars.SHOWWARNING
         self.showcritical = env_vars.SHOWCRITICAL
         self.showerror = env_vars.SHOWERROR
+        self.showdebug = env_vars.SHOWDEBUG
 
 elog = Log()

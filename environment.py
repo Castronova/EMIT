@@ -78,10 +78,10 @@ class EnvironmentVars(object):
 
     def write_default_settings(self):
         with open(self.settings_path, 'w') as f:
-            self.set_environment_variable('logging', 'showinfo', 'False')
-            self.set_environment_variable('logging', 'showwarning', 'False')
-            self.set_environment_variable('logging', 'showcritical', 'False')
-            self.set_environment_variable('logging', 'showerror', 'False')
+            self.set_environment_variable('logging', 'showinfo', 'True')
+            self.set_environment_variable('logging', 'showwarning', 'True')
+            self.set_environment_variable('logging', 'showcritical', 'True')
+            self.set_environment_variable('logging', 'showerror', 'True')
             self.set_environment_variable('logging', 'showdebug', 'False')
             self.set_environment_variable('local_db', 'path', os.path.abspath(os.path.join(os.path.dirname (self.settings_path),'../db/local.db')))
 

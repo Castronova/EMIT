@@ -323,7 +323,7 @@ class viewMenuBar(wx.Frame):
         #  Read the settings file
         currentdir = os.path.dirname(os.path.abspath(__file__))
         self.settingspath = os.path.abspath(os.path.join(currentdir, '../../app_data/config/.settings.ini'))
-        self.config = ConfigParser.ConfigParser();
+        self.config = ConfigParser.ConfigParser()
         self.config.read(self.settingspath)
         boolist = []
 

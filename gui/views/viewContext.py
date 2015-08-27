@@ -507,7 +507,8 @@ class SimulationContextMenu(ContextMenu):
         if session is not None:
             if session.__module__ == 'db.dbapi_v2':
                 conn = session
-                results = conn.read.getResultsBySimulationID(simulationID)
+                # results = conn.read.getResultsBySimulationID(simulationID)
+                results = conn.read.getResultByResultID(simulationID)
 
                 res = {}
                 for r in results:

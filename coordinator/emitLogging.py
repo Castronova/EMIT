@@ -150,19 +150,10 @@ class Log(object):
 
     def verbosity(self):
         #  Before every print, this method will check if it is allowed.
-        # self.showinfo = env_vars.LOGGING_SHOWINFO
-        # self.showwarning = env_vars.LOGGING_SHOWWARNING
-        # self.showcritical = env_vars.LOGGING_SHOWCRITICAL
-        # self.showerror = env_vars.LOGGING_SHOWERROR
-        # self.showdebug = env_vars.LOGGING_SHOWDEBUG
-
-        #  So the application does not need to be restarted for the changes to take affect, this will simply
-        #  read the config file and update the variables respectfully.
-        self.config.read(self.settingspath)
-        self.showinfo = self.config.getboolean("LOGGING", "showinfo")
-        self.showwarning = self.config.getboolean("LOGGING", "showwarning")
-        self.showcritical = self.config.getboolean("LOGGING", "showcritical")
-        self.showerror = self.config.getboolean("LOGGING", "showerror")
-        self.showdebug = self.config.getboolean("LOGGING", "showdebug")
+        self.showinfo = env_vars.LOGGING_SHOWINFO
+        self.showwarning = env_vars.LOGGING_SHOWWARNING
+        self.showcritical = env_vars.LOGGING_SHOWCRITICAL
+        self.showerror = env_vars.LOGGING_SHOWERROR
+        self.showdebug = env_vars.LOGGING_SHOWDEBUG
 
 elog = Log()

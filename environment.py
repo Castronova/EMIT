@@ -29,8 +29,11 @@ class EnvironmentVars(object):
                     setattr(self, k.upper(), v)
 
             EnvironmentVars.__monostate = self.__dict__
+            print self.__dict__
         else:
+            print self.__dict__
             self.__dict__ = EnvironmentVars.__monostate
+
 
     def set_environment_variable(self, section, var, value=None):
 
@@ -40,25 +43,32 @@ class EnvironmentVars(object):
 
             # create a class variable if the value is not None. Comments will have None value
             if value is not None:
-                if not value.isdigit():
-                    setattr(self, '_'.join([section, var.upper()]), value)
-                else:
-                    setattr(self, '_'.join([section, var.upper()]), int(value))
 
+                env_name = '_'.join([section, var.upper()])
+                if env_name in self.__dict__:
+                    self.__dict__[env_name] = value
+                else:
+                    setattr(self, '_'.join([section, var.upper()]), value)
+
+
+            # add section/var/value to configparser object
             # make sure that this section exists before adding var, value
             if not self.config.has_section(section):
                 self.config.add_section(section)
             self.config.set(section, var, value)
 
-
-            settings_file = open(self.settings_path, 'w+')
-            self.config.write(settings_file)
-            settings_file.close()
-
         except Exception:
-            # elog.warning("Invalid environment variable or value.")
-            pass
+            print "Invalid environment variable or value."
 
+
+    def write_environment_variables(self):
+        try:
+            fp = open(self.settings_path,'w+')
+            self.config.write(fp)
+            return 1
+        except Exception, e:
+            print e
+            return 0
 
     def parse_settings_file(self):
         '''
@@ -82,22 +92,28 @@ class EnvironmentVars(object):
     def write_default_settings(self):
         with open(self.settings_path, 'w') as f:
 
-            # print some info
-            self.set_environment_variable('LOGGING','; Controls the verbosity of the console dialog, 1 is on, 0 is off')
-            self.set_environment_variable('LOGGING','; True or False values should be represented by 1 or 0')
-            self.set_environment_variable('LOGGING', 'showinfo', '1')
-            self.set_environment_variable('LOGGING', 'showwarning', '1')
-            self.set_environment_variable('LOGGING', 'showcritical', '1')
-            self.set_environment_variable('LOGGING', 'showerror', '1')
-            self.set_environment_variable('LOGGING', 'showdebug', '0')
+            #fixme: ConfigParser does not preserve comments!  Replace with cfgparse
+            # set default environment variables
+            # self.set_environment_variable('LOGGING','; Controls the verbosity of the console dialog, 1 is on, 0 is off')
+            # self.set_environment_variable('LOGGING','; True or False values should be represented by 1 or 0')
+            self.set_environment_variable('LOGGING', 'showinfo', 1)
+            self.set_environment_variable('LOGGING', 'showinfo', 0)
+            self.set_environment_variable('LOGGING', 'showwarning', 1)
+            self.set_environment_variable('LOGGING', 'showcritical', 1)
+            self.set_environment_variable('LOGGING', 'showerror', 1)
+            self.set_environment_variable('LOGGING', 'showdebug', 0)
 
-            self.set_environment_variable('LOCAL_DB','; Settings associated with the local SQLite database')
+            # self.set_environment_variable('LOCAL_DB','; Settings associated with the local SQLite database')
             self.set_environment_variable('LOCAL_DB', 'path', os.path.abspath(os.path.join(os.path.dirname (self.settings_path),'../db/local.db')))
 
-            self.set_environment_variable('USER','; Settings associated with user profile')
+            # self.set_environment_variable('USER','; Settings associated with user profile')
             self.set_environment_variable('USER', 'json', os.path.abspath(os.path.join(os.path.dirname (self.settings_path),'../configuration/users.json')))
 
+            # write environment variables to file
+            self.write_environment_variables()
 
+            # self.set_environment_variable('LOGGING', 'showinfo',0)
+            # self.write_environment_variables()
 
 
 env_vars = EnvironmentVars()

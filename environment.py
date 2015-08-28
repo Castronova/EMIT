@@ -21,8 +21,8 @@ class EnvironmentVars(object):
             # if the settings path does not exist, then create it
             if not os.path.exists(self.settings_path):
                 self.write_default_settings()
-            if not self.config.has_section("LOGGING"):
-                self.write_default_settings()
+            # if not self.config.has_section("LOGGING"):
+            #     self.write_default_settings()
 
             else:
                 self.config.read(self.settings_path)
@@ -99,7 +99,6 @@ class EnvironmentVars(object):
             # self.set_environment_variable('LOGGING','; Controls the verbosity of the console dialog, 1 is on, 0 is off')
             # self.set_environment_variable('LOGGING','; True or False values should be represented by 1 or 0')
             self.set_environment_variable('LOGGING', 'showinfo', 1)
-            self.set_environment_variable('LOGGING', 'showinfo', 0)
             self.set_environment_variable('LOGGING', 'showwarning', 1)
             self.set_environment_variable('LOGGING', 'showcritical', 1)
             self.set_environment_variable('LOGGING', 'showerror', 1)

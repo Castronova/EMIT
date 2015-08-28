@@ -21,6 +21,8 @@ class EnvironmentVars(object):
             # if the settings path does not exist, then create it
             if not os.path.exists(self.settings_path):
                 self.write_default_settings()
+            if not self.config.has_section("LOGGING"):
+                self.write_default_settings()
 
             else:
                 self.config.read(self.settings_path)

@@ -1,6 +1,7 @@
 __author__ = 'tonycastronova'
 
 import wx
+import seaborn as sns
 from gui.views.viewPlot import ViewPlot, Data
 from PIL import Image, ImageDraw
 from matplotlib.dates import date2num
@@ -8,7 +9,7 @@ import matplotlib.pyplot as plt
 from gui.controller.enums import PlotEnum
 from wx.lib.pubsub import pub as Publisher
 
-
+sns.set_style("ticks")
 
 
 class LogicPlot(ViewPlot):
@@ -227,10 +228,11 @@ class LogicPlot(ViewPlot):
             if type == PlotEnum.point:
                 for x,y,label,color in zip(plt_xdata,plt_ydata,plt_labels,plt_colors):
                     self.axis.plot(x, y, label = label, linestyle='None', marker='o', color = color)
-
+                    sns.despine(right=True, top=True)
             if type == PlotEnum.line:
                 for x,y,label,color in zip(plt_xdata,plt_ydata,plt_labels,plt_colors):
                     self.axis.plot(x, y, label = label, linestyle='-',linewidth=1.5, color = color)
+                    sns.despine(right=True, top=True)
 
             if type == PlotEnum.bar:
                 i = 0
@@ -241,6 +243,8 @@ class LogicPlot(ViewPlot):
                     # adjust the x values such that they are center aligned on their original x value
                     offset_x = [val - .5*column_width*len(plt_labels)+(i*.5*column_width) for val in x]
                     self.axis.bar(offset_x, y, label = label, color = color, width=column_width)
+                    sns.despine(right=True, top=True)
+
                     i+=1
 
             self.axis.xaxis_date()

@@ -23,24 +23,24 @@ class ueb(feed_forward.feed_forward_wrapper):
 
         # get param, sitevar, input, output, and watershed files
         with open(conFile, 'r') as f:
-            lines = f.readlines()
-            paramFile = lines[1].strip()
-            sitevarFile = lines[2].strip()
-            inputconFile = lines[3].strip()
-            outputconFile = lines[4].strip()
-            watershedFile = lines[5].strip()
-            wsvarName = lines[6].split(' ')[0].strip()
-            wsycorName = lines[6].split(' ')[1].strip()
-            wsxcorName = lines[6].split(' ')[2].strip()
-            aggoutputconFile = lines[7].strip()
-            aggoutputFile = lines[8].strip()
-
-        # 2009 10 01 0.0
-        # 2010 05 31 0.0
-        # 1.0
-        # 1 15 16
-        # -7.0
-        # 0
+            # lines = f.readlines()
+            lines = f.read().splitlines()  # this will auto strip the \n \r
+            paramFile = lines[1]
+            sitevarFile = lines[2]
+            inputconFile = lines[3]
+            outputconFile = lines[4]
+            watershedFile = lines[5]
+            wsvarName = lines[6].split(' ')[0]
+            wsycorName = lines[6].split(' ')[1]
+            wsxcorName = lines[6].split(' ')[2]
+            aggoutputconFile = lines[7]
+            aggoutputFile = lines[8]
+            ModelStartDate = lines[9].split(' ')
+            ModelEndDate = lines[10].split(' ')
+            ModelDt = float(lines[11])
+            outtStride, outyStep, outxStep = [int(s) for s in lines[12].split(' ')]
+            ModelUTCOffset = float(lines[13])
+            inpDailyorSubdaily = bool(lines[14]==True)
 
 
         wsxcorArray = c_float()
@@ -71,9 +71,12 @@ class ueb(feed_forward.feed_forward_wrapper):
         self.__uebLib.readSiteVars('./TWDEF_distributed/'+ sitevarFile, byref(strsvArray))
 
 
-
-
-
+        # read 2d NetCDF Data
+        for i  in range(0,32):
+            a = strsvArray.contents[i]
+            if a.svType == 1:
+                print "%d %s %s\n" % (i, a.svFile,a.svVarName)
+                retvalue = self.__uebLib.read2DNC('./TWDEF_distributed/'+a.svFile, a.svVarName, byref(a.svArrayValues))
 
 
         # self.__uebLib.getObjectTypeCount.restype = c_int

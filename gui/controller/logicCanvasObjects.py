@@ -13,6 +13,7 @@ import matplotlib.colors as mcolors
 from wx.lib.floatcanvas import FloatCanvas as FC
 from environment import env_vars
 import datatypes
+from os import path
 
 sys.path.append("..")
 
@@ -121,14 +122,15 @@ class ModelBox(FC.Group):
         self.ID = id
 
         # Set box color based on model type
-        imgs_path = env_vars.IMGS_PATH
+        imgs_path = env_vars.IMAGES_PATH
         bmp = None
         if type == datatypes.ModelTypes.TimeStep:
-            bmp = wx.Image(imgs_path+'rectGreen.png', wx.BITMAP_TYPE_PNG)
+            bmp = wx.Image(path.join(imgs_path,'rectGreen.png'), wx.BITMAP_TYPE_PNG)
         elif type == datatypes.ModelTypes.FeedForward:
-            bmp = wx.Image(imgs_path+'rectBlue.png', wx.BITMAP_TYPE_PNG)
+            print path.join(imgs_path,'rectBlue.png')
+            bmp = wx.Image(path.join(imgs_path,'rectBlue.png'), wx.BITMAP_TYPE_PNG)
         elif type == datatypes.ModelTypes.Data:
-            bmp = wx.Image(imgs_path+'rectPurple.png', wx.BITMAP_TYPE_PNG)
+            bmp = wx.Image(path.join(imgs_path, 'rectPurple.png'), wx.BITMAP_TYPE_PNG)
 
         self.box = FC.Bitmap(bmp, XY, Position="cc", InForeground=True)
         self.Width = bmp.Width

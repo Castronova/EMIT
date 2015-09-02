@@ -114,6 +114,8 @@ class EnvironmentVars(object):
             # self.set_environment_variable('USER','; Settings associated with user profile')
             self.set_environment_variable('USER', 'json', os.path.abspath(os.path.join(os.path.dirname (self.settings_path),'../configuration/users.json')))
 
+            self.set_environment_variable('IMAGES', 'path', os.path.abspath(os.path.join(os.path.dirname (self.settings_path),'../../gui/images')))
+
             # write environment variables to file
             self.write_environment_variables()
 

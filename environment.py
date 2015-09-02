@@ -9,6 +9,8 @@ class EnvironmentVars(object):
     Variables can be accessed like 'env_vars.SHOWERROR'. All settings
     are parsed from app_data/config/.settings.ini using ConfigParser.
 
+    IMPORTANT: All instance variables are in UPPERCASE, but are stored
+    as lowercase in the settings.ini (ConfigParser does this).
     '''
     __monostate = None
     def __init__(self):
@@ -40,6 +42,7 @@ class EnvironmentVars(object):
     def set_environment_variable(self, section, var, value=None):
 
         try:
+
             # make sure all sections are uppercase
             section = section.upper()
 
@@ -71,6 +74,7 @@ class EnvironmentVars(object):
         except Exception, e:
             print e
             return 0
+
 
     def parse_settings_file(self):
         '''

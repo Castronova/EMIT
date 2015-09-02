@@ -3,6 +3,7 @@ __author__ = 'Mario'
 from gui.controller.logicNavigationCanvas import *
 from wx.lib.floatcanvas import FloatCanvas
 import sys, os
+from environment import env_vars
 
 # todo: refactor
 from gui.Resources import resourcesCanvasObjects as rco, icons
@@ -35,6 +36,7 @@ class ViewCanvas(wx.Panel):
 
         currentWorkDirectory = os.getcwd()
         imagesPath = os.path.join(currentWorkDirectory, 'gui/images/')
+        env_vars.set_environment_variable('images', 'imgs_path', imagesPath)
         self.linkArrow = wx.Image(imagesPath+'rightArrowBlue60.png', wx.BITMAP_TYPE_PNG)
         self.UnassignedBox4 = wx.Image(imagesPath+'rectBlue.png', wx.BITMAP_TYPE_PNG)
         self.TimeseriesBox = wx.Image(imagesPath+'rectGreen.png', wx.BITMAP_TYPE_PNG)

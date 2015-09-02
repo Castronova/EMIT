@@ -77,5 +77,5 @@ examples/swmm/data/rainfall_data.xlsx
 examples/swmm/src/swmm_model.sim
 
 # Settings
-*.ini
+.*.ini
 

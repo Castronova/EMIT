@@ -11,6 +11,10 @@ from wx.lib.newevent import NewEvent
 from coordinator.emitLogging import elog
 from viewLowerPanel import viewLowerPanel
 import os
+import ConfigParser
+import sys
+import os
+from environment import env_vars
 
 # create custom events
 wxCreateBox, EVT_CREATE_BOX = NewEvent()
@@ -319,35 +323,40 @@ class viewMenuBar(wx.Frame):
         wx.Frame.__init__(self, parent=None, id=-1, title="Settings...", pos=wx.DefaultPosition, size=wx.Size(350, 250))
 
         #  Read the settings file
-        currentdir = os.path.dirname(os.path.abspath(__file__))
-        self.settingspath = os.path.abspath(os.path.join(currentdir, '../../data/settings'))
-        file = open(self.settingspath, 'r')
-        fileinfo = file.readlines()
+        # currentdir = os.path.dirname(os.path.abspath(__file__))
+        # self.settingspath = os.path.abspath(os.path.join(currentdir, '../../app_data/config/.settings.ini'))
+        # self.config = ConfigParser.ConfigParser()
+        # self.config.read(self.settingspath)
+        # boolist = []
+        #
+        # ''' for i in range(0, len(fileinfo)):
+        #     value = fileinfo[i].split(' = ')
+        #     value = value[1].split('\n')
+        #     if value[0] == 'True':
+        #         boolist.append(True)
+        #     else:
+        #         boolist.append(False) '''
 
-        boolist = []
 
-        for i in range(0, len(fileinfo)):
-            value = fileinfo[i].split(' = ')
-            value = value[1].split('\n')
-            if value[0] == 'True':
-                boolist.append(True)
-            else:
-                boolist.append(False)
 
-        try:
-            self.infoIsChecked = boolist[0]
-            self.warningIsChecked = boolist[1]
-            self.criticalIsChecked = boolist[2]
-            self.errorIsChecked = boolist[3]
-            self.debugIsChecked = boolist[4]
-        except:  # if the settings file is empty it will set them to true
-            self.infoIsChecked = True
-            self.warningIsChecked = True
-            self.criticalIsChecked = True
-            self.errorIsChecked = True
-            self.debugIsChecked = True
-
-        file.close()
+        # try:
+        #     self.infoIsChecked = self.config.getboolean("LOGGING", 'showinfo')
+        #     self.warningIsChecked = self.config.getboolean("LOGGING", 'showwarning')
+        #     self.criticalIsChecked = self.config.getboolean("LOGGING", 'showcritical')
+        #     self.errorIsChecked = self.config.getboolean("LOGGING", 'showerror')
+        #     self.debugIsChecked = self.config.getboolean("LOGGING", 'showdebug')
+        # except:  # if the settings file is empty it will set them to true
+        #     self.infoIsChecked = True
+        #     self.warningIsChecked = True
+        #     self.criticalIsChecked = True
+        #     self.errorIsChecked = True
+        #     self.debugIsChecked = True
+        #
+        # elog.debug("debug " + str(self.debugIsChecked))
+        # elog.debug("error " + str(self.errorIsChecked))
+        # elog.debug("critical " + str(self.criticalIsChecked))
+        # elog.debug("warning " + str(self.warningIsChecked))
+        # elog.debug("info " + str(self.infoIsChecked))
 
         self.panel = wx.Panel(self)
 
@@ -363,11 +372,12 @@ class viewMenuBar(wx.Frame):
         self.c4 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Error Messages")
         self.c5 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Debug Messages")
 
-        self.c1.SetValue(self.infoIsChecked)
-        self.c2.SetValue(self.warningIsChecked)
-        self.c3.SetValue(self.criticalIsChecked)
-        self.c4.SetValue(self.errorIsChecked)
-        self.c5.SetValue(self.debugIsChecked)
+        self.c1.SetValue(env_vars.LOGGING_SHOWINFO)
+        self.c2.SetValue(env_vars.LOGGING_SHOWWARNING)
+        self.c3.SetValue(env_vars.LOGGING_SHOWCRITICAL)
+        self.c4.SetValue(env_vars.LOGGING_SHOWERROR)
+        self.c5.SetValue(env_vars.LOGGING_SHOWDEBUG)
+
         self.saveButton = wx.Button(self.panel, 1, 'Save')
 
         sizer.Add(console_title, .1, flag=wx.ALL | wx.ALIGN_LEFT, border=20)
@@ -385,24 +395,58 @@ class viewMenuBar(wx.Frame):
         self.Refresh()
         self.Show()
 
+    # def parse_settings_file(self):
+    #     d = {}
+    #     logging = self.config.options("LOGGING")
+    #     for option in logging:
+    #         value = self.config.getboolean("LOGGING", option)
+    #         d[option] = value
+    #
+    #     localdb = self.config.options("LOCAL_DB")
+    #     for option in localdb:
+    #         value = self.config.get("LOCAL_DB", option)
+    #         d[option] = value
+    #
+    #     return d
 
     def OnSave(self, event):
-        cb = self.getCheckboxValue()
-        file = open(self.settingspath, 'w')
-        file.writelines(['showinfo = '+str(cb.values()[0])+'\n',
-                         'showwarning = '+str(cb.values()[1])+'\n',
-                         'showcritical = '+str(cb.values()[2]+'\n'),
-                         'showerror = '+str(cb.values()[4]+'\n'),
-                         'showdebug = '+str(cb.values()[3]+'\n')])
-                         # for some reason the position of the error and debug are switched
-        file.close()
+        # cb = self.getCheckboxValue()
+        # currentdir = os.path.dirname(os.path.abspath(__file__))
+        # self.settingspath = os.path.abspath(os.path.join(currentdir, '../../app_data/config/.settings.ini'))
+
+
+        # get the checkbox values
+        chkvalues = self.getCheckboxValue()
+        infchk = int(chkvalues['info'])
+        wrnchk = int(chkvalues['warn'])
+        crtchk = int(chkvalues['critical'])
+        debchk = int(chkvalues['debug'])
+        errchk = int(chkvalues['error'])
+
+        env_vars.set_environment_variable('LOGGING', 'showinfo', infchk)
+        env_vars.set_environment_variable('LOGGING', 'showwarning', wrnchk)
+        env_vars.set_environment_variable('LOGGING', 'showcritical', crtchk)
+        env_vars.set_environment_variable('LOGGING', 'showdebug', debchk)
+        env_vars.set_environment_variable('LOGGING', 'showerror', errchk)
+
+        # write these new settings to file
+        env_vars.write_environment_variables()
+
+        print env_vars.LOGGING_SHOWWARNING
         self.Close()
 
     def getCheckboxValue(self):
+        '''
+        Get the checked status for each verbosity checkbox
+        :return: dictionary of Booleans, e.g {'info':True, }
+        '''
+
         info = self.c1.GetValue()
         warn = self.c2.GetValue()
+        print warn
         critical = self.c3.GetValue()
         error = self.c4.GetValue()
         debug = self.c5.GetValue()
-        cb = {'info': str(info), 'warn': str(warn), 'critical': str(critical), 'error': str(error), 'debug': str(debug)}
+        cb = {'info': info, 'warn': warn, 'critical': critical, 'error': error, 'debug': debug}
+        print cb
         return cb

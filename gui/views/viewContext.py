@@ -475,12 +475,22 @@ class ContextMenu(wx.Menu):
         PlotFrame.Show()
 
     def OnDelete(self,event):
-        dlg = wx.MessageDialog(self.parent, 'Are you sure you want to delete this record?', 'Question',
-                               wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
-        if dlg.ShowModal() == wx.ID_YES:
-            self.parent.Parent.m_olvSeries.RemoveObject(self.parent.GetSelectedObject())  # Deleting
-            self.parent.Parent.m_olvSeries.SortBy(self.parent.Parent.m_olvSeries.GetPrimaryColumnIndex())  # Sorting
-        dlg.Destroy()
+        if 'local' in self.parent.Parent.connection_combobox.GetStringSelection():
+            dlg = wx.MessageDialog(self.parent, 'Are you sure you want to delete this simulation?', 'Question',
+                                   wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
+            if dlg.ShowModal() == wx.ID_YES:
+                try:
+                    # From Time Series
+                    self.parent.Parent.m_olvSeries.RemoveObject(self.parent.GetSelectedObject())  # Deleting
+                    self.parent.Parent.m_olvSeries.SortBy(self.parent.Parent.m_olvSeries.GetPrimaryColumnIndex())  # Sorting
+                except:
+                    # From Simulations
+                    self.parent.Parent.conn.deleteRecord(self.parent.GetSelectedObject())
+                    self.parent.Parent.table.RemoveObject(self.parent.GetSelectedObject())
+                    self.parent.Parent.table.SortBy(self.parent.Parent.table.GetPrimaryColumnIndex())
+            dlg.Destroy()
+        else:
+            elog.info("Deleting can only be done on the local database")
 
 
 class TimeSeriesContextMenu(ContextMenu):
@@ -495,30 +505,52 @@ class SimulationContextMenu(ContextMenu):
 
         session = self.parent.getDbSession()
         if session is not None:
+            if session.__module__ == 'db.dbapi_v2':
+                conn = session
+                # results = conn.read.getResultsBySimulationID(simulationID)
+                results = conn.read.getResultByResultID(simulationID)
 
-            readsim = readSimulation(session)
-            readres = readResults(session)
-            results = readsim.getResultsBySimulationID(simulationID)
+                res = {}
+                for r in results:
+                    variable_name = r.VariableObj.VariableCode
+                    result_values = conn.read.getTimeSeriesResultValuesByResultID(r.ResultID)
 
-            res = {}
-            for r in results:
+                    dates = []
+                    values = []
+                    for val in result_values:
+                        dates.append(val.ValueDateTime)
+                        values.append(val.DataValue)
 
-                variable_name = r.VariableObj.VariableCode
-                result_values = readres.getTimeSeriesValuesByResultId(int(r.ResultID))
+                    if variable_name in res:
+                        res[variable_name].append([dates, values, r])
+                    else:
+                        res[variable_name] = [[dates, values, r]]
 
-                dates = []
-                values = []
-                for val in result_values:
-                    dates.append(val.ValueDateTime)
-                    values.append(val.DataValue)
+                return res
 
-                # save data series based on variable
-                if variable_name in res:
-                    res[variable_name].append([dates,values,r])
-                else:
-                    res[variable_name] = [[dates,values,r]]
+            else:
+                readsim = readSimulation(session)
+                readres = readResults(session)
+                results = readsim.getResultsBySimulationID(simulationID)
 
-            return res
+                res = {}
+                for r in results:
+                    variable_name = r.VariableObj.VariableCode
+                    result_values = readres.getTimeSeriesValuesByResultId(int(r.ResultID))
+
+                    dates = []
+                    values = []
+                    for val in result_values:
+                        dates.append(val.ValueDateTime)
+                        values.append(val.DataValue)
+
+                    # save data series based on variable
+                    if variable_name in res:
+                        res[variable_name].append([dates, values, r])
+                    else:
+                        res[variable_name] = [[dates, values, r]]
+
+                return res
 
     def OnPlot(self, event):
 
@@ -538,12 +570,14 @@ class SimulationContextMenu(ContextMenu):
         while id != -1:
 
             # get the result
-            simulationID = obj.GetItem(id,0).GetText()
+            simulationID = obj.GetItem(id, 0).GetText()
 
-            name = obj.GetItem(id,1).GetText()
+            name = obj.GetItem(id, 1).GetText()
 
             # get data for this row
             results = self.getData(simulationID)
+            if results is None:
+                return
 
             if PlotFrame is None:
 
@@ -554,12 +588,11 @@ class SimulationContextMenu(ContextMenu):
 
                 # set metadata based on first series
                 ylabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
-                title = '%s' % (resobj.VariableObj.VariableCode)
 
                 # save the variable and units to validate future time series
                 variable = resobj.VariableObj.VariableNameCV
                 units = resobj.UnitObj.UnitsName
-                title = '%s: %s [%s]' % (name, variable,units)
+                title = '%s: %s [%s]' % (name, variable, units)
 
                 PlotFrame = LogicPlot(self.Parent, ylabel=ylabel, title=title)
 

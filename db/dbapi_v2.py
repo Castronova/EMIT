@@ -74,7 +74,7 @@ class sqlite():
 
     def create_organization(self, organInfo):
         org = self.write.createOrganization(organInfo['cvType'], organInfo['code'], organInfo['name'],
-                                      organInfo['desc'], organInfo['link'], organInfo['parentOrgId'])
+                                            organInfo['desc'], organInfo['link'], organInfo['parentOrgId'])
         return org.OrganizationID
 
     def create_input_dataset(self, connection, resultids,type,code="",title="",abstract=""):
@@ -102,43 +102,23 @@ class sqlite():
         timestepname = config_params['time_step'][0].get('name') or 'seconds'
         timestepabbv = config_params['time_step'][0].get('abbreviation') or ' '
 
-
-        # name = config_params['name']
-        simulationName = coupledSimulationName
-
         # create person / organization / affiliation
         # affiliation = self.set_user_preferences(preferences_path)
-        person = self.write.createPerson(user_obj.person.firstname, user_obj.person.lastname, user_obj.person.middlename)
-        organization = self.write.createOrganization(user_obj.organization.typeCV, user_obj.organization.code,
-                                                     user_obj.organization.name,user_obj.organization.description,
-                                                     user_obj.organization.link, user_obj.organization.parent)
-        affiliation = self.write.createAffiliation(person.PersonID, organization.OrganizationID, user_obj.email, user_obj.phone, user_obj.address, user_obj.personLink, user_obj.isPrimaryOrganizationContact, user_obj.startDate, user_obj.affiliationEnd)
 
-        #organizationID = self.create_organization(user_obj.organization)
-        # userID = self.create_user(user_obj.person)
-
+        person = self.createPerson(user_obj)
+        organization = self.createOrganization(user_obj)
+        affiliation = self.createAffiliation(organization, person, user_obj)
 
         # get the timestep unit id
         #todo: This is not returning a timestepunit!!!  This may need to be added to the database
-        timestepunit = self.read.getUnitByName(timestepname)
-        if timestepunit is None:
-            timestepunit = self.write.createUnit('time', timestepname, timestepabbv)
+        timestepunit = self.createTimeStepUnit(timestepabbv, timestepname)
 
+        method = self.createMethod(organization)
 
-        # create method
-        method = self.read.getMethodByCode('simulation')
-        # org_id = odm2_affiliation[0].OrganizationID if len(odm2_affiliation) > 0 else None
-        if not method: method = self.write.createMethod(code= 'simulation',
-                                                             name='simulation',
-                                                             vType='calculated',
-                                                             orgId=organization.OrganizationID,
-                                                             description='Model Simulation Results')
-
-        # create action
         action = self.write.createAction(type='Simulation',
-                                              methodid=method.MethodID,
-                                              begindatetime=datetime.datetime.now(),
-                                              begindatetimeoffset=int((datetime.datetime.now() - datetime.datetime.utcnow() ).total_seconds()/3600))
+                                         methodid=method.MethodID,
+                                         begindatetime=datetime.datetime.now(),
+                                         begindatetimeoffset=int((datetime.datetime.now() - datetime.datetime.utcnow()).total_seconds()/3600))
 
         # create actionby
         # aff_id = odm2_affiliation[0].AffiliationID if len(odm2_affiliation) > 0 else None
@@ -148,14 +128,14 @@ class sqlite():
         # create processing level
         processinglevel = self.read.getProcessingLevelByCode(processingCode=2)
         if not processinglevel: processinglevel = self.write.createProcessingLevel(code=2,
-                                                                      definition='Derived Product',
-                                                                      explanation='Derived products require scientific and technical interpretation and include multiple-sensor data. An example might be basin average precipitation derived from rain gages using an interpolation procedure.')
+                                                                                   definition='Derived Product',
+                                                                                   explanation='Derived products require scientific and technical interpretation and include multiple-sensor data. An example might be basin average precipitation derived from rain gages using an interpolation procedure.')
 
         # create dataset
         dataset = self.write.createDataset(dstype='Simulation Input',
-                                                dscode='Input_%s'%modelname,
-                                                dstitle='Input for Simulation: %s'%modelname,
-                                                dsabstract=description)
+                                           dscode='Input_%s'%modelname,
+                                           dstitle='Input for Simulation: %s'%modelname,
+                                           dsabstract=description)
 
 
         # make sure the exchange item is represented as a list
@@ -175,15 +155,14 @@ class sqlite():
             # todo: implement variable vType
             variable = self.read.getVariableByCode(e.variable().VariableNameCV())
             if not variable: variable = self.write.createVariable(code=e.variable().VariableNameCV(),
-                                                                       name=e.variable().VariableDefinition(),
-                                                                       vType='unknown',
-                                                                       nodv=-999)
+                                                                  name=e.variable().VariableDefinition(),
+                                                                  vType='unknown',
+                                                                  nodv=-999)
 
             # create unit
             unit = self.read.getUnitByName(e.unit().UnitName())
-            if not unit: unit = self.write.createUnit(type=e.unit().UnitTypeCV(),
-                                                           abbrev=e.unit().UnitAbbreviation(),
-                                                           name=e.unit().UnitName())
+            if not unit:
+                unit = self.write.createUnit(type=e.unit().UnitTypeCV(), abbrev=e.unit().UnitAbbreviation(),  name=e.unit().UnitName())
 
             # create spatial reference
             srs = e.srs()
@@ -204,30 +183,29 @@ class sqlite():
                 values = datavalues[:,i]   # all dates for geometry(i)
 
                 # create sampling feature
-                samplingfeature = self.read.getSamplingFeatureByGeometry(geom.wkt)
-                if not samplingfeature:
-                    samplingFeatureID = self.insert_sampling_feature(type='site',geometryType=geom.type, WKTgeometry=geom.wkt)
-
+                samplingFeature = self.getSamplingFeatureID__Geometry_EQUALS(geom.wkt)
+                if not samplingFeature:
+                    samplingFeature = self.insert_sampling_feature(type='site',geometryType=geom.type, WKTgeometry=geom.wkt)
 
                 # create feature action
-                featureaction = self.write.createFeatureAction(samplingfeatureid=samplingFeatureID,
-                                                                    actionid=action.ActionID)
+                featureaction = self.write.createFeatureAction(samplingfeatureid=samplingFeature.SamplingFeatureID,
+                                                               actionid=action.ActionID)
 
                 # create a result record
                 result = self.write.createResult(featureactionid=featureaction.FeatureActionID,
-                                              variableid=variable.VariableID,
-                                              unitid=unit.UnitsID,
-                                              processinglevelid=processinglevel.ProcessingLevelID,
-                                              valuecount=len(dates),
-                                              sampledmedium='unknown',          # todo: this should be determined from variable/unit
-                                              resulttypecv='time series',       # todo: this should be determined from unit/variable
-                                              taxonomicclass=None,
-                                              resultdatetime=None,
-                                              resultdatetimeutcoffset=None,
-                                              validdatetime=None,
-                                              validdatetimeutcoffset=None,
-                                              statuscv=None
-                                              )
+                                                 variableid=variable.VariableID,
+                                                 unitid=unit.UnitsID,
+                                                 processinglevelid=processinglevel.ProcessingLevelID,
+                                                 valuecount=len(dates),
+                                                 sampledmedium='unknown',          # todo: this should be determined from variable/unit
+                                                 resulttypecv='time series',       # todo: this should be determined from unit/variable
+                                                 taxonomicclass=None,
+                                                 resultdatetime=None,
+                                                 resultdatetimeutcoffset=None,
+                                                 validdatetime=None,
+                                                 validdatetimeutcoffset=None,
+                                                 statuscv=None
+                                                 )
 
                 # create time series result
                 # using the sqlalchemy function results in: FlushError: Instance <TimeSeriesResults at 0x1174b5fd0> has a NULL identity key.
@@ -255,17 +233,11 @@ class sqlite():
                 # create pandas dataframe
                 df = pandas.DataFrame(data=data)
 
-                # strftime datetime objects (required for SQLite bc lack of datetime64 support)
-                df['ValueDateTime'] = df['ValueDateTime'].apply(lambda x: x.strftime('%m/%d/%y %H:%M:%S'))
+                # strftime datetime objects (required for SQLite bc lack of datetime64 support) YYYY-MM-DD HH:MM:SS
+                df['ValueDateTime'] = df['ValueDateTime'].apply(lambda x: x.strftime('%Y-%m-%d %H:%M:%S'))
                 self.insert_timeseries_result_values(dataframe=df)
 
-
-        # create model
-        model = self.read.getModelByCode(modelcode=modelcode)
-        if not model: model = self.write.createModel(code=modelcode,
-                                                           name=modelname,
-                                                           description=modeldesc)
-
+        model = self.createModel(modelcode, modeldesc, modelname)
 
         # create simulation
 
@@ -274,20 +246,62 @@ class sqlite():
 
         # TODO: remove hardcoded time offsets!
         sim = self.write.createSimulation(actionid=action.ActionID,
-                                              modelID=model.ModelID,
-                                              simulationName=modelname,
-                                              simulationDescription=description,
-                                              simulationStartDateTime=simstart ,
-                                              simulationStartOffset=-6,
-                                              simulationEndDateTime=simend,
-                                              simulationEndOffset=-6,
-                                              timeStepValue =timestepvalue,
-                                              timeStepUnitID=timestepunit.UnitsID,
-                                              inputDatasetID=dataset.DataSetID)
+                                          modelID=model.ModelID,
+                                          simulationName=coupledSimulationName,
+                                          simulationDescription=description,
+                                          simulationStartDateTime=simstart ,
+                                          simulationStartOffset=-6,
+                                          simulationEndDateTime=simend,
+                                          simulationEndOffset=-6,
+                                          timeStepValue =timestepvalue,
+                                          timeStepUnitID=timestepunit.UnitsID,
+                                          inputDatasetID=dataset.DataSetID)
 
         return sim
 
+    def createTimeStepUnit(self, timestepabbv, timestepname):
+        timestepunit = self.read.getUnitByName(timestepname)
+        if timestepunit is None:
+            timestepunit = self.write.createUnit('time', timestepabbv, timestepname)
+        return timestepunit
 
+    def createModel(self, modelcode, modeldesc, modelname):
+        model = self.read.getModelByCode(modelcode=modelcode)
+        if not model:
+            model = self.write.createModel(code=modelcode, name=modelname, description=modeldesc)
+
+        return model
+
+    def createMethod(self, organization):
+        method = self.read.getMethodByCode('simulation')
+        if not method:
+            method = self.write.createMethod(code='simulation', name='simulation', vType='calculated',
+                                             orgId=organization.OrganizationID, description='Model Simulation Results')
+        return method
+
+    def createAffiliation(self, organization, person, user_obj):
+        affiliation = self.read.getAffiliationByPersonAndOrg(user_obj.person.firstname, user_obj.person.lastname,
+                                                             user_obj.organization.code)
+        if not affiliation:
+            affiliation = self.write.createAffiliation(person.PersonID, organization.OrganizationID, user_obj.email,
+                                                       user_obj.phone, user_obj.address, user_obj.personLink,
+                                                       user_obj.isPrimaryOrganizationContact, user_obj.startDate,
+                                                       user_obj.affiliationEnd)
+        return affiliation
+
+    def createOrganization(self, user_obj):
+        organization = self.read.getOrganizationByCode(user_obj.organization.code)
+        if not organization:
+            organization = self.write.createOrganization(user_obj.organization.typeCV, user_obj.organization.code,
+                                                         user_obj.organization.name, user_obj.organization.description,
+                                                         user_obj.organization.link, user_obj.organization.parent)
+        return organization
+
+    def createPerson(self, user_obj):
+        person = self.read.getPersonByName(user_obj.person.firstname, user_obj.person.lastname)
+        if not person:
+            person = self.write.createPerson(user_obj.person.firstname, user_obj.person.lastname, user_obj.person.middlename)
+        return person
 
     ############ Custom SQL QUERIES ############
 
@@ -315,9 +329,9 @@ class sqlite():
         ElevationDatumCV=elevationDatum
 
         # get the last record index
-        res = self.spatialDb.execute('SELECT SamplingFeatureID FROM SamplingFeatures ORDER BY SamplingFeatureID DESC LIMIT 1').fetchall()
-        ID = res[0][0]  # get the last id value
-        ID += 1 # increment the last id
+        res = self.spatialDb.execute('SELECT last_insert_rowid() FROM SamplingFeatures')
+        ID = res.fetchone() or (-1,)
+        ID = ID[0] + 1 # increment the last id
 
         values = [ID,UUID,FeatureTypeCV,FeatureCode,FeatureName,FeatureDescription, FeatureGeoTypeCV, FeatureGeometry, Elevation,ElevationDatumCV]
         self.spatialDb.execute('INSERT INTO SamplingFeatures VALUES (?, ?, ?, ?, ?, ?, ?, geomFromText(?), ?, ?)'
@@ -325,11 +339,20 @@ class sqlite():
 
         self.spatial_connection.commit()
 
-        # return the id of the inserted record
-        return self.spatialDb.lastrowid
+        featureObj = models.SamplingFeatures()
+        featureObj.SamplingFeatureID = ID
+        featureObj.SamplingFeatureUUID = UUID
+        featureObj.SamplingFeatureTypeCV = FeatureTypeCV
+        featureObj.SamplingFeatureCode = FeatureName
+        featureObj.SamplingFeatureName = FeatureCode
+        featureObj.SamplingFeatureDescription = FeatureDescription
+        featureObj.SamplingFeatureGeotypeCV = FeatureGeoTypeCV
+        featureObj.Elevation_m = Elevation
+        featureObj.ElevationDatumCV = ElevationDatumCV
+        featureObj.FeatureGeometry = FeatureGeometry
 
-        # pts = self.spatial_connection.execute('SELECT ST_AsText(FeatureGeometry) from SamplingFeatures').fetchall()
-        # return ID
+        return featureObj
+
 
     def insert_timeseries_result(self, resultid, aggregationstatistic='Unknown', xloc=None, xloc_unitid=None, yloc=None,yloc_unitid=None, zloc=None, zloc_unitid=None, srsID=None, timespacing=None, timespacing_unitid=None):
         """
@@ -372,5 +395,95 @@ class sqlite():
         # return true
         return 1
 
+
+    ###################
+    #### GETTERS ######
+    ###################
+
+    def getSamplingFeatureID__Geometry_EQUALS(self, wkt_geometry):
+
+        try:
+            res = self.spatialDb.execute('SELECT SamplingFeatureID,'
+                                         'SamplingFeatureUUID,'
+                                         'SamplingFeatureTypeCV,'
+                                         'SamplingFeatureCode,'
+                                         'SamplingFeatureName,'
+                                         'SamplingFeatureDescription,'
+                                         'SamplingFeatureGeotypeCV,'
+                                         'Elevation_m,'
+                                         'ElevationDatumCV,'
+                                         'AsText(FeatureGeometry) '
+                                         'FROM SamplingFeatures '
+                                         'WHERE Equals ( geomFromText(?) , SamplingFeatures.FeatureGeometry )', [wkt_geometry])
+
+            sf = res.fetchone()
+            if sf is None:
+                return None
+
+            featureObj = models.SamplingFeatures()
+            featureObj.SamplingFeatureID =sf[0]
+            featureObj.SamplingFeatureUUID = sf[1]
+            featureObj.SamplingFeatureTypeCV = sf[2]
+            featureObj.SamplingFeatureCode = sf[3]
+            featureObj.SamplingFeatureName = sf[4]
+            featureObj.SamplingFeatureDescription = sf[5]
+            featureObj.SamplingFeatureGeotypeCV = sf[6]
+            featureObj.Elevation_m = sf[7]
+            featureObj.ElevationDatumCV = sf[8]
+            featureObj.FeatureGeometry = sf[9]
+
+            return featureObj
+
+        except Exception, e:
+            print e
+            return None
+
+
+    def getAllSeries(self):
+        """ General select statement for retrieving many results.  This is intended to be used when populating gui tables
+
+        :return :
+            :type list:
+        """
+        try:
+            res = self.connection.getSession().query(models.Results). \
+                join(models.Variables). \
+                join(models.Units). \
+                join(models.FeatureActions). \
+                join(models.Actions). \
+                join(models.TimeSeriesResultValues, models.TimeSeriesResultValues.ResultID == models.Results.ResultID). \
+                filter(models.Actions.ActionTypeCV != 'Simulation'). \
+                all()
+            return res
+        except Exception, e:
+            print e
+
+    def getAllSimulations(self):
+        """
+        General select statement for retrieving many simulations.  This is intended to be used for populating gui tables
+        :return:
+        """
+        try:
+            res = self.connection.getSession().query(models.Simulations, models.Models, models.Actions, models.People). \
+                join(models.Models). \
+                join(models.Actions). \
+                join(models.ActionBy). \
+                join(models.Affiliations). \
+                join(models.People).all()
+            return res
+        except Exception, e:
+            print e
+
+    def getCurrentSession(self):
+        return self.connection.getSession()
+
+    ###################
+    #### DELETES ######
+    ###################
+
+    def deleteSimulation(self, record):
+        self.delete.deleteRecord(record.simulation_id)
+        if not self.delete.isModelConstraint(record.model_id):
+            self.delete.deleteModelByName(record.model_name)
 
 

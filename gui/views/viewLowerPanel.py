@@ -153,7 +153,7 @@ class TimeSeriesTab(wx.Panel):
 
         # Publisher.subscribe(self.connection_added_status, "connectionAddedStatus")
 
-        engineEvent.onDatabaseConnected += self.refreshConnectionsListBox
+        engineEvent.onDatabaseConnected += self.refreshConnectionsListBoxTS
 
         # build custom context menu
         menu = TimeSeriesContextMenu(self.m_olvSeries)
@@ -171,7 +171,7 @@ class TimeSeriesTab(wx.Panel):
         # self refresh_database
         self.OLVRefresh(event)
 
-    def refreshConnectionsListBox(self, connection_added):
+    def refreshConnectionsListBoxTS(self, connection_added):
 
         if connection_added:
             self._databases = engine.getDbConnections()
@@ -261,11 +261,20 @@ class TimeSeriesTab(wx.Panel):
 
                 # query the database and get basic series info
 
-                # TODO : session wont exist here anymore!!!
-                session = dbUtilities.build_session_from_connection_string(db['connection_string'])
+                series = None
+                # fixme: This breaks for SQLite since it is implemented in dbapi_v2
+                if db['args']['engine'] == 'sqlite':
+                    import db.dbapi_v2 as db2
+                    from ODM2PythonAPI.src.api.ODMconnection import dbconnection
+                    session = dbconnection.createConnection(engine=db['args']['engine'], address=db['args']['address'])
+                    # gui_utils.connect_to_db()
+                    s = db2.connect(session)
+                    series = s.getAllSeries()
 
-                u = dbapi.utils(session)
-                series = u.getAllSeries()
+                else: # fixme: this is old api for postgresql and mysql (need to update to dbapi_v2)
+                    session = dbUtilities.build_session_from_connection_string(db['connection_string'])
+                    u = dbapi.utils(session)
+                    series = u.getAllSeries()
 
                 if series is None:
                     d = {key: value for (key, value) in
@@ -307,9 +316,13 @@ class TimeSeriesTab(wx.Panel):
         return
 
     def OLVRefresh(self, event):
-
-        thr = threading.Thread(target=self.refresh_database, name='DATABASE REFRESH THREAD', args=(), kwargs={})
-        thr.start()
+        if sys.gettrace():
+            #  In debug mode
+            self.refresh_database()
+        else:
+            # Not in debug mode
+            thr = threading.Thread(target=self.refresh_database, name='DATABASE REFRESH THREAD', args=(), kwargs={})
+            thr.start()
 
 class AddConnectionDialog(wx.Dialog):
     def __init__(
@@ -469,7 +482,7 @@ class AddConnectionDialog(wx.Dialog):
             self.btnok.Enable()
 
 class DataSeries(wx.Panel):
-    def __init__( self, parent ):
+    def __init__(self, parent):
         wx.Panel.__init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.Size(500, 500),
                           style=wx.TAB_TRAVERSAL)
 
@@ -598,15 +611,20 @@ class DataSeries(wx.Panel):
         raise Exception('Abstract method. Must be overridden!')
 
     def database_refresh(self, event):
-
-        thr = threading.Thread(target=self.load_data, args=(), kwargs={})
-        thr.start()
+        if sys.gettrace():
+            #  In debug mode
+            self.load_data()
+        else:
+            # Not in debug mode
+            thr = threading.Thread(target=self.load_data, args=(), kwargs={}, name='DataSeriesRefresh')
+            thr.start()
 
 class SimulationDataTab(DataSeries):
     def __init__(self, parent):
         #  wx.Panel.__init__(self, parent)
 
-        super(SimulationDataTab, self ).__init__(parent)
+        super(SimulationDataTab, self).__init__(parent)
+        self.parent = parent
 
         self.table_columns = ["Simulation ID", "Simulation Name", "Model Name", "Simulation Start", "Simulation End", "Date Created","Owner"]
         #  table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
@@ -617,6 +635,7 @@ class SimulationDataTab(DataSeries):
         # build custom context menu
         menu = SimulationContextMenu(self.table)
         self.table.setContextMenu(menu)
+        self.conn = None
 
     def load_data(self):
 
@@ -632,14 +651,34 @@ class SimulationDataTab(DataSeries):
             #     sys.stdout = redir
 
             # get the database session associated with the selected name
+            isSqlite = False
+
             if db['name'] == selected_db:
+                simulations = None
+
+                if db['args']['engine'] == 'sqlite':
+                    import db.dbapi_v2 as db2
+                    from ODM2PythonAPI.src.api.ODMconnection import dbconnection
+                    session = dbconnection.createConnection(engine=db['args']['engine'], address=db['args']['address'])
+                    self.conn = db2.connect(session)
+                    simulations = self.conn.getAllSimulations()
+                    isSqlite = True
+                    self.conn.getCurrentSession()
+                else:
+                    session = dbUtilities.build_session_from_connection_string(db['connection_string'])
+                    # build the database session
+
+                    u = dbapi.utils(session)
+                    simulations = u.getAllSimulations()
 
 
-                # build the database session
-                session = dbUtilities.build_session_from_connection_string(db['connection_string'])
-
-                u = dbapi.utils(session)
-                simulations = u.getAllSimulations()
+                #     # gui_utils.connect_to_db()
+                #
+                #
+                # else: # fixme: this is old api for postgresql and mysql (need to update to dbapi_v2)
+                #     session = dbUtilities.build_session_from_connection_string(db['connection_string'])
+                #     u = dbapi.utils(session)
+                #     series = u.getAllSeries()
 
 
                 sim_ids = []
@@ -654,21 +693,33 @@ class SimulationDataTab(DataSeries):
                     # loop through all of the returned data
 
                     for s in simulations:
+                        simulation = None
+                        if isSqlite:
+                            simulation = s.Simulations
+                            person = s.People
+                            action = s.Actions
+                            model = s.Models
+                        else:
+                            simulation = s.Simulation
+                            person = s.Person
+                            action = s.Action
+                            model = s.Model
 
-                        simulation_id = s.Simulation.SimulationID
+                        simulation_id = simulation.SimulationID
 
                         # only add if the simulation id doesn't already exist in sim_ids
                         if simulation_id not in sim_ids:
                             sim_ids.append(simulation_id)
 
                             d = {
-                                'simulation_id': s.Simulation.SimulationID,
-                                'simulation_name': s.Simulation.SimulationName,
-                                'model_name': s.Model.ModelName,
-                                'date_created': s.Action.BeginDateTime,
-                                'owner': s.Person.PersonLastName,
-                                'simulation_start': s.Simulation.SimulationStartDateTime,
-                                'simulation_end': s.Simulation.SimulationEndDateTime,
+                                'simulation_id': simulation.SimulationID,
+                                'simulation_name': simulation.SimulationName,
+                                'model_name': model.ModelName,
+                                'date_created': action.BeginDateTime,
+                                'owner': person.PersonLastName,
+                                'simulation_start': simulation.SimulationStartDateTime,
+                                'simulation_end': simulation.SimulationEndDateTime,
+                                'model_id': simulation.ModelID
                             }
 
                             record_object = type('DataRecord', (object,), d)
@@ -678,5 +729,4 @@ class SimulationDataTab(DataSeries):
                 self.table.SetObjects(data)
 
                 # set the current database in canvas controller
-                Publisher.sendMessage('SetCurrentDb',value=selected_db)  # sends to CanvasController.getCurrentDbSession
-
+                Publisher.sendMessage('SetCurrentDb', value=selected_db)  # sends to CanvasController.getCurrentDbSession

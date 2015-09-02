@@ -220,6 +220,7 @@ def run_feed_forward(obj, ds=None):
                              user_obj=ds.user,
                              config_params=config_params,
                              ei=items)
+    elog.info('Saving Complete, elapsed time = %3.5f' % (time.time() - st))
 
 def run_time_step(obj, ds=None):
     # store db sessions

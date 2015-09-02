@@ -16,7 +16,7 @@ def addModel(id=None, attrib=None):
     e.setTasks(task)
     # DO NOT MODIFY THIS CODE!
     ############################
-    e.thread = Thread(target=e.check_for_process_results)
+    e.thread = Thread(target=e.check_for_process_results, name='AddModel')
     e.thread.start()
     ############################
 
@@ -36,7 +36,7 @@ def connectToDbFromFile(dbtextfile=None):
     task = [('connect_to_db_from_file',kwargs)]
     e.setTasks(task)
 
-    e.thread = Thread(target = e.check_for_process_results)
+    e.thread = Thread(target = e.check_for_process_results, name='connectToDbFromFile')
     e.thread.start()
     e.thread.join()
 
@@ -47,8 +47,12 @@ def connectToDb(title, desc, engine, address, name, user, pwd):
     kwargs['event'] ='onDatabaseConnected'
     task = [('connect_to_db',kwargs)]
     e.setTasks(task)
-    result = e.processTasks()
-    return result
+
+    e.thread = Thread(target = e.check_for_process_results, name='connectToDb')
+    e.thread.start()
+
+    # result = e.processTasks()
+    # return result
 
 def addLink(source_id=None, source_item=None, target_id=None, target_item=None, spatial_interpolation=None,
             temporal_interpolation=None,uid=None):
@@ -172,9 +176,9 @@ def getAllModels():
     result = e.processTasks()
     return result
 
-def runSimulation(simulationName=None, dbName=None, user_yaml=None, datasets=None):
+def runSimulation(simulationName=None, dbName=None, user_json=None, datasets=None):
     e = Engine()
-    kwargs = dict(simulationName=simulationName, dbName=dbName, user_yaml=user_yaml, datasets=datasets, event='onSimulationFinished')
+    kwargs = dict(simulationName=simulationName, dbName=dbName, user_json=user_json, datasets=datasets, event='onSimulationFinished')
     task = [('run_simulation', kwargs)]
     e.setTasks(task)
 

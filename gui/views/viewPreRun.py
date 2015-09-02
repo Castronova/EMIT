@@ -6,7 +6,7 @@ import wx
 
 import coordinator.users as Users
 from coordinator import engineAccessors
-
+from environment import env_vars
 
 class viewPreRun(wx.Frame):
     def __init__(self):                                                     # this style makes the window non-resizable
@@ -131,9 +131,14 @@ class SummaryPage(wx.Panel):
         # with open(os.path.abspath(os.path.join(currentdir, '../../app_data/configuration/users.pkl')),'rb') as f:
         #     users.extend(dill.load(f))
 
+        # todo: get from environments
         # build affiliation/person/org objects from the users.yaml file
-        with open(os.path.abspath(os.path.join(currentdir, '../../app_data/configuration/users.yaml')),'r') as f:
-            known_users.extend(Users.BuildAffiliationfromYAML(f.read()))
+        # with open(os.path.abspath(os.path.join(currentdir, '../../app_data/configuration/users.json')),'r') as f:
+
+        userjson = env_vars.USER_JSON
+        print userjson
+        with open(userjson,'r') as f:
+            known_users.extend(Users.BuildAffiliationfromJSON(f.read()))
 
         return known_users
 
@@ -155,6 +160,7 @@ class DataPage(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
         scrollWin = wx.ScrolledWindow(self, -1, size=(440, 325))
+        self.cb_list = []
 
         if len(engineAccessors.getAllLinks()) < 1:
             wx.StaticText(scrollWin, id=wx.ID_ANY, label="No links have been added", pos=(10, 10))
@@ -203,7 +209,6 @@ class DataPage(wx.Panel):
 
             # build checkbox elements for each output exchange item found above
             y_pos = 30
-            self.cb_list = []
             for key, value in self.output_name_list.iteritems():
                 wx.StaticText(scrollWin, id=wx.ID_ANY, label=key, pos=(30, y_pos))
                 y_pos += 20

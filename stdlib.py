@@ -84,117 +84,6 @@ class Unit(object):
         else:
             self.__unitName = value
 
-class Element(object):
-    """
-    Spatial definition of a calculation or timeseries
-    """
-
-    # TODO: SRS should be an ogr object NOT defined by name,def,and code!
-
-    def __init__(self):
-        self.__geom = None
-        #self.__srs_def = None
-        #self.__srs_name = None
-        #self.__srs_code = None
-        self.__srs = None
-        self.__elev = None
-
-
-
-        # TODO: use enum
-        self.__type = None
-
-        elog.warning('deprecated: The Element class should no longer be used')
-
-    def geom(self,value=None):
-        if value is None:
-            return self.__geom
-        else:
-            self.__geom = value
-
-    def set_geom_from_wkt(self,wkt):
-        self.__geom = loads(wkt)
-
-
-    # def srs(self,srsname=None,srscode=None):
-    #     if srsname is None and srscode is None:
-    #         return (self.__srs_name,self.__srs_code)
-    #     else:
-    #         self.__srs_name = srsname
-    #         self.__srs_code = srscode
-
-    def srs(self,value=None):
-        if value is None:
-            return self.__srs
-        else:
-            self.__srs = value
-
-    def elev(self,value=None):
-        if value is None:
-            return self.__elev
-        else:
-            self.__elev = value
-
-    def type(self,value=None):
-        if value is None:
-            return self.__type
-        else:
-            self.__type = value
-
-class DataValues(object):
-    """
-    A dataset associated with a geometry
-    """
-    def __init__(self,timeseries=None):
-
-        # timeseries = [(date,val),(date,val),]
-        self.__timeseries = timeseries
-
-        # element = shapely geometry
-        #self.__element = element
-
-        self.__start = None
-        self.__end = None
-
-        # start and end are the defined by the date range of the dataset
-        if timeseries is not None:
-            self.update_start_end_times()
-
-        elog.warning('deprecated: The DataValues class should no longer be used')
-
-    def timeseries(self):
-        return self.__timeseries
-
-    def set_timeseries(self,value):
-        self.__timeseries = value
-        self.update_start_end_times()
-
-    def get_dates_values(self):
-        if self.__timeseries:
-            return zip(*self.__timeseries)
-        else:
-            return None, None
-
-    def earliest_date(self):
-        return self.__start
-
-    def latest_date(self):
-        return self.__end
-
-    def update_start_end_times(self):
-        dates,values = zip(*self.__timeseries)
-        self.__start = min(dates)
-        self.__end = max(dates)
-
-    def start(self):
-        if self.__start is None:
-            self.update_start_end_times()
-        return self.__start
-    def end(self):
-        if self.__end is None:
-            self.update_start_end_times()
-        return self.__end
-
 class Geometry(object):
 
     def __init__(self,geom=None,srs=4269,elev=None,datavalues=None,id=uuid.uuid4().hex[:5]):
@@ -312,7 +201,6 @@ class ExchangeItem(object):
         self.__saved = False
         self.__seriesID = None
 
-
     def srs(self, srs_epsg=None):
         if srs_epsg is not None:
             self.__srs = osr.SpatialReference()
@@ -332,7 +220,7 @@ class ExchangeItem(object):
     def getLatestTime2(self):
         return self.__times2[-1]
 
-    def getGeometries2(self, idx=None):
+    def getGeometries2(self, idx=None, ndarray=False):
         """
         returns geometries for the exchange item
         :param idx: index of the geometry
@@ -341,6 +229,8 @@ class ExchangeItem(object):
         if idx is not None:
             return self.__geoms2[idx]
         else:
+            if ndarray:
+                return numpy.array(self.__geoms2)
             return self.__geoms2
 
     def addGeometries2(self, geom):
@@ -354,10 +244,12 @@ class ExchangeItem(object):
                 if not isinstance(g, Geometry):
                     return 0  # return failure code
             self.__geoms2.extend(geom)
+            # self.__geoms2 = numpy.concatenate((self.__geoms2, geom))
         else:
             if not isinstance(geom, Geometry):
                 return 0  # return failure code
             self.__geoms2.append(geom)
+            # self.__geoms2 = numpy.concatenate((self.__geoms2, [geom]))
         return 1
 
     def setValues2(self, values, timevalue):
@@ -422,7 +314,7 @@ class ExchangeItem(object):
             # idx = len(self.__values2) - 1
             # self.setDates2(timevalue, idx)
 
-    def getValues2(self, idx_start=0, idx_end=None, start_time=None, end_time=None, time_idx=None):
+    def getValues2(self, idx_start=0, idx_end=None, start_time=None, end_time=None, time_idx=None, ndarray=False):
         """
         gets datavalues of the exchange item for idx
         :param idx_start: the start value index to be returned.
@@ -453,7 +345,10 @@ class ExchangeItem(object):
         for i in range(start_time_slice_idx, end_time_slice_idx):
             values.append(self.__values2[i][idx_start:idx_end])
 
-        return values
+        if ndarray:
+            return numpy.array(values)
+        else:
+            return values
 
     def setDates2(self, timevalue):
         """
@@ -467,7 +362,7 @@ class ExchangeItem(object):
         self.__times2.insert(idx+1, timevalue)
         return idx
 
-    def getDates2(self, timevalue=None, start=None, end=None):
+    def getDates2(self, timevalue=None, start=None, end=None, ndarray=False):
         """
         gets datavalue indices for a datetime
         :param timevalue: datetime object
@@ -481,7 +376,10 @@ class ExchangeItem(object):
                     times.append((idx, self.__times2[idx]))
                 else:
                     times.append(0, None)
-            return times
+            if ndarray:
+                return numpy.array(times)
+            else:
+                return times
 
         elif start is not None and end is not None:
             if not isinstance(start, datetime.datetime) or not isinstance(end, datetime.datetime):
@@ -491,8 +389,11 @@ class ExchangeItem(object):
             st = self._nearest(self.__times2, start, 'left')
             et = self._nearest(self.__times2, end, 'right') + 1
             times = [(idx, self.__times2[idx]) for idx in range(st, et)]
-            return times
 
+            if ndarray:
+                return numpy.array(times)
+            else:
+                return times
 
         elif isinstance(timevalue, datetime.datetime):
             idx = self._nearest(self.__times2, timevalue, 'left')
@@ -503,7 +404,11 @@ class ExchangeItem(object):
 
         else: # return all known values
             times = [(idx, self.__times2[idx]) for idx in range(0, len(self.__times2))]
-            return times
+
+            if ndarray:
+                return numpy.array(times)
+            else:
+                return times
 
     def unit(self,value=None):
         if value is None:
@@ -725,7 +630,116 @@ class ExchangeItem(object):
 
 
 
-
+# class Element(object):
+#     """
+#     Spatial definition of a calculation or timeseries
+#     """
+#
+#     # TODO: SRS should be an ogr object NOT defined by name,def,and code!
+#
+#     def __init__(self):
+#         self.__geom = None
+#         #self.__srs_def = None
+#         #self.__srs_name = None
+#         #self.__srs_code = None
+#         self.__srs = None
+#         self.__elev = None
+#
+#
+#
+#         # TODO: use enum
+#         self.__type = None
+#
+#         elog.warning('deprecated: The Element class should no longer be used')
+#
+#     def geom(self,value=None):
+#         if value is None:
+#             return self.__geom
+#         else:
+#             self.__geom = value
+#
+#     def set_geom_from_wkt(self,wkt):
+#         self.__geom = loads(wkt)
+#
+#
+#     # def srs(self,srsname=None,srscode=None):
+#     #     if srsname is None and srscode is None:
+#     #         return (self.__srs_name,self.__srs_code)
+#     #     else:
+#     #         self.__srs_name = srsname
+#     #         self.__srs_code = srscode
+#
+#     def srs(self,value=None):
+#         if value is None:
+#             return self.__srs
+#         else:
+#             self.__srs = value
+#
+#     def elev(self,value=None):
+#         if value is None:
+#             return self.__elev
+#         else:
+#             self.__elev = value
+#
+#     def type(self,value=None):
+#         if value is None:
+#             return self.__type
+#         else:
+#             self.__type = value
+#
+# class DataValues(object):
+#     """
+#     A dataset associated with a geometry
+#     """
+#     def __init__(self,timeseries=None):
+#
+#         # timeseries = [(date,val),(date,val),]
+#         self.__timeseries = timeseries
+#
+#         # element = shapely geometry
+#         #self.__element = element
+#
+#         self.__start = None
+#         self.__end = None
+#
+#         # start and end are the defined by the date range of the dataset
+#         if timeseries is not None:
+#             self.update_start_end_times()
+#
+#         elog.warning('deprecated: The DataValues class should no longer be used')
+#
+#     def timeseries(self):
+#         return self.__timeseries
+#
+#     def set_timeseries(self,value):
+#         self.__timeseries = value
+#         self.update_start_end_times()
+#
+#     def get_dates_values(self):
+#         if self.__timeseries:
+#             return zip(*self.__timeseries)
+#         else:
+#             return None, None
+#
+#     def earliest_date(self):
+#         return self.__start
+#
+#     def latest_date(self):
+#         return self.__end
+#
+#     def update_start_end_times(self):
+#         dates,values = zip(*self.__timeseries)
+#         self.__start = min(dates)
+#         self.__end = max(dates)
+#
+#     def start(self):
+#         if self.__start is None:
+#             self.update_start_end_times()
+#         return self.__start
+#     def end(self):
+#         if self.__end is None:
+#             self.update_start_end_times()
+#         return self.__end
 
 
 

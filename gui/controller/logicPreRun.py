@@ -5,6 +5,7 @@ from gui.views.viewPreRun import viewPreRun
 import os
 import time
 from coordinator import engineAccessors
+from environment import env_vars
 
 class logicPreRun(viewPreRun):
     def __init__(self):
@@ -55,50 +56,37 @@ class logicPreRun(viewPreRun):
         user_info = None
         for affil in self.accounts:
             if affil.ID() == user_name:
-                user_info_yaml = affil.toYAML()
-                # user_info = json.dumps(affil)
+                user_info_json = affil.toJSON()
 
         # todo: check all constraints before executing a simulation
         # raise exceptions before executing the simulation
-        if user_info_yaml is None:
+        if user_info_json is None:
             raise Exception('Cannot execute simulation if no user account is provided')
         if name.strip() == '':
-            raise Exception('Cannot execute simulation if no simulation name is provided')
+            name = "Simulation_run_" + time.strftime('%m-%d-%Y')
+            # raise Exception('Cannot execute simulation if no simulation name is provided')
 
         # build kwargs to pass to engineAccessors
-        kwargs = dict(simulationName=name, dbName=db, user_yaml=user_info_yaml, datasets=datasets)
+        kwargs = dict(simulationName=name, dbName=db, user_json=user_info_json, datasets=datasets)
 
         # initiate simulation
         engineAccessors.runSimulation(**kwargs)
 
         self.Close()
 
-    # def RunSim(self):
-    #
-    #     # todo: this should use engine accessor call, not event call
-    #     e = dict()
-    #     events.onClickRun.fire(**e)  # Calls onClickRun from viewContext.py
-    #     self.OnCancel(e)
-    #
-    #     # todo:  this should be opened after simulation has completed, not right here.
-    #     # if self.page1.displayMessage.GetValue():
-    #         # frm = viewPostRun()
-    #         # frm.Show()
-
     def GetDataToSave(self):
 
-        # eitems = {model name: [item1, ], ]
-        eitems = {}
-        if len(self.data_page.cb_list) > 0:
+        if len(self.data_page.cb_list) < 1:
+            return
+        else:
+            eitems = {}
             model_item_tuples = [(c.GetName().split('_')) for c in self.data_page.cb_list if c.GetValue()]
-
-
-        for model, item in model_item_tuples:
-            if model not in eitems.keys():
-                eitems[model] = [item]
-            else:
-                eitems[model].append(item)
-        return eitems
+            for model, item in model_item_tuples:
+                if model not in eitems.keys():
+                    eitems[model] = [item]
+                else:
+                    eitems[model].append(item)
+            return eitems
 
     def getDatabases(self):
         '''
@@ -116,19 +104,22 @@ class logicPreRun(viewPreRun):
 
     def OnOkButton(self, event):
 
-        currentdir = os.path.dirname(os.path.abspath(__file__))
-        connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/preferences'))
-        file = open(connections_txt, 'a')
-        self.accountinfo = self.dlg.GetTextBoxValues()
-        accounttxt = "[person]\n" \
-                     "firstname = " + self.accountinfo[0] + "\n" \
-                     + "lastname = " + self.accountinfo[1] + "\n" \
-                     + "organizationcode = " + self.accountinfo[2] + "\n" \
-                     + "phone = " + self.accountinfo[3] + "\n" \
-                     + "email = " + self.accountinfo[4] + "\n" \
-                     + "address = " + self.accountinfo[5] + "\n" \
-                     + "start_date = " + self.accountinfo[6] + "\n" \
-                     + "\n"
+        # currentdir = os.path.dirname(os.path.abspath(__file__))
+        # connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/preferences'))
+        # file = open(connections_txt, 'a')
+
+        usersjson = env_vars.USERS_JSON
+        with open(usersjson, 'a') as f:
+            self.accountinfo = self.dlg.GetTextBoxValues()
+            accounttxt = "[person]\n" \
+                         "firstname = " + self.accountinfo[0] + "\n" \
+                         + "lastname = " + self.accountinfo[1] + "\n" \
+                         + "organizationcode = " + self.accountinfo[2] + "\n" \
+                         + "phone = " + self.accountinfo[3] + "\n" \
+                         + "email = " + self.accountinfo[4] + "\n" \
+                         + "address = " + self.accountinfo[5] + "\n" \
+                         + "start_date = " + self.accountinfo[6] + "\n" \
+                         + "\n"
         self.RefreshCombo()
 
         file.write(accounttxt)

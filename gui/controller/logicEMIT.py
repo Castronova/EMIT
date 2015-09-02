@@ -12,9 +12,13 @@ from environment import env_vars
 
 class LogicEMIT(ViewEMIT):
     def __init__(self, parent):
+
         import threading
-        print "before", threading.activeCount()
-        # print threading.enumerate()
+        print "You have %d threads started: " % threading.activeCount()
+        for t in threading.enumerate():
+            print t
+
+
         ViewEMIT.__init__(self, parent)
         self.FloatCanvas = self.Canvas.FloatCanvas
 
@@ -27,8 +31,10 @@ class LogicEMIT(ViewEMIT):
         # todo: Delete this
         # engine.createSQLiteInMemory()
         # Create or connect to local database, create local folder in db
-        db_path = os.path.abspath(os.path.join(currentdir, '../../db/local.db'))
-        env_vars.set_environment_variable('LOCAL_DB', 'DB_PATH', db_path)
+
+        # db_path = os.path.abspath(os.path.join(currentdir, '../../db/local.db'))
+        # env_vars.set_environment_variable('LOCAL_DB', 'PATH', db_path)
+
 
         # if os.path.exists(env_vars.LOCAL_DB_PATH):
         #     odm2_db = sqlite3.connect(db_path)

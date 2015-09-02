@@ -5,6 +5,7 @@ import logging.handlers
 import os
 import json
 from environment import env_vars
+import ConfigParser
 
 
 class _Log:
@@ -113,14 +114,11 @@ class Log(object):
         :param target_control: Target control should be a wx.RichTextBox
         :return:
         '''
+        self.settingspath = os.getcwd() + "/app_data/config/.settings.ini"
+        self.config = ConfigParser.ConfigParser()
+
         self.log = _Log()
         self.verbosity()
-
-        self.showinfo = True
-        self.showwarning = True
-        self.showcritical = True
-        self.showerror = True
-        self.showdebug = True
 
     def debug(self, text):
         self.verbosity()
@@ -138,8 +136,6 @@ class Log(object):
             self.log._error(text)
 
     def info(self, text):
-        # todo: this is a hack
-        # if not 'OVERWRITE:' in text:
         self.verbosity()
         if self.showinfo:
             self.log._info(text)
@@ -153,9 +149,11 @@ class Log(object):
         return self.log._get_logger()
 
     def verbosity(self):
-        self.showinfo = env_vars.SHOWINFO
-        self.showwarning = env_vars.SHOWWARNING
-        self.showcritical = env_vars.SHOWCRITICAL
-        self.showerror = env_vars.SHOWERROR
+        #  Before every print, this method will check if it is allowed.
+        self.showinfo = env_vars.LOGGING_SHOWINFO
+        self.showwarning = env_vars.LOGGING_SHOWWARNING
+        self.showcritical = env_vars.LOGGING_SHOWCRITICAL
+        self.showerror = env_vars.LOGGING_SHOWERROR
+        self.showdebug = env_vars.LOGGING_SHOWDEBUG
 
 elog = Log()

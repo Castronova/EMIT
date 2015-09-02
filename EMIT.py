@@ -6,14 +6,9 @@ import wx.aui
 from gui.controller.logicEMIT import LogicEMIT
 from coordinator import engineManager
 import coordinator.emitLogging as l
-import os, sys
 
-# odm2_api_path = os.path.abspath(os.path.join(os.path.dirname(__file__), './ODM2PythonAPI/src'))
-# sys.path.append(odm2_api_path)
-# import api.ODMconnection as odm2dbConnection
 
 logging = l.Log()
-
 
 class EMITApp(wx.App):
     def OnInit(self):
@@ -28,5 +23,6 @@ class EMITApp(wx.App):
         return True
 
 if __name__ == '__main__':
+
     app = EMITApp()
     app.MainLoop()

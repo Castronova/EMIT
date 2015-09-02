@@ -340,9 +340,10 @@ class LogicCanvas(ViewCanvas):
 
         self.links = updated_links
 
-        # Remove the model from the engine
-        success = engine.removeModelById(model_obj.ID)
-        if success:
+        engine.removeModelById(model_obj.ID)
+        # engine.removeModelById is using deprecated functions and returns None, however the link is being removed.
+        # to prevent issues with the drawing the if statement makes sure the link no longer exists in the engine
+        if not engine.getModelById(model_obj.ID):
             # Update models list
             self.models.pop(model_obj)
 

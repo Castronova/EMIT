@@ -7,6 +7,7 @@ from PIL import Image, ImageDraw
 from matplotlib.dates import date2num
 import matplotlib.pyplot as plt
 from gui.controller.enums import PlotEnum
+from environment import env_vars
 from wx.lib.pubsub import pub as Publisher
 
 sns.set_style("ticks")
@@ -31,19 +32,23 @@ class LogicPlot(ViewPlot):
 
         # create file menu
         viewmenu= wx.Menu()
-
         # create plot options menu
         plotoptions= wx.Menu()
         self.plot_point = plotoptions.Append(wx.ID_ANY, 'Point')
         self.plot_line  = plotoptions.Append(wx.ID_ANY, 'Line')
         self.plot_bar   = plotoptions.Append(wx.ID_ANY, 'Bar')
+        legendmenu = wx.Menu()
+        legendoptions = wx.Menu()
+        self.legend_bottom = legendoptions.Append(wx.ID_ANY, 'Bottom')
+        self.legend_right = legendoptions.Append(wx.ID_ANY, 'Right')
 
         # add plot options to Plot menu
         viewmenu.AppendMenu(wx.ID_ANY, 'Plot', plotoptions)
-
+        legendmenu.AppendMenu(wx.ID_ANY, 'Location', legendoptions)
 
         # Creating the menubar.
         menuBar.Append(viewmenu,"&View")
+        menuBar.Append(legendmenu,"&Legend")
         self.SetMenuBar(menuBar)
         self.Show(True)
 
@@ -52,6 +57,8 @@ class LogicPlot(ViewPlot):
         self.Bind(wx.EVT_MENU, self.OnPlotPoint, self.plot_point)
         self.Bind(wx.EVT_MENU, self.OnPlotLine, self.plot_line)
         self.Bind(wx.EVT_MENU, self.OnPlotBar, self.plot_bar)
+        self.Bind(wx.EVT_MENU, self.Onlegend_right, self.legend_right)
+        self.Bind(wx.EVT_MENU, self.Onlegend_bottom, self.legend_bottom)
 
     def add_series(self,x,y):
         return self.spatialPanel.add_series(x,y)
@@ -60,6 +67,20 @@ class LogicPlot(ViewPlot):
         if value is not None:
             self.cmap = value
         return self.cmap
+
+
+    def Onlegend_right(self,event):
+
+        print "right"
+        env_vars.set_environment_variable('LEGEND', 'locationright', 1)
+        env_vars.set_environment_variable('LEGEND', 'locationbottom', 0)
+
+    def Onlegend_bottom(self,event):
+
+        print "bottom"
+        env_vars.set_environment_variable('LEGEND', 'locationright', 0)
+        env_vars.set_environment_variable('LEGEND', 'locationbottom', 1)
+
 
     def OnPlotPoint(self,event):
 

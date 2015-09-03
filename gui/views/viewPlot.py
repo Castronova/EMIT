@@ -8,7 +8,7 @@ from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg as NavTool
 import wx
 import wx.lib.newevent
 from wx.lib.pubsub import pub as Publisher
-
+from environment import env_vars
 from gui.controller.enums import PlotEnum
 
 
@@ -127,20 +127,36 @@ class ViewPlot(wx.Frame):
 
         self.selector = selector
         self.__image_list = None
-        if selector:
-            # increase the panel width to fit the selector
-            width = 800
-            height = 500
+        if env_vars.LEGEND_LOCATIONRIGHT == 1:
+
+            if selector:
+                # increase the panel width to fit the selector
+                width = 1000  # 800 if right
+                height = 500 # 500 if right
+            else:
+                width = 700
+                height = 500
         else:
-            width = 700
-            height = 500
+
+            if selector:
+                # increase the panel width to fit the selector
+                width = 600  # 800 if right
+                height = 600 # 500 if right
+            else:
+                width = 700
+                height = 500
 
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=wx.EmptyString,
                           pos=wx.DefaultPosition, size=wx.Size(width, height),
                           style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
-
-        self.Sizer = wx.BoxSizer(wx.VERTICAL)
-        self.HSizer = wx.BoxSizer(wx.HORIZONTAL)
+        if env_vars.LEGEND_LOCATIONRIGHT == 1:
+            #self.Sizer = wx.BoxSizer(wx.VERTICAL)
+            self.Sizer = wx.BoxSizer(wx.HORIZONTAL)
+            self.HSizer = wx.BoxSizer(wx.HORIZONTAL)
+            #self.HSizer = wx.BoxSizer(wx.VERTICAL)
+        else:
+            self.Sizer = wx.BoxSizer(wx.VERTICAL)
+            self.HSizer = wx.BoxSizer(wx.VERTICAL)
 
         self.parent = parent
 

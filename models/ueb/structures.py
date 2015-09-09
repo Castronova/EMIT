@@ -48,46 +48,45 @@ class sitevar(Structure):
         ("svdefValue", c_float),
         ("svArrayValues", POINTER(POINTER(c_float))), #float**
     ]
-#
-# class inpforcvar(Structure):
-#     _fields_ = [
-#         ("infName", c_char_p),
-#         ("infType", c_int),
-#         ("infFile", c_char_p),
-#         ("infvarName", c_char_p),
-#         ("inftimeVar", c_char_p),
-#         ("infdefValue", c_float),
-#         ("numNcfiles", c_int),
-#     ]
-#
-#
-# class pointOutput(Structure):
-#     _fields_ = [
-#         ("outfName", c_char_p),
-#         ("ycoord", c_int),
-#         ("xcoord", c_int),
-#     ]
 
-#
-# class ncOutput(Structure):
-#     _fields_ = [
-#         ("outfName", c_char_p),
-#         ("symbol", c_char_p),
-#         ("units", c_char_p),
-#     ]
-#
-#
-# class aggOutput(Structure):
+class inpforcvar(Structure):
+    _fields_ = [
+        ("infName", c_char * 256),
+        ("infType", c_int),
+        ("infFile", c_char * 256),
+        ("infvarName", c_char * 256),
+        ("inftimeVar", c_char * 256),
+        ("infdefValue", c_float),
+        ("numNcfiles", c_int),
+    ]
+
+class pointOutput(Structure):
+    _fields_ = [
+        ("outfName", c_char * 256),
+        ("ycoord", c_int),
+        ("xcoord", c_int),
+    ]
+
+
+class ncOutput(Structure):
+    _fields_ = [
+        ("outfName", c_char * 256),
+        ("symbol", c_char * 256),
+        ("units", c_char * 256),
+    ]
+
+
+class aggOutput(Structure):
 # 	#char outfName[256];
-#     _fields_ = [
-#         ("symbol", c_char_p),
-#         ("units", c_char_p),
-#         ("aggop", c_char_p),
-#     ]
-#
-# class inptimeseries(Structure):
+    _fields_ = [
+        ("symbol", c_char * 256),
+        ("units", c_char * 256),
+        ("aggop", c_char * 256),
+    ]
+
+class inptimeseries(Structure):
 #         #CTime dtime;
-#         _fields_ = [
-#             ("datetime", c_float),
-#             ("tsValue", c_float),
-#         ]
+        _fields_ = [
+            ("datetime", c_float),
+            ("tsValue", c_float),
+        ]

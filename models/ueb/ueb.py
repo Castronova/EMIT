@@ -57,11 +57,8 @@ class ueb(feed_forward.feed_forward_wrapper):
         parvalArray = c_float(0)
 
         #todo: [#] == pointer, * == pointer
-        # tsvarArray = pointer((c_float * 13)())
-        # tsvarArray = POINTER(POINTER(c_float) * 13)()
-        # tsvarArray = pointer(POINTER(c_float) * 13)()
-        tsvarArray = pointer((POINTER(c_float)*13)())
 
+        tsvarArray = pointer((POINTER(c_float)*13)())
 
         ntimesteps = pointer((c_int * 5)())
 
@@ -98,10 +95,10 @@ class ueb(feed_forward.feed_forward_wrapper):
         #readInputForcVars(inputconFile, strinpforcArray);
         print 'inputconFile: ',inputconFile
         print 'strinpforcArray: ', strinpforcArray.contents[0].infFile
+
         # read input force variables (main.cpp, line 219)
         self.__uebLib.readInputForcVars(cast(inputconFile,c_char_p), strinpforcArray)
         print 'strinpforcArray: ', strinpforcArray.contents[0].infFile
-
 
 
         # self.__uebLib.getObjectTypeCount.restype = c_int
@@ -116,24 +113,20 @@ class ueb(feed_forward.feed_forward_wrapper):
         print 'Number of time steps: ', numTimeStep
 
         # read forcing data (main.cpp, line 226)
-        # self.__uebLib.readTextData.argtypes = [POINTER(c_char), POINTER(c_float), POINTER(c_int)]
-
         if strsvArray.contents[16].svType != 3: # no accumulation zone (fixme: ???)
             for it in xrange(13):
                 inftype = strinpforcArray.contents[it].infType
                 print 'infFile: ',strinpforcArray.contents[it].infFile
                 if inftype == 0:
-                    # tsvar = cast(pointer(tsvarArray).contents[it], POINTER(c_float))
-                    # nts = cast(pointer(ntimesteps).contents[0], POINTER(c_int))
-                    # self.__uebLib.readTextData('./TWDEF_distributed/'+strinpforcArray.contents[it].infFile, byref(tsvar), byref(nts))
                     self.__uebLib.readTextData('./TWDEF_distributed/'+strinpforcArray.contents[it].infFile, byref(tsvarArray.contents[it]), byref(ntimesteps[0]))
-                    # print 'tsvarArray: ',list(tsvarArray.contents)
-                    # print 'ntimesteps: ',list(ntimesteps)
 
                 elif inftype == 2 or inftype == -1:
-                    pass
+                    tsvarArray.contents[it] = (c_float * 2)()
+                    ntimesteps.contents[0] = 2
+                    # copy the default value if a single value is the option
+                    tsvarArray.contents[it][0] = strinpforcArray.contents[it].infType
+                    tsvarArray.contents[it][1] = strinpforcArray.contents[it].infdefValue
 
-                print 'done'
 
         # todo: move this to finish
         # unload ueb

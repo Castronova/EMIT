@@ -27,42 +27,77 @@ class ODM1:
 
             Make sure to include 'iutah:' in front of the site code
         '''
-        conn = self.connectToNetwork(redButteCreek)
-        site = self.getXMLSite(conn, sitecode)
-        var = self.getXMLVariables(conn)
+
+        self.conn = self.connectToNetwork(redButteCreek)
+        site = self.getXMLSite(sitecode)
+        var = self.getXMLVariables()
+        # valuesObject = self.getValuesObject("RB_KF_C", "AirTemp_Avg")  # this will take about 3 min to load.
         self.getSiteInfo(site)
+        self.getSiteInfo(var)
 
 
     def connectToNetwork(self, link):
         connection = Client(link)
         return connection
 
-    def getXMLSite(self, conn, sitecode):
-        # Returns an XML in a array of arrays
-        xmlSite = conn.service.GetSites(sitecode)
+    def getXMLSite(self, sitecode):
+        # Returns an XML string
+        xmlSite = self.conn.service.GetSites(sitecode)
         return xmlSite
 
-    def getXMLVariables(self, conn):
-        # Returns an XML in a array of arrays
-        xmlVar = conn.service.GetVariables()
+    def getXMLVariables(self):
+        # Returns an XML string
+        xmlVar = self.conn.service.GetVariables()
         return xmlVar
 
-    def createXMLFileForReading(self, site):
+    def createXMLFileForReading(self, xml_string):
         # Open this file in a browser to view it parsed
         file = open("test.xml", "w")
-        file.write(site)
+        file.write(xml_string)
         file.close()
 
-    def getSiteInfo(self, site):
+    def createJSONFileForReading(self, json):
+        # Open this file in a browser to view in parsed
+        file = open("test.json", "w")
+        file.write(str(json))
+        file.close()
+
+    def getSiteInfo(self, site, start=None, end=None):
+        if start == None:
+            start = 0
+
+        if end == None:
+            end = start + 10
+
         tree = et.fromstring(site)
         siteInfo_Dictionary = {}
 
         for site in tree:
-            for siteInfo in site:
-                for info in siteInfo:
+            for siteInfo in site[start:end]:  # Using slicing to grab only 10 elements, otherwise it would grab 100+
+                # for info in siteInfo:
+                if len(siteInfo) > 0:
                     siteInfo_Dictionary[siteInfo.getchildren()[0].text] = siteInfo.getchildren()
 
         return siteInfo_Dictionary  # The key is the site name
+
+    def getValuesForASiteObject(self, siteid=None):
+        network = "iutah:"
+        x = self.conn.service.GetValuesForASiteObject(network + str(siteid))
+        return x
+
+    def getValuesObject(self, sitecode, variable):
+        # sitecode = RB_KF_C, variable = AirTemp_Avg this is can example it working
+        # Returns in a json format
+        network = "iutah:"
+        x = self.conn.service.GetValuesObject(network + str(sitecode), network + str(variable))
+        return x
+
+    def getVariablesObject(self):
+        #  Same as getXMLVariables() but it returns it in json format
+        varsObject = self.conn.service.GetVariablesObject()
+        return varsObject
+
+
 
 if __name__ == '__main__':
     odm1 = ODM1()

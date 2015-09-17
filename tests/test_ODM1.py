@@ -2,15 +2,16 @@ __author__ = 'francisco'
 
 from suds.client import Client
 import xml.etree.ElementTree as et
+import collections
 
 class ODM1:
 
     def __init__(self):
-        redButteCreek = "http://data.iutahepscor.org/RedButteCreekWOF/cuahsi_1_1.asmx?WSDL"
-        provoRiver = "http://data.iutahepscor.org/ProvoRiverWOF/cuahsi_1_1.asmx?WSDL"
-        loganRiver = "http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL"
+        self.redButteCreek = "http://data.iutahepscor.org/RedButteCreekWOF/cuahsi_1_1.asmx?WSDL"
+        self.provoRiver = "http://data.iutahepscor.org/ProvoRiverWOF/cuahsi_1_1.asmx?WSDL"
+        self.loganRiver = "http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL"
 
-        sitecode = sitecode = ["iutah:RB_FortD_SD"]
+        # sitecode = sitecode = ["iutah:RB_FortD_SD"]
         '''
             This site code is only one of many.  To get more site code go to
             http://data.iutahepscor.org/tsa/
@@ -28,12 +29,12 @@ class ODM1:
             Make sure to include 'iutah:' in front of the site code
         '''
 
-        self.conn = self.connectToNetwork(redButteCreek)
-        site = self.getSites(sitecode)
-        var = self.getVariables()
-        # valuesObject = self.getValuesObject("RB_KF_C", "AirTemp_Avg")  # this will take about 3 min to load.
-        self.parseXML2Dict(site)
-        self.parseXML2Dict(var)
+        self.conn = self.connectToNetwork(self.redButteCreek)
+        # site = self.getSites()
+        # var = self.getVariables()
+        # # valuesObject = self.getValuesObject("RB_KF_C", "AirTemp_Avg")  # this will take about 3 min to load.
+        # self.parseXML2Dict(site)
+        # self.parseXML2Dict(var)
 
 
     def connectToNetwork(self, link):
@@ -62,7 +63,7 @@ class ODM1:
         data = self.conn.service.GetSiteInfoObject(sitecode)
         return data
 
-    def getSites(self, sitecode):
+    def getSites(self, sitecode=""):
         #  Returns an XML
         data = self.conn.service.GetSites(sitecode)
         return data
@@ -77,11 +78,15 @@ class ODM1:
         siteobjects = self.conn.service.GetSitesObject(sitecode)
         return siteobjects
 
-    def getValues(self, sitecode, variable):
+    def getValues(self, sitecode, variable=None):
+        #  Passing only the sitecode returns the data values.
+        #  Passing both variables returns that specified object.
         # Returns an XML
         network = "iutah:"
+        if variable is not None:
+            variable = network + str(variable)
 
-        data = self.conn.service.GetValues(network + str(sitecode), network + str(variable))
+        data = self.conn.service.GetValues(network + str(sitecode), variable)
         return data
 
     def getValuesForASiteObject(self, siteid=None):
@@ -122,7 +127,6 @@ class ODM1:
         data = self.conn.service.GetVariablesObject()
         return data
 
-
     def parseXML2Dict(self, site, start=None, end=None):
         if start == None:
             start = 0
@@ -131,7 +135,7 @@ class ODM1:
             end = start + 10
 
         tree = et.fromstring(site)
-        siteInfo_Dictionary = {}
+        siteInfo_Dictionary = collections.OrderedDict()  # It will remember the order contents are added
 
         for site in tree:
             for siteInfo in site[start:end]:  # Using slicing to grab only 10 elements, otherwise it would grab 100+

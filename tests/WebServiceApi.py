@@ -1,20 +1,35 @@
 __author__ = 'ryan'
 
 import test_ODM1 as tODM1
-from suds.client import Client
-
+import collections
 
 class WebServiceApi:
 
+    '''
+    TODO:
+    allow for diffrent site codes.
+
+    '''
 
     def __init__(self):
         self.odm1 = tODM1.ODM1()
         self.sites = {}
-        self.objects = self.odm1.getObjectSite(self.odm1.sitecode)
+        self.objects = self.odm1.getSitesObject("iutah:RB_FortD_SD")
 
-    def buildSitesDictionary(self):
-        for site in self.objects.site:
-            print site
-            return
+    def buildSitesDictionary(self, start=None, end=None):
+
+        if start == None:
+            start = 1
+        if end  == None:
+            end = start + 10
+
+        self.siteInfo_Dictionary = collections.OrderedDict()
+        for site in self.objects[1]:
+            if len(site) > 0:
+                self.siteInfo_Dictionary[site[0][0]] = site[0][1][0][0]
+
+        return self.siteInfo_Dictionary
+
+
 temp = WebServiceApi()
-i = 1
+

@@ -3,12 +3,14 @@ __author__ = 'francisco'
 import wx
 import wx.grid
 import test_ODM1
+import WebServiceApi as wsapi
 
 class GridFrame(wx.Frame):
 
     def __init__(self, parent):
         self.odm1 = test_ODM1.ODM1()
 
+        self.WebAPI = wsapi.WebServiceApi()
         wx.Frame.__init__(self, parent)
         self.SetSize(wx.Size(900, 500))
 
@@ -32,15 +34,24 @@ class GridFrame(wx.Frame):
 
 
     def populateGrid(self):
+        '''
+            WebServiceApi is used to interface.
+
         xml = self.odm1.getSites()
         self.odm1.createXMLFileForReading(xml)
         data = self.odm1.parseXML2Dict(xml)
+        '''
 
+        data = self.WebAPI.buildSitesDictionary()
+        #'''
         row, col = 1, 0
 
         for key, value in data.iteritems():
-            self.grid.SetCellValue(row, col, key + " #" + value[1].items()[0][1])
-            self.grid.SetCellValue(row, 1, value[1].text)
+            self.grid.SetCellValue(row, col, key + " #siteID" )#+ value[1][0][0])
+            self.grid.SetCellValue(row, 1, value)
+            #self.grid.SetCellValue(row, col, key + " #" + value[1].items()[0][0])
+            #self.grid.SetCellValue(row, 1, value[1].text)
+
             row += 1
 
         row = 1

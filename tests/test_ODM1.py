@@ -29,26 +29,16 @@ class ODM1:
         '''
 
         self.conn = self.connectToNetwork(redButteCreek)
-        site = self.getXMLSite(sitecode)
-        var = self.getXMLVariables()
+        site = self.getSites(sitecode)
+        var = self.getVariables()
         # valuesObject = self.getValuesObject("RB_KF_C", "AirTemp_Avg")  # this will take about 3 min to load.
-        self.getSiteInfo(site)
-        self.getSiteInfo(var)
+        self.parseXML2Dict(site)
+        self.parseXML2Dict(var)
 
 
     def connectToNetwork(self, link):
         connection = Client(link)
         return connection
-
-    def getXMLSite(self, sitecode):
-        # Returns an XML string
-        xmlSite = self.conn.service.GetSites(sitecode)
-        return xmlSite
-
-    def getXMLVariables(self):
-        # Returns an XML string
-        xmlVar = self.conn.service.GetVariables()
-        return xmlVar
 
     def createXMLFileForReading(self, xml_string):
         # Open this file in a browser to view it parsed
@@ -62,7 +52,83 @@ class ODM1:
         file.write(str(json))
         file.close()
 
-    def getSiteInfo(self, site, start=None, end=None):
+    def getSites(self, sitecode):
+        # Returns an XML
+        xmlSite = self.conn.service.GetSites(sitecode)
+        return xmlSite
+
+    def getSiteInfoMultipleObject(self, sitecode):
+        #  Returns a JSON
+        data = self.conn.service.GetSiteInfoMultpleObject(sitecode)
+        return data
+
+    def getSiteInfoObject(self, sitecode):
+        #  Returns a JSON
+        data = self.conn.service.GetSiteInfoObject(sitecode)
+        return data
+
+    def getSites(self, sitecode):
+        #  Returns an XML
+        data = self.conn.service.GetSites(sitecode)
+        return data
+
+    def getSitesByBoxObject(self, sitecode):
+        # fixme: there is an error with the input string not in the correct format.
+        data = self.conn.service.GetSitesByBoxObject(sitecode)
+        return data
+
+    def getSitesObject(self, sitecode):
+        #  Returns a JSON
+        siteobjects = self.conn.service.GetSitesObject(sitecode)
+        return siteobjects
+
+    def getValues(self, sitecode, variable):
+        # Returns an XML
+        network = "iutah:"
+
+        data = self.conn.service.GetValues(network + str(sitecode), network + str(variable))
+        return data
+
+    def getValuesForASiteObject(self, siteid=None):
+        network = "iutah:"
+        x = self.conn.service.GetValuesForASiteObject(network + str(siteid))
+        return x
+
+    def getValuesObject(self, sitecode, variable):
+        # sitecode = RB_KF_C, variable = AirTemp_Avg this is can example it working
+        # Returns in a json format
+        network = "iutah:"
+        data = self.conn.service.GetValuesObject(network + str(sitecode), network + str(variable))
+        return data
+
+    def getVariableInfo(self, variable):
+        #  Returns an XML
+        if variable is not None:
+            variable = "iutah:" + str(variable)
+
+        data = self.conn.service.GetVariableInfo(variable)
+        return data
+
+    def getVariableInfoObject(self, variable=None):
+        #  Returns a JSON
+        if variable is not None:
+            variable = "iutah:" + str(variable)
+
+        data = self.conn.service.GetVariableInfoObject()
+        return data
+
+    def getVariables(self):
+        # Returns an XML string
+        data = self.conn.service.GetVariables()
+        return data
+
+    def getVariablesObject(self):
+        #  Same as getXMLVariables() but it returns it in json format
+        data = self.conn.service.GetVariablesObject()
+        return data
+
+
+    def parseXML2Dict(self, site, start=None, end=None):
         if start == None:
             start = 0
 
@@ -80,22 +146,6 @@ class ODM1:
 
         return siteInfo_Dictionary  # The key is the site name
 
-    def getValuesForASiteObject(self, siteid=None):
-        network = "iutah:"
-        x = self.conn.service.GetValuesForASiteObject(network + str(siteid))
-        return x
-
-    def getValuesObject(self, sitecode, variable):
-        # sitecode = RB_KF_C, variable = AirTemp_Avg this is can example it working
-        # Returns in a json format
-        network = "iutah:"
-        x = self.conn.service.GetValuesObject(network + str(sitecode), network + str(variable))
-        return x
-
-    def getVariablesObject(self):
-        #  Same as getXMLVariables() but it returns it in json format
-        varsObject = self.conn.service.GetVariablesObject()
-        return varsObject
 
 
 

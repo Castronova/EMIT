@@ -52,11 +52,6 @@ class ODM1:
         file.write(str(json))
         file.close()
 
-    def getSites(self, sitecode):
-        # Returns an XML
-        xmlSite = self.conn.service.GetSites(sitecode)
-        return xmlSite
-
     def getSiteInfoMultipleObject(self, sitecode):
         #  Returns a JSON
         data = self.conn.service.GetSiteInfoMultpleObject(sitecode)

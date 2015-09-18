@@ -43,6 +43,7 @@ class GridFrame(wx.Frame):
         '''
 
         data = self.WebAPI.buildSitesDictionary()
+
         #'''
         row, col = 1, 0
 
@@ -55,13 +56,15 @@ class GridFrame(wx.Frame):
             row += 1
 
         row = 1
-
+        '''
         xml = self.odm1.getVariables()
         self.odm1.createXMLFileForReading(xml)
         vars = self.odm1.parseXML2Dict(xml, 0, 17)
+        #vars = iter(vars)  # Skip the first item because it is None.
+        #next(vars)
 
-        vars = iter(vars)  # Skip the first item because it is None.
-        next(vars)
+        '''
+        vars = self.WebAPI.buildAllVariableDictionary(0,17)
 
         for key in vars:
             self.grid.SetCellValue(row, 2, str(key))

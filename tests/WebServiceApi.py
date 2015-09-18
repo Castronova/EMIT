@@ -16,7 +16,8 @@ class WebServiceApi:
         self.sites = {}
         self.objects = self.odm1.getSitesObject("iutah:RB_FortD_SD")
 
-    def buildSitesDictionary(self, start=None, end=None):
+    def buildSitesDictionary(self,start=None, end=None):
+
 
         if start == None:
             start = 1
@@ -30,6 +31,21 @@ class WebServiceApi:
 
         return self.siteInfo_Dictionary
 
+    def buildAllVariableDictionary(self, start=None, end=None):
 
-temp = WebServiceApi()
+        if start == None:
+            start = 1
+        if end == None:
+            end = start + 10
 
+        xml = self.odm1.getVariables()
+        self.odm1.createXMLFileForReading(xml)
+        vars = self.odm1.parseXML2Dict(xml, start, end)
+        vars = iter(vars)
+        next(vars)
+        self.AllVariables = vars
+        return vars
+
+    def buildSiteVariables(self, siteCode):
+
+        self.siteVarables = collections.OrderedDict()

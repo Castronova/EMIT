@@ -9,6 +9,7 @@ from structures import *
 import datetime
 import jdutil
 import math
+import numpy
 
 class ueb(feed_forward.feed_forward_wrapper):
 
@@ -48,13 +49,24 @@ class ueb(feed_forward.feed_forward_wrapper):
 
         wsxcorArray = c_float()
         wsycorArray = c_float()
-        wsArray = c_int32()
+        wsArray = pointer(pointer(c_int32()))
         dimlen1 = c_int()
         dimlen2 = c_int()
         totalgrid = 0
         wsfillVal = c_int(-9999)
         npar = c_int(32)
         parvalArray = c_float(0)
+        numOut = 70 # hack: number of outputs?
+
+        pOut = pointer(pointOutput())
+        aggOut = pointer(aggOutput())
+        ncOut = pointer(ncOutput())
+        npout = c_int(0)
+        nncout = c_int(0)
+        naggout = c_int(0)
+        nZones = c_int(0)
+
+
 
         #todo: [#] == pointer, * == pointer
 
@@ -73,6 +85,41 @@ class ueb(feed_forward.feed_forward_wrapper):
 
         # read watershed netcdf file
         self.__uebLib.readwsncFile('./TWDEF_distributed/'+watershedFile, wsvarName, wsycorName, wsxcorName, byref(wsycorArray), byref(wsxcorArray), byref(wsArray), byref(dimlen1), byref(dimlen2), byref(wsfillVal))
+
+
+        # wsArray1D = numpy.empty((dimlen1.value*dimlen2.value),dtype=numpy.float)
+        wxi,wyj = numpy.meshgrid(numpy.arange(0,dimlen1.value,1),
+                               numpy.arange(0,dimlen2.value, 1))
+        wsArray1D = wxi * dimlen2.value + wyj
+
+        # todo: I'm not sure what this code is doing
+        '''
+        std::set<int> zValues(wsArray1D, wsArray1D + (dimlen1*dimlen2));
+        //cout << zValues.size() << endl;
+        //std::remove_if(zValues.begin(), zValues.end(), [&wsfillVal](int a){ return a == wsfillVal; });
+
+        std::set<int> fillSet = { wsfillVal };
+        //cout << "fill: " << fillSet.size() << " value: " << *(fillSet.begin())<<endl;
+
+        std::vector<int> zVal(zValues.size());
+        std::vector<int>::iterator it = std::set_difference(zValues.begin(), zValues.end(), fillSet.begin(), fillSet.end(), zVal.begin());  // exclude _FillValue
+        zVal.resize(it - zVal.begin());
+        //cout << zVal.size()<<endl;
+
+        z_ycor = new float[zVal.size()];
+        z_xcor = new float[zVal.size()];
+        //cout << zValues.size() << endl;
+
+        nZones = zVal.size();
+        for (int iz = 0; iz < zVal.size(); iz++)
+        {
+            //#_12.24.14 change these with actual outlet locations coordinates
+            z_ycor[iz] = 0.0;
+            z_xcor[iz] = 0.0;
+            //cout << zValues[iz];
+        }
+        '''
+
 
         # read params (#194)
         self.__uebLib.readParams(paramFile, byref(parvalArray), npar)
@@ -126,6 +173,38 @@ class ueb(feed_forward.feed_forward_wrapper):
                     # copy the default value if a single value is the option
                     tsvarArray.contents[it][0] = strinpforcArray.contents[it].infType
                     tsvarArray.contents[it][1] = strinpforcArray.contents[it].infdefValue
+
+        # create a numpy array for outputs
+        outvarArray = numpy.zeros(shape=(numOut, numTimeStep), dtype=numpy.float, order="C")
+
+        # total grid size to compute progess
+        totalgrid = dimlen1.value*dimlen2.value
+
+        # read output control file (main.cpp, line 251)
+        # readOutputControl(outputconFile, aggoutputconFile, pOut, ncOut, aggOut, npout, nncout, naggout);
+        self.__uebLib.readOutputControl(cast(outputconFile,c_char_p), cast(aggoutputconFile, c_char_p),
+                                        byref(pOut), byref(ncOut), byref(aggOut),
+                                        byref(npout), byref(nncout), byref(naggout))
+
+
+        # create output netcdf
+        outtSteps = numTimeStep / outtStride
+        t_out = numpy.empty(shape=(outtSteps), dtype=numpy.float, order="C")
+        for i in xrange(outtSteps):
+            t_out[i] = i*outtStride*ModelDt
+
+
+        # fixme: this must be horribly inefficient.
+        aggoutvarArray = numpy.empty((nZones.value,), dtype=numpy.float)
+        totalAgg = numpy.empty((outtSteps,), dtype=numpy.float)
+        ZonesArr = numpy.empty((nZones.value,), dtype=numpy.int32)
+        for j in xrange(nZones.value):
+            ZonesArr[j] = 0
+            aggoutvarArray[j] = numpy.empty((naggout.value,), dtype=numpy.float)
+            for i in xrange(naggout.value):
+                aggoutvarArray[j][i] = numpy.empty((outtSteps,), dtype=numpy.float)
+                for it in xrange(outtSteps):
+                    aggoutvarArray[j][i][it] = 0.0;
 
 
         # todo: move this to finish

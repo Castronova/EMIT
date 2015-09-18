@@ -64,7 +64,7 @@ class GridFrame(wx.Frame):
         #next(vars)
 
         '''
-        vars = self.WebAPI.buildAllVariableDictionary(0,17)
+        vars = self.WebAPI.buildAllVariableDictionary(0, 18)
 
         for key in vars:
             self.grid.SetCellValue(row, 2, str(key))

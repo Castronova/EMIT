@@ -53,19 +53,23 @@ class ODM1:
         file.write(str(json))
         file.close()
 
-    def getSiteInfoMultipleObject(self, sitecode):
+    def getSiteInfoMultipleObject(self):
         #  Returns a JSON
-        data = self.conn.service.GetSiteInfoMultpleObject(sitecode)
+        #  Similar to getSiteInfoObject() but returns all locations, with a bit less information.
+        data = self.conn.service.GetSiteInfoMultpleObject("")
         return data
 
     def getSiteInfoObject(self, sitecode):
         #  Returns a JSON
+        #  Returns all the information for a given site.
+        #  This includes all the variables associated with that location  description.
         data = self.conn.service.GetSiteInfoObject(sitecode)
         return data
 
-    def getSites(self, sitecode=""):
+    def getSites(self):
         #  Returns an XML
-        data = self.conn.service.GetSites(sitecode)
+        #  Returns all sites
+        data = self.conn.service.GetSites("")
         return data
 
     def getSitesByBoxObject(self, sitecode):

@@ -46,6 +46,32 @@ class WebServiceApi:
         self.AllVariables = vars
         return vars
 
+    def buildAllSiteCodeVariables(self, sitecode, start=None, end=None):
+        if start is None:
+            start = 1
+        if end is None:
+            end = start + 10
+
+        siteObject = self.odm1.getSiteInfoObject(sitecode)
+
+        #  Most of these variables are just used to see how far you need to dig to get the information you want
+        queryInfoType = siteObject[0]
+
+        siteInfo = siteObject[1][0][0]
+        seriesCatalog = siteObject[1][0][1]
+        allVariables = siteObject[1][0][1][0][2]
+        singleVariable = siteObject[1][0][1][0][2][0]  # increment the right most number to see the next variable
+
+        variableName = siteObject[1][0][1][0][2][0][0][1]
+        variableCode = siteObject[1][0][1][0][2][0][0][0][0].value
+
+        variableDict = collections.OrderedDict()
+
+        for i in range(0, len(allVariables)):
+            variableDict[allVariables[i][0][0][0].value] = allVariables[i][0][1]
+
+        return variableDict
+
     def buildSiteVariables(self, siteCode):
 
         self.siteVarables = collections.OrderedDict()

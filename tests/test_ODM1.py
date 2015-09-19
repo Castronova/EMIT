@@ -63,7 +63,7 @@ class ODM1:
         #  Returns a JSON
         #  Returns all the information for a given site.
         #  This includes all the variables associated with that location  description.
-        data = self.conn.service.GetSiteInfoObject(sitecode)
+        data = self.conn.service.GetSiteInfoObject("iutah:" + str(sitecode))
         return data
 
     def getSites(self):

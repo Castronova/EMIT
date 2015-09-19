@@ -16,16 +16,6 @@ class ODM1:
             This site code is only one of many.  To get more site code go to
             http://data.iutahepscor.org/tsa/
 
-            Check one of the networks on the left side of the window. For example...check Red Butte
-            Creek.
-
-            Click on any of the circles on the map.  This will zoom in on the area you clicked.
-
-            Once zoomed, click another circle, and it will probably zoom in again.
-
-            Click another icon on the map it will give you site code.
-            The site code is below the name of the location.Its the small bold text.
-
             Make sure to include 'iutah:' in front of the site code
         '''
 

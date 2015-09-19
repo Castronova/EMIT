@@ -262,9 +262,10 @@ class TimeSeriesTab(wx.Panel):
         return wsdl
 
     def setup_odm1_table(self, api):
-        data = api.buildSitesDictionary()
+        data = api.getSiteInfo()
         self.table_columns = ["Site Name", "County, State"]
         self.m_olvSeries.DefineColumns(self.table_columns)
+        self.m_olvSeries.AutoSizeColumns()
         pass
 
     def refresh_database(self):
@@ -280,7 +281,6 @@ class TimeSeriesTab(wx.Panel):
 
                 return
 
-        #set the selected choice
         self.__selected_choice_idx = self.connection_combobox.GetSelection()
 
         for key, db in self._databases.iteritems():

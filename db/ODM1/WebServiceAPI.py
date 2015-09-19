@@ -64,3 +64,18 @@ class WebServiceApi:
 
         self.siteVarables = collections.OrderedDict()
 
+    def getSiteInfo(self, start=None, end=None):
+
+        if start == None:
+            start = 0
+        if end  == None:
+            end = start + 9
+
+        siteInfo = []
+        for site in self.objects[1][start:end]:
+            if len(site) > 0:
+                # The structure of siteInfo list is [[Site Name, County, State]]
+                siteInfo.append([site[0][0], site[0][5][0].value, site[0][5][1].value])
+
+        return siteInfo
+

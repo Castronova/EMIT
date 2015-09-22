@@ -88,37 +88,25 @@ class ueb(feed_forward.feed_forward_wrapper):
 
 
         # wsArray1D = numpy.empty((dimlen1.value*dimlen2.value),dtype=numpy.float)
-        wxi,wyj = numpy.meshgrid(numpy.arange(0,dimlen1.value,1),
-                               numpy.arange(0,dimlen2.value, 1))
-        wsArray1D = wxi * dimlen2.value + wyj
+        # wxi,wyj = numpy.meshgrid(numpy.arange(0,dimlen1.value,1),
+        #                        numpy.arange(0,dimlen2.value, 1))
+        # wsArray1D = wxi * dimlen2.value + wyj
 
-        # todo: I'm not sure what this code is doing
-        '''
-        std::set<int> zValues(wsArray1D, wsArray1D + (dimlen1*dimlen2));
-        //cout << zValues.size() << endl;
-        //std::remove_if(zValues.begin(), zValues.end(), [&wsfillVal](int a){ return a == wsfillVal; });
+        wsArray1D = numpy.empty((dimlen1.value*dimlen2.value),dtype=numpy.float)
+        for i in xrange(dimlen1.value) :
+            for j in xrange(dimlen2.value):
+                wsArray1D[i*dimlen2.value + j] = wsArray[i][j];
 
-        std::set<int> fillSet = { wsfillVal };
-        //cout << "fill: " << fillSet.size() << " value: " << *(fillSet.begin())<<endl;
+        # zvalues is the unique set of wsArray1D
+        zValues = list(set(wsArray1D))
+        # fillset = [wsfillVal]
 
-        std::vector<int> zVal(zValues.size());
-        std::vector<int>::iterator it = std::set_difference(zValues.begin(), zValues.end(), fillSet.begin(), fillSet.end(), zVal.begin());  // exclude _FillValue
-        zVal.resize(it - zVal.begin());
-        //cout << zVal.size()<<endl;
+        # zVal is the set of zValues that do not equal wsFillVal
+        zVal = [zValues[i] for i in xrange(len(zValues)) if zValues[i] != wsfillVal]
 
-        z_ycor = new float[zVal.size()];
-        z_xcor = new float[zVal.size()];
-        //cout << zValues.size() << endl;
-
-        nZones = zVal.size();
-        for (int iz = 0; iz < zVal.size(); iz++)
-        {
-            //#_12.24.14 change these with actual outlet locations coordinates
-            z_ycor[iz] = 0.0;
-            z_xcor[iz] = 0.0;
-            //cout << zValues[iz];
-        }
-        '''
+        nZones = len(zVal)
+        z_ycor = [0.0 for i in xrange(nZones)]
+        z_xcor = [0.0 for i in xrange(nZones)]
 
 
         # read params (#194)
@@ -193,18 +181,28 @@ class ueb(feed_forward.feed_forward_wrapper):
         for i in xrange(outtSteps):
             t_out[i] = i*outtStride*ModelDt
 
-
-        # fixme: this must be horribly inefficient.
-        aggoutvarArray = numpy.empty((nZones.value,), dtype=numpy.float)
+        # initialize the output arrays
+        aggoutvarArray = numpy.zeros((nZones,naggout.value, outtSteps), dtype=numpy.float)
         totalAgg = numpy.empty((outtSteps,), dtype=numpy.float)
-        ZonesArr = numpy.empty((nZones.value,), dtype=numpy.int32)
-        for j in xrange(nZones.value):
-            ZonesArr[j] = 0
-            aggoutvarArray[j] = numpy.empty((naggout.value,), dtype=numpy.float)
-            for i in xrange(naggout.value):
-                aggoutvarArray[j][i] = numpy.empty((outtSteps,), dtype=numpy.float)
-                for it in xrange(outtSteps):
-                    aggoutvarArray[j][i][it] = 0.0;
+        ZonesArr = numpy.zeros((nZones,), dtype=numpy.int32)
+        # for j in xrange(nZones):
+        #     ZonesArr[j] = 0
+            # aggoutvarArray[j] = numpy.empty((naggout.value,), dtype=numpy.float)
+            # for i in xrange(naggout.value):
+            #     aggoutvarArray[j][i] = numpy.empty((outtSteps,), dtype=numpy.float)
+            #     for it in xrange(outtSteps):
+            #         aggoutvarArray[j][i][it] = 0.0;
+
+        # main.cpp, line 290
+        activeCells = []
+        for iy in xrange(dimlen1.value):
+            for jx in xrange(dimlen2.value):
+                if wsArray[iy][jx] != wsfillVal.value and strsvArray[16].svType != 3:
+                    activeCells.append((iy, jx))
+
+        # run UEB
+
+
 
 
         # todo: move this to finish

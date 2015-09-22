@@ -1,35 +1,28 @@
 __author__ = 'ryan'
 
-import test_ODM1 as tODM1
 import collections
+from db.ODM1.ODM1 import ODM1
 
 class WebServiceApi:
 
-    '''
-    TODO:
-    allow for diffrent site codes.
+    def __init__(self, website):
 
-    '''
+        self.odm1 = ODM1(website)
+        self.objects = self.odm1.getSitesObject()
 
-    def __init__(self):
-        self.odm1 = tODM1.ODM1()
-        self.sites = {}
-        self.objects = self.odm1.getSitesObject("iutah:RB_FortD_SD")
-
-    def buildSitesDictionary(self,start=None, end=None):
-
+    def buildSitesDictionary(self, start=None, end=None):
 
         if start == None:
             start = 1
         if end  == None:
             end = start + 10
 
-        self.siteInfo_Dictionary = collections.OrderedDict()
-        for site in self.objects[1]:
+        siteInfo_Dictionary = collections.OrderedDict()
+        for site in self.objects[1][start:end]:
             if len(site) > 0:
-                self.siteInfo_Dictionary[site[0][0]] = site[0][1][0][0]
+                siteInfo_Dictionary[site[0][0]] = site[0][1][0][0]
 
-        return self.siteInfo_Dictionary
+        return siteInfo_Dictionary
 
     def buildAllVariableDictionary(self, start=None, end=None):
 
@@ -54,10 +47,6 @@ class WebServiceApi:
 
         siteObject = self.odm1.getSiteInfoObject(sitecode)
 
-        queryInfoType = siteObject[0]
-        siteInfo = siteObject[1][0][0]
-        seriesCatalog = siteObject[1][0][1]
-
         try:
             seriesVariables = siteObject[1][0][1][0][2]
         except Exception as e:
@@ -69,9 +58,24 @@ class WebServiceApi:
         for i in range(0, len(seriesVariables[start:end])):
             variableDict[seriesVariables[i][0][0][0].value] = seriesVariables[i][0][1]
 
-
         return variableDict
 
     def buildSiteVariables(self, siteCode):
 
         self.siteVarables = collections.OrderedDict()
+
+    def getSiteInfo(self, start=None, end=None):
+
+        if start == None:
+            start = 0
+        if end  == None:
+            end = start + 9
+
+        siteInfo = []
+        for site in self.objects[1][start:end]:
+            if len(site) > 0:
+                # The structure of siteInfo list is [[Site Name, County, State]]
+                siteInfo.append([site[0][0], site[0][5][0].value, site[0][5][1].value])
+
+        return siteInfo
+

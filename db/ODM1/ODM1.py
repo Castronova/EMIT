@@ -6,12 +6,8 @@ import collections
 
 class ODM1:
 
-    def __init__(self):
-        self.redButteCreek = "http://data.iutahepscor.org/RedButteCreekWOF/cuahsi_1_1.asmx?WSDL"
-        self.provoRiver = "http://data.iutahepscor.org/ProvoRiverWOF/cuahsi_1_1.asmx?WSDL"
-        self.loganRiver = "http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL"
-
-        # sitecode = sitecode = ["iutah:RB_FortD_SD"]
+    def __init__(self, website):
+        # exampel of a site code is: ["iutah:RB_FortD_SD"]
         '''
             This site code is only one of many.  To get more site code go to
             http://data.iutahepscor.org/tsa/
@@ -19,12 +15,7 @@ class ODM1:
             Make sure to include 'iutah:' in front of the site code
         '''
 
-        self.conn = self.connectToNetwork(self.redButteCreek)
-        # site = self.getSites()
-        # var = self.getVariables()
-        # # valuesObject = self.getValuesObject("RB_KF_C", "AirTemp_Avg")  # this will take about 3 min to load.
-        # self.parseXML2Dict(site)
-        # self.parseXML2Dict(var)
+        self.conn = self.connectToNetwork(website)
 
 
     def connectToNetwork(self, link):
@@ -67,9 +58,9 @@ class ODM1:
         data = self.conn.service.GetSitesByBoxObject(sitecode)
         return data
 
-    def getSitesObject(self, sitecode):
+    def getSitesObject(self):
         #  Returns a JSON
-        siteobjects = self.conn.service.GetSitesObject(sitecode)
+        siteobjects = self.conn.service.GetSitesObject("")
         return siteobjects
 
     def getValues(self, sitecode, variable=None):
@@ -138,9 +129,3 @@ class ODM1:
                     siteInfo_Dictionary[siteInfo.getchildren()[0].text] = siteInfo.getchildren()
 
         return siteInfo_Dictionary  # The key is the site name
-
-
-
-
-if __name__ == '__main__':
-    odm1 = ODM1()

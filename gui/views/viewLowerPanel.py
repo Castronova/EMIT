@@ -14,6 +14,7 @@ from wx import richtext
 from coordinator.emitLogging import elog
 from gui.controller import logicConsoleOutput
 import os, sys
+from db.ODM1.WebServiceAPI import WebServiceApi
 
 class viewLowerPanel:
     def __init__(self, notebook):
@@ -177,9 +178,16 @@ class TimeSeriesTab(wx.Panel):
             self._databases = engine.getDbConnections()
 
             choices = ['---']
-            for k,v in self._databases.iteritems():
+            for k, v in self._databases.iteritems():
                 choices.append(self._databases[k]['name'])
+
+            for key, value in self.getPossibleConnections().iteritems():
+                choices.append(key)
+
+            choices.sort()
+
             self.connection_combobox.SetItems(choices)
+
 
             # set the selected choice
             self.connection_combobox.SetSelection( self.__selected_choice_idx)
@@ -246,12 +254,33 @@ class TimeSeriesTab(wx.Panel):
 
                     wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
 
+    def getPossibleConnections(self):
+        wsdl = {}
+        wsdl["Red Butte Creek"] = "http://data.iutahepscor.org/RedButteCreekWOF/cuahsi_1_1.asmx?WSDL"
+        wsdl["Provo River"] = "http://data.iutahepscor.org/ProvoRiverWOF/cuahsi_1_1.asmx?WSDL"
+        wsdl["Logan River"] = "http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL"
+        return wsdl
+
+    def setup_odm1_table(self, api):
+        data = api.getSiteInfo()
+        self.table_columns = ["Site Name", "County, State"]
+        self.m_olvSeries.DefineColumns(self.table_columns)
+        self.m_olvSeries.AutoSizeColumns()
+        pass
+
     def refresh_database(self):
 
         # get the name of the selected database
         selected_db = self.connection_combobox.GetStringSelection()
 
-        #set the selected choice
+        for key, value in self.getPossibleConnections().iteritems():
+            if selected_db == key:
+                elog.info("This feature has not been implemented yet.")
+                # api = self.setup_odm1_connection(value)
+                # self.setup_odm1_table(api)
+
+                return
+
         self.__selected_choice_idx = self.connection_combobox.GetSelection()
 
         for key, db in self._databases.iteritems():
@@ -323,6 +352,10 @@ class TimeSeriesTab(wx.Panel):
             # Not in debug mode
             thr = threading.Thread(target=self.refresh_database, name='DATABASE REFRESH THREAD', args=(), kwargs={})
             thr.start()
+
+    def setup_odm1_connection(self, location):
+        webapi = WebServiceApi(location)
+        return webapi
 
 class AddConnectionDialog(wx.Dialog):
     def __init__(

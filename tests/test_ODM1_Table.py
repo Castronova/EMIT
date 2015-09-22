@@ -15,25 +15,17 @@ class GridFrame(wx.Frame):
         self.SetSize(wx.Size(900, 500))
 
         self.grid = wx.grid.Grid(self, -1)
+        # self.populateGridWithVariables("RB_KF_C")
+        self.populateGridWithSiteName()
 
 
-        self.grid.CreateGrid(20, 3)  # 20 rows and 3 columns
+        # self.grid.CreateGrid(100, 3)  # 20 rows and 3 columns
 
-        # We can set the sizes of individual rows and columns
-        # in pixels
-        self.grid.SetRowSize(0, 60)
-        self.grid.SetColSize(0, 120)
 
-        # And set grid cell contents as strings
-        self.grid.SetCellValue(0, 0, 'Site Name')
-        self.grid.SetCellValue(0, 1, "Site ID/Code")
-        self.grid.SetCellValue(0, 2, "Variable ID/Code")
-
-        self.populateGrid()
         self.Show()
 
 
-    def populateGrid(self):
+    def populateGridWithSiteName(self):
         '''
             WebServiceApi is used to interface.
 
@@ -43,6 +35,13 @@ class GridFrame(wx.Frame):
         '''
 
         data = self.WebAPI.buildSitesDictionary()
+
+        self.grid.CreateGrid(len(data) + 1, 3)
+
+        self.grid.SetCellValue(0, 0, 'Site Name')
+        self.grid.SetCellValue(0, 1, "Site ID/Code")
+        self.grid.SetCellValue(0, 2, "Variable ID/Code")
+        # self.WebAPI.buildAllSiteCodeVariables("RB_KF_C")
 
         #'''
         row, col = 1, 0
@@ -64,13 +63,31 @@ class GridFrame(wx.Frame):
         #next(vars)
 
         '''
-        vars = self.WebAPI.buildAllVariableDictionary(0,17)
+        vars = self.WebAPI.buildAllVariableDictionary(0, 18)
 
         for key in vars:
             self.grid.SetCellValue(row, 2, str(key))
             row += 1
 
         self.grid.AutoSize()
+
+    def populateGridWithVariables(self, sitecode):
+        data = self.WebAPI.buildAllSiteCodeVariables(sitecode)
+
+        self.grid.CreateGrid(len(data) + 1, 3)
+
+        self.grid.SetCellValue(0, 0, 'Site Name')
+        self.grid.SetCellValue(0, 1, "Value")
+        self.grid.SetCellValue(0, 2, "Variables")
+
+        row = 1
+
+        for key, value, in data.iteritems():
+            self.grid.SetCellValue(row, 1, str(key))
+            self.grid.SetCellValue(row, 2, str(value))
+            row += 1
+        self.grid.AutoSize()
+        pass
 
 
 if __name__ == '__main__':

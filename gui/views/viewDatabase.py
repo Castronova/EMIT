@@ -18,6 +18,13 @@ class Database(object):
         self.date_created = date_created
 
 
+class WOFRecord():
+
+    def __init__(self, name_value_tuple_list):
+        for var, val in name_value_tuple_list:
+            setattr(WOFRecord, var, val)
+
+
 class DataRecord():
     """    Model of the Data object that is displayed in the Object List View control
 

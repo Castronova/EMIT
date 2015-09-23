@@ -263,9 +263,20 @@ class TimeSeriesTab(wx.Panel):
 
     def setup_odm1_table(self, api):
         data = api.getSiteInfo()
+        output = []
+        for da in data:
+            d = {
+                "County, State": da[1],
+                "Site Name": da[0]
+            }
+
+            elog.info(d)
+            record_object = type('WOFRecord', (object,), d)
+            output.extend([record_object])
         self.table_columns = ["Site Name", "County, State"]
         self.m_olvSeries.DefineColumns(self.table_columns)
         self.m_olvSeries.AutoSizeColumns()
+        self.m_olvSeries.SetObjects(output)
         pass
 
     def refresh_database(self):
@@ -275,9 +286,12 @@ class TimeSeriesTab(wx.Panel):
         selected_db = self.connection_combobox.GetStringSelection()
         for key, value in self.getPossibleConnections().iteritems():
             if selected_db == key:
+
                 api = WebServiceApi(value)
-                self.setup_odm1_table(api)
-                elog.info("This feature has not been implemented yet." + key)
+                self.setup_odm1_table(api) #why isn't this working
+                return
+                #elog.info("This feature has not been implemented yet." + key)
+                break
 
                 # api = self.setup_odm1_connection(value)
                 # self.setup_odm1_table(api)
@@ -285,7 +299,6 @@ class TimeSeriesTab(wx.Panel):
         self.__selected_choice_idx = self.connection_combobox.GetSelection()
 
         for key, db in self._databases.iteritems():
-
             # get the database session associated with the selected name
             if db['name'] == selected_db:
 

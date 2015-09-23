@@ -71,7 +71,3 @@ class WebServiceApi:
 
 
         return variableDict
-
-    def buildSiteVariables(self, siteCode):
-
-        self.siteVarables = collections.OrderedDict()

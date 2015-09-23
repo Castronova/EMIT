@@ -270,16 +270,17 @@ class TimeSeriesTab(wx.Panel):
 
     def refresh_database(self):
 
+
         # get the name of the selected database
         selected_db = self.connection_combobox.GetStringSelection()
-
         for key, value in self.getPossibleConnections().iteritems():
             if selected_db == key:
-                elog.info("This feature has not been implemented yet.")
+                api = WebServiceApi(value)
+                self.setup_odm1_table(api)
+                elog.info("This feature has not been implemented yet." + key)
+
                 # api = self.setup_odm1_connection(value)
                 # self.setup_odm1_table(api)
-
-                return
 
         self.__selected_choice_idx = self.connection_combobox.GetSelection()
 

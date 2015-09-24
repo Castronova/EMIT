@@ -18,14 +18,14 @@ class Database(object):
         self.date_created = date_created
 
 
-class WOFRecord():
+class WOFRecord: #  todo: delete me because I'm not being used
 
     def __init__(self, name_value_tuple_list):
         for var, val in name_value_tuple_list:
             setattr(WOFRecord, var, val)
 
 
-class DataRecord():
+class DataRecord:  #  todo: delete me because I'm not being used
     """    Model of the Data object that is displayed in the Object List View control
 
      e.g. [(resultid,10),(date,11/7/14)]

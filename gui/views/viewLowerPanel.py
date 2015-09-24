@@ -169,7 +169,6 @@ class TimeSeriesTab(wx.Panel):
 
     def DbChanged(self, event):
         # refresh the database
-        # self refresh_database
         self.OLVRefresh(event)
 
     def refreshConnectionsListBoxTS(self, connection_added):
@@ -263,38 +262,36 @@ class TimeSeriesTab(wx.Panel):
 
     def setup_odm1_table(self, api):
         data = api.getSiteInfo()
+        self.table_columns = ["Site Name", "County", "State"]
+        self.m_olvSeries.DefineColumns(self.table_columns)
+
         output = []
         for da in data:
             d = {
-                "County, State": da[1],
-                "Site Name": da[0]
+                "model_name": da[0],  # The model_name is the site name so other code doesn't need to be modified
+                "County": da[1],
+                "State": da[2]
             }
 
-            elog.info(d)
+            # elog.info(d)
             record_object = type('WOFRecord', (object,), d)
             output.extend([record_object])
-        self.table_columns = ["Site Name", "County, State"]
-        self.m_olvSeries.DefineColumns(self.table_columns)
         self.m_olvSeries.AutoSizeColumns()
         self.m_olvSeries.SetObjects(output)
-        pass
 
     def refresh_database(self):
-
-
         # get the name of the selected database
         selected_db = self.connection_combobox.GetStringSelection()
+
         for key, value in self.getPossibleConnections().iteritems():
             if selected_db == key:
 
                 api = WebServiceApi(value)
-                self.setup_odm1_table(api) #why isn't this working
+                self.setup_odm1_table(api)  # why isn't this working
                 return
                 #elog.info("This feature has not been implemented yet." + key)
-                break
 
-                # api = self.setup_odm1_connection(value)
-                # self.setup_odm1_table(api)
+
 
         self.__selected_choice_idx = self.connection_combobox.GetSelection()
 
@@ -314,7 +311,7 @@ class TimeSeriesTab(wx.Panel):
                     s = db2.connect(session)
                     series = s.getAllSeries()
 
-                else: # fixme: this is old api for postgresql and mysql (need to update to dbapi_v2)
+                else:  # fixme: this is old api for postgresql and mysql (need to update to dbapi_v2)
                     session = dbUtilities.build_session_from_connection_string(db['connection_string'])
                     u = dbapi.utils(session)
                     series = u.getAllSeries()
@@ -330,13 +327,13 @@ class TimeSeriesTab(wx.Panel):
                     data = []
                     for s in series:
                         d = {
-                            'resultid' : s.ResultID,
-                            'variable' : s.VariableObj.VariableCode,
-                            'unit' : s.UnitObj.UnitsName,
-                            'date_created' : s.FeatureActionObj.ActionObj.BeginDateTime,
-                            'type' : s.FeatureActionObj.ActionObj.ActionTypeCV,
-                            'featurecode' : s.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode,
-                            'organization' : s.FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName
+                            'resultid': s.ResultID,
+                            'variable': s.VariableObj.VariableCode,
+                            'unit': s.UnitObj.UnitsName,
+                            'date_created': s.FeatureActionObj.ActionObj.BeginDateTime,
+                            'type': s.FeatureActionObj.ActionObj.ActionTypeCV,
+                            'featurecode': s.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode,
+                            'organization': s.FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName
                         }
 
                         record_object = type('DataRecord', (object,), d)
@@ -351,7 +348,7 @@ class TimeSeriesTab(wx.Panel):
                 # fire the onDbChanged Event
                 kwargs = dict(dbsession=session,
                               dbname=db['name'],
-                              dbid=db['id'] )
+                              dbid=db['id'])
                 events.onDbChanged.fire(**kwargs)
 
                 break
@@ -366,10 +363,6 @@ class TimeSeriesTab(wx.Panel):
             # Not in debug mode
             thr = threading.Thread(target=self.refresh_database, name='DATABASE REFRESH THREAD', args=(), kwargs={})
             thr.start()
-
-    def setup_odm1_connection(self, location):
-        webapi = WebServiceApi(location)
-        return webapi
 
 class AddConnectionDialog(wx.Dialog):
     def __init__(

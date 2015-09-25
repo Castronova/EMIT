@@ -133,7 +133,6 @@ class TimeSeriesTab(wx.Panel):
         self.connection_combobox.Bind(wx.EVT_CHOICE, self.DbChanged)
         # self.connection_combobox.Bind(wx.EVT_COMBOBOX_DROPDOWN, self.RefreshComboBox) todo: delete this
 
-
         # Sizers
         seriesSelectorSizer = wx.BoxSizer(wx.VERTICAL)
         buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -262,15 +261,16 @@ class TimeSeriesTab(wx.Panel):
 
     def setup_odm1_table(self, api):
         data = api.getSiteInfo()
+
         self.table_columns = ["Site Name", "County", "State"]
         self.m_olvSeries.DefineColumns(self.table_columns)
 
         output = []
         for da in data:
             d = {
-                "model_name": da[0],  # The model_name is the site name so other code doesn't need to be modified
-                "County": da[1],
-                "State": da[2]
+                "site_name": da[0],  # The key MUST match one in the table_columns IN LOWERCASE. FYI
+                "county": da[1],
+                "state": da[2]
             }
 
             # elog.info(d)

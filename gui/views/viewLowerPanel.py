@@ -259,9 +259,15 @@ class TimeSeriesTab(wx.Panel):
         wsdl["Logan River"] = "http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL"
         return wsdl
 
+    def prepareODM1_Model(self, siteObject):
+        #  This method will build a window/frame that will show the variables similar to the
+        #  the test that was built in test_ODM1_table.py.
+        #  Here user will also select the start and end date, export, and add to canvas.
+        #  We could possibly include a graph here.
+        pass
+
     def setup_odm1_table(self, api):
         data = api.getSiteInfo()
-
         self.table_columns = ["Site Name", "County", "State"]
         self.m_olvSeries.DefineColumns(self.table_columns)
 
@@ -270,10 +276,10 @@ class TimeSeriesTab(wx.Panel):
             d = {
                 "site_name": da[0],  # The key MUST match one in the table_columns IN LOWERCASE. FYI
                 "county": da[1],
-                "state": da[2]
+                "state": da[2],
+                "sitecode": da[3]
             }
 
-            # elog.info(d)
             record_object = type('WOFRecord', (object,), d)
             output.extend([record_object])
         self.m_olvSeries.AutoSizeColumns()
@@ -285,13 +291,12 @@ class TimeSeriesTab(wx.Panel):
 
         for key, value in self.getPossibleConnections().iteritems():
             if selected_db == key:
-
-                api = WebServiceApi(value)
-                self.setup_odm1_table(api)  # why isn't this working
+                self.api = WebServiceApi(value)
+                self.setup_odm1_table(self.api)
                 return
-                #elog.info("This feature has not been implemented yet." + key)
 
-
+        self.table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
+        self.m_olvSeries.DefineColumns(self.table_columns)
 
         self.__selected_choice_idx = self.connection_combobox.GetSelection()
 

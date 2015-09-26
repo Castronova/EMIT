@@ -74,8 +74,8 @@ class WebServiceApi:
         siteInfo = []
         for site in self.objects[1][start:end]:
             if len(site) > 0:
-                # The structure of siteInfo list is [[Site Name, County, State]]
-                siteInfo.append([site[0][0], site[0][5][0].value, site[0][5][1].value])
+                # The structure of siteInfo list is [[Site Name, County, State, site code]]
+                siteInfo.append([site[0][0], site[0][5][0].value, site[0][5][1].value, site[0][1][0].value])
 
         return siteInfo
 

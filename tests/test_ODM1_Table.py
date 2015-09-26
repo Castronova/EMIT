@@ -15,8 +15,8 @@ class GridFrame(wx.Frame):
         self.SetSize(wx.Size(900, 500))
 
         self.grid = wx.grid.Grid(self, -1)
-        # self.populateGridWithVariables("RB_KF_C")
-        self.populateGridWithSiteName()
+        self.populateGridWithVariables("RB_KF_C")
+        # self.populateGridWithSiteName()
 
 
         # self.grid.CreateGrid(100, 3)  # 20 rows and 3 columns

@@ -68,6 +68,16 @@ class LogicDatabase(ViewDatabase):
         filename = obj.GetItem(id).GetText()
         uniqueId = obj.GetItem(id).GetText()
         try:
+            sitecode = obj.GetObjectAt(id).sitecode
+            print "its an OMD1 model"
+            print "site code: " + str(sitecode)
+            self.Parent.prepareODM1_Model(obj.GetObjectAt(id))
+            return
+        except:
+            print "ITs an ODM2 model"
+            pass
+
+        try:
             title = obj.GetObjectAt(id).model_name
         except:
             title = obj.GetObjectAt(id).variable

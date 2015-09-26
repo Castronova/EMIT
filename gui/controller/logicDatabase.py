@@ -71,7 +71,7 @@ class LogicDatabase(ViewDatabase):
             sitecode = obj.GetObjectAt(id).sitecode
             print "its an OMD1 model"
             print "site code: " + str(sitecode)
-            self.Parent.prepareODM1_Model(obj.GetObjectAt(id))
+            # self.Parent.prepareODM1_Model(obj.GetObjectAt(id))
             return
         except:
             print "ITs an ODM2 model"

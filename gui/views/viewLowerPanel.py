@@ -264,7 +264,9 @@ class TimeSeriesTab(wx.Panel):
         #  the test that was built in test_ODM1_table.py.
         #  Here user will also select the start and end date, export, and add to canvas.
         #  We could possibly include a graph here.
-        pass
+        siteview = SiteViewer(siteObject)
+        siteview.Show()
+        return
 
     def setup_odm1_table(self, api):
         data = api.getSiteInfo()
@@ -368,6 +370,93 @@ class TimeSeriesTab(wx.Panel):
             # Not in debug mode
             thr = threading.Thread(target=self.refresh_database, name='DATABASE REFRESH THREAD', args=(), kwargs={})
             thr.start()
+
+from wx.lib.mixins.listctrl import CheckListCtrlMixin, ListCtrlAutoWidthMixin
+
+
+class CheckListCtrl(wx.ListCtrl, CheckListCtrlMixin, ListCtrlAutoWidthMixin):
+    def __init__(self, parent):
+        wx.ListCtrl.__init__(self, parent, -1, style=wx.LC_REPORT | wx.SUNKEN_BORDER)
+        CheckListCtrlMixin.__init__(self)
+        ListCtrlAutoWidthMixin.__init__(self)
+
+
+class SiteViewer(wx.Frame):
+    def __init__(self, siteObject):
+        wx.Frame.__init__(self, parent=None, id=-1, title="Site Viewer", pos=wx.DefaultPosition,
+                          size=wx.Size(550, 350))
+        self.siteObject = siteObject
+
+        panel = wx.Panel(self, -1)
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+
+        middlePanel = wx.Panel(panel, -1)
+        lowerPanel = wx.Panel(panel, -1)
+
+        self.plottingPanel = wx.TextCtrl(lowerPanel, -1, style=wx.TE_MULTILINE)
+        self.variableList = CheckListCtrl(lowerPanel)
+        self.variableList.InsertColumn(0, 'Variable', width=140)
+        self.variableList.InsertColumn(1, 'Values')
+
+        vbox2 = wx.BoxSizer(wx.VERTICAL)
+
+        sel = wx.Button(middlePanel, -1, 'Select All', size=(100, -1))
+        des = wx.Button(middlePanel, -1, 'Deselect All', size=(100, -1))
+        apply = wx.Button(middlePanel, -1, 'Apply', size=(100, -1))
+
+
+        self.Bind(wx.EVT_BUTTON, self.OnSelectAll, id=sel.GetId())
+        self.Bind(wx.EVT_BUTTON, self.OnDeselectAll, id=des.GetId())
+        self.Bind(wx.EVT_BUTTON, self.OnApply, id=apply.GetId())
+
+        # vbox2.Add(sel, 0, wx.TOP, 5)
+        # vbox2.Add(des)
+        # vbox2.Add(apply)
+        #
+        # middlePanel.SetSizer(vbox2)
+
+        vbox.Add(self.plottingPanel, 0.5, wx.EXPAND)
+        vbox.Add((-1, 10))
+        vbox.Add(middlePanel, 0, wx.EXPAND | wx.RIGHT, 5)
+        vbox.Add(lowerPanel, 1, wx.EXPAND)
+        vbox.Add((3, -1))
+        vbox.Add(self.variableList, 1, wx.EXPAND | wx.Bottom, 3)
+        vbox.Add((-1, 10))
+
+        lowerPanel.SetSizer(vbox)
+
+        # hbox.Add(middlePanel, 0, wx.EXPAND | wx.RIGHT, 5)
+        # hbox.Add(lowerPanel, 1, wx.EXPAND)
+        # hbox.Add((3, -1))
+
+        panel.SetSizer(vbox)
+
+        self.Centre()
+        self.Show(True)
+        return
+
+    def OnSelectAll(self, event):
+        num = self.variableList.GetItemCount()
+        for i in range(num):
+            self.variableList.CheckItem(i)
+
+    def OnDeselectAll(self, event):
+        num = self.variableList.GetItemCount()
+        for i in range(num):
+            self.variableList.CheckItem(i, False)
+
+    def OnApply(self, event):
+        num = self.variableList.GetItemCount()
+        for i in range(num):
+            if i == 0: self.plottingPanel.Clear()
+            if self.variableList.IsChecked(i):
+                self.plottingPanel.AppendText(self.variableList.GetItemText(i) + '\n')
+
+
+
+
 
 class AddConnectionDialog(wx.Dialog):
     def __init__(

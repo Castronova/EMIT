@@ -29,16 +29,16 @@ class ueb(feed_forward.feed_forward_wrapper):
         with open(conFile, 'r') as f:
             # lines = f.readlines()
             lines = f.read().splitlines()  # this will auto strip the \n \r
-            paramFile = lines[1]
-            sitevarFile = lines[2]
+            paramFile = './TWDEF_distributed/'+lines[1]
+            sitevarFile = './TWDEF_distributed/'+lines[2]
             inputconFile = './TWDEF_distributed/'+lines[3]
-            outputconFile = lines[4]
-            watershedFile = lines[5]
+            outputconFile = './TWDEF_distributed/'+lines[4]
+            watershedFile = './TWDEF_distributed/'+lines[5]
             wsvarName = lines[6].split(' ')[0]
             wsycorName = lines[6].split(' ')[1]
             wsxcorName = lines[6].split(' ')[2]
-            aggoutputconFile = lines[7]
-            aggoutputFile = lines[8]
+            aggoutputconFile = './TWDEF_distributed/'+lines[7]
+            aggoutputFile = './TWDEF_distributed/'+lines[8]
             ModelStartDate = [int(float(l)) for l in lines[9].split(' ') if l != '']
             ModelEndDate = [int(float(l)) for l in lines[10].split(' ') if l != '']
             ModelDt = float(lines[11])
@@ -55,7 +55,7 @@ class ueb(feed_forward.feed_forward_wrapper):
         totalgrid = 0
         wsfillVal = c_int(-9999)
         npar = c_int(32)
-        parvalArray = c_float(0)
+        parvalArray = pointer(c_float(0));
         numOut = 70 # hack: number of outputs?
 
         pOut = pointer(pointOutput())
@@ -65,6 +65,37 @@ class ueb(feed_forward.feed_forward_wrapper):
         nncout = c_int(0)
         naggout = c_int(0)
         nZones = c_int(0)
+
+        tNameout = c_char_p("time")
+        tunits = (c_char*256)()
+        tUnitsout = pointer(tunits)
+        tlong_name = c_char_p("time")
+        tcalendar = c_char_p("standard")
+        t_out = pointer(c_float(0))
+        out_fillVal = c_float(-9999.0)
+
+        outDimord = c_int(0)
+        aggoutDimord = c_int(1)
+        outvarindx = c_int(17)
+        aggoutvarindx = c_int(17)
+        size = c_int()
+        rank = c_int()
+        irank = c_int()
+        jrank = c_int()
+        startTimeT = c_double(0.0)
+        TotalTime = c_double(0.0)
+        totalmodelrunTime = c_double(0.0)
+        TsReadTime = c_double(0.0)
+        TSStartTime = c_double()
+        ComputeStartTime = c_double()
+        ComputeTime = c_double(0.0)
+        OutWriteTime = c_double()
+
+        uebVars = (c_char_p * 70)("Year", "Month", "Day", "dHour", "atff", "HRI", "Eacl", "Ema", "conZen", "Ta", "P", "V", "RH", "Qsi", "Qli", "Qnet","Us", "SWE", "tausn", "Pr", "Ps", "Alb", "QHs", "QEs", "Es", "SWIT", "QMs", "Q", "FM", "Tave", "TSURFs", "cump", "cumes", "cumMr", "Qnet", "smelt", "refDepth", "totalRefDepth", "cf", "Taufb", "Taufd", "Qsib", "Qsid", "Taub", "Taud", "Qsns", "Qsnc", "Qlns", "Qlnc", "Vz", "Rkinsc", "Rkinc", "Inmax", "intc", "ieff", "Ur", "Wc", "Tc", "Tac", "QHc", "QEc", "Ec", "Qpc", "Qmc", "Mc", "FMc", "SWIGM", "SWISM", "SWIR", "errMB")
+
+
+        zName = c_char_p("Outletlocations")
+
 
 
 
@@ -84,7 +115,7 @@ class ueb(feed_forward.feed_forward_wrapper):
         # pcap_lookupnet(dev, ctypes.byref(net), ctypes.byref(mask), errbuf)
 
         # read watershed netcdf file
-        self.__uebLib.readwsncFile('./TWDEF_distributed/'+watershedFile, wsvarName, wsycorName, wsxcorName, byref(wsycorArray), byref(wsxcorArray), byref(wsArray), byref(dimlen1), byref(dimlen2), byref(wsfillVal))
+        self.__uebLib.readwsncFile(watershedFile, wsvarName, wsycorName, wsxcorName, byref(wsycorArray), byref(wsxcorArray), byref(wsArray), byref(dimlen1), byref(dimlen2), byref(wsfillVal))
 
 
         # wsArray1D = numpy.empty((dimlen1.value*dimlen2.value),dtype=numpy.float)
@@ -115,7 +146,7 @@ class ueb(feed_forward.feed_forward_wrapper):
         # read site variables (#200)
         # void readSiteVars(const char* inpFile, sitevar *&svArr)
         # self.__uebLib.readSiteVars.argtypes = [POINTER(c_char), POINTER(sitevar)]
-        self.__uebLib.readSiteVars('./TWDEF_distributed/'+ sitevarFile, byref(strsvArray))
+        self.__uebLib.readSiteVars(sitevarFile, byref(strsvArray))
 
 
         # read 2d NetCDF Data
@@ -170,6 +201,7 @@ class ueb(feed_forward.feed_forward_wrapper):
 
         # read output control file (main.cpp, line 251)
         # readOutputControl(outputconFile, aggoutputconFile, pOut, ncOut, aggOut, npout, nncout, naggout);
+
         self.__uebLib.readOutputControl(cast(outputconFile,c_char_p), cast(aggoutputconFile, c_char_p),
                                         byref(pOut), byref(ncOut), byref(aggOut),
                                         byref(npout), byref(nncout), byref(naggout))
@@ -194,6 +226,26 @@ class ueb(feed_forward.feed_forward_wrapper):
             #         aggoutvarArray[j][i][it] = 0.0;
 
         # main.cpp, line 290
+        # CREATE 3D NC OUTPUT FILES
+        # convert t_out into a float pointer
+        C_t_out = t_out.ctypes.data_as(POINTER(c_float))
+        for i in xrange(nncout.value):
+            '''
+            for (int icout = 0; icout < nncout; icout++)
+                retvalue = create3DNC_uebOutputs(ncOut[icout].outfName, (const char*)ncOut[icout].symbol, (const char*)ncOut[icout].units, tNameout, tUnitsout,
+            tlong_name, tcalendar, outtSteps, outDimord, t_out, &out_fillVal, watershedFile, wsvarName, wsycorName, wsxcorName);
+            '''
+
+            retvalue = self.__uebLib.create3DNC_uebOutputs(ncOut[i].outfName, cast(ncOut[i].symbol, c_char_p), cast(ncOut[i].units, c_char_p), tNameout, tUnitsout, tlong_name, tcalendar, outtSteps, outDimord, C_t_out, byref(out_fillVal), watershedFile, wsvarName, wsycorName, wsxcorName);
+
+        # CREATE 3D NC AGGREGATE OUTPUT FILE
+        # convert z_ycor and x_xcor from list into ctype
+        C_z_xcor = numpy.asarray(z_xcor).ctypes.data_as(POINTER(c_float))
+        C_z_ycor = numpy.asarray(z_ycor).ctypes.data_as(POINTER(c_float))
+        retvalue = self.__uebLib.create3DNC_uebAggregatedOutputs(aggoutputFile, aggOut, naggout, tNameout, tUnitsout, tlong_name, tcalendar, outtSteps, aggoutDimord, C_t_out, byref(out_fillVal), watershedFile, wsvarName, wsycorName, wsxcorName, nZones, zName, C_z_ycor, C_z_xcor);
+
+
+        # main.cpp, line 303
         activeCells = []
         for iy in xrange(dimlen1.value):
             for jx in xrange(dimlen2.value):

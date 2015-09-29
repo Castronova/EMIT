@@ -47,6 +47,7 @@ class ueb(feed_forward.feed_forward_wrapper):
             inpDailyorSubdaily = bool(lines[14]==True)
 
 
+
         wsxcorArray = c_float()
         wsycorArray = c_float()
         wsArray = pointer(pointer(c_int32()))
@@ -55,6 +56,7 @@ class ueb(feed_forward.feed_forward_wrapper):
         totalgrid = 0
         wsfillVal = c_int(-9999)
         npar = c_int(32)
+        tinitTime = c_int(0)
         parvalArray = pointer(c_float(0));
         numOut = 70 # hack: number of outputs?
 
@@ -96,6 +98,10 @@ class ueb(feed_forward.feed_forward_wrapper):
 
         zName = c_char_p("Outletlocations")
 
+        # float *tcorvar[13], *tsvarArray[13], *tsvarArrayTemp[5];
+        tcorvar = pointer((c_float * 13)())
+        tsvarArray = pointer((c_float * 13)())
+        tsvarArrayTemp = pointer((c_float * 5)())
 
 
 
@@ -167,12 +173,16 @@ class ueb(feed_forward.feed_forward_wrapper):
         print 'strinpforcArray: ', strinpforcArray.contents[0].infFile
 
 
-        # self.__uebLib.getObjectTypeCount.restype = c_int
-        # self.__uebLib.swmm_getDateTime.restype = c_double
-
         # calculate model time span as a julian date (main.cpp, line 220)
         modelSpan =  jdutil.datetime_to_jd(datetime.datetime(*ModelEndDate)) - \
                      jdutil.datetime_to_jd(datetime.datetime(*ModelStartDate))
+
+        # setup the model start dates as UEB expects them
+        ModelStartHour = ModelStartDate.pop(-1) # an integer representing the start hour (24 hour time)
+        ModelEndHour = ModelEndDate.pop(-1)     # an integer representing the end hour (24 hour time)
+        # ModelStartDate is a 3 element array: [year, month, day]
+        # ModelEndDate is a 3 element array: [year, month, day]
+
 
         # calculate model time steps (main.cpp, line 222)
         numTimeStep = int(math.ceil(modelSpan*(24./ModelDt)) )
@@ -195,6 +205,14 @@ class ueb(feed_forward.feed_forward_wrapper):
 
         # create a numpy array for outputs
         outvarArray = numpy.zeros(shape=(numOut, numTimeStep), dtype=numpy.float, order="C")
+        arrays = outvarArray.astype(numpy.float32)
+        rows, cols = outvarArray.shape
+        arrays_as_list = list(arrays)
+        #get ctypes handles
+        ctypes_arrays = [numpy.ctypeslib.as_ctypes(array) for array in arrays_as_list]
+        #Pack into pointer array
+        C_outvarArray = (POINTER(c_float) * rows)(*ctypes_arrays)
+
 
         # total grid size to compute progess
         totalgrid = dimlen1.value*dimlen2.value
@@ -249,11 +267,67 @@ class ueb(feed_forward.feed_forward_wrapper):
         activeCells = []
         for iy in xrange(dimlen1.value):
             for jx in xrange(dimlen2.value):
-                if wsArray[iy][jx] != wsfillVal.value and strsvArray[16].svType != 3:
+                if wsArray[iy][jx] != wsfillVal.value and strsvArray.contents[16].svType != 3:
                     activeCells.append((iy, jx))
 
-        # run UEB
+        SiteState = numpy.zeros((32,))
+        for i in xrange(len(activeCells)):
 
+            # track grid cell
+            uebCellY = activeCells[i][0]
+            uebCellX = activeCells[i][1]
+
+            for s in xrange(32):
+
+                if strsvArray.contents[s].svType == 1:
+                    # print i, s, strsvArray.contents[s].svArrayValues[uebCellY][uebCellX]
+                    SiteState[s] = strsvArray.contents[s].svArrayValues[uebCellY][uebCellX]
+                else:
+                    SiteState[s] = strsvArray.contents[s].svdefValue
+
+            for t in xrange(13):
+                # HACK: Everything inside this 'if' statement needs to be checked!!!!
+                if strinpforcArray.contents[t].infType == 1:
+                    print 'You are in un-tested code! '
+                    ncTotaltimestep = 0;
+
+                    for numNc in xrange(strinpforcArray[it].numNcfiles):
+                        # read 3D netcdf data
+                        tsInputfile = strinpforcArray[t].infFile + numNc + '.nc'
+
+                        retvalue = self.__uebLib.readNC_TS(tsInputfile, strinpforcArray.contents[t].infvarName, strinpforcArray.contents[t].inftimeVar, wsycorName, wsxcorName, byref(tsvarArrayTemp[numNc]), byref(tcorvar[it]), uebCellY, uebCellX, byref(ntimesteps[numNc]));
+
+                        ncTotaltimestep += ntimesteps[numNc];
+
+                    tsvarArray[t] = (c_float * ncTotaltimestep)
+                    tinitTime = 0
+                    for numNc in xrange(strinpforcArray.contents[t].numNcFiles):
+                        for tts in xrange(ntimesteps[numNc]):
+                            tsvarArray.contents[t][tts + tinitTime] = tsvarArrayTemp.contents[numNc][tts]
+                        tinitTime += ntimesteps[numNc]
+
+            # convert SiteState into ctype
+            C_SiteState = SiteState.ctypes.data_as(POINTER(c_float))  # fixme ???
+            C_ModelStartDate = (c_int * len(ModelStartDate))(*ModelStartDate)
+            C_ModelEndDate =(c_int * len(ModelEndDate))(*ModelEndDate)
+            # C_outvarArray = outvarArray.ctypes.data_as(POINTER(POINTER(c_float)))
+            # C_outvarArray = outvarArray.ctypes.data_as((POINTER(c_float)))
+            # C_outvarArray = pointer(outvarArray.ctypes.data_as(POINTER(POINTER(c_float))))
+            C_ModelDt = c_double(ModelDt)
+            C_ModelUTCOffset = c_double(ModelUTCOffset)
+            C_ModelStartHour = c_double(ModelStartHour)
+            C_ModelEndHour = c_double(ModelEndHour)
+            # RUN THE UEB CALCS
+            ModelStartHour = 1
+
+
+            self.__uebLib.RUNUEB(tsvarArray, C_SiteState, parvalArray, byref(pointer(C_outvarArray)), C_ModelStartDate, C_ModelStartHour, C_ModelEndDate, C_ModelEndHour, C_ModelDt, C_ModelUTCOffset);
+
+
+            print "RESULT: ", C_outvarArray[5][i]
+
+
+            a = 1
 
 
 

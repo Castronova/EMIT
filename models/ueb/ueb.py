@@ -1,6 +1,7 @@
 __author__ = 'tonycastronova'
 
 import os
+import sys
 import stdlib
 from os.path import *
 from ctypes import *
@@ -263,6 +264,8 @@ class ueb(feed_forward.feed_forward_wrapper):
         retvalue = self.__uebLib.create3DNC_uebAggregatedOutputs(aggoutputFile, aggOut, naggout, tNameout, tUnitsout, tlong_name, tcalendar, outtSteps, aggoutDimord, C_t_out, byref(out_fillVal), watershedFile, wsvarName, wsycorName, wsxcorName, nZones, zName, C_z_ycor, C_z_xcor);
 
 
+        print "\nBegin Computation: \n"
+
         # main.cpp, line 303
         activeCells = []
         for iy in xrange(dimlen1.value):
@@ -307,7 +310,8 @@ class ueb(feed_forward.feed_forward_wrapper):
                         tinitTime += ntimesteps[numNc]
 
             # convert SiteState into ctype
-            C_SiteState = SiteState.ctypes.data_as(POINTER(c_float))  # fixme ???
+            # C_SiteState = SiteState.ctypes.data_as(POINTER(c_float))  # fixme ???
+            C_SiteState = (c_float * len(SiteState))(*SiteState)
             C_ModelStartDate = (c_int * len(ModelStartDate))(*ModelStartDate)
             C_ModelEndDate =(c_int * len(ModelEndDate))(*ModelEndDate)
             # C_outvarArray = outvarArray.ctypes.data_as(POINTER(POINTER(c_float)))
@@ -320,15 +324,22 @@ class ueb(feed_forward.feed_forward_wrapper):
             # RUN THE UEB CALCS
             ModelStartHour = 1
 
+            # SiteState[10] = 6.5999
+            # parvalArray[10] = 0.05
+            # 3 -1 0.98 2.09 2 0.01 337 1700 0.05 20 0.1 0.25 0.85 0.65 0.278 1.11 0.0654 1 -9999 -9999 0.001 0 0.98 0.5 0 0.5 0.00462629 0.25 0.5 0.857143 0.16 0.5
+            # 0 0 0.25 273.15 -8.92999 -8.93 -8.92999 0.921 4.405 286.882 0 0x7fff5fbfa640 0x7fff5fbfa720 8.40779e-45 0 0 0 -4.97582e-29 1.83671e-40 0 285.418 285.418 1.4013e-45 2.49644e-35 0 0 0 2.24208e-44 0 0 0
+
+            # 3 -1 0.98 2.09 2 0.01 337 1700 0.05 20 0.1 1.8 0.85 0.65 0.278 1.11 0.0654 1 -9999 -9999 0.001 2.625 0.98 0.5 0 0.5 0.00462629 0.25 0.5 0.857143 0.16 0.5
+
+            # print "Python SiteState: ",
+            # for i in xrange(32):
+            #     print SiteState[i], " ",
+            # print " "
 
             self.__uebLib.RUNUEB(tsvarArray, C_SiteState, parvalArray, byref(pointer(C_outvarArray)), C_ModelStartDate, C_ModelStartHour, C_ModelEndDate, C_ModelEndHour, C_ModelDt, C_ModelUTCOffset);
 
 
-            print "RESULT: ", C_outvarArray[5][i]
-
-
-            a = 1
-
+            print i, " of ", len(activeCells)
 
 
         # todo: move this to finish

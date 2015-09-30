@@ -383,11 +383,17 @@ class CheckListCtrl(wx.ListCtrl, CheckListCtrlMixin, ListCtrlAutoWidthMixin):
 
 class SiteViewer(wx.Frame):
     def __init__(self, siteObject):
-        wx.Frame.__init__(self, parent=None, id=-1, title="Site Viewer", pos=wx.DefaultPosition,
-                          size=wx.Size(550, 350))
-        self.siteObject = siteObject
+        #wx.Frame.__init__(self, parent=None, id=-1, title="Site Viewer", pos=wx.DefaultPosition,
+        #                  size=wx.Size(550, 350))
+        wx.Frame.__init__(self, None)
 
-        panel = wx.Panel(self, -1)
+        self.siteObject = siteObject
+        self.SetSize(wx.Size(900, 500))
+        self.grid = wx.Grid(self, -1)
+        self.Show()
+        panel = wx.Panel(self, True)
+        '''panel = wx.Panel(self, -1)
+        print "die here?"
 
         vbox = wx.BoxSizer(wx.VERTICAL)
         hbox = wx.BoxSizer(wx.HORIZONTAL)
@@ -431,7 +437,7 @@ class SiteViewer(wx.Frame):
         # hbox.Add(lowerPanel, 1, wx.EXPAND)
         # hbox.Add((3, -1))
 
-        panel.SetSizer(vbox)
+        panel.SetSizer(vbox)'''
 
         self.Centre()
         self.Show(True)

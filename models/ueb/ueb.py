@@ -30,16 +30,16 @@ class ueb(feed_forward.feed_forward_wrapper):
         with open(conFile, 'r') as f:
             # lines = f.readlines()
             lines = f.read().splitlines()  # this will auto strip the \n \r
-            paramFile = './TWDEF_distributed/'+lines[1]
-            sitevarFile = './TWDEF_distributed/'+lines[2]
-            inputconFile = './TWDEF_distributed/'+lines[3]
-            outputconFile = './TWDEF_distributed/'+lines[4]
-            watershedFile = './TWDEF_distributed/'+lines[5]
-            wsvarName = lines[6].split(' ')[0]
-            wsycorName = lines[6].split(' ')[1]
-            wsxcorName = lines[6].split(' ')[2]
-            aggoutputconFile = './TWDEF_distributed/'+lines[7]
-            aggoutputFile = './TWDEF_distributed/'+lines[8]
+            C_paramFile = './TWDEF_distributed/'+lines[1]
+            C_sitevarFile = './TWDEF_distributed/'+lines[2]
+            C_inputconFile = './TWDEF_distributed/'+lines[3]
+            C_outputconFile = './TWDEF_distributed/'+lines[4]
+            C_watershedFile = './TWDEF_distributed/'+lines[5]
+            C_wsvarName = lines[6].split(' ')[0]
+            C_wsycorName = lines[6].split(' ')[1]
+            C_wsxcorName = lines[6].split(' ')[2]
+            C_aggoutputconFile = './TWDEF_distributed/'+lines[7]
+            C_aggoutputFile = './TWDEF_distributed/'+lines[8]
             ModelStartDate = [int(float(l)) for l in lines[9].split(' ') if l != '']
             ModelEndDate = [int(float(l)) for l in lines[10].split(' ') if l != '']
             ModelDt = float(lines[11])
@@ -49,36 +49,36 @@ class ueb(feed_forward.feed_forward_wrapper):
 
 
 
-        wsxcorArray = c_float()
-        wsycorArray = c_float()
-        wsArray = pointer(pointer(c_int32()))
-        dimlen1 = c_int()
-        dimlen2 = c_int()
+        C_wsxcorArray = c_float()
+        C_wsycorArray = c_float()
+        C_wsArray = pointer(pointer(c_int32()))
+        C_dimlen1 = c_int()
+        C_dimlen2 = c_int()
         totalgrid = 0
-        wsfillVal = c_int(-9999)
+        C_wsfillVal = c_int(-9999)
         npar = c_int(32)
         tinitTime = c_int(0)
-        parvalArray = pointer(c_float(0));
+        C_parvalArray = pointer(c_float(0));
         numOut = 70 # hack: number of outputs?
 
-        pOut = pointer(pointOutput())
-        aggOut = pointer(aggOutput())
-        ncOut = pointer(ncOutput())
-        npout = c_int(0)
-        nncout = c_int(0)
-        naggout = c_int(0)
-        nZones = c_int(0)
+        C_pOut = pointer(pointOutput())
+        C_aggOut = pointer(aggOutput())
+        C_ncOut = pointer(ncOutput())
+        C_npout = c_int(0)
+        C_nncout = c_int(0)
+        C_naggout = c_int(0)
+        C_nZones = c_int(0)
 
-        tNameout = c_char_p("time")
+        C_tNameout = c_char_p("time")
         tunits = (c_char*256)()
-        tUnitsout = pointer(tunits)
-        tlong_name = c_char_p("time")
-        tcalendar = c_char_p("standard")
+        C_tUnitsout = pointer(tunits)
+        C_tlong_name = c_char_p("time")
+        C_tcalendar = c_char_p("standard")
         t_out = pointer(c_float(0))
-        out_fillVal = c_float(-9999.0)
+        C_out_fillVal = c_float(-9999.0)
 
-        outDimord = c_int(0)
-        aggoutDimord = c_int(1)
+        C_outDimord = c_int(0)
+        C_aggoutDimord = c_int(1)
         outvarindx = c_int(17)
         aggoutvarindx = c_int(17)
         size = c_int()
@@ -97,32 +97,31 @@ class ueb(feed_forward.feed_forward_wrapper):
         uebVars = (c_char_p * 70)("Year", "Month", "Day", "dHour", "atff", "HRI", "Eacl", "Ema", "conZen", "Ta", "P", "V", "RH", "Qsi", "Qli", "Qnet","Us", "SWE", "tausn", "Pr", "Ps", "Alb", "QHs", "QEs", "Es", "SWIT", "QMs", "Q", "FM", "Tave", "TSURFs", "cump", "cumes", "cumMr", "Qnet", "smelt", "refDepth", "totalRefDepth", "cf", "Taufb", "Taufd", "Qsib", "Qsid", "Taub", "Taud", "Qsns", "Qsnc", "Qlns", "Qlnc", "Vz", "Rkinsc", "Rkinc", "Inmax", "intc", "ieff", "Ur", "Wc", "Tc", "Tac", "QHc", "QEc", "Ec", "Qpc", "Qmc", "Mc", "FMc", "SWIGM", "SWISM", "SWIR", "errMB")
 
 
-        zName = c_char_p("Outletlocations")
+        C_zName = c_char_p("Outletlocations")
 
-        # float *tcorvar[13], *tsvarArray[13], *tsvarArrayTemp[5];
-        tcorvar = pointer((c_float * 13)())
-        tsvarArray = pointer((c_float * 13)())
-        tsvarArrayTemp = pointer((c_float * 5)())
+        C_tcorvar = pointer((c_float * 13)())
+        C_tsvarArray = pointer((c_float * 13)())
+        C_tsvarArrayTemp = pointer((c_float * 5)())
 
 
 
         #todo: [#] == pointer, * == pointer
 
-        tsvarArray = pointer((POINTER(c_float)*13)())
+        C_tsvarArray = pointer((POINTER(c_float)*13)())
 
-        ntimesteps = pointer((c_int * 5)())
+        C_ntimesteps = pointer((c_int * 5)())
 
         # create pointer to instance of sitevar struct array
-        strsvArray = pointer((sitevar * 32)())
+        C_strsvArray = pointer((sitevar * 32)())
 
         # create pointer to instance of inpforcvar struct array
-        strinpforcArray = pointer((inpforcvar * 13)())
+        C_strinpforcArray = pointer((inpforcvar * 13)())
 
         # mask = c_float()
         # pcap_lookupnet(dev, ctypes.byref(net), ctypes.byref(mask), errbuf)
 
         # read watershed netcdf file
-        self.__uebLib.readwsncFile(watershedFile, wsvarName, wsycorName, wsxcorName, byref(wsycorArray), byref(wsxcorArray), byref(wsArray), byref(dimlen1), byref(dimlen2), byref(wsfillVal))
+        self.__uebLib.readwsncFile(C_watershedFile, C_wsvarName, C_wsycorName, C_wsxcorName, byref(C_wsycorArray), byref(C_wsxcorArray), byref(C_wsArray), byref(C_dimlen1), byref(C_dimlen2), byref(C_wsfillVal))
 
 
         # wsArray1D = numpy.empty((dimlen1.value*dimlen2.value),dtype=numpy.float)
@@ -130,35 +129,35 @@ class ueb(feed_forward.feed_forward_wrapper):
         #                        numpy.arange(0,dimlen2.value, 1))
         # wsArray1D = wxi * dimlen2.value + wyj
 
-        wsArray1D = numpy.empty((dimlen1.value*dimlen2.value),dtype=numpy.float)
-        for i in xrange(dimlen1.value) :
-            for j in xrange(dimlen2.value):
-                wsArray1D[i*dimlen2.value + j] = wsArray[i][j];
+        wsArray1D = numpy.empty((C_dimlen1.value*C_dimlen2.value),dtype=numpy.float)
+        for i in xrange(C_dimlen1.value) :
+            for j in xrange(C_dimlen2.value):
+                wsArray1D[i*C_dimlen2.value + j] = C_wsArray[i][j];
 
         # zvalues is the unique set of wsArray1D
         zValues = list(set(wsArray1D))
         # fillset = [wsfillVal]
 
         # zVal is the set of zValues that do not equal wsFillVal
-        zVal = [zValues[i] for i in xrange(len(zValues)) if zValues[i] != wsfillVal]
+        zVal = [zValues[i] for i in xrange(len(zValues)) if zValues[i] != C_wsfillVal]
 
-        nZones = len(zVal)
-        z_ycor = [0.0 for i in xrange(nZones)]
-        z_xcor = [0.0 for i in xrange(nZones)]
+        C_nZones = len(zVal)
+        z_ycor = [0.0 for i in xrange(C_nZones)]
+        z_xcor = [0.0 for i in xrange(C_nZones)]
 
 
         # read params (#194)
-        self.__uebLib.readParams(paramFile, byref(parvalArray), npar)
+        self.__uebLib.readParams(C_paramFile, byref(C_parvalArray), npar)
 
         # read site variables (#200)
         # void readSiteVars(const char* inpFile, sitevar *&svArr)
         # self.__uebLib.readSiteVars.argtypes = [POINTER(c_char), POINTER(sitevar)]
-        self.__uebLib.readSiteVars(sitevarFile, byref(strsvArray))
+        self.__uebLib.readSiteVars(C_sitevarFile, byref(C_strsvArray))
 
 
         # read 2d NetCDF Data
         for i  in range(0,32):
-            a = strsvArray.contents[i]
+            a = C_strsvArray.contents[i]
             if a.svType == 1:
                 print "%d %s %s\n" % (i, a.svFile,a.svVarName)
                 retvalue = self.__uebLib.read2DNC('./TWDEF_distributed/'+a.svFile, a.svVarName, byref(a.svArrayValues))
@@ -166,12 +165,12 @@ class ueb(feed_forward.feed_forward_wrapper):
 
         #//read input /forcing control file--all possible entries of input control have to be provided
         #readInputForcVars(inputconFile, strinpforcArray);
-        print 'inputconFile: ',inputconFile
-        print 'strinpforcArray: ', strinpforcArray.contents[0].infFile
+        print 'inputconFile: ',C_inputconFile
+        print 'strinpforcArray: ', C_strinpforcArray.contents[0].infFile
 
         # read input force variables (main.cpp, line 219)
-        self.__uebLib.readInputForcVars(cast(inputconFile,c_char_p), strinpforcArray)
-        print 'strinpforcArray: ', strinpforcArray.contents[0].infFile
+        self.__uebLib.readInputForcVars(cast(C_inputconFile,c_char_p), C_strinpforcArray)
+        print 'strinpforcArray: ', C_strinpforcArray.contents[0].infFile
 
 
         # calculate model time span as a julian date (main.cpp, line 220)
@@ -190,19 +189,19 @@ class ueb(feed_forward.feed_forward_wrapper):
         print 'Number of time steps: ', numTimeStep
 
         # read forcing data (main.cpp, line 226)
-        if strsvArray.contents[16].svType != 3: # no accumulation zone (fixme: ???)
+        if C_strsvArray.contents[16].svType != 3: # no accumulation zone (fixme: ???)
             for it in xrange(13):
-                inftype = strinpforcArray.contents[it].infType
-                print 'infFile: ',strinpforcArray.contents[it].infFile
+                inftype = C_strinpforcArray.contents[it].infType
+                print 'infFile: ',C_strinpforcArray.contents[it].infFile
                 if inftype == 0:
-                    self.__uebLib.readTextData('./TWDEF_distributed/'+strinpforcArray.contents[it].infFile, byref(tsvarArray.contents[it]), byref(ntimesteps[0]))
+                    self.__uebLib.readTextData('./TWDEF_distributed/'+C_strinpforcArray.contents[it].infFile, byref(C_tsvarArray.contents[it]), byref(C_ntimesteps[0]))
 
                 elif inftype == 2 or inftype == -1:
-                    tsvarArray.contents[it] = (c_float * 2)()
-                    ntimesteps.contents[0] = 2
+                    C_tsvarArray.contents[it] = (c_float * 2)()
+                    C_ntimesteps.contents[0] = 2
                     # copy the default value if a single value is the option
-                    tsvarArray.contents[it][0] = strinpforcArray.contents[it].infType
-                    tsvarArray.contents[it][1] = strinpforcArray.contents[it].infdefValue
+                    C_tsvarArray.contents[it][0] = C_strinpforcArray.contents[it].infType
+                    C_tsvarArray.contents[it][1] = C_strinpforcArray.contents[it].infdefValue
 
         # create a numpy array for outputs
         outvarArray = numpy.zeros(shape=(numOut, numTimeStep), dtype=numpy.float, order="C")
@@ -216,130 +215,153 @@ class ueb(feed_forward.feed_forward_wrapper):
 
 
         # total grid size to compute progess
-        totalgrid = dimlen1.value*dimlen2.value
+        totalgrid = C_dimlen1.value*C_dimlen2.value
 
         # read output control file (main.cpp, line 251)
         # readOutputControl(outputconFile, aggoutputconFile, pOut, ncOut, aggOut, npout, nncout, naggout);
 
-        self.__uebLib.readOutputControl(cast(outputconFile,c_char_p), cast(aggoutputconFile, c_char_p),
-                                        byref(pOut), byref(ncOut), byref(aggOut),
-                                        byref(npout), byref(nncout), byref(naggout))
+        self.__uebLib.readOutputControl(cast(C_outputconFile,c_char_p), cast(C_aggoutputconFile, c_char_p),
+                                        byref(C_pOut), byref(C_ncOut), byref(C_aggOut),
+                                        byref(C_npout), byref(C_nncout), byref(C_naggout))
 
 
         # create output netcdf
-        outtSteps = numTimeStep / outtStride
-        t_out = numpy.empty(shape=(outtSteps), dtype=numpy.float, order="C")
-        for i in xrange(outtSteps):
+        C_outtSteps = numTimeStep / outtStride
+        t_out = numpy.empty(shape=(C_outtSteps), dtype=numpy.float, order="C")
+        for i in xrange(C_outtSteps):
             t_out[i] = i*outtStride*ModelDt
 
         # initialize the output arrays
-        aggoutvarArray = numpy.zeros((nZones,naggout.value, outtSteps), dtype=numpy.float)
-        totalAgg = numpy.empty((outtSteps,), dtype=numpy.float)
-        ZonesArr = numpy.zeros((nZones,), dtype=numpy.int32)
-        # for j in xrange(nZones):
-        #     ZonesArr[j] = 0
-            # aggoutvarArray[j] = numpy.empty((naggout.value,), dtype=numpy.float)
-            # for i in xrange(naggout.value):
-            #     aggoutvarArray[j][i] = numpy.empty((outtSteps,), dtype=numpy.float)
-            #     for it in xrange(outtSteps):
-            #         aggoutvarArray[j][i][it] = 0.0;
+        aggoutvarArray = numpy.zeros((C_nZones,C_naggout.value, C_outtSteps), dtype=numpy.float)
+        totalAgg = numpy.empty((C_outtSteps,), dtype=numpy.float)
+        ZonesArr = numpy.zeros((C_nZones,), dtype=numpy.int32)
 
         # main.cpp, line 290
         # CREATE 3D NC OUTPUT FILES
         # convert t_out into a float pointer
         C_t_out = t_out.ctypes.data_as(POINTER(c_float))
-        for i in xrange(nncout.value):
+        for i in xrange(C_nncout.value):
             '''
             for (int icout = 0; icout < nncout; icout++)
                 retvalue = create3DNC_uebOutputs(ncOut[icout].outfName, (const char*)ncOut[icout].symbol, (const char*)ncOut[icout].units, tNameout, tUnitsout,
             tlong_name, tcalendar, outtSteps, outDimord, t_out, &out_fillVal, watershedFile, wsvarName, wsycorName, wsxcorName);
             '''
 
-            retvalue = self.__uebLib.create3DNC_uebOutputs(ncOut[i].outfName, cast(ncOut[i].symbol, c_char_p), cast(ncOut[i].units, c_char_p), tNameout, tUnitsout, tlong_name, tcalendar, outtSteps, outDimord, C_t_out, byref(out_fillVal), watershedFile, wsvarName, wsycorName, wsxcorName);
+            retvalue = self.__uebLib.create3DNC_uebOutputs(C_ncOut[i].outfName, cast(C_ncOut[i].symbol, c_char_p), cast(C_ncOut[i].units, c_char_p), C_tNameout, C_tUnitsout, C_tlong_name, C_tcalendar, C_outtSteps, C_outDimord, C_t_out, byref(C_out_fillVal), C_watershedFile, C_wsvarName, C_wsycorName, C_wsxcorName);
 
         # CREATE 3D NC AGGREGATE OUTPUT FILE
         # convert z_ycor and x_xcor from list into ctype
         C_z_xcor = numpy.asarray(z_xcor).ctypes.data_as(POINTER(c_float))
         C_z_ycor = numpy.asarray(z_ycor).ctypes.data_as(POINTER(c_float))
-        retvalue = self.__uebLib.create3DNC_uebAggregatedOutputs(aggoutputFile, aggOut, naggout, tNameout, tUnitsout, tlong_name, tcalendar, outtSteps, aggoutDimord, C_t_out, byref(out_fillVal), watershedFile, wsvarName, wsycorName, wsxcorName, nZones, zName, C_z_ycor, C_z_xcor);
+        retvalue = self.__uebLib.create3DNC_uebAggregatedOutputs(C_aggoutputFile, C_aggOut, C_naggout, C_tNameout, C_tUnitsout, C_tlong_name, C_tcalendar, C_outtSteps, C_aggoutDimord, C_t_out, byref(C_out_fillVal), C_watershedFile, C_wsvarName, C_wsycorName, C_wsxcorName, C_nZones, C_zName, C_z_ycor, C_z_xcor);
 
 
         print "\nBegin Computation: \n"
 
+
+
         # main.cpp, line 303
         activeCells = []
-        for iy in xrange(dimlen1.value):
-            for jx in xrange(dimlen2.value):
-                if wsArray[iy][jx] != wsfillVal.value and strsvArray.contents[16].svType != 3:
+        for iy in xrange(C_dimlen1.value):
+            for jx in xrange(C_dimlen2.value):
+                if C_wsArray[iy][jx] != C_wsfillVal.value and C_strsvArray.contents[16].svType != 3:
                     activeCells.append((iy, jx))
 
+
+        # Initialize SiteState
         SiteState = numpy.zeros((32,))
+
+        # convert Simulation Time parameters into ctypes
+        C_ModelStartDate = (c_int * len(ModelStartDate))(*ModelStartDate)
+        C_ModelEndDate =(c_int * len(ModelEndDate))(*ModelEndDate)
+        C_ModelDt = c_double(ModelDt)
+        C_ModelUTCOffset = c_double(ModelUTCOffset)
+        C_ModelStartHour = c_double(ModelStartHour)
+        C_ModelEndHour = c_double(ModelEndHour)
+
         for i in xrange(len(activeCells)):
 
             # track grid cell
-            uebCellY = activeCells[i][0]
-            uebCellX = activeCells[i][1]
+            C_uebCellY = activeCells[i][0]
+            C_uebCellX = activeCells[i][1]
 
             for s in xrange(32):
-
-                if strsvArray.contents[s].svType == 1:
-                    # print i, s, strsvArray.contents[s].svArrayValues[uebCellY][uebCellX]
-                    SiteState[s] = strsvArray.contents[s].svArrayValues[uebCellY][uebCellX]
+                if C_strsvArray.contents[s].svType == 1:
+                    SiteState[s] = C_strsvArray.contents[s].svArrayValues[C_uebCellY][C_uebCellX]
                 else:
-                    SiteState[s] = strsvArray.contents[s].svdefValue
+                    SiteState[s] = C_strsvArray.contents[s].svdefValue
+
+            # convert SiteState into a ctype
+            C_SiteState = (c_float * len(SiteState))(*SiteState)
 
             for t in xrange(13):
+
                 # HACK: Everything inside this 'if' statement needs to be checked!!!!
-                if strinpforcArray.contents[t].infType == 1:
+                if C_strinpforcArray.contents[t].infType == 1:
                     print 'You are in un-tested code! '
                     ncTotaltimestep = 0;
 
-                    for numNc in xrange(strinpforcArray[it].numNcfiles):
+                    for numNc in xrange(C_strinpforcArray[it].numNcfiles):
                         # read 3D netcdf data
-                        tsInputfile = strinpforcArray[t].infFile + numNc + '.nc'
+                        tsInputfile = C_strinpforcArray[t].infFile + numNc + '.nc'
 
-                        retvalue = self.__uebLib.readNC_TS(tsInputfile, strinpforcArray.contents[t].infvarName, strinpforcArray.contents[t].inftimeVar, wsycorName, wsxcorName, byref(tsvarArrayTemp[numNc]), byref(tcorvar[it]), uebCellY, uebCellX, byref(ntimesteps[numNc]));
+                        retvalue = self.__uebLib.readNC_TS(tsInputfile, C_strinpforcArray.contents[t].infvarName, C_strinpforcArray.contents[t].inftimeVar, C_wsycorName, C_wsxcorName, byref(C_tsvarArrayTemp[numNc]), byref(C_tcorvar[it]), C_uebCellY, C_uebCellX, byref(C_ntimesteps[numNc]));
 
-                        ncTotaltimestep += ntimesteps[numNc];
+                        ncTotaltimestep += C_ntimesteps[numNc];
 
-                    tsvarArray[t] = (c_float * ncTotaltimestep)
+                    C_tsvarArray[t] = (c_float * ncTotaltimestep)
                     tinitTime = 0
-                    for numNc in xrange(strinpforcArray.contents[t].numNcFiles):
-                        for tts in xrange(ntimesteps[numNc]):
-                            tsvarArray.contents[t][tts + tinitTime] = tsvarArrayTemp.contents[numNc][tts]
-                        tinitTime += ntimesteps[numNc]
+                    for numNc in xrange(C_strinpforcArray.contents[t].numNcFiles):
+                        for tts in xrange(C_ntimesteps[numNc]):
+                            C_tsvarArray.contents[t][tts + tinitTime] = C_tsvarArrayTemp.contents[numNc][tts]
+                        tinitTime += C_ntimesteps[numNc]
 
-            # convert SiteState into ctype
-            # C_SiteState = SiteState.ctypes.data_as(POINTER(c_float))  # fixme ???
-            C_SiteState = (c_float * len(SiteState))(*SiteState)
-            C_ModelStartDate = (c_int * len(ModelStartDate))(*ModelStartDate)
-            C_ModelEndDate =(c_int * len(ModelEndDate))(*ModelEndDate)
-            # C_outvarArray = outvarArray.ctypes.data_as(POINTER(POINTER(c_float)))
-            # C_outvarArray = outvarArray.ctypes.data_as((POINTER(c_float)))
-            # C_outvarArray = pointer(outvarArray.ctypes.data_as(POINTER(POINTER(c_float))))
-            C_ModelDt = c_double(ModelDt)
-            C_ModelUTCOffset = c_double(ModelUTCOffset)
-            C_ModelStartHour = c_double(ModelStartHour)
-            C_ModelEndHour = c_double(ModelEndHour)
+
+
             # RUN THE UEB CALCS
             ModelStartHour = 1
-
-            # SiteState[10] = 6.5999
-            # parvalArray[10] = 0.05
-            # 3 -1 0.98 2.09 2 0.01 337 1700 0.05 20 0.1 0.25 0.85 0.65 0.278 1.11 0.0654 1 -9999 -9999 0.001 0 0.98 0.5 0 0.5 0.00462629 0.25 0.5 0.857143 0.16 0.5
-            # 0 0 0.25 273.15 -8.92999 -8.93 -8.92999 0.921 4.405 286.882 0 0x7fff5fbfa640 0x7fff5fbfa720 8.40779e-45 0 0 0 -4.97582e-29 1.83671e-40 0 285.418 285.418 1.4013e-45 2.49644e-35 0 0 0 2.24208e-44 0 0 0
-
-            # 3 -1 0.98 2.09 2 0.01 337 1700 0.05 20 0.1 1.8 0.85 0.65 0.278 1.11 0.0654 1 -9999 -9999 0.001 2.625 0.98 0.5 0 0.5 0.00462629 0.25 0.5 0.857143 0.16 0.5
-
-            # print "Python SiteState: ",
-            # for i in xrange(32):
-            #     print SiteState[i], " ",
-            # print " "
-
-            self.__uebLib.RUNUEB(tsvarArray, C_SiteState, parvalArray, byref(pointer(C_outvarArray)), C_ModelStartDate, C_ModelStartHour, C_ModelEndDate, C_ModelEndHour, C_ModelDt, C_ModelUTCOffset);
+            self.__uebLib.RUNUEB(C_tsvarArray, C_SiteState, C_parvalArray, byref(pointer(C_outvarArray)), C_ModelStartDate, C_ModelStartHour, C_ModelEndDate, C_ModelEndHour, C_ModelDt, C_ModelUTCOffset);
 
 
             print i, " of ", len(activeCells)
+
+
+        # write nc output
+        for i in xrange(C_nncout):
+            for j in xrange(70):
+                if C_ncOut[i].symbol == uebVars[j]:
+                    outvarindx = j;
+                    break
+            for j in xrange(C_outtSteps):
+                t_out[j] = outvarArray[outvarindx][outtStride*j]
+
+            retvalue = self.__uebLib.WriteTSto3DNC(cast(C_ncOut[i].outfName, c_char_p), cast(C_ncOut[i].symbol, c_char_p), C_outDimord, C_uebCellY, C_uebCellX, C_outtSteps, t_out)
+
+        # write point outputs
+        for i in xrange(C_npout):
+            # todo: this is inefficient
+            if C_uebCellY == C_pOut[i].ycoord and C_uebCellX == C_pOut[i].xcoord:
+                with open(C_pOut[i].outfName, 'w') as f:
+                    for step in xrange(numTimeStep):
+                        f.write("\n %d %d %d %8.3f " % (outvarArray[0][step],  outvarArray[1][step], outvarArray[2][step], outvarArray[3][step]) )
+                        for vnum in range(4,70):
+                            f.write(" %16.6f " % outvarArray[vnum][step])
+
+        # # write aggregated outputs
+        # zoneid = wsArray[uebCellY][uebCellX] - 1
+        # ZonesArr[zoneid] += 1
+        # for i in xrange(naggout):
+        #     # todo: this is inefficient
+        #     for v in xrange(70):
+        #         if aggOut[i].symbol == uebVars[v]:
+        #             aggoutvarindx = v
+        #             break
+        #     for t in xrange(outtSteps):
+        #         aggoutvarArray[zoneid][i][t] += outvarArray[aggoutvarindx][outtStride*t]
+        #
+        # for i in xrange(naggout):
+
+
 
 
         # todo: move this to finish

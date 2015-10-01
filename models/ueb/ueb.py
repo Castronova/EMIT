@@ -12,6 +12,8 @@ import jdutil
 import math
 import numpy
 
+
+
 class ueb(feed_forward.feed_forward_wrapper):
 
     def __init__(self, config_params):
@@ -23,8 +25,10 @@ class ueb(feed_forward.feed_forward_wrapper):
         self.__uebLib = cdll.LoadLibrary(join(os.path.dirname(__file__),lib))
         # print 'UEB Loaded Successfully'
 
+
         # todo: move into config
         conFile = './TWDEF_distributed/control.dat'
+        curdir = os.path.dirname(os.path.abspath(conFile))
 
         # get param, sitevar, input, output, and watershed files
         with open(conFile, 'r') as f:
@@ -321,26 +325,29 @@ class ueb(feed_forward.feed_forward_wrapper):
             # RUN THE UEB CALCS
             ModelStartHour = 1
             self.__uebLib.RUNUEB(C_tsvarArray, C_SiteState, C_parvalArray, byref(pointer(C_outvarArray)), C_ModelStartDate, C_ModelStartHour, C_ModelEndDate, C_ModelEndHour, C_ModelDt, C_ModelUTCOffset);
+            break
 
-
-            print i, " of ", len(activeCells)
+            print i+1, " of ", len(activeCells)
 
 
         # write nc output
-        for i in xrange(C_nncout):
+        for i in xrange(C_nncout.value):
             for j in xrange(70):
                 if C_ncOut[i].symbol == uebVars[j]:
-                    outvarindx = j;
+                    outvarindx.value = j;
                     break
             for j in xrange(C_outtSteps):
-                t_out[j] = outvarArray[outvarindx][outtStride*j]
+                t_out[j] = outvarArray[outvarindx.value][outtStride*j]
 
-            retvalue = self.__uebLib.WriteTSto3DNC(cast(C_ncOut[i].outfName, c_char_p), cast(C_ncOut[i].symbol, c_char_p), C_outDimord, C_uebCellY, C_uebCellX, C_outtSteps, t_out)
+            print 'Writing Output: ', os.path.join(curdir, C_ncOut[i].outfName)
+            C_t_out = t_out.ctypes.data_as(POINTER(c_float))
+            retvalue = self.__uebLib.WriteTSto3DNC(cast(os.path.join(curdir, C_ncOut[i].outfName), c_char_p), cast(C_ncOut[i].symbol, c_char_p), C_outDimord, C_uebCellY, C_uebCellX, C_outtSteps, C_t_out)
 
         # write point outputs
-        for i in xrange(C_npout):
+        for i in xrange(C_npout.value):
             # todo: this is inefficient
             if C_uebCellY == C_pOut[i].ycoord and C_uebCellX == C_pOut[i].xcoord:
+                print 'Writing Output: ', C_pOut[i].outfName
                 with open(C_pOut[i].outfName, 'w') as f:
                     for step in xrange(numTimeStep):
                         f.write("\n %d %d %d %8.3f " % (outvarArray[0][step],  outvarArray[1][step], outvarArray[2][step], outvarArray[3][step]) )

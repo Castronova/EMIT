@@ -380,30 +380,35 @@ class CheckListCtrl(wx.ListCtrl, CheckListCtrlMixin, ListCtrlAutoWidthMixin):
 
 class SiteViewer(wx.Frame):
     def __init__(self, siteObject):
-
         wx.Frame.__init__(self, parent=None, id=-1, title="Site Viewer", pos=wx.DefaultPosition, size=(550, 350),
-                          style=wx.STAY_ON_TOP | wx.DEFAULT_FRAME_STYLE)
+                          style=wx.STAY_ON_TOP | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         self.siteobject = siteObject
 
         panel = wx.Panel(self)
-
-        vbox = wx.BoxSizer(wx.VERTICAL)
-
         toppanel = wx.Panel(panel)
         middlepanel = wx.Panel(panel, size=(-1, 50))
         lowerpanel = wx.Panel(panel)
 
         toppanel.SetBackgroundColour("#AAFFCC")
+
         middlepanel.SetBackgroundColour("#00FF00")
         middlepanel.SetSize(wx.Size(100, 20))
-        lowerpanel.SetBackgroundColour("#FF00FF")
+        startDateText = wx.StaticText(parent=middlepanel, id=-1, label="Start Date", pos=(10, 10))
+        startDateBox = wx.TextCtrl(middlepanel, id=-1, value="Today", pos=(20, 20), size=(100, 0))
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(startDateText, 0, wx.EXPAND | wx.ALL, 2)
+        hbox.Add(startDateBox, 0, wx.EXPAND | wx.ALL, 2)
+        middlepanel.SetSizer(hbox)
 
+        lowerpanel.SetBackgroundColour("#FF00FF")
         # Column names
         self.variableList = CheckListCtrl(lowerpanel)
         self.variableList.InsertColumn(0, "Variable")
         self.variableList.InsertColumn(1, "Value")
         self.variableList.InsertColumn(2, "Unit")
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
 
         vbox.Add(toppanel, 1, wx.EXPAND | wx.ALL, 2)
         vbox.Add(middlepanel, 0, wx.EXPAND | wx.ALL, 2)
@@ -420,13 +425,12 @@ class SiteViewer(wx.Frame):
         for key, value, in data.iteritems():
             pos = self.variableList.InsertStringItem(count, str(key))
             self.variableList.SetStringItem(pos, 1, value)
+            count += 1
 
         # Auto size column
         self.variableList.setResizeColumn(0)
         self.variableList.setResizeColumn(1)
         self.variableList.setResizeColumn(2)
-
-
 
 
 class AddConnectionDialog(wx.Dialog):

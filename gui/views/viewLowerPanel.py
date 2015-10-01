@@ -261,6 +261,7 @@ class TimeSeriesTab(wx.Panel):
 
     def prepareODM1_Model(self, siteObject):
         siteview = SiteViewer(siteObject)
+        siteview.populateVariablesList(self.api, siteObject.sitecode)
         return
 
     def setup_odm1_table(self, api):
@@ -372,28 +373,59 @@ from wx.lib.mixins.listctrl import CheckListCtrlMixin, ListCtrlAutoWidthMixin
 
 class CheckListCtrl(wx.ListCtrl, CheckListCtrlMixin, ListCtrlAutoWidthMixin):
     def __init__(self, parent):
-        wx.ListCtrl.__init__(self, parent, -1, style=wx.LC_REPORT | wx.SUNKEN_BORDER)
+        wx.ListCtrl.__init__(self, parent, -1, size=(545, 130), style=wx.LC_REPORT | wx.SUNKEN_BORDER)
         CheckListCtrlMixin.__init__(self)
         ListCtrlAutoWidthMixin.__init__(self)
 
 
 class SiteViewer(wx.Frame):
     def __init__(self, siteObject):
-        wx.Frame.__init__(self, parent=None, id=-1, title="Site Viewer", pos=wx.DefaultPosition, size=wx.Size(550, 350),
+
+        wx.Frame.__init__(self, parent=None, id=-1, title="Site Viewer", pos=wx.DefaultPosition, size=(550, 350),
                           style=wx.STAY_ON_TOP | wx.DEFAULT_FRAME_STYLE)
 
         self.siteobject = siteObject
 
         panel = wx.Panel(self)
 
-        middlePanel = wx.Panel(panel)
-        lowerpanel = wx.Panel(panel)
-
-        self.plottingPanel = wx.TextCtrl(lowerpanel)
-
         vbox = wx.BoxSizer(wx.VERTICAL)
 
+        toppanel = wx.Panel(panel)
+        middlepanel = wx.Panel(panel, size=(-1, 50))
+        lowerpanel = wx.Panel(panel)
+
+        toppanel.SetBackgroundColour("#AAFFCC")
+        middlepanel.SetBackgroundColour("#00FF00")
+        middlepanel.SetSize(wx.Size(100, 20))
+        lowerpanel.SetBackgroundColour("#FF00FF")
+
+        # Column names
+        self.variableList = CheckListCtrl(lowerpanel)
+        self.variableList.InsertColumn(0, "Variable")
+        self.variableList.InsertColumn(1, "Value")
+        self.variableList.InsertColumn(2, "Unit")
+
+        vbox.Add(toppanel, 1, wx.EXPAND | wx.ALL, 2)
+        vbox.Add(middlepanel, 0, wx.EXPAND | wx.ALL, 2)
+        vbox.Add(lowerpanel, 1, wx.EXPAND | wx.ALL, 2)
+
+        panel.SetSizer(vbox)
+
         self.Show()
+
+    def populateVariablesList(self, api, sitecode):
+        data = api.buildAllSiteCodeVariables(sitecode)
+
+        count = 0
+        for key, value, in data.iteritems():
+            pos = self.variableList.InsertStringItem(count, str(key))
+            self.variableList.SetStringItem(pos, 1, value)
+
+        # Auto size column
+        self.variableList.setResizeColumn(0)
+        self.variableList.setResizeColumn(1)
+        self.variableList.setResizeColumn(2)
+
 
 
 

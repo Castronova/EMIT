@@ -69,19 +69,18 @@ class LogicDatabase(ViewDatabase):
         uniqueId = obj.GetItem(id).GetText()
         try:
             sitecode = obj.GetObjectAt(id).sitecode
-            print "its an OMD1 model"
-            print "site code: " + str(sitecode)
-            self.Parent.prepareODM1_Model(obj.GetObjectAt(id))
-            return
         except:
-            print "ITs an ODM2 model"
-            pass
+            sitecode = None
 
-        try:
-            title = obj.GetObjectAt(id).model_name
-        except:
-            title = obj.GetObjectAt(id).variable
-        Publisher.sendMessage('AddModel', filepath=filename, x=0, y=0, uniqueId=uniqueId, title=title)  # sends message to LogicCanvas.addModel
+        if sitecode is None:
+            try:
+                title = obj.GetObjectAt(id).model_name
+            except:
+                title = obj.GetObjectAt(id).variable
+            Publisher.sendMessage('AddModel', filepath=filename, x=0, y=0, uniqueId=uniqueId, title=title)  # sends message to LogicCanvas.addModel
+
+        else:
+            self.Parent.prepareODM1_Model(obj.GetObjectAt(id))
 
     def getDbSession(self):
         selected_db = self.Parent.connection_combobox.GetStringSelection()
@@ -98,7 +97,6 @@ class LogicDatabase(ViewDatabase):
                     session = dbutils.build_session_from_connection_string(db['connection_string'])
                     return session
 
-                # return db['session']
         return None
 
     def olvrefresh(self):

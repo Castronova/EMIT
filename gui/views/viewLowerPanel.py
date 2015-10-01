@@ -260,12 +260,7 @@ class TimeSeriesTab(wx.Panel):
         return wsdl
 
     def prepareODM1_Model(self, siteObject):
-        #  This method will build a window/frame that will show the variables similar to the
-        #  the test that was built in test_ODM1_table.py.
-        #  Here user will also select the start and end date, export, and add to canvas.
-        #  We could possibly include a graph here.
         siteview = SiteViewer(siteObject)
-        siteview.Show()
         return
 
     def setup_odm1_table(self, api):
@@ -293,9 +288,7 @@ class TimeSeriesTab(wx.Panel):
 
         for key, value in self.getPossibleConnections().iteritems():
             if selected_db == key:
-                self.api = WebServiceApi(value)
-                self.setup_odm1_table(self.api)
-                return
+                return value
 
         self.table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
         self.m_olvSeries.DefineColumns(self.table_columns)
@@ -357,19 +350,22 @@ class TimeSeriesTab(wx.Panel):
                               dbname=db['name'],
                               dbid=db['id'])
                 events.onDbChanged.fire(**kwargs)
-
                 break
 
         return
 
     def OLVRefresh(self, event):
-        if sys.gettrace():
-            #  In debug mode
-            self.refresh_database()
-        else:
-            # Not in debug mode
-            thr = threading.Thread(target=self.refresh_database, name='DATABASE REFRESH THREAD', args=(), kwargs={})
-            thr.start()
+        # if sys.gettrace():
+        #     #  In debug mode
+        #     self.refresh_database()
+        # else:
+        #     # Not in debug mode
+        #     thr = threading.Thread(target=self.refresh_database, name='DATABASE REFRESH THREAD', args=(), kwargs={})
+        #     thr.start()
+        value = self.refresh_database()
+        if value is not None:
+            self.api = WebServiceApi(value)
+            self.setup_odm1_table(self.api)
 
 from wx.lib.mixins.listctrl import CheckListCtrlMixin, ListCtrlAutoWidthMixin
 
@@ -383,84 +379,21 @@ class CheckListCtrl(wx.ListCtrl, CheckListCtrlMixin, ListCtrlAutoWidthMixin):
 
 class SiteViewer(wx.Frame):
     def __init__(self, siteObject):
-        #wx.Frame.__init__(self, parent=None, id=-1, title="Site Viewer", pos=wx.DefaultPosition,
-        #                  size=wx.Size(550, 350))
-        wx.Frame.__init__(self, None)
+        wx.Frame.__init__(self, parent=None, id=-1, title="Site Viewer", pos=wx.DefaultPosition, size=wx.Size(550, 350),
+                          style=wx.STAY_ON_TOP | wx.DEFAULT_FRAME_STYLE)
 
-        self.siteObject = siteObject
-        self.SetSize(wx.Size(900, 500))
-        self.grid = wx.Grid(self, -1)
-        self.Show()
-        panel = wx.Panel(self, True)
-        '''panel = wx.Panel(self, -1)
-        print "die here?"
+        self.siteobject = siteObject
+
+        panel = wx.Panel(self)
+
+        middlePanel = wx.Panel(panel)
+        lowerpanel = wx.Panel(panel)
+
+        self.plottingPanel = wx.TextCtrl(lowerpanel)
 
         vbox = wx.BoxSizer(wx.VERTICAL)
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
 
-        middlePanel = wx.Panel(panel, -1)
-        lowerPanel = wx.Panel(panel, -1)
-
-        self.plottingPanel = wx.TextCtrl(lowerPanel, -1, style=wx.TE_MULTILINE)
-        self.variableList = CheckListCtrl(lowerPanel)
-        self.variableList.InsertColumn(0, 'Variable', width=140)
-        self.variableList.InsertColumn(1, 'Values')
-
-        vbox2 = wx.BoxSizer(wx.VERTICAL)
-
-        sel = wx.Button(middlePanel, -1, 'Select All', size=(100, -1))
-        des = wx.Button(middlePanel, -1, 'Deselect All', size=(100, -1))
-        apply = wx.Button(middlePanel, -1, 'Apply', size=(100, -1))
-
-
-        self.Bind(wx.EVT_BUTTON, self.OnSelectAll, id=sel.GetId())
-        self.Bind(wx.EVT_BUTTON, self.OnDeselectAll, id=des.GetId())
-        self.Bind(wx.EVT_BUTTON, self.OnApply, id=apply.GetId())
-
-        # vbox2.Add(sel, 0, wx.TOP, 5)
-        # vbox2.Add(des)
-        # vbox2.Add(apply)
-        #
-        # middlePanel.SetSizer(vbox2)
-
-        vbox.Add(self.plottingPanel, 0.5, wx.EXPAND)
-        vbox.Add((-1, 10))
-        vbox.Add(middlePanel, 0, wx.EXPAND | wx.RIGHT, 5)
-        vbox.Add(lowerPanel, 1, wx.EXPAND)
-        vbox.Add((3, -1))
-        vbox.Add(self.variableList, 1, wx.EXPAND | wx.Bottom, 3)
-        vbox.Add((-1, 10))
-
-        lowerPanel.SetSizer(vbox)
-
-        # hbox.Add(middlePanel, 0, wx.EXPAND | wx.RIGHT, 5)
-        # hbox.Add(lowerPanel, 1, wx.EXPAND)
-        # hbox.Add((3, -1))
-
-        panel.SetSizer(vbox)'''
-
-        self.Centre()
-        self.Show(True)
-        return
-
-    def OnSelectAll(self, event):
-        num = self.variableList.GetItemCount()
-        for i in range(num):
-            self.variableList.CheckItem(i)
-
-    def OnDeselectAll(self, event):
-        num = self.variableList.GetItemCount()
-        for i in range(num):
-            self.variableList.CheckItem(i, False)
-
-    def OnApply(self, event):
-        num = self.variableList.GetItemCount()
-        for i in range(num):
-            if i == 0: self.plottingPanel.Clear()
-            if self.variableList.IsChecked(i):
-                self.plottingPanel.AppendText(self.variableList.GetItemText(i) + '\n')
-
-
+        self.Show()
 
 
 

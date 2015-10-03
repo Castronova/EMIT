@@ -15,6 +15,7 @@ from coordinator.emitLogging import elog
 from gui.controller import logicConsoleOutput
 import os, sys
 from db.ODM1.WebServiceAPI import WebServiceApi
+from wx.lib.mixins.listctrl import CheckListCtrlMixin, ListCtrlAutoWidthMixin
 import wx.calendar as cal
 
 
@@ -370,7 +371,6 @@ class TimeSeriesTab(wx.Panel):
             self.api = WebServiceApi(value)
             self.setup_odm1_table(self.api)
 
-from wx.lib.mixins.listctrl import CheckListCtrlMixin, ListCtrlAutoWidthMixin
 
 
 class CheckListCtrl(wx.ListCtrl, CheckListCtrlMixin, ListCtrlAutoWidthMixin):
@@ -403,16 +403,16 @@ class SiteViewer(wx.Frame):
 
         self.startDateBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Start Date")
         self.endDateBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="End Date")
-        export = wx.Button(middlepanel, id=wx.ID_ANY, label="Export")
-        addToCanvas = wx.Button(middlepanel, id=wx.ID_ANY, label="Add to Canvas")
+        self.exportBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Export")
+        self.addToCanvasBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Add to Canvas")
 
         hbox.Add(self.startDateBtn, 1, wx.EXPAND | wx.ALL, 2)
         hbox.AddSpacer(40)
         hbox.Add(self.endDateBtn, 1, wx.EXPAND | wx.ALL, 2)
         hbox.AddSpacer(40)
-        hbox.Add(export, 1, wx.EXPAND | wx.ALL, 2)
+        hbox.Add(self.exportBtn, 1, wx.EXPAND | wx.ALL, 2)
         hbox.AddSpacer(40)
-        hbox.Add(addToCanvas, 1, wx.EXPAND | wx.ALL, 2)
+        hbox.Add(self.addToCanvasBtn, 1, wx.EXPAND | wx.ALL, 2)
 
         middlepanel.SetSizer(hbox)
 
@@ -432,10 +432,21 @@ class SiteViewer(wx.Frame):
 
         self.Bind(wx.EVT_BUTTON, self.startDateCalender, self.startDateBtn)
         self.Bind(wx.EVT_BUTTON, self.endDateCalender, self.endDateBtn)
+        self.Bind(wx.EVT_BUTTON, self.addToCanvas, self.addToCanvasBtn)
         self.isCalendarOpen = False  # Used to prevent calendar being open twice
 
         self.Show()
 
+    def addToCanvas(self, event):
+
+        pass
+
+    def endDateCalender(self, event):
+        if self.isCalendarOpen:
+            pass
+        else:
+            Calendar(self, -1, "Calendar", self.endDateBtn)
+        event.Skip()
 
     def populateVariablesList(self, api, sitecode):
         data = api.buildAllSiteCodeVariables(sitecode)
@@ -456,13 +467,6 @@ class SiteViewer(wx.Frame):
             pass
         else:
             Calendar(self, -1, "Calendar", self.startDateBtn)
-        event.Skip()
-
-    def endDateCalender(self, event):
-        if self.isCalendarOpen:
-            pass
-        else:
-            Calendar(self, -1, "Calendar", self.endDateBtn)
         event.Skip()
 
 

@@ -15,6 +15,8 @@ from coordinator.emitLogging import elog
 from gui.controller import logicConsoleOutput
 import os, sys
 from db.ODM1.WebServiceAPI import WebServiceApi
+import wx.calendar as cal
+
 
 class viewLowerPanel:
     def __init__(self, notebook):
@@ -373,7 +375,7 @@ from wx.lib.mixins.listctrl import CheckListCtrlMixin, ListCtrlAutoWidthMixin
 
 class CheckListCtrl(wx.ListCtrl, CheckListCtrlMixin, ListCtrlAutoWidthMixin):
     def __init__(self, parent):
-        wx.ListCtrl.__init__(self, parent, -1, size=(545, 130), style=wx.LC_REPORT | wx.SUNKEN_BORDER)
+        wx.ListCtrl.__init__(self, parent, -1, size=(545, 140), style=wx.LC_REPORT | wx.SUNKEN_BORDER)
         CheckListCtrlMixin.__init__(self)
         ListCtrlAutoWidthMixin.__init__(self)
 
@@ -384,24 +386,36 @@ class SiteViewer(wx.Frame):
                           style=wx.STAY_ON_TOP | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         self.siteobject = siteObject
+        self.startDate = None
+        self.endDate = None
 
         panel = wx.Panel(self)
         toppanel = wx.Panel(panel)
-        middlepanel = wx.Panel(panel, size=(-1, 50))
+        middlepanel = wx.Panel(panel, size=(-1, 35))
         lowerpanel = wx.Panel(panel)
 
-        toppanel.SetBackgroundColour("#AAFFCC")
+        #  Uncomment these to see the panel outline
+        # toppanel.SetBackgroundColour("#AAFFCC")
+        # middlepanel.SetBackgroundColour("#00FF00")
+        # lowerpanel.SetBackgroundColour("#FF00FF")
 
-        middlepanel.SetBackgroundColour("#00FF00")
-        middlepanel.SetSize(wx.Size(100, 20))
-        startDateText = wx.StaticText(parent=middlepanel, id=-1, label="Start Date", pos=(10, 10))
-        startDateBox = wx.TextCtrl(middlepanel, id=-1, value="Today", pos=(20, 20), size=(100, 0))
         hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(startDateText, 0, wx.EXPAND | wx.ALL, 2)
-        hbox.Add(startDateBox, 0, wx.EXPAND | wx.ALL, 2)
+
+        self.startDateBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Start Date")
+        self.endDateBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="End Date")
+        export = wx.Button(middlepanel, id=wx.ID_ANY, label="Export")
+        addToCanvas = wx.Button(middlepanel, id=wx.ID_ANY, label="Add to Canvas")
+
+        hbox.Add(self.startDateBtn, 1, wx.EXPAND | wx.ALL, 2)
+        hbox.AddSpacer(40)
+        hbox.Add(self.endDateBtn, 1, wx.EXPAND | wx.ALL, 2)
+        hbox.AddSpacer(40)
+        hbox.Add(export, 1, wx.EXPAND | wx.ALL, 2)
+        hbox.AddSpacer(40)
+        hbox.Add(addToCanvas, 1, wx.EXPAND | wx.ALL, 2)
+
         middlepanel.SetSizer(hbox)
 
-        lowerpanel.SetBackgroundColour("#FF00FF")
         # Column names
         self.variableList = CheckListCtrl(lowerpanel)
         self.variableList.InsertColumn(0, "Variable")
@@ -416,7 +430,12 @@ class SiteViewer(wx.Frame):
 
         panel.SetSizer(vbox)
 
+        self.Bind(wx.EVT_BUTTON, self.startDateCalender, self.startDateBtn)
+        self.Bind(wx.EVT_BUTTON, self.endDateCalender, self.endDateBtn)
+        self.isCalendarOpen = False  # Used to prevent calendar being open twice
+
         self.Show()
+
 
     def populateVariablesList(self, api, sitecode):
         data = api.buildAllSiteCodeVariables(sitecode)
@@ -431,6 +450,65 @@ class SiteViewer(wx.Frame):
         self.variableList.setResizeColumn(0)
         self.variableList.setResizeColumn(1)
         self.variableList.setResizeColumn(2)
+
+    def startDateCalender(self, event):
+        if self.isCalendarOpen:
+            pass
+        else:
+            Calendar(self, -1, "Calendar", self.startDateBtn)
+        event.Skip()
+
+    def endDateCalender(self, event):
+        if self.isCalendarOpen:
+            pass
+        else:
+            Calendar(self, -1, "Calendar", self.endDateBtn)
+        event.Skip()
+
+
+class Calendar(wx.Dialog):
+    def __init__(self, parent, id, title, button):
+        wx.Dialog.__init__(self, parent, id, title)
+        self.button = button
+
+        self.Parent.isCalendarOpen = True
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        calend = cal.CalendarCtrl(self, -1, wx.DateTime_Now(),
+                                  style=cal.CAL_SHOW_HOLIDAYS | cal.CAL_SEQUENTIAL_MONTH_SELECTION)
+        vbox.Add(calend, 0, wx.EXPAND | wx.ALL, 5)
+        self.Bind(cal.EVT_CALENDAR, self.OnCalSelected, id=calend.GetId())
+
+        vbox.Add((-1, 20))
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        self.text = wx.StaticText(self, -1, 'Date')
+        hbox.Add(self.text)
+        vbox.Add(hbox, 0, wx.LEFT, 8)
+
+        hbox2 = wx.BoxSizer(wx.HORIZONTAL)
+        btn = wx.Button(self, -1, 'Ok')
+        hbox2.Add(btn, 1)
+        vbox.Add(hbox2, 0, wx.ALIGN_CENTER | wx.ALL, 5)
+
+        self.Bind(wx.EVT_BUTTON, self.OnQuit, id=btn.GetId())
+        self.Bind(wx.EVT_CLOSE, self.OnQuit)
+
+        self.SetSizerAndFit(vbox)
+
+        self.Show(True)
+        self.Centre()
+
+
+    def OnCalSelected(self, event):
+        date = event.GetDate().FormatDate()
+        self.text.SetLabel(date)
+        self.button.SetLabelText(date)
+
+    def OnQuit(self, event):
+        self.Parent.isCalendarOpen = False
+        self.Destroy()
 
 
 class AddConnectionDialog(wx.Dialog):

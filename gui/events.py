@@ -12,3 +12,6 @@ onDbChanged = EventHook('onDbChanged')
 
 #  Pre Run Events
 onClickRun = EventHook('onClickRun')
+
+#  Getting site variables to Canvas
+onAddToCanvas = EventHook('onAddToCanvas')

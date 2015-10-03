@@ -54,6 +54,7 @@ class LogicCanvas(ViewCanvas):
         self.arrows = {}
         self.models = {}
         self.pairedModels = []
+        self.siteVariablesSelected = []
 
         self.link_clicks = 0
         self._currentDbSession = None
@@ -88,6 +89,10 @@ class LogicCanvas(ViewCanvas):
         engineEvent.onLinkAdded += self.draw_link
         engineEvent.onSimulationFinished += self.simulation_finished
         events.onDbChanged += self.onDbChanged
+        events.onAddToCanvas += self.setSiteObjectsWithVariables
+
+    def setSiteObjectsWithVariables(self, e):
+        pass
 
     def initSubscribers(self):
         Publisher.subscribe(self.setCursor, "setCursor")

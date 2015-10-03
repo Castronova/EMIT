@@ -11,10 +11,7 @@ from wx.lib.pubsub import pub as Publisher
 from os.path import join, dirname, abspath
 import ConfigParser
 import fnmatch
-# from logicFileDrop import filepath
 from coordinator.emitLogging import elog
-
-
 # todo: refactor
 from gui.views.viewModel import ViewModel
 

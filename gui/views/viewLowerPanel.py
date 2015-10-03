@@ -117,14 +117,15 @@ class TimeSeriesTab(wx.Panel):
 
 
         connection_choices = []
-        self.connection_combobox = wx.Choice(self, wx.ID_ANY, wx.DefaultPosition, wx.Size(200, -1), connection_choices, 0)
+        self.connection_combobox = wx.Choice(self, wx.ID_ANY, wx.DefaultPosition, wx.Size(200, -1), connection_choices,
+                                             0)
         self.__selected_choice_idx = 0
         self.connection_combobox.SetSelection(self.__selected_choice_idx)
 
         self.connection_refresh_button = wx.Button(self, wx.ID_ANY, u"Refresh", wx.DefaultPosition, wx.DefaultSize, 0)
         self.addConnectionButton = wx.Button(self, wx.ID_ANY, u"Add Connection", wx.DefaultPosition, wx.DefaultSize, 0)
         self.m_olvSeries = LogicDatabase(self, pos=wx.DefaultPosition, size=wx.DefaultSize, id=wx.ID_ANY,
-                                         style=wx.LC_REPORT|wx.SUNKEN_BORDER)
+                                         style=wx.LC_REPORT | wx.SUNKEN_BORDER)
         self.table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
         self.m_olvSeries.DefineColumns(self.table_columns)
 
@@ -193,7 +194,7 @@ class TimeSeriesTab(wx.Panel):
             # set the selected choice
             self.connection_combobox.SetSelection( self.__selected_choice_idx)
 
-    def connection_added_status(self,value=None,connection_string=''):
+    def connection_added_status(self, value=None, connection_string=''):
         if value is not None:
             self._connection_added = value
             self._conection_string = connection_string
@@ -263,7 +264,8 @@ class TimeSeriesTab(wx.Panel):
         return wsdl
 
     def prepareODM1_Model(self, siteObject):
-        siteview = SiteViewer(siteObject)
+        self.selectedVariables = []
+        siteview = SiteViewer(self, siteObject)
         siteview.populateVariablesList(self.api, siteObject.sitecode)
         return
 
@@ -381,8 +383,8 @@ class CheckListCtrl(wx.ListCtrl, CheckListCtrlMixin, ListCtrlAutoWidthMixin):
 
 
 class SiteViewer(wx.Frame):
-    def __init__(self, siteObject):
-        wx.Frame.__init__(self, parent=None, id=-1, title="Site Viewer", pos=wx.DefaultPosition, size=(550, 350),
+    def __init__(self, parent, siteObject):
+        wx.Frame.__init__(self, parent=parent, id=-1, title="Site Viewer", pos=wx.DefaultPosition, size=(550, 350),
                           style=wx.STAY_ON_TOP | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         self.siteobject = siteObject
@@ -432,14 +434,19 @@ class SiteViewer(wx.Frame):
 
         self.Bind(wx.EVT_BUTTON, self.startDateCalender, self.startDateBtn)
         self.Bind(wx.EVT_BUTTON, self.endDateCalender, self.endDateBtn)
-        self.Bind(wx.EVT_BUTTON, self.addToCanvas, self.addToCanvasBtn)
+        self.Bind(wx.EVT_BUTTON, self.addToCanvas, id=self.addToCanvasBtn.GetId())
         self.isCalendarOpen = False  # Used to prevent calendar being open twice
 
         self.Show()
 
     def addToCanvas(self, event):
-
-        pass
+        num = self.variableList.GetItemCount()
+        for i in range(num):
+            if self.variableList.IsChecked(i):
+                self.Parent.selectedVariables.append(self.variableList.GetItemText(i))
+        # e = dict()
+        # events.onAddToCanvas.fire(**e)
+        self.Close()
 
     def endDateCalender(self, event):
         if self.isCalendarOpen:
@@ -468,7 +475,6 @@ class SiteViewer(wx.Frame):
         else:
             Calendar(self, -1, "Calendar", self.startDateBtn)
         event.Skip()
-
 
 class Calendar(wx.Dialog):
     def __init__(self, parent, id, title, button):

@@ -452,12 +452,11 @@ class SiteViewer(wx.Frame):
         if self.isCalendarOpen:
             pass
         else:
-            Calendar(self, -1, "Calendar", self.endDateBtn)
+            Calendar(self, -1, "Calendar", self.endDateBtn, "end")
         event.Skip()
 
     def populateVariablesList(self, api, sitecode):
         data = api.buildAllSiteCodeVariables(sitecode)
-
         count = 0
         for key, value, in data.iteritems():
             pos = self.variableList.InsertStringItem(count, str(key))
@@ -469,17 +468,21 @@ class SiteViewer(wx.Frame):
         self.variableList.setResizeColumn(1)
         self.variableList.setResizeColumn(2)
 
+
     def startDateCalender(self, event):
         if self.isCalendarOpen:
             pass
         else:
-            Calendar(self, -1, "Calendar", self.startDateBtn)
+            Calendar(self, -1, "Calendar", self.startDateBtn, "start")
+        print self.endDate
+        print self.startDate
         event.Skip()
 
 class Calendar(wx.Dialog):
-    def __init__(self, parent, id, title, button):
+    def __init__(self, parent, id, title, button, type):
         wx.Dialog.__init__(self, parent, id, title)
         self.button = button
+        self.type = type
 
         self.Parent.isCalendarOpen = True
 
@@ -513,6 +516,10 @@ class Calendar(wx.Dialog):
 
     def OnCalSelected(self, event):
         date = event.GetDate().FormatDate()
+        if self.type is "start":
+            self.Parent.startDate = date
+        else:
+            self.Parent.endDate = date
         self.text.SetLabel(date)
         self.button.SetLabelText(date)
 

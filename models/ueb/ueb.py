@@ -17,33 +17,37 @@ import numpy
 class ueb(feed_forward.feed_forward_wrapper):
 
     def __init__(self, config_params):
-
-        # super(ueb,self).__init__(config_params)
+        super(ueb,self).__init__(config_params)
 
         # lib = './bin/libUEBHydroCoupleComponent.1.0.0.dylib'
-        lib = '/Users/tonycastronova/Documents/projects/iUtah/models/ueb/UEBComponent/UEBHydroCoupleComponent/Mac_x86_64/Debug/libUEBHydroCoupleComponent.1.0.0.dylib'
+        lib = config_params['model_inputs'][0]['lib']
+        conFile = config_params['model_inputs'][0]['control']
+        # lib = '/Users/tonycastronova/Documents/projects/iUtah/models/ueb/UEBComponent/UEBHydroCoupleComponent/Mac_x86_64/Debug/libUEBHydroCoupleComponent.1.0.0.dylib'
         self.__uebLib = cdll.LoadLibrary(join(os.path.dirname(__file__),lib))
         # print 'UEB Loaded Successfully'
 
 
         # todo: move into config
-        conFile = './TWDEF_distributed/control.dat'
+        # conFile = './TWDEF_distributed/control.dat'
         curdir = os.path.dirname(os.path.abspath(conFile))
+
+        # the base directory for the control file is used to convert relative paths into absolute paths
+        base_dir = os.path.dirname(conFile)
 
         # get param, sitevar, input, output, and watershed files
         with open(conFile, 'r') as f:
             # lines = f.readlines()
             lines = f.read().splitlines()  # this will auto strip the \n \r
-            C_paramFile = './TWDEF_distributed/'+lines[1]
-            C_sitevarFile = './TWDEF_distributed/'+lines[2]
-            C_inputconFile = './TWDEF_distributed/'+lines[3]
-            C_outputconFile = './TWDEF_distributed/'+lines[4]
-            C_watershedFile = './TWDEF_distributed/'+lines[5]
+            C_paramFile = os.path.join(base_dir, lines[1])
+            C_sitevarFile = os.path.join(base_dir, lines[2])
+            C_inputconFile = os.path.join(base_dir, lines[3])
+            C_outputconFile = os.path.join(base_dir, lines[4])
+            C_watershedFile = os.path.join(base_dir, lines[5])
             C_wsvarName = lines[6].split(' ')[0]
             C_wsycorName = lines[6].split(' ')[1]
             C_wsxcorName = lines[6].split(' ')[2]
-            C_aggoutputconFile = './TWDEF_distributed/'+lines[7]
-            C_aggoutputFile = './TWDEF_distributed/'+lines[8]
+            C_aggoutputconFile = os.path.join(base_dir, lines[7])
+            C_aggoutputFile = os.path.join(base_dir, lines[8])
             ModelStartDate = [int(float(l)) for l in lines[9].split(' ') if l != '']
             ModelEndDate = [int(float(l)) for l in lines[10].split(' ') if l != '']
             ModelDt = float(lines[11])
@@ -156,7 +160,7 @@ class ueb(feed_forward.feed_forward_wrapper):
             a = self.C_strsvArray.contents[i]
             if a.svType == 1:
                 print "%d %s %s\n" % (i, a.svFile,a.svVarName)
-                retvalue = self.__uebLib.read2DNC('./TWDEF_distributed/'+a.svFile, a.svVarName, byref(a.svArrayValues))
+                retvalue = self.__uebLib.read2DNC(os.path.join(base_dir, a.svFile), a.svVarName, byref(a.svArrayValues))
 
 
         #//read input /forcing control file--all possible entries of input control have to be provided
@@ -198,7 +202,7 @@ class ueb(feed_forward.feed_forward_wrapper):
                 inftype = self.C_strinpforcArray.contents[it].infType
                 print 'infFile: ',self.C_strinpforcArray.contents[it].infFile
                 if inftype == 0:
-                    self.__uebLib.readTextData('./TWDEF_distributed/'+self.C_strinpforcArray.contents[it].infFile, byref(self.C_tsvarArray.contents[it]), byref(C_ntimesteps[0]))
+                    self.__uebLib.readTextData(os.path.join(base_dir, self.C_strinpforcArray.contents[it].infFile), byref(self.C_tsvarArray.contents[it]), byref(C_ntimesteps[0]))
 
                 elif inftype == 2 or inftype == -1:
                     self.C_tsvarArray.contents[it] = (c_float * 2)()

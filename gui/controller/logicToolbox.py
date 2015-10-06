@@ -12,6 +12,7 @@ from os.path import join, dirname, abspath
 import ConfigParser
 import fnmatch
 from coordinator.emitLogging import elog
+from environment import env_vars
 # todo: refactor
 from gui.views.viewModel import ViewModel
 
@@ -129,7 +130,7 @@ class LogicToolbox(ViewToolbox):
         return self.cat
 
     def sectionKey(self):
-        ini = join(dirname(abspath(__file__)), '../Resources/ToolboxPaths')
+        ini = env_vars.TOOLBOX_PATH
         cparser = ConfigParser.ConfigParser(None, multidict)
         cparser.read(ini)
         sections = cparser.sections()

@@ -120,6 +120,8 @@ class EnvironmentVars(object):
 
             self.set_environment_variable('IMAGES', 'path', os.path.abspath(os.path.join(os.path.dirname (self.settings_path),'../../gui/images')))
 
+            self.set_environment_variable('TOOLBOX', 'path', os.path.abspath(os.path.join(os.path.dirname (self.settings_path),'../configuration/toolbox.ini')))
+
             # write environment variables to file
             self.write_environment_variables()
 

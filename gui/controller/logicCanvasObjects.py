@@ -99,8 +99,9 @@ class SmoothLineWithArrow(SmoothLine):
     '''
     def __init__(self, Points, LineColor="#3F51B5", LineStyle="Solid", LineWidth = 4):
         super(SmoothLineWithArrow, self).__init__(Points, LineColor, LineStyle, LineWidth)
-        imgs_path = env_vars.IMGS_PATH
-        arrow_bitmap = wx.Image(imgs_path+'rightArrowBlue60.png', wx.BITMAP_TYPE_PNG)
+        imgs_base_path = env_vars.IMAGES_PATH
+        arrow_image = path.join(imgs_base_path, 'rightArrowBlue60.png')
+        arrow_bitmap = wx.Image(arrow_image, wx.BITMAP_TYPE_PNG)
         self.Arrow = ScaledBitmapWithRotation(Angle=self.GetAngleRadians(), Bitmap=arrow_bitmap, XY=self.MidPoint)
         self.Arrow.line = self  # This allows us to remove the entire object given a reference to just the arrow
 
@@ -122,15 +123,15 @@ class ModelBox(FC.Group):
         self.ID = id
 
         # Set box color based on model type
-        imgs_path = env_vars.IMAGES_PATH
+        imgs_base_path = env_vars.IMAGES_PATH
         bmp = None
         if type == datatypes.ModelTypes.TimeStep:
-            bmp = wx.Image(path.join(imgs_path,'rectGreen.png'), wx.BITMAP_TYPE_PNG)
+            bmp = wx.Image(path.join(imgs_base_path,'rectGreen.png'), wx.BITMAP_TYPE_PNG)
         elif type == datatypes.ModelTypes.FeedForward:
-            print path.join(imgs_path,'rectBlue.png')
-            bmp = wx.Image(path.join(imgs_path,'rectBlue.png'), wx.BITMAP_TYPE_PNG)
+            print path.join(imgs_base_path,'rectBlue.png')
+            bmp = wx.Image(path.join(imgs_base_path,'rectBlue.png'), wx.BITMAP_TYPE_PNG)
         elif type == datatypes.ModelTypes.Data:
-            bmp = wx.Image(path.join(imgs_path, 'rectPurple.png'), wx.BITMAP_TYPE_PNG)
+            bmp = wx.Image(path.join(imgs_base_path, 'rectPurple.png'), wx.BITMAP_TYPE_PNG)
 
         self.box = FC.Bitmap(bmp, XY, Position="cc", InForeground=True)
         self.Width = bmp.Width

@@ -37,6 +37,9 @@ class ueb(feed_forward.feed_forward_wrapper):
         # load the UEB C library
         self.__uebLib = cdll.LoadLibrary(join(os.path.dirname(__file__),lib))
 
+        print join(os.path.dirname(__file__),lib)
+        print lib
+
         # save the current directory for saving output data
         self.curdir = os.path.dirname(os.path.abspath(conFile))
 
@@ -181,6 +184,10 @@ class ueb(feed_forward.feed_forward_wrapper):
         self.__uebLib.readInputForcVars(cast(C_inputconFile,c_char_p), self.C_strinpforcArray)
         print 'strinpforcArray: ', self.C_strinpforcArray.contents[0].infFile
 
+        ed = datetime.datetime(*ModelEndDate)
+        sd = datetime.datetime(*ModelStartDate)
+        elog.info('UEB Start Date: %s' % sd.strftime("%m-%d-%Y %H:%M:%S"))
+        elog.info('UEB End Date: %s' % ed.strftime("%m-%d-%Y %H:%M:%S"))
 
         # calculate model time span as a julian date (main.cpp, line 220)
         modelSpan =  jdutil.datetime_to_jd(datetime.datetime(*ModelEndDate)) - \
@@ -202,8 +209,8 @@ class ueb(feed_forward.feed_forward_wrapper):
 
 
         # calculate model time steps (main.cpp, line 222)
-        numTimeStep = int(math.ceil(modelSpan*(24./ModelDt)) )
-        print 'Number of time steps: ', numTimeStep
+        self.numTimeStep = int(math.ceil(modelSpan*(24./ModelDt)) )
+        print 'Number of time steps: ', self.numTimeStep
 
         # read forcing data (main.cpp, line 226)
         if self.C_strsvArray.contents[16].svType != 3: # no accumulation zone (fixme: ???)
@@ -220,9 +227,21 @@ class ueb(feed_forward.feed_forward_wrapper):
                     self.C_tsvarArray.contents[it][0] = self.C_strinpforcArray.contents[it].infType
                     self.C_tsvarArray.contents[it][1] = self.C_strinpforcArray.contents[it].infdefValue
 
+
+        # :: this array is initialized to (numOut+1, numTimeStep+1) rather than (numOut, numTimeStep)
+        # :: b/c otherwise the calculations from RunUEB are incorrect for the first row.
+        # :: e.g.
+        # ::     2009 2010 5   30.000        23.999979
+        # ::  rather than:
+        # ::     2009 10 1    0.000         0.569902
+        # ::
+        # :: I thought this was b/c numpy.float32 (and 64) are smaller than c_float, however this change
+        # :: below didn't fix the problem.
+        # ::
         # create a numpy array for outputs
-        self.outvarArray = numpy.zeros(shape=(numOut, numTimeStep), dtype=numpy.float, order="C")
-        arrays = self.outvarArray.astype(numpy.float32)
+        self.outvarArray = numpy.zeros(shape=(numOut+1, self.numTimeStep+1), dtype=numpy.float, order="C")
+        # arrays_old = self.outvarArray.astype(numpy.float32)
+        arrays = self.outvarArray.astype(c_float)
         rows, cols = self.outvarArray.shape
         arrays_as_list = list(arrays)
         #get ctypes handles
@@ -230,6 +249,16 @@ class ueb(feed_forward.feed_forward_wrapper):
         #Pack into pointer array
         self.C_outvarArray = (POINTER(c_float) * rows)(*ctypes_arrays)
 
+        # x = numpy.zeros(shape=(numOut, self.numTimeStep), dtype=numpy.float, order="C")
+        # _floatpp = numpy.ctypeslib.ndpointer(dtype=numpy.uintp, ndim=1, flags='C')
+        # xpp = (x.__array_interface__['data'][0] + numpy.arange(x.shape[0])*x.strides[0]).astype(numpy.uintp)
+        # self.C_outvarArray = pointer(((POINTER(c_float) * self.numTimeStep) * numOut)())
+
+
+        # a = (c_float * self.numTimeStep)()
+        # outvarArray = pointer((a * numOut)())
+        # for i in xrange(numOut):
+        #     outvarArray[i] = pointer((c_float * self.numTimeStep)())
 
         # total grid size to compute progess
         totalgrid = self.C_dimlen1.value*self.C_dimlen2.value
@@ -243,7 +272,7 @@ class ueb(feed_forward.feed_forward_wrapper):
 
 
         # create output netcdf
-        self.C_outtSteps = numTimeStep / self.outtStride
+        self.C_outtSteps = self.numTimeStep / self.outtStride
         self.t_out = numpy.empty(shape=(self.C_outtSteps), dtype=numpy.float, order="C")
         for i in xrange(self.C_outtSteps):
             self.t_out[i] = i*self.outtStride*ModelDt
@@ -273,6 +302,21 @@ class ueb(feed_forward.feed_forward_wrapper):
         retvalue = self.__uebLib.create3DNC_uebAggregatedOutputs(C_aggoutputFile, C_aggOut, C_naggout, C_tNameout, C_tUnitsout, C_tlong_name, C_tcalendar, self.C_outtSteps, C_aggoutDimord, C_t_out, byref(C_out_fillVal), C_watershedFile, C_wsvarName, C_wsycorName, C_wsxcorName, C_nZones, C_zName, C_z_ycor, C_z_xcor);
 
 
+        # todo: create output element set
+        print 'Output Calculations available at: '
+        for pid in xrange(self.C_npout.value):
+            print "  Point(",self.C_pOut[pid].xcoord,", ",self.C_pOut[pid].ycoord,') '
+
+
+        # todo: This is where UEB grid points are defined!, expose these as input/output spatial objects
+        # main.cpp, line 303
+        self.activeCells = []
+        # print 'Calculations will be performed at: '
+        for iy in xrange(self.C_dimlen1.value):
+            for jx in xrange(self.C_dimlen2.value):
+                if self.C_wsArray[iy][jx] != self.C_wsfillVal.value and self.C_strsvArray.contents[16].svType != 3:
+                    # print "  Point(",jx,", ",iy,') '
+                    self.activeCells.append((iy, jx))
 
         print 'initialization successful'
 
@@ -280,26 +324,27 @@ class ueb(feed_forward.feed_forward_wrapper):
 
     def run(self, inputs):
 
-        print "\nBegin Computation: \n"
+        elog.info("\nBegin UEB Computation")
 
-        # main.cpp, line 303
-        activeCells = []
-        for iy in xrange(self.C_dimlen1.value):
-            for jx in xrange(self.C_dimlen2.value):
-                if self.C_wsArray[iy][jx] != self.C_wsfillVal.value and self.C_strsvArray.contents[16].svType != 3:
-                    activeCells.append((iy, jx))
+        # get output exchange items
+        sme = self.outputs()['Snow Melt Equivalent']
+
+
 
 
         # Initialize SiteState
         SiteState = numpy.zeros((32,))
 
+        # loop over all activeCells
+        for i in xrange(len(self.activeCells)):
 
-
-        for i in xrange(len(activeCells)):
+            # todo: remove, this is for debugging
+            # if i > 10:
+            #     break
 
             # track grid cell
-            self.C_uebCellY = activeCells[i][0]
-            self.C_uebCellX = activeCells[i][1]
+            self.C_uebCellY = self.activeCells[i][0]
+            self.C_uebCellX = self.activeCells[i][1]
 
             for s in xrange(32):
                 if self.C_strsvArray.contents[s].svType == 1:
@@ -336,11 +381,32 @@ class ueb(feed_forward.feed_forward_wrapper):
 
             # RUN THE UEB CALCS
             ModelStartHour = 1
+
             self.__uebLib.RUNUEB(self.C_tsvarArray, C_SiteState, self.C_parvalArray, byref(pointer(self.C_outvarArray)), self.C_ModelStartDate, self.C_ModelStartHour, self.C_ModelEndDate, self.C_ModelEndHour, self.C_ModelDt, self.C_ModelUTCOffset);
 
-            print i+1, " of ", len(activeCells)
+            if i % 10 == 0:
+                elog.info("%d of %d elements complete " % ((i+1), len(self.activeCells)))
 
 
+        # # todo: set output data (point)
+        # print 'set output data'
+
+            # todo: make more efficient
+            # write point outputs
+            for i in xrange(self.C_npout.value):
+                if self.C_uebCellY == self.C_pOut[i].ycoord and self.C_uebCellX == self.C_pOut[i].xcoord:
+                    print '\n' + 100 *'-'
+                    print 'Writing Output for Point :  %d, %d' % ( self.C_uebCellX, self.C_uebCellY)
+                    # print 'Year, Month, Day, Hour, Ta, P, Ws, SWISM, SWIR, errMB '
+                    for step in xrange(self.numTimeStep):
+                        # print '%d %d %d %8.3f %16.6f %16.6f %16.6f %16.6f %16.6f %16.6f' % (self.C_outvarArray[0][step],  self.C_outvarArray[1][step], self.C_outvarArray[2][step], self.C_outvarArray[3][step], self.C_outvarArray[9][step], self.C_outvarArray[10][step],self.C_outvarArray[17][step],self.C_outvarArray[67][step],self.C_outvarArray[68][step], self.C_outvarArray[69][step])
+                        print '%d %d %d %8.3f %16.6f %16.6f %16.6f %16.6f' % (self.C_outvarArray[0][step],  self.C_outvarArray[1][step], self.C_outvarArray[2][step], self.C_outvarArray[3][step], self.C_outvarArray[4][step], self.C_outvarArray[5][step],self.C_outvarArray[6][step],self.C_outvarArray[7][step])
+
+                        if step == 10:
+                            print "...\n", 100*'-'
+                            break
+
+        print 'Run Complete'
 
     def save(self):
 
@@ -352,7 +418,7 @@ class ueb(feed_forward.feed_forward_wrapper):
                     self.outvarindx.value = j;
                     break
             for j in xrange(self.C_outtSteps):
-                self.t_out[j] = self.outvarArray[self.outvarindx.value][self.outtStride*j]
+                self.t_out[j] = self.C_outvarArray[self.outvarindx.value][self.outtStride*j]
 
             print 'Writing Output: ', os.path.join(self.curdir, self.C_ncOut[i].outfName)
             C_t_out = self.t_out.ctypes.data_as(POINTER(c_float))
@@ -364,10 +430,10 @@ class ueb(feed_forward.feed_forward_wrapper):
             if self.C_uebCellY == self.C_pOut[i].ycoord and self.C_uebCellX == self.C_pOut[i].xcoord:
                 print 'Writing Output: ', self.C_pOut[i].outfName
                 with open(self.C_pOut[i].outfName, 'w') as f:
-                    for step in xrange(numTimeStep):
-                        f.write("\n %d %d %d %8.3f " % (self.outvarArray[0][step],  self.outvarArray[1][step], self.outvarArray[2][step], self.outvarArray[3][step]) )
+                    for step in xrange(self.numTimeStep):
+                        f.write("\n %d %d %d %8.3f " % (self.C_outvarArray[0][step],  self.C_outvarArray[1][step], self.C_outvarArray[2][step], self.C_outvarArray[3][step]) )
                         for vnum in range(4,70):
-                            f.write(" %16.6f " % self.outvarArray[vnum][step])
+                            f.write(" %16.6f " % self.C_outvarArray[vnum][step])
 
         # # write aggregated outputs
         # zoneid = wsArray[uebCellY][uebCellX] - 1

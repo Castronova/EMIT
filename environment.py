@@ -1,5 +1,5 @@
 __author__ = 'mike'
-import os
+import os, sys
 import ConfigParser
 
 # This is an interface for the settings file in the data directory
@@ -23,8 +23,10 @@ class EnvironmentVars(object):
             # if the settings path does not exist, then create it
             if not os.path.exists(self.settings_path):
                 self.write_default_settings()
-            # if not self.config.has_section("LOGGING"):
-            #     self.write_default_settings()
+
+            # re-write this file if in debug mode to ensure that the settings are always up-to-date
+            elif sys.gettrace():
+                self.write_default_settings()
 
             else:
                 self.config.read(self.settings_path)
@@ -118,7 +120,7 @@ class EnvironmentVars(object):
             self.set_environment_variable('LEGEND', 'locationright', 1)
             self.set_environment_variable('LEGEND', 'locationbottom', 0)
 
-            self.set_environment_variable('IMAGES', 'path', os.path.abspath(os.path.join(os.path.dirname (self.settings_path),'../../gui/images')))
+            self.set_environment_variable('IMAGES', 'path', os.path.abspath(os.path.join(os.path.dirname (self.settings_path),'../img')))
 
             self.set_environment_variable('TOOLBOX', 'path', os.path.abspath(os.path.join(os.path.dirname (self.settings_path),'../configuration/toolbox.ini')))
 

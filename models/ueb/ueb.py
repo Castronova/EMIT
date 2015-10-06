@@ -11,25 +11,34 @@ import datetime
 import jdutil
 import math
 import numpy
-
-
+from coordinator.emitLogging import elog
+from utilities import mdl
 
 class ueb(feed_forward.feed_forward_wrapper):
 
     def __init__(self, config_params):
         super(ueb,self).__init__(config_params)
 
-        # lib = './bin/libUEBHydroCoupleComponent.1.0.0.dylib'
-        lib = config_params['model_inputs'][0]['lib']
-        conFile = config_params['model_inputs'][0]['control']
-        # lib = '/Users/tonycastronova/Documents/projects/iUtah/models/ueb/UEBComponent/UEBHydroCoupleComponent/Mac_x86_64/Debug/libUEBHydroCoupleComponent.1.0.0.dylib'
+        # build inputs and outputs
+        elog.info('Building exchange items')
+        io = mdl.build_exchange_items_from_config(config_params)
+
+        # set input and output exchange items
+        self.inputs(value=io['input'])
+        self.outputs(value=io['output'])
+
+        # get model parameters
+        params = config_params['model_inputs'][0]
+
+        # grab the C library path and the control file path
+        lib = params['lib']
+        conFile = params['control']
+
+        # load the UEB C library
         self.__uebLib = cdll.LoadLibrary(join(os.path.dirname(__file__),lib))
-        # print 'UEB Loaded Successfully'
 
-
-        # todo: move into config
-        # conFile = './TWDEF_distributed/control.dat'
-        curdir = os.path.dirname(os.path.abspath(conFile))
+        # save the current directory for saving output data
+        self.curdir = os.path.dirname(os.path.abspath(conFile))
 
         # the base directory for the control file is used to convert relative paths into absolute paths
         base_dir = os.path.dirname(conFile)
@@ -345,9 +354,9 @@ class ueb(feed_forward.feed_forward_wrapper):
             for j in xrange(self.C_outtSteps):
                 self.t_out[j] = self.outvarArray[self.outvarindx.value][self.outtStride*j]
 
-            print 'Writing Output: ', os.path.join(curdir, self.C_ncOut[i].outfName)
+            print 'Writing Output: ', os.path.join(self.curdir, self.C_ncOut[i].outfName)
             C_t_out = self.t_out.ctypes.data_as(POINTER(c_float))
-            retvalue = self.__uebLib.WriteTSto3DNC(cast(os.path.join(curdir, self.C_ncOut[i].outfName), c_char_p), cast(self.C_ncOut[i].symbol, c_char_p), self.C_outDimord, self.C_uebCellY, self.C_uebCellX, self.C_outtSteps, C_t_out)
+            retvalue = self.__uebLib.WriteTSto3DNC(cast(os.path.join(self.curdir, self.C_ncOut[i].outfName), c_char_p), cast(self.C_ncOut[i].symbol, c_char_p), self.C_outDimord, self.C_uebCellY, self.C_uebCellX, self.C_outtSteps, C_t_out)
 
         # write point outputs
         for i in xrange(self.C_npout.value):

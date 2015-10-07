@@ -1,5 +1,7 @@
 __author__ = 'Francisco'
 
+
+from gui.views.viewPlot import ViewPlot, Data
 import wx
 from gui.controller.logicDatabase import LogicDatabase
 import coordinator.events as engineEvent
@@ -453,6 +455,8 @@ class SiteViewer(wx.Frame):
 
     def Plot(self, event):
         #TODO: make this plot data
+        plotting = ViewPlot(self, "Should auto fill", "time", "Data", False)
+        plotting.Show()
         print "test"
 
     def addToCanvas(self, event):

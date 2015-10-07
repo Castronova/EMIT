@@ -218,6 +218,6 @@ class ViewPlot(wx.Frame):
         self.Centre(wx.BOTH)
 
         # build custom menu bar
-        self.build_menu()
+        #self.build_menu()
 
 

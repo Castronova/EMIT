@@ -388,12 +388,14 @@ class SiteViewer(wx.Frame):
                           style=wx.STAY_ON_TOP | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         self.siteobject = siteObject
-        self.startDate = None
-        self.endDate = None
+        self.startDate = wx.DateTime_Now() - 7 * wx.DateSpan_Day()
+        print self.startDate
+        self.endDate = wx.DateTime_Now()
 
         panel = wx.Panel(self)
         toppanel = wx.Panel(panel)
         middlepanel = wx.Panel(panel, size=(-1, 35))
+        secondMiddle = wx.Panel(panel, size=(-1, 35))
         lowerpanel = wx.Panel(panel)
 
         #  Uncomment these to see the panel outline
@@ -403,19 +405,22 @@ class SiteViewer(wx.Frame):
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
 
+
         self.startDateBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Start Date")
         self.endDateBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="End Date")
         self.exportBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Export")
         self.addToCanvasBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Add to Canvas")
+        self.PlotBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Plot Panel")
 
         hbox.Add(self.startDateBtn, 1, wx.EXPAND | wx.ALL, 2)
-        hbox.AddSpacer(40)
+        hbox.AddSpacer(20)
         hbox.Add(self.endDateBtn, 1, wx.EXPAND | wx.ALL, 2)
-        hbox.AddSpacer(40)
+        hbox.AddSpacer(20)
         hbox.Add(self.exportBtn, 1, wx.EXPAND | wx.ALL, 2)
-        hbox.AddSpacer(40)
+        hbox.AddSpacer(20)
         hbox.Add(self.addToCanvasBtn, 1, wx.EXPAND | wx.ALL, 2)
-
+        hbox.AddSpacer(20)
+        hbox.Add(self.PlotBtn, 1, wx.EXPAND | wx.ALL, 2)
         middlepanel.SetSizer(hbox)
 
         # Column names
@@ -423,15 +428,22 @@ class SiteViewer(wx.Frame):
         self.variableList.InsertColumn(0, "Variable")
         self.variableList.InsertColumn(1, "Value")
         self.variableList.InsertColumn(2, "Unit")
+        #self.startDateText = wx.StaticText(self, -1, "Start Date: " + self.startDate.__str__())
+
+        #mhbox = wx.BoxSizer(wx.HORIZONTAL)
+        #mhbox.Add(self.startDateText, 1, wx.EXPAND | wx.ALL, 2)
+        #secondMiddle.SetSizer(mhbox)
 
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         vbox.Add(toppanel, 1, wx.EXPAND | wx.ALL, 2)
         vbox.Add(middlepanel, 0, wx.EXPAND | wx.ALL, 2)
+        #vbox.Add(secondMiddle, 0, wx.EXPAND | wx.ALL, 2)
         vbox.Add(lowerpanel, 1, wx.EXPAND | wx.ALL, 2)
 
         panel.SetSizer(vbox)
 
+        self.Bind(wx.EVT_BUTTON, self.Plot, self.PlotBtn)
         self.Bind(wx.EVT_BUTTON, self.startDateCalender, self.startDateBtn)
         self.Bind(wx.EVT_BUTTON, self.endDateCalender, self.endDateBtn)
         self.Bind(wx.EVT_BUTTON, self.addToCanvas, id=self.addToCanvasBtn.GetId())
@@ -439,13 +451,17 @@ class SiteViewer(wx.Frame):
 
         self.Show()
 
+    def Plot(self, event):
+        #TODO: make this plot data
+        print "test"
+
     def addToCanvas(self, event):
         num = self.variableList.GetItemCount()
         for i in range(num):
             if self.variableList.IsChecked(i):
                 self.Parent.selectedVariables.append(self.variableList.GetItemText(i))
         # e = dict()
-        # events.onAddToCanvas.fire(**e)
+        #events.onAddToCanvas.fire(**e)
         self.Close()
 
     def endDateCalender(self, event):
@@ -468,14 +484,14 @@ class SiteViewer(wx.Frame):
         self.variableList.setResizeColumn(1)
         self.variableList.setResizeColumn(2)
 
-
     def startDateCalender(self, event):
         if self.isCalendarOpen:
             pass
         else:
             Calendar(self, -1, "Calendar", self.startDateBtn, "start")
-        print self.endDate
+        print "Start first, then end"
         print self.startDate
+        print self.endDate
         event.Skip()
 
 class Calendar(wx.Dialog):
@@ -488,6 +504,12 @@ class Calendar(wx.Dialog):
 
         vbox = wx.BoxSizer(wx.VERTICAL)
 
+        #if self.type is "start" and self.Parent.startDate is not None:
+        #    calend = cal.CalendarCtrl(self, -1, self.Parent.startDate,
+        #                              style=cal.CAL_SHOW_HOLIDAYS | cal.CAL_SEQUENTIAL_MONTH_SELECTION)
+        #elif self.type is "end" and self.Parent.endDate is not None:
+        #    calend = cal.CalendarCtrl(self, -1, self.Parent.endDate, style=cal.CAL_SHOW_HOLIDAYS | cal.CAL_SEQUENTIAL_MONTH_SELECTION)
+        #else:
         calend = cal.CalendarCtrl(self, -1, wx.DateTime_Now(),
                                   style=cal.CAL_SHOW_HOLIDAYS | cal.CAL_SEQUENTIAL_MONTH_SELECTION)
         vbox.Add(calend, 0, wx.EXPAND | wx.ALL, 5)

@@ -271,6 +271,12 @@ class TimeSeriesTab(wx.Panel):
         siteview.populateVariablesList(self.api, siteObject.sitecode)
         return
 
+    def setParsedValues(self, siteObject):
+        # This method will get the values for variables passed.
+        values = self.api.parseValues(siteObject.sitecode, self.selectedVariables[0])
+
+        pass
+
     def setup_odm1_table(self, api):
         data = api.getSiteInfo()
         self.table_columns = ["Site Name", "County", "State"]
@@ -407,7 +413,6 @@ class SiteViewer(wx.Frame):
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
 
-
         self.startDateBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Start Date")
         self.endDateBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="End Date")
         self.exportBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Export")
@@ -453,20 +458,13 @@ class SiteViewer(wx.Frame):
 
         self.Show()
 
-    def Plot(self, event):
-        #TODO: make this plot data
-        plotting = ViewPlot(self, "Should auto fill", "time", "Data", False)
-        plotting.Show()
-        print "test"
-
     def addToCanvas(self, event):
         num = self.variableList.GetItemCount()
         for i in range(num):
             if self.variableList.IsChecked(i):
                 self.Parent.selectedVariables.append(self.variableList.GetItemText(i))
-        # e = dict()
-        #events.onAddToCanvas.fire(**e)
         self.Close()
+        self.Parent.setParsedValues(self.siteobject)
 
     def endDateCalender(self, event):
         if self.isCalendarOpen:
@@ -474,6 +472,12 @@ class SiteViewer(wx.Frame):
         else:
             Calendar(self, -1, "Calendar", self.endDateBtn, "end")
         event.Skip()
+
+    def Plot(self, event):
+        #TODO: make this plot data
+        plotting = ViewPlot(self, "Should auto fill", "time", "Data", False)
+        plotting.Show()
+        print "test"
 
     def populateVariablesList(self, api, sitecode):
         data = api.buildAllSiteCodeVariables(sitecode)
@@ -497,6 +501,7 @@ class SiteViewer(wx.Frame):
         print self.startDate
         print self.endDate
         event.Skip()
+
 
 class Calendar(wx.Dialog):
     def __init__(self, parent, id, title, button, type):
@@ -538,7 +543,6 @@ class Calendar(wx.Dialog):
 
         self.Show(True)
         self.Centre()
-
 
     def OnCalSelected(self, event):
         date = event.GetDate().FormatDate()

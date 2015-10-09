@@ -89,10 +89,6 @@ class LogicCanvas(ViewCanvas):
         engineEvent.onLinkAdded += self.draw_link
         engineEvent.onSimulationFinished += self.simulation_finished
         events.onDbChanged += self.onDbChanged
-        events.onAddToCanvas += self.setSiteObjectsWithVariables
-
-    def setSiteObjectsWithVariables(self, e):
-        pass
 
     def initSubscribers(self):
         Publisher.subscribe(self.setCursor, "setCursor")

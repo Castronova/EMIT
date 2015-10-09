@@ -2,6 +2,7 @@ __author__ = 'ryan'
 
 import collections
 from db.ODM1.ODM1 import ODM1
+import xml.etree.ElementTree as et
 
 class WebServiceApi:
 
@@ -78,4 +79,28 @@ class WebServiceApi:
                 siteInfo.append([site[0][0], site[0][5][0].value, site[0][5][1].value, site[0][1][0].value])
 
         return siteInfo
+
+    def parseValues(self, sitecode, variable, start=None, end=None):
+        # Data is taken every 15 minutes
+        # start date can be as early as 2013
+        # end data is today and continuing.
+        # There are 96 values for each day.
+
+        data = self.odm1.getValues(sitecode, variable)
+        tree = et.fromstring(data)
+        valuesList = []
+
+        queryInfo = tree[0]
+        sourceInfo = tree[1].getchildren()[0]
+        varInfo = tree[1].getchildren()[1]
+        values = tree[1].getchildren()[2]
+        stop = len(values) - 4
+
+        # self.odm1.createXMLFileForReading(data) Run this line to see the file in your browser
+
+        # Below will be an example of grabbing the data points for the most recent 2 days.
+        for i in range(stop-(2*96), stop):
+            valuesList.append(values[i].text)
+
+        return valuesList
 

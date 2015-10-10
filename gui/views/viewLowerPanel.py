@@ -470,8 +470,7 @@ class SiteViewer(wx.Frame):
         if self.isCalendarOpen:
             pass
         else:
-            Calendar(self, -1, "Calendar", self.endDateBtn, "end")
-        event.Skip()
+            Calendar(self, -1, "Calendar", "end")
 
     def Plot(self, event):
         #TODO: make this plot data
@@ -496,18 +495,12 @@ class SiteViewer(wx.Frame):
         if self.isCalendarOpen:
             pass
         else:
-            Calendar(self, -1, "Calendar", self.startDateBtn, "start")
-        print "Start first, then end"
-        print self.startDate
-        print self.endDate
-        event.Skip()
-
+            Calendar(self, -1, "Calendar", "start")
 
 class Calendar(wx.Dialog):
-    def __init__(self, parent, id, title, button, type):
+    def __init__(self, parent, id, title, type):
         wx.Dialog.__init__(self, parent, id, title, style=wx.STAY_ON_TOP | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^
                                                                            wx.MAXIMIZE_BOX)
-        self.button = button
         self.type = type
 
         self.Parent.isCalendarOpen = True
@@ -520,10 +513,9 @@ class Calendar(wx.Dialog):
         #elif self.type is "end" and self.Parent.endDate is not None:
         #    calend = cal.CalendarCtrl(self, -1, self.Parent.endDate, style=cal.CAL_SHOW_HOLIDAYS | cal.CAL_SEQUENTIAL_MONTH_SELECTION)
         #else:
-        calend = cal.CalendarCtrl(self, -1, wx.DateTime_Now(),
+        self.calendar = cal.CalendarCtrl(self, -1, wx.DateTime_Now(),
                                   style=cal.CAL_SHOW_HOLIDAYS | cal.CAL_SEQUENTIAL_MONTH_SELECTION)
-        vbox.Add(calend, 0, wx.EXPAND | wx.ALL, 5)
-        self.Bind(cal.EVT_CALENDAR_SEL_CHANGED, self.OnCalSelected, id=calend.GetId())
+        vbox.Add(self.calendar, 0, wx.EXPAND | wx.ALL, 5)
 
         vbox.Add((-1, 20))
 
@@ -545,18 +537,29 @@ class Calendar(wx.Dialog):
         self.Show(True)
         self.Centre()
 
-    def OnCalSelected(self, event):
-        date = event.GetDate().FormatDate()
-        if self.type is "start":
-            self.Parent.startDate = event.GetDate()
-        else:
-            self.Parent.endDate = event.GetDate()
-        self.text.SetLabel(date)
-        self.button.SetLabelText(date)
-
     def OnQuit(self, event):
-        self.Parent.isCalendarOpen = False
-        self.Destroy()
+        self.setCalendarDates()
+        if self.validateDates():
+            self.Parent.isCalendarOpen = False
+            self.Destroy()
+        else:
+            self.text.SetLabel("Make start before end")
+
+    def setCalendarDates(self):
+        if self.type == "start":
+            self.Parent.startDate = self.calendar.GetDate()
+            self.Parent.startDateBtn.SetLabelText(self.calendar.GetDate().FormatDate())
+        else:
+            self.Parent.endDate = self.calendar.GetDate()
+            self.Parent.endDateBtn.SetLabelText(self.calendar.GetDate().FormatDate())
+
+    def validateDates(self):
+        if self.Parent.startDate < self.Parent.endDate:
+            print "Start is before End So its GOOD "
+            return True
+        else:
+            print "Please fix, make start before END, FAIL"
+            return False
 
 
 class AddConnectionDialog(wx.Dialog):

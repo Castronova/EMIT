@@ -505,7 +505,8 @@ class SiteViewer(wx.Frame):
 
 class Calendar(wx.Dialog):
     def __init__(self, parent, id, title, button, type):
-        wx.Dialog.__init__(self, parent, id, title)
+        wx.Dialog.__init__(self, parent, id, title, style=wx.STAY_ON_TOP | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^
+                                                                           wx.MAXIMIZE_BOX)
         self.button = button
         self.type = type
 
@@ -522,7 +523,7 @@ class Calendar(wx.Dialog):
         calend = cal.CalendarCtrl(self, -1, wx.DateTime_Now(),
                                   style=cal.CAL_SHOW_HOLIDAYS | cal.CAL_SEQUENTIAL_MONTH_SELECTION)
         vbox.Add(calend, 0, wx.EXPAND | wx.ALL, 5)
-        self.Bind(cal.EVT_CALENDAR, self.OnCalSelected, id=calend.GetId())
+        self.Bind(cal.EVT_CALENDAR_SEL_CHANGED, self.OnCalSelected, id=calend.GetId())
 
         vbox.Add((-1, 20))
 
@@ -547,9 +548,9 @@ class Calendar(wx.Dialog):
     def OnCalSelected(self, event):
         date = event.GetDate().FormatDate()
         if self.type is "start":
-            self.Parent.startDate = date
+            self.Parent.startDate = event.GetDate()
         else:
-            self.Parent.endDate = date
+            self.Parent.endDate = event.GetDate()
         self.text.SetLabel(date)
         self.button.SetLabelText(date)
 

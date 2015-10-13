@@ -19,9 +19,9 @@ def build_point_geometries(x, y, geometryType='gdal'):
     # try to convert x,y coordinates into numpy arrays
     try:
         if not isinstance(x, numpy.ndarray):
-            x = numpy.array(x)
+            x = numpy.array([x])
         if not isinstance(y, numpy.ndarray):
-            y = numpy.array(y)
+            y = numpy.array([y])
     except:
         elog.critical('Could not convert the x,y coordinates into numpy array objects!')
 
@@ -32,12 +32,12 @@ def build_point_geometries(x, y, geometryType='gdal'):
 
     elif gtype == 'shapely':
         geoms = numpy.empty((x.shape), dtype=object)
-        for i in xrange(0, len(x)):
+        for i in range(len(x)):
             geoms[i] = Point(x[i], y[i])
 
     else:
         geoms = numpy.empty((x.shape), dtype=object)
-        for i in xrange(0, len(x)):
+        for i in range(len(x)):
             point = ogr.Geometry(ogr.wkbPoint)
             point.AddPoint(float(x[i]), float(y[i]))
             geoms[i] = point

@@ -12,7 +12,7 @@ import jdutil
 import math
 import numpy
 from coordinator.emitLogging import elog
-from utilities import mdl
+from utilities import mdl, geometry
 
 class ueb(feed_forward.feed_forward_wrapper):
 
@@ -308,6 +308,7 @@ class ueb(feed_forward.feed_forward_wrapper):
             print "  Point(",self.C_pOut[pid].xcoord,", ",self.C_pOut[pid].ycoord,') '
 
 
+
         # todo: This is where UEB grid points are defined!, expose these as input/output spatial objects
         # main.cpp, line 303
         self.activeCells = []
@@ -317,6 +318,17 @@ class ueb(feed_forward.feed_forward_wrapper):
                 if self.C_wsArray[iy][jx] != self.C_wsfillVal.value and self.C_strsvArray.contents[16].svType != 3:
                     # print "  Point(",jx,", ",iy,') '
                     self.activeCells.append((iy, jx))
+
+        # build output exchange items
+        pts = []
+        for pid in xrange(self.C_npout.value):
+            xcoord = self.C_pOut[pid].xcoord
+            ycoord = self.C_pOut[pid].ycoord
+            pt = geometry.build_point_geometries(xcoord, ycoord)
+            pts.append(pt)
+        self.outputs()['Snow Melt Equivalent'].addGeometries2(pts)
+
+
 
         print 'initialization successful'
 

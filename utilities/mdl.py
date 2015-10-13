@@ -61,7 +61,7 @@ def build_exchange_items_from_config(params):
     oitems = params['output'] if 'output' in params else []
     eitems = iitems + oitems
 
-    items = {'input':[],'output':[]}
+    items = {stdlib.ExchangeItemType.INPUT:[],stdlib.ExchangeItemType.OUTPUT:[]}
 
 
     # loop through each input/output and create an exchange item
@@ -71,7 +71,7 @@ def build_exchange_items_from_config(params):
         geoms_list = []
 
         # get all input and output exchange items as a list
-        iotype = stdlib.ExchangeItemType.Output if io['type'].lower() == 'output' else stdlib.ExchangeItemType.Input
+        iotype = stdlib.ExchangeItemType.OUTPUT if io['type'] == stdlib.ExchangeItemType.OUTPUT else stdlib.ExchangeItemType.INPUT
 
         for key,value in io.iteritems():
 

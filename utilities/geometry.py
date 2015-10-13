@@ -3,7 +3,6 @@ __author__ = 'tonycastronova'
 import numpy
 from osgeo import ogr
 from shapely.geometry import Point
-
 from coordinator.emitLogging import elog
 
 

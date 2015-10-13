@@ -17,14 +17,14 @@ from osgeo import osr
 import numpy
 
 class ElementType():
-    Point = 'Point'
-    Polygon = 'Polygon'
-    PolyLine = 'PolyLine'
-    Id = 'Id'
+    POINT = 'POINT'
+    POLYGON = 'POLYGON'
+    POLYLINE = 'POLYLINE'
+    ID = 'ID'
 
 class ExchangeItemType():
-    Input = 'input'
-    Output = 'output'
+    INPUT = 'INPUT'
+    OUTPUT = 'OUTPUT'
 
 class Variable(object):
     """
@@ -104,6 +104,7 @@ class Geometry(object):
 
 
         # set spatial reference
+        # todo: deprecated, implemented in Exchange Item Class
         self.__srs = osr.SpatialReference()
         try:
             self.__srs.ImportFromEPSG(srs)
@@ -133,35 +134,39 @@ class Geometry(object):
         self.__hash = hashlib.sha224(geom.to_wkt()).hexdigest()
 
     def srs(self,value=None):
+        # todo: deprecated (implemented in Exchange Item class)
         if value is None:
             return self.__srs
         else:
             self.__srs = value
 
     def elev(self,value=None):
+        # todo: set from geometry object when set
         if value is None:
             return self.__elev
         else:
             self.__elev = value
 
     def type(self,value=None):
+        #todo : assert that value is of type ElementType
         if value is None:
             return self.__type
         else:
             self.__type = value
 
     def datavalues(self,value=None):
+        # todo: deprecated, implemented in Exchange Item Class
         if value is None:
             return self.__datavalues
         else:
             self.__datavalues = value
 
     def get_data(self):
-
+        # todo: deprecated, implemented in Exchange Item Class
         self.__datavalues.get_dates_values()
 
 class ExchangeItem(object):
-    def __init__(self, id=None, name=None, desc=None, geometry=[], unit=None, variable=None, srs_epsg=4269, type=ExchangeItemType.Input):
+    def __init__(self, id=None, name=None, desc=None, geometry=[], unit=None, variable=None, srs_epsg=4269, type=ExchangeItemType.INPUT):
 
         self.__name = name
         self.__description = desc
@@ -169,7 +174,12 @@ class ExchangeItem(object):
         # variable and unit come from Variable and Unit standard classes
         self.__unit = unit
         self.__variable = variable
-        self.__type = type
+
+        # set type using Exchange Item Type enum
+        if type in ExchangeItemType.__dict__:
+            self.__type = type
+        else:
+            raise Exception('Exchange Item of Type "%s" not recognized'%type)
 
         # new style data encapsulation (everything is appended with '2', temporarily)
         self.__geoms2 = []

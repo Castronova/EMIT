@@ -4,7 +4,7 @@ import numpy
 from osgeo import ogr
 from shapely.geometry import Point
 from coordinator.emitLogging import elog
-
+import stdlib
 
 def build_point_geometries(x, y, geometryType='gdal'):
     """
@@ -37,8 +37,13 @@ def build_point_geometries(x, y, geometryType='gdal'):
     else:
         geoms = numpy.empty((x.shape), dtype=object)
         for i in range(len(x)):
-            point = ogr.Geometry(ogr.wkbPoint)
+
+            point = stdlib.Geometry2(ogr.wkbPoint)
+
+
+            # point = ogr.Geometry(ogr.wkbPoint)
             point.AddPoint(float(x[i]), float(y[i]))
+
             geoms[i] = point
 
     return geoms

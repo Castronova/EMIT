@@ -13,8 +13,35 @@ import uuid
 import hashlib
 from coordinator.emitLogging import elog
 from bisect import bisect_left, bisect_right
-from osgeo import osr
+from osgeo import osr, ogr
 import numpy
+
+# derived from GDAL types
+class GeomType():
+    POINT = 'POINT'
+    LINESTRING = 'LINESTRING'
+    POLYGON = 'POLYGON'
+    MULTIPOINT = 'MULTIPOINT'
+    MULTILINESTRING = 'MULTILINESTRING'
+    MULTIPOLYGON = 'MULTIPOLYGON'
+    GEOMETRYCOLLECTION = 'GEOMETRYCOLLECTION'
+    CIRCULARSTRING = 'CIRCULARSTRING'
+    COMPOUNDCURVE = 'COMPOUNDCURVE'
+    CURVEPOLYGON = 'CURVEPOLYGON'
+    MULTICURVE = 'MULTICURVE'
+    MULTISURFACE = 'MULTISURFACE'
+    _map = {'1': POINT,
+            '2': LINESTRING,
+            '3': POLYGON,
+            '4': MULTIPOINT,
+            '5': MULTILINESTRING,
+            '6': MULTIPOLYGON,
+            '7': GEOMETRYCOLLECTION,
+            '8': CIRCULARSTRING,
+            '9': COMPOUNDCURVE,
+            '10': CURVEPOLYGON,
+            '11': MULTICURVE,
+            '12': MULTISURFACE}
 
 class ElementType():
     POINT = 'POINT'
@@ -83,6 +110,34 @@ class Unit(object):
             return self.__unitName
         else:
             self.__unitName = value
+
+
+class Geometry2(ogr.Geometry):
+    def __init__(self, wkb_geom):
+        super(Geometry2, self).__init__(wkb_geom)
+
+        self.type = getattr(GeomType, self.GetGeometryName())
+
+        self.hash = None
+
+
+    def update_hash(self):
+        self.hash = hashlib.sha224(self.ExportToWkt()).hexdigest()
+
+
+    def AddPoint(self, *args, **kwargs):
+        super(Geometry2, self).AddPoint(*args, **kwargs)
+
+        # only update the geometry hash if AddGeometry will not be called (i.e. POINT and LINESTRING objects)
+        if self.type == GeomType.POINT or self.type == GeomType.LINESTRING:
+            self.update_hash()
+
+    def AddGeometry(self, *args):
+        super(Geometry2, self).AddGeometry(*args)
+
+        # update the geometry hash
+        self.update_hash()
+
 
 class Geometry(object):
 
@@ -249,15 +304,15 @@ class ExchangeItem(object):
         :param geom: list of geometries or a single value
         :return: None
         """
-        if isinstance(geom,list):
-            for g in geom:
-                if not isinstance(g, Geometry):
-                    return 0  # return failure code
+        if isinstance(geom,list) or isinstance(geom,numpy.ndarray):
+            # for g in geom:
+            #     if not isinstance(g, Geometry):
+            #         return 0  # return failure code
             self.__geoms2.extend(geom)
             # self.__geoms2 = numpy.concatenate((self.__geoms2, geom))
         else:
-            if not isinstance(geom, Geometry):
-                return 0  # return failure code
+            # if not isinstance(geom, Geometry):
+            #     return 0  # return failure code
             self.__geoms2.append(geom)
             # self.__geoms2 = numpy.concatenate((self.__geoms2, [geom]))
         return 1

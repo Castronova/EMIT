@@ -71,7 +71,7 @@ def build_exchange_items_from_config(params):
         geoms_list = []
 
         # get all input and output exchange items as a list
-        iotype = stdlib.ExchangeItemType.OUTPUT if io['type'] == stdlib.ExchangeItemType.OUTPUT else stdlib.ExchangeItemType.INPUT
+        iotype = stdlib.ExchangeItemType.OUTPUT if io['type'].upper() == stdlib.ExchangeItemType.OUTPUT else stdlib.ExchangeItemType.INPUT
 
         for key,value in io.iteritems():
 

@@ -4,6 +4,7 @@ import wx
 import matplotlib.pyplot as plt
 from gui.views.viewSpatialPlot import ViewSpatialPlot
 from coordinator.emitLogging import elog
+import stdlib
 
 class LogicSpatialPlot(ViewSpatialPlot):
 
@@ -48,7 +49,12 @@ class LogicSpatialPlot(ViewSpatialPlot):
         :return:
         """
         # self.inputCombo.SetItems([' ']+value.keys())
+
+
         self.__input_data = value
+
+
+
 
     def get_input_geom(self, var_name):
         if var_name in self.__input_data:
@@ -126,27 +132,36 @@ class LogicSpatialPlot(ViewSpatialPlot):
 
         i = 0
 
-        # POINT
-        if geom_list[0].geom_type == 'Point':
-            tuple_geomsin = [(g.x,g.y) for g in geom_list]
-            x,y = zip(*tuple_geomsin)
-            self.ax.scatter(x,y,color=colors)
+        # build geometry object
+        # todo: this should only be done once, not every time data is selected
 
-        elif geom_list[0].geom_type == 'Polygon':
+
+        # POINT
+        # print 'Colors', colors
+        if geom_list[0].GetGeometryName() == stdlib.GeomType.POINT:
+
+            # tuple_geomsin = [(g.x,g.y) for g in geom_list]
+            # x,y = zip(*tuple_geomsin)
+            # self.ax.scatter(x,y,color=colors)
+            x,y = zip(*[(g.GetX(), g.GetY()) for g in geom_list])
+            self.ax.scatter(x, y, color=colors)
+
+
+        elif geom_list[0].GetGeometryName() == stdlib.GeomType.POLYGON:
             # POLYGON
             for geom in geom_list:
                 x,y = geom.exterior.coords.xy
                 self.ax.plot(x,y,color=colors[i])
                 i += 1
 
-        elif geom_list[0].geom_type == 'LineString' or geom_list[0].geom_type == 'MultiLineString' :
+        elif geom_list[0].GetGeometryName() == stdlib.GeomType.LINESTRING or geom_list[0].geom_type == stdlib.GeomType.MULTILINESTRING :
             # LINESTRING
             for geom in geom_list:
-                if geom.geom_type == 'LineString':
+                if geom.geom_type == stdlib.GeomType.LINESTRING:
                     x,y = geom.xy
                     self.ax.plot(x,y,color=colors[i])
                     i += 1
-                elif geom.geom_type == 'MultiLineString':
+                elif geom.geom_type == stdlib.GeomType.MULTILINESTRING:
                     for g in geom.geoms:
                         x,y = g.xy
                         self.ax.plot(x,y,color=colors[i])
@@ -158,33 +173,33 @@ class LogicSpatialPlot(ViewSpatialPlot):
         self.ax.margins(0.1)
 
 
-    # def SetPlotDataOut(self, dataout, colors):
-    #
-    #     geomsout = dataout['data']
-    #     typeout = dataout['type']
-    #     i = 0
-    #
-    #     try:
-    #         self.ax.scatter.cla()
-    #     except:
-    #         pass
-    #
-    #     try:
-    #         self.ax.plot.cla()
-    #     except:
-    #         pass
-    #
-    #     if typeout == 'Point':
-    #         tuple_geomsout = [g[0] for g in geomsout]
-    #         x,y = zip(*tuple_geomsout)
-    #         self.ax.scatter(x,y,color=colors)
-    #     else:
-    #
-    #         for g in geomsout:
-    #             x,y = g.exterior.coords.xy
-    #             self.ax.plot(x,y,color=colors[i])
-    #             i += 1
-    #
-    #     self.ax.grid()
-    #     self.ax.axis('auto')
-    #     self.ax.margins(0.1)
+        # def SetPlotDataOut(self, dataout, colors):
+        #
+        #     geomsout = dataout['data']
+        #     typeout = dataout['type']
+        #     i = 0
+        #
+        #     try:
+        #         self.ax.scatter.cla()
+        #     except:
+        #         pass
+        #
+        #     try:
+        #         self.ax.plot.cla()
+        #     except:
+        #         pass
+        #
+        #     if typeout == 'Point':
+        #         tuple_geomsout = [g[0] for g in geomsout]
+        #         x,y = zip(*tuple_geomsout)
+        #         self.ax.scatter(x,y,color=colors)
+        #     else:
+        #
+        #         for g in geomsout:
+        #             x,y = g.exterior.coords.xy
+        #             self.ax.plot(x,y,color=colors[i])
+        #             i += 1
+        #
+        #     self.ax.grid()
+        #     self.ax.axis('auto')
+        #     self.ax.margins(0.1)

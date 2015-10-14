@@ -711,7 +711,8 @@ class Coordinator(object):
                 for ei in eitems:
                     if returnGeoms:
                         if ei.getGeometries2():
-                            geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.getGeometries2()]
+                            geoms = [ dict(wkb=g.ExportToWkb(), id=g.hash) for g in ei.getGeometries2()]
+                            # geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.getGeometries2()]
                         else:
                             elog.warning('deprecated: this component is implementing old geometry and datavalues storage mechanisms which are obsolete and inefficient.')
                             geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.geometries()]

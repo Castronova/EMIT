@@ -125,11 +125,11 @@ class ModelContextMenu(wx.Menu):
                 model_details.inputSelections.Append(name)
                 elog.info("input name: " + name)
 
-                # geoms = [ogr.CreateGeometryFromWkb(g) for g in i['geom']]
-                # igeoms[name] = geoms
+                geoms = [ogr.CreateGeometryFromWkb(g['wkb']) for g in i['geom']]
+                ogeoms[name] = geoms
 
-                geoms = [j['shape'] for j in i['geom']]
-                igeoms[name] = geoms
+                # geoms = [j['shape'] for j in i['geom']]
+                # igeoms[name] = geoms
 
         # todo: HACK! should all of this be in the LogicModel?
         # kwargs = {'edit':False,'spatial':True}

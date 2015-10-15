@@ -1,7 +1,7 @@
 __author__ = 'Francisco'
 
 
-from gui.views.viewPlot import ViewPlot, Data
+from gui.views.viewPlot import ViewPlot, ViewPlotForSiteViewer, Data
 import wx
 from gui.controller.logicDatabase import LogicDatabase
 import coordinator.events as engineEvent
@@ -392,16 +392,16 @@ class CheckListCtrl(wx.ListCtrl, CheckListCtrlMixin, ListCtrlAutoWidthMixin):
 
 class SiteViewer(wx.Frame):
     def __init__(self, parent, siteObject):
-        wx.Frame.__init__(self, parent=parent, id=-1, title="Site Viewer", pos=wx.DefaultPosition, size=(550, 350),
+        wx.Frame.__init__(self, parent=parent, id=-1, title="Site Viewer", pos=wx.DefaultPosition, size=(650, 700),
                           style=wx.STAY_ON_TOP | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         self.siteobject = siteObject
         self.startDate = wx.DateTime_Now() - 7 * wx.DateSpan_Day()
-        print self.startDate
         self.endDate = wx.DateTime_Now()
+        self.parent = parent
 
         panel = wx.Panel(self)
-        toppanel = wx.Panel(panel)
+        self.toppanel = wx.Panel(panel)
         middlepanel = wx.Panel(panel, size=(-1, 35))
         secondMiddle = wx.Panel(panel, size=(-1, 35))
         lowerpanel = wx.Panel(panel)
@@ -411,7 +411,16 @@ class SiteViewer(wx.Frame):
         # middlepanel.SetBackgroundColour("#00FF00")
         # lowerpanel.SetBackgroundColour("#FF00FF")
 
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hboxTopPanel = wx.BoxSizer(wx.HORIZONTAL)
+
+        plot = self.loadEmptyGraph(self.toppanel)
+
+        hboxTopPanel.Add(plot.plot, 1, wx.EXPAND | wx.ALL, 2)
+
+        self.toppanel.SetSizer(hboxTopPanel)
+
+
+        hboxMidPanel = wx.BoxSizer(wx.HORIZONTAL)
 
         self.startDateBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Start Date")
         self.endDateBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="End Date")
@@ -419,22 +428,27 @@ class SiteViewer(wx.Frame):
         self.addToCanvasBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Add to Canvas")
         self.PlotBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Plot Panel")
 
-        hbox.Add(self.startDateBtn, 1, wx.EXPAND | wx.ALL, 2)
-        hbox.AddSpacer(20)
-        hbox.Add(self.endDateBtn, 1, wx.EXPAND | wx.ALL, 2)
-        hbox.AddSpacer(20)
-        hbox.Add(self.exportBtn, 1, wx.EXPAND | wx.ALL, 2)
-        hbox.AddSpacer(20)
-        hbox.Add(self.addToCanvasBtn, 1, wx.EXPAND | wx.ALL, 2)
-        hbox.AddSpacer(20)
-        hbox.Add(self.PlotBtn, 1, wx.EXPAND | wx.ALL, 2)
-        middlepanel.SetSizer(hbox)
+        hboxMidPanel.Add(self.startDateBtn, 1, wx.EXPAND | wx.ALL, 2)
+        hboxMidPanel.AddSpacer(20)
+        hboxMidPanel.Add(self.endDateBtn, 1, wx.EXPAND | wx.ALL, 2)
+        hboxMidPanel.AddSpacer(20)
+        hboxMidPanel.Add(self.exportBtn, 1, wx.EXPAND | wx.ALL, 2)
+        hboxMidPanel.AddSpacer(20)
+        hboxMidPanel.Add(self.addToCanvasBtn, 1, wx.EXPAND | wx.ALL, 2)
+        hboxMidPanel.AddSpacer(20)
+        hboxMidPanel.Add(self.PlotBtn, 1, wx.EXPAND | wx.ALL, 2)
+        middlepanel.SetSizer(hboxMidPanel)
+
+        hboxLowPanel = wx.BoxSizer(wx.HORIZONTAL)
 
         # Column names
         self.variableList = CheckListCtrl(lowerpanel)
         self.variableList.InsertColumn(0, "Variable")
         self.variableList.InsertColumn(1, "Value")
         self.variableList.InsertColumn(2, "Unit")
+
+        hboxLowPanel.Add(self.variableList, 1, wx.EXPAND | wx.ALL, 2)
+        lowerpanel.SetSizer(hboxLowPanel)
         #self.startDateText = wx.StaticText(self, -1, "Start Date: " + self.startDate.__str__())
 
         #mhbox = wx.BoxSizer(wx.HORIZONTAL)
@@ -443,7 +457,7 @@ class SiteViewer(wx.Frame):
 
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        vbox.Add(toppanel, 1, wx.EXPAND | wx.ALL, 2)
+        vbox.Add(self.toppanel, 1, wx.EXPAND | wx.ALL, 2)
         vbox.Add(middlepanel, 0, wx.EXPAND | wx.ALL, 2)
         #vbox.Add(secondMiddle, 0, wx.EXPAND | wx.ALL, 2)
         vbox.Add(lowerpanel, 1, wx.EXPAND | wx.ALL, 2)
@@ -463,8 +477,10 @@ class SiteViewer(wx.Frame):
         for i in range(num):
             if self.variableList.IsChecked(i):
                 self.Parent.selectedVariables.append(self.variableList.GetItemText(i))
+
         self.Close()
-        self.Parent.setParsedValues(self.siteobject)
+        if len(self.Parent.selectedVariables) > 1:
+            self.Parent.setParsedValues(self.siteobject)
 
     def endDateCalender(self, event):
         if self.isCalendarOpen:
@@ -472,9 +488,13 @@ class SiteViewer(wx.Frame):
         else:
             Calendar(self, -1, "Calendar", "end")
 
+    def loadEmptyGraph(self, panel):
+        p = ViewPlotForSiteViewer(panel)
+        return p
+
     def Plot(self, event):
-        #TODO: make this plot data
-        plotting = ViewPlot(self, "Should auto fill", "time", "Data", False)
+        #  TODO: make this plot data
+        plotting = ViewPlot(parent=self, title="Should auto fill", selector=False)
         plotting.Show()
         print "test"
 
@@ -507,12 +527,6 @@ class Calendar(wx.Dialog):
 
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        #if self.type is "start" and self.Parent.startDate is not None:
-        #    calend = cal.CalendarCtrl(self, -1, self.Parent.startDate,
-        #                              style=cal.CAL_SHOW_HOLIDAYS | cal.CAL_SEQUENTIAL_MONTH_SELECTION)
-        #elif self.type is "end" and self.Parent.endDate is not None:
-        #    calend = cal.CalendarCtrl(self, -1, self.Parent.endDate, style=cal.CAL_SHOW_HOLIDAYS | cal.CAL_SEQUENTIAL_MONTH_SELECTION)
-        #else:
         self.calendar = cal.CalendarCtrl(self, -1, wx.DateTime_Now(),
                                   style=cal.CAL_SHOW_HOLIDAYS | cal.CAL_SEQUENTIAL_MONTH_SELECTION)
         vbox.Add(self.calendar, 0, wx.EXPAND | wx.ALL, 5)

@@ -1,7 +1,7 @@
 __author__ = 'Francisco'
 
 
-from gui.views.viewPlot import ViewPlot, ViewPlotForSiteViewer, Data
+from gui.views.viewPlot import ViewPlot, Data
 import wx
 from gui.controller.logicDatabase import LogicDatabase
 import coordinator.events as engineEvent
@@ -19,6 +19,8 @@ import os, sys
 from db.ODM1.WebServiceAPI import WebServiceApi
 from wx.lib.mixins.listctrl import CheckListCtrlMixin, ListCtrlAutoWidthMixin
 import wx.calendar as cal
+import numpy
+from gui.controller.logicPlotForSiteViewer import logicPlotForSiteViewer
 
 
 class viewLowerPanel:
@@ -403,7 +405,6 @@ class SiteViewer(wx.Frame):
         panel = wx.Panel(self)
         self.toppanel = wx.Panel(panel)
         middlepanel = wx.Panel(panel, size=(-1, 35))
-        secondMiddle = wx.Panel(panel, size=(-1, 35))
         lowerpanel = wx.Panel(panel)
 
         #  Uncomment these to see the panel outline
@@ -413,12 +414,11 @@ class SiteViewer(wx.Frame):
 
         hboxTopPanel = wx.BoxSizer(wx.HORIZONTAL)
 
-        plot = self.loadEmptyGraph(self.toppanel)
+        self.plot = self.loadEmptyGraph(self.toppanel)
 
-        hboxTopPanel.Add(plot.plot, 1, wx.EXPAND | wx.ALL, 2)
+        hboxTopPanel.Add(self.plot.plot, 1, wx.EXPAND | wx.ALL, 2)
 
         self.toppanel.SetSizer(hboxTopPanel)
-
 
         hboxMidPanel = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -449,22 +449,16 @@ class SiteViewer(wx.Frame):
 
         hboxLowPanel.Add(self.variableList, 1, wx.EXPAND | wx.ALL, 2)
         lowerpanel.SetSizer(hboxLowPanel)
-        #self.startDateText = wx.StaticText(self, -1, "Start Date: " + self.startDate.__str__())
-
-        #mhbox = wx.BoxSizer(wx.HORIZONTAL)
-        #mhbox.Add(self.startDateText, 1, wx.EXPAND | wx.ALL, 2)
-        #secondMiddle.SetSizer(mhbox)
 
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         vbox.Add(self.toppanel, 1, wx.EXPAND | wx.ALL, 2)
         vbox.Add(middlepanel, 0, wx.EXPAND | wx.ALL, 2)
-        #vbox.Add(secondMiddle, 0, wx.EXPAND | wx.ALL, 2)
         vbox.Add(lowerpanel, 1, wx.EXPAND | wx.ALL, 2)
 
         panel.SetSizer(vbox)
 
-        self.Bind(wx.EVT_BUTTON, self.Plot, self.PlotBtn)
+        self.Bind(wx.EVT_BUTTON, self.PreviewPlot, self.PlotBtn)
         self.Bind(wx.EVT_BUTTON, self.startDateCalender, self.startDateBtn)
         self.Bind(wx.EVT_BUTTON, self.endDateCalender, self.endDateBtn)
         self.Bind(wx.EVT_BUTTON, self.addToCanvas, id=self.addToCanvasBtn.GetId())
@@ -489,14 +483,19 @@ class SiteViewer(wx.Frame):
             Calendar(self, -1, "Calendar", "end")
 
     def loadEmptyGraph(self, panel):
-        p = ViewPlotForSiteViewer(panel)
+        p = logicPlotForSiteViewer(panel)
         return p
 
-    def Plot(self, event):
-        #  TODO: make this plot data
-        plotting = ViewPlot(parent=self, title="Should auto fill", selector=False)
-        plotting.Show()
-        print "test"
+    def PreviewPlot(self, event):
+        self.plot.axes.clear()
+        self.plot.plot.draw()
+
+        x_axis_value = [1, 2, 2.5, 2.75, 2.80, 2.88, 2.91, 3]
+
+        t = numpy.arange(0.0, len(x_axis_value), 1.0)
+        self.plot.axes.plot(t, x_axis_value)
+        self.plot.plot.draw()
+
 
     def populateVariablesList(self, api, sitecode):
         data = api.buildAllSiteCodeVariables(sitecode)
@@ -870,6 +869,7 @@ class DataSeries(wx.Panel):
             # Not in debug mode
             thr = threading.Thread(target=self.load_data, args=(), kwargs={}, name='DataSeriesRefresh')
             thr.start()
+        secondMiddle = wx.Panel(panel, size=(-1, 35))
 
 class SimulationDataTab(DataSeries):
     def __init__(self, parent):

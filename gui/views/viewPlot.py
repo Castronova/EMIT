@@ -104,17 +104,17 @@ class PlotPanel(wx.Panel):
 
         # put up a figure
         self.figure = plt.figure()
-        self.ax = self.figure.add_subplot(1, 1, 1)
+        self.axes = self.figure.add_subplot(1, 1, 1)
 
-        self.ax.grid()
-        self.ax.axis('auto')
-        self.ax.margins(0.1)
+        self.axes.grid()
+        self.axes.axis('auto')
+        self.axes.margins(0)
 
         self.canvas = FigureCanvas(self, -1, self.figure)
         sizer.Add(self.canvas, 100, wx.ALIGN_CENTER | wx.ALL)
 
     def Axis(self):
-        return self.ax
+        return self.axes
 
     def Figure(self):
         return self.figure
@@ -218,10 +218,3 @@ class ViewPlot(wx.Frame):
 
         # build custom menu bar
         #self.build_menu()
-
-
-class ViewPlotForSiteViewer:
-    def __init__(self, panel):
-        self.plot = PlotPanel(panel)
-
-

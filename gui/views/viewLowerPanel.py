@@ -869,7 +869,6 @@ class DataSeries(wx.Panel):
             # Not in debug mode
             thr = threading.Thread(target=self.load_data, args=(), kwargs={}, name='DataSeriesRefresh')
             thr.start()
-        secondMiddle = wx.Panel(panel, size=(-1, 35))
 
 class SimulationDataTab(DataSeries):
     def __init__(self, parent):

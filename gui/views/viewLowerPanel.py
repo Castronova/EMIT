@@ -426,25 +426,25 @@ class SiteViewer(wx.Frame):
         self.endDateBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="End Date")
         self.exportBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Export")
         self.addToCanvasBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Add to Canvas")
-        self.PlotBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Plot Panel")
+        self.PlotBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Preview")
 
         hboxMidPanel.Add(self.startDateBtn, 1, wx.EXPAND | wx.ALL, 2)
         hboxMidPanel.AddSpacer(20)
         hboxMidPanel.Add(self.endDateBtn, 1, wx.EXPAND | wx.ALL, 2)
         hboxMidPanel.AddSpacer(20)
+        hboxMidPanel.Add(self.PlotBtn, 1, wx.EXPAND | wx.ALL, 2)
+        hboxMidPanel.AddSpacer(20)
         hboxMidPanel.Add(self.exportBtn, 1, wx.EXPAND | wx.ALL, 2)
         hboxMidPanel.AddSpacer(20)
         hboxMidPanel.Add(self.addToCanvasBtn, 1, wx.EXPAND | wx.ALL, 2)
-        hboxMidPanel.AddSpacer(20)
-        hboxMidPanel.Add(self.PlotBtn, 1, wx.EXPAND | wx.ALL, 2)
         middlepanel.SetSizer(hboxMidPanel)
 
         hboxLowPanel = wx.BoxSizer(wx.HORIZONTAL)
 
         # Column names
         self.variableList = CheckListCtrl(lowerpanel)
-        self.variableList.InsertColumn(0, "Variable")
-        self.variableList.InsertColumn(1, "Value")
+        self.variableList.InsertColumn(0, "Variable code")
+        self.variableList.InsertColumn(1, "Variable Name")
         self.variableList.InsertColumn(2, "Unit")
 
         hboxLowPanel.Add(self.variableList, 1, wx.EXPAND | wx.ALL, 2)
@@ -458,7 +458,7 @@ class SiteViewer(wx.Frame):
 
         panel.SetSizer(vbox)
 
-        self.Bind(wx.EVT_BUTTON, self.PreviewPlot, self.PlotBtn)
+        self.Bind(wx.EVT_BUTTON, self.previewPlot, self.PlotBtn)
         self.Bind(wx.EVT_BUTTON, self.startDateCalender, self.startDateBtn)
         self.Bind(wx.EVT_BUTTON, self.endDateCalender, self.endDateBtn)
         self.Bind(wx.EVT_BUTTON, self.addToCanvas, id=self.addToCanvasBtn.GetId())
@@ -467,13 +467,10 @@ class SiteViewer(wx.Frame):
         self.Show()
 
     def addToCanvas(self, event):
-        num = self.variableList.GetItemCount()
-        for i in range(num):
-            if self.variableList.IsChecked(i):
-                self.Parent.selectedVariables.append(self.variableList.GetItemText(i))
+        self.Parent.selectedVariables = self.getSelectedVariables()
 
         self.Close()
-        if len(self.Parent.selectedVariables) > 1:
+        if len(self.Parent.selectedVariables) > 0:
             self.Parent.setParsedValues(self.siteobject)
 
     def endDateCalender(self, event):
@@ -482,20 +479,27 @@ class SiteViewer(wx.Frame):
         else:
             Calendar(self, -1, "Calendar", "end")
 
+    def getSelectedVariables(self):
+        num = self.variableList.GetItemCount()
+        checkedVar = []
+        for i in range(num):
+            if self.variableList.IsChecked(i):
+                checkedVar.append(self.variableList.GetItemText(i))
+
+        return checkedVar
+
     def loadEmptyGraph(self, panel):
         p = logicPlotForSiteViewer(panel)
         return p
 
-    def PreviewPlot(self, event):
-        self.plot.axes.clear()
-        self.plot.plot.draw()
-
-        x_axis_value = [1, 2, 2.5, 2.75, 2.80, 2.88, 2.91, 3]
-
-        t = numpy.arange(0.0, len(x_axis_value), 1.0)
-        self.plot.axes.plot(t, x_axis_value)
-        self.plot.plot.draw()
-
+    def previewPlot(self, event):
+        varList = self.getSelectedVariables()
+        if len(varList) > 0:
+            self.plot.clearPlot()
+            data = self.Parent.api.parseValues(self.siteobject.sitecode, varList[0])
+            self.plot.setTitle(varList[0])
+            self.plot.setAxisLabel("Date Time", "Units")
+            self.plot.plotData(data, str(varList[0]))
 
     def populateVariablesList(self, api, sitecode):
         data = api.buildAllSiteCodeVariables(sitecode)

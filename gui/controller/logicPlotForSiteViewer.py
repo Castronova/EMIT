@@ -6,12 +6,10 @@ import numpy
 class logicPlotForSiteViewer(ViewPlotForSiteViewer):
     def __init__(self, panel):
         ViewPlotForSiteViewer.__init__(self, panel)
-        x_axis_value = [0.202, 0.2, 0.212, 0.208, 0.2, 0.198, 0.203, 0.199, 0.196, 0.196, 0.194, 0.199, 0.2]
-        self.plotData(x_axis_value)
 
-    def plotData(self, data):
+    def plotData(self, data, name):
         t = numpy.arange(0.0, len(data), 1.0)
-        self.axes.plot(t, data)
+        self.axes.plot(t, data, label=str(name))
         self.reDraw()
 
     def reDraw(self):
@@ -19,5 +17,7 @@ class logicPlotForSiteViewer(ViewPlotForSiteViewer):
 
     def clearPlot(self):
         self.axes.clear()
+        self.axes.grid()
+        self.axes.margins(0)
         self.reDraw()
 

@@ -57,8 +57,15 @@ class WebServiceApi:
         variableDict = collections.OrderedDict()
 
         for i in range(0, len(seriesVariables[start:end])):
-            variableDict[seriesVariables[i][0][0][0].value] = seriesVariables[i][0][1]
-
+            # {Site code: [Variable Name, Units, Type, Category, Begin Date Time, End Date Time, Description]}
+            variableDict[seriesVariables[i][0][0][0].value] = [seriesVariables[i][0][1],  # Variable Name
+                                                               seriesVariables[i][0][6][2],  # Units
+                                                               seriesVariables[i][0][3],  # Type
+                                                               seriesVariables[i][0][4],  # Category
+                                                               seriesVariables[i][2][0],  # Begin Date Time Objects
+                                                               seriesVariables[i][2][1],  # End Date Time Objects
+                                                               seriesVariables[i][3][1],  # Description
+                                                               ]
         return variableDict
 
     def buildSiteVariables(self, siteCode):

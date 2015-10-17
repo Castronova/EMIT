@@ -387,7 +387,7 @@ class TimeSeriesTab(wx.Panel):
 
 class CheckListCtrl(wx.ListCtrl, CheckListCtrlMixin, ListCtrlAutoWidthMixin):
     def __init__(self, parent):
-        wx.ListCtrl.__init__(self, parent, -1, size=(545, 140), style=wx.LC_REPORT | wx.SUNKEN_BORDER)
+        wx.ListCtrl.__init__(self, parent, -1, size=(545, 140), style=wx.LC_REPORT)
         CheckListCtrlMixin.__init__(self)
         ListCtrlAutoWidthMixin.__init__(self)
 
@@ -443,9 +443,15 @@ class SiteViewer(wx.Frame):
 
         # Column names
         self.variableList = CheckListCtrl(lowerpanel)
-        self.variableList.InsertColumn(0, "Variable code")
-        self.variableList.InsertColumn(1, "Variable Name")
-        self.variableList.InsertColumn(2, "Unit")
+        self.variableList.InsertColumn(0, "Variable Name")
+        self.variableList.InsertColumn(1, "Unit")
+        self.variableList.InsertColumn(2, "Category")
+        self.variableList.InsertColumn(3, "Type")
+        self.variableList.InsertColumn(4, "Begin Date Time")
+        self.variableList.InsertColumn(5, "End Date Time")
+        self.variableList.InsertColumn(6, "Description")
+
+        self.autoSizeColumns()
 
         hboxLowPanel.Add(self.variableList, 1, wx.EXPAND | wx.ALL, 2)
         lowerpanel.SetSizer(hboxLowPanel)
@@ -503,16 +509,21 @@ class SiteViewer(wx.Frame):
 
     def populateVariablesList(self, api, sitecode):
         data = api.buildAllSiteCodeVariables(sitecode)
-        count = 0
+        rowNumber = 0
+        colNumber = 0
         for key, value, in data.iteritems():
-            pos = self.variableList.InsertStringItem(count, str(key))
-            self.variableList.SetStringItem(pos, 1, value)
-            count += 1
+            pos = self.variableList.InsertStringItem(rowNumber, str(key))
+            for i in value:
+                self.variableList.SetStringItem(pos, colNumber, str(i))
+                colNumber += 1
+            colNumber = 0
+            rowNumber += 1
 
-        # Auto size column
-        self.variableList.setResizeColumn(0)
-        self.variableList.setResizeColumn(1)
-        self.variableList.setResizeColumn(2)
+        self.autoSizeColumns()
+
+    def autoSizeColumns(self):
+        for i in range(self.variableList.GetColumnCount()):
+            self.variableList.SetColumnWidth(i, wx.LIST_AUTOSIZE)
 
     def startDateCalender(self, event):
         if self.isCalendarOpen:

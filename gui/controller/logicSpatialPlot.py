@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 from gui.views.viewSpatialPlot import ViewSpatialPlot
 from coordinator.emitLogging import elog
 import stdlib
+from matplotlib.collections import PolyCollection, LineCollection
+import numpy
 
 class LogicSpatialPlot(ViewSpatialPlot):
 
@@ -137,69 +139,68 @@ class LogicSpatialPlot(ViewSpatialPlot):
 
 
         # POINT
-        # print 'Colors', colors
         if geom_list[0].GetGeometryName() == stdlib.GeomType.POINT:
 
-            # tuple_geomsin = [(g.x,g.y) for g in geom_list]
-            # x,y = zip(*tuple_geomsin)
-            # self.ax.scatter(x,y,color=colors)
+            # get x,y points
             x,y = zip(*[(g.GetX(), g.GetY()) for g in geom_list])
             self.ax.scatter(x, y, color=colors)
 
 
+        # POLYGON
         elif geom_list[0].GetGeometryName() == stdlib.GeomType.POLYGON:
-            # POLYGON
-            for geom in geom_list:
-                x,y = geom.exterior.coords.xy
-                self.ax.plot(x,y,color=colors[i])
-                i += 1
 
-        elif geom_list[0].GetGeometryName() == stdlib.GeomType.LINESTRING or geom_list[0].geom_type == stdlib.GeomType.MULTILINESTRING :
-            # LINESTRING
+            poly_list= []
             for geom in geom_list:
-                if geom.geom_type == stdlib.GeomType.LINESTRING:
-                    x,y = geom.xy
-                    self.ax.plot(x,y,color=colors[i])
-                    i += 1
-                elif geom.geom_type == stdlib.GeomType.MULTILINESTRING:
-                    for g in geom.geoms:
-                        x,y = g.xy
-                        self.ax.plot(x,y,color=colors[i])
-                else:
-                    elog.critical('Unsupported line geometry found in logicSpatialPlot.SetPlotData')
+
+                # get then number of polygons
+                polycount = geom.GetGeometryCount()
+
+                # loop through each polygon (most of the time this will only be 1)
+                for i in range(polycount):
+
+                    # get geometry reference
+                    ring = geom.GetGeometryRef(i)
+
+                    # get number of points
+                    points = ring.GetPointCount()
+
+                    # build a list of points
+                    pts = numpy.array(ring.GetPoints())
+
+                    # p = pts[:,0:2]
+                    a = tuple(map(tuple, pts[:,0:2]))
+                    poly_list.append(a)
+
+            # build a polygon collection
+            pcoll = PolyCollection(poly_list, closed=True, facecolor=colors, alpha=0.1, edgecolor='none')
+
+            # add the polygon collection to the plot
+            self.ax.add_collection(pcoll, autolim=True)
+
+
+        # LINESTRING
+        elif geom_list[0].GetGeometryName() == stdlib.GeomType.LINESTRING:
+
+            line_list = []
+            for geom in geom_list:
+                # if geom.GetGeometryName() == stdlib.GeomType.LINESTRING:
+
+                # build a list of points
+                pts = numpy.array(geom.GetPoints())
+
+                # p = pts[:,0:2]
+                a = tuple(map(tuple, pts[:,0:2]))
+                line_list.append(a)
+
+            # build a line collection
+            lcoll = LineCollection(line_list, colors=colors)
+
+            # add the line collection to the plot
+            self.ax.add_collection(lcoll, autolim=True)
+
+        else:
+            elog.critical('Unsupported line geometry found in logicSpatialPlot.SetPlotData')
 
         self.ax.grid()
         self.ax.axis('auto')
         self.ax.margins(0.1)
-
-
-        # def SetPlotDataOut(self, dataout, colors):
-        #
-        #     geomsout = dataout['data']
-        #     typeout = dataout['type']
-        #     i = 0
-        #
-        #     try:
-        #         self.ax.scatter.cla()
-        #     except:
-        #         pass
-        #
-        #     try:
-        #         self.ax.plot.cla()
-        #     except:
-        #         pass
-        #
-        #     if typeout == 'Point':
-        #         tuple_geomsout = [g[0] for g in geomsout]
-        #         x,y = zip(*tuple_geomsout)
-        #         self.ax.scatter(x,y,color=colors)
-        #     else:
-        #
-        #         for g in geomsout:
-        #             x,y = g.exterior.coords.xy
-        #             self.ax.plot(x,y,color=colors[i])
-        #             i += 1
-        #
-        #     self.ax.grid()
-        #     self.ax.axis('auto')
-        #     self.ax.margins(0.1)

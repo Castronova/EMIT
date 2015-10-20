@@ -134,6 +134,7 @@ class Log(object):
             self.log._error(detailed_text)
 
     def info(self, text):
+        inf = env_vars.LOGGING_SHOWINFO
         if env_vars.LOGGING_SHOWINFO:
             self.log._info(text)
 

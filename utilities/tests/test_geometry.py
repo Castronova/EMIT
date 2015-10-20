@@ -102,6 +102,24 @@ class test_geometry(unittest.TestCase):
         self.assertTrue(pts[0][1] == coords[0][0][1])
         self.assertTrue(pts[0][2] == 0)
 
+    def test_build_polygon_single_gdal(self):
+
+        # create x,y points for polyline
+        coords = [(0,0), (0,2), (2,2), (2,0), (0,0)]
+
+        # use utility function to build geometries
+        geoms = build_polygon_geometries(coords)
+
+        geomref = geoms[0].GetGeometryRef(0)
+        pts = geomref.GetPoints()
+
+        self.assertTrue(len(geoms) == 1)
+        self.assertTrue(isinstance(geoms[0], ogr._object))
+        self.assertTrue(isinstance(geoms[0], stdlib.Geometry2))
+        self.assertTrue(pts[0][0] == coords[0][0])
+        self.assertTrue(pts[0][1] == coords[0][1])
+        self.assertTrue(pts[0][2] == 0)
+
     def test_build_polygon_many_gdal(self):
 
         # create x,y points for polygon
@@ -147,6 +165,89 @@ class test_geometry(unittest.TestCase):
         pts = geomref.GetPoints()
 
         self.assertTrue(len(geoms) == 7)
+        self.assertTrue(isinstance(geoms[0], ogr._object))
+        self.assertTrue(isinstance(geoms[0], stdlib.Geometry2))
+        self.assertTrue(pts[0][0] == coords[0][0][0])
+        self.assertTrue(pts[0][1] == coords[0][0][1])
+        self.assertTrue(pts[0][2] == 0)
+
+
+    # ---------------------------------------
+    # TESTS FOR POLYLINE GENERATION
+    # ---------------------------------------
+
+    def test_build_polyline_list_gdal(self):
+
+        # create x,y points for polyline
+        coords = [
+                    ((0,0), (0,2), (2,2), (2,0), (0,0)),
+                 ]
+
+        # use utility function to build geometries
+        geoms = build_polyline_geometries(coords)
+
+        pts = geoms[0].GetPoints()
+
+        self.assertTrue(len(geoms) == 1)
+        self.assertTrue(isinstance(geoms[0], ogr._object))
+        self.assertTrue(isinstance(geoms[0], stdlib.Geometry2))
+        self.assertTrue(pts[0][0] == coords[0][0][0])
+        self.assertTrue(pts[0][1] == coords[0][0][1])
+        self.assertTrue(pts[0][2] == 0)
+
+
+    def test_build_polyline_single_gdal(self):
+
+        # create x,y points for polyline
+        coords = [(0,0), (0,2), (2,2), (2,0), (0,0)]
+
+        # use utility function to build geometries
+        geoms = build_polyline_geometries(coords)
+
+        pts = geoms[0].GetPoints()
+
+        self.assertTrue(len(geoms) == 1)
+        self.assertTrue(isinstance(geoms[0], ogr._object))
+        self.assertTrue(isinstance(geoms[0], stdlib.Geometry2))
+        self.assertTrue(pts[0][0] == coords[0][0])
+        self.assertTrue(pts[0][1] == coords[0][1])
+        self.assertTrue(pts[0][2] == 0)
+
+    def test_build_polyline_numpy_gdal(self):
+
+        # create x,y points for polyline
+        coords = numpy.array([
+                    ((0,0), (0,2), (2,2), (2,0), (0,0)),
+                 ])
+
+        # use utility function to build geometries
+        geoms = build_polyline_geometries(coords)
+
+        pts = geoms[0].GetPoints()
+
+        self.assertTrue(len(geoms) == 1)
+        self.assertTrue(isinstance(geoms[0], ogr._object))
+        self.assertTrue(isinstance(geoms[0], stdlib.Geometry2))
+        self.assertTrue(pts[0][0] == coords[0][0][0])
+        self.assertTrue(pts[0][1] == coords[0][0][1])
+        self.assertTrue(pts[0][2] == 0)
+
+    def test_build_polyline_many_gdal(self):
+
+        # create x,y points for polyline
+        coords = numpy.array([
+                    ((0,0), (0,2), (2,2), (2,0), (0,0)),
+                    ((0,0), (0,2), (2,2), (2,0), (0,0)),
+                    ((0,0), (0,2), (2,2), (2,0), (0,0)),
+                    ((0,0), (0,2), (2,2), (2,0), (0,0)),
+                 ])
+
+        # use utility function to build geometries
+        geoms = build_polyline_geometries(coords)
+
+        pts = geoms[0].GetPoints()
+
+        self.assertTrue(len(geoms) == coords.shape[0])
         self.assertTrue(isinstance(geoms[0], ogr._object))
         self.assertTrue(isinstance(geoms[0], stdlib.Geometry2))
         self.assertTrue(pts[0][0] == coords[0][0][0])

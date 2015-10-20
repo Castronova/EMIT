@@ -2,7 +2,6 @@ __author__ = 'tonycastronova'
 
 import numpy
 from osgeo import ogr
-from shapely.geometry import Point, Polygon
 from coordinator.emitLogging import elog
 import stdlib
 
@@ -45,7 +44,6 @@ def build_point_geometries(x, y):
 
     return geoms
 
-
 def build_polygon_geometries(coords):
     """
     Builds stdlib Geometry objects from coordinates
@@ -68,16 +66,68 @@ def build_polygon_geometries(coords):
 
     shape = coords.shape
     poly_count = shape[0] if len(shape) == 3 else 1
+    has_multiple = 1 if len(shape) > 2 else 0
 
     geoms = numpy.empty((poly_count), dtype=object)
-    for i in xrange(0, len(coords)):
+    if has_multiple:
+        for i in xrange(0, len(coords)):
+            ring = ogr.Geometry(ogr.wkbLinearRing)
+            for pt in coords[i]:
+                ring.AddPoint(float(pt[0]), float(pt[1]))
+
+            poly = stdlib.Geometry2(ogr.wkbPolygon)
+            poly.AddGeometry(ring)
+            geoms[i] = poly
+    else:
         ring = ogr.Geometry(ogr.wkbLinearRing)
-        for pt in coords[i]:
+        for pt in coords:
             ring.AddPoint(float(pt[0]), float(pt[1]))
 
         poly = stdlib.Geometry2(ogr.wkbPolygon)
         poly.AddGeometry(ring)
-        geoms[i] = poly
+        geoms[0] = poly
+
+
+    return geoms
+
+def build_polyline_geometries(coords):
+    """
+    Builds stdlib Geometry objects from coordinates
+    :param coords: list or numpy array of polyline coordinates [[[1,2],[2,3], ], ]
+    :return: numpy array of stdlib geometries
+    """
+
+
+    # try to convert x,y coordinates into numpy arrays
+    try:
+        if not isinstance(coords, numpy.ndarray):
+            if isinstance(coords, list):
+                coords = numpy.asarray(coords)
+            else:
+                coords = numpy.array([coords])
+    except:
+        elog.critical('Could not convert the x,y coordinates into numpy array objects!')
+        return None
+
+
+    shape = coords.shape
+    poly_count = shape[0] if len(shape) == 3 else 1
+    has_multiple = 1 if len(shape) > 2 else 0
+
+    geoms = numpy.empty((poly_count), dtype=object)
+    if has_multiple:
+        for i in range(poly_count):
+            line = stdlib.Geometry2(ogr.wkbLineString)
+            for pt in coords[i]:
+                line.AddPoint(float(pt[0]), float(pt[1]))
+            geoms[i] = line
+    else:
+        line = stdlib.Geometry2(ogr.wkbLineString)
+        for pt in coords:
+            line.AddPoint(float(pt[0]), float(pt[1]))
+        geoms[0] = line
+
+
 
 
     return geoms

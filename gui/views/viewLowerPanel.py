@@ -1,7 +1,5 @@
 __author__ = 'Francisco'
 
-
-from gui.views.viewPlot import ViewPlot, Data
 import wx
 from gui.controller.logicDatabase import LogicDatabase
 import coordinator.events as engineEvent
@@ -15,18 +13,15 @@ import threading
 from wx import richtext
 from coordinator.emitLogging import elog
 from gui.controller import logicConsoleOutput
-import os, sys
+import sys
 from db.ODM1.WebServiceAPI import WebServiceApi
-from wx.lib.mixins.listctrl import CheckListCtrlMixin, ListCtrlAutoWidthMixin
+from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 import wx.calendar as cal
-import numpy
 from gui.controller.logicPlotForSiteViewer import logicPlotForSiteViewer
 
 
 class viewLowerPanel:
     def __init__(self, notebook):
-
-        # notebook = wx.Notebook
 
         console = ConsoleTab(notebook)
         timeseries = TimeSeriesTab(notebook)
@@ -45,7 +40,7 @@ class viewLowerPanel:
             t = threading.Thread(target=logicConsoleOutput.follow, name='CONSOLE THREAD', args=(elog, console.log))
             t.start()
 
-class RedirectText(object):
+class RedirectText(object): # delete this
 
     def __init__(self,TextCtrl):
 
@@ -117,9 +112,6 @@ class TimeSeriesTab(wx.Panel):
         self._databases = {}
         self._connection_added = True
 
-        # self.__logger = logging.getLogger('root')
-
-
         connection_choices = []
         self.connection_combobox = wx.Choice(self, wx.ID_ANY, wx.DefaultPosition, wx.Size(200, -1), connection_choices,
                                              0)
@@ -133,20 +125,14 @@ class TimeSeriesTab(wx.Panel):
         self.table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
         self.m_olvSeries.DefineColumns(self.table_columns)
 
-        # Bindings
         self.addConnectionButton.Bind(wx.EVT_LEFT_DOWN, self.AddConnection)
         self.addConnectionButton.Bind(wx.EVT_MOUSEWHEEL, self.AddConnection_MouseWheel)
 
         self.connection_refresh_button.Bind(wx.EVT_LEFT_DOWN, self.OLVRefresh)
         self.connection_combobox.Bind(wx.EVT_CHOICE, self.DbChanged)
-        # self.connection_combobox.Bind(wx.EVT_COMBOBOX_DROPDOWN, self.RefreshComboBox) todo: delete this
 
-        # Sizers
         seriesSelectorSizer = wx.BoxSizer(wx.VERTICAL)
         buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
-        #  These two comments below will stack the buttons on the left side of the datatable. For visualization only.
-        # seriesSelectorSizer = wx.BoxSizer(wx.HORIZONTAL)
-        # buttonSizer = wx.BoxSizer(wx.VERTICAL)
         buttonSizer.SetMinSize(wx.Size(-1, 45))
 
         buttonSizer.Add(self.connection_combobox, 0, flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=2)
@@ -159,8 +145,6 @@ class TimeSeriesTab(wx.Panel):
         self.SetSizer(seriesSelectorSizer)
         self.Layout()
 
-        # Publisher.subscribe(self.connection_added_status, "connectionAddedStatus")
-
         engineEvent.onDatabaseConnected += self.refreshConnectionsListBoxTS
 
         # build custom context menu
@@ -169,10 +153,6 @@ class TimeSeriesTab(wx.Panel):
 
         # object to hold the current session
         self.__current_session = None
-
-    # def RefreshComboBox(self, event):  # todo: delete this
-    #     pass
-
 
     def DbChanged(self, event):
         # refresh the database
@@ -385,16 +365,15 @@ class TimeSeriesTab(wx.Panel):
 
 
 
-class CheckListCtrl(wx.ListCtrl, CheckListCtrlMixin, ListCtrlAutoWidthMixin):
+class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
     def __init__(self, parent):
         wx.ListCtrl.__init__(self, parent, -1, size=(545, 140), style=wx.LC_REPORT)
-        CheckListCtrlMixin.__init__(self)
         ListCtrlAutoWidthMixin.__init__(self)
 
 
 class SiteViewer(wx.Frame):
     def __init__(self, parent, siteObject):
-        wx.Frame.__init__(self, parent=parent, id=-1, title="Site Viewer", pos=wx.DefaultPosition, size=(650, 700),
+        wx.Frame.__init__(self, parent=parent, id=-1, title=str(siteObject.site_name), pos=wx.DefaultPosition, size=(650, 700),
                           style=wx.STAY_ON_TOP | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         self.siteobject = siteObject
@@ -407,11 +386,6 @@ class SiteViewer(wx.Frame):
         self.toppanel = wx.Panel(panel)
         middlepanel = wx.Panel(panel, size=(-1, 35))
         lowerpanel = wx.Panel(panel)
-
-        #  Uncomment these to see the panel outline
-        # toppanel.SetBackgroundColour("#AAFFCC")
-        # middlepanel.SetBackgroundColour("#00FF00")
-        # lowerpanel.SetBackgroundColour("#FF00FF")
 
         hboxTopPanel = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -473,12 +447,19 @@ class SiteViewer(wx.Frame):
 
         self.Show()
 
+    def deSelect(self, event):
+        print "THis happened"
+
     def addToCanvas(self, event):
         self.Parent.selectedVariables = self.getSelectedVariables()
 
         self.Close()
         if len(self.Parent.selectedVariables) > 0:
             self.Parent.setParsedValues(self.siteobject)
+
+    def autoSizeColumns(self):
+        for i in range(self.variableList.GetColumnCount()):
+            self.variableList.SetColumnWidth(i, wx.LIST_AUTOSIZE)
 
     def endDateCalender(self, event):
         if self.isCalendarOpen:
@@ -490,23 +471,19 @@ class SiteViewer(wx.Frame):
         num = self.variableList.GetItemCount()
         checkedVar = []
         for i in range(num):
-            if self.variableList.IsChecked(i):
+            if self.variableList.IsSelected(i):
                 checkedVar.append(self.variableList.GetItemText(i))
 
         if len(checkedVar) > 0:
             sitecode = self.getSiteCodeByVariableName(checkedVar)
             return sitecode
+        else:
+            return 0
 
     def getSiteCodeByVariableName(self, checkedVar):
         for key, value in self.data.iteritems():
             if value[0] == checkedVar[0]:
                 return key
-
-    # def getBeginDateString(self):
-    #     return self.startDate.FormatDate().replace("/", "-")
-    #
-    # def getEndDateString(self):
-    #     return self.endDate.FormatDate().replace("/", "-")
 
     def loadEmptyGraph(self, panel):
         p = logicPlotForSiteViewer(panel)
@@ -516,10 +493,11 @@ class SiteViewer(wx.Frame):
         varList = self.getSelectedVariables()
         if len(varList) > 0:
             self.plot.clearPlot()
-            data = self.Parent.api.parseValues(self.siteobject.sitecode, varList, self.startDate.FormatISODate(), self.endDate.FormatISODate())
+            data = self.Parent.api.parseValues(self.siteobject.sitecode, varList,
+                                               self.startDate.FormatISODate(), self.endDate.FormatISODate())
             self.plot.setTitle(varList[0])
             self.plot.setAxisLabel("Date Time", "Units")
-            self.plot.plotData(data, str(varList[0]))
+            self.plot.plotData(data, str(varList))
 
     def populateVariablesList(self, api, sitecode):
         data = api.buildAllSiteCodeVariables(sitecode)
@@ -535,10 +513,6 @@ class SiteViewer(wx.Frame):
             rowNumber += 1
 
         self.autoSizeColumns()
-
-    def autoSizeColumns(self):
-        for i in range(self.variableList.GetColumnCount()):
-            self.variableList.SetColumnWidth(i, wx.LIST_AUTOSIZE)
 
     def startDateCalender(self, event):
         if self.isCalendarOpen:

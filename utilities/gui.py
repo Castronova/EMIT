@@ -135,8 +135,8 @@ def validate_config_ini(ini_path):
                     filename = os.path.basename(abspath)
                     module = imp.load_source(filename.split('.')[0], abspath)
                     m = getattr(module, classname)
-                except:
-                    elog.error('Configuration Parsing Error: '+classname+' is not a valid class name')
+                except Exception, e:
+                    elog.error('Configuration Parsing Error: '+str(e))
 
     except Exception, e:
         elog.error('Configuration Parsing Error: '+str(e))

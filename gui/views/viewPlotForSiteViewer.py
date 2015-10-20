@@ -1,10 +1,8 @@
 __author__ = 'francisco'
 
 import matplotlib
-import matplotlib.pyplot as pyplot
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.figure import Figure
-import numpy
 
 class ViewPlotForSiteViewer:
     def __init__(self, panel):
@@ -12,16 +10,7 @@ class ViewPlotForSiteViewer:
         self.axes = self.figure.add_subplot(111)
         self.axes.grid()
         self.axes.margins(0)
-
-        # value = [0.202, 0.2, 0.212, 0.208, 0.2, 0.198, 0.203, 0.199, 0.196, 0.196, 0.194, 0.199, 0.2]
-        value = [13.59, 13.64, 13.62, 13.52, 13.45, 13.51, 13.61, 13.53]
-        t = numpy.arange(0.0, len(value), 1.0)
-
-        self.axes.plot(t, value, label="Data", color='blue')
         self.setAxisLabel("Date Time", "Units")
-        self.displayLegend()
-        self.setTitle("Example")
-
         self.plot = FigureCanvas(panel, -1, self.figure)
 
     def setTitle(self, title=""):

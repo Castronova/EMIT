@@ -10,6 +10,7 @@ class logicPlotForSiteViewer(ViewPlotForSiteViewer):
     def plotData(self, data, name):
         t = numpy.arange(0.0, len(data), 1.0)
         self.axes.plot(t, data, label=str(name))
+        self.displayLegend(1)
         self.reDraw()
 
     def reDraw(self):

@@ -364,7 +364,6 @@ class TimeSeriesTab(wx.Panel):
             self.setup_odm1_table(self.api)
 
 
-
 class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
     def __init__(self, parent):
         wx.ListCtrl.__init__(self, parent, -1, size=(545, 140), style=wx.LC_REPORT)
@@ -447,11 +446,8 @@ class SiteViewer(wx.Frame):
 
         self.Show()
 
-    def deSelect(self, event):
-        print "THis happened"
-
     def addToCanvas(self, event):
-        self.Parent.selectedVariables = self.getSelectedVariables()
+        self.Parent.selectedVariables = self.getSelectedVariableSiteCode()
 
         self.Close()
         if len(self.Parent.selectedVariables) > 0:
@@ -467,7 +463,14 @@ class SiteViewer(wx.Frame):
         else:
             Calendar(self, -1, "Calendar", "end")
 
-    def getSelectedVariables(self):
+    def getSelectedVariableName(self):
+        num = self.variableList.GetItemCount()
+        for i in range(num):
+            if self.variableList.IsSelected(i):
+                checkedVar = self.variableList.GetItemText(i)
+                return checkedVar
+
+    def getSelectedVariableSiteCode(self):
         num = self.variableList.GetItemCount()
         checkedVar = []
         for i in range(num):
@@ -490,12 +493,12 @@ class SiteViewer(wx.Frame):
         return p
 
     def previewPlot(self, event):
-        varList = self.getSelectedVariables()
+        varList = self.getSelectedVariableSiteCode()
         if len(varList) > 0:
             self.plot.clearPlot()
             data = self.Parent.api.parseValues(self.siteobject.sitecode, varList,
                                                self.startDate.FormatISODate(), self.endDate.FormatISODate())
-            self.plot.setTitle(varList[0])
+            self.plot.setTitle(self.getSelectedVariableName())
             self.plot.setAxisLabel("Date Time", "Units")
             self.plot.plotData(data, str(varList))
 

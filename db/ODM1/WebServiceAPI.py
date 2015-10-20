@@ -93,7 +93,7 @@ class WebServiceApi:
         # end data is today and continuing.
         # There are 96 values for each day.
 
-        data = self.odm1.getValues(sitecode, variable)
+        data = self.odm1.getValues(sitecode, variable, start, end)
         tree = et.fromstring(data)
         valuesList = []
 
@@ -105,9 +105,13 @@ class WebServiceApi:
 
         # self.odm1.createXMLFileForReading(data) Run this line to see the file in your browser
 
-        # Below will be an example of grabbing the data points for the most recent 2 days.
-        for i in range(stop-(2*96), stop):
-            valuesList.append(values[i].text)
+        if start is not None and end is not None:
+            for i in range(stop):
+                valuesList.append(values[i].text)
+
+        else:  # Below will be an example of grabbing the data points for the most recent 2 days.
+            for i in range(stop-(2*96), stop):
+                valuesList.append(values[i].text)
 
         return valuesList
 

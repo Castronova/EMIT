@@ -401,6 +401,7 @@ class SiteViewer(wx.Frame):
         self.startDate = wx.DateTime_Now() - 7 * wx.DateSpan_Day()
         self.endDate = wx.DateTime_Now()
         self.parent = parent
+        self.data = None
 
         panel = wx.Panel(self)
         self.toppanel = wx.Panel(panel)
@@ -492,7 +493,20 @@ class SiteViewer(wx.Frame):
             if self.variableList.IsChecked(i):
                 checkedVar.append(self.variableList.GetItemText(i))
 
-        return checkedVar
+        if len(checkedVar) > 0:
+            sitecode = self.getSiteCodeByVariableName(checkedVar)
+            return sitecode
+
+    def getSiteCodeByVariableName(self, checkedVar):
+        for key, value in self.data.iteritems():
+            if value[0] == checkedVar[0]:
+                return key
+
+    # def getBeginDateString(self):
+    #     return self.startDate.FormatDate().replace("/", "-")
+    #
+    # def getEndDateString(self):
+    #     return self.endDate.FormatDate().replace("/", "-")
 
     def loadEmptyGraph(self, panel):
         p = logicPlotForSiteViewer(panel)
@@ -502,13 +516,14 @@ class SiteViewer(wx.Frame):
         varList = self.getSelectedVariables()
         if len(varList) > 0:
             self.plot.clearPlot()
-            data = self.Parent.api.parseValues(self.siteobject.sitecode, varList[0])
+            data = self.Parent.api.parseValues(self.siteobject.sitecode, varList, self.startDate.FormatISODate(), self.endDate.FormatISODate())
             self.plot.setTitle(varList[0])
             self.plot.setAxisLabel("Date Time", "Units")
             self.plot.plotData(data, str(varList[0]))
 
     def populateVariablesList(self, api, sitecode):
         data = api.buildAllSiteCodeVariables(sitecode)
+        self.data = data
         rowNumber = 0
         colNumber = 0
         for key, value, in data.iteritems():

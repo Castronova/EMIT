@@ -63,15 +63,18 @@ class ODM1:
         siteobjects = self.conn.service.GetSitesObject("")
         return siteobjects
 
-    def getValues(self, sitecode, variable=None):
+    def getValues(self, sitecode, variable=None, beginDate=None, endDate=None):
         #  Passing only the sitecode returns the data values.
         #  Passing both variables returns that specified object.
         # Returns an XML
         network = "iutah:"
         if variable is not None:
             variable = network + str(variable)
+        if beginDate is None or endDate is None:
+            data = self.conn.service.GetValues(network + str(sitecode), variable)
+        else:
+            data = self.conn.service.GetValues(network + str(sitecode), variable, beginDate, endDate)
 
-        data = self.conn.service.GetValues(network + str(sitecode), variable)
         return data
 
     def getValuesForASiteObject(self, siteid=None):

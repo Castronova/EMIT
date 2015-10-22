@@ -376,6 +376,7 @@ class SiteViewer(wx.Frame):
                           style=wx.STAY_ON_TOP | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         self.siteobject = siteObject
+        print siteObject
         self.startDate = wx.DateTime_Now() - 7 * wx.DateSpan_Day()
         self.endDate = wx.DateTime_Now()
         self.parent = parent
@@ -510,7 +511,10 @@ class SiteViewer(wx.Frame):
         for key, value, in data.iteritems():
             pos = self.variableList.InsertStringItem(rowNumber, str(key))
             for i in value:
-                self.variableList.SetStringItem(pos, colNumber, str(i))
+                if colNumber is 4 or colNumber is 5:
+                    self.variableList.SetStringItem(pos, colNumber, str(i.strftime("%m/%d/%y")))
+                else:
+                    self.variableList.SetStringItem(pos, colNumber, str(i))
                 colNumber += 1
             colNumber = 0
             rowNumber += 1

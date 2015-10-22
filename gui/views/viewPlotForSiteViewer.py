@@ -3,6 +3,8 @@ __author__ = 'francisco'
 import matplotlib
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.figure import Figure
+import seaborn as sb
+
 
 class ViewPlotForSiteViewer:
     def __init__(self, panel):

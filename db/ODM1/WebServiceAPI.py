@@ -109,9 +109,9 @@ class WebServiceApi:
             for i in range(stop):
                 valuesList.append(values[i].text)
 
-        else:  # Below will be an example of grabbing the data points for the most recent 2 days.
-            for i in range(stop-(2*96), stop):
-                valuesList.append(values[i].text)
+        #else:  # Below will be an example of grabbing the data points for the most recent 2 days.
+        #    for i in range(stop-(2*96), stop):
+        #        valuesList.append(values[i].text)
 
         return valuesList
 

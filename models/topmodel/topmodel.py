@@ -205,7 +205,7 @@ class topmodel(feed_forward.feed_forward_wrapper):
         x = x[nonzero]
         y = y[nonzero]
 
-        tigeoms = geometry.build_point_geometries(x,y,geometryType='gdal')
+        tigeoms = geometry.build_point_geometries(x,y)
 
         self.ti_geoms = tigeoms
         # self.output_soil_moisture_geoms = satgeoms

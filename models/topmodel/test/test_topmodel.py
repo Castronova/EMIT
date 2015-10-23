@@ -42,7 +42,7 @@ class test_topmodel(unittest.TestCase):
 
         # check input geometry type
         geom_type = precip_geoms[0].geom().geometryType()
-        self.assertTrue(geom_type == 'Point')
+        self.assertTrue(geom_type == stdlib.ElementType.POLYGON)
 
         # check output exchange items
         out_items = top.outputs()

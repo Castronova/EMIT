@@ -5,6 +5,94 @@ from osgeo import ogr
 from coordinator.emitLogging import elog
 import stdlib
 
+
+def fromWKT(wkt):
+    """
+    Builds a stdlib.Geometry object from a WKT string
+    :param wkt: wkt string
+    :return: stdlib.Geometry
+    """
+
+    geom = None
+
+    # parse the wkt string into ogr
+    ogrgeom = ogr.CreateGeometryFromWkt(wkt)
+
+    # get geometry type
+    geomtype =  ogrgeom.GetGeometryName()
+
+    if geomtype == stdlib.GeomType.POINT:
+        geom = fromGdalPoint(ogrgeom)
+    elif geomtype == stdlib.GeomType.LINESTRING:
+        geom = fromGdalLinestring(ogrgeom)
+    elif geomtype == stdlib.GeomType.POLYGON:
+        geom = fromGdalPolygon(ogrgeom)
+    else:
+        elog.critical("Unsupported geometry type %s, in utilities.geometry.fromWKT" % geomtype)
+
+    return geom
+
+
+def fromGdalPolygon(gdalpolygon):
+    """
+    Builds a stdlib.Geometry object from a GDAL polygon
+    :param gdalpolygon: osgeo.gdal.Polygon
+    :return: stdlib.Geometry
+    """
+
+    # get the ring that defines the polygon
+    ring = gdalpolygon.GetGeometryRef(0)
+
+    # create the stdlib geometry
+    g = stdlib.Geometry2(ogr.wkbPolygon)
+
+    # add the ring
+    g.AddGeometry(ring)
+
+    # add the geometry to the global list
+    return g
+
+
+def fromGdalPoint(gdalpoint):
+    """
+    Builds a stdlib.Geometry object from a GDAL point
+    :param gdalpolygon: osgeo.gdal.Point
+    :return: stdlib.Geometry
+    """
+
+    # get the geoms point
+    pt = gdalpoint.GetPoint()
+
+    # create the stdlib geometry
+    g = stdlib.Geometry2(ogr.wkbPoint)
+
+    # add the point
+    g.AddPoint(*pt)
+
+    # add the geometry to the global list
+    return g
+
+def fromGdalLinestring(gdallinestring):
+    """
+    Builds a stdlib.Geometry object from a GDAL linstring
+    :param gdalpolygon: osgeo.gdal.LineString
+    :return: stdlib.Geometry
+    """
+
+    # get the points of the linestring
+    pts = gdallinestring.GetPoints()
+
+    # create the stdlib geometry
+    g = stdlib.Geometry2(ogr.wkbLineString)
+
+    # add points to the linestring
+    for pt in pts:
+        g.AddPoint(*pt)
+
+    # add the geometry to the global list
+    return g
+
+
 def build_point_geometries(x, y):
     """
     Builds stdlib Geometry objects from a list of  x and y coordinates

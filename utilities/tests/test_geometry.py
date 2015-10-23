@@ -195,7 +195,6 @@ class test_geometry(unittest.TestCase):
         self.assertTrue(pts[0][1] == coords[0][0][1])
         self.assertTrue(pts[0][2] == 0)
 
-
     def test_build_polyline_single_gdal(self):
 
         # create x,y points for polyline
@@ -253,3 +252,36 @@ class test_geometry(unittest.TestCase):
         self.assertTrue(pts[0][0] == coords[0][0][0])
         self.assertTrue(pts[0][1] == coords[0][0][1])
         self.assertTrue(pts[0][2] == 0)
+
+    # ---------------------------------------
+    # TESTS FOR WKT GEOMETRY GENERATION
+    # ---------------------------------------
+
+    def test_point_from_wkt(self):
+
+        wkt = 'POINT(15 12)'
+
+        geom = fromWKT(wkt)
+
+        self.assertTrue(isinstance(geom, ogr._object))
+        self.assertTrue(isinstance(geom, stdlib.Geometry2))
+        self.assertTrue("EMPTY" not in geom.ExportToWkt())
+
+
+    def test_polygon_from_wkt(self):
+        wkt = 'POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))'
+
+        geom = fromWKT(wkt)
+
+        self.assertTrue(isinstance(geom, ogr._object))
+        self.assertTrue(isinstance(geom, stdlib.Geometry2))
+        self.assertTrue("EMPTY" not in geom.ExportToWkt())
+
+    def test_polyline_from_wkt(self):
+        wkt = 'LINESTRING (30 10, 10 30, 40 40)'
+
+        geom = fromWKT(wkt)
+
+        self.assertTrue(isinstance(geom, ogr._object))
+        self.assertTrue(isinstance(geom, stdlib.Geometry2))
+        self.assertTrue("EMPTY" not in geom.ExportToWkt())

@@ -98,6 +98,7 @@ class LogicSpatialPlot(ViewSpatialPlot):
         iei = self.__iei
         oei = self.__oei
         datain = self.get_input_geom(iei)
+        print 'datain', datain
         if datain is not None:
             colors = self.buildGradientColor(len(datain),'Reds')
             self.SetPlotData(datain,colors=colors)

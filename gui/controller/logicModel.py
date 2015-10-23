@@ -66,7 +66,7 @@ class LogicModel(ViewModel):
         if type == 'input':
             self.plotPanel.set_input_data(geometrycoords)
         elif type == 'output':
-                self.plotPanel.set_output_data(geometrycoords)
+            self.plotPanel.set_output_data(geometrycoords)
 
         # # todo: extend support for multiple inputs/outputs
         # for variable, geom in geometrycoords.iteritems():

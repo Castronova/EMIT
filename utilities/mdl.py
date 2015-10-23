@@ -70,7 +70,6 @@ def build_exchange_items_from_config(params):
     for io in eitems:
         variable = None
         unit = None
-        geoms_list = []
 
         # get all input and output exchange items as a list
         iotype = stdlib.ExchangeItemType.OUTPUT if io['type'].upper() == stdlib.ExchangeItemType.OUTPUT else stdlib.ExchangeItemType.INPUT
@@ -126,7 +125,7 @@ def build_exchange_items_from_config(params):
 
 
         # add geometry to exchange item (NEW)
-        ei.addGeometries2(geoms_list)
+        ei.addGeometries2(geom)
 
         # save exchange items based on type
         items[ei.get_type()].append(ei)

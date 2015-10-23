@@ -237,6 +237,11 @@ class ExchangeItem(object):
         self.__times2 = []
         self.__values2 = []
 
+        # todo: there should be similar functionality for times2 and values2
+        # save the geometries (if provided)
+        if geometry:
+            self.addGeometries2(geometry)
+
         # no data values will be represented as None
         self.__noData = None
 

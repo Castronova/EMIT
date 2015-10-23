@@ -1,7 +1,5 @@
 __author__ = 'Francisco'
 
-
-from gui.views.viewPlot import ViewPlot, Data
 import wx
 from gui.controller.logicDatabase import LogicDatabase
 import coordinator.events as engineEvent
@@ -15,16 +13,15 @@ import threading
 from wx import richtext
 from coordinator.emitLogging import elog
 from gui.controller import logicConsoleOutput
-import os, sys
+import sys
 from db.ODM1.WebServiceAPI import WebServiceApi
-from wx.lib.mixins.listctrl import CheckListCtrlMixin, ListCtrlAutoWidthMixin
+from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 import wx.calendar as cal
+from gui.controller.logicPlotForSiteViewer import logicPlotForSiteViewer
 
 
 class viewLowerPanel:
     def __init__(self, notebook):
-
-        # notebook = wx.Notebook
 
         console = ConsoleTab(notebook)
         timeseries = TimeSeriesTab(notebook)
@@ -43,7 +40,7 @@ class viewLowerPanel:
             t = threading.Thread(target=logicConsoleOutput.follow, name='CONSOLE THREAD', args=(elog, console.log))
             t.start()
 
-class RedirectText(object):
+class RedirectText(object): # delete this
 
     def __init__(self,TextCtrl):
 
@@ -115,9 +112,6 @@ class TimeSeriesTab(wx.Panel):
         self._databases = {}
         self._connection_added = True
 
-        # self.__logger = logging.getLogger('root')
-
-
         connection_choices = []
         self.connection_combobox = wx.Choice(self, wx.ID_ANY, wx.DefaultPosition, wx.Size(200, -1), connection_choices,
                                              0)
@@ -131,20 +125,14 @@ class TimeSeriesTab(wx.Panel):
         self.table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
         self.m_olvSeries.DefineColumns(self.table_columns)
 
-        # Bindings
         self.addConnectionButton.Bind(wx.EVT_LEFT_DOWN, self.AddConnection)
         self.addConnectionButton.Bind(wx.EVT_MOUSEWHEEL, self.AddConnection_MouseWheel)
 
         self.connection_refresh_button.Bind(wx.EVT_LEFT_DOWN, self.OLVRefresh)
         self.connection_combobox.Bind(wx.EVT_CHOICE, self.DbChanged)
-        # self.connection_combobox.Bind(wx.EVT_COMBOBOX_DROPDOWN, self.RefreshComboBox) todo: delete this
 
-        # Sizers
         seriesSelectorSizer = wx.BoxSizer(wx.VERTICAL)
         buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
-        #  These two comments below will stack the buttons on the left side of the datatable. For visualization only.
-        # seriesSelectorSizer = wx.BoxSizer(wx.HORIZONTAL)
-        # buttonSizer = wx.BoxSizer(wx.VERTICAL)
         buttonSizer.SetMinSize(wx.Size(-1, 45))
 
         buttonSizer.Add(self.connection_combobox, 0, flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=2)
@@ -157,8 +145,6 @@ class TimeSeriesTab(wx.Panel):
         self.SetSizer(seriesSelectorSizer)
         self.Layout()
 
-        # Publisher.subscribe(self.connection_added_status, "connectionAddedStatus")
-
         engineEvent.onDatabaseConnected += self.refreshConnectionsListBoxTS
 
         # build custom context menu
@@ -167,10 +153,6 @@ class TimeSeriesTab(wx.Panel):
 
         # object to hold the current session
         self.__current_session = None
-
-    # def RefreshComboBox(self, event):  # todo: delete this
-    #     pass
-
 
     def DbChanged(self, event):
         # refresh the database
@@ -382,75 +364,82 @@ class TimeSeriesTab(wx.Panel):
             self.setup_odm1_table(self.api)
 
 
-
-class CheckListCtrl(wx.ListCtrl, CheckListCtrlMixin, ListCtrlAutoWidthMixin):
+class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
     def __init__(self, parent):
-        wx.ListCtrl.__init__(self, parent, -1, size=(545, 140), style=wx.LC_REPORT | wx.SUNKEN_BORDER)
-        CheckListCtrlMixin.__init__(self)
+        wx.ListCtrl.__init__(self, parent, -1, size=(545, 140), style=wx.LC_REPORT)
         ListCtrlAutoWidthMixin.__init__(self)
 
 
 class SiteViewer(wx.Frame):
     def __init__(self, parent, siteObject):
-        wx.Frame.__init__(self, parent=parent, id=-1, title="Site Viewer", pos=wx.DefaultPosition, size=(550, 350),
+        wx.Frame.__init__(self, parent=parent, id=-1, title=str(siteObject.site_name), pos=wx.DefaultPosition, size=(650, 700),
                           style=wx.STAY_ON_TOP | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         self.siteobject = siteObject
+        print siteObject
         self.startDate = wx.DateTime_Now() - 7 * wx.DateSpan_Day()
-        print self.startDate
         self.endDate = wx.DateTime_Now()
+        self.parent = parent
+        self.data = None
 
         panel = wx.Panel(self)
-        toppanel = wx.Panel(panel)
+        self.toppanel = wx.Panel(panel)
         middlepanel = wx.Panel(panel, size=(-1, 35))
-        secondMiddle = wx.Panel(panel, size=(-1, 35))
         lowerpanel = wx.Panel(panel)
 
-        #  Uncomment these to see the panel outline
-        # toppanel.SetBackgroundColour("#AAFFCC")
-        # middlepanel.SetBackgroundColour("#00FF00")
-        # lowerpanel.SetBackgroundColour("#FF00FF")
+        hboxTopPanel = wx.BoxSizer(wx.HORIZONTAL)
 
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        self.plot = self.loadEmptyGraph(self.toppanel)
+
+        hboxTopPanel.Add(self.plot.plot, 1, wx.EXPAND | wx.ALL, 2)
+
+        self.toppanel.SetSizer(hboxTopPanel)
+
+        hboxMidPanel = wx.BoxSizer(wx.HORIZONTAL)
 
         self.startDateBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Start Date")
         self.endDateBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="End Date")
         self.exportBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Export")
         self.addToCanvasBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Add to Canvas")
-        self.PlotBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Plot Panel")
+        self.PlotBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Preview")
 
-        hbox.Add(self.startDateBtn, 1, wx.EXPAND | wx.ALL, 2)
-        hbox.AddSpacer(20)
-        hbox.Add(self.endDateBtn, 1, wx.EXPAND | wx.ALL, 2)
-        hbox.AddSpacer(20)
-        hbox.Add(self.exportBtn, 1, wx.EXPAND | wx.ALL, 2)
-        hbox.AddSpacer(20)
-        hbox.Add(self.addToCanvasBtn, 1, wx.EXPAND | wx.ALL, 2)
-        hbox.AddSpacer(20)
-        hbox.Add(self.PlotBtn, 1, wx.EXPAND | wx.ALL, 2)
-        middlepanel.SetSizer(hbox)
+        hboxMidPanel.Add(self.startDateBtn, 1, wx.EXPAND | wx.ALL, 2)
+        hboxMidPanel.AddSpacer(20)
+        hboxMidPanel.Add(self.endDateBtn, 1, wx.EXPAND | wx.ALL, 2)
+        hboxMidPanel.AddSpacer(20)
+        hboxMidPanel.Add(self.PlotBtn, 1, wx.EXPAND | wx.ALL, 2)
+        hboxMidPanel.AddSpacer(20)
+        hboxMidPanel.Add(self.exportBtn, 1, wx.EXPAND | wx.ALL, 2)
+        hboxMidPanel.AddSpacer(20)
+        hboxMidPanel.Add(self.addToCanvasBtn, 1, wx.EXPAND | wx.ALL, 2)
+        middlepanel.SetSizer(hboxMidPanel)
+
+        hboxLowPanel = wx.BoxSizer(wx.HORIZONTAL)
 
         # Column names
         self.variableList = CheckListCtrl(lowerpanel)
-        self.variableList.InsertColumn(0, "Variable")
-        self.variableList.InsertColumn(1, "Value")
-        self.variableList.InsertColumn(2, "Unit")
-        #self.startDateText = wx.StaticText(self, -1, "Start Date: " + self.startDate.__str__())
+        self.variableList.InsertColumn(0, "Variable Name")
+        self.variableList.InsertColumn(1, "Unit")
+        self.variableList.InsertColumn(2, "Category")
+        self.variableList.InsertColumn(3, "Type")
+        self.variableList.InsertColumn(4, "Begin Date Time")
+        self.variableList.InsertColumn(5, "End Date Time")
+        self.variableList.InsertColumn(6, "Description")
 
-        #mhbox = wx.BoxSizer(wx.HORIZONTAL)
-        #mhbox.Add(self.startDateText, 1, wx.EXPAND | wx.ALL, 2)
-        #secondMiddle.SetSizer(mhbox)
+        self.autoSizeColumns()
+
+        hboxLowPanel.Add(self.variableList, 1, wx.EXPAND | wx.ALL, 2)
+        lowerpanel.SetSizer(hboxLowPanel)
 
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        vbox.Add(toppanel, 1, wx.EXPAND | wx.ALL, 2)
+        vbox.Add(self.toppanel, 1, wx.EXPAND | wx.ALL, 2)
         vbox.Add(middlepanel, 0, wx.EXPAND | wx.ALL, 2)
-        #vbox.Add(secondMiddle, 0, wx.EXPAND | wx.ALL, 2)
         vbox.Add(lowerpanel, 1, wx.EXPAND | wx.ALL, 2)
 
         panel.SetSizer(vbox)
 
-        self.Bind(wx.EVT_BUTTON, self.Plot, self.PlotBtn)
+        self.Bind(wx.EVT_BUTTON, self.previewPlot, self.PlotBtn)
         self.Bind(wx.EVT_BUTTON, self.startDateCalender, self.startDateBtn)
         self.Bind(wx.EVT_BUTTON, self.endDateCalender, self.endDateBtn)
         self.Bind(wx.EVT_BUTTON, self.addToCanvas, id=self.addToCanvasBtn.GetId())
@@ -459,12 +448,15 @@ class SiteViewer(wx.Frame):
         self.Show()
 
     def addToCanvas(self, event):
-        num = self.variableList.GetItemCount()
-        for i in range(num):
-            if self.variableList.IsChecked(i):
-                self.Parent.selectedVariables.append(self.variableList.GetItemText(i))
+        self.Parent.selectedVariables = self.getSelectedVariableSiteCode()
+
         self.Close()
-        self.Parent.setParsedValues(self.siteobject)
+        if len(self.Parent.selectedVariables) > 0:
+            self.Parent.setParsedValues(self.siteobject)
+
+    def autoSizeColumns(self):
+        for i in range(self.variableList.GetColumnCount()):
+            self.variableList.SetColumnWidth(i, wx.LIST_AUTOSIZE)
 
     def endDateCalender(self, event):
         if self.isCalendarOpen:
@@ -472,24 +464,62 @@ class SiteViewer(wx.Frame):
         else:
             Calendar(self, -1, "Calendar", "end")
 
-    def Plot(self, event):
-        #TODO: make this plot data
-        plotting = ViewPlot(self, "Should auto fill", "time", "Data", False)
-        plotting.Show()
-        print "test"
+    def getSelectedVariableName(self):
+        num = self.variableList.GetItemCount()
+        for i in range(num):
+            if self.variableList.IsSelected(i):
+                checkedVar = self.variableList.GetItemText(i)
+                return checkedVar
+
+    def getSelectedVariableSiteCode(self):
+        num = self.variableList.GetItemCount()
+        checkedVar = []
+        for i in range(num):
+            if self.variableList.IsSelected(i):
+                checkedVar.append(self.variableList.GetItemText(i))
+
+        if len(checkedVar) > 0:
+            sitecode = self.getSiteCodeByVariableName(checkedVar)
+            return sitecode
+        else:
+            return 0
+
+    def getSiteCodeByVariableName(self, checkedVar):
+        for key, value in self.data.iteritems():
+            if value[0] == checkedVar[0]:
+                return key
+
+    def loadEmptyGraph(self, panel):
+        p = logicPlotForSiteViewer(panel)
+        return p
+
+    def previewPlot(self, event):
+        varList = self.getSelectedVariableSiteCode()
+        if len(varList) > 0:
+            self.plot.clearPlot()
+            data = self.Parent.api.parseValues(self.siteobject.sitecode, varList,
+                                               self.startDate.FormatISODate(), self.endDate.FormatISODate())
+            self.plot.setTitle(self.getSelectedVariableName())
+            self.plot.setAxisLabel("Date Time", "Units")
+            self.plot.plotData(data, str(varList))
 
     def populateVariablesList(self, api, sitecode):
         data = api.buildAllSiteCodeVariables(sitecode)
-        count = 0
+        self.data = data
+        rowNumber = 0
+        colNumber = 0
         for key, value, in data.iteritems():
-            pos = self.variableList.InsertStringItem(count, str(key))
-            self.variableList.SetStringItem(pos, 1, value)
-            count += 1
+            pos = self.variableList.InsertStringItem(rowNumber, str(key))
+            for i in value:
+                if colNumber is 4 or colNumber is 5:
+                    self.variableList.SetStringItem(pos, colNumber, str(i.strftime("%m/%d/%y")))
+                else:
+                    self.variableList.SetStringItem(pos, colNumber, str(i))
+                colNumber += 1
+            colNumber = 0
+            rowNumber += 1
 
-        # Auto size column
-        self.variableList.setResizeColumn(0)
-        self.variableList.setResizeColumn(1)
-        self.variableList.setResizeColumn(2)
+        self.autoSizeColumns()
 
     def startDateCalender(self, event):
         if self.isCalendarOpen:
@@ -507,12 +537,6 @@ class Calendar(wx.Dialog):
 
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        #if self.type is "start" and self.Parent.startDate is not None:
-        #    calend = cal.CalendarCtrl(self, -1, self.Parent.startDate,
-        #                              style=cal.CAL_SHOW_HOLIDAYS | cal.CAL_SEQUENTIAL_MONTH_SELECTION)
-        #elif self.type is "end" and self.Parent.endDate is not None:
-        #    calend = cal.CalendarCtrl(self, -1, self.Parent.endDate, style=cal.CAL_SHOW_HOLIDAYS | cal.CAL_SEQUENTIAL_MONTH_SELECTION)
-        #else:
         self.calendar = cal.CalendarCtrl(self, -1, wx.DateTime_Now(),
                                   style=cal.CAL_SHOW_HOLIDAYS | cal.CAL_SEQUENTIAL_MONTH_SELECTION)
         vbox.Add(self.calendar, 0, wx.EXPAND | wx.ALL, 5)

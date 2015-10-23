@@ -57,8 +57,15 @@ class WebServiceApi:
         variableDict = collections.OrderedDict()
 
         for i in range(0, len(seriesVariables[start:end])):
-            variableDict[seriesVariables[i][0][0][0].value] = seriesVariables[i][0][1]
-
+            # {Site code: [Variable Name, Units, Type, Category, Begin Date Time, End Date Time, Description]}
+            variableDict[seriesVariables[i][0][0][0].value] = [seriesVariables[i][0][1],  # Variable Name
+                                                               seriesVariables[i][0][6][2],  # Units
+                                                               seriesVariables[i][0][3],  # Type
+                                                               seriesVariables[i][0][4],  # Category
+                                                               seriesVariables[i][2][0],  # Begin Date Time Objects
+                                                               seriesVariables[i][2][1],  # End Date Time Objects
+                                                               seriesVariables[i][3][1],  # Description
+                                                               ]
         return variableDict
 
     def buildSiteVariables(self, siteCode):
@@ -86,7 +93,7 @@ class WebServiceApi:
         # end data is today and continuing.
         # There are 96 values for each day.
 
-        data = self.odm1.getValues(sitecode, variable)
+        data = self.odm1.getValues(sitecode, variable, start, end)
         tree = et.fromstring(data)
         valuesList = []
 
@@ -98,9 +105,13 @@ class WebServiceApi:
 
         # self.odm1.createXMLFileForReading(data) Run this line to see the file in your browser
 
-        # Below will be an example of grabbing the data points for the most recent 2 days.
-        for i in range(stop-(2*96), stop):
-            valuesList.append(values[i].text)
+        if start is not None and end is not None:
+            for i in range(stop):
+                valuesList.append(values[i].text)
+
+        #else:  # Below will be an example of grabbing the data points for the most recent 2 days.
+        #    for i in range(stop-(2*96), stop):
+        #        valuesList.append(values[i].text)
 
         return valuesList
 

@@ -104,17 +104,17 @@ class PlotPanel(wx.Panel):
 
         # put up a figure
         self.figure = plt.figure()
-        self.ax = self.figure.add_subplot(1,1,1)
+        self.axes = self.figure.add_subplot(1, 1, 1)
 
-        self.ax.grid()
-        self.ax.axis('auto')
-        self.ax.margins(0.1)
+        self.axes.grid()
+        self.axes.axis('auto')
+        self.axes.margins(0)
 
         self.canvas = FigureCanvas(self, -1, self.figure)
-        sizer.Add(self.canvas, 100, wx.ALIGN_CENTER|wx.ALL)
+        sizer.Add(self.canvas, 100, wx.ALIGN_CENTER | wx.ALL)
 
     def Axis(self):
-        return self.ax
+        return self.axes
 
     def Figure(self):
         return self.figure
@@ -132,7 +132,7 @@ class ViewPlot(wx.Frame):
             if selector:
                 # increase the panel width to fit the selector
                 width = 1000  # 800 if right
-                height = 500 # 500 if right
+                height = 500  # 500 if right
             else:
                 width = 700
                 height = 500
@@ -141,7 +141,7 @@ class ViewPlot(wx.Frame):
             if selector:
                 # increase the panel width to fit the selector
                 width = 600  # 800 if right
-                height = 600 # 500 if right
+                height = 600  # 500 if right
             else:
                 width = 700
                 height = 500
@@ -150,10 +150,10 @@ class ViewPlot(wx.Frame):
                           pos=wx.DefaultPosition, size=wx.Size(width, height),
                           style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
         if env_vars.LEGEND_LOCATIONRIGHT == 1:
-            #self.Sizer = wx.BoxSizer(wx.VERTICAL)
+            #  self.Sizer = wx.BoxSizer(wx.VERTICAL)
             self.Sizer = wx.BoxSizer(wx.HORIZONTAL)
             self.HSizer = wx.BoxSizer(wx.HORIZONTAL)
-            #self.HSizer = wx.BoxSizer(wx.VERTICAL)
+            #  self.HSizer = wx.BoxSizer(wx.VERTICAL)
         else:
             self.Sizer = wx.BoxSizer(wx.VERTICAL)
             self.HSizer = wx.BoxSizer(wx.VERTICAL)
@@ -164,7 +164,7 @@ class ViewPlot(wx.Frame):
         self.cmap = plt.cm.jet
 
         # create an instance of the figure
-        self.plotPanel = PlotPanel(self)
+        self.plotPanel = PlotPanel(parent)
 
         self.HSizer.Add(self.plotPanel, 1, wx.ALL | wx.EXPAND | wx.GROW, 0)
 
@@ -209,7 +209,6 @@ class ViewPlot(wx.Frame):
             self.y_label = ylabel
             self.title = title
 
-
             Publisher.subscribe(self.update_plot, "SeriesChecked")  # subscribes LegendListControl
 
         self.Sizer.Add(self.HSizer)
@@ -219,5 +218,3 @@ class ViewPlot(wx.Frame):
 
         # build custom menu bar
         #self.build_menu()
-
-

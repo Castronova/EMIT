@@ -6,8 +6,10 @@ from shapely import wkt
 import cPickle as pickle
 from osgeo import ogr, osr
 import utilities.spatial
+from utilities import geometry
 import stdlib
 from coordinator.emitLogging import elog
+import numpy
 
 def create_variable(variable_name_cv):
     """
@@ -90,18 +92,18 @@ def build_exchange_items_from_config(params):
                         raise Exception('Could not find file at path %s, generated from relative path %s'%(gen_path, value))
 
                     # parse the geometry from the shapefile
-                    geom,srs = utilities.spatial.read_shapefile(gen_path)
+                    geom, srs = utilities.spatial.read_shapefile(gen_path)
+
 
                 # otherwise it must be a wkt
                 else:
                     try:
+                        # get the wkt text string
                         value = value.strip('\'').strip('"')
-                        geoms = wkt.loads(value)
-                        geom = []
-                        if 'Multi' in geoms.geometryType():
-                                geom  = [g for g in geoms]
-                        else:
-                            geom = [geoms]
+
+                        # parse the wkt string into a stdlib.Geometry object
+                        geom = utilities.geometry.fromWKT(value)
+
                     except:
                         elog.warning('Could not load component geometry from *.mdl file')
                         # this is OK.  Just set the geoms to [] and assume that they will be populated during initialize.
@@ -110,20 +112,6 @@ def build_exchange_items_from_config(params):
                     srs = None
                     if 'espg_code' in io:
                         srs = utilities.spatial.get_srs_from_epsg(io['epsg_code'])
-
-                # create Geometry objects for each shape
-                for element in geom:
-                    # if srs is None:
-                        # set default srs
-                        # srs = utilities.spatial.get_srs_from_epsg('4269')
-
-                    # create element
-                    elem = stdlib.Geometry()
-                    elem.geom(element)
-                    elem.type(element.geom_type)
-                    elem.srs(srs)
-                    geoms_list.append(elem)
-
 
         # generate a unique uuid for this exchange item
         id = uuid.uuid4().hex

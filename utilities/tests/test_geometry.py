@@ -261,27 +261,33 @@ class test_geometry(unittest.TestCase):
 
         wkt = 'POINT(15 12)'
 
-        geom = fromWKT(wkt)
+        geoms = fromWKT(wkt)
 
-        self.assertTrue(isinstance(geom, ogr._object))
-        self.assertTrue(isinstance(geom, stdlib.Geometry2))
-        self.assertTrue("EMPTY" not in geom.ExportToWkt())
+        self.assertTrue(len(geoms) > 0)
+        for i in range(len(geoms)):
+            self.assertTrue(isinstance(geoms[i], ogr._object))
+            self.assertTrue(isinstance(geoms[i], stdlib.Geometry2))
+            self.assertTrue("EMPTY" not in geoms[i].ExportToWkt())
 
 
     def test_polygon_from_wkt(self):
         wkt = 'POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))'
 
-        geom = fromWKT(wkt)
+        geoms = fromWKT(wkt)
 
-        self.assertTrue(isinstance(geom, ogr._object))
-        self.assertTrue(isinstance(geom, stdlib.Geometry2))
-        self.assertTrue("EMPTY" not in geom.ExportToWkt())
+        self.assertTrue(len(geoms) > 0)
+        for i in range(len(geoms)):
+            self.assertTrue(isinstance(geoms[i], ogr._object))
+            self.assertTrue(isinstance(geoms[i], stdlib.Geometry2))
+            self.assertTrue("EMPTY" not in geoms[i].ExportToWkt())
 
     def test_polyline_from_wkt(self):
         wkt = 'LINESTRING (30 10, 10 30, 40 40)'
 
-        geom = fromWKT(wkt)
+        geoms = fromWKT(wkt)
 
-        self.assertTrue(isinstance(geom, ogr._object))
-        self.assertTrue(isinstance(geom, stdlib.Geometry2))
-        self.assertTrue("EMPTY" not in geom.ExportToWkt())
+        self.assertTrue(len(geoms) > 0)
+        for i in range(len(geoms)):
+            self.assertTrue(isinstance(geoms[i], ogr._object))
+            self.assertTrue(isinstance(geoms[i], stdlib.Geometry2))
+            self.assertTrue("EMPTY" not in geoms[i].ExportToWkt())

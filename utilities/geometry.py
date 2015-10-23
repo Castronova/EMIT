@@ -37,7 +37,7 @@ def fromGdalPolygon(gdalpolygon):
     """
     Builds a stdlib.Geometry object from a GDAL polygon
     :param gdalpolygon: osgeo.gdal.Polygon
-    :return: stdlib.Geometry
+    :return: numpy.array(stdlib.Geometry)
     """
 
     # get the ring that defines the polygon
@@ -49,8 +49,8 @@ def fromGdalPolygon(gdalpolygon):
     # add the ring
     g.AddGeometry(ring)
 
-    # add the geometry to the global list
-    return g
+    # return the geometry
+    return numpy.array([g])
 
 
 def fromGdalPoint(gdalpoint):
@@ -69,8 +69,8 @@ def fromGdalPoint(gdalpoint):
     # add the point
     g.AddPoint(*pt)
 
-    # add the geometry to the global list
-    return g
+    # return the geometry
+    return numpy.array([g])
 
 def fromGdalLinestring(gdallinestring):
     """
@@ -89,8 +89,8 @@ def fromGdalLinestring(gdallinestring):
     for pt in pts:
         g.AddPoint(*pt)
 
-    # add the geometry to the global list
-    return g
+    # return the geometry
+    return numpy.array([g])
 
 
 def build_point_geometries(x, y):

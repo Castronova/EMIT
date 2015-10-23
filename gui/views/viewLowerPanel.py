@@ -376,7 +376,7 @@ class SiteViewer(wx.Frame):
                           style=wx.STAY_ON_TOP | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         self.siteobject = siteObject
-        print siteObject
+        elog.debug("siteObject ", siteObject)
         self.startDate = wx.DateTime_Now() - 7 * wx.DateSpan_Day()
         self.endDate = wx.DateTime_Now()
         self.parent = parent
@@ -579,10 +579,10 @@ class Calendar(wx.Dialog):
 
     def validateDates(self):
         if self.Parent.startDate < self.Parent.endDate:
-            print "Start is before End So its GOOD "
+            elog.debug("Start is before End So its GOOD ")
             return True
         else:
-            print "Please fix, make start before END, FAIL"
+            elog.debug("Please fix, make start before END, FAIL")
             return False
 
 

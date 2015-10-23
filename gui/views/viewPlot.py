@@ -56,7 +56,6 @@ class LogicLegend(ViewLegend):
         """
         This is the same code, just added the event inside
         """
-        # print "SetCheckState called!"
 
         if self.checkStateColumn is None:
             return None
@@ -74,7 +73,6 @@ class LogicLegend(ViewLegend):
         """
         This is the same code, just added the event inside
         """
-        # print "_HandleLeftDownOnImage called!", rowIndex, " ", subItemIndex
 
         column = self.columns[subItemIndex]
         if not column.HasCheckState():
@@ -82,7 +80,6 @@ class LogicLegend(ViewLegend):
 
         self._PossibleFinishCellEdit()
         modelObject = self.GetObjectAt(rowIndex)
-        #print "modelObject", modelObject, " column", column
         if modelObject is not None:
             column.SetCheckState(modelObject, not column.GetCheckState(modelObject))
 

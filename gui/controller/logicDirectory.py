@@ -36,7 +36,6 @@ class LogicDirectory(ViewDirectory):
     def OnClick(self, event):
         dirpath = self.dirCtrl.getcurrentdirectory()
         path = os.path.join(dirpath, event.GetText())
-        # print '> ', path
         self.sb.SetValue(path)
 
 

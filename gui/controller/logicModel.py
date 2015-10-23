@@ -24,7 +24,6 @@ class LogicModel(ViewModel):
 
 
     def update_plot_output(self, event):
-        # print event.EventObject.StringSelection + " selected"
         received_data = event.EventObject.StringSelection
         self.TopLevelParent.plotPanel.set_selection_output(received_data)
         self.TopLevelParent.plotPanel.UpdatePlot()

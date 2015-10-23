@@ -5,10 +5,12 @@ import wx.xrc
 import wx.aui
 from gui.controller.logicEMIT import LogicEMIT
 from coordinator import engineManager
-import coordinator.emitLogging as l
+# import coordinator.emitLogging as l
+#
+#
+# logging = l.Log()
 
-
-logging = l.Log()
+from coordinator.emitLogging import elog
 
 class EMITApp(wx.App):
     def OnInit(self):

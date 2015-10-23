@@ -71,13 +71,11 @@ class LogicPlot(ViewPlot):
 
     def Onlegend_right(self,event):
 
-        print "right"
         env_vars.set_environment_variable('LEGEND', 'locationright', 1)
         env_vars.set_environment_variable('LEGEND', 'locationbottom', 0)
 
     def Onlegend_bottom(self,event):
 
-        print "bottom"
         env_vars.set_environment_variable('LEGEND', 'locationright', 0)
         env_vars.set_environment_variable('LEGEND', 'locationbottom', 1)
 

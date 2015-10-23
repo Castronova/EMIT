@@ -70,8 +70,10 @@ class EnvironmentVars(object):
                 self.config.add_section(section)
             self.config.set(section, var, value)
 
-        except Exception:
-            print "Invalid environment variable or value."
+        except Exception, e:
+            # fixme: cannot import logging b/c of circular dependency
+            # elog.error("Invalid environment variable or value: %s" % e.message)
+            return 0
 
 
     def save_environment(self, settings_path=None):
@@ -81,7 +83,8 @@ class EnvironmentVars(object):
             self.config.write(fp)
             return 1
         except Exception, e:
-            print e
+            # fixme: cannot import logging b/c of circular dependency
+            # elog.error("Error saving environment variables: %s" % e.message)
             return 0
 
 

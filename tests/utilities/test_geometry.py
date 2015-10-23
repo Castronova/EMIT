@@ -13,6 +13,10 @@ class test_geometry(unittest.TestCase):
     def tearDown(self):
         pass
 
+    def test_gdal_requirements(self):
+        pass
+
+
     # ---------------------------------------
     # TESTS FOR POINT GENERATION
     # ---------------------------------------

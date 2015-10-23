@@ -7,6 +7,7 @@ import wx
 import coordinator.users as Users
 from coordinator import engineAccessors
 from environment import env_vars
+from coordinator.emitLogging import elog
 
 class viewPreRun(wx.Frame):
     def __init__(self):                                                     # this style makes the window non-resizable
@@ -136,7 +137,7 @@ class SummaryPage(wx.Panel):
         # with open(os.path.abspath(os.path.join(currentdir, '../../app_data/configuration/users.json')),'r') as f:
 
         userjson = env_vars.USER_JSON
-        print userjson
+        elog.debug('userjson', userjson)
         with open(userjson,'r') as f:
             known_users.extend(Users.BuildAffiliationfromJSON(f.read()))
 

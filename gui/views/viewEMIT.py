@@ -445,10 +445,8 @@ class viewMenuBar(wx.Frame):
 
         info = self.c1.GetValue()
         warn = self.c2.GetValue()
-        print warn
         critical = self.c3.GetValue()
         error = self.c4.GetValue()
         debug = self.c5.GetValue()
         cb = {'info': info, 'warn': warn, 'critical': critical, 'error': error, 'debug': debug}
-        print cb
         return cb

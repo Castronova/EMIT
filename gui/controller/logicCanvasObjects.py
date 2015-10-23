@@ -128,7 +128,6 @@ class ModelBox(FC.Group):
         if type == datatypes.ModelTypes.TimeStep:
             bmp = wx.Image(path.join(imgs_base_path,'rectGreen.png'), wx.BITMAP_TYPE_PNG)
         elif type == datatypes.ModelTypes.FeedForward:
-            print path.join(imgs_base_path,'rectBlue.png')
             bmp = wx.Image(path.join(imgs_base_path,'rectBlue.png'), wx.BITMAP_TYPE_PNG)
         elif type == datatypes.ModelTypes.Data:
             bmp = wx.Image(path.join(imgs_base_path, 'rectPurple.png'), wx.BITMAP_TYPE_PNG)

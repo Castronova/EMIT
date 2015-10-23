@@ -22,23 +22,29 @@ class EnvironmentVars(object):
 
             # if the settings path does not exist, then create it
             if not os.path.exists(self.settings_path):
-                self.write_default_settings()
+                self.save_default_environment()
 
             # re-write this file if in debug mode to ensure that the settings are always up-to-date
-            elif sys.gettrace():
-                self.write_default_settings()
+            if sys.gettrace():
+                self.save_default_environment()
 
-            else:
-                self.config.read(self.settings_path)
-                settings_dict = self.parse_settings_file()
-                for k, v in settings_dict.iteritems():
-                    setattr(self, k.upper(), v)
+            # load the environment variables
+            self.load_environment(self.settings_path)
 
             EnvironmentVars.__monostate = self.__dict__
-            print self.__dict__
         else:
-            print self.__dict__
             self.__dict__ = EnvironmentVars.__monostate
+
+
+    def load_environment(self, settings_path=None):
+        settings_path = self.settings_path if settings_path is None else settings_path
+
+        self.config = ConfigParser.ConfigParser(allow_no_value = True)
+
+        self.config.read(self.settings_path)
+        settings_dict = self.parse()
+        for k, v in settings_dict.iteritems():
+            setattr(self, k.upper(), v)
 
 
     def set_environment_variable(self, section, var, value=None):
@@ -68,9 +74,10 @@ class EnvironmentVars(object):
             print "Invalid environment variable or value."
 
 
-    def write_environment_variables(self):
+    def save_environment(self, settings_path=None):
+        settings_path = self.settings_path if settings_path is None else settings_path
         try:
-            fp = open(self.settings_path,'w+')
+            fp = open(settings_path,'w+')
             self.config.write(fp)
             return 1
         except Exception, e:
@@ -78,7 +85,7 @@ class EnvironmentVars(object):
             return 0
 
 
-    def parse_settings_file(self):
+    def parse(self):
         '''
         The settings file is divided into sections, such as logging
         and local_db. In each section there are options, which contain
@@ -97,7 +104,8 @@ class EnvironmentVars(object):
 
         return d
 
-    def write_default_settings(self):
+    def save_default_environment(self):
+
         with open(self.settings_path, 'w') as f:
 
             #fixme: ConfigParser does not preserve comments!  Replace with cfgparse
@@ -125,7 +133,7 @@ class EnvironmentVars(object):
             self.set_environment_variable('TOOLBOX', 'path', os.path.abspath(os.path.join(os.path.dirname (self.settings_path),'../configuration/toolbox.ini')))
 
             # write environment variables to file
-            self.write_environment_variables()
+            self.save_environment()
 
             # self.set_environment_variable('LOGGING', 'showinfo',0)
             # self.write_environment_variables()

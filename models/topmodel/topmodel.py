@@ -34,8 +34,8 @@ class topmodel(feed_forward.feed_forward_wrapper):
         io = mdl.build_exchange_items_from_config(config_params)
 
         # set inputs and outputs
-        self.inputs(value=io['input'])
-        self.outputs(value=io['output'])
+        self.inputs(value=io[stdlib.ExchangeItemType.INPUT])
+        self.outputs(value=io[stdlib.ExchangeItemType.OUTPUT])
 
         # model_inputs
         inputs = config_params['model inputs'][0]
@@ -205,7 +205,7 @@ class topmodel(feed_forward.feed_forward_wrapper):
         x = x[nonzero]
         y = y[nonzero]
 
-        tigeoms = geometry.build_point_geometries(x,y,geometryType='gdal')
+        tigeoms = geometry.build_point_geometries(x,y)
 
         self.ti_geoms = tigeoms
         # self.output_soil_moisture_geoms = satgeoms

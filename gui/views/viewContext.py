@@ -15,6 +15,8 @@ from coordinator.emitLogging import elog
 import csv
 import time
 import os
+from osgeo import ogr
+
 
 #todo:  this needs to be split up into view and logic code
 
@@ -104,7 +106,10 @@ class ModelContextMenu(wx.Menu):
             for o in oei:
                 name = o['name']
                 model_details.outputSelections.Append(name)
-                geoms = [i['shape'] for i in o['geom']]
+
+                # geoms = [i['shape'] for i in o['geom']]
+
+                geoms = [ogr.CreateGeometryFromWkb(g['wkb']) for g in o['geom']]
                 ogeoms[name] = geoms
 
         # get the input geometries
@@ -119,8 +124,12 @@ class ModelContextMenu(wx.Menu):
                 name = i['name']
                 model_details.inputSelections.Append(name)
                 elog.info("input name: " + name)
-                geoms = [j['shape'] for j in i['geom']]
+
+                geoms = [ogr.CreateGeometryFromWkb(g['wkb']) for g in i['geom']]
                 igeoms[name] = geoms
+
+                # geoms = [j['shape'] for j in i['geom']]
+                # igeoms[name] = geoms
 
         # todo: HACK! should all of this be in the LogicModel?
         # kwargs = {'edit':False,'spatial':True}

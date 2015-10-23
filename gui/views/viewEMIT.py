@@ -430,9 +430,11 @@ class viewMenuBar(wx.Frame):
         env_vars.set_environment_variable('LOGGING', 'showerror', errchk)
 
         # write these new settings to file
-        env_vars.write_environment_variables()
+        env_vars.save_environment()
 
-        print env_vars.LOGGING_SHOWWARNING
+        elog.info('Verbosity Settings Saved')
+
+        # print env_vars.LOGGING_SHOWWARNING
         self.Close()
 
     def getCheckboxValue(self):

@@ -179,8 +179,7 @@ def parse_config(ini):
                 if os.path.isfile(genpath): # and genpath[-3:] != '.py' :
                     value = genpath
                 d[option] = value
-            d['type'] = section
-
+            d['type'] = section.upper()
 
             if section not in config_params:
                 config_params[section] = [d]

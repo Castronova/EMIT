@@ -299,23 +299,20 @@ class ExchangeItem(object):
                 return numpy.array(self.__geoms2)
             return self.__geoms2
 
-    def addGeometries2(self, geom):
+    def addGeometries2(self, geom=None):
         """
         adds geometries to the exchange item
         :param geom: list of geometries or a single value
         :return: None
         """
+
         if isinstance(geom,list) or isinstance(geom,numpy.ndarray):
-            # for g in geom:
-            #     if not isinstance(g, Geometry):
-            #         return 0  # return failure code
             self.__geoms2.extend(geom)
-            # self.__geoms2 = numpy.concatenate((self.__geoms2, geom))
-        else:
-            # if not isinstance(geom, Geometry):
-            #     return 0  # return failure code
+        elif isinstance(geom, Geometry2):
             self.__geoms2.append(geom)
-            # self.__geoms2 = numpy.concatenate((self.__geoms2, [geom]))
+        else:
+            elog.info("Attempted to add unsupported geometry type to ExchangeItem %s, in stdlib.addGeometries(geom)" % type(geom))
+            return 0
         return 1
 
     def setValues2(self, values, timevalue):

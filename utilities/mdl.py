@@ -70,6 +70,7 @@ def build_exchange_items_from_config(params):
     for io in eitems:
         variable = None
         unit = None
+        geom = None
 
         # get all input and output exchange items as a list
         iotype = stdlib.ExchangeItemType.OUTPUT if io['type'].upper() == stdlib.ExchangeItemType.OUTPUT else stdlib.ExchangeItemType.INPUT

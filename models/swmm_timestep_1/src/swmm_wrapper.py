@@ -8,9 +8,10 @@ from ctypes import *
 import os
 
 from shapely.geometry import *
-from stdlib import Geometry, DataValues, ExchangeItem, ExchangeItemType
+from stdlib import Geometry2, ExchangeItem, ExchangeItemType
+
 from wrappers.time_step import time_step_wrapper
-from utilities import mdl, spatial
+from utilities import mdl, spatial, geometry
 
 import sys
 
@@ -349,28 +350,26 @@ class swmm(time_step_wrapper):
 
                 # build elementset
                 geometries = geoms[key]
-                elementset = []
+                elements = []
+
                 for i, v in geometries.iteritems():
-                    geom = v['geometry']
-                    dv = DataValues()
-                    elem = Geometry(geom=geom,id=i)
-                    elem.type(geom.geom_type)
-                    elem.srs(srs)
-                    elem.datavalues(dv)
-                    elementset.append(elem)
+
+                    # get the geometry object, multi-geometries
+                    g = v['geometry'][0]
 
                     # save the geometry for lookup later
-                    self.__geom_lookup[i] = elem
+                    self.__geom_lookup[i] = g
+                    elements.append(g)
 
 
                 # create exchange item
                 ei = ExchangeItem(id,
                                 name=variable.VariableNameCV(),
                                 desc=variable.VariableDefinition(),
-                                geometry=elementset,
+                                geometry=elements,
                                 unit= unit,
                                 variable=variable,
-                                type=ExchangeItemType.Output)
+                                type=ExchangeItemType.OUTPUT)
 
                 # save the output item
                 output_items.append(ei)
@@ -387,28 +386,23 @@ class swmm(time_step_wrapper):
                 # build elementset
                 id_inc = 0
                 geometries = geoms[key]
-                elementset = []
+                elements = []
                 for i, v in geometries.iteritems():
-                    geom = v['geometry']
-                    dv = DataValues()
-                    elem = Geometry(geom=geom,id=id_inc)
-                    elem.type(geom.geom_type)
-                    elem.srs(srs)
-                    elem.datavalues(dv)
-                    elementset.append(elem)
-                    id_inc += 1
+                    # get the geometry object, multi-geometries
+                    g = v['geometry'][0]
 
                     # save the geometry for lookup later
-                    self.__geom_lookup[i] = elem
+                    self.__geom_lookup[i] = g
+                    elements.append(g)
 
                 # create exchange item
                 ei = ExchangeItem(id,
                                 name=variable.VariableNameCV(),
                                 desc=variable.VariableDefinition(),
-                                geometry=elementset,
+                                geometry=elements,
                                 unit= unit,
                                 variable=variable,
-                                type=ExchangeItemType.Input)
+                                type=ExchangeItemType.INPUT)
 
                 # save the output item
                 input_items.append(ei)

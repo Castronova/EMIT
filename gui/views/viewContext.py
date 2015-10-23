@@ -126,7 +126,7 @@ class ModelContextMenu(wx.Menu):
                 elog.info("input name: " + name)
 
                 geoms = [ogr.CreateGeometryFromWkb(g['wkb']) for g in i['geom']]
-                ogeoms[name] = geoms
+                igeoms[name] = geoms
 
                 # geoms = [j['shape'] for j in i['geom']]
                 # igeoms[name] = geoms

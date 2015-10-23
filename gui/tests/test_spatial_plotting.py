@@ -6,6 +6,7 @@ import random
 from osgeo import ogr
 from gui.controller.logicSpatialPlot import *
 import unittest
+import utilities.geometry
 
 class test_spatial_plotting(unittest.TestCase):
 
@@ -116,6 +117,25 @@ class test_spatial_plotting(unittest.TestCase):
         plot.set_input_data(test_data)
         self.assertEqual(plot.get_input_geom('testvar'), test_data['testvar'],msg="Data was not set correctly in logicSpatialPlot")
 
+        plot.set_selection_input('testvar')
+        plot.UpdatePlot()
+
+        del app
+
+
+    def test_poly_from_wkt(self):
+        app = wx.App()
+
+        frame = wx.Frame(None, -1)
+
+        plot = LogicSpatialPlot(frame)
+
+        wkt = 'POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))'
+        geom = utilities.geometry.fromWKT(wkt)
+
+        # set the input data
+        test_data = {'testvar':geom}
+        plot.set_input_data(test_data)
         plot.set_selection_input('testvar')
         plot.UpdatePlot()
 

@@ -110,16 +110,18 @@ class topmodel(feed_forward.feed_forward_wrapper):
             idx, date = datetimes[i]
 
             # get precip at the current time
-            precip = precipitation.getValues2(time_idx = i)
+            in_precip = precipitation.getValues2(time_idx = i)
 
             #todo: this is a hack because i'm running out of time before the demo
             # todo: something is wrong with the data interpolation!
-            p = precip[0][0]
-            if isinstance(p, np.ndarray):
-                precip = p[0]
-            else:
-                precip = p
-            # precip = precip[0][0][0]
+            # p = precip[0][0]
+            # if isinstance(p, np.ndarray):
+            #     precip = p[0]
+            # else:
+            #     precip = p
+            # # precip = precip[0][0][0]
+
+            precip = in_precip[0]
 
             # calculate saturation deficit
             sat_deficit = [self.s_average + self.c * (self.lamda_average - ti) for ti in self.ti]

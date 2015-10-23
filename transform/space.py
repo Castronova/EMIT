@@ -148,8 +148,9 @@ class spatial_exact_match(space_base.Space):
 
         mapped_geoms = []
 
-        igeoms = [ingeoms[i].geom().to_wkt() for i in range(0, len(ingeoms))]
-        ogeoms = [outgeoms[i].geom().to_wkt() for i in range(0, len(outgeoms))]
+        # todo: this should use Geometry2 hash instead of WKT
+        igeoms = [ingeoms[i].ExportToWkt() for i in range(0, len(ingeoms))]
+        ogeoms = [outgeoms[i].ExportToWkt() for i in range(0, len(outgeoms))]
 
         for i in range(0, len(igeoms)):
             igeom = igeoms[i]

@@ -2,18 +2,18 @@ __author__ = 'tonycastronova'
 
 import unittest
 import time
-from models.topmodel import topmodel
-from utilities.gui import parse_config
-from utilities import mdl
-import stdlib
-from coordinator import engineAccessors as engine
-from transform.space import *
-from transform.time import *
 import timeit
+import os
+
 import numpy
 from osgeo import ogr
-import os
-from scipy.stats import itemfreq
+
+from models.topmodel import topmodel
+from utilities.gui import parse_config
+from transform.space import *
+from transform.time import *
+import stdlib
+
 
 class test_topmodel(unittest.TestCase):
 
@@ -41,39 +41,29 @@ class test_topmodel(unittest.TestCase):
         self.assertTrue(len(precip_geoms) > 0)
 
         # check input geometry type
-        geom_type = precip_geoms[0].geom().geometryType()
-        self.assertTrue(geom_type == stdlib.ElementType.POLYGON)
+        geom_type = precip_geoms[0].GetGeometryName()
+        self.assertTrue(geom_type == stdlib.GeomType.POLYGON)
 
         # check output exchange items
-        out_items = top.outputs()
-        self.assertTrue(len(out_items.keys()) == 1)
-        self.assertTrue('streamflow' in out_items.keys())
-        flow = out_items['streamflow']
+        # out_items = top.outputs()
+        # self.assertTrue(len(out_items.keys()) == 1)
+        # self.assertTrue('streamflow' in out_items.keys())
+        # flow = out_items['streamflow']
 
-        # check that output geoms exist
-        flow_geoms = flow.getGeometries2()
-        self.assertTrue(len(flow_geoms) > 0)
-
-        # check output geometry type
-        geom_type = flow_geoms[0].geom().geometryType()
-        self.assertTrue(geom_type == 'LineString')
+        # # check that output geoms exist
+        # flow_geoms = flow.getGeometries2()
+        # self.assertTrue(len(flow_geoms) > 0)
+        #
+        # # check output geometry type
+        # geom_type = flow_geoms[0].geom().geometryType()
+        # self.assertTrue(geom_type == 'LineString')
 
     def test_geometry_parsing(self):
-
-        import time
-        import numpy as np
-        import matplotlib.pyplot as plt
-        from shapely.geometry import Point
-        import stdlib
-
-        # plt.ion()
-        # plt.show()
 
         geoms = []
         with open('./data/right_hand_fork_ti_trim.txt', 'r') as sr:
 
             lines = sr.readlines()
-            # ncols = int(lines[0].split(' ')[-1].strip())
             nrows = int(lines[1].split(' ')[-1].strip())
             lowerx = float(lines[2].split(' ')[-1].strip())
             lowery = float(lines[3].split(' ')[-1].strip())
@@ -89,25 +79,18 @@ class test_topmodel(unittest.TestCase):
                 for element in l:
                     if element != nodata:
                         xy.append((x,y))
-                        pt = Point(x,y)
-                        geoms.append(stdlib.Geometry(geom=pt))
+                        geom = stdlib.Geometry2(ogr.wkbPoint)
+                        geom.AddPoint(x, y)
+                        geoms.append(geom)
                     x += cellsize
-                # if len(xy) > 0:
-                #     X,Y = zip(*xy)
-                #     # plt.scatter(X,Y, c=np.random.rand(3,1))
-                #     # plt.draw()
                 y -= cellsize
-            # plt.draw()
 
         return geoms
 
     def test_geometry_parsing_numpy(self):
 
-        import time
         import numpy as np
         import matplotlib.pyplot as plt
-        from shapely.geometry import Point
-        import stdlib
         import utilities.geometry
 
         topo_input = './data/right_hand_fork_ti_trim.txt'
@@ -146,20 +129,18 @@ class test_topmodel(unittest.TestCase):
         x = x[nonzero]
         y = y[nonzero]
 
-        points = utilities.geometry.build_point_geometries(x,y,geometryType='gdal')
+        points = utilities.geometry.build_point_geometries(x,y)
         # self.create_point_shapefile(points, data)
 
-        # return points
-        X = x[::4]
-        Y = y[::4]
-        plt.scatter(X, Y, s=.5, edgecolors='none',color='blue')
-        plt.draw()
-        plt.show()
+        # # return points
+        # X = x[::4]
+        # Y = y[::4]
+        # plt.scatter(X, Y, s=.5, edgecolors='none',color='blue')
+        # plt.draw()
+        # plt.show()
 
-        print 'done'
     def test_execute_simulation(self):
 
-        import datatypes
         from coordinator import engine
         simulator = engine.Coordinator()
 

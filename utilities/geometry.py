@@ -31,7 +31,7 @@ def build_point_geometries(x, y):
         return None
 
 
-    geoms = numpy.empty((x.shape), dtype=object)
+    geoms = numpy.empty((x.shape[0]), dtype=object)
     for i in range(len(x)):
 
         point = stdlib.Geometry2(ogr.wkbPoint)

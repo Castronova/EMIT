@@ -7,6 +7,8 @@ from osgeo import ogr, osr
 import cPickle as pickle
 import shapefile
 from shapely.geometry import shape
+import numpy
+
 # import coordinator.engineAccessors as engine
 
 
@@ -139,26 +141,70 @@ def get_srs_from_epsg(code=None):
 
 def read_shapefile(shp):
     """
-    returns (shapely geometry, spatial reference system)
+    Parses a shapefile into stdlib.Geometry objects
+    :param shp: the absolute path to a shapefile
+    :return: tuple (numpy.array([stdlib.Geometry,]), osr.SpatialReference )
     """
 
-    # OnOpen the shapefile
+    # Load the shapefile
     driver = ogr.GetDriverByName('ESRI Shapefile')
     dataset = driver.Open(shp)
 
+    # get layer info
     layer = dataset.GetLayer()
     spatialRef = layer.GetSpatialRef()
+    featureCount = layer.GetFeatureCount()
 
-    # from Geometry
-    geoms = []
-    for i in xrange(0,layer.GetFeatureCount()):
-        feature = layer.GetNextFeature()
+    # numpy array to store stdlib.Geometry objects
+    geoms = numpy.empty((featureCount), dtype=object)
+
+    # loop through each feature in the layer
+    for i in range(featureCount):
+        feature = layer.GetFeature(i)
         geom = feature.GetGeometryRef()
+        type = geom.GetGeometryName()
 
-        # convert into shapely geometry
-        geom_wkt = geom.ExportToWkt()
-        shapely_geom = wkt.loads(geom_wkt)
+        if type == stdlib.GeomType.POLYGON:
 
-        geoms.append(shapely_geom)
+            # get the ring that defines the polygon
+            ring = geom.GetGeometryRef(0)
+
+            # create the stdlib geometry
+            g = stdlib.Geometry2(ogr.wkbPolygon)
+
+            # add the ring
+            g.AddGeometry(ring)
+
+            # add the geometry to the global list
+            geoms[i] = g
+
+        elif type == stdlib.GeomType.POINT:
+
+            # get the geoms point
+            pt = geom.GetPoint()
+
+            # create the stdlib geometry
+            g = stdlib.Geometry2(ogr.wkbPoint)
+
+            # add the point
+            g.AddPoint(*pt)
+
+            # add the geometry to the global list
+            geoms[i] = g
+
+        elif type == stdlib.GeomType.LINESTRING:
+
+            # get the points of the linestring
+            pts = geom.GetPoints()
+
+            # create the stdlib geometry
+            g = stdlib.Geometry2(ogr.wkbLineString)
+
+            # add points to the linestring
+            for pt in pts:
+                g.AddPoint(*pt)
+
+            # add the geometry to the global list
+            geoms[i] = g
 
     return geoms, spatialRef

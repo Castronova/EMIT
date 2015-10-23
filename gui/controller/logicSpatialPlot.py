@@ -98,7 +98,6 @@ class LogicSpatialPlot(ViewSpatialPlot):
         iei = self.__iei
         oei = self.__oei
         datain = self.get_input_geom(iei)
-        print 'datain', datain
         if datain is not None:
             colors = self.buildGradientColor(len(datain),'Reds')
             self.SetPlotData(datain,colors=colors)
@@ -162,9 +161,6 @@ class LogicSpatialPlot(ViewSpatialPlot):
                     # get geometry reference
                     ring = geom.GetGeometryRef(i)
 
-                    # get number of points
-                    points = ring.GetPointCount()
-
                     # build a list of points
                     pts = numpy.array(ring.GetPoints())
 
@@ -172,8 +168,14 @@ class LogicSpatialPlot(ViewSpatialPlot):
                     a = tuple(map(tuple, pts[:,0:2]))
                     poly_list.append(a)
 
+            # generate a border color based off the first value
+            mc = min(colors[0])
+            bc = [ max(0, colors[0][0] - mc),
+                    max(0, colors[0][1] - mc),
+                    max(0, colors[0][2] - mc)]
+
             # build a polygon collection
-            pcoll = PolyCollection(poly_list, closed=True, facecolor=colors, alpha=0.1, edgecolor='none')
+            pcoll = PolyCollection(poly_list, closed=True, facecolor=colors, alpha=0.1, edgecolor=bc, linewidths=(2,))
 
             # add the polygon collection to the plot
             self.ax.add_collection(pcoll, autolim=True)

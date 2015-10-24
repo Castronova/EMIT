@@ -72,6 +72,10 @@ class WebServiceApi:
 
         self.siteVarables = collections.OrderedDict()
 
+    def getSites(self):
+        sites = self.odm1.createXMLFileForReading(self.odm1.getSites())
+        return sites
+
     def getSiteInfo(self, start=None, end=None):
 
         if start == None:

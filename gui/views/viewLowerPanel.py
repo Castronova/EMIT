@@ -245,6 +245,8 @@ class TimeSeriesTab(wx.Panel):
         wsdl["Red Butte Creek"] = "http://data.iutahepscor.org/RedButteCreekWOF/cuahsi_1_1.asmx?WSDL"
         wsdl["Provo River"] = "http://data.iutahepscor.org/ProvoRiverWOF/cuahsi_1_1.asmx?WSDL"
         wsdl["Logan River"] = "http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL"
+        wsdl["Tarland Scotland"] = "http://143.234.88.22/TarlandHydrologyDataWS/cuahsi_1_1.asmx?WSDL"
+        wsdl["NWIS Unit Values"] = "http://hydroportal.cuahsi.org/nwisuv/cuahsi_1_1.asmx?WSDL"
         return wsdl
 
     def prepareODM1_Model(self, siteObject):
@@ -376,7 +378,6 @@ class SiteViewer(wx.Frame):
                           style=wx.STAY_ON_TOP | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         self.siteobject = siteObject
-        elog.debug("siteObject ", siteObject)
         self.startDate = wx.DateTime_Now() - 7 * wx.DateSpan_Day()
         self.endDate = wx.DateTime_Now()
         self.parent = parent
@@ -537,8 +538,10 @@ class Calendar(wx.Dialog):
 
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        self.calendar = cal.CalendarCtrl(self, -1, wx.DateTime_Now(),
-                                  style=cal.CAL_SHOW_HOLIDAYS | cal.CAL_SEQUENTIAL_MONTH_SELECTION)
+        self.calendar = cal.CalendarCtrl(self, -1, style=cal.CAL_SHOW_HOLIDAYS | cal.CAL_SEQUENTIAL_MONTH_SELECTION)
+
+        self.rememberCalendarPos()
+
         vbox.Add(self.calendar, 0, wx.EXPAND | wx.ALL, 5)
 
         vbox.Add((-1, 20))
@@ -561,6 +564,7 @@ class Calendar(wx.Dialog):
         self.Show(True)
         self.Centre()
 
+
     def OnQuit(self, event):
         self.setCalendarDates()
         if self.validateDates():
@@ -568,6 +572,12 @@ class Calendar(wx.Dialog):
             self.Destroy()
         else:
             self.text.SetLabel("Make start before end")
+
+    def rememberCalendarPos(self):
+        if self.type == "start":
+            self.calendar.SetDate(self.Parent.startDate)
+        else:
+            self.calendar.SetDate(self.Parent.endDate)
 
     def setCalendarDates(self):
         if self.type == "start":

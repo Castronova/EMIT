@@ -15,21 +15,30 @@ class LogicWofSites(ViewWofSites):
         self.Bind(wx.EVT_BUTTON, self.previewPlot, self.PlotBtn)
         self.Bind(wx.EVT_BUTTON, self.startDateCalender, self.startDateBtn)
         self.Bind(wx.EVT_BUTTON, self.endDateCalender, self.endDateBtn)
+        self.Bind(wx.EVT_BUTTON, self.export, self.exportBtn)
         self.Bind(wx.EVT_BUTTON, self.addToCanvas, id=self.addToCanvasBtn.GetId())
         self.isCalendarOpen = False  # Used to prevent calendar being open twice
 
     def addToCanvas(self, event):
-        self.Parent.selectedVariables = self.getSelectedVariableSiteCode()
-
+        var = self.Parent.selectedVariables = self.getSelectedVariableSiteCode()
+        parent = self.Parent
+        siteobject = self.siteobject
+        start = self.startDate.FormatISODate()
+        end = self.endDate.FormatISODate()
         self.Close()
-        if len(self.Parent.selectedVariables) > 0:
-            self.Parent.setParsedValues(self.siteobject)
+        if var > 0:
+            parent.setParsedValues(siteobject, start, end)
 
     def endDateCalender(self, event):
         if self.isCalendarOpen:
             pass
         else:
             Calendar(self, -1, "Calendar", "end")
+
+    def export(self, event):
+        dial = wx.MessageDialog(None, message='This feature has not been implemented yet.', style=wx.OK)
+        dial.ShowModal()
+
 
     def getSelectedVariableName(self):
         num = self.variableList.GetItemCount()

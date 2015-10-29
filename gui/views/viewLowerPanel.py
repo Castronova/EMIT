@@ -201,14 +201,14 @@ class TimeSeriesTab(wx.Panel):
         return wsdl
 
     def prepareODM1_Model(self, siteObject):
-        self.selectedVariables = []
+        self.selectedVariables = None
         siteview = LogicWofSites(self, siteObject)
         siteview.populateVariablesList(self.api, siteObject.sitecode)
         return
 
-    def setParsedValues(self, siteObject):
-        # This method will get the values for variables passed.
-        values = self.api.parseValues(siteObject.sitecode, self.selectedVariables[0])
+    def setParsedValues(self, siteObject, startDate, endDate):
+        values = self.api.parseValues(siteObject.sitecode, self.selectedVariables, startDate, endDate)
+        elog.info("AddToCanvas has not been implemented.  The above variable value contains the data.")
 
     def setup_odm1_table(self, api):
         data = api.getSiteInfo()

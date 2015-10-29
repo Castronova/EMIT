@@ -58,7 +58,7 @@ class LogicWofSites(ViewWofSites):
 
     def previewPlot(self, event):
         varList = self.getSelectedVariableSiteCode()
-        if len(varList) > 0:
+        if varList > 0:
             self.plot.clearPlot()
             data = self.Parent.api.parseValues(self.siteobject.sitecode, varList,
                                                self.startDate.FormatISODate(), self.endDate.FormatISODate())

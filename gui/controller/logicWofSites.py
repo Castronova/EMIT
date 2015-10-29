@@ -2,15 +2,15 @@ __author__ = 'tonycastronova'
 
 import wx
 from gui.views.viewWofSites import ViewWofSites
-from gui.controller.logicPlotForSiteViewer import logicPlotForSiteViewer
+from coordinator.emitLogging import elog
+import wx.calendar as cal
+
 
 class LogicWofSites(ViewWofSites):
 
     def __init__(self, parent, siteObject):
 
-        # Initialize the View
         ViewWofSites.__init__(self, parent, siteObject)
-
 
         self.Bind(wx.EVT_BUTTON, self.previewPlot, self.PlotBtn)
         self.Bind(wx.EVT_BUTTON, self.startDateCalender, self.startDateBtn)
@@ -24,8 +24,6 @@ class LogicWofSites(ViewWofSites):
         self.Close()
         if len(self.Parent.selectedVariables) > 0:
             self.Parent.setParsedValues(self.siteobject)
-
-
 
     def endDateCalender(self, event):
         if self.isCalendarOpen:
@@ -129,7 +127,6 @@ class Calendar(wx.Dialog):
         self.Show(True)
         self.Centre()
 
-
     def OnQuit(self, event):
         self.setCalendarDates()
         if self.validateDates():
@@ -157,5 +154,5 @@ class Calendar(wx.Dialog):
             elog.debug("Start is before End So its GOOD ")
             return True
         else:
-            elog.debug("Please fix, make start before END, FAIL")
+            elog.debug("End date must be after start date")
             return False

@@ -15,9 +15,6 @@ from coordinator.emitLogging import elog
 from gui.controller import logicConsoleOutput
 import sys
 from db.ODM1.WebServiceAPI import WebServiceApi
-from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
-import wx.calendar as cal
-from gui.controller.logicPlotForSiteViewer import logicPlotForSiteViewer
 from gui.controller.logicWofSites import LogicWofSites
 
 class viewLowerPanel:
@@ -39,53 +36,6 @@ class viewLowerPanel:
             #  Thread starts here to ensure its on the main thread
             t = threading.Thread(target=logicConsoleOutput.follow, name='CONSOLE THREAD', args=(elog, console.log))
             t.start()
-
-class RedirectText(object): # delete this
-
-    def __init__(self,TextCtrl):
-
-        self.out=TextCtrl
-        self.__line_num = 0
-
-    def line_num(self,reset=False):
-        if not reset:
-            self.__line_num += 1
-            return self.__line_num
-        else:
-            self.__line_num = 0
-
-    def write(self,string):
-
-        args = string.split('|')
-        string = args[-1]
-        args = [a.strip() for a in args[:-1]]
-
-        if len(string.strip()) > 0:
-
-            string += '\n'
-            if 'RESET' in args:
-                self.line_num(reset=True)
-                return
-
-
-            string = str(self.line_num())+ ':  '+string if string != '\n' else string
-            self.out.SetInsertionPoint(0)
-            if 'WARNING' in args:
-                self.out.BeginTextColour((255, 140, 0))
-            elif 'ERROR' in args:
-                self.out.BeginTextColour((255, 0, 0))
-            elif not 'DEBUG' in args:
-                self.out.BeginTextColour((0, 0, 0))
-
-            # self.out.Text =  self.out.Text.Insert(string+ "\n");
-
-            self.out.WriteText(string)
-            self.out.EndTextColour()
-
-            self.out.Refresh()
-
-    def flush(self):
-        pass
 
 class ConsoleTab(wx.Panel):
     def __init__(self, parent):
@@ -251,7 +201,6 @@ class TimeSeriesTab(wx.Panel):
 
     def prepareODM1_Model(self, siteObject):
         self.selectedVariables = []
-        # siteview = SiteViewer(self, siteObject)
         siteview = LogicWofSites(self, siteObject)
         siteview.populateVariablesList(self.api, siteObject.sitecode)
         return
@@ -259,8 +208,6 @@ class TimeSeriesTab(wx.Panel):
     def setParsedValues(self, siteObject):
         # This method will get the values for variables passed.
         values = self.api.parseValues(siteObject.sitecode, self.selectedVariables[0])
-
-        pass
 
     def setup_odm1_table(self, api):
         data = api.getSiteInfo()
@@ -365,239 +312,6 @@ class TimeSeriesTab(wx.Panel):
         if value is not None:
             self.api = WebServiceApi(value)
             self.setup_odm1_table(self.api)
-
-# THE SITE VIEWER HAS BEEN SPLIT INTO LOGIC AND VIEW CLASSES.
-# SEE VIEWWOFSITES AND LOGICWOFSITES
-
-# class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
-#     def __init__(self, parent):
-#         wx.ListCtrl.__init__(self, parent, -1, size=(545, 140), style=wx.LC_REPORT)
-#         ListCtrlAutoWidthMixin.__init__(self)
-#
-#
-# class SiteViewer(wx.Frame):
-#     def __init__(self, parent, siteObject):
-#         wx.Frame.__init__(self, parent=parent, id=-1, title=str(siteObject.site_name), pos=wx.DefaultPosition, size=(650, 700),
-#                           style=wx.STAY_ON_TOP | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
-#
-#         self.siteobject = siteObject
-#         self.startDate = wx.DateTime_Now() - 7 * wx.DateSpan_Day()
-#         self.endDate = wx.DateTime_Now()
-#         self.parent = parent
-#         self.data = None
-#
-#         panel = wx.Panel(self)
-#         self.toppanel = wx.Panel(panel)
-#         middlepanel = wx.Panel(panel, size=(-1, 35))
-#         lowerpanel = wx.Panel(panel)
-#
-#         hboxTopPanel = wx.BoxSizer(wx.HORIZONTAL)
-#
-#         self.plot = self.loadEmptyGraph(self.toppanel)
-#
-#         hboxTopPanel.Add(self.plot.plot, 1, wx.EXPAND | wx.ALL, 2)
-#
-#         self.toppanel.SetSizer(hboxTopPanel)
-#
-#         hboxMidPanel = wx.BoxSizer(wx.HORIZONTAL)
-#
-#         self.startDateBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Start Date")
-#         self.endDateBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="End Date")
-#         self.exportBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Export")
-#         self.addToCanvasBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Add to Canvas")
-#         self.PlotBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Preview")
-#
-#         hboxMidPanel.Add(self.startDateBtn, 1, wx.EXPAND | wx.ALL, 2)
-#         hboxMidPanel.AddSpacer(20)
-#         hboxMidPanel.Add(self.endDateBtn, 1, wx.EXPAND | wx.ALL, 2)
-#         hboxMidPanel.AddSpacer(20)
-#         hboxMidPanel.Add(self.PlotBtn, 1, wx.EXPAND | wx.ALL, 2)
-#         hboxMidPanel.AddSpacer(20)
-#         hboxMidPanel.Add(self.exportBtn, 1, wx.EXPAND | wx.ALL, 2)
-#         hboxMidPanel.AddSpacer(20)
-#         hboxMidPanel.Add(self.addToCanvasBtn, 1, wx.EXPAND | wx.ALL, 2)
-#         middlepanel.SetSizer(hboxMidPanel)
-#
-#         hboxLowPanel = wx.BoxSizer(wx.HORIZONTAL)
-#
-#         # Column names
-#         self.variableList = CheckListCtrl(lowerpanel)
-#         self.variableList.InsertColumn(0, "Variable Name")
-#         self.variableList.InsertColumn(1, "Unit")
-#         self.variableList.InsertColumn(2, "Category")
-#         self.variableList.InsertColumn(3, "Type")
-#         self.variableList.InsertColumn(4, "Begin Date Time")
-#         self.variableList.InsertColumn(5, "End Date Time")
-#         self.variableList.InsertColumn(6, "Description")
-#
-#         self.autoSizeColumns()
-#
-#         hboxLowPanel.Add(self.variableList, 1, wx.EXPAND | wx.ALL, 2)
-#         lowerpanel.SetSizer(hboxLowPanel)
-#
-#         vbox = wx.BoxSizer(wx.VERTICAL)
-#
-#         vbox.Add(self.toppanel, 1, wx.EXPAND | wx.ALL, 2)
-#         vbox.Add(middlepanel, 0, wx.EXPAND | wx.ALL, 2)
-#         vbox.Add(lowerpanel, 1, wx.EXPAND | wx.ALL, 2)
-#
-#         panel.SetSizer(vbox)
-#
-#         self.Bind(wx.EVT_BUTTON, self.previewPlot, self.PlotBtn)
-#         self.Bind(wx.EVT_BUTTON, self.startDateCalender, self.startDateBtn)
-#         self.Bind(wx.EVT_BUTTON, self.endDateCalender, self.endDateBtn)
-#         self.Bind(wx.EVT_BUTTON, self.addToCanvas, id=self.addToCanvasBtn.GetId())
-#         self.isCalendarOpen = False  # Used to prevent calendar being open twice
-#
-#         self.Show()
-#
-#     def addToCanvas(self, event):
-#         self.Parent.selectedVariables = self.getSelectedVariableSiteCode()
-#
-#         self.Close()
-#         if len(self.Parent.selectedVariables) > 0:
-#             self.Parent.setParsedValues(self.siteobject)
-#
-#     def autoSizeColumns(self):
-#         for i in range(self.variableList.GetColumnCount()):
-#             self.variableList.SetColumnWidth(i, wx.LIST_AUTOSIZE)
-#
-#     def endDateCalender(self, event):
-#         if self.isCalendarOpen:
-#             pass
-#         else:
-#             Calendar(self, -1, "Calendar", "end")
-#
-#     def getSelectedVariableName(self):
-#         num = self.variableList.GetItemCount()
-#         for i in range(num):
-#             if self.variableList.IsSelected(i):
-#                 checkedVar = self.variableList.GetItemText(i)
-#                 return checkedVar
-#
-#     def getSelectedVariableSiteCode(self):
-#         num = self.variableList.GetItemCount()
-#         checkedVar = []
-#         for i in range(num):
-#             if self.variableList.IsSelected(i):
-#                 checkedVar.append(self.variableList.GetItemText(i))
-#
-#         if len(checkedVar) > 0:
-#             sitecode = self.getSiteCodeByVariableName(checkedVar)
-#             return sitecode
-#         else:
-#             return 0
-#
-#     def getSiteCodeByVariableName(self, checkedVar):
-#         for key, value in self.data.iteritems():
-#             if value[0] == checkedVar[0]:
-#                 return key
-#
-#     def loadEmptyGraph(self, panel):
-#         p = logicPlotForSiteViewer(panel)
-#         return p
-#
-#     def previewPlot(self, event):
-#         varList = self.getSelectedVariableSiteCode()
-#         if len(varList) > 0:
-#             self.plot.clearPlot()
-#             data = self.Parent.api.parseValues(self.siteobject.sitecode, varList,
-#                                                self.startDate.FormatISODate(), self.endDate.FormatISODate())
-#             self.plot.setTitle(self.getSelectedVariableName())
-#             self.plot.setAxisLabel("Date Time", "Units")
-#             self.plot.plotData(data, str(varList))
-#
-#     def populateVariablesList(self, api, sitecode):
-#         data = api.buildAllSiteCodeVariables(sitecode)
-#         self.data = data
-#         rowNumber = 0
-#         colNumber = 0
-#         for key, value, in data.iteritems():
-#             pos = self.variableList.InsertStringItem(rowNumber, str(key))
-#             for i in value:
-#                 if colNumber is 4 or colNumber is 5:
-#                     self.variableList.SetStringItem(pos, colNumber, str(i.strftime("%m/%d/%y")))
-#                 else:
-#                     self.variableList.SetStringItem(pos, colNumber, str(i))
-#                 colNumber += 1
-#             colNumber = 0
-#             rowNumber += 1
-#
-#         self.autoSizeColumns()
-#
-#     def startDateCalender(self, event):
-#         if self.isCalendarOpen:
-#             pass
-#         else:
-#             Calendar(self, -1, "Calendar", "start")
-#
-# class Calendar(wx.Dialog):
-#     def __init__(self, parent, id, title, type):
-#         wx.Dialog.__init__(self, parent, id, title, style=wx.STAY_ON_TOP | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^
-#                                                                            wx.MAXIMIZE_BOX)
-#         self.type = type
-#
-#         self.Parent.isCalendarOpen = True
-#
-#         vbox = wx.BoxSizer(wx.VERTICAL)
-#
-#         self.calendar = cal.CalendarCtrl(self, -1, style=cal.CAL_SHOW_HOLIDAYS | cal.CAL_SEQUENTIAL_MONTH_SELECTION)
-#
-#         self.rememberCalendarPos()
-#
-#         vbox.Add(self.calendar, 0, wx.EXPAND | wx.ALL, 5)
-#
-#         vbox.Add((-1, 20))
-#
-#         hbox = wx.BoxSizer(wx.HORIZONTAL)
-#         self.text = wx.StaticText(self, -1, 'Date')
-#         hbox.Add(self.text)
-#         vbox.Add(hbox, 0, wx.LEFT, 8)
-#
-#         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
-#         btn = wx.Button(self, -1, 'Ok')
-#         hbox2.Add(btn, 1)
-#         vbox.Add(hbox2, 0, wx.ALIGN_CENTER | wx.ALL, 5)
-#
-#         self.Bind(wx.EVT_BUTTON, self.OnQuit, id=btn.GetId())
-#         self.Bind(wx.EVT_CLOSE, self.OnQuit)
-#
-#         self.SetSizerAndFit(vbox)
-#
-#         self.Show(True)
-#         self.Centre()
-#
-#
-#     def OnQuit(self, event):
-#         self.setCalendarDates()
-#         if self.validateDates():
-#             self.Parent.isCalendarOpen = False
-#             self.Destroy()
-#         else:
-#             self.text.SetLabel("Make start before end")
-#
-#     def rememberCalendarPos(self):
-#         if self.type == "start":
-#             self.calendar.SetDate(self.Parent.startDate)
-#         else:
-#             self.calendar.SetDate(self.Parent.endDate)
-#
-#     def setCalendarDates(self):
-#         if self.type == "start":
-#             self.Parent.startDate = self.calendar.GetDate()
-#             self.Parent.startDateBtn.SetLabelText(self.calendar.GetDate().FormatDate())
-#         else:
-#             self.Parent.endDate = self.calendar.GetDate()
-#             self.Parent.endDateBtn.SetLabelText(self.calendar.GetDate().FormatDate())
-#
-#     def validateDates(self):
-#         if self.Parent.startDate < self.Parent.endDate:
-#             elog.debug("Start is before End So its GOOD ")
-#             return True
-#         else:
-#             elog.debug("Please fix, make start before END, FAIL")
-#             return False
-
 
 class AddConnectionDialog(wx.Dialog):
     def __init__(

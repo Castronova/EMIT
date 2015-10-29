@@ -4,6 +4,7 @@ import wx
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 from gui.controller.logicPlotForSiteViewer import logicPlotForSiteViewer
 
+
 class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
     def __init__(self, parent):
         wx.ListCtrl.__init__(self, parent, -1, size=(545, 140), style=wx.LC_REPORT)
@@ -26,7 +27,6 @@ class ViewWofSites(wx.Frame):
         lowerpanel = wx.Panel(panel)
 
         hboxTopPanel = wx.BoxSizer(wx.HORIZONTAL)
-
 
         self.plot = logicPlotForSiteViewer(panel)
         hboxTopPanel.Add(self.plot.plot, 1, wx.EXPAND | wx.ALL, 2)
@@ -64,8 +64,6 @@ class ViewWofSites(wx.Frame):
         self.variableList.InsertColumn(5, "End Date Time")
         self.variableList.InsertColumn(6, "Description")
 
-
-
         hboxLowPanel.Add(self.variableList, 1, wx.EXPAND | wx.ALL, 2)
         lowerpanel.SetSizer(hboxLowPanel)
 
@@ -80,13 +78,6 @@ class ViewWofSites(wx.Frame):
         self.autoSizeColumns()
 
         self.Show()
-
-    def addToCanvas(self, event):
-        self.Parent.selectedVariables = self.getSelectedVariableSiteCode()
-
-        self.Close()
-        if len(self.Parent.selectedVariables) > 0:
-            self.Parent.setParsedValues(self.siteobject)
 
     def autoSizeColumns(self):
         for i in range(self.variableList.GetColumnCount()):

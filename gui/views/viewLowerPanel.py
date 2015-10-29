@@ -191,14 +191,12 @@ class TimeSeriesTab(wx.Panel):
                     wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
 
     def getPossibleConnections(self):
-        wof_path = os.getcwd() + "/db/ODM1/.wofsites.ini"
-        config = ConfigParser.ConfigParser()
-        config.read(wof_path)
         wsdl = {}
-        for section in config.sections():
-            for option in config.options(section):
-                value = config.get(section, option)
-                wsdl[option.title()] = value
+        wsdl["Red Butte Creek"] = "http://data.iutahepscor.org/RedButteCreekWOF/cuahsi_1_1.asmx?WSDL"
+        wsdl["Provo River"] = "http://data.iutahepscor.org/ProvoRiverWOF/cuahsi_1_1.asmx?WSDL"
+        wsdl["Logan River"] = "http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL"
+        wsdl["Tarland Scotland"] = "http://143.234.88.22/TarlandHydrologyDataWS/cuahsi_1_1.asmx?WSDL"
+        wsdl["NWIS Unit Values"] = "http://hydroportal.cuahsi.org/nwisuv/cuahsi_1_1.asmx?WSDL"
 
         return wsdl
 

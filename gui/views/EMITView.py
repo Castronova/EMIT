@@ -1,7 +1,7 @@
 __author__ = 'Mario'
-from gui.controller.logicDirectory import LogicDirectory
+from gui.controller.DirectoryCtrl import LogicDirectory
 from gui.controller.logicToolbox import LogicToolbox
-from gui.controller.logicCanvas import LogicCanvas
+from gui.controller.CanvasCtrl import LogicCanvas
 import wx
 import wx.html2
 from wx.lib.pubsub import pub as Publisher

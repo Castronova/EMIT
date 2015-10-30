@@ -40,12 +40,7 @@ class WebServiceApi:
         self.AllVariables = vars
         return vars
 
-    def buildAllSiteCodeVariables(self, sitecode, start=None, end=None):
-        if start is None:
-            start = 1
-        if end is None:
-            end = start + 10
-
+    def buildAllSiteCodeVariables(self, sitecode):
         siteObject = self.odm1.getSiteInfoObject(sitecode)
 
         try:
@@ -56,7 +51,7 @@ class WebServiceApi:
 
         variableDict = collections.OrderedDict()
 
-        for i in range(0, len(seriesVariables[start:end])):
+        for i in range(0, len(seriesVariables)):
             # {Site code: [Variable Name, Units, Type, Category, Begin Date Time, End Date Time, Description]}
             variableDict[seriesVariables[i][0][0][0].value] = [seriesVariables[i][0][1],  # Variable Name
                                                                seriesVariables[i][0][6][2],  # Units

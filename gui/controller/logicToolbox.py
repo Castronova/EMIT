@@ -4,7 +4,7 @@ import os
 import random
 from gui.views.ToolboxView import ViewToolbox
 from gui.views.ContextView import ToolboxContextMenu
-from gui.controller.logicModel import LogicModel
+from gui.controller.ModelCtrl import LogicModel
 from gui import events
 import wx
 from wx.lib.pubsub import pub as Publisher

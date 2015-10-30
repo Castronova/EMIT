@@ -6,7 +6,7 @@ import wx
 import wx.xrc
 import wx.propgrid as wxpg
 from gui.views import PlotView
-from gui.controller.logicSpatialPlot import LogicSpatialPlot
+from gui.controller.SpatialPlotCtrl import LogicSpatialPlot
 # from gui.views.viewPanel import SpatialPanel
 
 class ViewModel(wx.Frame):

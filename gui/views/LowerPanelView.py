@@ -5,7 +5,7 @@ import sys
 import wx
 from wx.lib.pubsub import pub as Publisher
 from wx import richtext
-from gui.controller.logicDatabase import LogicDatabase
+from gui.controller.DatabaseCtrl import LogicDatabase
 import coordinator.events as engineEvent
 from ContextView import TimeSeriesContextMenu, SimulationContextMenu, ConsoleContextMenu
 import coordinator.engineAccessors as engine
@@ -13,7 +13,7 @@ from utilities import db as dbUtilities
 from db import dbapi as dbapi
 from gui import events
 from coordinator.emitLogging import elog
-from gui.controller import logicConsoleOutput
+from gui.controller import ConsoleOutputCtrl
 from db.ODM1.WebServiceAPI import WebServiceApi
 from gui.controller.logicWofSites import LogicWofSites
 
@@ -35,7 +35,7 @@ class viewLowerPanel:
             # sys.stdout = redir
 
             #  Thread starts here to ensure its on the main thread
-            t = threading.Thread(target=logicConsoleOutput.follow, name='CONSOLE THREAD', args=(elog, console.log))
+            t = threading.Thread(target=ConsoleOutputCtrl.follow, name='CONSOLE THREAD', args=(elog, console.log))
             t.start()
 
 class ConsoleTab(wx.Panel):
@@ -195,8 +195,6 @@ class TimeSeriesTab(wx.Panel):
         wsdl["Red Butte Creek"] = "http://data.iutahepscor.org/RedButteCreekWOF/cuahsi_1_1.asmx?WSDL"
         wsdl["Provo River"] = "http://data.iutahepscor.org/ProvoRiverWOF/cuahsi_1_1.asmx?WSDL"
         wsdl["Logan River"] = "http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL"
-        wsdl["Tarland Scotland"] = "http://143.234.88.22/TarlandHydrologyDataWS/cuahsi_1_1.asmx?WSDL"
-        wsdl["NWIS Unit Values"] = "http://hydroportal.cuahsi.org/nwisuv/cuahsi_1_1.asmx?WSDL"
 
         return wsdl
 

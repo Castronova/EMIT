@@ -3,7 +3,7 @@ __author__ = 'Mario'
 import wx
 import wx.xrc
 import wx.aui
-from gui.controller.logicEMIT import LogicEMIT
+from gui.controller.EMITCtrl import LogicEMIT
 from coordinator import engineManager
 # import coordinator.emitLogging as l
 #

@@ -92,6 +92,7 @@ class LogicWofSites(ViewWofSites):
             rowNumber += 1
 
         self.autoSizeColumns()
+        self.alternateRowColor()
 
     def startDateCalender(self, event):
         if self.isCalendarOpen:

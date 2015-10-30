@@ -6,9 +6,9 @@ from api_old.ODM2.Results.services import readResults
 from utilities import spatial
 from api_old.ODM2.Simulation.services import readSimulation
 from wx.lib.pubsub import pub as Publisher, __all__
-from gui.controller.logicModel import LogicModel
-from gui.controller.logicPlot import LogicPlot
-from gui.controller.logicPreRun import logicPreRun
+from gui.controller.ModelCtrl import LogicModel
+from gui.controller.PlotCtrl import LogicPlot
+from gui.controller.PreRunCtrl import logicPreRun
 import coordinator.engineAccessors as engine
 from gui import events
 from coordinator.emitLogging import elog

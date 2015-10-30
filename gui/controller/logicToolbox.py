@@ -2,8 +2,8 @@ __author__ = 'tonycastronova'
 
 import os
 import random
-from gui.views.viewToolbox import ViewToolbox
-from gui.views.viewContext import ToolboxContextMenu
+from gui.views.ToolboxView import ViewToolbox
+from gui.views.ContextView import ToolboxContextMenu
 from gui.controller.logicModel import LogicModel
 from gui import events
 import wx
@@ -14,7 +14,7 @@ import fnmatch
 from coordinator.emitLogging import elog
 from environment import env_vars
 # todo: refactor
-from gui.views.viewModel import ViewModel
+from gui.views.ModelView import ViewModel
 
 
 class LogicToolbox(ViewToolbox):

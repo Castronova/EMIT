@@ -1,22 +1,22 @@
 __author__ = 'Francisco'
 
+import threading
+import sys
 import wx
+from wx.lib.pubsub import pub as Publisher
+from wx import richtext
 from gui.controller.logicDatabase import LogicDatabase
 import coordinator.events as engineEvent
-from viewContext import TimeSeriesContextMenu, SimulationContextMenu, ConsoleContextMenu
+from ContextView import TimeSeriesContextMenu, SimulationContextMenu, ConsoleContextMenu
 import coordinator.engineAccessors as engine
-from wx.lib.pubsub import pub as Publisher
 from utilities import db as dbUtilities
 from db import dbapi as dbapi
 from gui import events
-import threading
-from wx import richtext
 from coordinator.emitLogging import elog
 from gui.controller import logicConsoleOutput
-import sys, os
 from db.ODM1.WebServiceAPI import WebServiceApi
 from gui.controller.logicWofSites import LogicWofSites
-import ConfigParser
+
 
 class viewLowerPanel:
     def __init__(self, notebook):

@@ -5,7 +5,7 @@ import time
 
 import wx
 
-from gui.views.viewDirectoryListControl import ViewDirectoryListControl
+from gui.views.DirectoryListControlView import ViewDirectoryListControl
 
 
 class LogicDirectoryListControl(ViewDirectoryListControl):

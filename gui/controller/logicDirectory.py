@@ -2,9 +2,9 @@ __author__ = 'tonycastronova'
 
 
 import os
-from gui.views.viewDirectory import ViewDirectory, HomeID, PreviousID, UpID, RefreshID
-from gui.views.viewContext import DirectoryContextMenu
-from gui.views.viewModel import ViewModel
+from gui.views.DirectoryView import ViewDirectory, HomeID, PreviousID, UpID, RefreshID
+from gui.views.ContextView import DirectoryContextMenu
+from gui.views.ModelView import ViewModel
 from gui.controller.logicModel import LogicModel
 from wx.lib.pubsub import pub as Publisher
 import wx

@@ -6,7 +6,7 @@ import wx
 import wx.lib.newevent as ne
 import wx.grid as gridlib
 
-from gui.views.viewLink import ViewLink
+from gui.views.LinkView import ViewLink
 import coordinator.engineAccessors as engine
 from gui.controller.logicSpatialPlot import LogicSpatialPlot
 # from gui.views.viewLinkSpatialPlot import ViewLinkSpatialPlot

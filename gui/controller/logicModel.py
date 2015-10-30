@@ -1,6 +1,6 @@
 __author__ = 'tonycastronova'
 
-from gui.views.viewModel import ViewModel
+from gui.views.ModelView import ViewModel
 from utilities import gui
 import wx.propgrid as wxpg
 from wx.lib.pubsub import pub as Publisher

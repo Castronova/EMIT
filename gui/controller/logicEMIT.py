@@ -2,7 +2,7 @@ __author__ = 'Mario'
 
 import os
 import wx
-from gui.views.viewEMIT import ViewEMIT
+from gui.views.EMITView import ViewEMIT
 import coordinator.engineAccessors as engine
 import sqlite3 as lite
 from coordinator.emitLogging import elog

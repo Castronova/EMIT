@@ -9,7 +9,7 @@ import wx.lib.agw.aui as aui
 from gui import events
 from wx.lib.newevent import NewEvent
 from coordinator.emitLogging import elog
-from viewLowerPanel import viewLowerPanel
+from LowerPanelView import viewLowerPanel
 import os
 import ConfigParser
 import sys

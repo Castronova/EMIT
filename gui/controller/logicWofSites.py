@@ -1,7 +1,7 @@
 __author__ = 'tonycastronova'
 
 import wx
-from gui.views.viewWofSites import ViewWofSites
+from gui.views.WofSitesView import ViewWofSites
 from coordinator.emitLogging import elog
 import wx.calendar as cal
 

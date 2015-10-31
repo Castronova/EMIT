@@ -204,13 +204,14 @@ class TimeSeriesTab(wx.Panel):
         siteview.populateVariablesList(self.api, siteObject.sitecode)
         return
 
-    def setParsedValues(self, siteObject, startDate, endDate):
+    def getParsedValues(self, siteObject, startDate, endDate):
         values = self.api.parseValues(siteObject.sitecode, self.selectedVariables, startDate, endDate)
         elog.info("AddToCanvas has not been implemented.  The above variable value contains the data.")
+        return values
 
     def setup_odm1_table(self, api):
         data = api.getSiteInfo()
-        self.table_columns = ["Site Name", "County", "State", "Site Type"]
+        self.table_columns = ["Site Name", "County", "State", "Site Type", "Site Code"]
         self.m_olvSeries.DefineColumns(self.table_columns)
 
         output = []
@@ -219,8 +220,9 @@ class TimeSeriesTab(wx.Panel):
                 "site_name": da[0],  # The key MUST match one in the table_columns IN LOWERCASE. FYI
                 "county": da[1],
                 "state": da[2],
-                "sitecode": da[3],
-                "site_type": da[4]
+                "site_type": da[3],
+                "site_code": da[4],
+                "sitecode": da[4]
             }
 
             record_object = type('WOFRecord', (object,), d)
@@ -230,7 +232,9 @@ class TimeSeriesTab(wx.Panel):
         self.m_olvSeries.SetColumnWidth(0, 500)
         self.m_olvSeries.SetColumnWidth(1, 150)
         self.m_olvSeries.SetColumnWidth(2, 150)
-        self.m_olvSeries.SetColumnWidth(3, 365)
+        self.m_olvSeries.SetColumnWidth(3, 165)
+
+        self.m_olvSeries.SetColumnWidth(4, 200)
 
 
     def refresh_database(self):
@@ -497,7 +501,6 @@ class DataSeries(wx.Panel):
 
         # Bindings
         self.addConnectionButton.Bind(wx.EVT_LEFT_DOWN, self.AddConnection)
-        self.addConnectionButton.Bind(wx.EVT_MOUSEWHEEL, self.AddConnection_MouseWheel)
 
         self.connection_refresh_button.Bind(wx.EVT_LEFT_DOWN, self.database_refresh)
         self.connection_combobox.Bind(wx.EVT_CHOICE, self.DbChanged)
@@ -517,9 +520,6 @@ class DataSeries(wx.Panel):
         self.SetSizer(seriesSelectorSizer)
         self.Layout()
 
-        #databases = Publisher.sendMessage('getDatabases')
-        # Publisher.subscribe(self.getKnownDatabases, "getKnownDatabases")  # sends message to CanvasController
-        # Publisher.subscribe(self.connection_added_status, "connectionAddedStatus")
         engineEvent.onDatabaseConnected += self.refreshConnectionsListBox
 
     def DbChanged(self, event):
@@ -543,14 +543,6 @@ class DataSeries(wx.Panel):
             self._connection_added = value
             self._connection_string = connection_string
         return self._connection_added
-
-    def AddConnection_MouseWheel(self, event):
-        '''
-        This is intentionally empty to disable mouse scrolling in the AddConnection combobox
-        :param event: EVT_MOUSEWHEEL
-        :return: None
-        '''
-        pass
 
     def AddConnection(self, event):
 

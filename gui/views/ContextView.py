@@ -35,12 +35,6 @@ class LinkContextMenu(wx.Menu):
     def RemoveLink(self, e):
         self.parent.RemoveLink(self.arrow_obj)
 
-    # todo: Delete this
-    # def OnMinimize(self, e):
-    #     self.parent.Iconize()
-    # todo: Delete this
-    # def OnClose(self, e):
-    #     self.parent.Close()
 
 class ConsoleContextMenu(wx.Menu):
     """
@@ -61,12 +55,6 @@ class ConsoleContextMenu(wx.Menu):
         User clears the gui console
         """
         self.log.Clear()
-    # todo: Delete this
-    # def OnMinimize(self, e):
-    #     self.parent.Iconize()
-    # todo: Delete this
-    # def OnClose(self, e):
-    #     self.parent.Close()
 
 class ModelContextMenu(wx.Menu):
 
@@ -128,20 +116,11 @@ class ModelContextMenu(wx.Menu):
                 geoms = [ogr.CreateGeometryFromWkb(g['wkb']) for g in i['geom']]
                 igeoms[name] = geoms
 
-                # geoms = [j['shape'] for j in i['geom']]
-                # igeoms[name] = geoms
-
-        # todo: HACK! should all of this be in the LogicModel?
-        # kwargs = {'edit':False,'spatial':True}
-        # model_details = LogicModel(f, **kwargs)
 
         # load geometry data
         model_details.PopulateSpatialGeoms(ogeoms, type='output')
         model_details.PopulateSpatialGeoms(igeoms, type='input')
 
-        # model_details.inputSelections.Clear()
-        # model_details.inputSelections.Append("test2")
-        # populate model metadata from MDL file
         atts = engine.getModelById(self.model_obj.ID)['attrib']
         if 'mdl' in atts.keys():
             model_details.PopulateSummary(atts['mdl'])
@@ -149,18 +128,6 @@ class ModelContextMenu(wx.Menu):
             model_details.PopulateProperties(engine.getModelById(self.model_obj.ID), iei=iei, oei=oei)
 
         model_details.Show()
-    # todo: Delete this
-    # def PopupDisplay(self, e):
-    #     self.parent.DetailView(e)
-    # todo: Delete this
-    # def OnAddLink(self, e):
-    #     self.parent.ArrowClicked(e)
-    # todo: Delete this
-    # def OnMinimize(self, e):
-    #     self.parent.Iconize()
-    # todo: Delete this
-    # def OnClose(self, e):
-    #     self.parent.Close()
 
     def RemoveModel(self, e):
         self.parent.RemoveModel(self.model_obj)
@@ -283,12 +250,6 @@ class DirectoryContextMenu(wx.Menu):
 
     def OnViewDetails(self, e):
         self.parent.ShowDetails()
-    # todo: Delete this
-    # def OnMinimize(self, e):
-    #     self.parent.Iconize()
-    # todo: Delete this
-    # def OnClose(self, e):
-    #     self.parent.Close()
 
 class ToolboxContextMenu(wx.Menu):
 
@@ -316,12 +277,6 @@ class ToolboxContextMenu(wx.Menu):
 
     def OnCollapseAll(self, e):
         self.parent.OnCollapseAll()
-    # todo: Delete this
-    # def OnMinimize(self, e):
-    #     self.parent.Iconize()
-    # todo: Delete this
-    # def OnClose(self, e):
-    #     self.parent.Close()
 
     def OnRemove(self, e):
         self.parent.Remove(e)

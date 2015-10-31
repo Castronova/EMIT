@@ -4,6 +4,9 @@ import wx
 from gui.views.WofSitesView import ViewWofSites
 from coordinator.emitLogging import elog
 import wx.calendar as cal
+import os
+import csv
+import time
 
 
 class LogicWofSites(ViewWofSites):
@@ -15,19 +18,23 @@ class LogicWofSites(ViewWofSites):
         self.Bind(wx.EVT_BUTTON, self.previewPlot, self.PlotBtn)
         self.Bind(wx.EVT_BUTTON, self.startDateCalender, self.startDateBtn)
         self.Bind(wx.EVT_BUTTON, self.endDateCalender, self.endDateBtn)
-        self.Bind(wx.EVT_BUTTON, self.export, self.exportBtn)
+        self.Bind(wx.EVT_BUTTON, self.onExport, self.exportBtn)
         self.Bind(wx.EVT_BUTTON, self.addToCanvas, id=self.addToCanvasBtn.GetId())
         self.isCalendarOpen = False  # Used to prevent calendar being open twice
 
-    def addToCanvas(self, event):
+    def _preparationToGetValues(self):
         var = self.Parent.selectedVariables = self.getSelectedVariableSiteCode()
         parent = self.Parent
         siteobject = self.siteobject
         start = self.startDate.FormatISODate()
         end = self.endDate.FormatISODate()
+        return end, parent, siteobject, start, var
+
+    def addToCanvas(self, event):
+        end, parent, siteobject, start, var = self._preparationToGetValues()
         self.Close()
         if var > 0:
-            parent.setParsedValues(siteobject, start, end)
+            parent.getParsedValues(siteobject, start, end)
 
     def endDateCalender(self, event):
         if self.isCalendarOpen:
@@ -35,10 +42,52 @@ class LogicWofSites(ViewWofSites):
         else:
             Calendar(self, -1, "Calendar", "end")
 
-    def export(self, event):
-        dial = wx.MessageDialog(None, message='This feature has not been implemented yet.', style=wx.OK)
-        dial.ShowModal()
+    def onExport(self, event):
+        var = self.Parent.selectedVariables = self.getSelectedVariableSiteCode()
+        if var > 0:
+            save = wx.FileDialog(parent=self, message="Choose Path",
+                                 defaultDir=os.getcwd(),
+                                 wildcard="CSV Files (*.csv)|*.csv",
+                                 style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+            if save.ShowModal() == wx.ID_OK:
+                path = save.GetPath()
+                if path[-4] != '.':
+                    path += '.csv'
+                file = open(path, 'w')
+                writer = csv.writer(file, delimiter=',')
+                varInfo = self.getSelectedVariable()
+                end, parent, siteobject, start, var = self._preparationToGetValues()
+                values = parent.getParsedValues(siteobject, start, end)
 
+                writer.writerow(["#-------------------------Disclaimer:  This is a data set that was exported by EMIT ... use at your own risk..."])
+                writer.writerow(["#"])
+                writer.writerow(["#Date Exported: %s" % getTodayDate()])
+                writer.writerow(["#Site Name: %s" % siteobject.site_name])
+                writer.writerow(["#Site Code: %s" % siteobject.site_code])
+                writer.writerow(["#Variable Name: %s" % varInfo[0]])
+                writer.writerow(["#Variable Code: %s" % var])
+                writer.writerow(["#Unit: %s" % varInfo[1]])
+                writer.writerow(["#Category: %s" % varInfo[2]])
+                writer.writerow(["#Type: %s" % varInfo[3]])
+                writer.writerow(["#Begin Date: %s" % varInfo[4]])
+                writer.writerow(["#End Date: %s" % varInfo[5]])
+                writer.writerow(["#Description: %s" % varInfo[6]])
+                writer.writerow(["#"])
+                writer.writerow(["#-------------------------End Disclaimer"])
+                writer.writerow(["#"])
+                writer.writerow(["#Values"])
+
+                for d in values:
+                    writer.writerow([d])
+
+                file.close()
+        else:
+            elog.info("Select a variable to export")
+
+
+    def getSelectedVariable(self):
+        code = self.getSelectedVariableSiteCode()
+        return self.data[code]
 
     def getSelectedVariableName(self):
         num = self.variableList.GetItemCount()
@@ -166,3 +215,6 @@ class Calendar(wx.Dialog):
         else:
             elog.debug("End date must be after start date")
             return False
+
+def getTodayDate():
+    return time.strftime("%m/%d/%Y")

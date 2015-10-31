@@ -210,7 +210,7 @@ class TimeSeriesTab(wx.Panel):
 
     def setup_odm1_table(self, api):
         data = api.getSiteInfo()
-        self.table_columns = ["Site Name", "County", "State"]
+        self.table_columns = ["Site Name", "County", "State", "Site Type"]
         self.m_olvSeries.DefineColumns(self.table_columns)
 
         output = []
@@ -219,13 +219,19 @@ class TimeSeriesTab(wx.Panel):
                 "site_name": da[0],  # The key MUST match one in the table_columns IN LOWERCASE. FYI
                 "county": da[1],
                 "state": da[2],
-                "sitecode": da[3]
+                "sitecode": da[3],
+                "site_type": da[4]
             }
 
             record_object = type('WOFRecord', (object,), d)
             output.extend([record_object])
         self.m_olvSeries.AutoSizeColumns()
         self.m_olvSeries.SetObjects(output)
+        self.m_olvSeries.SetColumnWidth(0, 500)
+        self.m_olvSeries.SetColumnWidth(1, 150)
+        self.m_olvSeries.SetColumnWidth(2, 150)
+        self.m_olvSeries.SetColumnWidth(3, 365)
+
 
     def refresh_database(self):
         # get the name of the selected database

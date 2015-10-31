@@ -11,6 +11,14 @@ class WebServiceApi:
         self.odm1 = ODM1(website)
         self.objects = self.odm1.getSitesObject()
 
+    def _getSiteType(self, site):
+        try:
+            return site[0][5][3].value
+        except IndexError:
+            return site[0][5][2].value
+        except ValueError:
+            return ""
+
     def buildSitesDictionary(self, start=None, end=None):
 
         if start == None:
@@ -81,17 +89,12 @@ class WebServiceApi:
         siteInfo = []
         for site in self.objects[1][start:end]:
             if len(site) > 0:
-                # The structure of siteInfo list is [[Site Name, County, State, site code]]
-                siteInfo.append([site[0][0], site[0][5][0].value, site[0][5][1].value, site[0][1][0].value])
+                # The structure of siteInfo list is [[Site Name, County, State, site code, site type]]
+                siteInfo.append([site[0][0], site[0][5][0].value, site[0][5][1].value, site[0][1][0].value, self._getSiteType(site)])
 
         return siteInfo
 
     def parseValues(self, sitecode, variable, start=None, end=None):
-        # Data is taken every 15 minutes
-        # start date can be as early as 2013
-        # end data is today and continuing.
-        # There are 96 values for each day.
-
         data = self.odm1.getValues(sitecode, variable, start, end)
         tree = et.fromstring(data)
         valuesList = []

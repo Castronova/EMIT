@@ -1,16 +1,15 @@
 __author__ = 'tonycastronova'
 
-import wx
-from gui.views.WofSitesView import ViewWofSites
-from coordinator.emitLogging import elog
-import wx.calendar as cal
 import os
 import csv
 import time
+import wx
+import wx.calendar as cal
+from gui.views.WofSitesView import ViewWofSites
+from coordinator.emitLogging import elog
 
 
 class LogicWofSites(ViewWofSites):
-
     def __init__(self, parent, siteObject):
 
         ViewWofSites.__init__(self, parent, siteObject)
@@ -36,6 +35,21 @@ class LogicWofSites(ViewWofSites):
         if var > 0:
             parent.getParsedValues(siteobject, start, end)
 
+    def dicToObj(self, data):
+        temp = []
+        for key, value in data.iteritems():
+            d = {}
+            d["code"] = key
+            d["name"] = value[0]
+            d["unit"] = value[1]
+            d["category"] = value[2]
+            d["type"] = value[3]
+            d["begin_date"] = value[4]
+            d["end_date"] = value[5]
+            d["description"] = value[6]
+            temp.append(dicToObj(d))
+        return temp
+
     def endDateCalender(self, event):
         if self.isCalendarOpen:
             pass
@@ -59,7 +73,8 @@ class LogicWofSites(ViewWofSites):
                 end, parent, siteobject, start, var = self._preparationToGetValues()
                 values = parent.getParsedValues(siteobject, start, end)
 
-                writer.writerow(["#-------------------------Disclaimer:  This is a data set that was exported by EMIT ... use at your own risk..."])
+                writer.writerow([
+                                    "#-------------------------Disclaimer:  This is a data set that was exported by EMIT ... use at your own risk..."])
                 writer.writerow(["#"])
                 writer.writerow(["#Date Exported: %s" % getTodayDate()])
                 writer.writerow(["#Site Name: %s" % siteobject.site_name])
@@ -84,10 +99,15 @@ class LogicWofSites(ViewWofSites):
         else:
             elog.info("Select a variable to export")
 
+    def getSelectedObject(self):
+        code = self.getSelectedVariableSiteCode()
+        for i in range(len(self._objects)):
+            if code == self._objects[i].code:
+                return self._objects[i]
 
     def getSelectedVariable(self):
         code = self.getSelectedVariableSiteCode()
-        return self.data[code]
+        return self._data[code]
 
     def getSelectedVariableName(self):
         num = self.variableList.GetItemCount()
@@ -110,7 +130,7 @@ class LogicWofSites(ViewWofSites):
             return 0
 
     def getSiteCodeByVariableName(self, checkedVar):
-        for key, value in self.data.iteritems():
+        for key, value in self._data.iteritems():
             if value[0] == checkedVar[0]:
                 return key
 
@@ -126,7 +146,8 @@ class LogicWofSites(ViewWofSites):
 
     def populateVariablesList(self, api, sitecode):
         data = api.buildAllSiteCodeVariables(sitecode)
-        self.data = data
+        self._data = data
+        self._objects = self.dicToObj(data)
         rowNumber = 0
         colNumber = 0
         for key, value, in data.iteritems():
@@ -215,6 +236,11 @@ class Calendar(wx.Dialog):
         else:
             elog.debug("End date must be after start date")
             return False
+
+
+class dicToObj(object):
+    def __init__(self, dic):
+        self.__dict__ = dic
 
 def getTodayDate():
     return time.strftime("%m/%d/%Y")

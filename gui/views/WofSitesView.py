@@ -19,7 +19,7 @@ class ViewWofSites(wx.Frame):
         self.startDate = wx.DateTime_Now() - 7 * wx.DateSpan_Day()
         self.endDate = wx.DateTime_Now()
         self.parent = parent
-        self.data = None
+        self._data = None
 
         panel = wx.Panel(self)
         self.toppanel = wx.Panel(panel)

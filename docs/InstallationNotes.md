@@ -24,8 +24,9 @@ CFLAGS=-I/usr/local/include pip install pyspatialite
 1. Execute the loading script to create DLL files
 
 ```
-cd [path tp project]/EMIT/db/scripts
-
+cd [path tp project]/EMIT/db/scripts  
+```
+```
 python build_sql_dump_scripts.py
 
 ```

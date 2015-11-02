@@ -9,12 +9,6 @@ import pandas
 
 # This is our API for simulation data that uses the latest ODM2PythonAPI code
 
-from api_old.ODM2.Core.services import *
-from api_old.ODM2.SamplingFeatures.services import *
-from api_old.ODM2.Results.services import *
-from api_old.ODM2.Simulation.services import *
-from utilities import gui
-
 from ODM2PythonAPI.src.api.ODMconnection import dbconnection
 from ODM2PythonAPI.src.api.ODM2.services.readService import ReadODM2
 from ODM2PythonAPI.src.api.ODM2.services.createService import CreateODM2
@@ -105,9 +99,11 @@ class sqlite():
         # create person / organization / affiliation
         # affiliation = self.set_user_preferences(preferences_path)
 
+        # todo: handle multiple affiliations
+        # for obj in user_obj:
         person = self.createPerson(user_obj)
         organization = self.createOrganization(user_obj)
-        affiliation = self.createAffiliation(organization, person, user_obj)
+        affiliation = self.createAffiliation(organization.OrganizationID, person.PersonID, user_obj)
 
         # get the timestep unit id
         #todo: This is not returning a timestepunit!!!  This may need to be added to the database
@@ -279,17 +275,20 @@ class sqlite():
                                              orgId=organization.OrganizationID, description='Model Simulation Results')
         return method
 
-    def createAffiliation(self, organization, person, user_obj):
+    def createAffiliation(self, organizationid, personid, user_obj):
+
+
         affiliation = self.read.getAffiliationByPersonAndOrg(user_obj.person.firstname, user_obj.person.lastname,
                                                              user_obj.organization.code)
         if not affiliation:
-            affiliation = self.write.createAffiliation(person.PersonID, organization.OrganizationID, user_obj.email,
+            affiliation = self.write.createAffiliation(personid, organizationid, user_obj.email,
                                                        user_obj.phone, user_obj.address, user_obj.personLink,
                                                        user_obj.isPrimaryOrganizationContact, user_obj.startDate,
                                                        user_obj.affiliationEnd)
         return affiliation
 
     def createOrganization(self, user_obj):
+
         organization = self.read.getOrganizationByCode(user_obj.organization.code)
         if not organization:
             organization = self.write.createOrganization(user_obj.organization.typeCV, user_obj.organization.code,
@@ -298,6 +297,7 @@ class sqlite():
         return organization
 
     def createPerson(self, user_obj):
+
         person = self.read.getPersonByName(user_obj.person.firstname, user_obj.person.lastname)
         if not person:
             person = self.write.createPerson(user_obj.person.firstname, user_obj.person.lastname, user_obj.person.middlename)

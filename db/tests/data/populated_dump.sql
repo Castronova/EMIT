@@ -190,8 +190,8 @@ CREATE TABLE Affiliations (
 	FOREIGN KEY (PersonID) REFERENCES People (PersonID)
 	ON UPDATE NO ACTION ON DELETE NO ACTION
 );
-INSERT INTO "Affiliations" VALUES(1,1,1,'True','2015-08-17 15:08:36.145351',NULL,'(505) 250-5885','chris.cox@usu.edu',NULL,NULL);
-INSERT INTO "Affiliations" VALUES(2,2,3,'false','2014-03-10',NULL,'435-797-0852','tony.castronova@usu.edu','8200 old main, logan ut, 84322',NULL);
+INSERT INTO "Affiliations" VALUES(1,1,1,1,'2015-08-17 15:08:36.145351',NULL,'(505) 250-5885','chris.cox@usu.edu',NULL,NULL);
+INSERT INTO "Affiliations" VALUES(2,2,3,0,'2014-03-10',NULL,'435-797-0852','tony.castronova@usu.edu','8200 old main, logan ut, 84322',NULL);
 CREATE TABLE Datasets (
 	DatasetID INTEGER   NOT NULL PRIMARY KEY,
 	DatasetUUID VARCHAR(36)   NOT NULL,

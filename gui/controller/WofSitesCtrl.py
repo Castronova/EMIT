@@ -159,7 +159,7 @@ class LogicWofSites(ViewWofSites):
                                                self.startDate.FormatISODate(), self.endDate.FormatISODate())
             self.plot.setTitle(self.getSelectedVariableName())
             self.plot.setAxisLabel("Date Time", "Units")
-            self.plot.plotData(data, str(varList))
+            self.plot.plotData(data, str(varList), data[-1])
 
     def populateVariablesList(self, api, sitecode):
         data = api.buildAllSiteCodeVariables(sitecode)

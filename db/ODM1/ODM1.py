@@ -74,7 +74,6 @@ class ODM1:
             data = self.conn.service.GetValues(network + str(sitecode), variable)
         else:
             data = self.conn.service.GetValues(network + str(sitecode), variable, beginDate, endDate)
-
         return data
 
     def getValuesForASiteObject(self, siteid=None):

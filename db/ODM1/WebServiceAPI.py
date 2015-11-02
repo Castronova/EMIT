@@ -98,18 +98,18 @@ class WebServiceApi:
         data = self.odm1.getValues(sitecode, variable, start, end)
         tree = et.fromstring(data)
         valuesList = []
-
+        #TODO: fix hard coded
         queryInfo = tree[0]
         sourceInfo = tree[1].getchildren()[0]
         varInfo = tree[1].getchildren()[1]
         values = tree[1].getchildren()[2]
         stop = len(values) - 4
 
-        # self.odm1.createXMLFileForReading(data) Run this line to see the file in your browser
+        self.odm1.createXMLFileForReading(data) #Run this line to see the file in your browser
 
         if start is not None and end is not None:
             for i in range(stop):
                 valuesList.append(values[i].text)
-
+        valuesList.append(varInfo[7].text) # no data value is here
         return valuesList
 

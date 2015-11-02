@@ -12,15 +12,15 @@ from wx.lib.floatcanvas.NavCanvas import NavCanvas
 from wx.lib.pubsub import pub as Publisher
 import numpy as N
 from matplotlib.pyplot import cm
-from gui.views.viewContext import LinkContextMenu, ModelContextMenu, CanvasContextMenu
+from gui.views.ContextView import LinkContextMenu, ModelContextMenu, CanvasContextMenu
 from transform.space import SpatialInterpolation
 from transform.time import TemporalInterpolation
 import datatypes
 from utilities.threading import EVT_CREATE_BOX, EVT_UPDATE_CONSOLE, ThreadManager
-from gui.views.viewCanvas import ViewCanvas
-import gui.controller.logicCanvasObjects as LogicCanvasObjects
-from gui.controller.logicCanvasObjects import SmoothLineWithArrow, ModelBox
-from gui.controller.logicLink import LogicLink
+from gui.views.CanvasView import ViewCanvas
+import gui.controller.CanvasObjectsCtrl as LogicCanvasObjects
+from gui.controller.CanvasObjectsCtrl import SmoothLineWithArrow, ModelBox
+from gui.controller.LinkCtrl import LogicLink
 import coordinator.engineAccessors as engine
 import utilities.db as dbUtilities
 import coordinator.events as engineEvent

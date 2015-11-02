@@ -2,7 +2,7 @@ __author__ = 'tonycastronova'
 
 import wx
 import matplotlib.pyplot as plt
-from gui.views.viewSpatialPlot import ViewSpatialPlot
+from gui.views.SpatialPlotView import ViewSpatialPlot
 from coordinator.emitLogging import elog
 import stdlib
 from matplotlib.collections import PolyCollection, LineCollection

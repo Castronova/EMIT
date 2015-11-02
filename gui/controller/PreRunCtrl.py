@@ -1,7 +1,7 @@
 __author__ = 'Francisco'
 
 import wx
-from gui.views.viewPreRun import viewPreRun
+from gui.views.PreRunView import viewPreRun
 import os
 import time
 from coordinator import engineAccessors

@@ -3,10 +3,10 @@ import wx
 import wx.xrc
 from shapely import wkt
 from utilities import gui, spatial
-from gui.views.viewModel import ViewModel
+from gui.views.ModelView import ViewModel
 # todo: refactor
 # from ..DirectoryLstCtrl import DirectoryListCtrl
-from gui.controller.logicDirectoryListControl import LogicDirectoryListControl
+from gui.controller.DirectoryListControlCtrl import LogicDirectoryListControl
 from gui.Resources import icons
 from coordinator.emitLogging import elog
 

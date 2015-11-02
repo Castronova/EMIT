@@ -1,6 +1,6 @@
 __author__ = 'francisco'
 
-from gui.views.viewPlotForSiteViewer import ViewPlotForSiteViewer
+from gui.views.PlotForSiteViewerView import ViewPlotForSiteViewer
 import numpy
 
 class logicPlotForSiteViewer(ViewPlotForSiteViewer):

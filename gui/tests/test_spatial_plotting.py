@@ -4,7 +4,7 @@ __author__ = 'tonycastronova'
 import wx
 import random
 from osgeo import ogr
-from gui.controller.logicSpatialPlot import *
+from gui.controller.SpatialPlotCtrl import *
 import unittest
 import utilities.geometry
 

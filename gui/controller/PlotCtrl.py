@@ -2,7 +2,7 @@ __author__ = 'tonycastronova'
 
 import wx
 import seaborn as sns
-from gui.views.viewPlot import ViewPlot, Data
+from gui.views.PlotView import ViewPlot, Data
 from PIL import Image, ImageDraw
 from matplotlib.dates import date2num
 import matplotlib.pyplot as plt

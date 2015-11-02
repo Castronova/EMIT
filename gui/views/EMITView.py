@@ -1,7 +1,7 @@
 __author__ = 'Mario'
-from gui.controller.logicDirectory import LogicDirectory
+from gui.controller.DirectoryCtrl import LogicDirectory
 from gui.controller.logicToolbox import LogicToolbox
-from gui.controller.logicCanvas import LogicCanvas
+from gui.controller.CanvasCtrl import LogicCanvas
 import wx
 import wx.html2
 from wx.lib.pubsub import pub as Publisher
@@ -9,7 +9,7 @@ import wx.lib.agw.aui as aui
 from gui import events
 from wx.lib.newevent import NewEvent
 from coordinator.emitLogging import elog
-from viewLowerPanel import viewLowerPanel
+from LowerPanelView import viewLowerPanel
 import os
 import ConfigParser
 import sys
@@ -322,42 +322,6 @@ class viewMenuBar(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, parent=None, id=-1, title="Settings...", pos=wx.DefaultPosition, size=wx.Size(350, 250))
 
-        #  Read the settings file
-        # currentdir = os.path.dirname(os.path.abspath(__file__))
-        # self.settingspath = os.path.abspath(os.path.join(currentdir, '../../app_data/config/.settings.ini'))
-        # self.config = ConfigParser.ConfigParser()
-        # self.config.read(self.settingspath)
-        # boolist = []
-        #
-        # ''' for i in range(0, len(fileinfo)):
-        #     value = fileinfo[i].split(' = ')
-        #     value = value[1].split('\n')
-        #     if value[0] == 'True':
-        #         boolist.append(True)
-        #     else:
-        #         boolist.append(False) '''
-
-
-
-        # try:
-        #     self.infoIsChecked = self.config.getboolean("LOGGING", 'showinfo')
-        #     self.warningIsChecked = self.config.getboolean("LOGGING", 'showwarning')
-        #     self.criticalIsChecked = self.config.getboolean("LOGGING", 'showcritical')
-        #     self.errorIsChecked = self.config.getboolean("LOGGING", 'showerror')
-        #     self.debugIsChecked = self.config.getboolean("LOGGING", 'showdebug')
-        # except:  # if the settings file is empty it will set them to true
-        #     self.infoIsChecked = True
-        #     self.warningIsChecked = True
-        #     self.criticalIsChecked = True
-        #     self.errorIsChecked = True
-        #     self.debugIsChecked = True
-        #
-        # elog.debug("debug " + str(self.debugIsChecked))
-        # elog.debug("error " + str(self.errorIsChecked))
-        # elog.debug("critical " + str(self.criticalIsChecked))
-        # elog.debug("warning " + str(self.warningIsChecked))
-        # elog.debug("info " + str(self.infoIsChecked))
-
         self.panel = wx.Panel(self)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -395,27 +359,7 @@ class viewMenuBar(wx.Frame):
         self.Refresh()
         self.Show()
 
-    # def parse_settings_file(self):
-    #     d = {}
-    #     logging = self.config.options("LOGGING")
-    #     for option in logging:
-    #         value = self.config.getboolean("LOGGING", option)
-    #         d[option] = value
-    #
-    #     localdb = self.config.options("LOCAL_DB")
-    #     for option in localdb:
-    #         value = self.config.get("LOCAL_DB", option)
-    #         d[option] = value
-    #
-    #     return d
-
     def OnSave(self, event):
-        # cb = self.getCheckboxValue()
-        # currentdir = os.path.dirname(os.path.abspath(__file__))
-        # self.settingspath = os.path.abspath(os.path.join(currentdir, '../../app_data/config/.settings.ini'))
-
-
-        # get the checkbox values
         chkvalues = self.getCheckboxValue()
         infchk = int(chkvalues['info'])
         wrnchk = int(chkvalues['warn'])
@@ -434,7 +378,6 @@ class viewMenuBar(wx.Frame):
 
         elog.info('Verbosity Settings Saved')
 
-        # print env_vars.LOGGING_SHOWWARNING
         self.Close()
 
     def getCheckboxValue(self):

@@ -2,7 +2,7 @@ __author__ = 'tonycastronova'
 
 import wx
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
-from gui.controller.logicPlotForSiteViewer import logicPlotForSiteViewer
+from gui.controller.PlotForSiteViewerCtrl import logicPlotForSiteViewer
 
 
 class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
@@ -19,7 +19,7 @@ class ViewWofSites(wx.Frame):
         self.startDate = wx.DateTime_Now() - 7 * wx.DateSpan_Day()
         self.endDate = wx.DateTime_Now()
         self.parent = parent
-        self.data = None
+        self._data = None
 
         panel = wx.Panel(self)
         self.toppanel = wx.Panel(panel)
@@ -82,4 +82,9 @@ class ViewWofSites(wx.Frame):
     def autoSizeColumns(self):
         for i in range(self.variableList.GetColumnCount()):
             self.variableList.SetColumnWidth(i, wx.LIST_AUTOSIZE)
+
+    def alternateRowColor(self, color="#DCEBEE"):
+        for i in range(self.variableList.GetItemCount()):
+            if i % 2 == 0:
+                self.variableList.SetItemBackgroundColour(i, color)
 

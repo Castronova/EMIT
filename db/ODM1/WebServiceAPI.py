@@ -11,6 +11,14 @@ class WebServiceApi:
         self.odm1 = ODM1(website)
         self.objects = self.odm1.getSitesObject()
 
+    def _getSiteType(self, site):
+        try:
+            return site[0][5][3].value
+        except IndexError:
+            return site[0][5][2].value
+        except ValueError:
+            return ""
+
     def buildSitesDictionary(self, start=None, end=None):
 
         if start == None:
@@ -40,12 +48,7 @@ class WebServiceApi:
         self.AllVariables = vars
         return vars
 
-    def buildAllSiteCodeVariables(self, sitecode, start=None, end=None):
-        if start is None:
-            start = 1
-        if end is None:
-            end = start + 10
-
+    def buildAllSiteCodeVariables(self, sitecode):
         siteObject = self.odm1.getSiteInfoObject(sitecode)
 
         try:
@@ -56,7 +59,7 @@ class WebServiceApi:
 
         variableDict = collections.OrderedDict()
 
-        for i in range(0, len(seriesVariables[start:end])):
+        for i in range(0, len(seriesVariables)):
             # {Site code: [Variable Name, Units, Type, Category, Begin Date Time, End Date Time, Description]}
             variableDict[seriesVariables[i][0][0][0].value] = [seriesVariables[i][0][1],  # Variable Name
                                                                seriesVariables[i][0][6][2],  # Units
@@ -86,17 +89,12 @@ class WebServiceApi:
         siteInfo = []
         for site in self.objects[1][start:end]:
             if len(site) > 0:
-                # The structure of siteInfo list is [[Site Name, County, State, site code]]
-                siteInfo.append([site[0][0], site[0][5][0].value, site[0][5][1].value, site[0][1][0].value])
+                # The structure of siteInfo list is [[Site Name, County, State, site type, site code]]
+                siteInfo.append([site[0][0], site[0][5][0].value, site[0][5][1].value, self._getSiteType(site), site[0][1][0].value])
 
         return siteInfo
 
     def parseValues(self, sitecode, variable, start=None, end=None):
-        # Data is taken every 15 minutes
-        # start date can be as early as 2013
-        # end data is today and continuing.
-        # There are 96 values for each day.
-
         data = self.odm1.getValues(sitecode, variable, start, end)
         tree = et.fromstring(data)
         valuesList = []

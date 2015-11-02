@@ -1,22 +1,22 @@
 __author__ = 'Francisco'
 
+import threading
+import sys
 import wx
-from gui.controller.logicDatabase import LogicDatabase
-import coordinator.events as engineEvent
-from viewContext import TimeSeriesContextMenu, SimulationContextMenu, ConsoleContextMenu
-import coordinator.engineAccessors as engine
 from wx.lib.pubsub import pub as Publisher
+from wx import richtext
+from gui.controller.DatabaseCtrl import LogicDatabase
+import coordinator.events as engineEvent
+from ContextView import TimeSeriesContextMenu, SimulationContextMenu, ConsoleContextMenu
+import coordinator.engineAccessors as engine
 from utilities import db as dbUtilities
 from db import dbapi as dbapi
 from gui import events
-import threading
-from wx import richtext
 from coordinator.emitLogging import elog
-from gui.controller import logicConsoleOutput
-import sys, os
+from gui.controller import ConsoleOutputCtrl
 from db.ODM1.WebServiceAPI import WebServiceApi
 from gui.controller.logicWofSites import LogicWofSites
-import ConfigParser
+
 
 class viewLowerPanel:
     def __init__(self, notebook):
@@ -35,7 +35,7 @@ class viewLowerPanel:
             # sys.stdout = redir
 
             #  Thread starts here to ensure its on the main thread
-            t = threading.Thread(target=logicConsoleOutput.follow, name='CONSOLE THREAD', args=(elog, console.log))
+            t = threading.Thread(target=ConsoleOutputCtrl.follow, name='CONSOLE THREAD', args=(elog, console.log))
             t.start()
 
 class ConsoleTab(wx.Panel):
@@ -195,8 +195,6 @@ class TimeSeriesTab(wx.Panel):
         wsdl["Red Butte Creek"] = "http://data.iutahepscor.org/RedButteCreekWOF/cuahsi_1_1.asmx?WSDL"
         wsdl["Provo River"] = "http://data.iutahepscor.org/ProvoRiverWOF/cuahsi_1_1.asmx?WSDL"
         wsdl["Logan River"] = "http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL"
-        wsdl["Tarland Scotland"] = "http://143.234.88.22/TarlandHydrologyDataWS/cuahsi_1_1.asmx?WSDL"
-        wsdl["NWIS Unit Values"] = "http://hydroportal.cuahsi.org/nwisuv/cuahsi_1_1.asmx?WSDL"
 
         return wsdl
 
@@ -206,13 +204,14 @@ class TimeSeriesTab(wx.Panel):
         siteview.populateVariablesList(self.api, siteObject.sitecode)
         return
 
-    def setParsedValues(self, siteObject, startDate, endDate):
+    def getParsedValues(self, siteObject, startDate, endDate):
         values = self.api.parseValues(siteObject.sitecode, self.selectedVariables, startDate, endDate)
         elog.info("AddToCanvas has not been implemented.  The above variable value contains the data.")
+        return values
 
     def setup_odm1_table(self, api):
         data = api.getSiteInfo()
-        self.table_columns = ["Site Name", "County", "State"]
+        self.table_columns = ["Site Name", "County", "State", "Site Type", "Site Code"]
         self.m_olvSeries.DefineColumns(self.table_columns)
 
         output = []
@@ -221,13 +220,22 @@ class TimeSeriesTab(wx.Panel):
                 "site_name": da[0],  # The key MUST match one in the table_columns IN LOWERCASE. FYI
                 "county": da[1],
                 "state": da[2],
-                "sitecode": da[3]
+                "site_type": da[3],
+                "site_code": da[4],
+                "sitecode": da[4]
             }
 
             record_object = type('WOFRecord', (object,), d)
             output.extend([record_object])
         self.m_olvSeries.AutoSizeColumns()
         self.m_olvSeries.SetObjects(output)
+        self.m_olvSeries.SetColumnWidth(0, 500)
+        self.m_olvSeries.SetColumnWidth(1, 150)
+        self.m_olvSeries.SetColumnWidth(2, 150)
+        self.m_olvSeries.SetColumnWidth(3, 165)
+
+        self.m_olvSeries.SetColumnWidth(4, 200)
+
 
     def refresh_database(self):
         # get the name of the selected database
@@ -493,7 +501,6 @@ class DataSeries(wx.Panel):
 
         # Bindings
         self.addConnectionButton.Bind(wx.EVT_LEFT_DOWN, self.AddConnection)
-        self.addConnectionButton.Bind(wx.EVT_MOUSEWHEEL, self.AddConnection_MouseWheel)
 
         self.connection_refresh_button.Bind(wx.EVT_LEFT_DOWN, self.database_refresh)
         self.connection_combobox.Bind(wx.EVT_CHOICE, self.DbChanged)
@@ -513,9 +520,6 @@ class DataSeries(wx.Panel):
         self.SetSizer(seriesSelectorSizer)
         self.Layout()
 
-        #databases = Publisher.sendMessage('getDatabases')
-        # Publisher.subscribe(self.getKnownDatabases, "getKnownDatabases")  # sends message to CanvasController
-        # Publisher.subscribe(self.connection_added_status, "connectionAddedStatus")
         engineEvent.onDatabaseConnected += self.refreshConnectionsListBox
 
     def DbChanged(self, event):
@@ -539,14 +543,6 @@ class DataSeries(wx.Panel):
             self._connection_added = value
             self._connection_string = connection_string
         return self._connection_added
-
-    def AddConnection_MouseWheel(self, event):
-        '''
-        This is intentionally empty to disable mouse scrolling in the AddConnection combobox
-        :param event: EVT_MOUSEWHEEL
-        :return: None
-        '''
-        pass
 
     def AddConnection(self, event):
 

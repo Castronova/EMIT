@@ -67,8 +67,10 @@ class LogicDatabase(ViewDatabase):
         obj = event.GetEventObject()
         filename = obj.GetItem(id).GetText()
         uniqueId = obj.GetItem(id).GetText()
+
+        # todo: this should check the type of data instead i.e. ODM2, WOF, etc...
         try:
-            sitecode = obj.GetObjectAt(id).sitecode
+            sitecode = obj.GetObjectAt(id).site_code
         except:
             sitecode = None
 
@@ -81,6 +83,7 @@ class LogicDatabase(ViewDatabase):
 
         else:
             self.Parent.prepareODM1_Model(obj.GetObjectAt(id))
+            # self.Parent.prepareODM1_Model(id)
 
     def getDbSession(self):
         selected_db = self.Parent.connection_combobox.GetStringSelection()

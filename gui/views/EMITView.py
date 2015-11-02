@@ -1,6 +1,6 @@
 __author__ = 'Mario'
 from gui.controller.DirectoryCtrl import LogicDirectory
-from gui.controller.logicToolbox import LogicToolbox
+from gui.controller.ToolboxCtrl import LogicToolbox
 from gui.controller.CanvasCtrl import LogicCanvas
 import wx
 import wx.html2

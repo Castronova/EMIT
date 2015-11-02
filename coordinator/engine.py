@@ -29,6 +29,8 @@ from coordinator.emitLogging import elog
 # import ODM2PythonAPI.src.api as odm2api
 from datetime import datetime
 import users as Users
+import wrappers
+from wrappers import Types
 
 """
 Purpose: This file contains the logic used to run coupled model simulations
@@ -161,38 +163,44 @@ class Model(object):
 
 
     def get_input_exchange_item_by_name(self,value):
-        ii = None
 
-        for k,v in self.__iei.iteritems():
-            if v.name() == value:
-                ii = self.__iei[k]
-
-        if ii is None:
+        i = self.get_instance()
+        if value in i.inputs():
+            return i.inputs()[value]
+        # for k,v in self.__iei.iteritems():
+        #     if v.name() == value:
+        #         ii = self.__iei[k]
+        #
+        # if ii is None:
+        else:
             elog.error('Could not find Input Exchange Item: '+value)
 
-        return ii
 
     def get_output_exchange_item_by_name(self,value):
-        oi = None
 
-        for k,v in self.__oei.iteritems():
-            if v.name() == value:
-                oi = self.__oei[k]
+        i = self.get_instance()
+        if value in i.ouputs():
+            return i.ouputs()[value]
 
-        if oi is None:
+        # for k,v in i.iteritems():
+        #     if v.name() == value:
+        #         oi = self.__oei[k]
+
+        # if oi is None:
+        else:
             elog.error('Could not find Output Exchange Item: '+value)
 
-        return oi
 
     def get_description(self):
         return self.__description
 
     def get_name(self):
-        if 'mdl' in self.attrib():
-            return self.__name
-        elif 'databaseid' in self.attrib() and 'resultid' in self.attrib():
-            attribDict = self.attrib()
-            return self.__name + '-' + attribDict['resultid']
+        return self.get_instance().name()
+        # if 'mdl' in self.attrib():
+        #     return self.__name
+        # elif 'databaseid' in self.attrib() and 'resultid' in self.attrib():
+        #     attribDict = self.attrib()
+        #     return self.__name + '-' + attribDict['resultid']
 
     def get_id(self):
         return self.__id
@@ -320,6 +328,9 @@ class Coordinator(object):
         """
         thisModel = None
 
+        if id is None:
+            id = uuid.uuid4().hex
+
         if 'mdl' in attrib:
         # if type == datatypes.ModelTypes.FeedForward or type == datatypes.ModelTypes.TimeStep:
 
@@ -375,9 +386,6 @@ class Coordinator(object):
                 elog.warning('Series named '+inst.name()+' already exists in configuration')
                 return None
 
-            if id is None:
-                id = uuid.uuid4().hex[:5]
-
             # create a model instance
             thisModel = Model(id=id,
                               name=inst.name(),
@@ -392,6 +400,22 @@ class Coordinator(object):
             att = {'resultid':resultid}
             att['databaseid'] = databaseid
             thisModel.attrib(att)
+
+
+        elif attrib['type'] == Types.WOF:
+            # Load WOF wrapper model
+            inst = getattr(wrappers, attrib['type']).wrapper(attrib)
+            oei = inst.outputs().values()
+            iei = inst.inputs().values()
+
+            # create a model instance
+            thisModel = Model(id=id,
+                              name=inst.name(),
+                              instance=inst,
+                              desc=inst.description(),
+                              input_exchange_items= [],
+                              output_exchange_items=  oei,
+                              params=None)
 
         # save the model
         self.__models[thisModel.get_name()] = thisModel

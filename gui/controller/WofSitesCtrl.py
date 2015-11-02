@@ -7,7 +7,8 @@ import wx
 import wx.calendar as cal
 from gui.views.WofSitesView import ViewWofSites
 from coordinator.emitLogging import elog
-
+import coordinator.engineAccessors as engine
+import uuid
 
 class LogicWofSites(ViewWofSites):
     def __init__(self, parent, siteObject):
@@ -18,7 +19,7 @@ class LogicWofSites(ViewWofSites):
         self.Bind(wx.EVT_BUTTON, self.startDateCalender, self.startDateBtn)
         self.Bind(wx.EVT_BUTTON, self.endDateCalender, self.endDateBtn)
         self.Bind(wx.EVT_BUTTON, self.onExport, self.exportBtn)
-        self.Bind(wx.EVT_BUTTON, self.addToCanvas, id=self.addToCanvasBtn.GetId())
+        self.Bind(wx.EVT_BUTTON, self.addToCanvas, self.addToCanvasBtn)
         self.isCalendarOpen = False  # Used to prevent calendar being open twice
 
     def _preparationToGetValues(self):
@@ -30,10 +31,26 @@ class LogicWofSites(ViewWofSites):
         return end, parent, siteobject, start, var
 
     def addToCanvas(self, event):
-        end, parent, siteobject, start, var = self._preparationToGetValues()
+        end, parent, siteobject, start, variable_code = self._preparationToGetValues()
+
+        if variable_code == 0:
+            # no table row selected
+            return
+
+        args = dict(type='wof',
+                    wsdl=self.parent.api.wsdl,
+                    site_code = siteobject.site_code,
+                    variable_code = variable_code,
+                    start = start,
+                    end = end
+        )
+
+        engine.addModel(attrib=args)
+
+
         self.Close()
-        if var > 0:
-            parent.getParsedValues(siteobject, start, end)
+        # if var > 0:
+        #     parent.getParsedValues(siteobject, start, end)
 
     def dicToObj(self, data):
         temp = []

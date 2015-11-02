@@ -26,7 +26,7 @@ import utilities.db as dbUtilities
 import coordinator.events as engineEvent
 from gui import events
 from coordinator.emitLogging import elog
-
+import random
 
 class LogicCanvas(ViewCanvas):
     def __init__(self, parent):
@@ -212,8 +212,13 @@ class LogicCanvas(ViewCanvas):
         self.model_coords[id] = {'x': x, 'y': y}
 
     def get_model_coords(self, id):
-
-        return (self.model_coords[id]['x'], self.model_coords[id]['y'])
+        if id in self.model_coords:
+            return (self.model_coords[id]['x'], self.model_coords[id]['y'])
+        else:
+            x = random.randint(-200, 200)
+            y = random.randint(-200, 200)
+            self.model_coords[id] = dict(x=x, y=y)
+            return x, y
 
     def createLine(self, R1, R2):
 
@@ -265,7 +270,7 @@ class LogicCanvas(ViewCanvas):
 
         # generate an ID for this model
         if uid is None:
-            uid = uuid.uuid4().hex[:5]
+            uid = uuid.uuid4().hex
 
         # save these coordinates for drawing once the model is loaded
         self.set_model_coords(uid, x=x, y=y)

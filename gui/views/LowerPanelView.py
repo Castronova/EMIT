@@ -15,8 +15,8 @@ from gui import events
 from coordinator.emitLogging import elog
 from gui.controller import ConsoleOutputCtrl
 from db.ODM1.WebServiceAPI import WebServiceApi
-from gui.controller.logicWofSites import LogicWofSites
-
+from gui.controller.WofSitesCtrl import LogicWofSites
+from webservice import wof
 
 class viewLowerPanel:
     def __init__(self, notebook):
@@ -200,8 +200,10 @@ class TimeSeriesTab(wx.Panel):
 
     def prepareODM1_Model(self, siteObject):
         self.selectedVariables = None
+        # siteObject = self.api.objects[siteObjectID]
+        # print siteObject
         siteview = LogicWofSites(self, siteObject)
-        siteview.populateVariablesList(self.api, siteObject.sitecode)
+        siteview.populateVariablesList(self.api, siteObject.site_code)
         return
 
     def getParsedValues(self, siteObject, startDate, endDate):
@@ -209,20 +211,22 @@ class TimeSeriesTab(wx.Panel):
         elog.info("AddToCanvas has not been implemented.  The above variable value contains the data.")
         return values
 
-    def setup_odm1_table(self, api):
-        data = api.getSiteInfo()
+    def setup_wof_table(self, api):
+        self.wofsites = api.getSites()
+        # data = api.getSiteInfo()
         self.table_columns = ["Site Name", "County", "State", "Site Type", "Site Code"]
         self.m_olvSeries.DefineColumns(self.table_columns)
 
+
         output = []
-        for da in data:
+        for site in self.wofsites:
+            properties = {prop._name.lower(): prop.value for prop in site.siteInfo.siteProperty if 'value' in prop }
             d = {
-                "site_name": da[0],  # The key MUST match one in the table_columns IN LOWERCASE. FYI
-                "county": da[1],
-                "state": da[2],
-                "site_type": da[3],
-                "site_code": da[4],
-                "sitecode": da[4]
+                "site_name": site.siteInfo.siteName,  # The key MUST match one in the table_columns IN LOWERCASE. FYI
+                "county": properties['county'],
+                "state": properties['state'],
+                "site_type": properties['site type'],
+                "site_code": site.siteInfo.siteCode[0].value,
             }
 
             record_object = type('WOFRecord', (object,), d)
@@ -233,7 +237,6 @@ class TimeSeriesTab(wx.Panel):
         self.m_olvSeries.SetColumnWidth(1, 150)
         self.m_olvSeries.SetColumnWidth(2, 150)
         self.m_olvSeries.SetColumnWidth(3, 165)
-
         self.m_olvSeries.SetColumnWidth(4, 200)
 
 
@@ -319,8 +322,9 @@ class TimeSeriesTab(wx.Panel):
         #     thr.start()
         value = self.refresh_database()
         if value is not None:
-            self.api = WebServiceApi(value)
-            self.setup_odm1_table(self.api)
+            # self.api = WebServiceApi(value)
+            self.api = wof.wof(value)
+            self.setup_wof_table(self.api)
 
 class AddConnectionDialog(wx.Dialog):
     def __init__(

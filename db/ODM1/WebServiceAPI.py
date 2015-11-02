@@ -7,7 +7,7 @@ import xml.etree.ElementTree as et
 class WebServiceApi:
 
     def __init__(self, website):
-
+        self.wsdl = website
         self.odm1 = ODM1(website)
         self.objects = self.odm1.getSitesObject()
 

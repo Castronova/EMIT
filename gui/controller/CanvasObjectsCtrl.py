@@ -131,6 +131,8 @@ class ModelBox(FC.Group):
             bmp = wx.Image(path.join(imgs_base_path,'rectBlue.png'), wx.BITMAP_TYPE_PNG)
         elif type == datatypes.ModelTypes.Data:
             bmp = wx.Image(path.join(imgs_base_path, 'rectPurple.png'), wx.BITMAP_TYPE_PNG)
+        else: # default type
+            bmp = wx.Image(path.join(imgs_base_path, 'rectPurple.png'), wx.BITMAP_TYPE_PNG)
 
         self.box = FC.Bitmap(bmp, XY, Position="cc", InForeground=True)
         self.Width = bmp.Width

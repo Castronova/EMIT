@@ -5,6 +5,32 @@ from osgeo import ogr
 from coordinator.emitLogging import elog
 import stdlib
 
+def fromWKB(wkb):
+    """
+    Builds a stdlib.Geometry object from a WKT string
+    :param wkb: wkb string
+    :return: stdlib.Geometry
+    """
+
+    geom = None
+
+    # parse the wkt string into ogr
+    ogrgeom = ogr.CreateGeometryFromWkb(wkb)
+
+    # get geometry type
+    geomtype =  ogrgeom.GetGeometryName()
+
+    if geomtype == stdlib.GeomType.POINT:
+        geom = fromGdalPoint(ogrgeom)
+    elif geomtype == stdlib.GeomType.LINESTRING:
+        geom = fromGdalLinestring(ogrgeom)
+    elif geomtype == stdlib.GeomType.POLYGON:
+        geom = fromGdalPolygon(ogrgeom)
+    else:
+        elog.critical("Unsupported geometry type %s, in utilities.geometry.fromWKB" % geomtype)
+
+    return geom
+
 
 def fromWKT(wkt):
     """

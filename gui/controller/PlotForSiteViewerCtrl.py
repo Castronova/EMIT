@@ -7,8 +7,12 @@ class logicPlotForSiteViewer(ViewPlotForSiteViewer):
     def __init__(self, panel):
         ViewPlotForSiteViewer.__init__(self, panel)
 
-    def plotData(self, data, name):
+    def plotData(self, data, name, noDataValue):
+        del data[-1] #we don't want to plot the no data value
         t = numpy.arange(0.0, len(data), 1.0)
+        for i in xrange(len(t)):
+            if data[i] == noDataValue:
+                data[i] = None
         self.axes.plot(t, data, label=str(name))
         self.displayLegend(1)
         self.reDraw()

@@ -18,7 +18,7 @@ class logicPlotForSiteViewer(ViewPlotForSiteViewer):
         nvals[nvals==noDataValue] = None
 
         # plot datetime axis
-        self.axes.plot_date(dates, nvals, label=name, linestyle='-')
+        self.axes.plot_date(dates, nvals, label=name, linestyle='-', marker=None)
         self.displayLegend(1)
         self.reDraw()
 

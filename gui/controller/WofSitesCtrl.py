@@ -177,7 +177,7 @@ class LogicWofSites(ViewWofSites):
                 noData = data[0].variable.noDataValue
 
             self.plot.setTitle(self.getSelectedVariableName())
-            self.plot.setAxisLabel("Date Time", "Units")
+            self.plot.setAxisLabel("Date Time", data[0].variable.unit.unitName)
             self.plot.plotData(plotData, var_name[0], noData)
 
     def populateVariablesList(self, api, sitecode):

@@ -3,10 +3,11 @@ __author__ = 'tonycastronova'
 import datetime as dt
 from api_old.ODM2.Core.services import readCore
 from api_old.ODM2.Results.services import readResults
-from shapely import wkb
+# from shapely import wkb
 import stdlib, uuid
 from utilities.status import Status
 import datatypes
+from utilities import geometry
 
 class odm2(object):
     def __init__(self,resultid, session):
@@ -29,20 +30,9 @@ class odm2(object):
         desc = obj.VariableObj.VariableDefinition
         #unit = obj.UnitObj.UnitsName
         #vari = obj.VariableObj.VariableNameCV
-        type = stdlib.ExchangeItemType.Output
+        type = stdlib.ExchangeItemType.OUTPUT
         start = min(dates)
         end = max(dates)
-
-        # build datavalue object
-        data = stdlib.DataValues(timeseries=zip(dates,values))
-
-        # build geometry object
-        # todo: this assumes single geometry! fix
-        shape = wkb.loads(str(obj.FeatureActionObj.SamplingFeatureObj.FeatureGeometry.data))
-
-        # todo: need to specify srs and elevation
-        geometry = stdlib.Geometry(geom=shape,srs=None,elev=None,datavalues=data)
-        geometry.type(shape.geom_type)
 
         # build variable
         variable = stdlib.Variable()
@@ -55,8 +45,18 @@ class odm2(object):
         unit.UnitName(obj.UnitObj.UnitsName)
         unit.UnitTypeCV(obj.UnitObj.UnitsTypeCV)
 
+        # build geometries
+        # todo: need to specify srs and elevation
+        wkb = str(obj.FeatureActionObj.SamplingFeatureObj.FeatureGeometry.data)
+        geom = geometry.fromWKB(wkb)
+
         # build exchange item object
-        item = stdlib.ExchangeItem(id=id, name=name, desc=desc, geometry=[geometry], unit=unit, variable=variable,type=type )
+        oei = stdlib.ExchangeItem(id=id,
+                                   name=name,
+                                   desc=desc,
+                                   geometry=geom,
+                                   unit=unit,
+                                   variable=variable,type=type )
 
 
         # set global parameters
@@ -64,15 +64,12 @@ class odm2(object):
         self.__name = name
         self.__start=start
         self.__end=end
-        self.__output={self.__name: item}
+        self.__output={self.__name: oei}
         self.__desc=obj.VariableObj.VariableDefinition
         self.__current_time = self.simulation_start()
-        #self.__actionid = obj.FeatureActionObj.ActionObj.ActionID
         self.__obj = obj
         self.__resultid = obj.ResultID
-
         self.__session = session
-
         self.__status = Status.Loaded
 
     def type(self):

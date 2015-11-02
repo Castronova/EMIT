@@ -161,14 +161,19 @@ class wof(object):
         #  Passing both variables returns that specified object.
         # Returns an XML
 
-        site = ':'.join([network_code,site_code])
-        var = ':'.join([network_code, variable_code])
-        if beginDate is None or endDate is None:
-            data = self.conn.service.GetValuesObject(site, var)
-        else:
-            data = self.conn.service.GetValuesObject(site, var, beginDate, endDate)
+        try:
+            site = ':'.join([network_code,site_code])
+            var = ':'.join([network_code, variable_code])
+            if beginDate is None or endDate is None:
+                data = self.conn.service.GetValuesObject(site, var)
+            else:
+                data = self.conn.service.GetValuesObject(site, var, beginDate, endDate)
 
-        return data.timeSeries
+            return data.timeSeries
+        except:
+            # error getting data
+            print 'There was an getting data for %s:%s, %s:%s, %s %s' % (network_code, site_code, network_code, variable_code, str(beginDate), str(endDate))
+            return None
 
     def getVariables(self, network_code=None, variable_code=None):
         #  Returns JSON

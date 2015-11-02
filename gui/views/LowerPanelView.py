@@ -14,7 +14,7 @@ from db import dbapi as dbapi
 from gui import events
 from coordinator.emitLogging import elog
 from gui.controller import ConsoleOutputCtrl
-from db.ODM1.WebServiceAPI import WebServiceApi
+# from db.ODM1.WebServiceAPI import WebServiceApi
 from gui.controller.WofSitesCtrl import LogicWofSites
 from webservice import wof
 
@@ -214,7 +214,7 @@ class TimeSeriesTab(wx.Panel):
     def setup_wof_table(self, api):
         self.wofsites = api.getSites()
         # data = api.getSiteInfo()
-        self.table_columns = ["Site Name", "County", "State", "Site Type", "Site Code"]
+        self.table_columns = ["Site Name", "Network", "County", "State", "Site Type", "Site Code"]
         self.m_olvSeries.DefineColumns(self.table_columns)
 
 
@@ -223,6 +223,7 @@ class TimeSeriesTab(wx.Panel):
             properties = {prop._name.lower(): prop.value for prop in site.siteInfo.siteProperty if 'value' in prop }
             d = {
                 "site_name": site.siteInfo.siteName,  # The key MUST match one in the table_columns IN LOWERCASE. FYI
+                "network": site.siteInfo.siteCode[0]._network,
                 "county": properties['county'],
                 "state": properties['state'],
                 "site_type": properties['site type'],
@@ -236,8 +237,9 @@ class TimeSeriesTab(wx.Panel):
         self.m_olvSeries.SetColumnWidth(0, 500)
         self.m_olvSeries.SetColumnWidth(1, 150)
         self.m_olvSeries.SetColumnWidth(2, 150)
-        self.m_olvSeries.SetColumnWidth(3, 165)
-        self.m_olvSeries.SetColumnWidth(4, 200)
+        self.m_olvSeries.SetColumnWidth(3, 150)
+        self.m_olvSeries.SetColumnWidth(4, 165)
+        self.m_olvSeries.SetColumnWidth(5, 200)
 
 
     def refresh_database(self):

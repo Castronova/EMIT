@@ -134,32 +134,51 @@ class LogicWofSites(ViewWofSites):
                 return checkedVar
 
     def getSelectedVariableSiteCode(self):
+        variable_name_codes = []
         num = self.variableList.GetItemCount()
         checkedVar = []
         for i in range(num):
             if self.variableList.IsSelected(i):
-                checkedVar.append(self.variableList.GetItemText(i))
+                v_name = self.variableList.GetItemText(i)
+                variable_name_codes.append((v_name, self.getSiteCodeByVariableName(v_name)))
+                # checkedVar.append(self.variableList.GetItemText(i))
 
-        if len(checkedVar) > 0:
-            sitecode = self.getSiteCodeByVariableName(checkedVar)
-            return sitecode
-        else:
-            return 0
+        # print checkedVar
+
+        # if len(checkedVar) > 0:
+        #     sitecode = self.getSiteCodeByVariableName(checkedVar)
+        #     return sitecode
+        # else:
+        #     return 0
+        return zip(*variable_name_codes)
 
     def getSiteCodeByVariableName(self, checkedVar):
         for key, value in self._data.iteritems():
-            if value[0] == checkedVar[0]:
+            if value[0] == checkedVar:
                 return key
 
     def previewPlot(self, event):
-        varList = self.getSelectedVariableSiteCode()
-        if varList > 0:
+        var_name, var_code = self.getSelectedVariableSiteCode()
+
+        if len(var_code) > 0:
             self.plot.clearPlot()
-            data = self.Parent.api.parseValues(self.siteobject.sitecode, varList,
+
+            data = self.Parent.api.getValues(self.siteobject.network, self.siteobject.site_code, var_code[0],
                                                self.startDate.FormatISODate(), self.endDate.FormatISODate())
+            plotData = []
+            noData = None
+            # make sure data is found
+            if data is not None:
+                # get the first data element only
+                values = data[0].values[0].value
+                for value in values:
+                    plotData.append((value._dateTime, value.value))
+
+                noData = data[0].variable.noDataValue
+
             self.plot.setTitle(self.getSelectedVariableName())
             self.plot.setAxisLabel("Date Time", "Units")
-            self.plot.plotData(data, str(varList), data[-1])
+            self.plot.plotData(plotData, var_name[0], noData)
 
     def populateVariablesList(self, api, sitecode):
         data = api.buildAllSiteCodeVariables(sitecode)

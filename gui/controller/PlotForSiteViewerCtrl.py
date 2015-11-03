@@ -19,7 +19,7 @@ class logicPlotForSiteViewer(ViewPlotForSiteViewer):
 
         # plot datetime axis
         self.axes.plot_date(dates, nvals, label=name, linestyle='-', marker=None)
-        self.displayLegend(1)
+        self.displayLegend(0)
         self.reDraw()
 
     def reDraw(self):

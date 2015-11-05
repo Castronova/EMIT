@@ -1,9 +1,10 @@
 __author__ = 'tonycastronova'
 
 from base import BaseWrapper
-from wof import WofWrapper
+import wof
+import odm2
 
-__all__ = [BaseWrapper, WofWrapper]
+# __all__ = [BaseWrapper, WofWrapper]
 
 class Types():
     WOF = "wof"

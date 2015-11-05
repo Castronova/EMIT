@@ -175,20 +175,28 @@ class testBaseWrapper(unittest.TestCase):
 
 
 class testWofWrapper(unittest.TestCase):
-    pass
 
-    # def test_wof(self):
-    #
-    #     type = wrappers.Types.WOF
-    #
-    #     model_wrapper = getattr(wrappers, "wof").wrapper()
-    #
-    #     d = model_wrapper.description()
-    #
-    #     network = 'iutah'
-    #     sitecode = 'LR_WaterLab_AA'
-    #     variable= 'RH_enc'
-    #     start = '2015-10-26'
-    #     end = '2015-10-30'
-    #
-    #     print 'here'
+    def test_wof_initialization(self):
+
+        args = dict(network = 'iutah',
+                    sitecode = 'LR_WaterLab_AA',
+                    variable = 'RH_enc',
+                    start = datetime.datetime(2015, 10, 26, 0, 0, 0),
+                    end = datetime.datetime(2015, 10, 30, 0, 0, 0),
+                    wsdl = 'http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL')
+
+
+        model_wrapper = getattr(wrappers, wrappers.Types.WOF).Wrapper(args)
+
+
+        self.assertTrue(model_wrapper.description() != 'No Description Provided')
+        self.assertTrue(model_wrapper.name() != 'Unspecified')
+        self.assertTrue(len(model_wrapper.outputs().keys()) > 0)
+        self.assertTrue(model_wrapper.simulation_end() == args['end'])
+        self.assertTrue(model_wrapper.simulation_start() == args['start'])
+
+        # make sure date, values, and geometries are set correctly
+        self.assertTrue(len(model_wrapper.outputs().values()[0].getValues2()) > 0)
+        self.assertTrue(len(model_wrapper.outputs().values()[0].getDates2()) > 0)
+        self.assertTrue(len(model_wrapper.outputs().values()[0].getGeometries2()) == 1)
+

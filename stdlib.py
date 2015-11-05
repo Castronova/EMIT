@@ -17,12 +17,11 @@ from osgeo import osr, ogr
 import numpy
 
 class Status:
-    LOADED = 'LOADED'
+    READY = 'READY'
+    NOTREADY = 'NOTREADY'
     RUNNING = 'RUNNING'
     FINISHED = 'FINSHED'
     ERROR = 'ERROR'
-    READY = 'READY'
-    NOTREADY = 'NOTREADY'
 
 
 # derived from GDAL types

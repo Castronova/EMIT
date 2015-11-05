@@ -9,6 +9,7 @@ from gui.views.WofSitesView import ViewWofSites
 from coordinator.emitLogging import elog
 import coordinator.engineAccessors as engine
 import uuid
+import datetime as dt
 
 class LogicWofSites(ViewWofSites):
     def __init__(self, parent, siteObject):
@@ -23,26 +24,33 @@ class LogicWofSites(ViewWofSites):
         self.isCalendarOpen = False  # Used to prevent calendar being open twice
 
     def _preparationToGetValues(self):
-        var = self.Parent.selectedVariables = self.getSelectedVariableSiteCode()
+
+
+        var = self.getSelectedVariableCode()
         parent = self.Parent
         siteobject = self.siteobject
-        start = self.startDate.FormatISODate()
-        end = self.endDate.FormatISODate()
+
+        # convert wx._misc.DateTime to python datetime
+        start = dt.datetime.strptime('%sT%s'%(self.startDate.FormatISODate(), self.startDate.FormatISOTime()),
+                                     "%Y-%m-%dT%H:%M:%S")
+        end = dt.datetime.strptime('%sT%s'%(self.endDate.FormatISODate(), self.endDate.FormatISOTime()),
+                                     "%Y-%m-%dT%H:%M:%S")
         return end, parent, siteobject, start, var
 
     def addToCanvas(self, event):
         end, parent, siteobject, start, variable_code = self._preparationToGetValues()
 
-        if variable_code == 0:
+        if variable_code is None:
             # no table row selected
             return
 
-        args = dict(type='wof',
+        args = dict(type = 'wof' ,
                     wsdl=self.parent.api.wsdl,
-                    site_code = siteobject.site_code,
-                    variable_code = variable_code,
+                    site = siteobject.site_code,
+                    variable = variable_code,
                     start = start,
-                    end = end
+                    end = end,
+                    network = siteobject.network
         )
 
         engine.addModel(attrib=args)
@@ -132,6 +140,16 @@ class LogicWofSites(ViewWofSites):
             if self.variableList.IsSelected(i):
                 checkedVar = self.variableList.GetItemText(i)
                 return checkedVar
+
+    def getSelectedVariableCode(self):
+        variableCode = None
+        num = self.variableList.GetItemCount()
+        for i in range(num):
+            if self.variableList.IsSelected(i):
+                v_name = self.variableList.GetItemText(i)
+                variableCode = self.getSiteCodeByVariableName(v_name)
+                break
+        return variableCode
 
     def getSelectedVariableSiteCode(self):
         variable_name_codes = []

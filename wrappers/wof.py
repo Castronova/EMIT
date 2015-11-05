@@ -17,7 +17,7 @@ class Wrapper(base.BaseWrapper):
         wsdl = self.args['wsdl']
         network = self.args['network']
         variable = '%s:%s' % (network, self.args['variable'])
-        site = '%s:%s'%(network, self.args['sitecode'])
+        site = '%s:%s'%(network, self.args['site'])
         start = self.args['start'].strftime('%Y-%m-%dT%H:%M:%S')
         end = self.args['end'].strftime('%Y-%m-%dT%H:%M:%S')
 
@@ -65,7 +65,7 @@ class Wrapper(base.BaseWrapper):
                                   desc = siteDescription,
                                   geometry= geom,
                                   unit= unit,
-                                  variable= variable,
+                                  variable= var,
                                   type= stdlib.ExchangeItemType.OUTPUT,
                                   # srs_epsg= ''
                                   )

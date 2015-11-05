@@ -178,6 +178,7 @@ class LogicCanvas(ViewCanvas):
             B = ModelBox(type, (x,y), name, id)
             self.FloatCanvas.AddObject(B)
             self.models[B] = id
+            print self.models
 
             B.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit)
             B.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
@@ -187,6 +188,8 @@ class LogicCanvas(ViewCanvas):
             elog.debug(name + ' has been added to the canvas.')
 
     def draw_box(self, evt):
+
+        print 'CANVAS: ' + evt.id
         x, y = self.get_model_coords(id=evt.id)
         self.createBox(name=evt.name, id=evt.id, xCoord=x, yCoord=y, type=evt.model_type)
 

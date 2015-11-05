@@ -48,7 +48,7 @@ def run_feed_forward(obj, ds=None):
 
     exec_order = obj.determine_execution_order()
     for i in range(0, len(exec_order)):
-        elog.info('%d.) %s' % (i + 1, obj.get_model_by_id(exec_order[i]).get_name()))
+        elog.info('%d.) %s' % (i + 1, obj.get_model_by_id(exec_order[i]).name()))
 
 
 
@@ -117,7 +117,7 @@ def run_feed_forward(obj, ds=None):
     # prepare all models
     for modelid in exec_order:
         model_obj = obj.get_model_by_id(modelid)
-        model_inst = model_obj.get_instance()
+        model_inst = model_obj.instance()
         if model_inst.status() != Status.Ready:
             model_inst.prepare()
 
@@ -129,7 +129,7 @@ def run_feed_forward(obj, ds=None):
 
         # get the current model instance
         model_obj = obj.get_model_by_id(modelid)
-        model_inst = model_obj.get_instance()
+        model_inst = model_obj.instance()
         elog.info('\n' + \
                   '------------------' + len(model_inst.name()) * '-' + '\n' + \
                   'Executing module: %s \n' % model_inst.name() + \
@@ -203,7 +203,7 @@ def run_feed_forward(obj, ds=None):
 
         # get the current model instance
         model_obj = obj.get_model_by_id(modelid)
-        model_inst = model_obj.get_instance()
+        model_inst = model_obj.instance()
         model_name = model_inst.name()
 
         # get the output exchange items to save for this model
@@ -240,7 +240,7 @@ def run_time_step(obj, ds=None):
     msg = 'done'
     dispatcher.putOutput(msg)
     for i in range(0, len(exec_order)):
-        msg = '> %d.) %s' % (i + 1, obj.get_model_by_id(exec_order[i]).get_name())
+        msg = '> %d.) %s' % (i + 1, obj.get_model_by_id(exec_order[i]).name())
         dispatcher.putOutput(msg)
 
     links = {}
@@ -274,13 +274,13 @@ def run_time_step(obj, ds=None):
                                                              target.get_all_datasets().keys())
 
         # set model status to RUNNING
-        obj.get_model_by_id(modelid).get_instance().status(Status.Running)
+        obj.get_model_by_id(modelid).instance().status(Status.Running)
 
         # initialize the simulation_status dictionary
-        simulation_status[modelid] = obj.get_model_by_id(modelid).get_instance().status()
+        simulation_status[modelid] = obj.get_model_by_id(modelid).instance().status()
 
         # store model db sessions
-        session = obj.get_model_by_id(modelid).get_instance().session()
+        session = obj.get_model_by_id(modelid).instance().session()
         if session is None:
             try:  # this is necessary if no db connection exists
                 session = obj.get_default_db()['session']
@@ -301,7 +301,7 @@ def run_time_step(obj, ds=None):
     global_simulation_start = datetime.datetime(3000, 1, 1)
     global_simulation_end = datetime.datetime(1800, 1, 1)
     for modelid in exec_order:
-        inst = obj.get_model_by_id(modelid).get_instance()
+        inst = obj.get_model_by_id(modelid).instance()
         global_simulation_start = inst.simulation_start() if inst.simulation_start() < global_simulation_start else global_simulation_start
         global_simulation_end = inst.simulation_end() if inst.simulation_end() > global_simulation_end else global_simulation_end
 
@@ -316,7 +316,7 @@ def run_time_step(obj, ds=None):
     # prepare all models
     for modelid in exec_order:
         model_obj = obj.get_model_by_id(modelid)
-        model_inst = model_obj.get_instance()
+        model_inst = model_obj.instance()
         if model_inst.status() != Status.Ready:
             model_inst.prepare()
 
@@ -335,7 +335,7 @@ def run_time_step(obj, ds=None):
 
             # get the current model instance
             model_obj = obj.get_model_by_id(modelid)
-            model_inst = model_obj.get_instance()
+            model_inst = model_obj.instance()
 
             # get the target simulation times from the model links (including its own endtime)
             target_times = []
@@ -345,7 +345,7 @@ def run_time_step(obj, ds=None):
                 for linkid, link in links[modelid].iteritems():
                     #target_model  = target[0]
                     target_model = link.target_component()
-                    target_times.append(target_model.get_instance().current_time())
+                    target_times.append(target_model.instance().current_time())
 
 
             else:
@@ -456,7 +456,7 @@ def run_time_step(obj, ds=None):
 
         # get the current model instance
         model_obj = obj.get_model_by_id(modelid)
-        model_inst = model_obj.get_instance()
+        model_inst = model_obj.instance()
 
         # save results
         items = model_inst.save()

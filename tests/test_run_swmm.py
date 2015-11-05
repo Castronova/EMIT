@@ -179,7 +179,7 @@ class test_run_swmm(unittest.TestCase):
         # add swmm component
         swmm_path = r'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/caleb_swmm/src/swmm_time-step.mdl'
         swmm = self.sim.add_model(type=datatypes.ModelTypes.TimeStep, attrib={'mdl':swmm_path})
-        swmm_name = swmm.get_name()
+        swmm_name = swmm.name()
 
 
 
@@ -232,14 +232,14 @@ class test_run_swmm(unittest.TestCase):
         # add swmm1 component
         swmm1_path = r'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_1/src/model1.mdl'
         swmm1 = self.sim.add_model(type=datatypes.ModelTypes.TimeStep, attrib={'mdl':swmm1_path})
-        swmm1_name = swmm1.get_name()
+        swmm1_name = swmm1.name()
 
 
         # add swmm1 component
         # swmm2_path = r'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_2/src/swmm_time-step.mdl'
         swmm2_path = r'/Users/tonycastronova/Documents/projects/iUtah/EMIT/models/swmm_timestep_1/src/model2.mdl'
         swmm2 = self.sim.add_model(type=datatypes.ModelTypes.TimeStep, attrib={'mdl':swmm2_path})
-        swmm2_name = swmm2.get_name()
+        swmm2_name = swmm2.name()
 
         # create odm2 instance
         series_id = 21  # incremental rainfall

@@ -138,7 +138,7 @@ def get_ts_from_database_link(dbapi, db_sessions, dbactions, links, target_model
 
         dbapi = db_sessions[f[0].id()]
 
-        if t[0].get_name() == tname:
+        if t[0].name() == tname:
             mapping[t[1].name()] = f[1].name()
             #print '>  %s -> %s'%(f[1].name(), t[1].name())
 
@@ -147,12 +147,12 @@ def get_ts_from_database_link(dbapi, db_sessions, dbactions, links, target_model
             from_var = f[1].variable()
             to_var = t[1].variable()
             to_item = t[1]
-            name = f[0].get_name()
+            name = f[0].name()
             # start = f[1].getStartTime()
             # end = f[1].getEndTime()
 
-            start = t[0].get_instance().simulation_start()
-            end = t[0].get_instance().simulation_end()
+            start = t[0].instance().simulation_start()
+            end = t[0].instance().simulation_end()
 
             #model = f[0]
 

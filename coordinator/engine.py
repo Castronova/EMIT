@@ -117,7 +117,7 @@ class Model(object):
         # if value is not None:
         #     self.__type = value
         # return self.__type
-        return self.get_instance().type()
+        return self.instance().type()
 
     def attrib(self, value=None):
         """
@@ -164,7 +164,7 @@ class Model(object):
 
     def get_input_exchange_item_by_name(self,value):
 
-        i = self.get_instance()
+        i = self.instance()
         if value in i.inputs():
             return i.inputs()[value]
         # for k,v in self.__iei.iteritems():
@@ -178,7 +178,7 @@ class Model(object):
 
     def get_output_exchange_item_by_name(self,value):
 
-        i = self.get_instance()
+        i = self.instance()
         if value in i.ouputs():
             return i.ouputs()[value]
 
@@ -191,21 +191,21 @@ class Model(object):
             elog.error('Could not find Output Exchange Item: '+value)
 
 
-    def get_description(self):
+    def description(self):
         return self.__description
 
-    def get_name(self):
-        return self.get_instance().name()
+    def name(self):
+        return self.instance().name()
         # if 'mdl' in self.attrib():
         #     return self.__name
         # elif 'databaseid' in self.attrib() and 'resultid' in self.attrib():
         #     attribDict = self.attrib()
         #     return self.__name + '-' + attribDict['resultid']
 
-    def get_id(self):
+    def id(self):
         return self.__id
 
-    def get_instance(self):
+    def instance(self):
         return self.__inst
 
     def get_config_params(self):
@@ -249,7 +249,7 @@ class Coordinator(object):
 
     def Models(self, model=None):
         if model is not None:
-            self.__models[model.get_name()] = model
+            self.__models[model.name()] = model
         return self.__models
 
     def Links(self, link=None):
@@ -325,13 +325,37 @@ class Coordinator(object):
     def add_model(self, id=None, attrib=None):
         """
         stores model component objects when added to a configuration
+        stores model component objects when added to a configuration
         """
         thisModel = None
 
         if id is None:
             id = uuid.uuid4().hex
 
-        if 'mdl' in attrib:
+        if 'type' in attrib.keys():
+
+            try:
+                getattr(wrappers, attrib['type'])
+            except:
+                elog.critical('Could not locate wrapper of type %s.  Make sure the wrapper is specified in wrappers.__init__.' % (attrib['type']))
+
+            # Load WOF wrapper model
+            inst = getattr(wrappers, attrib['type']).Wrapper(attrib)
+            oei = inst.outputs().values()
+            iei = inst.inputs().values()
+
+            # create a model instance
+            thisModel = Model(id=id,
+                              name=inst.name(),
+                              instance=inst,
+                              desc=inst.description(),
+                              input_exchange_items= iei,
+                              output_exchange_items=  oei,
+                              params=None)
+
+
+        elif 'mdl' in attrib:
+            elog.warning('Usage deprecated.  Please pass wrapper type to engine add_model.')
         # if type == datatypes.ModelTypes.FeedForward or type == datatypes.ModelTypes.TimeStep:
 
             ini_path = attrib['mdl']
@@ -368,6 +392,7 @@ class Coordinator(object):
                 thisModel.attrib(attrib)
 
         elif 'databaseid' in attrib and 'resultid' in attrib:
+            elog.warning('Usage deprecated.  Please pass wrapper type to engine add_model.')
         # elif type == datatypes.ModelTypes.Data:
 
             databaseid = attrib['databaseid']
@@ -402,25 +427,10 @@ class Coordinator(object):
             thisModel.attrib(att)
 
 
-        elif attrib['type'] == Types.WOF:
-            # Load WOF wrapper model
-            inst = getattr(wrappers, attrib['type']).wrapper(attrib)
-            oei = inst.outputs().values()
-            iei = inst.inputs().values()
-
-            # create a model instance
-            thisModel = Model(id=id,
-                              name=inst.name(),
-                              instance=inst,
-                              desc=inst.description(),
-                              input_exchange_items= [],
-                              output_exchange_items=  oei,
-                              params=None)
-
         # save the model
-        self.__models[thisModel.get_name()] = thisModel
-
-        return {'id':thisModel.get_id(), 'name':thisModel.get_name(),'model_type':thisModel.type()}
+        self.__models[thisModel.name()] = thisModel
+        print 'ENGINE: '+ thisModel.id()
+        return {'id':thisModel.id(), 'name':thisModel.name(), 'model_type':thisModel.type()}
 
     def remove_model(self, linkablecomponent):
         """
@@ -464,9 +474,9 @@ class Coordinator(object):
         for m in self.__models:
             if self.__models[m].id() == id:
                 return {'params': self.__models[m].get_config_params(),
-                        'name': self.__models[m].get_name(),
+                        'name': self.__models[m].name(),
                         'id': self.__models[m].id(),
-                        'description': self.__models[m].get_description(),
+                        'description': self.__models[m].description(),
                         'type': self.__models[m].type(),
                         'attrib': self.__models[m].attrib(),
                         }
@@ -606,8 +616,8 @@ class Coordinator(object):
                 link_dict = dict(id=link.id(),
                                  source_id=source_id,
                                  target_id=target_id,
-                                 source_name=link.source_component().get_name(),
-                                 target_name=link.target_component().get_name(),
+                                 source_name=link.source_component().name(),
+                                 target_name=link.target_component().name(),
                                  source_item=link.source_exchange_item().name(),
                                  target_item=link.target_exchange_item().name(),
                                  spatial_interpolation=spatial,
@@ -645,8 +655,8 @@ class Coordinator(object):
                         input_id=self.__links[l].target_exchange_item().id(),
                         spatial_interpolation=spatial,
                         temporal_interpolation=temporal,
-                        source_component_name=self.__links[l].source_component().get_name(),
-                        target_component_name=self.__links[l].target_component().get_name(),
+                        source_component_name=self.__links[l].source_component().name(),
+                        target_component_name=self.__links[l].target_component().name(),
                         source_component_id=self.__links[l].source_component().id(),
                         target_component_id=self.__links[l].target_component().id(),)
         return None
@@ -669,8 +679,8 @@ class Coordinator(object):
                         input_id=self.__links[l].target_exchange_item().id(),
                         spatial_interpolation=spatial,
                         temporal_interpolation=temporal,
-                        source_component_name=self.__links[l].source_component().get_name(),
-                        target_component_name=self.__links[l].target_component().get_name(),
+                        source_component_name=self.__links[l].source_component().name(),
+                        target_component_name=self.__links[l].target_component().name(),
                         source_component_id=self.__links[l].source_component().id(),
                         target_component_id=self.__links[l].target_component().id(),
                             ))
@@ -682,9 +692,9 @@ class Coordinator(object):
 
             models.append(
                 {'params': self.__models[m].get_config_params(),
-                    'name': self.__models[m].get_name(),
+                    'name': self.__models[m].name(),
                     'id': self.__models[m].id(),
-                    'description': self.__models[m].get_description(),
+                    'description': self.__models[m].description(),
                     'type': self.__models[m].type(),
                     'attrib': self.__models[m].attrib(),
                     }
@@ -816,13 +826,13 @@ class Coordinator(object):
         for id,link_inst in self.__links.iteritems():
             f,t = link_inst.get_link()
 
-            if t[0].get_name() == name:
+            if t[0].name() == name:
                 for item in exchangeitems:
                     if t[1].name() == item.name():
                         self.__links[id] = Link(id, f[0], t[0], f[1], item)
                         #t[1] = item
 
-            elif f[0].get_name() == name:
+            elif f[0].name() == name:
                 for item in exchangeitems:
                     if f[1].name() == item.name():
                         self.__links[id] = Link(id, f[0], t[0], item, t[1])
@@ -912,7 +922,7 @@ class Coordinator(object):
             models = self.Models()
             types = []
             for model in models.itervalues() :
-                types.extend(inspect.getmro(model.get_instance().__class__))
+                types.extend(inspect.getmro(model.instance().__class__))
 
             # make sure that feed forward and time-step models are not mixed together
             if (feed_forward.feed_forward_wrapper in types) and (time_step.time_step_wrapper in types):
@@ -952,7 +962,7 @@ class Coordinator(object):
             for name,model in self.__models.iteritems():
                 model_output = []
                 model_output.append('Model: '+name)
-                model_output.append('desc: ' + model.get_description())
+                model_output.append('desc: ' + model.description())
                 model_output.append('id: ' + model.id())
 
                 # print exchange items
@@ -1006,8 +1016,8 @@ class Coordinator(object):
                 From, To = link.get_link()
 
                 link_output.append('LINK ID : ' + linkid)
-                link_output.append('from: '+From[0].get_name()+' -- output --> '+From[1].name())
-                link_output.append('to: '+To[0].get_name()+' -- input --> '+To[1].name())
+                link_output.append('from: ' + From[0].name() + ' -- output --> ' + From[1].name())
+                link_output.append('to: ' + To[0].name() + ' -- input --> ' + To[1].name())
 
                 # get the formatted width
                 w = self.get_format_width(link_output)

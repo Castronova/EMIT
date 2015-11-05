@@ -8,7 +8,7 @@ import time
 from multiprocessing import Queue
 import events
 import wx
-from coordinator.emitLogging import elog
+# from coordinator.emitLogging import elog
 
 class EngineBorg:
     """
@@ -135,7 +135,8 @@ class Engine:
                 try:
                     result = task(**next_task_args)
                 except Exception, e:
-                    elog.error(e.message)
+                    # elog.error(e.message)
+                    print e.message
                     result = None
 
                 if evt is not None:
@@ -165,82 +166,82 @@ class Engine:
         # get output
         return self.dispatcher.getResult()
 
-    def processStop(self, resfunc=None):
-        """
-        Stop the execution of tasks by the processes.
-        """
-        self.keepgoing = False
+    # def processStop(self, resfunc=None):
+    #     """
+    #     Stop the execution of tasks by the processes.
+    #     """
+    #     self.keepgoing = False
+    #
+    #     while (self.j < self.i):
+    #         # Get and print any results remining in the done queue
+    #         output = self.getOutput()
+    #         if (isinstance(resfunc, (types.FunctionType, types.MethodType))):
+    #             resfunc(output)
+    #
+    # def processTerminate(self):
+    #     """
+    #     Stop the execution of tasks by the processes.
+    #     """
+    #     for n in range(self.numprocesses):
+    #         # Terminate any running processes
+    #         self.Processes[n].terminate()
+    #
+    #     # Wait for all processes to stop
+    #     while (self.anyAlive()):
+    #         time.sleep(0.5)
+    #
+    # def anyAlive(self):
+    #     """
+    #     Check if any processes are alive.
+    #     """
+    #     isalive = False
+    #     for n in range(self.numprocesses):
+    #         isalive = (isalive or self.Processes[n].is_alive())
+    #     return isalive
 
-        while (self.j < self.i):
-            # Get and print any results remining in the done queue
-            output = self.getOutput()
-            if (isinstance(resfunc, (types.FunctionType, types.MethodType))):
-                resfunc(output)
+    # def getOutput(self):
+    #     """
+    #     Get the output from one completed task.
+    #     """
+    #     self.j += 1
+    #
+    #     if (self.numprocesses == 0):
+    #         # Use the single-process method
+    #         self.worker_sp()
+    #
+    #     output = self.dispatcher.getResult()
+    #     # Calculate the time remaining
+    #     self.timeRemaining(self.j + 1, self.numtasks, output['process']['pid'])
+    #
+    #     return output
 
-    def processTerminate(self):
-        """
-        Stop the execution of tasks by the processes.
-        """
-        for n in range(self.numprocesses):
-            # Terminate any running processes
-            self.Processes[n].terminate()
-
-        # Wait for all processes to stop
-        while (self.anyAlive()):
-            time.sleep(0.5)
-
-    def anyAlive(self):
-        """
-        Check if any processes are alive.
-        """
-        isalive = False
-        for n in range(self.numprocesses):
-            isalive = (isalive or self.Processes[n].is_alive())
-        return isalive
-
-    def getOutput(self):
-        """
-        Get the output from one completed task.
-        """
-        self.j += 1
-
-        if (self.numprocesses == 0):
-            # Use the single-process method
-            self.worker_sp()
-
-        output = self.dispatcher.getResult()
-        # Calculate the time remaining
-        self.timeRemaining(self.j + 1, self.numtasks, output['process']['pid'])
-
-        return output
-
-    def timeRemaining(self, tasknum, numtasks, pid):
-        """
-        Calculate the time remaining for the processes to complete N tasks.
-        """
-        timeNow = time.time()
-        self.timeElapsed = timeNow - self.timeStart
-
-        pid_str = '%d' % pid
-        self.processTime[pid_str] = self.timeElapsed
-
-        # Calculate the average time elapsed for all of the processes
-        timeElapsedAvg = 0.0
-        numprocesses = self.numprocesses
-        if (numprocesses == 0): numprocesses = 1
-        for pid_str in self.processTime.keys():
-            timeElapsedAvg += self.processTime[pid_str] / numprocesses
-        self.timeRemain = timeElapsedAvg * (float(numtasks) / float(tasknum) - 1.0)
-
-    def update(self, output):
-        """
-        Get and print the results from one completed task.
-        """
-        # sys.stdout.write('%s [%d] calculate(%d) = %.2f' % ( output['process']['name'], output['process']['pid'], output['result'][0], output['result'][1] ))
-        sys.stdout.write('  [Complete: %2d / %2d  Time Elapsed: %s  Remaining: %s]' % (
-        self.j + 1, self.numtasks, time.strftime('%M:%S', time.gmtime(self.timeElapsed)),
-        time.strftime('%M:%S', time.gmtime(self.timeRemain))))
-        sys.stdout.write('\n')
+    # def timeRemaining(self, tasknum, numtasks, pid):
+    #     """
+    #     Calculate the time remaining for the processes to complete N tasks.
+    #     """
+    #     timeNow = time.time()
+    #     self.timeElapsed = timeNow - self.timeStart
+    #
+    #     pid_str = '%d' % pid
+    #     self.processTime[pid_str] = self.timeElapsed
+    #
+    #     # Calculate the average time elapsed for all of the processes
+    #     timeElapsedAvg = 0.0
+    #     numprocesses = self.numprocesses
+    #     if (numprocesses == 0): numprocesses = 1
+    #     for pid_str in self.processTime.keys():
+    #         timeElapsedAvg += self.processTime[pid_str] / numprocesses
+    #     self.timeRemain = timeElapsedAvg * (float(numtasks) / float(tasknum) - 1.0)
+    #
+    # def update(self, output):
+    #     """
+    #     Get and print the results from one completed task.
+    #     """
+    #     # sys.stdout.write('%s [%d] calculate(%d) = %.2f' % ( output['process']['name'], output['process']['pid'], output['result'][0], output['result'][1] ))
+    #     sys.stdout.write('  [Complete: %2d / %2d  Time Elapsed: %s  Remaining: %s]' % (
+    #     self.j + 1, self.numtasks, time.strftime('%M:%S', time.gmtime(self.timeElapsed)),
+    #     time.strftime('%M:%S', time.gmtime(self.timeRemain))))
+    #     sys.stdout.write('\n')
 
     def check_for_process_results(self):
 

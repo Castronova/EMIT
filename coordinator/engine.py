@@ -179,8 +179,8 @@ class Model(object):
     def get_output_exchange_item_by_name(self,value):
 
         i = self.instance()
-        if value in i.ouputs():
-            return i.ouputs()[value]
+        if value in i.outputs():
+            return i.outputs()[value]
 
         # for k,v in i.iteritems():
         #     if v.name() == value:
@@ -429,7 +429,6 @@ class Coordinator(object):
         if thisModel is not None:
             # save the model
             self.__models[thisModel.name()] = thisModel
-            print 'ENGINE: '+ thisModel.id()
             return {'id':thisModel.id(), 'name':thisModel.name(), 'model_type':thisModel.type()}
         else:
             elog.error('Failed to load model.')
@@ -514,7 +513,7 @@ class Coordinator(object):
         if ii is not None and oi is not None:
             # generate a unique model id
             if uid is None:
-                id = 'L'+uuid.uuid4().hex[:5]
+                id = 'L'+uuid.uuid4()
             else:
                 id = uid
 

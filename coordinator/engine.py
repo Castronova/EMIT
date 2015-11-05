@@ -339,7 +339,7 @@ class Coordinator(object):
             except:
                 elog.critical('Could not locate wrapper of type %s.  Make sure the wrapper is specified in wrappers.__init__.' % (attrib['type']))
 
-            # Load WOF wrapper model
+            # instantiate the component wrapper
             inst = getattr(wrappers, attrib['type']).Wrapper(attrib)
             oei = inst.outputs().values()
             iei = inst.inputs().values()
@@ -513,7 +513,7 @@ class Coordinator(object):
         if ii is not None and oi is not None:
             # generate a unique model id
             if uid is None:
-                id = 'L'+uuid.uuid4()
+                id = 'L'+uuid.uuid4().hex
             else:
                 id = uid
 

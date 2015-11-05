@@ -138,11 +138,6 @@ def run_feed_forward(obj, ds=None):
         #  retrieve inputs from database
         elog.info('[1 of 4] Retrieving input data... ')
 
-        # todo: pass db_sessions instead of simulation_dbapi
-        # try:
-        #     input_data =  get_ts_from_database_link(db_sessions[modelid], db_sessions, obj.DbResults(), obj.Links(), model_inst)
-        # except Exception as e:
-        #     raise Exception (e)
         input_data = model_inst.inputs()
 
         elog.info('[2 of 4] Performing calculation... ')
@@ -150,38 +145,17 @@ def run_feed_forward(obj, ds=None):
         # pass these inputs ts to the models' run function
         model_inst.run(input_data)
 
-        # msg = 'done'
-        # dispatcher.putOutput(msg)
-
         # save these results
         elog.info('[3 of 4] Saving calculations to database... ')
 
-        exchangeitems = model_inst.save()
-
-        # only insert data if its not already in a database
-        if type(model_inst) != odm2_data.odm2:
-            pass
-            # todo: not saving result b/c it is to slow over wireless!
-            # #  set these input data as exchange items in stdlib or wrapper class
-            # simulation = simulation_dbapi.create_simulation(preferences_path=obj.preferences,
-            #                                config_params=model_obj.get_config_params(),
-            #                                output_exchange_items=exchangeitems,
-            #                                )
-            #
-            #
-            # # store the database action associated with this simulation
-            # obj.DbResults(key=model_inst.name(), value = (simulation.ActionID,model_inst.session(),'action'))
-
-        else:
-            if db_sessions[modelid] is not None:
-                obj.DbResults(key=model_inst.name(), value=(model_inst.resultid(), model_inst.session(), 'result'))
 
         # update links
         elog.info('[4 of 4] Updating links... ')
 
-        #obj.update_links(model_inst,exchangeitems)
-        update.update_links_feed_forward(obj, links[modelid], exchangeitems, spatial_maps)
+        oei = model_inst.outputs()
+        update.update_links_feed_forward(obj, links[modelid], oei, spatial_maps)
 
+        model_inst.finish()
         elog.info('module simulation completed in %3.2f seconds' % (time.time() - st))
 
     elog.info('------------------------------------------\n' +
@@ -191,36 +165,38 @@ def run_feed_forward(obj, ds=None):
               'Simulation duration: %3.2f seconds\n' % (time.time() - sim_st) +
               '------------------------------------------')
 
+    # save results if ds is provided
+    # todo: move this outside run.py
+    if ds is not None:
+        elog.info('Saving Simulation Results...')
+        st = time.time()
 
-    elog.info('Saving Simulation Results...')
-    st = time.time()
+        # build an instance of dbv22
+        db = dbv2.connect(ds.session)
 
-    # build an instance of dbv22
-    db = dbv2.connect(ds.session)
+        # insert data!
+        for modelid in exec_order:
 
-    # insert data!
-    for modelid in exec_order:
+            # get the current model instance
+            model_obj = obj.get_model_by_id(modelid)
+            model_inst = model_obj.instance()
+            model_name = model_inst.name()
 
-        # get the current model instance
-        model_obj = obj.get_model_by_id(modelid)
-        model_inst = model_obj.instance()
-        model_name = model_inst.name()
+            # get the output exchange items to save for this model
+            oeis =  ds.datasets[model_name]
+            items = []
+            for oei in oeis:
+                items.extend(model_inst.outputs(name=oei).values())
 
-        # get the output exchange items to save for this model
-        oeis =  ds.datasets[model_name]
-        items = []
-        for oei in oeis:
-            items.extend(model_inst.outputs(name=oei).values())
-
-        # get config parameters
-        config_params=model_obj.get_config_params()
+            # get config parameters
+            config_params=model_obj.get_config_params()
 
 
-        db.create_simulation(coupledSimulationName=ds.simulationName,
-                             user_obj=ds.user,
-                             config_params=config_params,
-                             ei=items)
-    elog.info('Saving Complete, elapsed time = %3.5f' % (time.time() - st))
+            db.create_simulation(coupledSimulationName=ds.simulationName,
+                                 user_obj=ds.user,
+                                 config_params=config_params,
+                                 ei=items)
+        elog.info('Saving Complete, elapsed time = %3.5f' % (time.time() - st))
 
 def run_time_step(obj, ds=None):
     # store db sessions

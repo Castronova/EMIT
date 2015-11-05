@@ -93,7 +93,9 @@ class Wrapper(base.BaseWrapper):
         self.simulation_start(start)
         self.simulation_end(end)
 
-
+    def prepare(self):
+        self.status(stdlib.Status.READY)
+        
     def type(self):
         return wrappers.Types().WOF
 

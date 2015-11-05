@@ -249,6 +249,11 @@ class Engine:
             if 'event' in result.keys():
                 evt_name= result.pop('event')
                 evt = getattr(events, evt_name)
-                wx.CallAfter(evt.fire, **result)
+
+                try:
+                    wx.CallAfter(evt.fire, **result)
+                except:
+                    pass
+
                 # evt.fire(**result)
 

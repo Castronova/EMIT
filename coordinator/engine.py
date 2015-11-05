@@ -426,11 +426,14 @@ class Coordinator(object):
             att['databaseid'] = databaseid
             thisModel.attrib(att)
 
-
-        # save the model
-        self.__models[thisModel.name()] = thisModel
-        print 'ENGINE: '+ thisModel.id()
-        return {'id':thisModel.id(), 'name':thisModel.name(), 'model_type':thisModel.type()}
+        if thisModel is not None:
+            # save the model
+            self.__models[thisModel.name()] = thisModel
+            print 'ENGINE: '+ thisModel.id()
+            return {'id':thisModel.id(), 'name':thisModel.name(), 'model_type':thisModel.type()}
+        else:
+            elog.error('Failed to load model.')
+            return None
 
     def remove_model(self, linkablecomponent):
         """

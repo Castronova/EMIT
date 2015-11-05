@@ -49,8 +49,6 @@ class LogicWofSites(ViewWofSites):
 
 
         self.Close()
-        # if var > 0:
-        #     parent.getParsedValues(siteobject, start, end)
 
     def dicToObj(self, data):
         temp = []
@@ -107,10 +105,10 @@ class LogicWofSites(ViewWofSites):
                 writer.writerow(["#"])
                 writer.writerow(["#-------------------------End Disclaimer"])
                 writer.writerow(["#"])
-                writer.writerow(["#Values"])
+                writer.writerow(["#Dates", "Values"])
 
                 for d in values:
-                    writer.writerow([d])
+                    writer.writerow([d[0], d[1]])
 
                 file.close()
         else:
@@ -134,13 +132,14 @@ class LogicWofSites(ViewWofSites):
                 return checkedVar
 
     def getSelectedVariableSiteCode(self):
-        variable_name_codes = []
+        # variable_name_code = []
         num = self.variableList.GetItemCount()
-        checkedVar = []
+        # checkedVar = []
         for i in range(num):
             if self.variableList.IsSelected(i):
                 v_name = self.variableList.GetItemText(i)
-                variable_name_codes.append((v_name, self.getSiteCodeByVariableName(v_name)))
+                # variable_name_code.append((v_name, self.getSiteCodeByVariableName(v_name)))
+                return self.getSiteCodeByVariableName(v_name)
                 # checkedVar.append(self.variableList.GetItemText(i))
 
         # print checkedVar
@@ -150,7 +149,7 @@ class LogicWofSites(ViewWofSites):
         #     return sitecode
         # else:
         #     return 0
-        return zip(*variable_name_codes)
+        # return zip(*variable_name_code)
 
     def getSiteCodeByVariableName(self, checkedVar):
         for key, value in self._data.iteritems():
@@ -158,19 +157,25 @@ class LogicWofSites(ViewWofSites):
                 return key
 
     def previewPlot(self, event):
-        var_name, var_code = self.getSelectedVariableSiteCode()
+        var_code = self.getSelectedVariableSiteCode()
+        var_name = self.getSelectedVariableName()
 
         if len(var_code) > 0:
             self.plot.clearPlot()
 
-            data = self.Parent.api.getValues(self.siteobject.network, self.siteobject.site_code, var_code[0],
+            data = self.Parent.api.getValues(self.siteobject.site_code, var_code,
                                                self.startDate.FormatISODate(), self.endDate.FormatISODate())
             plotData = []
             noData = None
             # make sure data is found
             if data is not None:
                 # get the first data element only
-                values = data[0].values[0].value
+                if len(data[0].values[0]) > 1:
+                    values = data[0].values[0].value
+                else:
+                    elog.info("There are no values.  Try selecting a bigger date range")
+                    return
+
                 for value in values:
                     plotData.append((value._dateTime, value.value))
 
@@ -178,7 +183,7 @@ class LogicWofSites(ViewWofSites):
 
             self.plot.setTitle(self.getSelectedVariableName())
             self.plot.setAxisLabel("Date Time", data[0].variable.unit.unitName)
-            self.plot.plotData(plotData, var_name[0], noData)
+            self.plot.plotData(plotData, var_name, noData)
 
     def populateVariablesList(self, api, sitecode):
         data = api.buildAllSiteCodeVariables(sitecode)

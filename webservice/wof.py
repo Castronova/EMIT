@@ -10,6 +10,7 @@ class wof(object):
     def __init__(self, wsdl):
         self.wsdl = wsdl
         self.conn = Client(wsdl)
+        self.network_code = ""
 
     def _getSiteType(self, site):
         try:
@@ -96,21 +97,11 @@ class wof(object):
 
     def parseValues(self, sitecode, variable, start=None, end=None):
         data = self.getValues(sitecode, variable, start, end)
-        tree = et.fromstring(data)
         valuesList = []
-
-        queryInfo = tree[0]
-        sourceInfo = tree[1].getchildren()[0]
-        varInfo = tree[1].getchildren()[1]
-        values = tree[1].getchildren()[2]
-        stop = len(values) - 4
-
-        # self.odm1.createXMLFileForReading(data) Run this line to see the file in your browser
-
-        if start is not None and end is not None:
-            for i in range(stop):
-                valuesList.append(values[i].text)
-
+        for values in data[0].values[0].value:
+            # values_list = [[date1, value1], [date2, value2]]
+            valuesList.append([values._dateTime, values.value])
+            pass
         return valuesList
 
     def connectToNetwork(self, link):
@@ -156,13 +147,14 @@ class wof(object):
         return siteobjects[1]
 
 
-    def getValues(self, network_code, site_code, variable_code, beginDate=None, endDate=None):
+    def getValues(self, site_code, variable_code, beginDate=None, endDate=None):
         #  Passing only the sitecode returns the data values.
         #  Passing both variables returns that specified object.
         # Returns an XML
+        network_code = self.network_code
 
         try:
-            site = ':'.join([network_code,site_code])
+            site = ':'.join([network_code, site_code])
             var = ':'.join([network_code, variable_code])
             if beginDate is None or endDate is None:
                 data = self.conn.service.GetValuesObject(site, var)

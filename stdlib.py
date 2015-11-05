@@ -16,6 +16,15 @@ from bisect import bisect_left, bisect_right
 from osgeo import osr, ogr
 import numpy
 
+class Status:
+    LOADED = 'LOADED'
+    RUNNING = 'RUNNING'
+    FINISHED = 'FINSHED'
+    ERROR = 'ERROR'
+    READY = 'READY'
+    NOTREADY = 'NOTREADY'
+
+
 # derived from GDAL types
 class GeomType():
     POINT = 'POINT'
@@ -158,7 +167,7 @@ class ExchangeItem(object):
         # no data values will be represented as None
         self.__noData = None
 
-        self.__id = uuid.uuid4().hex[:5]
+        self.__id = uuid.uuid4().hex
         if id is not None:
             if isinstance(id, str):
                 self.__id = id

@@ -2,6 +2,8 @@ __author__ = 'tonycastronova'
 
 
 import datetime as dt
+import stdlib
+import dateutil.parser as dtparser
 
 class BaseWrapper(object):
 
@@ -12,6 +14,7 @@ class BaseWrapper(object):
         self.__inputs = {}
 
         # set initial conditions
+        # todo: is session needed?
         self.__session = None
 
         self.__timestep_in_seconds = 5 * 60
@@ -20,6 +23,7 @@ class BaseWrapper(object):
         self.__current_time = self.__simulation_start_dt
         self.__name = "Unspecified"
         self.__description = "No Description Provided"
+        self.__status =  stdlib.Status.NOTREADY
 
     def prepare(self):
         raise NotImplementedError('This is an abstract method that must be implemented!')
@@ -35,7 +39,16 @@ class BaseWrapper(object):
         raise NotImplementedError('This is an abstract method that must be implemented!')
 
 
+    def status(self, value = None):
+        if value is not None:
+            try:
+                if getattr(stdlib.Status, value):
+                    self.__status = value
+            except AttributeError:
+                pass
+        return self.__status
 
+    # todo: is this really needed?
     def session(self, value = None):
         if value is not None:
             self.__session = value
@@ -79,21 +92,58 @@ class BaseWrapper(object):
     def simulation_start(self, value = None):
         """
         Getter/Setter for simulation start date times
-        :param value: datetime object
+        :param value: datetime or string representation of datetime
         :return: simulation start datetime
         """
+
         if value is not None:
-            self.__simulation_start_dt = value
+
+            # try to parse datetime string
+            if not isinstance(value, dt.datetime):
+                try:
+                    value = dtparser.parse(value)
+                except:
+                    return self.__simulation_start_dt
+
+            if self.__simulation_end_dt is not None:
+                # check that start time is before end time
+                if (self.__simulation_end_dt - value).total_seconds() > 0:
+                    self.__simulation_start_dt = value
+
+                    # set the current time
+                    self.__current_time = value
+            else:
+                # set the value b/c end-start cannot be evaluated
+                self.__simulation_start_dt = value
+
+                # set the current time
+                self.__current_time = value
+
         return self.__simulation_start_dt
 
     def simulation_end(self, value = None):
         """
         Getter/Setter for simulation end date times
-        :param value: datetime object
+        :param value: datetime or string representation of datetime
         :return: simulation end datetime
         """
+
         if value is not None:
-            self.__simulation_end_dt = value
+
+            # try to parse datetime string
+            if not isinstance(value, dt.datetime):
+                try:
+                    value = dtparser.parse(value)
+                except:
+                    return self.__simulation_end_dt
+
+            if self.__simulation_start_dt is not None:
+                # check that end time is after start time
+                if  (value - self.__simulation_start_dt).total_seconds() > 0:
+                    self.__simulation_end_dt = value
+            else:
+                # set the value b/c end-start cannot be evaluated
+                self.__simulation_end_dt = value
         return self.__simulation_end_dt
 
     def name(self, value = None):
@@ -124,6 +174,8 @@ class BaseWrapper(object):
         self.__current_time = time
 
 
+
+    # todo: is this really needed?
     def get_output(self, outputname):
 
         outputs = self.outputs()
@@ -134,7 +186,7 @@ class BaseWrapper(object):
             print 'Could not find output: %s' + outputname
             return None
 
-
+    # todo: is this really needed?
     def get_input(self,inputname):
 
         inputs = self.inputs()

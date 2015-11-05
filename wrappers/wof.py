@@ -3,11 +3,11 @@ __author__ = 'tonycastronova'
 import wrappers
 from wrappers import base
 
-class wrapper(base.BaseWrapper):
+class WofWrapper(base.BaseWrapper):
 
 
     def __init__(self, args):
-        super(wrapper, self).__init__(self)
+        super(WofWrapper, self).__init__(self)
 
         self.args = args
 

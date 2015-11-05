@@ -407,10 +407,10 @@ class ExchangeItem(object):
         else:
             self.__variable = value
 
-    def get_id(self):
+    def id(self):
         return self.__id
 
-    def get_type(self):
+    def type(self):
         return self.__type
 
     def name(self,value=None):

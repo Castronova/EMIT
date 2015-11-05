@@ -205,9 +205,9 @@ class test_run_swmm(unittest.TestCase):
 
         # add link between rainfall and timeseries
         link = self.sim.add_link_by_name(from_id=timeseries.id(),
-                                  from_item_name='rainfall',
-                                  to_id=swmm.get_id(),
-                                  to_item_name='Rainfall')
+                                         from_item_name='rainfall',
+                                         to_id=swmm.id(),
+                                         to_item_name='Rainfall')
 
         link.spatial_interpolation(SpatialInterpolation.NearestObject)
         link.temporal_interpolation(TemporalInterpolation.NearestNeighbor)
@@ -215,9 +215,9 @@ class test_run_swmm(unittest.TestCase):
 
 
         # some assertions to make sure models loaded correctly
-        self.assertTrue(self.sim.get_model_by_id(swmm.get_id()) is not None )
+        self.assertTrue(self.sim.get_model_by_id(swmm.id()) is not None)
         self.assertTrue(self.sim.get_model_by_id(timeseries.id()) is not None )
-        self.assertTrue(self.sim.get_links_btwn_models(timeseries.id(),swmm.get_id())[0] is not None )
+        self.assertTrue(self.sim.get_links_btwn_models(timeseries.id(), swmm.id())[0] is not None)
 
 
         print 'Starting Simulation'
@@ -268,27 +268,27 @@ class test_run_swmm(unittest.TestCase):
 
         # add link between rainfall and swmm 1
         link1 = self.sim.add_link_by_name(from_id=timeseries.id(),
-                                  from_item_name='rainfall',
-                                  to_id=swmm1.get_id(),
-                                  to_item_name='Rainfall')
+                                          from_item_name='rainfall',
+                                          to_id=swmm1.id(),
+                                          to_item_name='Rainfall')
 
         # add link between rainfall and swmm 2
         link2 = self.sim.add_link_by_name(from_id=timeseries.id(),
-                                  from_item_name='rainfall',
-                                  to_id=swmm2.get_id(),
-                                  to_item_name='Rainfall')
+                                          from_item_name='rainfall',
+                                          to_id=swmm2.id(),
+                                          to_item_name='Rainfall')
 
         # add link between swmm 1 and swmm 2 (streamflow)
-        link3 = self.sim.add_link_by_name(from_id=swmm1.get_id(),
-                                  from_item_name='Flow_rate',
-                                  to_id=swmm2.get_id(),
-                                  to_item_name='Flow_rate')
+        link3 = self.sim.add_link_by_name(from_id=swmm1.id(),
+                                          from_item_name='Flow_rate',
+                                          to_id=swmm2.id(),
+                                          to_item_name='Flow_rate')
 
         # add link between swmm 2 and swmm 1 (stage)
-        link4 = self.sim.add_link_by_name(from_id=swmm2.get_id(),
-                                  from_item_name='Hydraulic_head',
-                                  to_id=swmm1.get_id(),
-                                  to_item_name='Hydraulic_head')
+        link4 = self.sim.add_link_by_name(from_id=swmm2.id(),
+                                          from_item_name='Hydraulic_head',
+                                          to_id=swmm1.id(),
+                                          to_item_name='Hydraulic_head')
 
 
         # set link tranformations

@@ -21,8 +21,8 @@ class BaseWrapper(object):
         self.__simulation_start_dt = None
         self.__simulation_end_dt = None
         self.__current_time = self.__simulation_start_dt
-        self.__name = "Unspecified"
-        self.__description = "No Description Provided"
+        self.__name = 'Unspecified'
+        self.__description = 'No Description Provided'
         self.__status =  stdlib.Status.NOTREADY
 
     def prepare(self):
@@ -30,7 +30,6 @@ class BaseWrapper(object):
 
     def type(self):
         raise NotImplementedError('This is an abstract method that must be implemented!')
-        # return datatypes.ModelTypes.FeedForward
 
     def run(self,inputs):
         raise NotImplementedError('This is an abstract method that must be implemented!')
@@ -61,31 +60,34 @@ class BaseWrapper(object):
         return self.__timestep_in_seconds
 
 
-    def outputs(self, value = None, name = None):
+    def outputs(self, value = None):
 
-        # setter
         if value is not None:
-            if name is None:
-                for eitem in value:
+
+            # make sure this is a list
+            if not isinstance(value, list):
+                value = [value]
+
+            for eitem in value:
+                if eitem.type() == stdlib.ExchangeItemType.OUTPUT:
                     self.__outputs[eitem.name()] = eitem
-            else:
-                self.__outputs[name] = value
-        # getter
+
         return self.__outputs
 
 
 
     def inputs(self, value = None, name = None):
 
-        # setter
         if value is not None:
-            if name is None:
-                for eitem in value:
-                    self.__inputs[eitem.name()] = eitem
-            else:
-                self.__inputs[name] = value
 
-        # getter
+            # make sure this is a list
+            if not isinstance(value, list):
+                value = [value]
+
+            for eitem in value:
+                if eitem.type() == stdlib.ExchangeItemType.INPUT:
+                    self.__inputs[eitem.name()] = eitem
+
         return self.__inputs
 
 
@@ -172,28 +174,3 @@ class BaseWrapper(object):
 
         # update the current time
         self.__current_time = time
-
-
-
-    # todo: is this really needed?
-    def get_output(self, outputname):
-
-        outputs = self.outputs()
-
-        if outputs.has_key(outputname):
-            return outputs[outputname]
-        else:
-            print 'Could not find output: %s' + outputname
-            return None
-
-    # todo: is this really needed?
-    def get_input(self,inputname):
-
-        inputs = self.inputs()
-
-        for input in inputs:
-            if input.name() == inputname:
-                return input
-
-        raise Exception('Could not find input: %s' + inputname)
-

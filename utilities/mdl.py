@@ -129,6 +129,6 @@ def build_exchange_items_from_config(params):
         ei.addGeometries2(geom)
 
         # save exchange items based on type
-        items[ei.get_type()].append(ei)
+        items[ei.type()].append(ei)
 
     return items

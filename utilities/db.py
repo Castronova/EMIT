@@ -136,7 +136,7 @@ def get_ts_from_database_link(dbapi, db_sessions, dbactions, links, target_model
     for id,link_inst in links.iteritems():
         f,t = link_inst.get_link()
 
-        dbapi = db_sessions[f[0].get_id()]
+        dbapi = db_sessions[f[0].id()]
 
         if t[0].get_name() == tname:
             mapping[t[1].name()] = f[1].name()

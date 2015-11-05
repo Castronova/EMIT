@@ -5,6 +5,7 @@ import unittest
 import wrappers
 import stdlib
 import datetime
+from utilities import geometry
 
 class testBaseWrapper(unittest.TestCase):
 
@@ -85,26 +86,92 @@ class testBaseWrapper(unittest.TestCase):
 
         pass
 
-    def test_base_start_end_times(self):
-        pass
-
     def test_base_outputs(self):
-        pass
+
+        outputs = self.base.outputs()
+        self.assertTrue(outputs == {})
+
+        geom = geometry.fromWKT('POINT(1 2)')
+        unit = stdlib.Unit()
+        unit.UnitAbbreviation('cm')
+        unit.UnitName('centimeters')
+        var = stdlib.Variable()
+        var.VariableNameCV('my variable')
+        var.VariableDefinition('this is my variable definition')
+        oei = stdlib.ExchangeItem(name = 'output1',
+                            desc = 'my description',
+                            unit = unit,
+                            variable = var,
+                            geometry = geom,
+                            type = stdlib.ExchangeItemType.OUTPUT)
+        outputs = self.base.outputs(oei)
+        self.assertTrue(len(outputs.items()) == 1)
+
+        # add duplicate
+        outputs = self.base.outputs(oei)
+        self.assertTrue(len(outputs.items()) == 1)
+
+        # try to add an input type
+        iei = stdlib.ExchangeItem(name = 'input1',
+                            desc = 'my description',
+                            unit = unit,
+                            variable = var,
+                            geometry = geom,
+                            type = stdlib.ExchangeItemType.INPUT)
+        outputs = self.base.outputs(iei)
+        self.assertTrue(len(outputs.items()) == 1)
+
 
     def test_base_inputs(self):
-        pass
+        inputs = self.base.inputs()
+        self.assertTrue(inputs == {})
+
+        geom = geometry.fromWKT('POINT(1 2)')
+        unit = stdlib.Unit()
+        unit.UnitAbbreviation('cm')
+        unit.UnitName('centimeters')
+        var = stdlib.Variable()
+        var.VariableNameCV('my variable')
+        var.VariableDefinition('this is my variable definition')
+        iei = stdlib.ExchangeItem(name = 'input1',
+                            desc = 'my description',
+                            unit = unit,
+                            variable = var,
+                            geometry = geom,
+                            type = stdlib.ExchangeItemType.INPUT)
+        outputs = self.base.inputs(iei)
+        self.assertTrue(len(inputs.items()) == 1)
+
+        # add duplicate
+        outputs = self.base.inputs(iei)
+        self.assertTrue(len(inputs.items()) == 1)
+
+        # try to add output type
+        oei = stdlib.ExchangeItem(name = 'output1',
+                            desc = 'my description',
+                            unit = unit,
+                            variable = var,
+                            geometry = geom,
+                            type = stdlib.ExchangeItemType.OUTPUT)
+        outputs = self.base.inputs(oei)
+        self.assertTrue(len(inputs.items()) == 1)
 
     def test_base_name(self):
-        pass
+
+        self.assertTrue(self.base.name() == 'Unspecified')
+
+        self.base.name('My Model')
+
+        self.assertTrue(self.base.name() == 'My Model')
 
     def test_base_description(self):
-        pass
 
-    def test_base_getoutput(self):
-        pass
+        self.assertTrue(self.base.description() == 'No Description Provided')
 
-    def test_base_getinput(self):
-        pass
+        self.base.name('My Model Description')
+
+        self.assertTrue(self.base.name() == 'My Model Description')
+
 
 
 class testWofWrapper(unittest.TestCase):

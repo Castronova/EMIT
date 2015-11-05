@@ -141,7 +141,7 @@ class Model(object):
         ii = None
 
         for k,v in self.__iei.iteritems():
-            if v.get_id() == value:
+            if v.id() == value:
                 ii = self.__iei[k]
 
         if ii is None:
@@ -153,7 +153,7 @@ class Model(object):
         oi = None
 
         for k,v in self.__oei.iteritems():
-            if v.get_id() == value:
+            if v.id() == value:
                 oi = self.__oei[k]
 
         if oi is None:
@@ -435,7 +435,7 @@ class Coordinator(object):
 
     def remove_model_by_id(self,id):
         for m in self.__models:
-            if self.__models[m].get_id() == id:
+            if self.__models[m].id() == id:
 
                 # remove the model
                 self.__models.pop(m,None)
@@ -444,7 +444,7 @@ class Coordinator(object):
                 remove_these_links  = []
                 for l in self.__links:
                     FROM, TO = self.__links[l].get_link()
-                    if FROM[0].get_id() == id or TO[0].get_id() == id:
+                    if FROM[0].id() == id or TO[0].id() == id:
                         remove_these_links.append(l)
 
                 # remove all links associated with the model
@@ -462,10 +462,10 @@ class Coordinator(object):
         """
 
         for m in self.__models:
-            if self.__models[m].get_id() == id:
+            if self.__models[m].id() == id:
                 return {'params': self.__models[m].get_config_params(),
                         'name': self.__models[m].get_name(),
-                        'id': self.__models[m].get_id(),
+                        'id': self.__models[m].id(),
                         'description': self.__models[m].get_description(),
                         'type': self.__models[m].type(),
                         'attrib': self.__models[m].attrib(),
@@ -474,7 +474,7 @@ class Coordinator(object):
 
     def get_model_by_id(self,id):
         for m in self.__models:
-            if self.__models[m].get_id() == id:
+            if self.__models[m].id() == id:
                 return self.__models[m]
         return None
 
@@ -567,7 +567,7 @@ class Coordinator(object):
         for linkid, link in self.__links.iteritems():
             # get the from/to link info
 
-            if link.source_component().get_id() == model_id:
+            if link.source_component().id() == model_id:
                 links[linkid] = link
 
         return links
@@ -593,8 +593,8 @@ class Coordinator(object):
         links = []
         link_dict = {}
         for linkid, link in self.__links.iteritems():
-            source_id = link.source_component().get_id()
-            target_id = link.target_component().get_id()
+            source_id = link.source_component().id()
+            target_id = link.target_component().id()
             if source_id == from_model_id and target_id == to_model_id:
                 # links.append(link)
                 spatial = link.spatial_interpolation().name() \
@@ -603,7 +603,7 @@ class Coordinator(object):
                 temporal = link.temporal_interpolation().name() \
                     if link.temporal_interpolation() is not None \
                     else 'None'
-                link_dict = dict(id=link.get_id(),
+                link_dict = dict(id=link.id(),
                                  source_id=source_id,
                                  target_id=target_id,
                                  source_name=link.source_component().get_name(),
@@ -640,15 +640,15 @@ class Coordinator(object):
                     else 'None'
                 return dict(
                         output_name=self.__links[l].source_exchange_item().name(),
-                        output_id=self.__links[l].source_exchange_item().get_id(),
+                        output_id=self.__links[l].source_exchange_item().id(),
                         input_name=self.__links[l].target_exchange_item().name(),
-                        input_id=self.__links[l].target_exchange_item().get_id(),
+                        input_id=self.__links[l].target_exchange_item().id(),
                         spatial_interpolation=spatial,
                         temporal_interpolation=temporal,
                         source_component_name=self.__links[l].source_component().get_name(),
                         target_component_name=self.__links[l].target_component().get_name(),
-                        source_component_id=self.__links[l].source_component().get_id(),
-                        target_component_id=self.__links[l].target_component().get_id(),)
+                        source_component_id=self.__links[l].source_component().id(),
+                        target_component_id=self.__links[l].target_component().id(),)
         return None
 
     def get_all_links(self):
@@ -664,15 +664,15 @@ class Coordinator(object):
             links.append(dict(
                         id=l,
                         output_name=self.__links[l].source_exchange_item().name(),
-                        output_id=self.__links[l].source_exchange_item().get_id(),
+                        output_id=self.__links[l].source_exchange_item().id(),
                         input_name=self.__links[l].target_exchange_item().name(),
-                        input_id=self.__links[l].target_exchange_item().get_id(),
+                        input_id=self.__links[l].target_exchange_item().id(),
                         spatial_interpolation=spatial,
                         temporal_interpolation=temporal,
                         source_component_name=self.__links[l].source_component().get_name(),
                         target_component_name=self.__links[l].target_component().get_name(),
-                        source_component_id=self.__links[l].source_component().get_id(),
-                        target_component_id=self.__links[l].target_component().get_id(),
+                        source_component_id=self.__links[l].source_component().id(),
+                        target_component_id=self.__links[l].target_component().id(),
                             ))
         return links
 
@@ -683,7 +683,7 @@ class Coordinator(object):
             models.append(
                 {'params': self.__models[m].get_config_params(),
                     'name': self.__models[m].get_name(),
-                    'id': self.__models[m].get_id(),
+                    'id': self.__models[m].id(),
                     'description': self.__models[m].get_description(),
                     'type': self.__models[m].type(),
                     'attrib': self.__models[m].attrib(),
@@ -698,7 +698,7 @@ class Coordinator(object):
         :return: dictionary of serializable objects
         """
         for m in self.__models:
-            if self.__models[m].get_id() == id:
+            if self.__models[m].id() == id:
                 eitems = self.__models[m].get_output_exchange_items()
                 items_list = []
 
@@ -712,11 +712,11 @@ class Coordinator(object):
                             elog.warning('deprecated: this component is implementing old geometry and datavalues storage mechanisms which are obsolete and inefficient.')
                             geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.geometries()]
 
-                        items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.get_id(), unit=ei.unit(),
-                                               variable=ei.variable(),type=ei.get_type(),geom=geoms))
+                        items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.id(), unit=ei.unit(),
+                                               variable=ei.variable(), type=ei.type(), geom=geoms))
                     else:
-                        items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.get_id(), unit=ei.unit(),
-                                            variable=ei.variable(),type=ei.get_type()))
+                        items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.id(), unit=ei.unit(),
+                                               variable=ei.variable(), type=ei.type()))
                 return items_list
         return None
 
@@ -728,7 +728,7 @@ class Coordinator(object):
         :return: dictionary of serializable objects
         """
         for m in self.__models:
-            if self.__models[m].get_id() == id:
+            if self.__models[m].id() == id:
                 eitems = self.__models[m].get_input_exchange_items()
                 items_list = []
 
@@ -742,11 +742,11 @@ class Coordinator(object):
                             geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.geometries()]
 
 
-                        items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.get_id(), unit=ei.unit(),
-                                            variable=ei.variable(),type=ei.get_type(),geom=geoms))
+                        items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.id(), unit=ei.unit(),
+                                               variable=ei.variable(), type=ei.type(), geom=geoms))
                     else:
-                        items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.get_id(), unit=ei.unit(),
-                                            variable=ei.variable(),type=ei.get_type()))
+                        items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.id(), unit=ei.unit(),
+                                               variable=ei.variable(), type=ei.type()))
                 return items_list
         return None
 
@@ -850,8 +850,8 @@ class Coordinator(object):
             #from_node = f[0].get_id()
             #to_node = t[0].get_id()
 
-            from_node = link.source_component().get_id()
-            to_node = link.target_component().get_id()
+            from_node = link.source_component().id()
+            to_node = link.target_component().id()
 
 
             g.add_edge(from_node, to_node)
@@ -878,7 +878,7 @@ class Coordinator(object):
         # return single model if one model and no links
         if len(order) == 0:
             if len(self.__models) == 1:
-                order = [self.__models.values()[0].get_id()]
+                order = [self.__models.values()[0].id()]
 
         # return execution order
         return order
@@ -953,7 +953,7 @@ class Coordinator(object):
                 model_output = []
                 model_output.append('Model: '+name)
                 model_output.append('desc: ' + model.get_description())
-                model_output.append('id: '+ model.get_id())
+                model_output.append('id: ' + model.id())
 
                 # print exchange items
                 #print '  '+(27+len(name))*'-'
@@ -972,7 +972,7 @@ class Coordinator(object):
                     # print '   * unit: '+item.unit().UnitName()
                     # print '   * variable: '+item.variable().VariableNameCV()
                     # print '  '+(27+len(name))*'-'
-                    model_output.append( str(item.get_id()))
+                    model_output.append(str(item.id()))
                     model_output.append( 'name: '+item.name())
                     model_output.append( 'description: '+item.description())
                     model_output.append( 'unit: '+item.unit().UnitName())

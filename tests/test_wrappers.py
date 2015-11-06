@@ -179,7 +179,7 @@ class testWofWrapper(unittest.TestCase):
     def test_wof_initialization(self):
 
         args = dict(network = 'iutah',
-                    sitecode = 'LR_WaterLab_AA',
+                    site = 'LR_WaterLab_AA',
                     variable = 'RH_enc',
                     start = datetime.datetime(2015, 10, 26, 0, 0, 0),
                     end = datetime.datetime(2015, 10, 30, 0, 0, 0),

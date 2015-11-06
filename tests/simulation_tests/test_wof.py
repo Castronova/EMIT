@@ -24,7 +24,7 @@ class testWofSimulation(unittest.TestCase):
                     start = datetime.datetime(2015, 10, 26, 0, 0, 0),
                     end = datetime.datetime(2015, 10, 30, 0, 0, 0),
                     wsdl = 'http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL',
-                    type = 'wof'
+                    type = 'WOF'
                     )
 
 

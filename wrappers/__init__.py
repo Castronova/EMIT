@@ -1,11 +1,13 @@
 __author__ = 'tonycastronova'
 
 from base import BaseWrapper
-import wof
-import odm2
+import wof as WOF
+import odm2 as ODM2
+import netcdf as NETCDF
 
 class Types():
-    WOF = "wof"
-    ODM2 = "odm2"
+    WOF = "WOF"
+    ODM2 = "ODM2"
+    NETCDF = 'NETCDF'
 
 

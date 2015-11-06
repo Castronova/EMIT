@@ -26,7 +26,7 @@ def update_links(obj, links, output_exchange_items, spatial_maps):
         link_key = generate_link_key(link)
 
         # get the target interpolation time based on the current time of the target model
-        target_time = target_model.get_instance().current_time()
+        target_time = target_model.instance().current_time()
 
         # get all the datasets of the output exchange item.  These will be used to temporally map the data
         datasets = output_exchange_items[source_item_name].get_all_datasets()
@@ -72,9 +72,9 @@ def update_links_feed_forward(obj, links, output_exchange_items, spatial_maps):
         link_key = generate_link_key(link)
 
         # get the target interpolation time based on the current time of the target model
-        target_st = target_model.get_instance().simulation_start()
-        target_et = target_model.get_instance().simulation_end()
-        target_ts = target_model.get_instance().time_step()
+        target_st = target_model.instance().simulation_start()
+        target_et = target_model.instance().simulation_end()
+        target_ts = target_model.instance().time_step()
 
         t = target_st
         target_times = []
@@ -121,6 +121,7 @@ def update_links_feed_forward(obj, links, output_exchange_items, spatial_maps):
             # set mapped dates in temp array
             # nvals[:, gidx] = mapped_values
 
+        # todo: remove loop to improve efficiency
         # set these data in the iei
         for i in range(0, len(nvals)):
             iei.setValues2(values=nvals[i], timevalue=mdates[i])

@@ -6,7 +6,8 @@ import random
 from wrappers import feed_forward
 import stdlib
 from utilities import mdl
-
+import numpy
+import datetime
 
 class randomizer(feed_forward.feed_forward_wrapper):
     def __init__(self, config_params):
@@ -19,8 +20,8 @@ class randomizer(feed_forward.feed_forward_wrapper):
         io = mdl.build_exchange_items_from_config(config_params)
 
         # set inputs and outputs
-        self.inputs(value=io['input'])
-        self.outputs(value=io['output'])
+        self.inputs(value=io[stdlib.ExchangeItemType.INPUT])
+        self.outputs(value=io[stdlib.ExchangeItemType.OUTPUT])
 
 
     def run(self, inputs):
@@ -40,34 +41,40 @@ class randomizer(feed_forward.feed_forward_wrapper):
                    self.get_output_by_name('random POINT 100-1000'),
                    ]
 
+
+        # geoms = output.geometries()
+        dates = []
+        end = self.simulation_end()
+        while (self.current_time() <= end):
+            dates.append(self.current_time())
+            self.increment_time()
+
         for output in outputs:
 
-            geoms = output.geometries()
+            geoms = output.getGeometries2()
 
-            random.randrange(5,60,5)
+            vals = []
 
-            # loop over each output geometry instance and generate a random number
-            for g in geoms:
-                # get the geometry
-                geom = g.geom()
-                ts = []
+            # calculate a random number for each timestep
+            for ct in dates:
 
-                # calculate a random number timeseries
-                current_time = self.current_time()
-                end = self.simulation_end()
-                while (current_time <= end):
+                v = []
+                # loop over each output geometry instance and generate a random number
+                for g in geoms:
 
+                    # generate random numbers
                     Min,Max = output.name().split(' ')[-1].split('-')
-                    val = random.random()*float(Max) + float(Min)
-                    ts.append(((current_time), (val)))
+                    v.append(random.random()*float(Max) + float(Min))
 
-                    # increment time
-                    current_time = self.increment_time(current_time)
+                # save list of values for each geom at current time
+                vals.append(v)
 
 
-                # save this timeseries to the output geom
-                self.set_geom_values(output.name(), geom, ts)
+            # save calculated values for this output exchange item
+            output.setValues2(vals, dates)
+            # self.set_geom_values(output.name(), geom, ts)
 
+        print 'Run Complete'
 
     def save(self):
         """
@@ -81,15 +88,33 @@ class randomizer(feed_forward.feed_forward_wrapper):
         with open(base+'/output.out', 'w') as f:
             for oei in self.outputs().keys():
                 output = self.get_output_by_name(oei)
-                geoms = output.geometries()
-                f.write(oei+'\n')
-                for g in geoms:
-                    f.write(g.geom().to_wkt()+'\n')
-                    date, val = g.datavalues().get_dates_values()
-                    for i in xrange(0, len(date)):
-                        f.write(date[i].strftime("%m-%d-%Y %H:%M")+','+str(val[i])+'\n')
+                geoms = output.getGeometries2()
+                dates = output.getDates2(ndarray=True)
+                values = output.getValues2(ndarray=True)
 
+                f.write(oei+'\n')
+                f.write('GEOMETRIES AS WKT \n')
+                for i in range(0, len(geoms)):
+                    f.write(str(i+1)+'\t'+geoms[i].geom().to_wkt()+'\n')
+
+                # write header
+                f.write('\n\ntime index\tdate time\t')
+                for i in range(0, len(geoms)):
+                    f.write('geometry '+str(i+1)+'\t')
                 f.write('\n')
+
+                output = numpy.hstack((dates, values))
+                for r in range(0, output.shape[0]):
+                    for c in range(0, output.shape[1]):
+                        val = output[r,c]
+                        if not isinstance(val, datetime.datetime):
+                            f.write(str(val)+'\t')
+                        else:
+                            f.write(val.strftime('m/d/Y H:M:S') +'\t')
+
+                    f.write('\n')
+
+                f.write(100*'-' + '\n')
 
 
         # save all timeseries

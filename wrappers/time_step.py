@@ -2,7 +2,7 @@ __author__ = 'tonycastronova'
 
 import datetime as dt
 from utilities.status import Status
-from stdlib import Geometry
+from stdlib import Geometry2
 import datatypes
 
 class time_step_wrapper(object):
@@ -188,7 +188,7 @@ class time_step_wrapper(object):
 
         geometries = item.geometries()
 
-        if type(geometry) == Geometry:
+        if type(geometry) == Geometry2:
             for geom in geometries:
                 if geom.geom().equals(geometry.geom()):
                     geom.datavalues().set_timeseries(datavalues)
@@ -207,7 +207,7 @@ class time_step_wrapper(object):
 
         geometries = item.geometries()
 
-        if type(geometry) == Geometry:
+        if type(geometry) == Geometry2:
 
             geom = next((x for x in geometries if x.hash() == geometry.hash()), None)
             if geom is not None:

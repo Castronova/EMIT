@@ -12,7 +12,7 @@ class weatherReader(feed_forward.feed_forward_wrapper):
 
         # build inputs and outputs
         io = mdl.build_exchange_items_from_config(config_params)
-        self.outputs(value=io['output'])
+        self.outputs(value=io[stdlib.ExchangeItemType.OUTPUT])
 
         # set inputs and outputs
         self.p = self.outputs()['Precipitation']

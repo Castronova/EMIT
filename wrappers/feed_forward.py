@@ -24,7 +24,7 @@ class feed_forward_wrapper(object):
     def type(self):
         return datatypes.ModelTypes.FeedForward
 
-    def save(self):
+    def finish(self):
         raise NotImplementedError('This is an abstract method that must be implemented!')
 
     def run(self,inputs):
@@ -49,7 +49,7 @@ class feed_forward_wrapper(object):
         """
             ini configuration file
         """
-        return (int(self.__params['time_step'][0]['value']),self.__params['time_step'][0]['unit_type_cv'])
+        return (int(self.__params['time_step'][0]['value']),self.__params['time_step'][0]['name'])
         #raise NotImplementedError('This is an abstract method that must be implemented!')
 
     def outputs(self, value = None, name = None):
@@ -135,17 +135,11 @@ class feed_forward_wrapper(object):
     def current_time(self):
         return self.__current_time
 
-    def increment_time(self, time):
+    def increment_time(self):
+
+        time = self.current_time()
 
         value,unit = self.time_step()
-
-        # if unit == 'millisecond': self.__current_time += dt.timedelta(milliseconds=value)
-        # elif unit == 'second': self.__current_time +=  dt.timedelta(seconds =value)
-        # elif unit == 'minute': self.__current_time +=  dt.timedelta(minutes=value)
-        # elif unit == 'hour': self.__current_time +=  dt.timedelta(hours=value)
-        # elif unit == 'day': self.__current_time +=  dt.timedelta(days=value)
-        # else:
-        #     raise Exception('Unknown unit: %s'%unit)
 
         if unit == 'milliseconds': time += dt.timedelta(milliseconds=value)
         elif unit == 'seconds': time +=  dt.timedelta(seconds =value)
@@ -155,7 +149,8 @@ class feed_forward_wrapper(object):
         else:
             raise Exception('Unknown unit: %s'%unit)
 
-        return time
+        # update the current time
+        self.__current_time = time
 
 
     def get_output_by_name(self,outputname):

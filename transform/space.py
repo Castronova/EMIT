@@ -3,7 +3,7 @@ __author__ = 'tonycastronova'
 import stdlib
 import space_base
 from shapely.geometry import LineString, MultiPoint, Point, Polygon
-
+from coordinator.emitLogging import elog
 
 
 
@@ -148,8 +148,9 @@ class spatial_exact_match(space_base.Space):
 
         mapped_geoms = []
 
-        igeoms = [ingeoms[i].geom().to_wkt() for i in range(0, len(ingeoms))]
-        ogeoms = [outgeoms[i].geom().to_wkt() for i in range(0, len(outgeoms))]
+        # todo: this should use Geometry2 hash instead of WKT
+        igeoms = [ingeoms[i].ExportToWkt() for i in range(0, len(ingeoms))]
+        ogeoms = [outgeoms[i].ExportToWkt() for i in range(0, len(outgeoms))]
 
         for i in range(0, len(igeoms)):
             igeom = igeoms[i]
@@ -158,11 +159,35 @@ class spatial_exact_match(space_base.Space):
                 mapped_geoms.append((ingeoms[i], outgeoms[o]))
         return mapped_geoms
 
+class spatial_index(space_base.Space):
+
+    def __init__(self):
+            super(spatial_index,self).__init__()
+
+    def name(self):
+        return 'Index-based'
+
+    def transform(self, ingeoms, outgeoms):
+
+        mapped = []
+        for i in range(0, len(ingeoms)):
+            try:
+                mapped.append([ingeoms[i],outgeoms[i]])
+            except IndexError:
+                elog.warning('An index error occurred during spatial-index mapping.  This is mostly likely due to inconsistent input and output geometry lengths.')
+        return mapped
+
 class SpatialInterpolation():
+    Index = spatial_index()
     NearestNeighbor = spatial_nearest_neighbor()
     NearestObject = spatial_closest_object()
     ExactMatch = spatial_exact_match()
     IntersectPolygonPoint = spatial_intersect_polygon_point()
 
     def methods(self):
-        return [self.NearestNeighbor,self.NearestObject, self.ExactMatch, self.IntersectPolygonPoint]
+        return [self.Index,
+                self.NearestNeighbor,
+                self.NearestObject,
+                self.ExactMatch,
+                self.IntersectPolygonPoint,
+                ]

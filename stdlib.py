@@ -13,17 +13,47 @@ import uuid
 import hashlib
 from coordinator.emitLogging import elog
 from bisect import bisect_left, bisect_right
-from osgeo import osr
+from osgeo import osr, ogr
+import numpy
 
-class ElementType():
-    Point = 'Point'
-    Polygon = 'Polygon'
-    PolyLine = 'PolyLine'
-    Id = 'Id'
+class Status:
+    READY = 'READY'
+    NOTREADY = 'NOTREADY'
+    RUNNING = 'RUNNING'
+    FINISHED = 'FINSHED'
+    ERROR = 'ERROR'
+
+
+# derived from GDAL types
+class GeomType():
+    POINT = 'POINT'
+    LINESTRING = 'LINESTRING'
+    POLYGON = 'POLYGON'
+    MULTIPOINT = 'MULTIPOINT'
+    MULTILINESTRING = 'MULTILINESTRING'
+    MULTIPOLYGON = 'MULTIPOLYGON'
+    GEOMETRYCOLLECTION = 'GEOMETRYCOLLECTION'
+    CIRCULARSTRING = 'CIRCULARSTRING'
+    COMPOUNDCURVE = 'COMPOUNDCURVE'
+    CURVEPOLYGON = 'CURVEPOLYGON'
+    MULTICURVE = 'MULTICURVE'
+    MULTISURFACE = 'MULTISURFACE'
+    _map = {'1': POINT,
+            '2': LINESTRING,
+            '3': POLYGON,
+            '4': MULTIPOINT,
+            '5': MULTILINESTRING,
+            '6': MULTIPOLYGON,
+            '7': GEOMETRYCOLLECTION,
+            '8': CIRCULARSTRING,
+            '9': COMPOUNDCURVE,
+            '10': CURVEPOLYGON,
+            '11': MULTICURVE,
+            '12': MULTISURFACE}
 
 class ExchangeItemType():
-    Input = 'input'
-    Output = 'output'
+    INPUT = 'INPUT'
+    OUTPUT = 'OUTPUT'
 
 class Variable(object):
     """
@@ -83,191 +113,33 @@ class Unit(object):
         else:
             self.__unitName = value
 
-class Element(object):
-    """
-    Spatial definition of a calculation or timeseries
-    """
+class Geometry2(ogr.Geometry):
+    def __init__(self, wkb_geom):
+        super(Geometry2, self).__init__(wkb_geom)
 
-    # TODO: SRS should be an ogr object NOT defined by name,def,and code!
+        self.type = getattr(GeomType, self.GetGeometryName())
 
-    def __init__(self):
-        self.__geom = None
-        #self.__srs_def = None
-        #self.__srs_name = None
-        #self.__srs_code = None
-        self.__srs = None
-        self.__elev = None
+        self.hash = None
 
+    def update_hash(self):
+        self.hash = hashlib.sha224(self.ExportToWkt()).hexdigest()
 
+    def AddPoint(self, *args, **kwargs):
+        super(Geometry2, self).AddPoint(*args, **kwargs)
 
-        # TODO: use enum
-        self.__type = None
+        # only update the geometry hash if AddGeometry will not be called (i.e. POINT and LINESTRING objects)
+        if self.type == GeomType.POINT or self.type == GeomType.LINESTRING:
+            self.update_hash()
 
-    def geom(self,value=None):
-        if value is None:
-            return self.__geom
-        else:
-            self.__geom = value
+    def AddGeometry(self, *args):
+        super(Geometry2, self).AddGeometry(*args)
 
-    def set_geom_from_wkt(self,wkt):
-        self.__geom = loads(wkt)
-
-
-    # def srs(self,srsname=None,srscode=None):
-    #     if srsname is None and srscode is None:
-    #         return (self.__srs_name,self.__srs_code)
-    #     else:
-    #         self.__srs_name = srsname
-    #         self.__srs_code = srscode
-
-    def srs(self,value=None):
-        if value is None:
-            return self.__srs
-        else:
-            self.__srs = value
-
-    def elev(self,value=None):
-        if value is None:
-            return self.__elev
-        else:
-            self.__elev = value
-
-    def type(self,value=None):
-        if value is None:
-            return self.__type
-        else:
-            self.__type = value
-
-class DataValues(object):
-    """
-    A dataset associated with a geometry
-    """
-    def __init__(self,timeseries=None):
-
-        # timeseries = [(date,val),(date,val),]
-        self.__timeseries = timeseries
-
-        # element = shapely geometry
-        #self.__element = element
-
-        self.__start = None
-        self.__end = None
-
-        # start and end are the defined by the date range of the dataset
-        if timeseries is not None:
-            self.update_start_end_times()
-
-    def timeseries(self):
-        return self.__timeseries
-
-    def set_timeseries(self,value):
-        self.__timeseries = value
-        self.update_start_end_times()
-
-    def get_dates_values(self):
-        if self.__timeseries:
-            return zip(*self.__timeseries)
-        else:
-            return None, None
-
-    def earliest_date(self):
-        return self.__start
-
-    def latest_date(self):
-        return self.__end
-
-    def update_start_end_times(self):
-        dates,values = zip(*self.__timeseries)
-        self.__start = min(dates)
-        self.__end = max(dates)
-
-    def start(self):
-        if self.__start is None:
-            self.update_start_end_times()
-        return self.__start
-    def end(self):
-        if self.__end is None:
-            self.update_start_end_times()
-        return self.__end
-
-class Geometry(object):
-
-    def __init__(self,geom=None,srs=4269,elev=None,datavalues=None,id=uuid.uuid4().hex[:5]):
-        self.__geom = geom
-        self.__elev = elev
-        self.__datavalues = datavalues
-        self.__id = id
-        self.__hash = None
-
-        if geom is not None:
-            self.build_hash(self.__geom)
-
-
-        # TODO: use enum
-        self.__type = None
-
-
-
-        # set spatial reference
-        self.__srs = osr.SpatialReference()
-        try:
-            self.__srs.ImportFromEPSG(srs)
-        except:
-            # set default
-            elog.error('Could not create spatial reference object from code: %s. Using the default spatial reference system: North American Datum 1983.'% str(srs))
-            self.__srs.ImportFromEPSG(4269)
-
-
-    def id(self):
-        return self.__id
-
-    def hash(self):
-        return self.__hash
-
-    def geom(self,value=None):
-        if value is None:
-            return self.__geom
-        else:
-            self.__geom = value
-
-    def set_geom_from_wkt(self,wkt):
-        self.__geom = loads(wkt)
-        self.build_hash(self.__geom)
-
-    def build_hash(self, geom):
-        self.__hash = hashlib.sha224(geom.to_wkt()).hexdigest()
-
-    def srs(self,value=None):
-        if value is None:
-            return self.__srs
-        else:
-            self.__srs = value
-
-    def elev(self,value=None):
-        if value is None:
-            return self.__elev
-        else:
-            self.__elev = value
-
-    def type(self,value=None):
-        if value is None:
-            return self.__type
-        else:
-            self.__type = value
-
-    def datavalues(self,value=None):
-        if value is None:
-            return self.__datavalues
-        else:
-            self.__datavalues = value
-
-    def get_data(self):
-
-        self.__datavalues.get_dates_values()
-
+        # update the geometry hash
+        self.update_hash()
 
 class ExchangeItem(object):
-    def __init__(self, id=None, name=None, desc=None, geometry=[], unit=None, variable=None, type=ExchangeItemType.Input):
+    def __init__(self, id=None, name=None, desc=None, geometry=[], unit=None, variable=None, srs_epsg=4269, type=ExchangeItemType.INPUT):
+
         self.__name = name
         self.__description = desc
 
@@ -275,42 +147,59 @@ class ExchangeItem(object):
         self.__unit = unit
         self.__variable = variable
 
-        self.__type = type
-
+        # set type using Exchange Item Type enum
+        if type in ExchangeItemType.__dict__:
+            self.__type = type
+        else:
+            raise Exception('Exchange Item of Type "%s" not recognized'%type)
 
         # new style data encapsulation (everything is appended with '2', temporarily)
         self.__geoms2 = []
         self.__times2 = []
         self.__values2 = []
 
+        # todo: there should be similar functionality for times2 and values2
+        # save the geometries (if provided)
+        if geometry:
+            self.addGeometries2(geometry)
 
-        # A dataset is a list of [one or more values per element,]
-        # [[element1,[ts,]],[element2,[ts,,]],   ]
-        #self.__dataset =  ds
+        # no data values will be represented as None
+        self.__noData = None
 
-        #self.StartTime = datetime.datetime(2999,1,1,1,0,0)
-        #self.EndTime = datetime.datetime(1900,1,1,1,0,0)
-
-        self.__id = uuid.uuid4().hex[:5]
+        self.__id = uuid.uuid4().hex
         if id is not None:
             if isinstance(id, str):
                 self.__id = id
 
+        self.__srs = osr.SpatialReference()
+        try:
+            self.__srs.ImportFromEPSG(srs_epsg)
+        except:
+            # set default
+            elog.error('Could not create spatial reference object from code: %s. '
+                       'Using the default spatial reference system: North American Datum 1983.'% str(srs_epsg))
+            self.__srs.ImportFromEPSG(4269)
 
 
+        # todo: REMOVE THE DEPRECATED VARIABLES BELOW
         self.__geoms = geometry
-
         # variables for saving/retrieving values from database
         self.__session = None
         self.__saved = False
         self.__seriesID = None
 
-        # no data values will be represented as None
-        self.__noData = None
+    def srs(self, srs_epsg=None):
+        if srs_epsg is not None:
+            self.__srs = osr.SpatialReference()
+            try:
+                self.__srs.ImportFromEPSG(srs_epsg)
+            except:
+                # set default
+                elog.error('Could not create spatial reference object from code: %s. '
+                           'Using the default spatial reference system: North American Datum 1983.'% str(srs_epsg))
+                self.__srs.ImportFromEPSG(4269)
 
-        # # determine start and end times
-        # for geom in self.__geoms:
-        #     self.__calculate_start_and_end_times(geom.datavalues())
+        return self.__srs
 
     def getEarliestTime2(self):
         return self.__times2[0]
@@ -318,7 +207,7 @@ class ExchangeItem(object):
     def getLatestTime2(self):
         return self.__times2[-1]
 
-    def getGeometries2(self, idx=None):
+    def getGeometries2(self, idx=None, ndarray=False):
         """
         returns geometries for the exchange item
         :param idx: index of the geometry
@@ -327,23 +216,24 @@ class ExchangeItem(object):
         if idx is not None:
             return self.__geoms2[idx]
         else:
+            if ndarray:
+                return numpy.array(self.__geoms2)
             return self.__geoms2
 
-    def addGeometries2(self, geom):
+    def addGeometries2(self, geom=None):
         """
         adds geometries to the exchange item
         :param geom: list of geometries or a single value
         :return: None
         """
-        if isinstance(geom,list):
-            for g in geom:
-                if not isinstance(g, Geometry):
-                    return 0  # return failure code
+
+        if isinstance(geom,list) or isinstance(geom,numpy.ndarray):
             self.__geoms2.extend(geom)
-        else:
-            if not isinstance(geom, Geometry):
-                return 0  # return failure code
+        elif isinstance(geom, Geometry2):
             self.__geoms2.append(geom)
+        else:
+            elog.info("Attempted to add unsupported geometry type to ExchangeItem %s, in stdlib.addGeometries(geom)" % type(geom))
+            return 0
         return 1
 
     def setValues2(self, values, timevalue):
@@ -355,16 +245,22 @@ class ExchangeItem(object):
         """
 
 
-        if isinstance(timevalue, list):
+        if  hasattr(timevalue, "__len__"):
 
             # make sure that the length of values matches the length of times
             if len(timevalue) != len(values):
                 elog.critical('Could not set data values. Length of timevalues and datavalues lists must be equal.')
                 return 0
 
+            invalid_dates = False
             for i in range(0, len(timevalue)):
                 if isinstance(timevalue[i], datetime.datetime):
                     self._setValues2(values[i], timevalue[i])
+                else: invalid_dates = True
+
+            if invalid_dates:
+                elog.warning('Invalid datetimes were found while setting values.  Data values may not be set correctly.')
+
 
             return 1
 
@@ -393,7 +289,7 @@ class ExchangeItem(object):
             self.__values2[idx] = values
         else:
             # insert new values at the specified index
-            if not isinstance(values, list):
+            if not hasattr(values, "__len__"):
                 values = [values]
             self.__values2.insert(idx+1, values)
             self.__times2.insert(idx+1, timevalue)
@@ -402,7 +298,7 @@ class ExchangeItem(object):
             # idx = len(self.__values2) - 1
             # self.setDates2(timevalue, idx)
 
-    def getValues2(self, idx_start=0, idx_end=None, start_time=None, end_time=None, time_idx=None):
+    def getValues2(self, idx_start=0, idx_end=None, start_time=None, end_time=None, time_idx=None, ndarray=False):
         """
         gets datavalues of the exchange item for idx
         :param idx_start: the start value index to be returned.
@@ -414,7 +310,7 @@ class ExchangeItem(object):
 
         # set initial value end index as the length of the geometery array
         if idx_end is None:
-            idx_end = len(self.__geoms2)
+            idx_end = len(self.__geoms2) + 1
         else:
             # add one to make return values from idx_start to idx_end inclusive
             idx_end += 1
@@ -427,14 +323,16 @@ class ExchangeItem(object):
             if end_time is not None:
                 end_time_slice_idx = self._nearest(self.__times2, end_time, 'right') + 1
         else:
-            start_time_slice_idx = time_idx
-            end_time_slice_idx = time_idx + 1
+            return self.__values2[time_idx][idx_start:idx_end]  # return a single time index of values
 
         values = []
         for i in range(start_time_slice_idx, end_time_slice_idx):
             values.append(self.__values2[i][idx_start:idx_end])
 
-        return values
+        if ndarray:
+            return numpy.array(values)
+        else:
+            return values
 
     def setDates2(self, timevalue):
         """
@@ -448,7 +346,7 @@ class ExchangeItem(object):
         self.__times2.insert(idx+1, timevalue)
         return idx
 
-    def getDates2(self, timevalue=None, start=None, end=None):
+    def getDates2(self, timevalue=None, start=None, end=None, ndarray=False):
         """
         gets datavalue indices for a datetime
         :param timevalue: datetime object
@@ -462,7 +360,10 @@ class ExchangeItem(object):
                     times.append((idx, self.__times2[idx]))
                 else:
                     times.append(0, None)
-            return times
+            if ndarray:
+                return numpy.array(times)
+            else:
+                return times
 
         elif start is not None and end is not None:
             if not isinstance(start, datetime.datetime) or not isinstance(end, datetime.datetime):
@@ -472,8 +373,11 @@ class ExchangeItem(object):
             st = self._nearest(self.__times2, start, 'left')
             et = self._nearest(self.__times2, end, 'right') + 1
             times = [(idx, self.__times2[idx]) for idx in range(st, et)]
-            return times
 
+            if ndarray:
+                return numpy.array(times)
+            else:
+                return times
 
         elif isinstance(timevalue, datetime.datetime):
             idx = self._nearest(self.__times2, timevalue, 'left')
@@ -484,8 +388,41 @@ class ExchangeItem(object):
 
         else: # return all known values
             times = [(idx, self.__times2[idx]) for idx in range(0, len(self.__times2))]
-            return times
 
+            if ndarray:
+                return numpy.array(times)
+            else:
+                return times
+
+    def unit(self,value=None):
+        if value is None:
+            return self.__unit
+        else:
+            self.__unit = value
+
+    def variable(self,value=None):
+        if value is None:
+            return self.__variable
+        else:
+            self.__variable = value
+
+    def id(self):
+        return self.__id
+
+    def type(self):
+        return self.__type
+
+    def name(self,value=None):
+        if value is None:
+            return self.__name
+        else:
+            self.__name = value
+
+    def description(self,value=None):
+        if value is None:
+            return self.__description
+        else:
+            self.__description = value
 
     def _nearest(self, lst, time, direction='left'):
         """
@@ -507,212 +444,6 @@ class ExchangeItem(object):
             i = bisect_right(lst, time)
             nearest = min(lst[max(0, i-1): i+2], key=lambda t: abs(time - t))
             return lst.index(nearest)
-
-
-    def getStartTime(self):
-        elog.warning('deprecated: Use getEarliestTime2 instead')
-        return min(g.datavalues().start() for g in self.__geoms)
-
-    def getEndTime(self):
-        elog.warning('deprecated: Use getLatestTime2 instead')
-        return max(g.datavalues().end() for g in self.__geoms)
-
-    def get_id(self):
-        return self.__id
-
-    def get_type(self):
-        return self.__type
-
-    def name(self,value=None):
-        if value is None:
-            return self.__name
-        else:
-            self.__name = value
-
-    def description(self,value=None):
-        if value is None:
-            return self.__description
-        else:
-            self.__description = value
-
-    def geometries(self):
-        elog.warning('deprecated: stdlib.geometries use getGeometries2 instead')
-        g = self.getGeometries2()
-        if len(g) != 0:
-            return g
-        return self.__geoms
-
-    def add_geometry(self, geom):
-        elog.warning('deprecated: stdlib.add_geometry use addGeometries2 instead')
-        if isinstance(geom,list):
-            self.__geoms.extend(geom)
-            # for g in geom:
-            #     self.__calculate_start_and_end_times(g.datavalues())
-        else:
-            self.__geoms.append(geom)
-            # self.__calculate_start_and_end_times(geom.datavalues())
-
-    def get_dataset(self,geometry):
-        elog.warning('deprecated: stdlib.get_dataset use getValues2 instead')
-        for geom in self.__geoms:
-            if geom.geom() == geometry:
-                return geometry.datavalues()
-        raise Exception('Could not find geometry in exchange item instance: %s'%geometry)
-        #return self.__dataset
-
-    def get_all_datasets(self):
-        elog.warning('deprecated: stdlib.get_all_datasets use getValues2 instead')
-        """
-        returns the input dataset as a dictionary of geometries
-        """
-        geom_dict = {}
-        for geom in self.__geoms:
-            geom_dict[geom] = geom.datavalues()
-        return geom_dict
-
-        # for datavalues in self.__dataset:
-        #     dict[datavalues.element] = datavalues.values()
-        # return dict
-
-    def get_geoms_and_timeseries(self):
-        elog.warning('deprecated: stdlib.get_geoms_and_timeseries')
-        geom_dict = {}
-        for geom in self.__geoms:
-            geom_dict[geom] = geom.datavalues().get_dates_values()
-        return geom_dict
-
-    def get_timeseries_by_id(self, geom_id):
-        elog.warning('deprecated: stdlib.get_timeseries_by_id')
-        # TODO: loop using integers to speed this up
-        for geom in self.__geoms:
-            if geom.id() == geom_id:
-                return geom.datavalues().get_dates_values()
-
-    def set_timeseries_by_id(self, geom_id, timeseries):
-        elog.warning('deprecated: stdlib.set_timeseries_by_id')
-        '''
-        sets the timeseries for a geometry using the geometry id
-        :param geom_id: id of the geometry
-        :param timeseries: zip([dates],[values])
-        :return: None
-        '''
-
-        for geom in self.__geoms:
-            if geom.id() == geom_id:
-                geom.datavalues().set_timeseries(timeseries)
-                return
-
-    def get_timeseries_by_geom(self,geom):
-        elog.warning('deprecated: stdlib.get_timeseries_by_geom')
-        # """
-        # geom = the geom of the desired timeseries
-        # """
-        # dict = self.get_dataset_dict()
-        # for element in dict.keys():
-        #     if element.geom() == geom:
-        #         return dict[element]
-        # return None
-        pass
-
-    def get_timeseries_by_element(self,element):
-        elog.warning('deprecated: stdlib.get_timeseries_by_element')
-        # """
-        # element = the element of the desired timeseries
-        # """
-        # dict = self.get_dataset_dict()
-        # return dict[element]
-        pass
-
-    def unit(self,value=None):
-        if value is None:
-            return self.__unit
-        else:
-            self.__unit = value
-
-    def variable(self,value=None):
-        if value is None:
-            return self.__variable
-        else:
-            self.__variable = value
-
-    def add_dataset(self,datavalues):
-        elog.warning('deprecated: stdlib.add_dataset')
-        # """
-        # datavalues = list of datavalue objects
-        # """
-        # if isinstance(datavalues,list):
-        #     self.get_dataset().extend(datavalues)
-        #     self.__calculate_start_and_end_times(datavalues)
-        #
-        #     # save the geometries
-        #
-        # else:
-        #     self.get_dataset().append(datavalues)
-        #     self.__calculate_start_and_end_times([datavalues])
-        pass
-
-    def clear(self):
-        #self.__dataset = []
-        self.__geoms = []
-        # self.StartTime = datetime.datetime(2999,1,1,1,0,0)
-        # self.EndTime = datetime.datetime(1900,1,1,1,0,0)
-
-    def set_dataset(self,value):
-        # self.__dataset = value
-        # self.__calculate_start_and_end_times(value)
-        elog.warning('deprecated: stdlib.set_dataset')
-        pass
-
-    # def __calculate_start_and_end_times(self,dv):
-    #     #for dv in datavalues:
-    #     if dv.earliest_date() is not None and dv.latest_date() is not None:
-    #         if dv.earliest_date() < self.StartTime:
-    #             self.StartTime = dv.earliest_date()
-    #         if dv.latest_date() > self.EndTime:
-    #             self.EndTime = dv.latest_date()
-
-    def session(self,value=None):
-        """
-        gets/sets the database session for this exchange item
-        :param value: database session object
-        :return: database session object
-        """
-        if value is not None:
-            self.__session == value
-        else:
-            return self.__session
-
-    def is_saved(self,value=None):
-        """
-        gets/sets the saved state of the exchange item
-        :param value: Boolean type indicated if the exchange item has been saved to db
-        :return: Boolean
-        """
-        if value is not None:
-            self.__saved = value
-        else:
-            return self.__saved
-
-    def resultid(self,value):
-        """
-        gets/sets the database series id for the simulation results
-        :param value: ODM2 resultID
-        :return: ODM2 resultID
-        """
-        if value is not None:
-            return self.__seriesID
-        else:
-            self.__seriesID = value
-
-
-
-
-
-
-
-
-
-
 
 
 

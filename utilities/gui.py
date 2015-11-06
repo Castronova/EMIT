@@ -6,7 +6,9 @@ import ConfigParser
 import datetime
 import cPickle as pickle
 import imp
-from api_old.ODMconnection import  dbconnection
+from api_old.ODMconnection import dbconnection
+from ODM2PythonAPI.src.api.ODMconnection import dbconnection as dbconnection2
+
 # from ODMconnection import dbconnection
 import uuid
 # import coordinator.emitLogging as l
@@ -133,19 +135,20 @@ def validate_config_ini(ini_path):
                     filename = os.path.basename(abspath)
                     module = imp.load_source(filename.split('.')[0], abspath)
                     m = getattr(module, classname)
-                except:
-                    elog.error('ERROR | Configuration Parsing Error: '+classname+' is not a valid class name')
+                except Exception, e:
+                    elog.error('Configuration Parsing Error: '+str(e))
 
     except Exception, e:
-        elog.error('ERROR | [Configuration Parsing Error] '+str(e))
+        elog.error('Configuration Parsing Error: '+str(e))
         return 0
 
 
     return 1
 
+
 def parse_config(ini):
     """
-    parses metadata stored in *.ini file
+    parses metadata stored in *.ini file.  This file is use by both the GUI and the ENGINE.
     """
     # isvalid = True
     # if validate:
@@ -176,8 +179,7 @@ def parse_config(ini):
                 if os.path.isfile(genpath): # and genpath[-3:] != '.py' :
                     value = genpath
                 d[option] = value
-            d['type'] = section
-
+            d['type'] = section.upper()
 
             if section not in config_params:
                 config_params[section] = [d]
@@ -232,8 +234,41 @@ def parse_config(ini):
 #     else:
 #         return None
 
+def connect_to_ODM2_db(title, desc, engine, address, db, user, pwd):
+
+    # create a db session
+    session = dbconnection2.createConnection(engine, address, db, user, pwd)
+
+    db_connections = {}
+    if session:
+
+        # get the connection string
+        connection_string = session.engine.url
+
+        # save this session in the db_connections object
+        db_id = uuid.uuid4().hex[:5]
+        d['id'] = db_id
+        db_connections[db_id] = {'name':title,
+                                 'session': session,
+                                 'connection_string':connection_string,
+                                 'description':desc,
+                                 'args': {'name':title,'desc':desc ,'engine':engine,'address':address,'db': db, 'user': user,'pwd': pwd}}
+
+        elog.info('Connected to : %s [%s]'%(connection_string,db_id))
+    else:
+        elog.error('Could not establish a connection with the database')
+        return None
+
+    return db_connections
+
+
 def create_database_connections_from_args(title, desc, engine, address, db, user, pwd):
 
+    # fixme: all database connections should use the updated ODM library
+    if engine == 'sqlite':
+        return connect_to_db(title, desc, engine, address, db, user, pwd)
+
+    # old database connection api
 
     d = {'name':title,
          'desc':desc ,
@@ -272,7 +307,7 @@ def create_database_connections_from_args(title, desc, engine, address, db, user
 
         elog.info('Connected to : %s [%s]'%(connection_string,db_id))
     else:
-        elog.error('ERROR | Could not establish a connection with the database')
+        elog.error('Could not establish a connection with the database')
         return None
 
     return db_connections
@@ -306,7 +341,12 @@ def load_model(config_params):
 def connect_to_db(title, desc, engine, address, name, user, pwd):
 
     d = {}
-    session = dbconnection.createConnection(engine, address, name, user, pwd)
+
+    # fixme: all database connections should use the updated ODM library
+    if engine == 'sqlite':
+        session = dbconnection2.createConnection(engine, address)
+    else:
+        session = dbconnection.createConnection(engine, address, name, user, pwd)
 
     if session:
         # adjusting timeout
@@ -321,12 +361,13 @@ def connect_to_db(title, desc, engine, address, name, user, pwd):
                      'session': session,
                      'connection_string':connection_string,
                      'description':desc,
-                     'args': d}
+                     'args': dict(address=connection_string, desc=desc, engine=engine,id=db_id,name=name,
+                                  user=None, pwd=None,default=False,db=None)}
 
         elog.info('Connected to : %s [%s]'%(connection_string,db_id))
 
     else:
-        elog.error('ERROR | Could not establish a connection with the database')
+        elog.error('Could not establish a connection with the database')
 
     return d
 
@@ -377,7 +418,7 @@ def create_database_connections_from_file(ini):
 
 
         else:
-            elog.error('ERROR | Could not establish a connection with the database')
+            elog.error('Could not establish a connection with the database')
             #return None
 
 
@@ -391,9 +432,9 @@ def generate_link_key(link):
     :return: unique string key
     """
 
-    return '_'.join([ link.source_component().get_name(),
+    return '_'.join([ link.source_component().name(),
                       link.source_exchange_item().name(),
-                      link.target_component().get_name(),
+                      link.target_component().name(),
                       link.target_exchange_item().name()])
 
     #return '_'.join([link[0][0].get_name(),link[0][1].name(),link[1][0].get_name(),link[1][1].name()])
@@ -421,9 +462,9 @@ def get_ts_from_database_link(dbapi, db_sessions, dbactions, links, target_model
     for id,link_inst in links.iteritems():
         f,t = link_inst.get_link()
 
-        dbapi = db_sessions[f[0].get_id()]
+        dbapi = db_sessions[f[0].id()]
 
-        if t[0].get_name() == tname:
+        if t[0].name() == tname:
             mapping[t[1].name()] = f[1].name()
             #print '>  %s -> %s'%(f[1].name(), t[1].name())
 
@@ -432,12 +473,12 @@ def get_ts_from_database_link(dbapi, db_sessions, dbactions, links, target_model
             from_var = f[1].variable()
             to_var = t[1].variable()
             to_item = t[1]
-            name = f[0].get_name()
+            name = f[0].name()
             # start = f[1].getStartTime()
             # end = f[1].getEndTime()
 
-            start = t[0].get_instance().simulation_start()
-            end = t[0].get_instance().simulation_end()
+            start = t[0].instance().simulation_start()
+            end = t[0].instance().simulation_end()
 
             #model = f[0]
 

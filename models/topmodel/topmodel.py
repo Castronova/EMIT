@@ -3,12 +3,12 @@ __author__ = 'tonycastronova'
 import os
 from wrappers import feed_forward
 import stdlib
-from utilities import mdl, spatial
+from utilities import mdl, spatial, geometry
 import math
 from shapely.geometry import Point
 from coordinator.emitLogging import elog
 import numpy as np
-
+from distutils.version import LooseVersion
 
 class topmodel(feed_forward.feed_forward_wrapper):
 
@@ -21,6 +21,12 @@ class topmodel(feed_forward.feed_forward_wrapper):
 
         super(topmodel,self).__init__(config_params)
 
+        if LooseVersion(np.__version__) < LooseVersion('1.9.0'):
+            elog.error('Could not load TOPMODEL, NumPY version 1.9.0 or greater required')
+            raise Exception('Could not load TOPMODEL, NumPY version 1.9.0 or greater required')
+
+
+
         elog.info('Begin Component Initialization')
 
         # build inputs and outputs
@@ -28,8 +34,8 @@ class topmodel(feed_forward.feed_forward_wrapper):
         io = mdl.build_exchange_items_from_config(config_params)
 
         # set inputs and outputs
-        self.inputs(value=io['input'])
-        self.outputs(value=io['output'])
+        self.inputs(value=io[stdlib.ExchangeItemType.INPUT])
+        self.outputs(value=io[stdlib.ExchangeItemType.OUTPUT])
 
         # model_inputs
         inputs = config_params['model inputs'][0]
@@ -104,16 +110,18 @@ class topmodel(feed_forward.feed_forward_wrapper):
             idx, date = datetimes[i]
 
             # get precip at the current time
-            precip = precipitation.getValues2(time_idx = i)
+            in_precip = precipitation.getValues2(time_idx = i)
 
             #todo: this is a hack because i'm running out of time before the demo
             # todo: something is wrong with the data interpolation!
-            p = precip[0][0]
-            if isinstance(p, np.ndarray):
-                precip = p[0]
-            else:
-                precip = p
-            # precip = precip[0][0][0]
+            # p = precip[0][0]
+            # if isinstance(p, np.ndarray):
+            #     precip = p[0]
+            # else:
+            #     precip = p
+            # # precip = precip[0][0][0]
+
+            precip = in_precip[0]
 
             # calculate saturation deficit
             sat_deficit = [self.s_average + self.c * (self.lamda_average - ti) for ti in self.ti]
@@ -186,66 +194,49 @@ class topmodel(feed_forward.feed_forward_wrapper):
         # read ti data
         data = np.genfromtxt(self.topo_input, delimiter=' ', skip_header=6)
 
-        # set start x, y
-        y = lowery + cellsize * nrows
-        i = 0
+        # build X and Y coordinate arrays
+        xi = np.linspace(lowerx, lowerx+ncols*cellsize, ncols)
+        yi = np.linspace(lowery+nrows*cellsize, lowery, nrows)
+        x,y = np.meshgrid(xi,yi)    # generate 2d arrays from xi, yi
+        x = x.ravel()   # convert to 1-d
+        y = y.ravel()   # convert to 1-d
+        data = data.ravel()  # convert to 1-d
 
-        for row in data:
-            elog.info('OVERWRITE:TOPMODEL: Building Geometry Objects [%d of %d]' % (i, nrows*ncols))
-        # for line in lines[6:]:
-            x = lowerx
-            # l = line.strip().split(' ')
-            for element in row:
-                if element != nodata:
-                    pt = Point(x,y)
+        # remove all nodata points from x, y arrays
+        nonzero = np.where(data != nodata)
+        x = x[nonzero]
+        y = y[nonzero]
 
-                    # save as ti geometry
-                    # srs = spatial.get_srs_from_epsg(None)   # get default
-                    tigeoms.append(stdlib.Geometry(geom=pt))
-                i += 1
-
-                x += cellsize
-            y += cellsize
-
-        # # read ti data
-        # fac_data = np.genfromtxt(self.fac_input, delimiter=' ', skip_header=6)
-        #
-        # # set start x, y
-        # y = lowery + cellsize * nrows
-        # for row in fac_data:
-        #     x = lowerx
-        #     for element in row:
-        #         if element != nodata:
-        #             pt = Point(x,y)
-        #             if element >= 20.:
-        #                 # save as sat geometry
-        #                 # srs = spatial.get_srs_from_epsg(None)   # get default
-        #                 satgeoms.append(stdlib.Geometry(geom=pt))
-        #         x += cellsize
-        #     y += cellsize
+        tigeoms = geometry.build_point_geometries(x,y)
 
         self.ti_geoms = tigeoms
         # self.output_soil_moisture_geoms = satgeoms
 
     def read_topo_input(self):
 
-        # ---- begin reading the values stored in the topo file
+
         with open(self.topo_input, 'r') as sr:
 
             lines = sr.readlines()
+            ncols = int(lines[0].split(' ')[-1].strip())
+            nrows = int(lines[1].split(' ')[-1].strip())
+            lowerx = float(lines[2].split(' ')[-1].strip())
+            lowery = float(lines[3].split(' ')[-1].strip())
             cellsize = float(lines[4].split(' ')[-1].strip())
-            nodata = lines[5].split(' ')[-1].strip()
+            nodata = float(lines[5].split(' ')[-1].strip())
 
-            # generate topolist by parsing cell data
-            topoList = [item for sublist in lines[6:] for item in sublist.strip().split(' ') if item != nodata]
-            self._watershedArea = len(topoList) * cellsize
+        # read ti data
+        data = np.genfromtxt(self.topo_input, delimiter=' ', skip_header=6)
+
+        topoList = data.ravel() # convert into 1-d list
+        topoList = topoList[topoList != nodata] # remove nodata values
+        self._watershedArea = topoList.shape[0]*cellsize  # calculate watershed area
 
 
-        # ---- calculate frequency of each topographic index
-        # -- consolidate topo list into unique values
-        d = {float(i):float(topoList.count(i)) for i in set(topoList)}
+        topoList = np.round(topoList, 4)         # round topoList items
+        total = topoList.shape[0]                   # total number of element in the topoList
+        unique, counts = np.unique(topoList, return_counts=True)    # get bins for topoList elements
 
-        # -- calculate topo frequency, then return both topographic index and topo frequency arrays
-        total = len(topoList)
-        self.ti = [round(k,4) for k in d.iterkeys()]
-        self.freq = [round((k/total), 10) for k in d.iterkeys()]
+        self.ti = unique                         # topographic index list
+        self.freq = unique/total                 # freq of topo indices
+        self.freq = np.round(self.freq, 10)        # round the frequencies

@@ -9,15 +9,16 @@ def Close():
     e.setTasks(task)
     return 1
 
-
 def addModel(id=None, attrib=None):
     e = Engine()
     kwargs = dict(attrib=attrib, id=id, event='onModelAdded')
     task = [('add_model', kwargs)]
     e.setTasks(task)
-
-    e.thread = Thread(target=e.check_for_process_results)
+    # DO NOT MODIFY THIS CODE!
+    ############################
+    e.thread = Thread(target=e.check_for_process_results, name='AddModel')
     e.thread.start()
+    ############################
 
 def createSQLiteInMemory(dbtextfile=None):
     e = Engine()
@@ -35,20 +36,23 @@ def connectToDbFromFile(dbtextfile=None):
     task = [('connect_to_db_from_file',kwargs)]
     e.setTasks(task)
 
-    e.thread = Thread(target = e.check_for_process_results)
+    e.thread = Thread(target = e.check_for_process_results, name='connectToDbFromFile')
     e.thread.start()
     e.thread.join()
 
-def connectToDb(**kwargs):
-    #engine=None, address=None, db=None, user=None, pwd=None):
+
+def connectToDb(title, desc, engine, address, name, user, pwd):
+    kwargs = dict(title=title, desc=desc, engine=engine, address=address, name=name, user=user, pwd=pwd)
     e = Engine()
     kwargs['event'] ='onDatabaseConnected'
     task = [('connect_to_db',kwargs)]
     e.setTasks(task)
 
-    e.thread = Thread(target = e.check_for_process_results)
+    e.thread = Thread(target = e.check_for_process_results, name='connectToDb')
     e.thread.start()
-    e.thread.join()
+
+    # result = e.processTasks()
+    # return result
 
 def addLink(source_id=None, source_item=None, target_id=None, target_item=None, spatial_interpolation=None,
             temporal_interpolation=None,uid=None):
@@ -172,9 +176,9 @@ def getAllModels():
     result = e.processTasks()
     return result
 
-def runSimulation():
+def runSimulation(simulationName=None, dbName=None, user_json=None, datasets=None):
     e = Engine()
-    kwargs = dict(event='onSimulationFinished')
+    kwargs = dict(simulationName=simulationName, dbName=dbName, user_json=user_json, datasets=datasets, event='onSimulationFinished')
     task = [('run_simulation', kwargs)]
     e.setTasks(task)
 

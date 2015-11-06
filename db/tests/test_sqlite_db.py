@@ -4,6 +4,8 @@ import unittest
 import os, sys
 import pyspatialite.dbapi2 as sqlite3
 import subprocess
+import coordinator.users as user
+from environment import env_vars
 
 # odm2_api_path = os.path.abspath(os.path.join(__file__, '../../../ODM2PythonAPI'))
 odm2_api_path = os.path.abspath(os.path.join(__file__, '../../../ODM2PythonAPI/src'))
@@ -34,26 +36,46 @@ class test_sqlite_db(unittest.TestCase):
 
 
         # get the database dump files
-        empty_dump_script = open('./data/empty_dump.sql','r').read()
-        populated_dump_script = open('./data/populated_dump.sql','r').read()
+        empty_dump_script = open('./data/build_empty.sql','r').read()
+        populated_dump_script = open('./data/insert_test_data.sql','r').read()
+
+
 
         # create temp databases
-        empty_odm2_db = sqlite3.connect(self.empty_db_path) # create a memory database
-        pop_odm2_db = sqlite3.connect(self.pop_db_path) # create a memory database
+        empty_odm2_db = sqlite3.connect(self.empty_db_path)
+        pop_odm2_db = sqlite3.connect(self.pop_db_path)
 
-        # load the dump files into the in-memory databases
-        empty_odm2_db.executescript(empty_dump_script)
-        pop_odm2_db.executescript(populated_dump_script)
 
-        self.sqlite = sqlite(self.pop_db_path)
+        # load the dump files into the databases
+        # empty_odm2_db.executescript(empty_dump_script)
+        # pop_odm2_db.executescript(populated_dump_script)
+
+        # connect to each database
+        empty_connection = dbconnection.createConnection('sqlite', self.empty_db_path)
+        pop_connection = dbconnection.createConnection('sqlite', self.pop_db_path)
+        self.emptysqlite = sqlite(empty_connection)
+        self.popsqlite = sqlite(pop_connection)
+        # initialize the in-memory database, loop through each command (skip first and last lines)
+        for line in empty_dump_script.split(';\n'):
+            # conn.getSession().execute(line)
+            self.emptysqlite.write.getSession().execute(line)
+            self.popsqlite.write.getSession().execute(line)
+        for line in populated_dump_script.split(';\n'):
+            self.popsqlite.write.getSession().execute(line)
+
+        # connection = dbconnection.createConnection('sqlite', ':memory:')
+
+
+
+
         # create database connections that will be used in test cases
-        self.empty_connection = dbconnection.createConnection('sqlite', self.empty_db_path)
+        # self.empty_connection = dbconnection.createConnection('sqlite', self.empty_db_path)
 
         # self.pop_connection = dbconnection.createConnection('sqlite', self.pop_db_path)
         self.pop_connection = self.sqlite.connection
 
 
-
+    #
     def tearDown(self):
 
         # remove temp databases
@@ -84,6 +106,7 @@ class test_sqlite_db(unittest.TestCase):
         tempPerson = {'firstName': 'Bob', 'lastName': 'Charles'}
         self.sqlite.create_user(tempPerson)
 
+        # TODO:  Must make sure that an affiliation is created otherwise the user entry will fail during actionby creation
     def test_validate_new_user(self):
 
         #  Validating that the person was added
@@ -91,18 +114,18 @@ class test_sqlite_db(unittest.TestCase):
         person = r.getPersonByName('Bob', 'Charles')
         self.assertTrue('Bob' == person.PersonFirstName, msg="Match! Person was inserted in the database")
 
+        # TODO:  Must make sure that an affiliation is created otherwise the user entry will fail during actionby creation
+
     def test_add_new_user(self):
         tempPerson = {'firstName': 'Bob', 'lastName': 'Charles'}
+
+        # TODO:  Must make sure that an affiliation is created otherwise the user entry will fail during actionby creation
         self.sqlite.create_user(tempPerson)
 
         r = ReadODM2(self.pop_connection)
         person = r.getPersonByName('Bob', 'Charles')
         id = r.getPersonById(person.PersonID)
         self.assertTrue(person == id)
-
-    def test_display_new_user(self):
-        r = ReadODM2(self.pop_connection)
-        print r.getPeople()
 
     def test_create_organization(self):
         temporgan = {'cvType': 'University', 'code': 'usu',
@@ -126,7 +149,8 @@ class test_sqlite_db(unittest.TestCase):
     def test_create_simulation(self):
 
         import stdlib
-        from utilities import mdl
+
+        from utilities import mdl, gui
         from shapely.geometry import Point
         import random
         from datetime import datetime as dt
@@ -143,19 +167,20 @@ class test_sqlite_db(unittest.TestCase):
         coords = [(1,2),(2,3),(3,4)]
         geoms = []
         for x,y in coords:
-            pt = Point(x,y)
-            geoms.append(stdlib.Geometry(pt))
+            point = Point(x,y)
+            geoms.append(stdlib.Geometry(point))
         item.addGeometries2(geoms)
         self.assertTrue(len(item.getGeometries2()) == len(geoms))
 
         # set exchange item values
-        st = dt.now()                   # set start time to 'now'
-        et = st + timedelta(days=100)   # set endtime to 100 days later
-        current_time = st               # initial time
-        dates = []                      # list to hold dates
-        values = []                     # list to hold values for each date
+        start_time = dt.now()                       # set start time to 'now'
+        end_time = start_time + timedelta(days=100) # set endtime to 100 days later
+        current_time = start_time                   # initial time
+        dates = []                                  # list to hold dates
+        values = []                                 # list to hold values for each date
+
         # populate dates list
-        while current_time <= et:
+        while current_time <= end_time:
 
             # add date
             dates.append(current_time)
@@ -165,7 +190,6 @@ class test_sqlite_db(unittest.TestCase):
 
             # increment time by 1 day
             current_time += timedelta(days=1)
-
 
         # set dates and values in the exchange item
         item.setValues2(values, dates)
@@ -182,12 +206,37 @@ class test_sqlite_db(unittest.TestCase):
         # list of exchange items
         ei = [item]
 
-        # use numpy arrays to slice the data during insert
-        # import numpy as np
-        # array = np.array(my_list)
-        # array[:,2]  all datavalues for geometry index of 2
-        # self.sqlite.create_simulation(preferences_path=pref, config_params=config, output_exchange_items=item)
+        params = {'general': [{'simulation_end': '03/01/2014 23:00:00',
+                               'simulation_start': '03/01/2014 12:00:00',
+                               'description': 'Some description',
+                               'name': 'test simulation'}],
+                  'model': [{'code': 'TOPMODEL',
+                             'name': 'test model',
+                             'description': 'Some model descipription'}],
+                  'time_step' : [{'abbreviation': 'hr',
+                                'unit_type_cv': 'hour',
+                                'name': 'hours',
+                                'value': '1'}]}
 
+
+        # # model parameters that will be accessed via engine during simualtion (hardcoded for the test case)
+        # params = dict(  name = 'test_simulation',
+        #                 description = 'this is a sample description',
+        #                 simulation_start = '03/01/2014 12:00:00',
+        #                 simulation_end = '03/01/2014 23:00:00',
+        #                 code = 'testmodel',
+        #                 unit_type_cv = 'hour',
+        #                 value = '1',
+        # )
+
+        # build user object
+        user_json = open(env_vars.USER_JSON).read()
+        user_obj = user.BuildAffiliationfromJSON(user_json)
+
+        # get affiliation
+        r = ReadODM2(self.pop_connection)
+        # affiliation = r.getAffiliationsByPerson('tony','castronova')
+        self.sqlite.create_simulation('My Simulation', user_obj[0], params, item)
 
 
 

@@ -4,7 +4,9 @@ import logging
 import logging.handlers
 import os
 import json
-
+from environment import env_vars
+import ConfigParser
+import inspect
 
 class _Log:
     __monostate = None
@@ -24,7 +26,7 @@ class _Log:
             self.__root = logging.getLogger('EMIT ENGINE')
             self.__root.setLevel(logging.DEBUG)
 
-            formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(funcName)s - %(lineno)s --- %(message)s')
 
             # todo: setup streamhandler to handle std.out
             # todo: https://docs.python.org/2/library/logging.handlers.html
@@ -112,27 +114,35 @@ class Log(object):
         :param target_control: Target control should be a wx.RichTextBox
         :return:
         '''
+        self.settingspath = os.getcwd() + "/app_data/config/.settings.ini"
+        self.config = ConfigParser.ConfigParser()
+
         self.log = _Log()
 
     def debug(self, text):
-        self.log._debug(text)
+        if env_vars.LOGGING_SHOWDEBUG:
+            self.log._debug(text)
 
     def warning(self, text):
-        self.log._warning(text)
+        if env_vars.LOGGING_SHOWWARNING:
+            self.log._warning(text)
 
     def error(self, text):
-        self.log._error(text)
+        f = inspect.getouterframes(inspect.currentframe(),2)
+        detailed_text = " [%s, %s (line %d)] --- %s " % (f[1][1].split('/')[-1], f[1][3], f[1][2], text)
+        if env_vars.LOGGING_SHOWERROR:
+            self.log._error(detailed_text)
 
     def info(self, text):
-        # todo: this is a hack
-        # if not 'OVERWRITE:' in text:
-        self.log._info(text)
+        inf = env_vars.LOGGING_SHOWINFO
+        if env_vars.LOGGING_SHOWINFO:
+            self.log._info(text)
 
     def critical(self, text):
-        self.log._critical(text)
+        if env_vars.LOGGING_SHOWCRITICAL:
+            self.log._critical(text)
 
     def get_logger(self):
         return self.log._get_logger()
-
 
 elog = Log()

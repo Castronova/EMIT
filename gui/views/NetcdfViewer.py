@@ -34,10 +34,11 @@ class NetcdfViewer(wx.Frame):
 
         vbox_bottom_panel.Add(hbox_bottom_panel, 1, wx.EXPAND | wx.ALL, 2)
 
-
+        #  This panel has a vertical and a horitzonal box sizer.
+        #  The vertical makes it so the text box and buttons are stacked
+        #  While the horizontal only affects the button.
 
         self.bottom_panel.SetSizer(vbox_bottom_panel)
-
 
         viewer_vbox = wx.BoxSizer(wx.VERTICAL)
 
@@ -46,6 +47,8 @@ class NetcdfViewer(wx.Frame):
 
         panel.SetSizer(viewer_vbox)
         self.Show()
+
+
 
 
 

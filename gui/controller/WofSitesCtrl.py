@@ -82,7 +82,7 @@ class LogicWofSites(ViewWofSites):
     def onExport(self, event):
         var = self.Parent.selectedVariables = self.getSelectedVariableSiteCode()
         if var > 0:
-            save = wx.FileDialog(parent=self, message="Choose Path",
+            save = wx.FileDialog(parent=self.GetTopLevelParent(), message="Choose Path",
                                  defaultDir=os.getcwd(),
                                  wildcard="CSV Files (*.csv)|*.csv",
                                  style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)

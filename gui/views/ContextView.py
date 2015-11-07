@@ -231,7 +231,7 @@ class CanvasContextMenu(wx.Menu):
     def OnClose(self, e):
         self.parent.Close()
 
-    def Warn(parent, message, caption = 'Warning!'):
+    def Warn(parent, message, caption='Warning!'):
         dlg = wx.MessageDialog(parent, message, caption, wx.OK | wx.ICON_WARNING)
         dlg.ShowModal()
         dlg.Destroy()

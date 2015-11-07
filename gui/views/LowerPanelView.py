@@ -15,7 +15,7 @@ from gui import events
 from coordinator.emitLogging import elog
 from gui.controller import ConsoleOutputCtrl
 # from db.ODM1.WebServiceAPI import WebServiceApi
-from gui.controller.WofSitesCtrl import LogicWofSites
+from gui.controller.WofSitesCtrl import WofSitesViewerCtrl
 from webservice import wof
 
 class viewLowerPanel:
@@ -202,7 +202,7 @@ class TimeSeriesTab(wx.Panel):
         self.selectedVariables = None
         # siteObject = self.api.objects[siteObjectID]
         # print siteObject
-        siteview = LogicWofSites(self, siteObject)
+        siteview = WofSitesViewerCtrl(self, siteObject)
         siteview.populateVariablesList(self.api, siteObject.site_code)
         return
 

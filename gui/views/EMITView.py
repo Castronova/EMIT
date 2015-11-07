@@ -11,10 +11,8 @@ from wx.lib.newevent import NewEvent
 from coordinator.emitLogging import elog
 from LowerPanelView import viewLowerPanel
 import os
-import ConfigParser
-import sys
-import os
 from environment import env_vars
+from gui.controller.NetcdfCtrl import NetcdfCtrl
 
 # create custom events
 wxCreateBox, EVT_CREATE_BOX = NewEvent()
@@ -191,6 +189,10 @@ class ViewEMIT(wx.Frame):
         self.Bind(wx.EVT_MENU, self.onAddFile, add_file)
         self.Bind(wx.EVT_MENU, self.onOpenDapViewer, open_dap_viewer)
 
+    def Settings(self, event):
+        settings = viewMenuBar()
+        settings.Show()
+
     def onAddFile(self, event):
         file_dialog = wx.FileDialog(self.Parent,
                                     message="Add .csv or .nc file",
@@ -202,18 +204,15 @@ class ViewEMIT(wx.Frame):
             path = file_dialog.GetPath()
         elog.info("This implemention has not been finished")
 
-    def onOpenDapViewer(self, event):
-        print "Open Dap Viewer not implemented yet"
-
-    def Settings(self, event):
-        settings = viewMenuBar()
-        settings.Show()
-
     def onClose(self, event):
         dial = wx.MessageDialog(None, 'Are you sure to quit?', 'Question',
             wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
         if dial.ShowModal() == wx.ID_YES:
             self.Destroy()
+
+    def onOpenDapViewer(self, event):
+        print "Open Dap Viewer not implemented yet"
+        netcdf = NetcdfCtrl(self)
 
     def defaultview(self, event):
         """

@@ -5,16 +5,16 @@ import csv
 import time
 import wx
 import wx.calendar as cal
-from gui.views.WofSitesView import ViewWofSites
+from gui.views.WofSitesView import WofSitesViewer
 from coordinator.emitLogging import elog
 import coordinator.engineAccessors as engine
 import uuid
 import datetime as dt
 
-class LogicWofSites(ViewWofSites):
+class WofSitesViewerCtrl(WofSitesViewer):
     def __init__(self, parent, siteObject):
 
-        ViewWofSites.__init__(self, parent, siteObject)
+        WofSitesViewer.__init__(self, parent, siteObject)
 
         self.Bind(wx.EVT_BUTTON, self.previewPlot, self.PlotBtn)
         self.Bind(wx.EVT_BUTTON, self.startDateCalender, self.startDateBtn)

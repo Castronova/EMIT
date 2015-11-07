@@ -10,7 +10,7 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
         wx.ListCtrl.__init__(self, parent, -1, size=(545, 140), style=wx.LC_REPORT)
         ListCtrlAutoWidthMixin.__init__(self)
 
-class ViewWofSites(wx.Frame):
+class WofSitesViewer(wx.Frame):
     def __init__(self, parent, siteObject):
         wx.Frame.__init__(self, parent=parent, id=-1, title=str(siteObject.site_name), pos=wx.DefaultPosition, size=(650, 700),
                           style=wx.STAY_ON_TOP | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)

@@ -160,7 +160,7 @@ class ExchangeItem(object):
 
         # todo: there should be similar functionality for times2 and values2
         # save the geometries (if provided)
-        if geometry:
+        if geometry is not None:
             self.addGeometries2(geometry)
 
         # no data values will be represented as None

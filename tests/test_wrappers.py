@@ -1,6 +1,6 @@
 __author__ = 'tonycastronova'
 
-
+import os
 import unittest
 import wrappers
 import stdlib
@@ -199,4 +199,21 @@ class testWofWrapper(unittest.TestCase):
         self.assertTrue(len(model_wrapper.outputs().values()[0].getValues2()) > 0)
         self.assertTrue(len(model_wrapper.outputs().values()[0].getDates2()) > 0)
         self.assertTrue(len(model_wrapper.outputs().values()[0].getGeometries2()) == 1)
+
+
+class testNetcdfWrapper(unittest.TestCase):
+
+    def test_netcdf_initialization(self):
+
+        args = dict(ncpath = './data/prcp.nc',
+                    timevar = 'time',
+                    ptx = 'x',
+                    pty = 'y')
+
+        self.assertTrue(os.path.exists(args['ncpath']))
+
+        model_wrapper = getattr(wrappers, wrappers.Types.NETCDF).Wrapper(args)
+
+        self.assertTrue(model_wrapper.type() == wrappers.Types.NETCDF)
+
 

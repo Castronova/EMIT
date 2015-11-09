@@ -4,9 +4,10 @@ import os
 import time
 import unittest
 import datetime
-from coordinator.engine import Coordinator
 import wrappers
-class testWofSimulation(unittest.TestCase):
+from coordinator.engine import Coordinator
+
+class testNetcdfSimulation(unittest.TestCase):
 
 
     def setUp(self):
@@ -16,17 +17,17 @@ class testWofSimulation(unittest.TestCase):
         pass
 
 
-    def test_wof_feedforward(self):
+    def test_netcdf_feedforward(self):
 
-        args = dict(network = 'iutah',
-                    site = 'LR_WaterLab_AA',
-                    variable = 'RH_enc',
-                    start = datetime.datetime(2015, 10, 26, 0, 0, 0),
-                    end = datetime.datetime(2015, 10, 30, 0, 0, 0),
-                    wsdl = 'http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL',
-                    type = wrappers.Types.WOF
-                    )
+        args = dict(ncpath = '../data/prcp.nc',
+                    tdim = 'time',
+                    xdim = 'x',
+                    ydim = 'y',
+                    tunit = 'hours',
+                    starttime = '10-26-2015 00:00:00',
+                    type = wrappers.Types.NETCDF)
 
+        self.assertTrue(os.path.exists(args['ncpath']))
 
         # add the wof component to the engine
         self.engine.add_model(id=1234, attrib=args)

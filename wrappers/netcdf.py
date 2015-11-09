@@ -6,6 +6,8 @@ from wrappers import base
 from utilities import geometry
 from dateutil import parser
 import datetime
+import numpy
+
 # http://www.hydro.washington.edu/~jhamman/hydro-logic/blog/2013/10/12/plot-netcdf-data/
 
 class Wrapper(base.BaseWrapper):
@@ -56,12 +58,16 @@ class Wrapper(base.BaseWrapper):
 
         variables.remove(tdim)
 
-        xcoords = handle.variables[xdim][:]
+        x = handle.variables[xdim][:]
         variables.remove(xdim)
 
-        ycoords = handle.variables[ydim][:]
+        y = handle.variables[ydim][:]
         variables.remove(ydim)
 
+        # create flattened lists of x,y coords from meshgrid
+        xcoords, ycoords = numpy.meshgrid(x, y)
+        xcoords = xcoords.flatten()
+        ycoords = ycoords.flatten()
 
 
         # loop through the remaining variables and expose them as outputs
@@ -76,8 +82,7 @@ class Wrapper(base.BaseWrapper):
             variable.VariableNameCV(handle.variables[var].name)
 
             # create geometries
-            endidx = min(len(xcoords), len(ycoords)) # in case number of x and y coords does not match
-            geoms = geometry.build_point_geometries(xcoords[:endidx], ycoords[:endidx])
+            geoms = geometry.build_point_geometries(xcoords, ycoords)
 
             # create exchange item
             oei = stdlib.ExchangeItem(name=variable.VariableNameCV(),
@@ -87,14 +92,23 @@ class Wrapper(base.BaseWrapper):
                                 variable = variable,
                                 type = stdlib.ExchangeItemType.OUTPUT)
 
-            # set data
-            oei.setValues2(handle.variables[var][:], times)
+            # flatten each timestep of the data
+            values = [v.flatten() for v in handle.variables[var][:]]
+
+            # set these data
+            oei.setValues2(values, times)
 
             # save the oei
             self.outputs(oei)
 
+        # set metadata
+        name = args['ncpath'].split('/')[-1]
+        self.name(name)
+        self.description('NetCDF data component, '+name)
+        self.simulation_start(times[0])
+        self.simulation_end(times[-1])
+        self.status(stdlib.Status.READY)
 
-        print 'initialize complete'
 
     def prepare(self):
         self.status(stdlib.Status.READY)

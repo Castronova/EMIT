@@ -4,10 +4,25 @@ import netCDF4
 import wrappers
 from wrappers import base
 from utilities import geometry
+from dateutil import parser
+import datetime
+import numpy
 
 # http://www.hydro.washington.edu/~jhamman/hydro-logic/blog/2013/10/12/plot-netcdf-data/
 
 class Wrapper(base.BaseWrapper):
+    """
+    Wrapper for NetCDF data types.  Requires user specified inputs that cannot be extracted from NetCDF files in
+    a generalized manner:
+
+    tdim -> time variable name
+    tunit -> time unit name (datetime.timedelta hours, minutes, seconds, days, etc...)
+    starttime -> start time
+    xdim -> x location variable name
+    ydim -> y location variable name
+
+    """
+
 
     def __init__(self, args):
         super(Wrapper, self).__init__(self)
@@ -16,17 +31,44 @@ class Wrapper(base.BaseWrapper):
 
         variables = handle.variables.keys()
 
-        # make sure time is a variable in this file
-        assert args['timevar'] in variables
+        tdim = args['tdim']
+        xdim = args['xdim']
+        ydim = args['ydim']
+        tunit = {args['tunit']: 1}
+        st = parser.parse(args['starttime'])
 
-        variables.remove(args['timevar'])
-        times = handle.variables[args['timevar']][:]
-        assert args['ptx'] in variables
-        variables.remove(args['ptx'])
-        xcoords = handle.variables[args['ptx']][:]
-        assert args['pty'] in variables
-        ycoords = handle.variables[args['pty']][:]
-        variables.remove(args['pty'])
+        # make sure the variables provided exist in the nc file
+        assert tdim in variables, 'time variable name not specified.  Cannot continue'
+        assert xdim in variables, 'x dimension variable name not specified.  Cannot continue'
+        assert ydim in variables, 'y dimension variable name not specified.  Cannot continue'
+
+
+
+        # get data for these variables
+        timesteps = handle.variables[tdim][:]
+        times = []
+        for ts in timesteps:
+            # update the time unit value
+            tunit[args['tunit']] = ts
+
+            # unpack the tunit dictionary to create a timedelta object
+            dt = datetime.timedelta(**tunit)
+
+            times.append(st + dt)
+
+        variables.remove(tdim)
+
+        x = handle.variables[xdim][:]
+        variables.remove(xdim)
+
+        y = handle.variables[ydim][:]
+        variables.remove(ydim)
+
+        # create flattened lists of x,y coords from meshgrid
+        xcoords, ycoords = numpy.meshgrid(x, y)
+        xcoords = xcoords.flatten()
+        ycoords = ycoords.flatten()
+
 
         # loop through the remaining variables and expose them as outputs
         for var in variables:
@@ -40,8 +82,7 @@ class Wrapper(base.BaseWrapper):
             variable.VariableNameCV(handle.variables[var].name)
 
             # create geometries
-            endidx = min(len(xcoords), len(ycoords)) # in case number of x and y coords does not match
-            geoms = geometry.build_point_geometries(xcoords[:endidx], ycoords[:endidx])
+            geoms = geometry.build_point_geometries(xcoords, ycoords)
 
             # create exchange item
             oei = stdlib.ExchangeItem(name=variable.VariableNameCV(),
@@ -51,14 +92,23 @@ class Wrapper(base.BaseWrapper):
                                 variable = variable,
                                 type = stdlib.ExchangeItemType.OUTPUT)
 
-            # set data
-            oei.setValues2(handle.variables[var][:], times)
+            # flatten each timestep of the data
+            values = [v.flatten() for v in handle.variables[var][:]]
+
+            # set these data
+            oei.setValues2(values, times)
 
             # save the oei
             self.outputs(oei)
 
+        # set metadata
+        name = args['ncpath'].split('/')[-1]
+        self.name(name)
+        self.description('NetCDF data component, '+name)
+        self.simulation_start(times[0])
+        self.simulation_end(times[-1])
+        self.status(stdlib.Status.READY)
 
-        print 'initialize complete'
 
     def prepare(self):
         self.status(stdlib.Status.READY)

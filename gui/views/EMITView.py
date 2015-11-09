@@ -13,6 +13,8 @@ from LowerPanelView import viewLowerPanel
 import os
 from environment import env_vars
 from gui.controller.NetcdfCtrl import NetcdfCtrl
+import coordinator.engineAccessors as engine
+import wrappers
 
 # create custom events
 wxCreateBox, EVT_CREATE_BOX = NewEvent()
@@ -164,6 +166,8 @@ class ViewEMIT(wx.Frame):
         self.data_menu = wx.Menu()
         self._menubar.Append(self.data_menu, "Data")
         add_file = self.data_menu.Append(wx.NewId(), "&Add File")
+        add_netcdf = self.data_menu.Append(wx.NewId(), '&Add NetCDF')
+
         open_dap_viewer = self.data_menu.Append(wx.NewId(), "&Open Dap Viewer")
 
         self.SetMenuBar(self._menubar)
@@ -187,6 +191,7 @@ class ViewEMIT(wx.Frame):
 
         # Data Menu Bindings
         self.Bind(wx.EVT_MENU, self.onAddFile, add_file)
+        self.Bind(wx.EVT_MENU, self.onAddNetcdfFile, add_netcdf)
         self.Bind(wx.EVT_MENU, self.onOpenDapViewer, open_dap_viewer)
 
     def Settings(self, event):
@@ -203,6 +208,22 @@ class ViewEMIT(wx.Frame):
         if file_dialog.ShowModal() == wx.ID_OK:
             path = file_dialog.GetPath()
         elog.info("This implemention has not been finished")
+
+    def onAddNetcdfFile(self, event):
+        file_dialog = wx.FileDialog(self.Parent,
+                                    message="Add *.nc file",
+                                    defaultDir=os.getcwd(),
+                                    defaultFile="",
+                                    wildcard="NetCDF File(*.nc)|*.nc", style=wx.FD_OPEN)
+
+        # if a file is selected
+        if file_dialog.ShowModal() == wx.ID_OK:
+            path = file_dialog.GetPath()
+            attrib = dict(ncpath = path,
+                          type = wrappers.Types.NETCDF)
+            engine.addModel(attrib=attrib)
+
+
 
     def onClose(self, event):
         dial = wx.MessageDialog(None, 'Are you sure to quit?', 'Question',

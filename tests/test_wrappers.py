@@ -206,9 +206,11 @@ class testNetcdfWrapper(unittest.TestCase):
     def test_netcdf_initialization(self):
 
         args = dict(ncpath = './data/prcp.nc',
-                    timevar = 'time',
-                    ptx = 'x',
-                    pty = 'y')
+                    tdim = 'time',
+                    xdim = 'x',
+                    ydim = 'y',
+                    tunit = 'hours',
+                    starttime = '01-01-2014')
 
         self.assertTrue(os.path.exists(args['ncpath']))
 

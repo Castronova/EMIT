@@ -4,10 +4,23 @@ import netCDF4
 import wrappers
 from wrappers import base
 from utilities import geometry
-
+from dateutil import parser
+import datetime
 # http://www.hydro.washington.edu/~jhamman/hydro-logic/blog/2013/10/12/plot-netcdf-data/
 
 class Wrapper(base.BaseWrapper):
+    """
+    Wrapper for NetCDF data types.  Requires user specified inputs that cannot be extracted from NetCDF files in
+    a generalized manner:
+
+    tdim -> time variable name
+    tunit -> time unit name (datetime.timedelta hours, minutes, seconds, days, etc...)
+    starttime -> start time
+    xdim -> x location variable name
+    ydim -> y location variable name
+
+    """
+
 
     def __init__(self, args):
         super(Wrapper, self).__init__(self)
@@ -16,17 +29,40 @@ class Wrapper(base.BaseWrapper):
 
         variables = handle.variables.keys()
 
-        # make sure time is a variable in this file
-        assert args['timevar'] in variables
+        tdim = args['tdim']
+        xdim = args['xdim']
+        ydim = args['ydim']
+        tunit = {args['tunit']: 1}
+        st = parser.parse(args['starttime'])
 
-        variables.remove(args['timevar'])
-        times = handle.variables[args['timevar']][:]
-        assert args['ptx'] in variables
-        variables.remove(args['ptx'])
-        xcoords = handle.variables[args['ptx']][:]
-        assert args['pty'] in variables
-        ycoords = handle.variables[args['pty']][:]
-        variables.remove(args['pty'])
+        # make sure the variables provided exist in the nc file
+        assert tdim in variables, 'time variable name not specified.  Cannot continue'
+        assert xdim in variables, 'x dimension variable name not specified.  Cannot continue'
+        assert ydim in variables, 'y dimension variable name not specified.  Cannot continue'
+
+
+
+        # get data for these variables
+        timesteps = handle.variables[tdim][:]
+        times = []
+        for ts in timesteps:
+            # update the time unit value
+            tunit[args['tunit']] = ts
+
+            # unpack the tunit dictionary to create a timedelta object
+            dt = datetime.timedelta(**tunit)
+
+            times.append(st + dt)
+
+        variables.remove(tdim)
+
+        xcoords = handle.variables[xdim][:]
+        variables.remove(xdim)
+
+        ycoords = handle.variables[ydim][:]
+        variables.remove(ydim)
+
+
 
         # loop through the remaining variables and expose them as outputs
         for var in variables:

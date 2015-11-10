@@ -165,7 +165,7 @@ class ViewEMIT(wx.Frame):
 
         self.data_menu = wx.Menu()
         self._menubar.Append(self.data_menu, "Data")
-        add_file = self.data_menu.Append(wx.NewId(), "&Add File")
+        add_file = self.data_menu.Append(wx.NewId(), "&Add CSV File")
         add_netcdf = self.data_menu.Append(wx.NewId(), '&Add NetCDF')
 
         open_dap_viewer = self.data_menu.Append(wx.NewId(), "&Open Dap Viewer")
@@ -190,7 +190,7 @@ class ViewEMIT(wx.Frame):
         self.Bind(wx.EVT_MENU, self.defaultview, defaultview)
 
         # Data Menu Bindings
-        self.Bind(wx.EVT_MENU, self.onAddFile, add_file)
+        self.Bind(wx.EVT_MENU, self.onAddCsvFile, add_file)
         self.Bind(wx.EVT_MENU, self.onAddNetcdfFile, add_netcdf)
         self.Bind(wx.EVT_MENU, self.onOpenDapViewer, open_dap_viewer)
 
@@ -198,16 +198,15 @@ class ViewEMIT(wx.Frame):
         settings = viewMenuBar()
         settings.Show()
 
-    def onAddFile(self, event):
+    def onAddCsvFile(self, event):
         file_dialog = wx.FileDialog(self.Parent,
-                                    message="Add .csv or .nc file",
+                                    message="Add *.csv file",
                                     defaultDir=os.getcwd(),
                                     defaultFile="",
-                                    wildcard=" CSV File (*.csv)|*.csv|NetCDF File(*.nc)|*.nc", style=wx.FD_OPEN)
+                                    wildcard=" CSV File (*.csv)|*.csv", style=wx.FD_OPEN)
 
         if file_dialog.ShowModal() == wx.ID_OK:
             path = file_dialog.GetPath()
-        elog.info("This implemention has not been finished")
 
     def onAddNetcdfFile(self, event):
         file_dialog = wx.FileDialog(self.Parent,

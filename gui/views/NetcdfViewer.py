@@ -20,7 +20,7 @@ class NetcdfViewer(wx.Frame):
         panel = wx.Panel(self)
         self.top_panel = wx.Panel(panel)
         self.bottom_panel = wx.Panel(panel, size=(-1, 70))
-        self.bottom_panel.SetBackgroundColour("#AABBCC")
+        # self.bottom_panel.SetBackgroundColour("#AABBCC")
 
         horizontal_sizer = wx.BoxSizer(wx.HORIZONTAL)
 

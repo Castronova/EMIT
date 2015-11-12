@@ -19,7 +19,6 @@ class NetcdfCtrl(NetcdfViewer):
         NetcdfViewer.__init__(self, parent=parent)
         self.Bind(wx.EVT_BUTTON, self.addToCanvas, self.add_to_canvas_btn)
         self.Bind(wx.EVT_BUTTON, self.RunCrawler, self.get_btn)
-        self.test_populateList()
         self.alternateRowColor()
 
     def addToCanvas(self, event):
@@ -28,6 +27,10 @@ class NetcdfCtrl(NetcdfViewer):
         url = self.TableValues[item][1]
         print url
         print "Adding to canvas: SEarch HELLO THIS IS ADDING"
+
+    def autoSizeColumns(self):
+        for i in range(self.variable_list.GetColumnCount()):
+            self.variable_list.SetColumnWidth(i, wx.LIST_AUTOSIZE)
 
     def check_url(self, url):
         """
@@ -104,18 +107,7 @@ class NetcdfCtrl(NetcdfViewer):
             for x in self.TableValues:
                 print x
             self.updateFileList(self.TableValues)
-
-    def test_populateList(self):
-        row = 0
-        col = 0
-        for i in range(20):
-            pos = self.variable_list.InsertStringItem(row, str(i))
-            for j in range(4):  # Number of columns
-                self.variable_list.SetStringItem(pos, col, str(i+1))
-
-                col += 1
-            col = 0
-            row += 1
+        self.autoSizeColumns()
 
     def updateFileList(self, data):
         rowNumber = 0

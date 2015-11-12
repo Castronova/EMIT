@@ -10,18 +10,17 @@ import httplib
 import urlparse
 
 
-
 class NetcdfCtrl(NetcdfViewer):
 
     def __init__(self, parent):  # What parameters does this need?
-
-
         # namespaces for XML parsing
         self.thredds = "http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0"
         self.xlink = "http://www.w3.org/1999/xlink"
         NetcdfViewer.__init__(self, parent=parent)
         self.Bind(wx.EVT_BUTTON, self.addToCanvas, self.add_to_canvas_btn)
         self.Bind(wx.EVT_BUTTON, self.RunCrawler, self.get_btn)
+        self.test_populateList()
+        self.alternateRowColor()
 
     def addToCanvas(self, event):
         item = self.getSelectedInformation()
@@ -30,13 +29,36 @@ class NetcdfCtrl(NetcdfViewer):
         print url
         print "Adding to canvas: SEarch HELLO THIS IS ADDING"
 
-    def getSelectedInformation(self):
-        num = self.variableList.GetItemCount()
-        for i in range(num):
-            if self.variableList.IsSelected(i):
-                v_name = self.variableList.GetItemText(1)
-                return i
+    def check_url(self, url):
+        """
+        Check if a URL exists without downloading the whole file.
+        We only check the URL header.
+        """
+        # see also http://stackoverflow.com/questions/2924422
+        good_codes = [httplib.OK, httplib.FOUND, httplib.MOVED_PERMANENTLY]
+        return self.get_server_status_code(url) in good_codes
 
+    def crawler(self, catalog, results):
+        r = requests.get(catalog)
+        xml = cElementTree.fromstring(r.content)
+
+        for subdir in xml.iterfind(".//{%s}catalogRef" % self.thredds):
+            link = subdir.attrib["{%s}href" % self.xlink]
+
+            self.crawler(urljoin(catalog, link), results)
+
+        for dataset in xml.iterfind(".//{%s}dataset//{%s}dataset" % (self.thredds,self.thredds)):
+            results.append(dataset)
+
+
+        return results
+
+    def getSelectedInformation(self):
+        num = self.variable_list.GetItemCount()
+        for i in range(num):
+            if self.variable_list.IsSelected(i):
+                v_name = self.variable_list.GetItemText(1)
+                return i
 
     def get_server_status_code(self, url):
         """
@@ -51,28 +73,6 @@ class NetcdfCtrl(NetcdfViewer):
             return conn.getresponse().status
         except StandardError:
             return None
-
-    def check_url(self, url):
-        """
-        Check if a URL exists without downloading the whole file.
-        We only check the URL header.
-        """
-        # see also http://stackoverflow.com/questions/2924422
-        good_codes = [httplib.OK, httplib.FOUND, httplib.MOVED_PERMANENTLY]
-        return self.get_server_status_code(url) in good_codes
-
-    def updateFileList(self, data):
-        rowNumber = 0
-        colNumber = 0
-
-        for x in data:
-            pos = self.variableList.InsertStringItem(rowNumber, "test")
-            for y in x:
-                self.variableList.SetStringItem(pos, colNumber, str(y))
-                colNumber +=1
-            colNumber = 0
-            rowNumber +=1
-
 
     def RunCrawler(self, event):
         results = [];
@@ -105,23 +105,26 @@ class NetcdfCtrl(NetcdfViewer):
                 print x
             self.updateFileList(self.TableValues)
 
+    def test_populateList(self):
+        row = 0
+        col = 0
+        for i in range(20):
+            pos = self.variable_list.InsertStringItem(row, str(i))
+            for j in range(4):  # Number of columns
+                self.variable_list.SetStringItem(pos, col, str(i+1))
 
-    def crawler(self,catalog, results):
-        r = requests.get(catalog)
-        xml = cElementTree.fromstring(r.content)
+                col += 1
+            col = 0
+            row += 1
 
-        for subdir in xml.iterfind(".//{%s}catalogRef" % self.thredds):
-            link = subdir.attrib["{%s}href" % self.xlink]
+    def updateFileList(self, data):
+        rowNumber = 0
+        colNumber = 0
 
-            self.crawler(urljoin(catalog, link), results)
-
-        for dataset in xml.iterfind(".//{%s}dataset//{%s}dataset" % (self.thredds,self.thredds)):
-            results.append(dataset)
-
-
-        return results
-
-
-
-
-
+        for x in data:
+            pos = self.variable_list.InsertStringItem(rowNumber, "test")
+            for y in x:
+                self.variable_list.SetStringItem(pos, colNumber, str(y))
+                colNumber += 1
+            colNumber = 0
+            rowNumber += 1

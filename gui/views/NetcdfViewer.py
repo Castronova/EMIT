@@ -19,42 +19,37 @@ class NetcdfViewer(wx.Frame):
 
         panel = wx.Panel(self)
         self.top_panel = wx.Panel(panel)
-        self.bottom_panel = wx.Panel(panel, size=(-1, 100))
+        self.bottom_panel = wx.Panel(panel, size=(-1, 70))
         self.bottom_panel.SetBackgroundColour("#AABBCC")
 
         horizontal_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.variableList = CheckListCtrl(self.top_panel)
+        self.variable_list = CheckListCtrl(self.top_panel)
 
-        #self.tree_ctrl = wx.TreeCtrl(parent=self.top_panel)
-        #horizontal_sizer.Add(self.tree_ctrl, 1, wx.EXPAND | wx.ALL, 2)
-
-        horizontal_sizer.Add(self.variableList, 1, wx.EXPAND | wx.ALL, 2)
+        horizontal_sizer.Add(self.variable_list, 1, wx.EXPAND | wx.ALL, 2)
         self.top_panel.SetSizer(horizontal_sizer)
         hbox_bottom_panel = wx.BoxSizer(wx.HORIZONTAL)
         vbox_bottom_panel = wx.BoxSizer(wx.VERTICAL)
+        hbox_url = wx.BoxSizer(wx.HORIZONTAL)
 
+        self.variable_list.InsertColumn(0, "File Name")
+        self.variable_list.InsertColumn(1, "URL")
+        self.variable_list.InsertColumn(2, "Size")
+        self.variable_list.InsertColumn(3, "Last Updated")
 
-        self.variableList.InsertColumn(0, "File name")
-        self.variableList.InsertColumn(1, "File url")
-        self.variableList.InsertColumn(2, "DAS url")
-
-        self.url_textbox = wx.TextCtrl(parent=self.bottom_panel, id=wx.ID_ANY, value="https://url.example")
-        self.get_btn = wx.Button(parent=self.bottom_panel, id=wx.ID_ANY, label="Get")
+        self.url_textbox = wx.TextCtrl(parent=self.bottom_panel, value="https://url.example", size=(-1, 25))
+        self.get_btn = wx.Button(parent=self.bottom_panel, label="Get", size=(-1, 27))
         self.download_btn = wx.Button(parent=self.bottom_panel, id=wx.ID_ANY, label="Download")
         self.add_to_canvas_btn = wx.Button(parent=self.bottom_panel, id=wx.ID_ANY, label="Add To Canvas")
 
-        vbox_bottom_panel.Add(self.url_textbox, 1, wx.EXPAND | wx.ALL, 2)
+        hbox_url.Add(self.url_textbox, 1, 0)
+        hbox_url.Add(self.get_btn, 0, wx.ALL)
+        vbox_bottom_panel.Add(hbox_url, 1, wx.EXPAND | wx.ALL, 2)
 
-        hbox_bottom_panel.Add(self.get_btn,1,wx.EXPAND | wx.ALL, 2)
         hbox_bottom_panel.Add(self.download_btn, 1, wx.EXPAND | wx.ALL, 2)
         hbox_bottom_panel.Add(self.add_to_canvas_btn, 1, wx.EXPAND | wx.ALL, 2)
 
-        vbox_bottom_panel.Add(hbox_bottom_panel, 1, wx.EXPAND | wx.ALL, 2)
-
-        #  This panel has a vertical and a horitzonal box sizer.
-        #  The vertical makes it so the text box and buttons are stacked
-        #  While the horizontal only affects the button.
+        vbox_bottom_panel.Add(hbox_bottom_panel, 1, wx.EXPAND | wx.ALL, 1)
 
         self.bottom_panel.SetSizer(vbox_bottom_panel)
 
@@ -64,10 +59,10 @@ class NetcdfViewer(wx.Frame):
         viewer_vbox.Add(self.bottom_panel, 0, wx.EXPAND | wx.ALL, 2)
 
         panel.SetSizer(viewer_vbox)
+        self.Layout()
         self.Show()
 
-
-
-
-
-
+    def alternateRowColor(self, color="#DCEBEE"):
+        for i in range(self.variable_list.GetItemCount()):
+            if i % 2 == 1:
+                self.variable_list.SetItemBackgroundColour(i, color)

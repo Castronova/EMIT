@@ -8,7 +8,7 @@ from urlparse import urljoin
 import requests
 import httplib
 import urlparse
-
+import urllib
 
 class NetcdfCtrl(NetcdfViewer):
 
@@ -17,6 +17,7 @@ class NetcdfCtrl(NetcdfViewer):
         self.thredds = "http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0"
         self.xlink = "http://www.w3.org/1999/xlink"
         NetcdfViewer.__init__(self, parent=parent)
+        self.Bind(wx.EVT_BUTTON, self.DownloadFile, self.download_btn)
         self.Bind(wx.EVT_BUTTON, self.addToCanvas, self.add_to_canvas_btn)
         self.Bind(wx.EVT_BUTTON, self.RunCrawler, self.get_btn)
         self.alternateRowColor()
@@ -31,6 +32,11 @@ class NetcdfCtrl(NetcdfViewer):
     def autoSizeColumns(self):
         for i in range(self.variable_list.GetColumnCount()):
             self.variable_list.SetColumnWidth(i, wx.LIST_AUTOSIZE)
+
+    def DownloadFile(self, event):
+        location = self.getSelectedInformation()
+        print self.TableValues[location][1]
+        urllib.urlretrieve(self.TableValues[location][1], self.TableValues[location][0])
 
     def check_url(self, url):
         """

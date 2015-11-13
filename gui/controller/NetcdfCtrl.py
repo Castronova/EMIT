@@ -20,7 +20,7 @@ class NetcdfCtrl(NetcdfViewer):
         self.Bind(wx.EVT_BUTTON, self.DownloadFile, self.download_btn)
         self.Bind(wx.EVT_BUTTON, self.addToCanvas, self.add_to_canvas_btn)
         self.Bind(wx.EVT_BUTTON, self.RunCrawler, self.get_btn)
-        self.alternateRowColor()
+
 
     def addToCanvas(self, event):
         item = self.getSelectedInformation()
@@ -28,6 +28,7 @@ class NetcdfCtrl(NetcdfViewer):
         url = self.TableValues[item][1]
         print url
         print "Adding to canvas: SEarch HELLO THIS IS ADDING"
+
 
     def autoSizeColumns(self):
         for i in range(self.variable_list.GetColumnCount()):
@@ -46,6 +47,9 @@ class NetcdfCtrl(NetcdfViewer):
         # see also http://stackoverflow.com/questions/2924422
         good_codes = [httplib.OK, httplib.FOUND, httplib.MOVED_PERMANENTLY]
         return self.get_server_status_code(url) in good_codes
+
+    def clearData(self):
+        self.variable_list.DeleteAllItems()
 
     def crawler(self, catalog, results):
         r = requests.get(catalog)
@@ -84,35 +88,39 @@ class NetcdfCtrl(NetcdfViewer):
             return None
 
     def RunCrawler(self, event):
-        results = [];
-        url = self.url_textbox.GetLineText(0)
-        isValid = self.check_url(url + "/catalog.xml")
+        if self.variable_list.GetItemCount() > 0:
+            self.clearData()
 
-        if isValid:
-            results = self.crawler(url +"/catalog.xml",results)
-            self.TableValues = [];
+        results = []
+        url = self.url_textbox.GetLineText(0)
+        is_valid = self.check_url(url + "/catalog.xml")
+
+        if is_valid:
+            results = self.crawler(url + "/catalog.xml", results)
+            self.TableValues = []
             spacing = 25
-            print '\n\nFilename',(spacing-len('Filename'))*' ','DAP Path'
-            print '--------',(spacing-len('Filename'))*' ','--------'
+            print '\n\nFilename', (spacing-len('Filename'))*' ', 'DAP Path'
+            print '--------', (spacing-len('Filename'))*' ', '--------'
             for ds in results:
                 # cElementTree.tostring(catalog, 'utf-8')
 
-                dap = ds.find('.//{%s}access[@serviceName="dap"]'%self.thredds)
+                dap = ds.find('.//{%s}access[@serviceName="dap"]' % self.thredds)
                 if dap is not None:
-                    wms = ds.find('.//{%s}access[@serviceName="wms"]'%self.thredds)
-                    size = ds.find('.//{%s}dataSize'%self.thredds)
-                    date = ds.find('.//{%s}date'%self.thredds)
+                    wms = ds.find('.//{%s}access[@serviceName="wms"]' % self.thredds)
+                    size = ds.find('.//{%s}dataSize' % self.thredds)
+                    date = ds.find('.//{%s}date' % self.thredds)
 
                     dap_url = dict(dap.items())['urlPath']
                     wms_url = dict(wms.items())['urlPath']
                     name = dict(ds.items())['name']
 
                     self.TableValues.append([name, url + dap_url, url + dap_url + ".das"])
-                    print name,(spacing-len(name))*' ',dap_url
+                    print name, (spacing-len(name))*' ', dap_url
 
             for x in self.TableValues:
                 print x
             self.updateFileList(self.TableValues)
+        self.alternateRowColor()
         self.autoSizeColumns()
 
     def updateFileList(self, data):

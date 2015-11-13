@@ -37,7 +37,7 @@ class NetcdfViewer(wx.Frame):
         self.variable_list.InsertColumn(2, "Size")
         self.variable_list.InsertColumn(3, "Last Updated")
 
-        self.url_textbox = wx.TextCtrl(parent=self.bottom_panel, value="https://url.example", size=(-1, 25))
+        self.url_textbox = wx.TextCtrl(parent=self.bottom_panel, value="http://129.123.51.203/opendap", size=(-1, 25))
         self.get_btn = wx.Button(parent=self.bottom_panel, label="Get", size=(-1, 27))
         self.download_btn = wx.Button(parent=self.bottom_panel, id=wx.ID_ANY, label="Download")
         self.add_to_canvas_btn = wx.Button(parent=self.bottom_panel, id=wx.ID_ANY, label="Add To Canvas")

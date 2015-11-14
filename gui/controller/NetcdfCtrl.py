@@ -88,9 +88,10 @@ class NetcdfCtrl(NetcdfViewer):
             return None
 
     def RunCrawler(self, event):
+        self.status_bar.SetStatusText("Loading")
+        self.Enable(False)
         if self.variable_list.GetItemCount() > 0:
             self.clearData()
-
         results = []
         url = self.url_textbox.GetLineText(0)
         is_valid = self.check_url(url + "/catalog.xml")
@@ -119,9 +120,12 @@ class NetcdfCtrl(NetcdfViewer):
 
             for x in self.TableValues:
                 print x
+            self.status_bar.SetStatusText("Almost done...")
             self.updateFileList(self.TableValues)
         self.alternateRowColor()
         self.autoSizeColumns()
+        self.Enable(True)
+        self.status_bar.SetStatusText("Done!")
 
     def updateFileList(self, data):
         rowNumber = 0

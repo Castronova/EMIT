@@ -28,7 +28,7 @@ class testWofSimulation(unittest.TestCase):
                     )
 
 
-        # add the wof component to the engine
+        # add the WaterOneFlow component to the engine
         self.engine.add_model(id=1234, attrib=args)
 
         # load a test component
@@ -41,7 +41,7 @@ class testWofSimulation(unittest.TestCase):
         models = self.engine.get_all_models()
         self.assertTrue(len(models) == 2)
 
-        # add a link from wof to multiplier
+        # add a link from WaterOneFlow to multiplier
         wof_oei = self.engine.get_output_exchange_items_summary(id=1234)
         mul_iei = self.engine.get_input_exchange_items_summary(id=1235)
         self.engine.add_link(from_id=1234, from_item_id=wof_oei[0]['name'],

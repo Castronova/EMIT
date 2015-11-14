@@ -2,14 +2,19 @@ __author__ = 'tonycastronova'
 
 import collections
 import xml.etree.ElementTree as et
+
 from suds.client import Client
+
 from coordinator.emitLogging import elog
+from utilities.timeout import timeout
 
 
-class wof(object):
+class WaterOneFlow(object):
 
+    @timeout(10)
     def __init__(self, wsdl):
         self.wsdl = wsdl
+        # sleep(3)
         self.conn = Client(wsdl)
         self.network_code = ""
 

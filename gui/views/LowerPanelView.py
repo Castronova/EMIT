@@ -16,7 +16,7 @@ from coordinator.emitLogging import elog
 from gui.controller import ConsoleOutputCtrl
 # from db.ODM1.WebServiceAPI import WebServiceApi
 from gui.controller.WofSitesCtrl import WofSitesViewerCtrl
-from webservice import wof
+from webservice import wateroneflow
 
 class viewLowerPanel:
     def __init__(self, notebook):
@@ -323,8 +323,12 @@ class TimeSeriesTab(wx.Panel):
         #     thr.start()
         value = self.refresh_database()
         if value is not None:
-            self.api = wof.wof(value)
-            self.setup_wof_table(self.api)
+            try:
+                self.api = wateroneflow.WaterOneFlow(value)
+                self.setup_wof_table(self.api)
+            except Exception:
+                elog.debug("Wof web service took to long or failed.")
+                elog.info("Web service took to long. Wof may be down.")
 
 class AddConnectionDialog(wx.Dialog):
     def __init__(

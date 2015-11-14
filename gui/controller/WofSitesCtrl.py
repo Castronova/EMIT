@@ -50,7 +50,7 @@ class WofSitesViewerCtrl(WofSitesViewer):
             # no table row selected
             return
 
-        args = dict(type='wof',
+        args = dict(type='WaterOneFlow',
                     wsdl=self.parent.api.wsdl,
                     site=siteobject.site_code,
                     variable=variable_code,

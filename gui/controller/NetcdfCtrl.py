@@ -72,6 +72,10 @@ class NetcdfCtrl(NetcdfViewer):
             if self.variable_list.IsSelected(i):
                 v_name = self.variable_list.GetItemText(1)
                 return i
+    
+    def update_statusbar(self, status_bar, text):
+        status_bar.SetStatusText(text);
+        wx.Yield()
 
     def get_server_status_code(self, url):
         """
@@ -88,7 +92,8 @@ class NetcdfCtrl(NetcdfViewer):
             return None
 
     def RunCrawler(self, event):
-        self.status_bar.SetStatusText("Loading")
+        #self.status_bar.SetStatusText("Loading")
+        self.update_statusbar(self.status_bar, 'loading...')
         self.Enable(False)
         if self.variable_list.GetItemCount() > 0:
             self.clearData()
@@ -120,12 +125,17 @@ class NetcdfCtrl(NetcdfViewer):
 
             for x in self.TableValues:
                 print x
-            self.status_bar.SetStatusText("Almost done...")
+            #self.status_bar.SetStatusText("Almost done...")
+            self.update_statusbar(self.status_bar, 'almost done...')
             self.updateFileList(self.TableValues)
-        self.alternateRowColor()
-        self.autoSizeColumns()
-        self.Enable(True)
-        self.status_bar.SetStatusText("Done!")
+            self.update_statusbar(self.status_bar, 'done')
+        
+            self.alternateRowColor()
+            self.autoSizeColumns()
+            self.Enable(True)
+            #self.status_bar.SetStatusText("Done!")
+        else:
+            self.update_statusbar(self.status_bar, 'error connecting to the server')
 
     def updateFileList(self, data):
         rowNumber = 0

@@ -61,7 +61,7 @@ class NetcdfViewer(wx.Frame):
         panel.SetSizer(viewer_vbox)
 
         self.status_bar = self.CreateStatusBar()
-        self.status_bar.SetStatusText("Ready...")
+        self.status_bar.SetStatusText("ready")
         self.Layout()
         self.Show()
 

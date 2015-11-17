@@ -7,7 +7,7 @@ import stdlib
 
 def fromWKB(wkb):
     """
-    Builds a stdlib.Geometry object from a WKT string
+    Builds a stdlib.Geometry object from a WKB string
     :param wkb: wkb string
     :return: stdlib.Geometry
     """
@@ -29,7 +29,7 @@ def fromWKB(wkb):
     else:
         elog.critical("Unsupported geometry type %s, in utilities.geometry.fromWKB" % geomtype)
 
-    return geom
+    return geom[0]
 
 
 def fromWKT(wkt):
@@ -56,7 +56,7 @@ def fromWKT(wkt):
     else:
         elog.critical("Unsupported geometry type %s, in utilities.geometry.fromWKT" % geomtype)
 
-    return geom
+    return geom[0]
 
 
 def fromGdalPolygon(gdalpolygon):

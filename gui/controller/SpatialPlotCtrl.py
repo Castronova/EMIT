@@ -98,6 +98,7 @@ class LogicSpatialPlot(ViewSpatialPlot):
         oei_title = oei if oei is not None else ''
         self.set_titles(iei_title,oei_title)
 
+
         # draw the canvas
         self.canvas.draw()
 

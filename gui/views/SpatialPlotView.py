@@ -23,20 +23,20 @@ class ViewSpatialPlot(wx.Panel):
         # create some sizers
         sizer = wx.BoxSizer(wx.VERTICAL)
 
-        self.inputLabel = wx.StaticText(self,wx.ID_ANY,label='Input Features: ')
-        self.outputLabel = wx.StaticText(self,wx.ID_ANY,label='Output Features: ')
+        # self.inputLabel = wx.StaticText(self,wx.ID_ANY,label='Input Features: ')
+        # self.outputLabel = wx.StaticText(self,wx.ID_ANY,label='Output Features: ')
 
         # put up a figure
         self.figure = plt.figure()
         self.ax = self.figure.add_subplot(1,1,1)
-        self.ax.xaxis._visible = False
-        self.ax.yaxis._visible = False
+        self.ax.xaxis._visible = True
+        self.ax.yaxis._visible = True
 
         self.canvas = FigureCanvas(self, -1, self.figure)
 
         sizer.Add(self.canvas, 100, wx.ALIGN_CENTER|wx.ALL)
 
-        self.outtext = plt.figtext(0.12, 0.92, " ", fontsize='large', color='b', ha ='left')
-        self.intext = plt.figtext(0.9, 0.92, " ",fontsize='large', color='r', ha ='right')
+        self.intext = plt.figtext(0.12, 0.94, " ", fontsize='large', color='b', ha ='left')
+        self.outtext = plt.figtext(0.9, 0.94, " ",fontsize='large', color='r', ha ='right')
 
 

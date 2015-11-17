@@ -11,6 +11,7 @@ import coordinator.engineAccessors as engine
 from gui.controller.SpatialPlotCtrl import LogicSpatialPlot
 # from gui.views.viewLinkSpatialPlot import ViewLinkSpatialPlot
 from coordinator.emitLogging import elog
+from utilities import geometry
 
 LinkUpdatedEvent, EVT_LINKUPDATED = ne.NewEvent()
 
@@ -25,6 +26,9 @@ class LogicLink(ViewLink):
 
         # self.l = None
         self.swap = swap
+
+        # save parent (used in onplot)
+        self.parent = parent
 
         # class link variables used to save link
         self.__selected_link = None
@@ -85,7 +89,7 @@ class LogicLink(ViewLink):
         ogeoms = {}
         for o in oei:
             name = o['name']
-            geoms = [i['shape'] for i in o['geom']]
+            geoms = [geometry.fromWKB(g['wkb']) for g in o['geom']]
             ogeoms[name] = geoms
 
         # get the output geometries
@@ -93,7 +97,7 @@ class LogicLink(ViewLink):
         iei = engine.getInputExchangeItems(target_model_id)
         for i in iei:
             name = i['name']
-            geoms = [j['shape'] for j in i['geom']]
+            geoms = [geometry.fromWKB(g['wkb']) for g in o['geom']]
             igeoms[name] = geoms
 
         # set input and output geometries
@@ -145,8 +149,8 @@ class LogicLink(ViewLink):
         b = wx.BoxSizer(wx.VERTICAL)
         b.Add(textLabel, flag=wx.LEFT, border=20 )
         SelectionSizer.AddSizer(b, flag=wx.BOTTOM, border=10)
-        SelectionSizer.Add(outputSelection, flag=wx.LEFT, border=20)
         SelectionSizer.Add(inputSelection, flag=wx.LEFT, border=20)
+        SelectionSizer.Add(outputSelection, flag=wx.LEFT, border=20)
         plotSizer.Add(plot_panel)
 
         # add elements back to mainSizer
@@ -281,8 +285,8 @@ class LogicLink(ViewLink):
 
         self.OnChange(None)
 
-        self.outputLabel.SetLabel("Output of " + self.GetModelFrom())
-        self.inputLabel.SetLabel("Input of " + self.GetModelTo())
+        # self.outputLabel.SetLabel("Output of " + self.GetModelFrom())
+        # self.inputLabel.SetLabel("Input of " + self.GetModelTo())
 
     def OnSwap(self, event):
         try:

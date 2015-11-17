@@ -13,6 +13,8 @@ import math
 import numpy
 from coordinator.emitLogging import elog
 from utilities import mdl, geometry
+import netCDF4 as nc
+
 
 class ueb(feed_forward.feed_forward_wrapper):
 
@@ -24,8 +26,8 @@ class ueb(feed_forward.feed_forward_wrapper):
         io = mdl.build_exchange_items_from_config(config_params)
 
         # set input and output exchange items
-        self.inputs(value=io['input'])
-        self.outputs(value=io['output'])
+        self.inputs(value=io[stdlib.ExchangeItemType.INPUT])
+        self.outputs(value=io[stdlib.ExchangeItemType.OUTPUT])
 
         # get model parameters
         params = config_params['model_inputs'][0]
@@ -66,6 +68,19 @@ class ueb(feed_forward.feed_forward_wrapper):
             self.outtStride, outyStep, outxStep = [int(s) for s in lines[12].split(' ')]
             ModelUTCOffset = float(lines[13])
             inpDailyorSubdaily = bool(lines[14]==True)
+
+
+        # build input geometries
+        ds = nc.Dataset(C_watershedFile)
+        Xlist = ds.variables['x']
+        yList = ds.variables['y']
+        xcoords, ycoords = numpy.meshgrid(Xlist, yList)
+        xcoords = xcoords.flatten()
+        ycoords = ycoords.flatten()
+        geoms = geometry.build_point_geometries(xcoords, ycoords)
+        self.inputs()['precipitation'].addGeometries2(geoms)
+
+
 
 
         C_wsxcorArray = c_float()

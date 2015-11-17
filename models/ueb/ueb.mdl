@@ -23,6 +23,10 @@ value = 1
 variable_name_cv = Snow Melt Equivalent
 unit_type_cv = inches
 
+[input]
+variable_name_cv = precipitation
+unit_type_cv = inches
+
 [options]
 ignorecv = 1
 

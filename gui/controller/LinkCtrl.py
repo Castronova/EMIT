@@ -84,7 +84,7 @@ class LogicLink(ViewLink):
         source_model_id = self.__selected_link.source_id
         target_model_id = self.__selected_link.target_id
 
-        # get the input geometries
+        # get the output geometries
         oei = engine.getOutputExchangeItems(source_model_id)
         ogeoms = {}
         for o in oei:
@@ -92,12 +92,12 @@ class LogicLink(ViewLink):
             geoms = [geometry.fromWKB(g['wkb']) for g in o['geom']]
             ogeoms[name] = geoms
 
-        # get the output geometries
+        # get the input geometries
         igeoms = {}
         iei = engine.getInputExchangeItems(target_model_id)
         for i in iei:
             name = i['name']
-            geoms = [geometry.fromWKB(g['wkb']) for g in o['geom']]
+            geoms = [geometry.fromWKB(g['wkb']) for g in i['geom']]
             igeoms[name] = geoms
 
         # set input and output geometries
@@ -136,6 +136,7 @@ class LogicLink(ViewLink):
         # set the initial state of the input and output selectors
         inputSelection.SetValue(True)
         outputSelection.SetValue(True)
+
         plot_panel.set_selection_input(self.__selected_link.iei)
         plot_panel.set_selection_output(self.__selected_link.oei)
         plot_panel.UpdatePlot()  # update the plot to reflect the input/output selection
@@ -145,7 +146,7 @@ class LogicLink(ViewLink):
         plotSizer = wx.BoxSizer(wx.VERTICAL)
         SelectionSizer= wx.BoxSizer(wx.VERTICAL)
 
-        # nest sizers to pad bothe the top and left borders
+        # nest sizers to pad both the top and left borders
         b = wx.BoxSizer(wx.VERTICAL)
         b.Add(textLabel, flag=wx.LEFT, border=20 )
         SelectionSizer.AddSizer(b, flag=wx.BOTTOM, border=10)

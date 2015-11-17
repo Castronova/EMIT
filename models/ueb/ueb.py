@@ -335,12 +335,12 @@ class ueb(feed_forward.feed_forward_wrapper):
                     self.activeCells.append((iy, jx))
 
         # build output exchange items
-        pts = []
+        xcoords = []
+        ycoords = []
         for pid in xrange(self.C_npout.value):
-            xcoord = self.C_pOut[pid].xcoord
-            ycoord = self.C_pOut[pid].ycoord
-            pt = geometry.build_point_geometries(xcoord, ycoord)
-            pts.append(pt)
+            xcoords.append(self.C_pOut[pid].xcoord)
+            ycoords.append(self.C_pOut[pid].ycoord)
+        pts = geometry.build_point_geometries(xcoords, ycoords)
         self.outputs()['Snow Melt Equivalent'].addGeometries2(pts)
 
 

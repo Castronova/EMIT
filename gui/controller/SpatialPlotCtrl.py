@@ -20,9 +20,6 @@ class LogicSpatialPlot(ViewSpatialPlot):
         self.__iei = None
         self.__oei = None
 
-        # self.inputCombo.Bind(wx.EVT_COMBOBOX, self.UpdatePlot)
-        # self.outputCombo.Bind(wx.EVT_COMBOBOX, self.UpdatePlot)
-
     def log(self, fmt, *args):
         elog.info((fmt % args))
 
@@ -40,23 +37,13 @@ class LogicSpatialPlot(ViewSpatialPlot):
             self.__iei = iei_name
         else:
             self.__iei = None
-    #
-    # def set_selected_intput(self, selected_name):
-    #     self.__iei = selected_name
-
 
     def set_input_data(self, value):
         """
         :param value: dictionary {variable: [geoms]}
         :return:
         """
-        # self.inputCombo.SetItems([' ']+value.keys())
-
-
         self.__input_data = value
-
-
-
 
     def get_input_geom(self, var_name):
         if var_name in self.__input_data:
@@ -68,7 +55,6 @@ class LogicSpatialPlot(ViewSpatialPlot):
         :param value: dictionary {variable: [geoms]}
         :return:
         """
-        # self.outputCombo.SetItems([' ']+value.keys())
         self.__output_data = value
 
     def get_output_geom(self, var_name):

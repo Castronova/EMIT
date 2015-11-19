@@ -9,9 +9,9 @@ class NASCtrl(NASViewer):
 
     def __init__(self, parent, file):
         self.fileurl = file
-        NASViewer.__init__(self,parent=parent)
-        g = self.PropertyGrid.Append( wxpg.PropertyCategory("test"))
-        self.PropertyGrid.Append( wxpg.StringProperty(str(file), value=str("oops")))
+        NASViewer.__init__(self, parent=parent)
+        g = self.property_grid.Append(wxpg.PropertyCategory("test"))
+        self.property_grid.Append(wxpg.StringProperty(str(file), value=str("oops")))
         self.populateList()
         self.last = " "
 
@@ -19,18 +19,18 @@ class NASCtrl(NASViewer):
         alreadyUsed = {}
         self.ds = nc.Dataset(self.fileurl)
         keys =  self.ds.__dict__.keys()
-        g = self.PropertyGrid.Append( wxpg.PropertyCategory("Global Attributes"))
+        g = self.property_grid.Append(wxpg.PropertyCategory("Global Attributes"))
         for key in keys:
             print self.ds.__dict__[key]
-            self.PropertyGrid.Append(wxpg.StringProperty(str(key), value=str(self.ds.__dict__[key])))
+            self.property_grid.Append(wxpg.StringProperty(str(key), value=str(self.ds.__dict__[key])))
         variables = self.ds.variables.keys()
         for var in variables:
-            g = self.PropertyGrid.Append(wxpg.PropertyCategory(var))
+            g = self.property_grid.Append(wxpg.PropertyCategory(var))
             info = self.ds.variables[var].__dict__.keys()
             for i in info:
                 if i in alreadyUsed:
-                    self.PropertyGrid.Append(wxpg.StringProperty(str(i+alreadyUsed[i]), value=str(self.ds.variables[var].__dict__[i])))
+                    self.property_grid.Append(wxpg.StringProperty(str(i + alreadyUsed[i]), value=str(self.ds.variables[var].__dict__[i])))
                     alreadyUsed[i] += " "
                 else:
-                    self.PropertyGrid.Append(wxpg.StringProperty(str(i), value=str(self.ds.variables[var].__dict__[i])))
+                    self.property_grid.Append(wxpg.StringProperty(str(i), value=str(self.ds.variables[var].__dict__[i])))
                     alreadyUsed[i] = " "

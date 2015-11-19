@@ -218,9 +218,12 @@ class ViewEMIT(wx.Frame):
         # if a file is selected
         if file_dialog.ShowModal() == wx.ID_OK:
             path = file_dialog.GetPath()
-            attrib = dict(ncpath = path,
-                          type = wrappers.Types.NETCDF)
-            engine.addModel(attrib=attrib)
+
+            # print path
+
+            from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
+            NetcdfDetailsCtrl(self.Parent, path)
+
 
 
 

@@ -9,8 +9,8 @@ import requests
 import httplib
 import urlparse
 import urllib
-from gui.controller.NASCtrl import NASCtrl
-from gui.views.NASViewer import NASViewer
+from gui.controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
+from gui.views.NetcdfDetailsView import NetcdfDetailsView
 
 class NetcdfCtrl(NetcdfViewer):
 
@@ -29,7 +29,7 @@ class NetcdfCtrl(NetcdfViewer):
         # this will get the url we want
         url = self.TableValues[item][1]
         print url
-        temp = NASCtrl(self, url)
+        temp = NetcdfDetailsCtrl(self, url)
         print "Adding to canvas: SEarch HELLO THIS IS ADDING"
 
 

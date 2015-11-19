@@ -2,7 +2,7 @@ import wx
 import wx.propgrid as wxpg
 
 
-class NASViewer(wx.Frame):
+class NetcdfDetailsView(wx.Frame):
 
     def __init__(self, parent):
         wx.Frame.__init__(self, parent=parent, id=-1, title=str("Netcdf file information"), pos=wx.DefaultPosition,

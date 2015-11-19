@@ -1,15 +1,15 @@
 __author__ = 'Ryan'
 
-from gui.views.NASViewer import NASViewer
+from gui.views.NetcdfDetailsView import NetcdfDetailsView
 import wx
 import netCDF4 as nc
 import wx.propgrid as wxpg
 
-class NASCtrl(NASViewer):
+class NetcdfDetailsCtrl(NetcdfDetailsView):
 
     def __init__(self, parent, file):
         self.fileurl = file
-        NASViewer.__init__(self, parent=parent)
+        NetcdfDetailsView.__init__(self, parent=parent)
         g = self.property_grid.Append(wxpg.PropertyCategory("test"))
         self.property_grid.Append(wxpg.StringProperty(str(file), value=str("oops")))
         self.populateList()

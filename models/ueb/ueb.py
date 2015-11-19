@@ -114,19 +114,19 @@ class ueb(feed_forward.feed_forward_wrapper):
         self.C_outDimord = c_int(0)
         C_aggoutDimord = c_int(1)
         self.outvarindx = c_int(17)
-        aggoutvarindx = c_int(17)
-        size = c_int()
-        rank = c_int()
-        irank = c_int()
-        jrank = c_int()
-        startTimeT = c_double(0.0)
-        TotalTime = c_double(0.0)
-        totalmodelrunTime = c_double(0.0)
-        TsReadTime = c_double(0.0)
-        TSStartTime = c_double()
-        ComputeStartTime = c_double()
-        ComputeTime = c_double(0.0)
-        OutWriteTime = c_double()
+        # aggoutvarindx = c_int(17)
+        # size = c_int()
+        # rank = c_int()
+        # irank = c_int()
+        # jrank = c_int()
+        # startTimeT = c_double(0.0)
+        # TotalTime = c_double(0.0)
+        # totalmodelrunTime = c_double(0.0)
+        # TsReadTime = c_double(0.0)
+        # TSStartTime = c_double()
+        # ComputeStartTime = c_double()
+        # ComputeTime = c_double(0.0)
+        # OutWriteTime = c_double()
 
         self.uebVars = (c_char_p * 70)("Year", "Month", "Day", "dHour", "atff", "HRI", "Eacl", "Ema", "conZen", "Ta", "P", "V", "RH", "Qsi", "Qli", "Qnet","Us", "SWE", "tausn", "Pr", "Ps", "Alb", "QHs", "QEs", "Es", "SWIT", "QMs", "Q", "FM", "Tave", "TSURFs", "cump", "cumes", "cumMr", "Qnet", "smelt", "refDepth", "totalRefDepth", "cf", "Taufb", "Taufd", "Qsib", "Qsid", "Taub", "Taud", "Qsns", "Qsnc", "Qlns", "Qlnc", "Vz", "Rkinsc", "Rkinc", "Inmax", "intc", "ieff", "Ur", "Wc", "Tc", "Tac", "QHc", "QEc", "Ec", "Qpc", "Qmc", "Mc", "FMc", "SWIGM", "SWISM", "SWIR", "errMB")
 
@@ -224,7 +224,7 @@ class ueb(feed_forward.feed_forward_wrapper):
 
 
         # calculate model time steps (main.cpp, line 222)
-        self.numTimeStep = int(math.ceil(modelSpan*(24./ModelDt)) )
+        self.numTimeStep = int(math.ceil(modelSpan*(24./ModelDt)) ) + 1
         print 'Number of time steps: ', self.numTimeStep
 
         # initialize C_tsvarArray values (this replaces __uebLib.readTextData)
@@ -232,22 +232,22 @@ class ueb(feed_forward.feed_forward_wrapper):
 
         # NOTE: C_strinpforcArray stores info about the forcing data files
 
-        # read forcing data (main.cpp, line 226)
-        if self.C_strsvArray.contents[16].svType != 3: # no accumulation zone (fixme: ???)
-            for it in xrange(13):
-                inftype = self.C_strinpforcArray.contents[it].infType
-                print 'infFile: ',self.C_strinpforcArray.contents[it].infFile
-                if inftype == 0:
-
-                    # read the files stored in C_strinpforcArray and populated C_tsvarArray
-                    self.__uebLib.readTextData(os.path.join(self.base_dir, self.C_strinpforcArray.contents[it].infFile), byref(self.C_tsvarArray.contents[it]), byref(C_ntimesteps[0]))
-
-                elif inftype == 2 or inftype == -1:
-                    self.C_tsvarArray.contents[it] = (c_float * 2)()
-                    C_ntimesteps.contents[0] = 2
-                    # copy the default value if a single value is the option
-                    self.C_tsvarArray.contents[it][0] = self.C_strinpforcArray.contents[it].infType
-                    self.C_tsvarArray.contents[it][1] = self.C_strinpforcArray.contents[it].infdefValue
+        # # read forcing data (main.cpp, line 226)
+        # if self.C_strsvArray.contents[16].svType != 3: # no accumulation zone (fixme: ???)
+        #     for it in xrange(13):
+        #         inftype = self.C_strinpforcArray.contents[it].infType
+        #         print 'infFile: ',self.C_strinpforcArray.contents[it].infFile
+        #         if inftype == 0:
+        #
+        #             # read the files stored in C_strinpforcArray and populated C_tsvarArray
+        #             self.__uebLib.readTextData(os.path.join(self.base_dir, self.C_strinpforcArray.contents[it].infFile), byref(self.C_tsvarArray.contents[it]), byref(C_ntimesteps[0]))
+        #
+        #         elif inftype == 2 or inftype == -1:
+        #             self.C_tsvarArray.contents[it] = (c_float * 2)()
+        #             C_ntimesteps.contents[0] = 2
+        #             # copy the default value if a single value is the option
+        #             self.C_tsvarArray.contents[it][0] = self.C_strinpforcArray.contents[it].infType
+        #             self.C_tsvarArray.contents[it][1] = self.C_strinpforcArray.contents[it].infdefValue
 
 
         # :: this array is initialized to (numOut+1, numTimeStep+1) rather than (numOut, numTimeStep)
@@ -261,7 +261,7 @@ class ueb(feed_forward.feed_forward_wrapper):
         # :: below didn't fix the problem.
         # ::
         # create a numpy array for outputs
-        self.outvarArray = numpy.zeros(shape=(numOut+1, self.numTimeStep+1), dtype=numpy.float, order="C")
+        self.outvarArray = numpy.zeros(shape=(numOut+1, self.numTimeStep), dtype=numpy.float, order="C")
         # arrays_old = self.outvarArray.astype(numpy.float32)
         arrays = self.outvarArray.astype(c_float)
         rows, cols = self.outvarArray.shape
@@ -556,7 +556,6 @@ class ueb(feed_forward.feed_forward_wrapper):
                         # increment the row
                         row += 1
 
-        print 'done'
 
 
 

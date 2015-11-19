@@ -15,8 +15,8 @@ simulation_end = 05/01/2010 13:00:00
 
 
 [time_step]
-name = day
-abbreviation = day
+name = days
+abbreviation = days
 value = 1
 
 [output]

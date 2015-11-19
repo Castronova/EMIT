@@ -107,9 +107,6 @@ class NetcdfCtrl(NetcdfViewer):
         if is_valid:
             results = self.crawler(url + "/catalog.xml", results)
             self.TableValues = []
-            spacing = 25
-            print '\n\nFilename', (spacing-len('Filename'))*' ', 'DAP Path'
-            print '--------', (spacing-len('Filename'))*' ', '--------'
             for ds in results:
                 # cElementTree.tostring(catalog, 'utf-8')
 
@@ -124,10 +121,7 @@ class NetcdfCtrl(NetcdfViewer):
                     name = dict(ds.items())['name']
 
                     self.TableValues.append([name, url + dap_url, url + dap_url + ".das"])
-                    print name, (spacing-len(name))*' ', dap_url
 
-            for x in self.TableValues:
-                print x
             #self.status_bar.SetStatusText("Almost done...")
             self.update_statusbar(self.status_bar, 'almost done...')
             self.updateFileList(self.TableValues)

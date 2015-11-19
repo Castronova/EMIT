@@ -32,14 +32,12 @@ class NetcdfDetailsView(wx.Frame):
         self.time_var_combo = wx.ComboBox(self.bottom_panel, value="---")
         start_time = wx.StaticText(self.bottom_panel, label="Start Time:")
         self.startDatePicker = wx.DatePickerCtrl(self.bottom_panel, dt=self.start_date)
-        time_step = wx.StaticText(self.bottom_panel, label="Time Step:")
-        self.time_step_textbox = wx.TextCtrl(self.bottom_panel, value="1")
-        time_unit = wx.StaticText(self.bottom_panel, label="Units:")
+        time_unit = wx.StaticText(self.bottom_panel, label="Time Units:")
         self.time_step_combo = wx.ComboBox(self.bottom_panel, value="---")
 
         fgs.AddMany([x_spatial_var, self.x_spatial_var_combo, y_spatial_var, self.y_spatial_var_combo,
                      time_var, self.time_var_combo, start_time, self.startDatePicker,
-                     time_step, self.time_step_textbox, time_unit, self.time_step_combo])
+                      time_unit, self.time_step_combo])
 
         vbox_bottom_panel.Add(fgs, 1, wx.EXPAND | wx.ALL, 10)
 

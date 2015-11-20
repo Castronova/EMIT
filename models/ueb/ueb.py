@@ -70,19 +70,6 @@ class ueb(feed_forward.feed_forward_wrapper):
             inpDailyorSubdaily = bool(lines[14]==True)
 
 
-        # build input geometries
-        ds = nc.Dataset(C_watershedFile)
-        Xlist = ds.variables['x']
-        yList = ds.variables['y']
-        xcoords, ycoords = numpy.meshgrid(Xlist, yList)
-        xcoords = xcoords.flatten()
-        ycoords = ycoords.flatten()
-        geoms = geometry.build_point_geometries(xcoords, ycoords)
-        self.inputs()['precipitation'].addGeometries2(geoms)
-
-
-
-
         C_wsxcorArray = c_float()
         C_wsycorArray = c_float()
         self.C_wsArray = pointer(pointer(c_int32()))
@@ -347,9 +334,16 @@ class ueb(feed_forward.feed_forward_wrapper):
         for pid in xrange(self.C_npout.value):
             xcoords.append(self.C_pOut[pid].xcoord)
             ycoords.append(self.C_pOut[pid].ycoord)
-        pts = geometry.build_point_geometries(xcoords, ycoords)
-        self.outputs()['Snow Melt Equivalent'].addGeometries2(pts)
+        self.pts = geometry.build_point_geometries(xcoords, ycoords)
+        self.outputs()['Snow Melt Equivalent'].addGeometries2(self.pts)
 
+
+        # build input exchange items
+        ds = nc.Dataset(C_watershedFile)
+        Xlist = ds.variables['x']
+        Ylist = ds.variables['y']
+        self.geoms = self.build_geometries(Xlist, Ylist)
+        self.inputs()['precipitation'].addGeometries2(self.geoms)
 
 
         print 'initialization successful'
@@ -380,7 +374,8 @@ class ueb(feed_forward.feed_forward_wrapper):
         # get output exchange items
         sme = self.outputs()['Snow Melt Equivalent']
 
-
+        # get the input data
+        # prcp = self.inputs()['precipitation'].getValues2()
 
 
         # Initialize SiteState
@@ -406,29 +401,41 @@ class ueb(feed_forward.feed_forward_wrapper):
             # convert SiteState into a ctype
             C_SiteState = (c_float * len(SiteState))(*SiteState)
 
-            for t in xrange(13):
 
-                # HACK: Everything inside this 'if' statement needs to be checked!!!!
+            # get the input data for the current geometry
+            prcp = self.inputs()['precipitation'].getValues2(geom_idx_start=i, geom_idx_end=i)
 
-                # todo: what does infType == 1 mean?
-                if self.C_strinpforcArray.contents[t].infType == 1:
-                    print 'You are in un-tested code! '
-                    ncTotaltimestep = 0;
+            m = max(prcp)
 
-                    for numNc in xrange(self.C_strinpforcArray[it].numNcfiles):
-                        # read 3D netcdf data
-                        tsInputfile = self.C_strinpforcArray[t].infFile + numNc + '.nc'
+            # set the input data for this geometry
+            for i in range(len(prcp)):
+                # set precipitation values in tsvarArray (index 1)
+                self.C_tsvarArray.contents[1][i] = prcp[i][0]
 
-                        retvalue = self.__uebLib.readNC_TS(tsInputfile, self.C_strinpforcArray.contents[t].infvarName, self.C_strinpforcArray.contents[t].inftimeVar, C_wsycorName, C_wsxcorName, byref(C_tsvarArrayTemp[numNc]), byref(C_tcorvar[it]), self.C_uebCellY, self.C_uebCellX, byref(C_ntimesteps[numNc]));
 
-                        ncTotaltimestep += C_ntimesteps[numNc];
-
-                    self.C_tsvarArray[t] = (c_float * ncTotaltimestep)
-                    tinitTime = 0
-                    for numNc in xrange(self.C_strinpforcArray.contents[t].numNcFiles):
-                        for tts in xrange(C_ntimesteps[numNc]):
-                            self.C_tsvarArray.contents[t][tts + tinitTime] = C_tsvarArrayTemp.contents[numNc][tts]
-                        tinitTime += C_ntimesteps[numNc]
+            # for t in xrange(13):
+            #
+            #     # HACK: Everything inside this 'if' statement needs to be checked!!!!
+            #
+            #     # todo: what does infType == 1 mean?
+            #     if self.C_strinpforcArray.contents[t].infType == 1:
+            #         print 'You are in un-tested code! '
+            #         ncTotaltimestep = 0;
+            #
+            #         for numNc in xrange(self.C_strinpforcArray[it].numNcfiles):
+            #             # read 3D netcdf data
+            #             tsInputfile = self.C_strinpforcArray[t].infFile + numNc + '.nc'
+            #
+            #             retvalue = self.__uebLib.readNC_TS(tsInputfile, self.C_strinpforcArray.contents[t].infvarName, self.C_strinpforcArray.contents[t].inftimeVar, C_wsycorName, C_wsxcorName, byref(C_tsvarArrayTemp[numNc]), byref(C_tcorvar[it]), self.C_uebCellY, self.C_uebCellX, byref(C_ntimesteps[numNc]));
+            #
+            #             ncTotaltimestep += C_ntimesteps[numNc];
+            #
+            #         self.C_tsvarArray[t] = (c_float * ncTotaltimestep)
+            #         tinitTime = 0
+            #         for numNc in xrange(self.C_strinpforcArray.contents[t].numNcFiles):
+            #             for tts in xrange(C_ntimesteps[numNc]):
+            #                 self.C_tsvarArray.contents[t][tts + tinitTime] = C_tsvarArrayTemp.contents[numNc][tts]
+            #             tinitTime += C_ntimesteps[numNc]
 
 
 
@@ -557,5 +564,22 @@ class ueb(feed_forward.feed_forward_wrapper):
                         row += 1
 
 
+    def build_geometries(self, xcoords, ycoords):
+        """
+        builds point geometries consistent with the native UEB ordering
+        :param xcoords:  list of x coordinates
+        :param xyoords:  list of xycoordinates
+        :return: a list of geometries
+        """
 
+        # build a meshgrid
+        x, y = numpy.meshgrid(xcoords, ycoords)
+
+        # x any y coords are paired using Fortran ordering to be consistent with the way activeCells are ordered.  This
+        # is necessary to ensure that calculation looping is maintained in the run function.
+        x = numpy.ravel(x, 'F')
+        y = numpy.ravel(y, 'F')
+
+        # build point geometries
+        return geometry.build_point_geometries(x, y)
 

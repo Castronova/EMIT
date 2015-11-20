@@ -30,6 +30,30 @@ class testUEB(unittest.TestCase):
 
         print 'done'
 
+    def test_geometry_creation_and_ordering(self):
+
+        # intialize ueb
+        mdl = '../ueb.mdl'
+        config_params = parse_config(mdl)
+        UEB = ueb.ueb(config_params)
+
+        # get the active cells (these are looped through in run)
+        cells = UEB.activeCells
+
+        # build geometries
+        xdim = UEB.C_dimlen1.value
+        ydim = UEB.C_dimlen2.value
+        geoms = UEB.build_geometries(range(xdim), range(ydim))
+
+        # create point tuples from geoms
+        pts = [ (int(g.GetX()), int(g.GetY())) for g in geoms]
+
+        # make sure the ordering is correct
+        self.assertTrue(cells == pts)
+
+
+
+
     def test_netcdf_input(self):
         engine = Coordinator()
 

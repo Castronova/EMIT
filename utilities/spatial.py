@@ -7,62 +7,70 @@ from osgeo import ogr, osr
 import cPickle as pickle
 import shapefile
 from shapely.geometry import shape
+import numpy
 
-def get_input_geoms(cmd, model_id):
-
-    # get the model by id
-    model = cmd.get_model_by_id(model_id)
-
-    # get the mdoel inputs
-    inputs = model.get_instance().inputs()
-
-    # store input geometries by exchange item name
-    input_geoms = {}
-
-    if inputs is not None:
-        for iei in inputs.values():
-            input_geoms[iei.name()] = {}
-            input_geoms[iei.name()]['data'] = get_coords(iei.geometries())
-            # hack: assumes all geoms will be the same type
-            input_geoms[iei.name()]['type'] =iei.geometries()[0].type()
+# import coordinator.engineAccessors as engine
 
 
-    return input_geoms
+# def get_input_geoms(model_id):
+#
+#     # get the model by id
+#     # model = cmd.get_model_by_id(model_id)
+#     # model = engine.getModelById(model_id)
+#
+#     # get the mdoel inputs
+#     # inputs = model.get_instance().inputs()
+#     inputs = engine.getInputExchangeItems(model_id)
+#
+#     # store input geometries by exchange item name
+#     input_geoms = {}
+#
+#     if inputs is not None:
+#         for iei in inputs.values():
+#             input_geoms[iei.name()] = {}
+#             input_geoms[iei.name()]['data'] = get_coords(iei.geometries())
+#             # hack: assumes all geoms will be the same type
+#             input_geoms[iei.name()]['type'] =iei.geometries()[0].type()
+#
+#
+#     return input_geoms
 
-def get_output_geoms(cmd, model_id):
+# def get_output_geoms(model_id):
+#
+#     # get the model by id
+#     # model = cmd.get_model_by_id(model_id)
+#     # model = engine.getModelById(model_id)
+#
+#     # get the model outputs
+#     # outputs = model.get_instance().outputs()
+#     outputs = engine.getOutputExchangeItems(model_id)
+#     # output_exchange_items = model.get_output_exchange_items()
+#
+#     # store output geometries by exchange item name
+#     output_geoms = {}
+#
+#     if outputs is not None:
+#         for oei in outputs.values():
+#             output_geoms[oei.name()] = {}
+#             output_geoms[oei.name()]['data'] = get_coords(oei.geometries())
+#             # hack: assumes all geoms will be the same type
+#             output_geoms[oei.name()]['type'] =oei.geometries()[0].type()
+#
+#     return output_geoms
 
-    # get the model by id
-    model = cmd.get_model_by_id(model_id)
-
-    # get the model outputs
-    outputs = model.get_instance().outputs()
-    # output_exchange_items = model.get_output_exchange_items()
-
-    # store output geometries by exchange item name
-    output_geoms = {}
-
-    if outputs is not None:
-        for oei in outputs.values():
-            output_geoms[oei.name()] = {}
-            output_geoms[oei.name()]['data'] = get_coords(oei.geometries())
-            # hack: assumes all geoms will be the same type
-            output_geoms[oei.name()]['type'] =oei.geometries()[0].type()
-
-    return output_geoms
-
-def set_output_geoms(model, variable, geoms):
-
-
-    # find the item by variable name
-    oei = model.get_output_by_name(variable)
-
-    for g in geoms:
-        # create a stdlib geometry
-        geom = stdlib.Geometry(geom=g)
-
-        # add this geometry to the exchange item
-        oei.add_geometry(geom)
-
+# def set_output_geoms(model, variable, geoms):
+#
+#
+#     # find the item by variable name
+#     oei = model.get_output_by_name(variable)
+#
+#     for g in geoms:
+#         # create a stdlib geometry
+#         geom = stdlib.Geometry(geom=g)
+#
+#         # add this geometry to the exchange item
+#         oei.add_geometry(geom)
+#
 def get_coords(geometries):
 
     geoms = []
@@ -133,26 +141,70 @@ def get_srs_from_epsg(code=None):
 
 def read_shapefile(shp):
     """
-    returns (shapely geometry, spatial reference system)
+    Parses a shapefile into stdlib.Geometry objects
+    :param shp: the absolute path to a shapefile
+    :return: tuple (numpy.array([stdlib.Geometry,]), osr.SpatialReference )
     """
 
-    # OnOpen the shapefile
+    # Load the shapefile
     driver = ogr.GetDriverByName('ESRI Shapefile')
     dataset = driver.Open(shp)
 
+    # get layer info
     layer = dataset.GetLayer()
     spatialRef = layer.GetSpatialRef()
+    featureCount = layer.GetFeatureCount()
 
-    # from Geometry
-    geoms = []
-    for i in xrange(0,layer.GetFeatureCount()):
-        feature = layer.GetNextFeature()
+    # numpy array to store stdlib.Geometry objects
+    geoms = numpy.empty((featureCount), dtype=object)
+
+    # loop through each feature in the layer
+    for i in range(featureCount):
+        feature = layer.GetFeature(i)
         geom = feature.GetGeometryRef()
+        type = geom.GetGeometryName()
 
-        # convert into shapely geometry
-        geom_wkt = geom.ExportToWkt()
-        shapely_geom = wkt.loads(geom_wkt)
+        if type == stdlib.GeomType.POLYGON:
 
-        geoms.append(shapely_geom)
+            # get the ring that defines the polygon
+            ring = geom.GetGeometryRef(0)
+
+            # create the stdlib geometry
+            g = stdlib.Geometry2(ogr.wkbPolygon)
+
+            # add the ring
+            g.AddGeometry(ring)
+
+            # add the geometry to the global list
+            geoms[i] = g
+
+        elif type == stdlib.GeomType.POINT:
+
+            # get the geoms point
+            pt = geom.GetPoint()
+
+            # create the stdlib geometry
+            g = stdlib.Geometry2(ogr.wkbPoint)
+
+            # add the point
+            g.AddPoint(*pt)
+
+            # add the geometry to the global list
+            geoms[i] = g
+
+        elif type == stdlib.GeomType.LINESTRING:
+
+            # get the points of the linestring
+            pts = geom.GetPoints()
+
+            # create the stdlib geometry
+            g = stdlib.Geometry2(ogr.wkbLineString)
+
+            # add points to the linestring
+            for pt in pts:
+                g.AddPoint(*pt)
+
+            # add the geometry to the global list
+            geoms[i] = g
 
     return geoms, spatialRef

@@ -1,7 +1,0 @@
-<?xml version="1.0" ?>
-<Simulation>
-  <DataModel databaseid="30d42" id="5b69a04a" name="cumulative_precipitation" resultid="5" x="-346.0" y="-69.0"/>
-  <Model id="6d6b4" mdl="C:\Users\Mario\Documents\Projects\EMIT\gui\../models\swmm\src\swmm.mdl" name="SWMM" x="129.0" y="-9.0"/>
-  <Link from_id="5b69a04a" from_item="cumulative_precipitation" from_item_id="5b69a04a" from_name="cumulative_precipitation" to_id="6d6b4" to_item="Rainfall" to_item_id="674b0" to_name="SWMM"/>
-  <DbConnection address="castro-server.bluezone.usu.edu" connection_string="postgresql+psycopg2://postgres:water@castro-server.bluezone.usu.edu/ODM2-Live" databaseid="30d42" db="ODM2-Live" desc="PostgreSQL database with hydrology simulations" engine="postgresql" name="ODM2 Simulation database - Live" pwd="water" user="postgres"/>
-</Simulation>

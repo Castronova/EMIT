@@ -29,6 +29,5 @@ unit_type_cv = international inch
 directory = ../data
 input = simulation.inp
 
-
 [options]
 ignorecv = 1

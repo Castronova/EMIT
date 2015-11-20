@@ -1,0 +1,18 @@
+
+conda create -n emit python=2.7
+source activate emit
+pip install --upgrade -r requirements.txt
+
+brew install gdal
+conda install gdal
+conda install shapely
+CFLAGS=-I/usr/local/include pip install pyspatialite
+
+conda install matplotlib
+conda install numpy
+
+conda install pil
+conda install wxPython
+
+conda install binstar
+conda install -c https://conda.binstar.org/jonrowland psycopg2

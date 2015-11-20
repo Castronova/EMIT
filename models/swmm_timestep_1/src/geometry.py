@@ -2,7 +2,8 @@ __author__ = 'tonycastronova'
 
 import re
 from shapely.geometry import *
-
+from osgeo import ogr
+from utilities import geometry as geom_utilites
 
 def build_catchments(inp):
     geoms = {}
@@ -27,7 +28,11 @@ def build_catchments(inp):
             node_order.append(vals[0])
 
     for name,coords in nodes.iteritems():
-        geoms[name] = {'geometry': Polygon(coords)}
+
+
+        g = geom_utilites.build_polygon_geometries(coords)
+
+        geoms[name] = {'geometry': g}
 
     return geoms
 
@@ -56,7 +61,10 @@ def build_nodes(inp):
 
 
     for name,coords in nodes.iteritems():
-        geoms[name] = {'geometry':Point(coords)}
+        ptx = [x for x,y in coords]
+        pty = [y for x,y in coords]
+        g = geom_utilites.build_point_geometries(ptx, pty)
+        geoms[name] = {'geometry':g}
 
     return geoms
 
@@ -117,7 +125,9 @@ def build_links(inp):
             outlet_node= nodes[outlet_id]
 
             # create the link geometry
-            g = LineString([inlet_node, outlet_node])
+            # g = LineString([inlet_node, outlet_node])
+
+            g = geom_utilites.build_polyline_geometries([inlet_node, outlet_node])
 
             geoms[node_id] = {'geometry':g , 'inlet':inlet_id, 'outlet':outlet_id}
 

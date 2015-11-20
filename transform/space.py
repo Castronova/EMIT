@@ -1,8 +1,9 @@
 __author__ = 'tonycastronova'
 
+import stdlib
 import space_base
 from shapely.geometry import LineString, MultiPoint, Point, Polygon
-
+from coordinator.emitLogging import elog
 
 
 
@@ -21,6 +22,11 @@ class spatial_nearest_neighbor(space_base.Space):
         return 'Nearest Neighbor'
 
     def transform(self, ingeoms, outgeoms):
+
+        if isinstance(ingeoms[0], stdlib.Geometry):
+            ingeoms = [i.geom() for i in ingeoms]  # convert Geometry objects into a list of shapely geometries
+        if isinstance(outgeoms[0], stdlib.Geometry):
+            outgeoms = [i.geom() for i in outgeoms]  # convert Geometry objects into a list of shapely geometries
 
         # get parameters
         max_distance = self.__params['max_distance']
@@ -93,6 +99,44 @@ class spatial_closest_object(space_base.Space):
             i += 1
         return mapped
 
+
+
+class spatial_intersect_polygon_point(space_base.Space):
+
+    def __init__(self):
+            super(spatial_intersect_polygon_point,self).__init__()
+
+    def name(self):
+        return 'Intersection - Polygon to Point'
+
+    def transform(self, ingeoms, outgeoms):
+
+        # isolate the shapely geometries
+        polygons = [geom.geom() for geom in ingeoms]
+        points = [geom.geom() for geom in outgeoms]
+
+        if len(polygons) ==  0 or len(points) == 0:
+            raise Exception('Number of geometries must be greater than 0.')
+
+        # todo: what about MultiPoint, MultiPolygon?
+        # assert that the correct shapes have been provided
+        if polygons[0].geom_type != 'Polygon':
+            raise Exception('Incorrect geometry type provided')
+        if points[0].geom_type != 'Point':
+            raise Exception('Incorrect geometry type provided')
+
+        mapped = []
+
+        i = 0
+
+        for point in points:
+
+            min_dist, min_index = min((point.distance(geom), k) for (k, geom) in enumerate(polygons))
+            mapped.append([ingeoms[min_index], outgeoms[i]])
+
+            i += 1
+        return mapped
+
 class spatial_exact_match(space_base.Space):
     def __init__(self):
         super(spatial_exact_match,self).__init__()
@@ -104,8 +148,9 @@ class spatial_exact_match(space_base.Space):
 
         mapped_geoms = []
 
-        igeoms = [ingeoms[i].geom().to_wkt() for i in range(0, len(ingeoms))]
-        ogeoms = [outgeoms[i].geom().to_wkt() for i in range(0, len(outgeoms))]
+        # todo: this should use Geometry2 hash instead of WKT
+        igeoms = [ingeoms[i].ExportToWkt() for i in range(0, len(ingeoms))]
+        ogeoms = [outgeoms[i].ExportToWkt() for i in range(0, len(outgeoms))]
 
         for i in range(0, len(igeoms)):
             igeom = igeoms[i]
@@ -114,10 +159,35 @@ class spatial_exact_match(space_base.Space):
                 mapped_geoms.append((ingeoms[i], outgeoms[o]))
         return mapped_geoms
 
+class spatial_index(space_base.Space):
+
+    def __init__(self):
+            super(spatial_index,self).__init__()
+
+    def name(self):
+        return 'Index-based'
+
+    def transform(self, ingeoms, outgeoms):
+
+        mapped = []
+        for i in range(0, len(ingeoms)):
+            try:
+                mapped.append([ingeoms[i],outgeoms[i]])
+            except IndexError:
+                elog.warning('An index error occurred during spatial-index mapping.  This is mostly likely due to inconsistent input and output geometry lengths.')
+        return mapped
+
 class SpatialInterpolation():
+    Index = spatial_index()
     NearestNeighbor = spatial_nearest_neighbor()
     NearestObject = spatial_closest_object()
     ExactMatch = spatial_exact_match()
+    IntersectPolygonPoint = spatial_intersect_polygon_point()
 
     def methods(self):
-        return [self.NearestNeighbor,self.NearestObject, self.ExactMatch]
+        return [self.Index,
+                self.NearestNeighbor,
+                self.NearestObject,
+                self.ExactMatch,
+                self.IntersectPolygonPoint,
+                ]

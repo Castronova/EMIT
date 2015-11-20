@@ -1,0 +1,4 @@
+pyspatialite==3.0.1a0
+pysqlite==2.6.3
+SQLAlchemy==1.0.5
+suds==0.4

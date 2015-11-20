@@ -8,4 +8,4 @@ class Status():
     Finished = 'FINSHED'
     Error = 'ERROR'
     Ready = 'READY'
-
+    NOTREADY = 'NOTREADY'

@@ -15,13 +15,17 @@ simulation_end = 05/01/2010 13:00:00
 
 
 [time_step]
-name = day
-abbreviation = day
+name = days
+abbreviation = days
 value = 1
 
 [output]
 variable_name_cv = Snow Melt Equivalent
 unit_type_cv = inches
+
+[input]
+variable_name_cv = precipitation
+unit_type_cv = meters per hour
 
 [options]
 ignorecv = 1

@@ -11,6 +11,7 @@ import coordinator.engineAccessors as engine
 from gui.controller.SpatialPlotCtrl import LogicSpatialPlot
 # from gui.views.viewLinkSpatialPlot import ViewLinkSpatialPlot
 from coordinator.emitLogging import elog
+from utilities import geometry
 
 LinkUpdatedEvent, EVT_LINKUPDATED = ne.NewEvent()
 
@@ -25,6 +26,9 @@ class LogicLink(ViewLink):
 
         # self.l = None
         self.swap = swap
+
+        # save parent (used in onplot)
+        self.parent = parent
 
         # class link variables used to save link
         self.__selected_link = None
@@ -80,20 +84,20 @@ class LogicLink(ViewLink):
         source_model_id = self.__selected_link.source_id
         target_model_id = self.__selected_link.target_id
 
-        # get the input geometries
+        # get the output geometries
         oei = engine.getOutputExchangeItems(source_model_id)
         ogeoms = {}
         for o in oei:
             name = o['name']
-            geoms = [i['shape'] for i in o['geom']]
+            geoms = [geometry.fromWKB(g['wkb']) for g in o['geom']]
             ogeoms[name] = geoms
 
-        # get the output geometries
+        # get the input geometries
         igeoms = {}
         iei = engine.getInputExchangeItems(target_model_id)
         for i in iei:
             name = i['name']
-            geoms = [j['shape'] for j in i['geom']]
+            geoms = [geometry.fromWKB(g['wkb']) for g in i['geom']]
             igeoms[name] = geoms
 
         # set input and output geometries
@@ -132,6 +136,7 @@ class LogicLink(ViewLink):
         # set the initial state of the input and output selectors
         inputSelection.SetValue(True)
         outputSelection.SetValue(True)
+
         plot_panel.set_selection_input(self.__selected_link.iei)
         plot_panel.set_selection_output(self.__selected_link.oei)
         plot_panel.UpdatePlot()  # update the plot to reflect the input/output selection
@@ -141,12 +146,12 @@ class LogicLink(ViewLink):
         plotSizer = wx.BoxSizer(wx.VERTICAL)
         SelectionSizer= wx.BoxSizer(wx.VERTICAL)
 
-        # nest sizers to pad bothe the top and left borders
+        # nest sizers to pad both the top and left borders
         b = wx.BoxSizer(wx.VERTICAL)
         b.Add(textLabel, flag=wx.LEFT, border=20 )
         SelectionSizer.AddSizer(b, flag=wx.BOTTOM, border=10)
-        SelectionSizer.Add(outputSelection, flag=wx.LEFT, border=20)
         SelectionSizer.Add(inputSelection, flag=wx.LEFT, border=20)
+        SelectionSizer.Add(outputSelection, flag=wx.LEFT, border=20)
         plotSizer.Add(plot_panel)
 
         # add elements back to mainSizer
@@ -281,8 +286,8 @@ class LogicLink(ViewLink):
 
         self.OnChange(None)
 
-        self.outputLabel.SetLabel("Output of " + self.GetModelFrom())
-        self.inputLabel.SetLabel("Input of " + self.GetModelTo())
+        # self.outputLabel.SetLabel("Output of " + self.GetModelFrom())
+        # self.inputLabel.SetLabel("Input of " + self.GetModelTo())
 
     def OnSwap(self, event):
         try:

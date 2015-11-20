@@ -31,6 +31,10 @@ def update_links(obj, links, output_exchange_items, spatial_maps):
         # get all the datasets of the output exchange item.  These will be used to temporally map the data
         datasets = output_exchange_items[source_item_name].get_all_datasets()
 
+        # build temporal mapping array
+        temporal = temporal_nearest_neighbor()
+        tmap = temporal.transform(dates,target_time)
+
         # Temporal data mapping
         mapped = {}
         for geom, datavalues in datasets.iteritems():
@@ -50,6 +54,7 @@ def update_links(obj, links, output_exchange_items, spatial_maps):
         # update links
         if len(mapped.keys()) > 0:
             obj.update_link(linkid, mapped, spatial_maps[link_key])
+
 
 def update_links_feed_forward(obj, links, output_exchange_items, spatial_maps):
     """
@@ -86,7 +91,7 @@ def update_links_feed_forward(obj, links, output_exchange_items, spatial_maps):
         # get oei data (source)
         oei = output_exchange_items[source_item_name]
         sgeoms = oei.getGeometries2()
-        sdates = oei.getDates2()
+        sdateidx, sdates = zip(*oei.getDates2())
         svalues = np.array(oei.getValues2())
 
         # get iei data (target)
@@ -94,6 +99,10 @@ def update_links_feed_forward(obj, links, output_exchange_items, spatial_maps):
         tgeoms = iei.getGeometries2()
         tdates = iei.getDates2()
         tvals = iei.getValues2()
+
+        # build temporal mapping array
+        temporal = temporal_nearest_neighbor()
+        tmap = temporal.map(sdates,target_times)
 
         # create empty array to hold mapped data (mimicks the target values array)
         nvals = np.empty((len(target_times), len(tgeoms)))
@@ -111,9 +120,11 @@ def update_links_feed_forward(obj, links, output_exchange_items, spatial_maps):
             svals = svalues[:, sidx]
 
             # calculate mapped dates and mapped values
-            sdate_idx, sdate_list = zip(*sdates)
-            temporal = temporal_nearest_neighbor()  # todo: this is hardcoded for now.  Need to change!
-            mdates, mvals = temporal.transform(sdate_list, svals, target_times)
+            # sdate_idx, sdate_list = zip(*sdates)
+            # temporal = temporal_nearest_neighbor()  # todo: this is hardcoded for now.  Need to change!
+            # mdates, mvals = temporal.transform(sdate_list, svals, target_times)
+
+            mvals = transform(tmap, svals)
 
             # set the source values in the target
             nvals[:, tidx] = mvals
@@ -124,7 +135,7 @@ def update_links_feed_forward(obj, links, output_exchange_items, spatial_maps):
         # todo: remove loop to improve efficiency
         # set these data in the iei
         for i in range(0, len(nvals)):
-            iei.setValues2(values=nvals[i], timevalue=mdates[i])
+            iei.setValues2(values=nvals[i], timevalue=sdates[i])
         # obj.update_link
 
 

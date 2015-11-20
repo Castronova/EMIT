@@ -160,7 +160,7 @@ class ExchangeItem(object):
 
         # todo: there should be similar functionality for times2 and values2
         # save the geometries (if provided)
-        if geometry:
+        if geometry is not None:
             self.addGeometries2(geometry)
 
         # no data values will be represented as None
@@ -298,22 +298,22 @@ class ExchangeItem(object):
             # idx = len(self.__values2) - 1
             # self.setDates2(timevalue, idx)
 
-    def getValues2(self, idx_start=0, idx_end=None, start_time=None, end_time=None, time_idx=None, ndarray=False):
+    def getValues2(self, geom_idx_start=0, geom_idx_end=None, start_time=None, end_time=None, time_idx=None, ndarray=False):
         """
         gets datavalues of the exchange item for idx
-        :param idx_start: the start value index to be returned.
-        :param idx_end: the end value index to be returned.
+        :param geom_idx_start: the start value index to be returned.
+        :param geom_idx_end: the end value index to be returned.
         :param start_time: start index for selecting a data subset
         :param end_time: end index for selecting a data subset
         :return: datavalues between start_time and end_time.  If not given, entire time range will be returned.
         """
 
         # set initial value end index as the length of the geometery array
-        if idx_end is None:
-            idx_end = len(self.__geoms2) + 1
+        if geom_idx_end is None:
+            geom_idx_end = len(self.__geoms2) + 1
         else:
             # add one to make return values from idx_start to idx_end inclusive
-            idx_end += 1
+            geom_idx_end += 1
 
         if time_idx is None:
             start_time_slice_idx = 0
@@ -323,11 +323,11 @@ class ExchangeItem(object):
             if end_time is not None:
                 end_time_slice_idx = self._nearest(self.__times2, end_time, 'right') + 1
         else:
-            return self.__values2[time_idx][idx_start:idx_end]  # return a single time index of values
+            return self.__values2[time_idx][geom_idx_start:geom_idx_end]  # return a single time index of values
 
         values = []
         for i in range(start_time_slice_idx, end_time_slice_idx):
-            values.append(self.__values2[i][idx_start:idx_end])
+            values.append(self.__values2[i][geom_idx_start:geom_idx_end])
 
         if ndarray:
             return numpy.array(values)

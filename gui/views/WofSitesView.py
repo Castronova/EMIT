@@ -10,14 +10,14 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
         wx.ListCtrl.__init__(self, parent, -1, size=(545, 140), style=wx.LC_REPORT)
         ListCtrlAutoWidthMixin.__init__(self)
 
-class ViewWofSites(wx.Frame):
+class WofSitesViewer(wx.Frame):
     def __init__(self, parent, siteObject):
         wx.Frame.__init__(self, parent=parent, id=-1, title=str(siteObject.site_name), pos=wx.DefaultPosition, size=(650, 700),
                           style=wx.STAY_ON_TOP | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         self.siteobject = siteObject
-        self.startDate = wx.DateTime_Now() - 7 * wx.DateSpan_Day()
-        self.endDate = wx.DateTime_Now()
+        self.start_date = wx.DateTime_Now() - 7 * wx.DateSpan_Day()
+        self.end_date = wx.DateTime_Now()
         self.parent = parent
         self._data = None
 
@@ -35,20 +35,30 @@ class ViewWofSites(wx.Frame):
 
         hboxMidPanel = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.startDateBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Start Date")
-        self.endDateBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="End Date")
+        # self.startDateBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Start Date")
+        self.startDateText = wx.StaticText(middlepanel, id=wx.ID_ANY, label="Start")
+        self.startDatePicker = wx.DatePickerCtrl(middlepanel, id=wx.ID_ANY, dt=self.start_date)
+        # self.endDateBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="End Date")
+        self.endDateText = wx.StaticText(middlepanel, id=wx.ID_ANY, label="End")
+        self.endDatePicker = wx.DatePickerCtrl(middlepanel, id=wx.ID_ANY, dt=self.end_date)
         self.exportBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Export")
         self.addToCanvasBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Add to Canvas")
         self.PlotBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Preview")
 
-        hboxMidPanel.Add(self.startDateBtn, 1, wx.EXPAND | wx.ALL, 2)
-        hboxMidPanel.AddSpacer(20)
-        hboxMidPanel.Add(self.endDateBtn, 1, wx.EXPAND | wx.ALL, 2)
-        hboxMidPanel.AddSpacer(20)
+        # hboxMidPanel.Add(self.startDateBtn, 1, wx.EXPAND | wx.ALL, 2)
+        hboxMidPanel.Add(self.startDateText, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
+        hboxMidPanel.AddSpacer(2)
+        hboxMidPanel.Add(self.startDatePicker, 1, wx.EXPAND | wx.ALL, 2)
+        hboxMidPanel.AddSpacer(2)
+        # hboxMidPanel.Add(self.endDateBtn, 1, wx.EXPAND | wx.ALL, 2)
+        hboxMidPanel.Add(self.endDateText, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
+        hboxMidPanel.AddSpacer(2)
+        hboxMidPanel.Add(self.endDatePicker, 1, wx.EXPAND | wx.ALL, 2)
+        hboxMidPanel.AddSpacer(2)
         hboxMidPanel.Add(self.PlotBtn, 1, wx.EXPAND | wx.ALL, 2)
-        hboxMidPanel.AddSpacer(20)
+        hboxMidPanel.AddSpacer(2)
         hboxMidPanel.Add(self.exportBtn, 1, wx.EXPAND | wx.ALL, 2)
-        hboxMidPanel.AddSpacer(20)
+        hboxMidPanel.AddSpacer(2)
         hboxMidPanel.Add(self.addToCanvasBtn, 1, wx.EXPAND | wx.ALL, 2)
         middlepanel.SetSizer(hboxMidPanel)
 

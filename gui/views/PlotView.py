@@ -143,8 +143,8 @@ class ViewPlot(wx.Frame):
                 width = 700
                 height = 500
 
-        wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=wx.EmptyString,
-                          pos=wx.DefaultPosition, size=wx.Size(width, height),
+        wx.Frame.__init__(self, parent=parent, id=wx.ID_ANY, title=wx.EmptyString,
+                          pos=wx.DefaultPosition, size=wx.Size(width, height-30),
                           style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
         if env_vars.LEGEND_LOCATIONRIGHT == 1:
             #  self.Sizer = wx.BoxSizer(wx.VERTICAL)
@@ -161,7 +161,7 @@ class ViewPlot(wx.Frame):
         self.cmap = plt.cm.jet
 
         # create an instance of the figure
-        self.plotPanel = PlotPanel(parent)
+        self.plotPanel = PlotPanel(self)
 
         self.HSizer.Add(self.plotPanel, 1, wx.ALL | wx.EXPAND | wx.GROW, 0)
 

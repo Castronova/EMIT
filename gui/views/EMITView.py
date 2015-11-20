@@ -11,10 +11,10 @@ from wx.lib.newevent import NewEvent
 from coordinator.emitLogging import elog
 from LowerPanelView import viewLowerPanel
 import os
-import ConfigParser
-import sys
-import os
 from environment import env_vars
+from gui.controller.NetcdfCtrl import NetcdfCtrl
+import coordinator.engineAccessors as engine
+import wrappers
 
 # create custom events
 wxCreateBox, EVT_CREATE_BOX = NewEvent()
@@ -139,44 +139,38 @@ class ViewEMIT(wx.Frame):
     def initMenu(self):
         # Menu stuff
 
-        self.m_menubar = wx.MenuBar()
+        self._menubar = wx.MenuBar()
 
-        self.m_fileMenu = wx.Menu()
-        Load = self.m_fileMenu.Append(wx.NewId(), '&Load\tCtrl+O', 'Load Configuration')
-        Save = self.m_fileMenu.Append(wx.NewId(), '&Save Configuration\tCtrl+S', 'Save Configuration')
-        SaveAs = self.m_fileMenu.Append(wx.NewId(), '&Save Configuration As', 'Save Configuration')
-        Settings = self.m_fileMenu.Append(wx.NewId(), "Settings...")
-        exit = self.m_fileMenu.Append(wx.NewId(), '&Quit\tCtrl+Q', 'Quit application')
+        self.file_menu = wx.Menu()
+        Load = self.file_menu.Append(wx.NewId(), '&Load\tCtrl+O', 'Load Configuration')
+        Save = self.file_menu.Append(wx.NewId(), '&Save Configuration\tCtrl+S', 'Save Configuration')
+        SaveAs = self.file_menu.Append(wx.NewId(), '&Save Configuration As', 'Save Configuration')
+        Settings = self.file_menu.Append(wx.NewId(), "Settings...")
+        exit = self.file_menu.Append(wx.NewId(), '&Quit\tCtrl+Q', 'Quit application')
 
-        self.m_menubar.Append(self.m_fileMenu, "&File")
+        self._menubar.Append(self.file_menu, "&File")
 
         self.m_toolMenu = wx.Menu()
 
 
-        self.m_viewMenu = wx.Menu()
-        ShowAll = self.m_viewMenu.Append(wx.NewId(), '&Toolbox\tCtrl+A', 'Show all associated files', wx.ITEM_RADIO)
-        ShowDir = self.m_viewMenu.Append(wx.NewId(), '&Directory\tCtrl+D', 'Shows file directory', wx.ITEM_RADIO)
-        separator = self.m_viewMenu.Append(wx.NewId(), 'separate', 'separate', wx.ITEM_SEPARATOR)
-        MinimizeConsole = self.m_viewMenu.Append(wx.NewId(), '&Console Off', 'Minimizes the Console', wx.ITEM_CHECK)
+        self.view_menu = wx.Menu()
+        ShowAll = self.view_menu.Append(wx.NewId(), '&Toolbox\tCtrl+A', 'Show all associated files', wx.ITEM_RADIO)
+        ShowDir = self.view_menu.Append(wx.NewId(), '&Directory\tCtrl+D', 'Shows file directory', wx.ITEM_RADIO)
+        separator = self.view_menu.Append(wx.NewId(), 'separate', 'separate', wx.ITEM_SEPARATOR)
+        MinimizeConsole = self.view_menu.Append(wx.NewId(), '&Console Off', 'Minimizes the Console', wx.ITEM_CHECK)
 
-        defaultview = self.m_viewMenu.Append(wx.NewId(), '&Default View', 'Returns the view to the default (inital) state', wx.ITEM_NORMAL)
+        defaultview = self.view_menu.Append(wx.NewId(), '&Default View', 'Returns the view to the default (inital) state', wx.ITEM_NORMAL)
 
-        self.m_menubar.Append(self.m_viewMenu, "&View")
+        self._menubar.Append(self.view_menu, "&View")
 
-        self.m_optionMenu = wx.Menu()
-        self.m_menubar.Append(self.m_optionMenu, "Options")
-        ShowSim = self.m_optionMenu.Append(wx.NewId(), 'Show Configurations', 'Shows the saved configurations files in the toolbox', wx.ITEM_RADIO)
-        HideSim = self.m_optionMenu.Append(wx.NewId(), 'Hide Configurations', 'Only shows Hydrology models in the toolbox', wx.ITEM_RADIO)
+        self.data_menu = wx.Menu()
+        self._menubar.Append(self.data_menu, "Data")
+        add_file = self.data_menu.Append(wx.NewId(), "&Add CSV File")
+        add_netcdf = self.data_menu.Append(wx.NewId(), '&Add NetCDF')
 
+        open_dap_viewer = self.data_menu.Append(wx.NewId(), "&Open Dap Viewer")
 
-        self.m_runMenu = wx.Menu()
-        separator = self.m_runMenu.Append(wx.NewId(), 'separate', 'separate', wx.ITEM_SEPARATOR)
-        databaseSave = self.m_runMenu.Append(wx.NewId(), '&Save Results to Database', 'Saves the result to the default database', wx.ITEM_CHECK)
-        viewResult = self.m_runMenu.Append(wx.NewId(), '&View Results', 'View the result', wx.ITEM_CHECK)
-        viewResult.Check()
-        self.m_menubar.Append(self.m_runMenu, "&Run")
-
-        self.SetMenuBar(self.m_menubar)
+        self.SetMenuBar(self._menubar)
 
         wx.CallAfter(self._postStart)
 
@@ -195,16 +189,53 @@ class ViewEMIT(wx.Frame):
         self.Bind(wx.EVT_MENU, self.onConsole, MinimizeConsole)
         self.Bind(wx.EVT_MENU, self.defaultview, defaultview)
 
+        # Data Menu Bindings
+        self.Bind(wx.EVT_MENU, self.onAddCsvFile, add_file)
+        self.Bind(wx.EVT_MENU, self.onAddNetcdfFile, add_netcdf)
+        self.Bind(wx.EVT_MENU, self.onOpenDapViewer, open_dap_viewer)
+
     def Settings(self, event):
         settings = viewMenuBar()
         settings.Show()
-        pass
+
+    def onAddCsvFile(self, event):
+        file_dialog = wx.FileDialog(self.Parent,
+                                    message="Add *.csv file",
+                                    defaultDir=os.getcwd(),
+                                    defaultFile="",
+                                    wildcard=" CSV File (*.csv)|*.csv", style=wx.FD_OPEN)
+
+        if file_dialog.ShowModal() == wx.ID_OK:
+            path = file_dialog.GetPath()
+
+    def onAddNetcdfFile(self, event):
+        file_dialog = wx.FileDialog(self.Parent,
+                                    message="Add *.nc file",
+                                    defaultDir=os.getcwd(),
+                                    defaultFile="",
+                                    wildcard="NetCDF File(*.nc)|*.nc", style=wx.FD_OPEN)
+
+        # if a file is selected
+        if file_dialog.ShowModal() == wx.ID_OK:
+            path = file_dialog.GetPath()
+
+            # print path
+
+            from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
+            NetcdfDetailsCtrl(self.Parent, path)
+
+
+
 
     def onClose(self, event):
         dial = wx.MessageDialog(None, 'Are you sure to quit?', 'Question',
             wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
         if dial.ShowModal() == wx.ID_YES:
             self.Destroy()
+
+    def onOpenDapViewer(self, event):
+        print "Open Dap Viewer not implemented yet"
+        netcdf = NetcdfCtrl(self)
 
     def defaultview(self, event):
         """
@@ -313,9 +344,6 @@ class ModelView(wx.Panel):
     def setText(self, value=None):
         self.contents.SetPage(value, "")
 
-# class AllFileView(wx.Panel):  # todo: Delete this
-#     def __init__(self, parent):
-#         wx.Panel.__init__(self, parent)
 
 class viewMenuBar(wx.Frame):
 

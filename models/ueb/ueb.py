@@ -13,6 +13,8 @@ import math
 import numpy
 from coordinator.emitLogging import elog
 from utilities import mdl, geometry
+import netCDF4 as nc
+
 
 class ueb(feed_forward.feed_forward_wrapper):
 
@@ -24,8 +26,8 @@ class ueb(feed_forward.feed_forward_wrapper):
         io = mdl.build_exchange_items_from_config(config_params)
 
         # set input and output exchange items
-        self.inputs(value=io['input'])
-        self.outputs(value=io['output'])
+        self.inputs(value=io[stdlib.ExchangeItemType.INPUT])
+        self.outputs(value=io[stdlib.ExchangeItemType.OUTPUT])
 
         # get model parameters
         params = config_params['model_inputs'][0]
@@ -44,22 +46,22 @@ class ueb(feed_forward.feed_forward_wrapper):
         self.curdir = os.path.dirname(os.path.abspath(conFile))
 
         # the base directory for the control file is used to convert relative paths into absolute paths
-        base_dir = os.path.dirname(conFile)
+        self.base_dir = os.path.dirname(conFile)
 
         # get param, sitevar, input, output, and watershed files
         with open(conFile, 'r') as f:
             # lines = f.readlines()
             lines = f.read().splitlines()  # this will auto strip the \n \r
-            C_paramFile = os.path.join(base_dir, lines[1])
-            C_sitevarFile = os.path.join(base_dir, lines[2])
-            C_inputconFile = os.path.join(base_dir, lines[3])
-            C_outputconFile = os.path.join(base_dir, lines[4])
-            C_watershedFile = os.path.join(base_dir, lines[5])
+            C_paramFile = os.path.join(self.base_dir, lines[1])
+            C_sitevarFile = os.path.join(self.base_dir, lines[2])
+            C_inputconFile = os.path.join(self.base_dir, lines[3])
+            C_outputconFile = os.path.join(self.base_dir, lines[4])
+            C_watershedFile = os.path.join(self.base_dir, lines[5])
             C_wsvarName = lines[6].split(' ')[0]
             C_wsycorName = lines[6].split(' ')[1]
             C_wsxcorName = lines[6].split(' ')[2]
-            C_aggoutputconFile = os.path.join(base_dir, lines[7])
-            C_aggoutputFile = os.path.join(base_dir, lines[8])
+            C_aggoutputconFile = os.path.join(self.base_dir, lines[7])
+            C_aggoutputFile = os.path.join(self.base_dir, lines[8])
             ModelStartDate = [int(float(l)) for l in lines[9].split(' ') if l != '']
             ModelEndDate = [int(float(l)) for l in lines[10].split(' ') if l != '']
             ModelDt = float(lines[11])
@@ -99,19 +101,19 @@ class ueb(feed_forward.feed_forward_wrapper):
         self.C_outDimord = c_int(0)
         C_aggoutDimord = c_int(1)
         self.outvarindx = c_int(17)
-        aggoutvarindx = c_int(17)
-        size = c_int()
-        rank = c_int()
-        irank = c_int()
-        jrank = c_int()
-        startTimeT = c_double(0.0)
-        TotalTime = c_double(0.0)
-        totalmodelrunTime = c_double(0.0)
-        TsReadTime = c_double(0.0)
-        TSStartTime = c_double()
-        ComputeStartTime = c_double()
-        ComputeTime = c_double(0.0)
-        OutWriteTime = c_double()
+        # aggoutvarindx = c_int(17)
+        # size = c_int()
+        # rank = c_int()
+        # irank = c_int()
+        # jrank = c_int()
+        # startTimeT = c_double(0.0)
+        # TotalTime = c_double(0.0)
+        # totalmodelrunTime = c_double(0.0)
+        # TsReadTime = c_double(0.0)
+        # TSStartTime = c_double()
+        # ComputeStartTime = c_double()
+        # ComputeTime = c_double(0.0)
+        # OutWriteTime = c_double()
 
         self.uebVars = (c_char_p * 70)("Year", "Month", "Day", "dHour", "atff", "HRI", "Eacl", "Ema", "conZen", "Ta", "P", "V", "RH", "Qsi", "Qli", "Qnet","Us", "SWE", "tausn", "Pr", "Ps", "Alb", "QHs", "QEs", "Es", "SWIT", "QMs", "Q", "FM", "Tave", "TSURFs", "cump", "cumes", "cumMr", "Qnet", "smelt", "refDepth", "totalRefDepth", "cf", "Taufb", "Taufd", "Qsib", "Qsid", "Taub", "Taud", "Qsns", "Qsnc", "Qlns", "Qlnc", "Vz", "Rkinsc", "Rkinc", "Inmax", "intc", "ieff", "Ur", "Wc", "Tc", "Tac", "QHc", "QEc", "Ec", "Qpc", "Qmc", "Mc", "FMc", "SWIGM", "SWISM", "SWIR", "errMB")
 
@@ -172,7 +174,7 @@ class ueb(feed_forward.feed_forward_wrapper):
             a = self.C_strsvArray.contents[i]
             if a.svType == 1:
                 print "%d %s %s\n" % (i, a.svFile,a.svVarName)
-                retvalue = self.__uebLib.read2DNC(os.path.join(base_dir, a.svFile), a.svVarName, byref(a.svArrayValues))
+                retvalue = self.__uebLib.read2DNC(os.path.join(self.base_dir, a.svFile), a.svVarName, byref(a.svArrayValues))
 
 
         #//read input /forcing control file--all possible entries of input control have to be provided
@@ -209,23 +211,30 @@ class ueb(feed_forward.feed_forward_wrapper):
 
 
         # calculate model time steps (main.cpp, line 222)
-        self.numTimeStep = int(math.ceil(modelSpan*(24./ModelDt)) )
+        self.numTimeStep = int(math.ceil(modelSpan*(24./ModelDt)) ) + 1
         print 'Number of time steps: ', self.numTimeStep
 
-        # read forcing data (main.cpp, line 226)
-        if self.C_strsvArray.contents[16].svType != 3: # no accumulation zone (fixme: ???)
-            for it in xrange(13):
-                inftype = self.C_strinpforcArray.contents[it].infType
-                print 'infFile: ',self.C_strinpforcArray.contents[it].infFile
-                if inftype == 0:
-                    self.__uebLib.readTextData(os.path.join(base_dir, self.C_strinpforcArray.contents[it].infFile), byref(self.C_tsvarArray.contents[it]), byref(C_ntimesteps[0]))
+        # initialize C_tsvarArray values (this replaces __uebLib.readTextData)
+        self.initialize_timeseries_variable_array(self.C_strinpforcArray, self.numTimeStep)
 
-                elif inftype == 2 or inftype == -1:
-                    self.C_tsvarArray.contents[it] = (c_float * 2)()
-                    C_ntimesteps.contents[0] = 2
-                    # copy the default value if a single value is the option
-                    self.C_tsvarArray.contents[it][0] = self.C_strinpforcArray.contents[it].infType
-                    self.C_tsvarArray.contents[it][1] = self.C_strinpforcArray.contents[it].infdefValue
+        # NOTE: C_strinpforcArray stores info about the forcing data files
+
+        # # read forcing data (main.cpp, line 226)
+        # if self.C_strsvArray.contents[16].svType != 3: # no accumulation zone (fixme: ???)
+        #     for it in xrange(13):
+        #         inftype = self.C_strinpforcArray.contents[it].infType
+        #         print 'infFile: ',self.C_strinpforcArray.contents[it].infFile
+        #         if inftype == 0:
+        #
+        #             # read the files stored in C_strinpforcArray and populated C_tsvarArray
+        #             self.__uebLib.readTextData(os.path.join(self.base_dir, self.C_strinpforcArray.contents[it].infFile), byref(self.C_tsvarArray.contents[it]), byref(C_ntimesteps[0]))
+        #
+        #         elif inftype == 2 or inftype == -1:
+        #             self.C_tsvarArray.contents[it] = (c_float * 2)()
+        #             C_ntimesteps.contents[0] = 2
+        #             # copy the default value if a single value is the option
+        #             self.C_tsvarArray.contents[it][0] = self.C_strinpforcArray.contents[it].infType
+        #             self.C_tsvarArray.contents[it][1] = self.C_strinpforcArray.contents[it].infdefValue
 
 
         # :: this array is initialized to (numOut+1, numTimeStep+1) rather than (numOut, numTimeStep)
@@ -239,7 +248,7 @@ class ueb(feed_forward.feed_forward_wrapper):
         # :: below didn't fix the problem.
         # ::
         # create a numpy array for outputs
-        self.outvarArray = numpy.zeros(shape=(numOut+1, self.numTimeStep+1), dtype=numpy.float, order="C")
+        self.outvarArray = numpy.zeros(shape=(numOut+1, self.numTimeStep), dtype=numpy.float, order="C")
         # arrays_old = self.outvarArray.astype(numpy.float32)
         arrays = self.outvarArray.astype(c_float)
         rows, cols = self.outvarArray.shape
@@ -320,14 +329,21 @@ class ueb(feed_forward.feed_forward_wrapper):
                     self.activeCells.append((iy, jx))
 
         # build output exchange items
-        pts = []
+        xcoords = []
+        ycoords = []
         for pid in xrange(self.C_npout.value):
-            xcoord = self.C_pOut[pid].xcoord
-            ycoord = self.C_pOut[pid].ycoord
-            pt = geometry.build_point_geometries(xcoord, ycoord)
-            pts.append(pt)
-        self.outputs()['Snow Melt Equivalent'].addGeometries2(pts)
+            xcoords.append(self.C_pOut[pid].xcoord)
+            ycoords.append(self.C_pOut[pid].ycoord)
+        self.pts = geometry.build_point_geometries(xcoords, ycoords)
+        self.outputs()['Snow Melt Equivalent'].addGeometries2(self.pts)
 
+
+        # build input exchange items
+        ds = nc.Dataset(C_watershedFile)
+        Xlist = ds.variables['x']
+        Ylist = ds.variables['y']
+        self.geoms = self.build_geometries(Xlist, Ylist)
+        self.inputs()['precipitation'].addGeometries2(self.geoms)
 
 
         print 'initialization successful'
@@ -336,12 +352,30 @@ class ueb(feed_forward.feed_forward_wrapper):
 
     def run(self, inputs):
 
+        # todo: Do ts variable all have the same shape (i.e. same timestep?)
+        # NOTES:
+        # C_tsvarArray (or RegArray in RunUEB C code) stores the time series values for all inputs
+        # C_tsvarArray[0] --> Ta  (air temp)
+        # C_tsvarArray[1] --> Precipitation (mm/day)
+        # C_tsvarArray[2] --> V  (wind speed)
+        # C_tsvarArray[3] --> RH (relative humidity)
+        # C_tsvarArray[4] --> atmospheric pressure ?
+        # C_tsvarArray[5] --> Qsiobs
+        # C_tsvarArray[6] --> Qli
+        # C_tsvarArray[7] --> Qnetob
+        # C_tsvarArray[8] --> Qg
+        # C_tsvarArray[9] --> Snowalb
+        # C_tsvarArray[10] --> Tmin
+        # C_tsvarArray[11] --> Tmax
+        # C_tsvarArray[12] --> Vapor Pressure of air
+
         elog.info("\nBegin UEB Computation")
 
         # get output exchange items
         sme = self.outputs()['Snow Melt Equivalent']
 
-
+        # get the input data
+        # prcp = self.inputs()['precipitation'].getValues2()
 
 
         # Initialize SiteState
@@ -367,27 +401,41 @@ class ueb(feed_forward.feed_forward_wrapper):
             # convert SiteState into a ctype
             C_SiteState = (c_float * len(SiteState))(*SiteState)
 
-            for t in xrange(13):
 
-                # HACK: Everything inside this 'if' statement needs to be checked!!!!
-                if self.C_strinpforcArray.contents[t].infType == 1:
-                    print 'You are in un-tested code! '
-                    ncTotaltimestep = 0;
+            # get the input data for the current geometry
+            prcp = self.inputs()['precipitation'].getValues2(geom_idx_start=i, geom_idx_end=i)
 
-                    for numNc in xrange(self.C_strinpforcArray[it].numNcfiles):
-                        # read 3D netcdf data
-                        tsInputfile = self.C_strinpforcArray[t].infFile + numNc + '.nc'
+            m = max(prcp)
 
-                        retvalue = self.__uebLib.readNC_TS(tsInputfile, self.C_strinpforcArray.contents[t].infvarName, self.C_strinpforcArray.contents[t].inftimeVar, C_wsycorName, C_wsxcorName, byref(C_tsvarArrayTemp[numNc]), byref(C_tcorvar[it]), self.C_uebCellY, self.C_uebCellX, byref(C_ntimesteps[numNc]));
+            # set the input data for this geometry
+            for i in range(len(prcp)):
+                # set precipitation values in tsvarArray (index 1)
+                self.C_tsvarArray.contents[1][i] = prcp[i][0]
 
-                        ncTotaltimestep += C_ntimesteps[numNc];
 
-                    self.C_tsvarArray[t] = (c_float * ncTotaltimestep)
-                    tinitTime = 0
-                    for numNc in xrange(self.C_strinpforcArray.contents[t].numNcFiles):
-                        for tts in xrange(C_ntimesteps[numNc]):
-                            self.C_tsvarArray.contents[t][tts + tinitTime] = C_tsvarArrayTemp.contents[numNc][tts]
-                        tinitTime += C_ntimesteps[numNc]
+            # for t in xrange(13):
+            #
+            #     # HACK: Everything inside this 'if' statement needs to be checked!!!!
+            #
+            #     # todo: what does infType == 1 mean?
+            #     if self.C_strinpforcArray.contents[t].infType == 1:
+            #         print 'You are in un-tested code! '
+            #         ncTotaltimestep = 0;
+            #
+            #         for numNc in xrange(self.C_strinpforcArray[it].numNcfiles):
+            #             # read 3D netcdf data
+            #             tsInputfile = self.C_strinpforcArray[t].infFile + numNc + '.nc'
+            #
+            #             retvalue = self.__uebLib.readNC_TS(tsInputfile, self.C_strinpforcArray.contents[t].infvarName, self.C_strinpforcArray.contents[t].inftimeVar, C_wsycorName, C_wsxcorName, byref(C_tsvarArrayTemp[numNc]), byref(C_tcorvar[it]), self.C_uebCellY, self.C_uebCellX, byref(C_ntimesteps[numNc]));
+            #
+            #             ncTotaltimestep += C_ntimesteps[numNc];
+            #
+            #         self.C_tsvarArray[t] = (c_float * ncTotaltimestep)
+            #         tinitTime = 0
+            #         for numNc in xrange(self.C_strinpforcArray.contents[t].numNcFiles):
+            #             for tts in xrange(C_ntimesteps[numNc]):
+            #                 self.C_tsvarArray.contents[t][tts + tinitTime] = C_tsvarArrayTemp.contents[numNc][tts]
+            #             tinitTime += C_ntimesteps[numNc]
 
 
 
@@ -463,3 +511,75 @@ class ueb(feed_forward.feed_forward_wrapper):
 
         # unload ueb
         del self.__uebLib
+
+
+    def initialize_timeseries_variable_array(self, forcing_data, number_of_timesteps):
+
+
+        # initialize the arrays base on number of timesteps.  This assumes that all datasets share a timestep
+        self.C_tsvarArray.contents[0] = (c_float * number_of_timesteps)()  # air temp
+        self.C_tsvarArray.contents[1] = (c_float * number_of_timesteps)()  # precipitation
+        self.C_tsvarArray.contents[2] = (c_float * number_of_timesteps)()  # windspeed
+        self.C_tsvarArray.contents[3] = (c_float * number_of_timesteps)()  # relative humidity
+        self.C_tsvarArray.contents[10] = (c_float * number_of_timesteps)()  # Min Air temperature
+        self.C_tsvarArray.contents[11] = (c_float * number_of_timesteps)()  # Max Air temperature
+
+        # initialize parameter values
+        for i in [4,5,6,7,8,9,12]:
+            #  4: AP: Air pressure   (always required)
+            #  5: Qsi: Incoming shortwave(kJ/m2/hr)   (only required if irad=1 or 2)
+            #  6: Qli: Long wave radiation(kJ/m2/hr)
+            #  7: Qnet: Net radiation(kJ/m2/hr)   (only required if irad=3)
+            #  8: Qg: Ground heat flux   (kJ/m2/hr)
+            #  9: Snowalb: Snow albedo (0-1).  (only required if ireadalb=1) The albedo of the snow surface to be used when the internal albedo calculations are to be overridden
+            # 12: Vp: Air vapor pressure
+            self.C_tsvarArray.contents[i] = (c_float * 2)()  # Qsi: Incoming shortwave(kJ/m2/hr)
+            self.C_tsvarArray.contents[i][0] = self.C_strinpforcArray.contents[i].infType
+            self.C_tsvarArray.contents[i][1] = self.C_strinpforcArray.contents[i].infdefValue
+
+        variables = {'Ta':0, 'Prec':1, 'v':2, 'RH':3, 'AP':4, 'Qsi':5, 'Qli':6, 'Qnet':7, 'Qg':8, 'Snowalb':9, 'Tmin':10, 'Tmax':11, 'Vp':12}
+
+        # populate data (loop over the strinpforcArray)
+        for i in range(13):
+
+            # get the variable name
+            var_name = self.C_strinpforcArray.contents[i].infName
+
+            # get the index corresponding to this variable
+            idx = variables[var_name]
+
+            if self.C_strinpforcArray.contents[i].infType == 0:
+                # read DAT file
+                with open(os.path.join(self.base_dir, self.C_strinpforcArray.contents[i].infFile), 'r') as f:
+                    lines = f.readlines()
+                    row = 0
+                    for l in range(1, len(lines)):
+                        # DAT format:  Year	Month	Day	Hour	value
+                        data = lines[l].strip().split()
+
+                        # save the value column
+                        self.C_tsvarArray.contents[idx][row] = float(data[-1])
+
+                        # increment the row
+                        row += 1
+
+
+    def build_geometries(self, xcoords, ycoords):
+        """
+        builds point geometries consistent with the native UEB ordering
+        :param xcoords:  list of x coordinates
+        :param xyoords:  list of xycoordinates
+        :return: a list of geometries
+        """
+
+        # build a meshgrid
+        x, y = numpy.meshgrid(xcoords, ycoords)
+
+        # x any y coords are paired using Fortran ordering to be consistent with the way activeCells are ordered.  This
+        # is necessary to ensure that calculation looping is maintained in the run function.
+        x = numpy.ravel(x, 'F')
+        y = numpy.ravel(y, 'F')
+
+        # build point geometries
+        return geometry.build_point_geometries(x, y)
+

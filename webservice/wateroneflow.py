@@ -2,13 +2,19 @@ __author__ = 'tonycastronova'
 
 import collections
 import xml.etree.ElementTree as et
+
 from suds.client import Client
 
+from coordinator.emitLogging import elog
+from utilities.timeout import timeout
 
-class wof(object):
 
+class WaterOneFlow(object):
+
+    @timeout(10)
     def __init__(self, wsdl):
         self.wsdl = wsdl
+        # sleep(3)
         self.conn = Client(wsdl)
         self.network_code = ""
 
@@ -19,20 +25,6 @@ class wof(object):
             return site[0][5][2].value
         except ValueError:
             return ""
-
-    # def buildSitesDictionary(self, start=None, end=None):
-    #
-    #     if start == None:
-    #         start = 1
-    #     if end  == None:
-    #         end = start + 10
-    #
-    #     siteInfo_Dictionary = collections.OrderedDict()
-    #     for site in self.objects[1][start:end]:
-    #         if len(site) > 0:
-    #             siteInfo_Dictionary[site[0][0]] = site[0][1][0][0]
-    #
-    #     return siteInfo_Dictionary
 
     def buildAllVariableDictionary(self, start=None, end=None):
 
@@ -50,10 +42,10 @@ class wof(object):
         return vars
 
     def buildAllSiteCodeVariables(self, sitecode):
-        siteObject = self.getSiteInfoObject(sitecode)
+        site_object = self.getSiteInfoObject(sitecode)
 
         try:
-            seriesVariables = siteObject[1][0][1][0][2]
+            seriesVariables = site_object[1][0][1][0][2]
         except Exception as e:
             print e  # There exist no variables
             return {}
@@ -76,15 +68,11 @@ class wof(object):
 
         self.siteVarables = collections.OrderedDict()
 
-    # def getSites(self):
-    #     sites = self.createXMLFileForReading(self.getSites())
-    #     return sites
-
     def getSiteInfo(self, start=None, end=None):
 
-        if start == None:
+        if start is None:
             start = 0
-        if end  == None:
+        if end is None:
             end = start + 9
 
         siteInfo = []
@@ -96,12 +84,16 @@ class wof(object):
         return siteInfo
 
     def parseValues(self, sitecode, variable, start=None, end=None):
-        data = self.getValues(sitecode, variable, start, end)
+        data = self.getValues(sitecode, variable, start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d"))
         valuesList = []
-        for values in data[0].values[0].value:
-            # values_list = [[date1, value1], [date2, value2]]
-            valuesList.append([values._dateTime, values.value])
-            pass
+        if data is not None:
+            for values in data[0].values[0].value:
+                # values_list = [[date1, value1], [date2, value2]]
+                valuesList.append([values._dateTime, values.value])
+        else:
+            elog.debug("data is None")
+            elog.error("Failed to retrieve data")
+
         return valuesList
 
     def connectToNetwork(self, link):
@@ -141,10 +133,10 @@ class wof(object):
     def getSites(self, value=None):
         #  Returns JSON
         if value is None:
-            siteobjects = self.conn.service.GetSitesObject("")
+            site_objects = self.conn.service.GetSitesObject("")
         else:
-            siteobjects = self.conn.service.GetSitesObject(value)
-        return siteobjects[1]
+            site_objects = self.conn.service.GetSitesObject(value)
+        return site_objects[1]
 
 
     def getValues(self, site_code, variable_code, beginDate=None, endDate=None):
@@ -175,16 +167,6 @@ class wof(object):
         else:
             data = self.conn.service.GetVariableInfoObject()
         return data.variables
-
-
-
-
-
-
-
-
-
-
 
     def getValuesForASiteObject(self, siteid=None):
         network = "iutah:"

@@ -22,7 +22,10 @@ class NetcdfDetailsCtrl(NetcdfDetailsView):
             self.y_spatial_var_combo.AppendItems(self.variables)
             self.time_var_combo.AppendItems(self.variables)
         self.time_step_combo.AppendItems(['days', 'minutes', 'seconds', 'years'])
-
+        self.Bind(wx.EVT_BUTTON, self.addToCanvasBTn, self.download_btn)
+        
+    def addToCanvasBTn(self, event):
+        wx.MessageBox("1234567890SEARCHME0987654321W")
 
     def populateList(self):
         alreadyUsed = {}

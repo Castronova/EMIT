@@ -16,6 +16,7 @@ import csv
 import time
 import os
 from osgeo import ogr
+from gui.controller.TimeSeriesObjectCtrl import TimeSeriesObjectCtrl
 
 
 #todo:  this needs to be split up into view and logic code
@@ -377,66 +378,92 @@ class ContextMenu(wx.Menu):
                 dates.append(val.ValueDateTime)
                 values.append(val.DataValue)
 
-            return dates,values,obj
+            return dates, values, obj
 
     def OnPlot(self, event):
-
         obj = self.__list_obj
 
-        # create a plot frame
-        PlotFrame = None
-        xlabel = None
-        title = None
-        variable = None
-        units = None
-        warning = None
-        x_series = []
-        y_series = []
-        labels = []
         id = self.parent.GetFirstSelected()
-        while id != -1:
-            # get the result
-            resultID = obj.GetItem(id, 0).GetText()
+        plot = TimeSeriesObjectCtrl()
+        result_id = obj.GetItem(id, 0).GetText()
+        date_time_objects, value, resobj = self.getData(resultID=result_id)
+        ylabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
+        xlabel = 'DateTime'
+        title = '%s' % (resobj.VariableObj.VariableCode)
 
-            # get data for this row
-            x,y, resobj = self.getData(resultID)
+        plot.setPlotTitle(title)
+        plot.setPlotLabel(xlabel, ylabel)
 
-            if PlotFrame is None:
-                # set metadata based on first series
-                ylabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
+        data = []
+        for i in range(len(date_time_objects)):  # get the data to be in the correct format
+            data.append((date_time_objects[i], value[i]))
 
-                # todo: this needs to change based on the axis format decided by matplotlib
-                xlabel = 'DateTime'
+        variable_name = str(resobj.VariableObj.VariableCode)
+        variable_name = variable_name.replace("_", " ")
 
-                # todo: this title must be more specific.  e.g. include gage location?
-                title = '%s' % (resobj.VariableObj.VariableCode)
+        plot.plotGraph(data, variable_name)  # data = [(datetime, value)]
 
-                # save the variable and units to validate future time series
-                variable = resobj.VariableObj.VariableCode
-                units = resobj.UnitObj.UnitsName
-                PlotFrame = LogicPlot(self.Parent, title=title, ylabel=ylabel, xlabel=xlabel)
 
-            if resobj.VariableObj.VariableCode == variable and resobj.UnitObj.UnitsName == units:
-                # store the x and Y data
-                x_series.append(x)
-                y_series.append(y)
-                labels.append(resultID)
+        column_names = ["Result ID", "Symbology"]
+        plot.createColumns(column_names)
 
-            elif warning is None:
-                warning = 'Multiple Variables/Units were selected.  I currently don\'t support plotting heterogeneous time series. ' +\
-                          'Some of the selected time series will not be shown :( '
-
-            # get the next selected item
-            id = obj.GetNextSelected(id)
-
-        if warning:
-            dlg = wx.MessageDialog(self.parent, warning, '', wx.OK | wx.ICON_WARNING)
-            dlg.ShowModal()
-            dlg.Destroy()
-
-        # plot the data
-        PlotFrame.plot(xlist=x_series, ylist=y_series, labels=labels)
-        PlotFrame.Show()
+        #  Uncomment the code below to run both plot views and compare.
+        # obj = self.__list_obj
+        #
+        # # create a plot frame
+        # PlotFrame = None
+        # xlabel = None
+        # title = None
+        # variable = None
+        # units = None
+        # warning = None
+        # x_series = []
+        # y_series = []
+        # labels = []
+        # id = self.parent.GetFirstSelected()
+        # while id != -1:
+        #     # get the result
+        #     resultID = obj.GetItem(id, 0).GetText()
+        #
+        #     # get data for this row
+        #     date_time_objects,value, resobj = self.getData(resultID)
+        #
+        #     if PlotFrame is None:
+        #         # set metadata based on first series
+        #         ylabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
+        #
+        #         # todo: this needs to change based on the axis format decided by matplotlib
+        #         xlabel = 'DateTime'
+        #
+        #         # todo: this title must be more specific.  e.g. include gage location?
+        #         title = '%s' % (resobj.VariableObj.VariableCode)
+        #
+        #         # save the variable and units to validate future time series
+        #         variable = resobj.VariableObj.VariableCode
+        #         units = resobj.UnitObj.UnitsName
+        #         PlotFrame = LogicPlot(self.Parent, title=title, ylabel=ylabel, xlabel=xlabel)
+        #
+        #     if resobj.VariableObj.VariableCode == variable and resobj.UnitObj.UnitsName == units:
+        #         # store the date_time_objects and Y data
+        #         x_series.append(date_time_objects)
+        #         y_series.append(value)
+        #         labels.append(resultID)
+        #
+        #     elif warning is None:
+        #         warning = 'Multiple Variables/Units were selected.  I currently don\'t support plotting heterogeneous time series. ' +\
+        #                   'Some of the selected time series will not be shown :( '
+        #
+        #     # get the next selected item
+        #     id = obj.GetNextSelected(id)
+        #
+        # if warning:
+        #     dlg = wx.MessageDialog(self.parent, warning, '', wx.OK | wx.ICON_WARNING)
+        #     dlg.ShowModal()
+        #     dlg.Destroy()
+        #
+        # # plot the data
+        # PlotFrame.plot(xlist=x_series, ylist=y_series, labels=labels)
+        # PlotFrame.Show()
 
     def OnDelete(self,event):
         if 'local' in self.parent.Parent.connection_combobox.GetStringSelection():

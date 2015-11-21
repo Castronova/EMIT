@@ -43,8 +43,25 @@ class TimeSeriesObjectCtrl(TimeSeriesObjectViewer):
             elog.info("Received no data to plot")
             elog.info("data is None")
 
-    def populateVariableList(self):
-        pass
+    def populateVariableList(self, data):
+        if isinstance(data, dict):
+            self._data = data
+            rowNumber = 0
+            colNumber = 0
+            for key, values in data.iteritems():
+                pos = self.variableList.InsertStringItem(colNumber, str(key))
+                colNumber += 1
+                for value in values:
+                    self.variableList.SetStringItem(pos, colNumber, str(value))
+                    colNumber += 1
+                colNumber = 0
+                rowNumber += 1
+
+            self.autoSizeColumns()
+            self.alternateRowColor()
+        else:
+            elog.debug("populateVariableList()---data passed is not a dictionary")
+            elog.error("Received wrong format of data")
 
     def setEndDate(self, event):
         self.end_date = self.endDatePicker.GetValue()

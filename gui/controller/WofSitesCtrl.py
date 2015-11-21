@@ -17,13 +17,10 @@ class WofSitesViewerCtrl(WofSitesViewer):
         WofSitesViewer.__init__(self, parent, siteObject)
 
         self.Bind(wx.EVT_BUTTON, self.previewPlot, self.PlotBtn)
-        # self.Bind(wx.EVT_BUTTON, self.startDateCalender, self.startDateBtn)
         self.Bind(wx.EVT_DATE_CHANGED, self.setStartDate, self.startDatePicker)
-        # self.Bind(wx.EVT_BUTTON, self.endDateCalender, self.endDateBtn)
         self.Bind(wx.EVT_DATE_CHANGED, self.setEndDate, self.endDatePicker)
         self.Bind(wx.EVT_BUTTON, self.onExport, self.exportBtn)
         self.Bind(wx.EVT_BUTTON, self.addToCanvas, self.addToCanvasBtn)
-        # self.isCalendarOpen = False  # Used to prevent calendar being open twice
 
     def setEndDate(self, event):
         self.end_date = self.endDatePicker.GetValue()
@@ -74,14 +71,8 @@ class WofSitesViewerCtrl(WofSitesViewer):
             d["begin_date"] = value[4]
             d["end_date"] = value[5]
             d["description"] = value[6]
-            temp.append(dicToObj(d))
+            temp.append(DicToObj(d))
         return temp
-
-    # def endDateCalender(self, event):
-    #     if self.isCalendarOpen:
-    #         pass
-    #     else:
-    #         Calendar(self, -1, "Calendar", "end")
 
     def onExport(self, event):
         var = self.Parent.selectedVariables = self.getSelectedVariableSiteCode()
@@ -154,29 +145,18 @@ class WofSitesViewerCtrl(WofSitesViewer):
         return variableCode
 
     def getSelectedVariableSiteCode(self):
-        # variable_name_code = []
         num = self.variableList.GetItemCount()
-        # checkedVar = []
         for i in range(num):
             if self.variableList.IsSelected(i):
                 v_name = self.variableList.GetItemText(i)
-                # variable_name_code.append((v_name, self.getSiteCodeByVariableName(v_name)))
                 return self.getSiteCodeByVariableName(v_name)
-                # checkedVar.append(self.variableList.GetItemText(i))
 
-        # print checkedVar
-
-        # if len(checkedVar) > 0:
-        #     sitecode = self.getSiteCodeByVariableName(checkedVar)
-        #     return sitecode
-        # else:
-        #     return 0
-        # return zip(*variable_name_code)
 
     def getSiteCodeByVariableName(self, checkedVar):
         for key, value in self._data.iteritems():
             if value[0] == checkedVar:
-                return key
+                return key        # Column names
+
 
     def previewPlot(self, event):
         var_code = self.getSelectedVariableSiteCode()
@@ -206,6 +186,7 @@ class WofSitesViewerCtrl(WofSitesViewer):
             self.plot.setTitle(self.getSelectedVariableName())
             self.plot.setAxisLabel("Date Time", data[0].variable.unit.unitName)
             self.plot.plotData(plotData, var_name, noData)
+        # Column names
 
     def populateVariablesList(self, api, sitecode):
         data = api.buildAllSiteCodeVariables(sitecode)
@@ -227,83 +208,8 @@ class WofSitesViewerCtrl(WofSitesViewer):
         self.autoSizeColumns()
         self.alternateRowColor()
 
-    # def startDateCalender(self, event):
-    #     if self.isCalendarOpen:
-    #         pass
-    #     else:
-    #         Calendar(self, -1, "Calendar", "start")
 
-
-# class Calendar(wx.Dialog):
-#     def __init__(self, parent, id, title, type):
-#         wx.Dialog.__init__(self, parent, id, title, style=wx.STAY_ON_TOP | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^
-#                                                                            wx.MAXIMIZE_BOX)
-#         self.type = type
-#
-#         self.Parent.isCalendarOpen = True
-#
-#         vbox = wx.BoxSizer(wx.VERTICAL)
-#
-#         # self.calendar = cal.CalendarCtrl(self, -1, style=cal.CAL_SHOW_HOLIDAYS | cal.CAL_SEQUENTIAL_MONTH_SELECTION)
-#         self.datepicker = wx.DatePickerCtrl(self, -1, size=(100, 20), style=wx.DP_DROPDOWN)
-#
-#         # self.rememberCalendarPos()
-#
-#         # vbox.Add(self.calendar, 0, wx.EXPAND | wx.ALL, 5)
-#         vbox.Add(self.datepicker, 0, wx.EXPAND | wx.ALL, 5)
-#
-#         vbox.Add((-1, 20))
-#
-#         hbox = wx.BoxSizer(wx.HORIZONTAL)
-#         self.text = wx.StaticText(self, -1, 'Date')
-#         hbox.Add(self.text)
-#         vbox.Add(hbox, 0, wx.LEFT, 8)
-#
-#         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
-#         btn = wx.Button(self, -1, 'Ok')
-#         hbox2.Add(btn, 1)
-#         vbox.Add(hbox2, 0, wx.ALIGN_CENTER | wx.ALL, 5)
-#
-#         self.Bind(wx.EVT_BUTTON, self.OnQuit, id=btn.GetId())
-#         self.Bind(wx.EVT_CLOSE, self.OnQuit)
-#
-#         self.SetSizerAndFit(vbox)
-#
-#         self.Show(True)
-#         self.Centre()
-#
-#     def OnQuit(self, event):
-#         self.setCalendarDates()
-#         if self.validateDates():
-#             self.Parent.isCalendarOpen = False
-#             self.Destroy()
-#         else:
-#             self.text.SetLabel("Make start before end")
-#
-#     def rememberCalendarPos(self):
-#         if self.type == "start":
-#             self.calendar.SetDate(self.Parent.startDate)
-#         else:
-#             self.calendar.SetDate(self.Parent.endDate)
-#
-#     def setCalendarDates(self):
-#         if self.type == "start":
-#             self.Parent.startDate = self.calendar.GetDate()
-#             self.Parent.startDateBtn.SetLabelText(self.calendar.GetDate().FormatDate())
-#         else:
-#             self.Parent.endDate = self.calendar.GetDate()
-#             self.Parent.endDateBtn.SetLabelText(self.calendar.GetDate().FormatDate())
-#
-#     def validateDates(self):
-#         if self.Parent.startDate < self.Parent.endDate:
-#             elog.debug("Start is before End So its GOOD ")
-#             return True
-#         else:
-#             elog.debug("End date must be after start date")
-#             return False
-
-
-class dicToObj(object):
+class DicToObj(object):
     def __init__(self, dic):
         self.__dict__ = dic
 

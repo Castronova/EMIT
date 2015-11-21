@@ -387,32 +387,35 @@ class ContextMenu(wx.Menu):
         plot = TimeSeriesObjectCtrl()
         result_id = obj.GetItem(id, 0).GetText()
         date_time_objects, value, resobj = self.getData(resultID=result_id)
-        ylabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
-        xlabel = 'DateTime'
+        y_label = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
+        x_label = "DateTime"
         title = '%s' % (resobj.VariableObj.VariableCode)
 
         plot.setPlotTitle(title)
-        plot.setPlotLabel(xlabel, ylabel)
+        plot.setPlotLabel(x_label, y_label)
 
         data = []
         for i in range(len(date_time_objects)):  # get the data to be in the correct format
             data.append((date_time_objects[i], value[i]))
 
-        variable_name = str(resobj.VariableObj.VariableCode)
-        variable_name = variable_name.replace("_", " ")
+        variable_name = str(resobj.VariableObj.VariableNameCV)
+        definition = resobj.VariableObj.VariableDefinition
 
         plot.plotGraph(data, variable_name)  # data = [(datetime, value)]
 
+        variable_list_entries = {result_id: [variable_name, definition]}
 
-        column_names = ["Result ID", "Symbology"]
+        column_names = ["id", "Name", "Definition"]
         plot.createColumns(column_names)
+
+        plot.populateVariableList(variable_list_entries)
 
         #  Uncomment the code below to run both plot views and compare.
         # obj = self.__list_obj
         #
         # # create a plot frame
         # PlotFrame = None
-        # xlabel = None
+        # x_label = None
         # title = None
         # variable = None
         # units = None
@@ -430,10 +433,10 @@ class ContextMenu(wx.Menu):
         #
         #     if PlotFrame is None:
         #         # set metadata based on first series
-        #         ylabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
+        #         y_label = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
         #
         #         # todo: this needs to change based on the axis format decided by matplotlib
-        #         xlabel = 'DateTime'
+        #         x_label = 'DateTime'
         #
         #         # todo: this title must be more specific.  e.g. include gage location?
         #         title = '%s' % (resobj.VariableObj.VariableCode)
@@ -441,7 +444,7 @@ class ContextMenu(wx.Menu):
         #         # save the variable and units to validate future time series
         #         variable = resobj.VariableObj.VariableCode
         #         units = resobj.UnitObj.UnitsName
-        #         PlotFrame = LogicPlot(self.Parent, title=title, ylabel=ylabel, xlabel=xlabel)
+        #         PlotFrame = LogicPlot(self.Parent, title=title, ylabel=y_label, xlabel=x_label)
         #
         #     if resobj.VariableObj.VariableCode == variable and resobj.UnitObj.UnitsName == units:
         #         # store the date_time_objects and Y data

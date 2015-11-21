@@ -9,6 +9,7 @@ from coordinator.emitLogging import elog
 class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
     def __init__(self, parent):
         wx.ListCtrl.__init__(self, parent, -1, size=(545, 140), style=wx.LC_REPORT)
+        ListCtrlAutoWidthMixin.__init__(self)  # This allows the row to extend
 
 class TimeSeriesObjectViewer(wx.Frame):
 
@@ -60,15 +61,7 @@ class TimeSeriesObjectViewer(wx.Frame):
 
         hboxLowPanel = wx.BoxSizer(wx.HORIZONTAL)
 
-        # Column names
         self.variableList = CheckListCtrl(lowerpanel)
-        # self.variableList.InsertColumn(0, "Variable Name")
-        # self.variableList.InsertColumn(1, "Unit")
-        # self.variableList.InsertColumn(2, "Category")
-        # self.variableList.InsertColumn(3, "Type")
-        # self.variableList.InsertColumn(4, "Begin Date Time")
-        # self.variableList.InsertColumn(5, "End Date Time")
-        # self.variableList.InsertColumn(6, "Description")
 
         hboxLowPanel.Add(self.variableList, 1, wx.EXPAND | wx.ALL, 2)
         lowerpanel.SetSizer(hboxLowPanel)

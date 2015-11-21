@@ -19,9 +19,13 @@ class NetcdfCtrl(NetcdfViewer):
         self.thredds = "http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0"
         self.xlink = "http://www.w3.org/1999/xlink"
         NetcdfViewer.__init__(self, parent=parent)
-        self.Bind(wx.EVT_BUTTON, self.DownloadFile, self.download_btn)
+        self.Bind(wx.EVT_BUTTON, self.downloadFile, self.download_btn)
         self.Bind(wx.EVT_BUTTON, self.addToCanvas, self.add_to_canvas_btn)
         self.Bind(wx.EVT_BUTTON, self.RunCrawler, self.get_btn)
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.enableBtns)
+        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.disableBtns)
+        self.add_to_canvas_btn.Disable()
+        self.download_btn.Disable()
 
 
     def addToCanvas(self, event):
@@ -32,15 +36,9 @@ class NetcdfCtrl(NetcdfViewer):
         temp = NetcdfDetailsCtrl(self, url)
         print "Adding to canvas: SEarch HELLO THIS IS ADDING"
 
-
     def autoSizeColumns(self):
         for i in range(self.variable_list.GetColumnCount()):
             self.variable_list.SetColumnWidth(i, wx.LIST_AUTOSIZE)
-
-    def DownloadFile(self, event):
-        location = self.getSelectedInformation()
-        print self.TableValues[location][1]
-        urllib.urlretrieve(self.TableValues[location][1], self.TableValues[location][0])
 
     def check_url(self, url):
         """
@@ -68,6 +66,19 @@ class NetcdfCtrl(NetcdfViewer):
 
 
         return results
+
+    def disableBtns(self, event):
+        self.add_to_canvas_btn.Disable()
+        self.download_btn.Disable()
+
+    def downloadFile(self, event):
+        location = self.getSelectedInformation()
+        print self.TableValues[location][1]
+        urllib.urlretrieve(self.TableValues[location][1], self.TableValues[location][0])
+
+    def enableBtns(self, event):
+        self.add_to_canvas_btn.Enable()
+        self.download_btn.Enable()
 
     def getSelectedInformation(self):
         num = self.variable_list.GetItemCount()

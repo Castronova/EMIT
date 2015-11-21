@@ -6,13 +6,12 @@ class NetcdfDetailsView(wx.Frame):
 
     def __init__(self, parent):
         wx.Frame.__init__(self, parent=parent, id=-1, title=str("Netcdf file information"), pos=wx.DefaultPosition,
-                          size=(650, 700), style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
+                          size=(650, 565), style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
         panel = wx.Panel(self)
         self.top_panel = wx.Panel(panel)
         self.bottom_panel = wx.Panel(panel)
 
         self.property_grid = MyPropertyGrid(self.top_panel, id=wx.ID_ANY, pos=wx.Point(0, 0), size=(500, 400))
-
 
         #  Makes the property grid fill the entire top panel
         hbox_top_panel = wx.BoxSizer(wx.HORIZONTAL)
@@ -25,21 +24,21 @@ class NetcdfDetailsView(wx.Frame):
         fgs = wx.FlexGridSizer(rows=6, cols=4, vgap=10, hgap=8)
 
         x_spatial_var = wx.StaticText(self.bottom_panel, label="X Spatial Variable:")
-        self.x_spatial_var_combo = wx.ComboBox(self.bottom_panel, value="---")
+        self.x_spatial_var_combo = wx.ComboBox(self.bottom_panel, value="---", size=(150, -1))
         y_spatial_var = wx.StaticText(self.bottom_panel, label="Y Spatial Variable:")
-        self.y_spatial_var_combo = wx.ComboBox(self.bottom_panel, value="---")
+        self.y_spatial_var_combo = wx.ComboBox(self.bottom_panel, value="---", size=(150, -1))
         time_var = wx.StaticText(self.bottom_panel, label="Time Variable:")
-        self.time_var_combo = wx.ComboBox(self.bottom_panel, value="---")
+        self.time_var_combo = wx.ComboBox(self.bottom_panel, value="---", size=(150, -1))
         start_time = wx.StaticText(self.bottom_panel, label="Start Time:")
         self.startDatePicker = wx.DatePickerCtrl(self.bottom_panel, dt=self.start_date)
         time_unit = wx.StaticText(self.bottom_panel, label="Time Units:")
-        self.time_step_combo = wx.ComboBox(self.bottom_panel, value="---")
+        self.time_step_combo = wx.ComboBox(self.bottom_panel, value="---", size=(150, -1))
         emptyLabel = wx.StaticText(self.bottom_panel, label="")
         self.download_btn = wx.Button(parent=self.bottom_panel, id=wx.ID_ANY, label="Add To Canvas")
 
-        fgs.AddMany([x_spatial_var, self.x_spatial_var_combo, y_spatial_var, self.y_spatial_var_combo,
-                     time_var, self.time_var_combo, start_time, self.startDatePicker,
-                      time_unit, self.time_step_combo, emptyLabel,self.download_btn])
+        fgs.AddMany([x_spatial_var, (self.x_spatial_var_combo, 1, wx.EXPAND | wx.RIGHT, 40), y_spatial_var, self.y_spatial_var_combo,
+                     time_var, (self.time_var_combo, 1, wx.EXPAND | wx.RIGHT, 40), start_time, self.startDatePicker,
+                     time_unit, (self.time_step_combo, 1, wx.EXPAND | wx.RIGHT, 40), emptyLabel, self.download_btn])
 
         vbox_bottom_panel.Add(fgs, 1, wx.EXPAND | wx.ALL, 10)
 

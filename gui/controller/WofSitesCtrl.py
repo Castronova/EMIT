@@ -47,7 +47,7 @@ class WofSitesViewerCtrl(WofSitesViewer):
             # no table row selected
             return
 
-        args = dict(type='WaterOneFlow',
+        args = dict(type='wof',
                     wsdl=self.parent.api.wsdl,
                     site=siteobject.site_code,
                     variable=variable_code,

@@ -15,6 +15,8 @@ from environment import env_vars
 from gui.controller.NetcdfCtrl import NetcdfCtrl
 import coordinator.engineAccessors as engine
 import wrappers
+from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
+
 
 # create custom events
 wxCreateBox, EVT_CREATE_BOX = NewEvent()
@@ -218,11 +220,8 @@ class ViewEMIT(wx.Frame):
         # if a file is selected
         if file_dialog.ShowModal() == wx.ID_OK:
             path = file_dialog.GetPath()
-
-            # print path
-
-            from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
-            NetcdfDetailsCtrl(self.Parent, path)
+            filename = file_dialog.GetFilename()
+            NetcdfDetailsCtrl(self.Parent, path, filename)
 
 
 

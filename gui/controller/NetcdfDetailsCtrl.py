@@ -46,8 +46,11 @@ class NetcdfDetailsCtrl(NetcdfDetailsView):
             self.property_grid.Append(wxpg.PropertyCategory(dim + ' (dimension)'))
             self.property_grid.Append(wxpg.StringProperty(label='size', name=dim+'_size', value=str(len(self.ds.dimensions[dim]))))
             self.property_grid.Append(wxpg.StringProperty(label='is unlimited', name=dim+'_isunlimited', value=str(self.ds.dimensions[dim].isunlimited())))
-            drange = '%3.3f.....%3.3f' % (self.ds.variables[dim][0], self.ds.variables[dim][-1])
-            self.property_grid.Append(wxpg.StringProperty(label='Data Range', name=dim+'_min', value=str(drange)))
+
+            try:
+                drange = '%3.3f.....%3.3f' % (self.ds.variables[dim][0], self.ds.variables[dim][-1])
+                self.property_grid.Append(wxpg.StringProperty(label='data range', name=dim+'_min', value=str(drange)))
+            except: pass
 
         # get all of the variable properties and add them to the property grid
         self.variables = self.ds.variables.keys()

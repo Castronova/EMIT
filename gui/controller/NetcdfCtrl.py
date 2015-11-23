@@ -31,8 +31,9 @@ class NetcdfCtrl(NetcdfViewer):
         item = self.getSelectedInformation()
         # this will get the url we want
         url = self.TableValues[item][3]
+        filename = self.TableValues[item][0]
         print url
-        temp = NetcdfDetailsCtrl(self, url)
+        temp = NetcdfDetailsCtrl(self, url,filename)
         print "Adding to canvas: SEarch HELLO THIS IS ADDING"
 
     def autoSizeColumns(self):
@@ -133,8 +134,7 @@ class NetcdfCtrl(NetcdfViewer):
                     name = dict(ds.items())['name']
                     mod = lastmodified.replace("T", " ")
                     self.TableValues.append([name, fileSize + " " + dict(size.items())['units'], mod, url + dap_url])
-            self.download_btn.Enable()
-            self.add_to_canvas_btn.Enable()
+
 
             #self.status_bar.SetStatusText("Almost done...")
             self.update_statusbar(self.status_bar, 'almost done...')

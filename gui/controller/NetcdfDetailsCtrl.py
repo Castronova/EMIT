@@ -7,10 +7,10 @@ import wx.propgrid as wxpg
 
 class NetcdfDetailsCtrl(NetcdfDetailsView):
 
-    def __init__(self, parent, file):
+    def __init__(self, parent, file, filename):
         self.fileurl = file
         NetcdfDetailsView.__init__(self, parent=parent)
-
+        self.Title = "NetCDF: " + filename
         self.variables = []
 
         # populate the property grid

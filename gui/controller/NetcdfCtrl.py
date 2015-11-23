@@ -19,6 +19,8 @@ class NetcdfCtrl(NetcdfViewer):
         self.thredds = "http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0"
         self.xlink = "http://www.w3.org/1999/xlink"
         NetcdfViewer.__init__(self, parent=parent)
+        self.download_btn.Disable()
+        self.add_to_canvas_btn.Disable()
         self.Bind(wx.EVT_BUTTON, self.DownloadFile, self.download_btn)
         self.Bind(wx.EVT_BUTTON, self.addToCanvas, self.add_to_canvas_btn)
         self.Bind(wx.EVT_BUTTON, self.RunCrawler, self.get_btn)
@@ -116,11 +118,16 @@ class NetcdfCtrl(NetcdfViewer):
                     size = ds.find('.//{%s}dataSize' % self.thredds)
                     date = ds.find('.//{%s}date' % self.thredds)
 
+                    fileSize = size.itertext().next()
+                    lastmodified = date.itertext().next()
                     dap_url = dict(dap.items())['urlPath']
                     wms_url = dict(wms.items())['urlPath']
                     name = dict(ds.items())['name']
-
-                    self.TableValues.append([name, url + dap_url, url + dap_url + ".das"])
+                    print name,' ',dap_url, ' ', fileSize
+                    mod = lastmodified.replace("T", " ")
+                    self.TableValues.append([name, fileSize + " " + dict(size.items())['units'], mod, url + dap_url])
+            self.download_btn.Enable()
+            self.add_to_canvas_btn.Enable()
 
             #self.status_bar.SetStatusText("Almost done...")
             self.update_statusbar(self.status_bar, 'almost done...')

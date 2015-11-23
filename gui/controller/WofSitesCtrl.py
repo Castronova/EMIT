@@ -21,6 +21,19 @@ class WofSitesViewerCtrl(WofSitesViewer):
         self.Bind(wx.EVT_DATE_CHANGED, self.setEndDate, self.endDatePicker)
         self.Bind(wx.EVT_BUTTON, self.onExport, self.exportBtn)
         self.Bind(wx.EVT_BUTTON, self.addToCanvas, self.addToCanvasBtn)
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.enableBtns)
+        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.disableBtns)
+        self.disableBtns(None)
+
+    def enableBtns(self, event):
+        self.PlotBtn.Enable()
+        self.exportBtn.Enable()
+        self.addToCanvasBtn.Enable()
+
+    def disableBtns(self, event):
+        self.PlotBtn.Disable()
+        self.exportBtn.Disable()
+        self.addToCanvasBtn.Disable()
 
     def setEndDate(self, event):
         self.end_date = self.endDatePicker.GetValue()

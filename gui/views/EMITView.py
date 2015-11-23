@@ -234,7 +234,6 @@ class ViewEMIT(wx.Frame):
             self.Destroy()
 
     def onOpenDapViewer(self, event):
-        print "Open Dap Viewer not implemented yet"
         netcdf = NetcdfCtrl(self)
 
     def defaultview(self, event):

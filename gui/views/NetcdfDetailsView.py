@@ -6,7 +6,7 @@ class NetcdfDetailsView(wx.Frame):
 
     def __init__(self, parent):
         wx.Frame.__init__(self, parent=parent, id=-1, title=str("Netcdf file information"), pos=wx.DefaultPosition,
-                          size=(650, 565), style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
+                          size=(650, 565), style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
         panel = wx.Panel(self)
         self.top_panel = wx.Panel(panel)
         self.bottom_panel = wx.Panel(panel)
@@ -25,14 +25,19 @@ class NetcdfDetailsView(wx.Frame):
 
         x_spatial_var = wx.StaticText(self.bottom_panel, label="X Spatial Variable:")
         self.x_spatial_var_combo = wx.ComboBox(self.bottom_panel, value="---", size=(150, -1))
+
         y_spatial_var = wx.StaticText(self.bottom_panel, label="Y Spatial Variable:")
         self.y_spatial_var_combo = wx.ComboBox(self.bottom_panel, value="---", size=(150, -1))
+
         time_var = wx.StaticText(self.bottom_panel, label="Time Variable:")
         self.time_var_combo = wx.ComboBox(self.bottom_panel, value="---", size=(150, -1))
+
         start_time = wx.StaticText(self.bottom_panel, label="Start Time:")
         self.startDatePicker = wx.DatePickerCtrl(self.bottom_panel, dt=self.start_date)
+
         time_unit = wx.StaticText(self.bottom_panel, label="Time Units:")
         self.time_step_combo = wx.ComboBox(self.bottom_panel, value="---", size=(150, -1))
+
         emptyLabel = wx.StaticText(self.bottom_panel, label="")
         self.download_btn = wx.Button(parent=self.bottom_panel, id=wx.ID_ANY, label="Add To Canvas")
 

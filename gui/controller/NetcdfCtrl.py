@@ -31,9 +31,7 @@ class NetcdfCtrl(NetcdfViewer):
         item = self.getSelectedInformation()
         # this will get the url we want
         url = self.TableValues[item][3]
-        print url
         temp = NetcdfDetailsCtrl(self, url)
-        print "Adding to canvas: SEarch HELLO THIS IS ADDING"
 
     def autoSizeColumns(self):
         for i in range(self.variable_list.GetColumnCount()):

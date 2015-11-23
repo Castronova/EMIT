@@ -4,6 +4,9 @@ from gui.views.NetcdfDetailsView import NetcdfDetailsView
 import wx
 import netCDF4 as nc
 import wx.propgrid as wxpg
+from coordinator import engineAccessors as engine
+import datetime as dt
+import wrappers
 
 class NetcdfDetailsCtrl(NetcdfDetailsView):
 
@@ -25,7 +28,33 @@ class NetcdfDetailsCtrl(NetcdfDetailsView):
         self.Bind(wx.EVT_BUTTON, self.addToCanvasBTn, self.download_btn)
         
     def addToCanvasBTn(self, event):
-        wx.MessageBox("1234567890SEARCHME0987654321W")
+        '''
+        adds the netcdf resource to the canvas
+        :param event:
+        :return:
+        '''
+
+        x = self.x_spatial_var_combo.GetStringSelection()
+        y = self.y_spatial_var_combo.GetStringSelection()
+        t = self.time_var_combo.GetStringSelection()
+        time_unit = self.time_step_combo.GetStringSelection()
+        st = dt.datetime.strptime('%s'%(self.startDatePicker.GetValue().FormatISODate()), "%Y-%m-%d")
+
+        args = dict(ncpath = self.fileurl,
+                    tdim = t,
+                    xdim = x,
+                    ydim = y,
+                    tunit = time_unit,
+                    starttime = st,
+                    type = wrappers.Types.NETCDF
+                    )
+
+        engine.addModel(attrib=args)
+
+        # close the window
+        self.Close()
+
+
 
     def populateList(self):
         alreadyUsed = {}

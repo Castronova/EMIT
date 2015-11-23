@@ -35,7 +35,10 @@ class Wrapper(base.BaseWrapper):
         xdim = args['xdim']
         ydim = args['ydim']
         tunit = {args['tunit']: 1}
-        st = parser.parse(args['starttime'])
+        if isinstance(args['starttime'], datetime.datetime):
+            st = args['starttime']
+        else:
+            st = parser.parse(args['starttime'])
 
         # make sure the variables provided exist in the nc file
         assert tdim in variables, 'time variable name not specified.  Cannot continue'

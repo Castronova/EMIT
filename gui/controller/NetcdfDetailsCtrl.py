@@ -25,8 +25,26 @@ class NetcdfDetailsCtrl(NetcdfDetailsView):
             self.y_spatial_var_combo.AppendItems(self.variables)
             self.time_var_combo.AppendItems(self.variables)
         self.time_step_combo.AppendItems(['days', 'minutes', 'seconds', 'years'])
-        self.Bind(wx.EVT_BUTTON, self.addToCanvasBTn, self.download_btn)
-        
+        self.Bind(wx.EVT_BUTTON, self.addToCanvasBTn, self.add_to_canvas_btn)
+
+        self.time_step_combo.Bind(wx.EVT_COMBOBOX, self.checkComboBoxSelections)
+        self.x_spatial_var_combo.Bind(wx.EVT_COMBOBOX, self.checkComboBoxSelections)
+        self.y_spatial_var_combo.Bind(wx.EVT_COMBOBOX, self.checkComboBoxSelections)
+        self.time_var_combo.Bind(wx.EVT_COMBOBOX, self.checkComboBoxSelections)
+
+    def checkComboBoxSelections(self, event):
+        """
+        enable/disable the add_to_canvas button based on the values of the combo boxes
+        :return: None
+        """
+        if self.x_spatial_var_combo.Selection >= 0 and \
+           self.y_spatial_var_combo.Selection >= 0 and \
+           self.time_var_combo.Selection >= 0 and \
+           self.time_step_combo.Selection >= 0:
+            self.add_to_canvas_btn.Enable()
+            return
+        self.add_to_canvas_btn.Disable()
+
     def addToCanvasBTn(self, event):
         '''
         adds the netcdf resource to the canvas

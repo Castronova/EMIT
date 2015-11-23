@@ -39,11 +39,12 @@ class NetcdfDetailsView(wx.Frame):
         self.time_step_combo = wx.ComboBox(self.bottom_panel, value="---", size=(150, -1))
 
         emptyLabel = wx.StaticText(self.bottom_panel, label="")
-        self.download_btn = wx.Button(parent=self.bottom_panel, id=wx.ID_ANY, label="Add To Canvas")
+        self.add_to_canvas_btn = wx.Button(parent=self.bottom_panel, id=wx.ID_ANY, label="Add To Canvas")
+        self.add_to_canvas_btn.Disable()
 
         fgs.AddMany([x_spatial_var, (self.x_spatial_var_combo, 1, wx.EXPAND | wx.RIGHT, 40), y_spatial_var, self.y_spatial_var_combo,
                      time_var, (self.time_var_combo, 1, wx.EXPAND | wx.RIGHT, 40), start_time, self.startDatePicker,
-                     time_unit, (self.time_step_combo, 1, wx.EXPAND | wx.RIGHT, 40), emptyLabel, self.download_btn])
+                     time_unit, (self.time_step_combo, 1, wx.EXPAND | wx.RIGHT, 40), emptyLabel, self.add_to_canvas_btn])
 
         vbox_bottom_panel.Add(fgs, 1, wx.EXPAND | wx.ALL, 10)
 

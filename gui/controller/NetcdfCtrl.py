@@ -24,14 +24,13 @@ class NetcdfCtrl(NetcdfViewer):
         self.Bind(wx.EVT_BUTTON, self.RunCrawler, self.get_btn)
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.enableBtns)
         self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.disableBtns)
-        self.add_to_canvas_btn.Disable()
-        self.download_btn.Disable()
+        self.disableBtns(None)
 
 
     def addToCanvas(self, event):
         item = self.getSelectedInformation()
         # this will get the url we want
-        url = self.TableValues[item][1]
+        url = self.TableValues[item][3]
         print url
         temp = NetcdfDetailsCtrl(self, url)
         print "Adding to canvas: SEarch HELLO THIS IS ADDING"
@@ -127,11 +126,15 @@ class NetcdfCtrl(NetcdfViewer):
                     size = ds.find('.//{%s}dataSize' % self.thredds)
                     date = ds.find('.//{%s}date' % self.thredds)
 
+                    fileSize = size.itertext().next()
+                    lastmodified = date.itertext().next()
                     dap_url = dict(dap.items())['urlPath']
                     wms_url = dict(wms.items())['urlPath']
                     name = dict(ds.items())['name']
-
-                    self.TableValues.append([name, url + dap_url, url + dap_url + ".das"])
+                    mod = lastmodified.replace("T", " ")
+                    self.TableValues.append([name, fileSize + " " + dict(size.items())['units'], mod, url + dap_url])
+            self.download_btn.Enable()
+            self.add_to_canvas_btn.Enable()
 
             #self.status_bar.SetStatusText("Almost done...")
             self.update_statusbar(self.status_bar, 'almost done...')

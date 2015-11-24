@@ -615,7 +615,7 @@ class Coordinator(object):
                 temporal = link.temporal_interpolation().name() \
                     if link.temporal_interpolation() is not None \
                     else 'None'
-                link_dict = dict(id=link.id(),
+                link_dict = dict(id=link.get_id(),
                                  source_id=source_id,
                                  target_id=target_id,
                                  source_name=link.source_component().name(),

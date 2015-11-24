@@ -445,15 +445,19 @@ class LogicCanvas(ViewCanvas):
         to_model = engine.getModelById(r2.ID)
 
         if len(self.links) > 1:
-            bidirectional = self.CheckIfBidirectionalLink(r1.Name, r2.Name)
+            bidirectional = self.CheckIfBidirectionalLink(r1.ID, r2.ID)
 
         linkstart = LogicLink(self.FloatCanvas, from_model, to_model, bidirectional)
         linkstart.Show()
 
-    def CheckIfBidirectionalLink(self, r1, r2):
+    def CheckIfBidirectionalLink(self, id1, id2):
         count = 0
         for pair in self.pairedModels:
-            if r1 in pair and r2 in pair:
+
+            # get the ids of the models in this link pair
+            pair_ids = [pair[0].ID, pair[1].ID]
+
+            if id1 in pair_ids and id2 in pair_ids:
                 count += 1
 
         if count >= 2:

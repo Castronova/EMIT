@@ -7,16 +7,19 @@ import wx
 
 class TimeSeriesObjectCtrl(TimeSeriesObjectViewer):
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, parentClass=None):
         TimeSeriesObjectViewer.__init__(self, parent=parent)
+        self.parentClass = parentClass  # used to access methods from parent class
         self.SetTitle("Time Series Object Ctrl")
 
         self.Bind(wx.EVT_DATE_CHANGED, self.setstartDate, self.startDatePicker)
         self.Bind(wx.EVT_DATE_CHANGED, self.setEndDate, self.endDatePicker)
         self.Bind(wx.EVT_BUTTON, self.onExport, self.exportBtn)
         self.Bind(wx.EVT_BUTTON, self.addToCanvas, self.addToCanvasBtn)
+        self.Bind(wx.EVT_BUTTON, self.previewPlot, self.previewBtn)
 
         self.autoSizeColumns()
+        self._objects = None
 
     def addToCanvas(self, event):
         pass
@@ -29,11 +32,32 @@ class TimeSeriesObjectCtrl(TimeSeriesObjectViewer):
         else:
             elog.debug("Column list received is empty")
 
+    def getSelectedObject(self):
+        id = self.getSelectedId()
+        for object in self._objects:
+            if id == object.resultid:
+                return object
+
+    def getSelectedId(self):
+        num = self.variableList.GetItemCount()
+        for i in range(num):
+            if self.variableList.IsSelected(i):
+                id = self.variableList.GetItemText(i)
+                return int(id)
+
     def onExport(self, event):
         pass
 
     def previewPlot(self, event):
-        pass
+        id = self.getSelectedId()
+        date_time_objects, value, resobj = self.parentClass.getData(resultID=id)
+
+        data = []
+        for i in range(len(date_time_objects)):
+            data.append((date_time_objects[i], value[i]))
+
+        variable_name = str(resobj.VariableObj.VariableNameCV)
+        self.plotGraph(data=data, var_name=variable_name)
 
     def plotGraph(self, data, var_name, no_data=None):
         self.plot.clearPlot()

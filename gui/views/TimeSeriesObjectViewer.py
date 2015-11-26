@@ -42,7 +42,7 @@ class TimeSeriesObjectViewer(wx.Frame):
         self.endDatePicker = wx.DatePickerCtrl(middlepanel, id=wx.ID_ANY, dt=self.end_date)
         self.exportBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Export")
         self.addToCanvasBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Add to Canvas")
-        self.PlotBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Preview")
+        self.previewBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Preview")
 
         hboxMidPanel.Add(self.startDateText, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
         hboxMidPanel.AddSpacer(2)
@@ -52,7 +52,7 @@ class TimeSeriesObjectViewer(wx.Frame):
         hboxMidPanel.AddSpacer(2)
         hboxMidPanel.Add(self.endDatePicker, 1, wx.EXPAND | wx.ALL, 2)
         hboxMidPanel.AddSpacer(2)
-        hboxMidPanel.Add(self.PlotBtn, 1, wx.EXPAND | wx.ALL, 2)
+        hboxMidPanel.Add(self.previewBtn, 1, wx.EXPAND | wx.ALL, 2)
         hboxMidPanel.AddSpacer(2)
         hboxMidPanel.Add(self.exportBtn, 1, wx.EXPAND | wx.ALL, 2)
         hboxMidPanel.AddSpacer(2)

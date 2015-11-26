@@ -15,7 +15,7 @@ class logicPlotForSiteViewer(ViewPlotForSiteViewer):
         # unpack the dates, values and replace nodata with None
         dates, values = zip(*data)
         nvals = numpy.array(values, dtype=numpy.float)
-        nvals[nvals==noDataValue] = None
+        nvals[nvals == noDataValue] = None
 
         # plot datetime axis
         self.axes.plot_date(dates, nvals, label=name, linestyle='-', marker=None)

@@ -318,7 +318,7 @@ class ContextMenu(wx.Menu):
             if path[-4] != '.':
                 path += '.csv'
             file = open(path, 'w')
-
+#
             writer = csv.writer(file, delimiter=',')
 
             obj = self.__list_obj

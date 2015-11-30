@@ -14,7 +14,7 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
 class TimeSeriesObjectViewer(wx.Frame):
 
     def __init__(self, parent):
-        wx.Frame.__init__(self, parent=parent, size=(650, 700), style=wx.STAY_ON_TOP | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
+        wx.Frame.__init__(self, parent=parent, size=(650, 700), style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
 
         self.parent = parent

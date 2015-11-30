@@ -1,19 +1,19 @@
 __author__ = 'francisco'
 
 # from gui.views.TimeSeriesObjectViewer import TimeSeriesObjectViewer
-from gui.views.WofSitesView import WofSitesViewer
+from gui.views.TimeSeriesPlotView import TimeSeriesPlotView
 from coordinator.emitLogging import elog
 import wx
 import os
 import csv
 import time
 
-class TimeSeriesObjectCtrl(WofSitesViewer):
+class TimeSeriesObjectCtrl(TimeSeriesPlotView):
 
     def __init__(self, parent=None, parentClass=None, timeseries_variables={}):
 
         table_cols = ["Result ID", "Feature Code","Variable","Unit","Type","Organization","Date Created"]
-        WofSitesViewer.__init__(self, parent, "My Title", table_cols)
+        TimeSeriesPlotView.__init__(self, parent, "My Title", table_cols)
         # TimeSeriesObjectViewer.__init__(self, parent=parent)
 
         self.populateVariableList(timeseries_variables)

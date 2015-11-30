@@ -93,11 +93,7 @@ class TimeSeriesObjectCtrl(WofSitesViewer):
 
 
         id = self.getSelectedId()
-        print id
-
-        print 'getting data'
         date_time_objects, value, resobj = self.parentClass.getData(resultID=id)
-        print 'done'
 
         data = []
         for i in range(len(date_time_objects)):

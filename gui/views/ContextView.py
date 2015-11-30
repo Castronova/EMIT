@@ -386,17 +386,23 @@ class ContextMenu(wx.Menu):
         obj = self.__list_obj
         objects = obj.GetObjects()
 
-        variable_list_entries = {}
-        for i in range(self.parent.GetSelectedItemCount()):
+        print 'Selected ', self.parent.GetSelectedItemCount()
 
-            # get the id of the selected item
-            id = self.parent.GetNextSelected(i)
+        item = self.parent.GetFirstSelected()
+        variable_list_entries = {}
+
+        while item != -1:
+
+            print 'parsing id: ', item
 
             # get the object associated with this id
-            object = objects[id]
+            object = objects[item]
 
             # save the variable metadata
             variable_list_entries[object.resultid] = [object.featurecode, object.variable, object.unit, object.type, object.organization, object.date_created]
+
+            item = self.parent.GetNextSelected(item)
+
 
         # instantiate the time series control
         TimeSeriesObjectCtrl(parentClass=self, timeseries_variables=variable_list_entries)

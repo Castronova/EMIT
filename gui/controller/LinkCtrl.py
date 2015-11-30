@@ -35,8 +35,8 @@ class LogicLink(ViewLink):
 
         self.__link_source_id = self.output_component['id']
         self.__link_target_id = self.input_component['id']
-        self.__link_ids = {}
-        self.__links = []
+        self.__links = {}
+        # self.__links = []
         self.link_obj_hit = False
 
         #  Loaded twice for when links go both ways
@@ -174,7 +174,7 @@ class LogicLink(ViewLink):
         self.link_obj_hit = False
 
     def getLinkByName(self, name):
-        for l in self.__links:
+        for l in self.__links.values():
             if l.name() == name:
                 return l
         return None
@@ -213,16 +213,20 @@ class LogicLink(ViewLink):
 
         # get the selected link object
         selected = self.LinkNameListBox.GetStringSelection()
-        known_link_ids = [l.name() for l in self.__links]
-        if selected in known_link_ids:
-            l = self.__links[known_link_ids.index(selected)]
-            self.__selected_link = l
+        selected_id = selected.split('|')[0].strip()
+
+        # make sure a link is selected
+        if selected_id in self.__links.keys():
+
+            # get the selected link object
+            self.__selected_link = self.__links[selected_id]
 
             # activate controls
             self.activateControls(True)
 
-            self.populate_output_metadata(l)
-            self.populate_input_metadata(l)
+            # populate the link metadata
+            self.populate_output_metadata(self.__selected_link)
+            self.populate_input_metadata(self.__selected_link)
 
         else:
             # deactivate controls if nothing is selected
@@ -258,7 +262,7 @@ class LogicLink(ViewLink):
     def refreshLinkNameBox(self):
 
         self.LinkNameListBox.Clear()
-        for l in self.__links:
+        for l in self.__links.values():
             self.LinkNameListBox.Append(l.name())
 
     def NewButton(self, event):
@@ -273,7 +277,7 @@ class LogicLink(ViewLink):
 
         # create a link object and save it at the class level
         l = LinkInfo(oei, iei, self.__link_source_id, self.__link_target_id)
-        self.__links.append(l)
+        self.__links[l.uid] = l
 
         # add the link name to the links list box
         self.refreshLinkNameBox()
@@ -405,16 +409,12 @@ class LogicLink(ViewLink):
         # get the current link
         l = self.__selected_link
 
-        # get index of this link and then remove it from the links list
-        link_idx = self.__links.index(l)
-        self.__links.pop(link_idx)
-
         # change the link name to reflect output -> input
         l.oei = output_name
         l.refresh('output')
 
         # update the name in the links list
-        self.__links.insert(link_idx, l)
+        self.__links[l.uid] = l
 
         # refresh the link name box
         self.refreshLinkNameBox()
@@ -433,16 +433,12 @@ class LogicLink(ViewLink):
         # get the current link
         l = self.__selected_link
 
-        # get index of this link and then remove it from the links list
-        link_idx = self.__links.index(l)
-        self.__links.pop(link_idx)
-
         # change the link name to reflect output -> input
         l.iei = input_name
         l.refresh('input')
 
         # update the name in the links list
-        self.__links.insert(link_idx, l)
+        self.__links[l.uid] = l
 
         # refresh the link name box
         self.refreshLinkNameBox()
@@ -487,7 +483,7 @@ class LogicLink(ViewLink):
 
         warnings = []
         errors = []
-        for l in self.__links:
+        for l in self.__links.values():
 
             if l.iei == '---' or l.oei == '--':
                 warnings.append(l)
@@ -532,8 +528,7 @@ class LogicLink(ViewLink):
     def OnStartUp(self, component1, component2):
         self.InputComboBox.SetItems(['---'] + self.InputComboBoxChoices())
         self.OutputComboBox.SetItems(['---'] + self.OutputComboBoxChoices())
-        self.InputComboBox.SetSelection(0)
-        self.OutputComboBox.SetSelection(0)
+
 
         links = engine.getLinksBtwnModels(component1['id'], component2['id'])
         if links:
@@ -546,16 +541,31 @@ class LogicLink(ViewLink):
                                 l['spatial_interpolation'],
                                 l['temporal_interpolation'])
 
-                self.__links.append(link)
+                self.__links[l['id']] = link
 
             # select the first value
             self.refreshLinkNameBox()
             self.LinkNameListBox.SetSelection(0)
-            self.__selected_link = self.__links[0]
+            self.__selected_link = self.__links.keys()[0]
             self.OnChange(None)
+        else:
+            # if no links are found, need to deactivate controls
+            self.activateControls(False)
 
-        # if no links are found, need to deactivate controls
-        self.activateControls(False)
+        # initial selection for the comboboxes.  This will change (below) if links exist
+        self.InputComboBox.SetSelection(0)
+        self.OutputComboBox.SetSelection(0)
+
+        # set the selection to the first link
+        selected = self.LinkNameListBox.GetStringSelection()
+        selected_id = selected.split('|')[0].strip()
+        if selected != '':
+            l = self.__links[selected_id]
+            self.OutputComboBox.SetSelection(self.OutputComboBoxChoices().index(l.oei) + 1)
+            self.InputComboBox.SetSelection(self.InputComboBoxChoices().index(l.iei) + 1)
+
+
+
 
     def OutputGridHover(self, e):
         self.OutGridToolTip(e)
@@ -583,7 +593,7 @@ class LinkInfo():
                  temporal_interpolation=None):
 
 
-        self.uid = 'L' + uuid.uuid4().hex[:5] if uid is None else uid
+        self.uid = 'L' + uuid.uuid4().hex if uid is None else uid
         # self.name = self.generate_link_name(oei,iei,self.uid)
         self.oei = oei
         self.iei = iei
@@ -615,13 +625,13 @@ class LinkInfo():
 
     def get_input_and_output_metadata(self, type=None):
 
-        if type == 'output':
+        if type == 'output' or type is None:
             # get output information
             outputs = engine.getOutputExchangeItems(self.source_id, returnGeoms=False)
             if outputs is not None:
                 for output in outputs:
                     self.output_metadata[output['name']] = output
-        if type == 'input':
+        if type == 'input' or type is None:
             # get input information
             inputs = engine.getInputExchangeItems(self.target_id, returnGeoms=False)
             if inputs is not None:

@@ -13,7 +13,7 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
 class TimeSeriesPlotView(wx.Frame):
     def __init__(self, parent, title, table_columns):
         wx.Frame.__init__(self, parent=parent, id=-1, title=title, pos=wx.DefaultPosition, size=(650, 700),
-                          style=wx.STAY_ON_TOP | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
+                          style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         # self.siteobject = siteObject
         self.start_date = wx.DateTime_Now() - 7 * wx.DateSpan_Day()

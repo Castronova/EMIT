@@ -13,13 +13,13 @@ class TimeSeriesObjectCtrl(TimeSeriesPlotView):
     def __init__(self, parent=None, parentClass=None, timeseries_variables={}):
 
         table_cols = ["Result ID", "Feature Code","Variable","Unit","Type","Organization","Date Created"]
-        TimeSeriesPlotView.__init__(self, parent, "My Title", table_cols)
+        TimeSeriesPlotView.__init__(self, parent, "No Title", table_cols)
         # TimeSeriesObjectViewer.__init__(self, parent=parent)
 
         self.populateVariableList(timeseries_variables)
 
         self.parentClass = parentClass  # used to access methods from parent class
-        self.SetTitle("Time Series Object Ctrl")
+        self.SetTitle("TimeSeries Viewer")
 
         self.Bind(wx.EVT_DATE_CHANGED, self.setstartDate, self.startDatePicker)
         self.Bind(wx.EVT_DATE_CHANGED, self.setEndDate, self.endDatePicker)
@@ -98,16 +98,20 @@ class TimeSeriesObjectCtrl(TimeSeriesPlotView):
         data = []
         for i in range(len(date_time_objects)):
             data.append((date_time_objects[i], value[i]))
+
         try:
             variable_name = str(resobj.VariableObj.VariableNameCV)
-            self.plotGraph(data=data, var_name=variable_name)
+            unit_name = '%s [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
+            self.plotGraph(data=data, var_name=variable_name, yunits=unit_name)
+
         except Exception as e:
             elog.debug("DetachedInstanceError. See resobj.VariableObj" + str(e))
             elog.error("Failed to load the graph.  Try restarting.")
 
-    def plotGraph(self, data, var_name, no_data=None):
+    def plotGraph(self, data, var_name, yunits=None, no_data=None):
         self.plot.clearPlot()
         if data is not None:
+            self.plot.setAxisLabel(" ", yunits)
             self.plot.plotData(data, str(var_name), no_data)
         else:
             elog.info("Received no data to plot")

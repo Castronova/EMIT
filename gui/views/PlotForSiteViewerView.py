@@ -12,7 +12,6 @@ class ViewPlotForSiteViewer:
         self.axes = self.figure.add_subplot(111)
         self.axes.grid()
         self.axes.margins(0)
-        self.setAxisLabel("Date Time", "Units")
         self.plot = FigureCanvas(panel, -1, self.figure)
 
     def setTitle(self, title=""):

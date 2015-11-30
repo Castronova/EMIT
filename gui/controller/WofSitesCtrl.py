@@ -190,7 +190,7 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
                 if len(data[0].values[0]) > 1:
                     values = data[0].values[0].value
                 else:
-                    elog.info("There are no values.  Try selecting a bigger date range")
+                    elog.info("There are no values.  Try selecting a larger date range")
                     return
 
                 for value in values:
@@ -198,10 +198,9 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
 
                 noData = data[0].variable.noDataValue
 
-            self.plot.setTitle(self.getSelectedVariableName())
-            self.plot.setAxisLabel("Date Time", data[0].variable.unit.unitName)
+            # self.plot.setTitle(self.getSelectedVariableName())
+            self.plot.setAxisLabel(" ", data[0].variable.unit.unitName)
             self.plot.plotData(plotData, var_name, noData)
-        # Column names
 
     def populateVariablesList(self, api, sitecode):
         data = api.buildAllSiteCodeVariables(sitecode)

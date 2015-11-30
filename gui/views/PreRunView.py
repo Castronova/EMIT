@@ -137,7 +137,7 @@ class SummaryPage(wx.Panel):
         # with open(os.path.abspath(os.path.join(currentdir, '../../app_data/configuration/users.json')),'r') as f:
 
         userjson = env_vars.USER_JSON
-        elog.debug('userjson', userjson)
+        elog.debug('userjson ' + userjson)
         with open(userjson,'r') as f:
             known_users.extend(Users.BuildAffiliationfromJSON(f.read()))
 

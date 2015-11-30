@@ -26,9 +26,11 @@ from numpy import random as random
 
 from shapely.geometry import Point
 from transform.space import SpatialInterpolation
-from stdlib import Geometry
+# from stdlib import Geometry
 from copy import copy
 import time
+
+from utilities import geometry
 
 ##################################################################
 ##############           !     NOTE     !           ##############
@@ -483,6 +485,37 @@ class testSpatial(unittest.TestCase):
         self.assertTrue('None' not in mapped)
 
 
+    def test_spatial_nearest_neighbor_radial(self):
+
+
+        # build some test points
+        x_in = [0,4,2,0,4]
+        y_in = [0,0,2,4,4]
+        x_out = [0,2,4]
+        y_out = [1,0,3]
+        pts_in = geometry.build_point_geometries(x_in, y_in)
+        pts_out = geometry.build_point_geometries(x_out, y_out)
+
+        # instantiate the interpolation class
+        interpolation = SpatialInterpolation.NearestNeighborRadial
+
+        # test multiple matches (large search distance)
+        interpolation.set_param("max_distance", 10)
+        mapped = interpolation.transform(pts_in, pts_out)
+        self.assertTrue('None' not in mapped)
+        self.assertTrue(len(mapped) == 3)
+
+        # test no matches (very small search distance)
+        interpolation.set_param("max_distance", 0)
+        mapped = interpolation.transform(pts_in, pts_out)
+        self.assertTrue('None' not in mapped)
+        self.assertTrue(len(mapped) == 0)
+
+        # test partial matches (small search distance)
+        interpolation.set_param("max_distance", 1)
+        mapped = interpolation.transform(pts_in, pts_out)
+        self.assertTrue('None' not in mapped)
+        self.assertTrue(len(mapped) == 2)
 
 
 

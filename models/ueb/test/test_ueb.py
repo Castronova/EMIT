@@ -8,6 +8,7 @@ from utilities.gui import parse_config
 import wrappers
 from coordinator.engine import Coordinator
 import time
+from transform import space
 
 class testUEB(unittest.TestCase):
 
@@ -81,12 +82,15 @@ class testUEB(unittest.TestCase):
         models = engine.get_all_models()
         self.assertTrue(len(models) == 2)
 
+        spatial_interpolation = space.spatial_nearest_neighbor()
+
+
          # add a link from NetCDF to UEB
         netcdf = engine.get_output_exchange_items_summary(id=1234)
         ueb = engine.get_input_exchange_items_summary(id=1235)
         engine.add_link(from_id=1234, from_item_id = netcdf[0]['name'],
                         to_id=1235, to_item_id = ueb[0]['name'],
-                        spatial_interp=None,
+                        spatial_interp=spatial_interpolation,
                         temporal_interp=None,
                         uid=None)
 

@@ -318,7 +318,7 @@ class ContextMenu(wx.Menu):
             if path[-4] != '.':
                 path += '.csv'
             file = open(path, 'w')
-
+#
             writer = csv.writer(file, delimiter=',')
 
             obj = self.__list_obj
@@ -384,7 +384,8 @@ class ContextMenu(wx.Menu):
         obj = self.__list_obj
 
         id = self.parent.GetFirstSelected()
-        plot = TimeSeriesObjectCtrl()
+        plot = TimeSeriesObjectCtrl(parentClass=self)
+        plot._objects = obj.GetObjects()
         result_id = obj.GetItem(id, 0).GetText()
         date_time_objects, value, resobj = self.getData(resultID=result_id)
         y_label = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
@@ -394,18 +395,21 @@ class ContextMenu(wx.Menu):
         plot.setPlotTitle(title)
         plot.setPlotLabel(x_label, y_label)
 
+        variable_list_entries = {}
+        for object in obj.GetObjects():
+            variable_list_entries[object.resultid] = [object.featurecode, object.variable, object.unit, object.type, object.organization, object.date_created]
+
         data = []
         for i in range(len(date_time_objects)):  # get the data to be in the correct format
             data.append((date_time_objects[i], value[i]))
 
         variable_name = str(resobj.VariableObj.VariableNameCV)
-        definition = resobj.VariableObj.VariableDefinition
+        # definition = resobj.VariableObj.VariableDefinition
 
         plot.plotGraph(data, variable_name)  # data = [(datetime, value)]
 
-        variable_list_entries = {result_id: [variable_name, definition]}
-
         column_names = ["id", "Name", "Definition"]
+        column_names = ["ResultID", "Feature Code", "Variable", "Unit", "Type", "Organization", "Date Created"]
         plot.createColumns(column_names)
 
         plot.populateVariableList(variable_list_entries)

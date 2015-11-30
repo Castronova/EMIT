@@ -3,20 +3,25 @@ __author__ = 'francisco'
 from gui.views.TimeSeriesObjectViewer import TimeSeriesObjectViewer
 from coordinator.emitLogging import elog
 import wx
-
+import os
+import csv
+import time
 
 class TimeSeriesObjectCtrl(TimeSeriesObjectViewer):
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, parentClass=None):
         TimeSeriesObjectViewer.__init__(self, parent=parent)
+        self.parentClass = parentClass  # used to access methods from parent class
         self.SetTitle("Time Series Object Ctrl")
 
         self.Bind(wx.EVT_DATE_CHANGED, self.setstartDate, self.startDatePicker)
         self.Bind(wx.EVT_DATE_CHANGED, self.setEndDate, self.endDatePicker)
         self.Bind(wx.EVT_BUTTON, self.onExport, self.exportBtn)
         self.Bind(wx.EVT_BUTTON, self.addToCanvas, self.addToCanvasBtn)
+        self.Bind(wx.EVT_BUTTON, self.previewPlot, self.previewBtn)
 
         self.autoSizeColumns()
+        self._objects = None
 
     def addToCanvas(self, event):
         pass
@@ -29,11 +34,67 @@ class TimeSeriesObjectCtrl(TimeSeriesObjectViewer):
         else:
             elog.debug("Column list received is empty")
 
+    def getSelectedObject(self):
+        id = self.getSelectedId()
+        for object in self._objects:
+            if id == object.resultid:
+                return object
+
+    def getSelectedId(self):
+        num = self.variableList.GetItemCount()
+        for i in range(num):
+            if self.variableList.IsSelected(i):
+                id = self.variableList.GetItemText(i)
+                return int(id)
+
     def onExport(self, event):
-        pass
+        save = wx.FileDialog(parent=self, message="Choose Path",
+                             defaultDir=os.getcwd(),
+                             wildcard="CSV Files (*.csv)|*.csv",
+                             style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+        if save.ShowModal() == wx.ID_OK:
+            path = save.GetPath()
+            if path[-4] != '.':
+                path += '.csv'
+            file = open(path, 'w')
+            writer = csv.writer(file, delimiter=',')
+            varInfo = self.getSelectedObject()
+            id = self.getSelectedId()
+            date_time_object, values, resojb = self.parentClass.getData(resultID=id)
+
+            writer.writerow(["#---Disclaimer: "])
+            writer.writerow(["#"])
+            writer.writerow(["Date Created: %s" % str(varInfo.date_created.strftime("%m/%d/%Y"))])
+            writer.writerow(["Date Exported: %s" % str(time.strftime("%m/%d/%Y"))])
+            writer.writerow(["ID: %s" % str(id)])
+            writer.writerow(["Feature Code: %s" % str(varInfo.featurecode)])
+            writer.writerow(["Variable Name: %s" % str(varInfo.variable)])
+            writer.writerow(["Unit: %s" % str(varInfo.unit)])
+            writer.writerow(["Type: %s" % str(varInfo.type)])
+            writer.writerow(["Organization: %s" % str(varInfo.organization)])
+            writer.writerow(["#"])
+            writer.writerow(["#---End Disclaimer"])
+            writer.writerow(["#"])
+            writer.writerow(["Dates", "Values"])
+
+            for i in range(len(date_time_object)):
+                writer.writerow([date_time_object[i], values[i]])
+
+            file.close()
 
     def previewPlot(self, event):
-        pass
+        id = self.getSelectedId()
+        date_time_objects, value, resobj = self.parentClass.getData(resultID=id)
+
+        data = []
+        for i in range(len(date_time_objects)):
+            data.append((date_time_objects[i], value[i]))
+        try:
+            variable_name = str(resobj.VariableObj.VariableNameCV)
+            self.plotGraph(data=data, var_name=variable_name)
+        except Exception as e:
+            elog.debug("DetachedInstanceError. See resobj.VariableObj" + str(e))
+            elog.error("Failed to load the graph.  Try restarting.")
 
     def plotGraph(self, data, var_name, no_data=None):
         self.plot.clearPlot()

@@ -14,8 +14,10 @@ import datetime as dt
 class WofSitesViewerCtrl(WofSitesViewer):
     def __init__(self, parent, siteObject):
 
-        WofSitesViewer.__init__(self, parent, siteObject)
+        table_cols = ["Variable Name", "Unit","Category","Type","Begin Date Time","End Date Time","Description"]
+        WofSitesViewer.__init__(self, parent, siteObject.site_name, table_cols)
 
+        self.siteobject = siteObject
         self.Bind(wx.EVT_BUTTON, self.previewPlot, self.PlotBtn)
         self.Bind(wx.EVT_DATE_CHANGED, self.setStartDate, self.startDatePicker)
         self.Bind(wx.EVT_DATE_CHANGED, self.setEndDate, self.endDatePicker)
@@ -220,6 +222,21 @@ class WofSitesViewerCtrl(WofSitesViewer):
 
         self.autoSizeColumns()
         self.alternateRowColor()
+
+    def build_timeseries_table(self):
+
+        # Column names
+        # self.variableList = CheckListCtrl(lowerpanel)
+        self.variableList.InsertColumn(0, "Variable Name")
+        self.variableList.InsertColumn(1, "Unit")
+        self.variableList.InsertColumn(2, "Category")
+        self.variableList.InsertColumn(3, "Type")
+        self.variableList.InsertColumn(4, "Begin Date Time")
+        self.variableList.InsertColumn(5, "End Date Time")
+        self.variableList.InsertColumn(6, "Description")
+
+        self.refresh_timeseries_table()
+
 
 
 class DicToObj(object):

@@ -1,16 +1,19 @@
 __author__ = 'francisco'
 
-from gui.views.TimeSeriesObjectViewer import TimeSeriesObjectViewer
+# from gui.views.TimeSeriesObjectViewer import TimeSeriesObjectViewer
+from gui.views.WofSitesView import WofSitesViewer
 from coordinator.emitLogging import elog
 import wx
 import os
 import csv
 import time
 
-class TimeSeriesObjectCtrl(TimeSeriesObjectViewer):
+class TimeSeriesObjectCtrl(WofSitesViewer):
 
     def __init__(self, parent=None, parentClass=None):
-        TimeSeriesObjectViewer.__init__(self, parent=parent)
+        WofSitesViewer.__init__(self, parent=parent)
+        # TimeSeriesObjectViewer.__init__(self, parent=parent)
+
         self.parentClass = parentClass  # used to access methods from parent class
         self.SetTitle("Time Series Object Ctrl")
 

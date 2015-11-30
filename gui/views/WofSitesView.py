@@ -11,11 +11,11 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
         ListCtrlAutoWidthMixin.__init__(self)
 
 class WofSitesViewer(wx.Frame):
-    def __init__(self, parent, siteObject):
-        wx.Frame.__init__(self, parent=parent, id=-1, title=str(siteObject.site_name), pos=wx.DefaultPosition, size=(650, 700),
+    def __init__(self, parent, title, table_columns):
+        wx.Frame.__init__(self, parent=parent, id=-1, title=title, pos=wx.DefaultPosition, size=(650, 700),
                           style=wx.STAY_ON_TOP | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
-        self.siteobject = siteObject
+        # self.siteobject = siteObject
         self.start_date = wx.DateTime_Now() - 7 * wx.DateSpan_Day()
         self.end_date = wx.DateTime_Now()
         self.parent = parent
@@ -64,15 +64,10 @@ class WofSitesViewer(wx.Frame):
 
         hboxLowPanel = wx.BoxSizer(wx.HORIZONTAL)
 
-        # Column names
+        # Build time series table
         self.variableList = CheckListCtrl(lowerpanel)
-        self.variableList.InsertColumn(0, "Variable Name")
-        self.variableList.InsertColumn(1, "Unit")
-        self.variableList.InsertColumn(2, "Category")
-        self.variableList.InsertColumn(3, "Type")
-        self.variableList.InsertColumn(4, "Begin Date Time")
-        self.variableList.InsertColumn(5, "End Date Time")
-        self.variableList.InsertColumn(6, "Description")
+        for i in range(len(table_columns)):
+            self.variableList.InsertColumn(i, str(table_columns[i]))
 
         hboxLowPanel.Add(self.variableList, 1, wx.EXPAND | wx.ALL, 2)
         lowerpanel.SetSizer(hboxLowPanel)
@@ -88,6 +83,7 @@ class WofSitesViewer(wx.Frame):
         self.autoSizeColumns()
 
         self.Show()
+
 
     def autoSizeColumns(self):
         for i in range(self.variableList.GetColumnCount()):

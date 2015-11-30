@@ -330,7 +330,8 @@ class Coordinator(object):
         thisModel = None
 
         if id is None:
-            id = uuid.uuid4().hex
+            id = 'M' + uuid.uuid4().hex
+
 
         if 'type' in attrib.keys():
 
@@ -353,9 +354,7 @@ class Coordinator(object):
                               output_exchange_items=  oei,
                               params=None)
 
-
         elif 'mdl' in attrib:
-            elog.warning('Usage deprecated.  Please pass wrapper type to engine add_model.')
         # if type == datatypes.ModelTypes.FeedForward or type == datatypes.ModelTypes.TimeStep:
 
             ini_path = attrib['mdl']
@@ -375,10 +374,6 @@ class Coordinator(object):
                 iei = model_inst.inputs().values()
                 oei = model_inst.outputs().values()
 
-                # generate a unique model id
-                if id is None:
-                    id = uuid.uuid4().hex[:5]
-
                 # create a model instance
                 thisModel = Model(id= id,
                                   name=model_inst.name(),
@@ -392,8 +387,6 @@ class Coordinator(object):
                 thisModel.attrib(attrib)
 
         elif 'databaseid' in attrib and 'resultid' in attrib:
-            elog.warning('Usage deprecated.  Please pass wrapper type to engine add_model.')
-        # elif type == datatypes.ModelTypes.Data:
 
             databaseid = attrib['databaseid']
             resultid = attrib['resultid']

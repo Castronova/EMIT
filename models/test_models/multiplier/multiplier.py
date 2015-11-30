@@ -52,8 +52,3 @@ class multiply(feed_forward.feed_forward_wrapper):
         oei.setValues2(values=new_vals, timevalue=dates)
 
 
-
-    def save(self):
-        return self.outputs()
-
-

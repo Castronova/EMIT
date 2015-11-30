@@ -175,13 +175,15 @@ class sqlite():
             for i in range(0, len(geometries)):
 
 
-                geom = geometries[i].geom()
+                geom_wkt = geometries[i].ExportToWkt()
+                geom_type = geometries[i].type
+
                 values = datavalues[:,i]   # all dates for geometry(i)
 
                 # create sampling feature
-                samplingFeature = self.getSamplingFeatureID__Geometry_EQUALS(geom.wkt)
+                samplingFeature = self.getSamplingFeatureID__Geometry_EQUALS(geom_wkt)
                 if not samplingFeature:
-                    samplingFeature = self.insert_sampling_feature(type='site',geometryType=geom.type, WKTgeometry=geom.wkt)
+                    samplingFeature = self.insert_sampling_feature(type='site',geometryType=geom_type, WKTgeometry=geom_wkt)
 
                 # create feature action
                 featureaction = self.write.createFeatureAction(samplingfeatureid=samplingFeature.SamplingFeatureID,

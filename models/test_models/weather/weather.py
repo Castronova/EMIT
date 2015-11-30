@@ -55,13 +55,3 @@ class weatherReader(feed_forward.feed_forward_wrapper):
 
         # set output data
         self.p.setValues2(incremental_precip, dates)
-
-
-    def save(self):
-        """
-        This function is used to build output exchange items
-        :return: list of output exchange items
-        """
-
-        # save all timeseries
-        return self.outputs()

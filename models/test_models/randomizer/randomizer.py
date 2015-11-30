@@ -76,7 +76,7 @@ class randomizer(feed_forward.feed_forward_wrapper):
 
         print 'Run Complete'
 
-    def save(self):
+    def finish(self):
         """
         This function is used to build output exchange items
         :return: list of output exchange items
@@ -118,4 +118,4 @@ class randomizer(feed_forward.feed_forward_wrapper):
 
 
         # save all timeseries
-        return self.outputs()
+        # return self.outputs()

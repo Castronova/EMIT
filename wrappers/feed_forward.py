@@ -25,7 +25,8 @@ class feed_forward_wrapper(object):
         return datatypes.ModelTypes.FeedForward
 
     def finish(self):
-        raise NotImplementedError('This is an abstract method that must be implemented!')
+        pass
+        # raise NotImplementedError('This is an abstract method that must be implemented!')
 
     def run(self,inputs):
         self.status(Status.Finished)

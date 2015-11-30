@@ -135,7 +135,7 @@ def update_links_feed_forward(obj, links, output_exchange_items, spatial_maps):
         # todo: remove loop to improve efficiency
         # set these data in the iei
         for i in range(0, len(nvals)):
-            iei.setValues2(values=nvals[i], timevalue=sdates[i])
+            iei.setValues2(values=nvals[i], timevalue=target_times[i])
         # obj.update_link
 
 

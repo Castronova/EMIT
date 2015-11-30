@@ -381,96 +381,26 @@ class ContextMenu(wx.Menu):
             return dates, values, obj
 
     def OnPlot(self, event):
+
+        # get the list control objects
         obj = self.__list_obj
-
-        id = self.parent.GetFirstSelected()
-        plot = TimeSeriesObjectCtrl(parentClass=self)
-        plot._objects = obj.GetObjects()
-        result_id = obj.GetItem(id, 0).GetText()
-        date_time_objects, value, resobj = self.getData(resultID=result_id)
-        y_label = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
-        x_label = "DateTime"
-        title = '%s' % (resobj.VariableObj.VariableCode)
-
-        plot.setPlotTitle(title)
-        plot.setPlotLabel(x_label, y_label)
+        objects = obj.GetObjects()
 
         variable_list_entries = {}
-        for object in obj.GetObjects():
+        for i in range(self.parent.GetSelectedItemCount()):
+
+            # get the id of the selected item
+            id = self.parent.GetNextSelected(i)
+
+            # get the object associated with this id
+            object = objects[id]
+
+            # save the variable metadata
             variable_list_entries[object.resultid] = [object.featurecode, object.variable, object.unit, object.type, object.organization, object.date_created]
 
-        data = []
-        for i in range(len(date_time_objects)):  # get the data to be in the correct format
-            data.append((date_time_objects[i], value[i]))
+        # instantiate the time series control
+        TimeSeriesObjectCtrl(parentClass=self, timeseries_variables=variable_list_entries)
 
-        variable_name = str(resobj.VariableObj.VariableNameCV)
-        # definition = resobj.VariableObj.VariableDefinition
-
-        plot.plotGraph(data, variable_name)  # data = [(datetime, value)]
-
-        column_names = ["id", "Name", "Definition"]
-        column_names = ["ResultID", "Feature Code", "Variable", "Unit", "Type", "Organization", "Date Created"]
-        plot.createColumns(column_names)
-
-        plot.populateVariableList(variable_list_entries)
-
-        #  Uncomment the code below to run both plot views and compare.
-        # obj = self.__list_obj
-        #
-        # # create a plot frame
-        # PlotFrame = None
-        # x_label = None
-        # title = None
-        # variable = None
-        # units = None
-        # warning = None
-        # x_series = []
-        # y_series = []
-        # labels = []
-        # id = self.parent.GetFirstSelected()
-        # while id != -1:
-        #     # get the result
-        #     resultID = obj.GetItem(id, 0).GetText()
-        #
-        #     # get data for this row
-        #     date_time_objects,value, resobj = self.getData(resultID)
-        #
-        #     if PlotFrame is None:
-        #         # set metadata based on first series
-        #         y_label = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
-        #
-        #         # todo: this needs to change based on the axis format decided by matplotlib
-        #         x_label = 'DateTime'
-        #
-        #         # todo: this title must be more specific.  e.g. include gage location?
-        #         title = '%s' % (resobj.VariableObj.VariableCode)
-        #
-        #         # save the variable and units to validate future time series
-        #         variable = resobj.VariableObj.VariableCode
-        #         units = resobj.UnitObj.UnitsName
-        #         PlotFrame = LogicPlot(self.Parent, title=title, ylabel=y_label, xlabel=x_label)
-        #
-        #     if resobj.VariableObj.VariableCode == variable and resobj.UnitObj.UnitsName == units:
-        #         # store the date_time_objects and Y data
-        #         x_series.append(date_time_objects)
-        #         y_series.append(value)
-        #         labels.append(resultID)
-        #
-        #     elif warning is None:
-        #         warning = 'Multiple Variables/Units were selected.  I currently don\'t support plotting heterogeneous time series. ' +\
-        #                   'Some of the selected time series will not be shown :( '
-        #
-        #     # get the next selected item
-        #     id = obj.GetNextSelected(id)
-        #
-        # if warning:
-        #     dlg = wx.MessageDialog(self.parent, warning, '', wx.OK | wx.ICON_WARNING)
-        #     dlg.ShowModal()
-        #     dlg.Destroy()
-        #
-        # # plot the data
-        # PlotFrame.plot(xlist=x_series, ylist=y_series, labels=labels)
-        # PlotFrame.Show()
 
     def OnDelete(self,event):
         if 'local' in self.parent.Parent.connection_combobox.GetStringSelection():

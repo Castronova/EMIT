@@ -10,9 +10,13 @@ import time
 
 class TimeSeriesObjectCtrl(WofSitesViewer):
 
-    def __init__(self, parent=None, parentClass=None):
-        WofSitesViewer.__init__(self, parent=parent)
+    def __init__(self, parent=None, parentClass=None, timeseries_variables={}):
+
+        table_cols = ["Result ID", "Feature Code","Variable","Unit","Type","Organization","Date Created"]
+        WofSitesViewer.__init__(self, parent, "My Title", table_cols)
         # TimeSeriesObjectViewer.__init__(self, parent=parent)
+
+        self.populateVariableList(timeseries_variables)
 
         self.parentClass = parentClass  # used to access methods from parent class
         self.SetTitle("Time Series Object Ctrl")
@@ -21,7 +25,7 @@ class TimeSeriesObjectCtrl(WofSitesViewer):
         self.Bind(wx.EVT_DATE_CHANGED, self.setEndDate, self.endDatePicker)
         self.Bind(wx.EVT_BUTTON, self.onExport, self.exportBtn)
         self.Bind(wx.EVT_BUTTON, self.addToCanvas, self.addToCanvasBtn)
-        self.Bind(wx.EVT_BUTTON, self.previewPlot, self.previewBtn)
+        self.Bind(wx.EVT_BUTTON, self.previewPlot, self.PlotBtn)
 
         self.autoSizeColumns()
         self._objects = None
@@ -86,8 +90,14 @@ class TimeSeriesObjectCtrl(WofSitesViewer):
             file.close()
 
     def previewPlot(self, event):
+
+
         id = self.getSelectedId()
+        print id
+
+        print 'getting data'
         date_time_objects, value, resobj = self.parentClass.getData(resultID=id)
+        print 'done'
 
         data = []
         for i in range(len(date_time_objects)):

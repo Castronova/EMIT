@@ -186,7 +186,7 @@ def run_feed_forward(obj, ds=None):
             oeis =  ds.datasets[model_name]
             items = []
             for oei in oeis:
-                items.extend(model_inst.outputs(name=oei).values())
+                items.append(model_inst.outputs()[oei])
 
             # get config parameters
             config_params=model_obj.get_config_params()
@@ -195,7 +195,27 @@ def run_feed_forward(obj, ds=None):
             db.create_simulation(coupledSimulationName=ds.simulationName,
                                  user_obj=ds.user,
                                  config_params=config_params,
-                                 ei=items)
+                                 ei=items,
+                                 simulation_start = model_inst.simulation_start(),
+                                 simulation_end = model_inst.simulation_end(),
+                                 timestep_value = model_inst.time_step()[0],
+                                 timestep_unit = model_inst.time_step()[1],
+                                 description = model_inst.description(),
+                                 name = model_inst.name()
+                                 )
+
+        # description = config_params['general'][0]['description']
+        # simstart = datetime.datetime.strptime(config_params['general'][0]['simulation_start'], '%m/%d/%Y %H:%M:%S' )
+        # simend = datetime.datetime.strptime(config_params['general'][0]['simulation_end'], '%m/%d/%Y %H:%M:%S' )
+        # modelcode = config_params['model'][0]['code']
+        # modelname = config_params['model'][0]['name']
+        # modeldesc = config_params['model'][0]['description']
+        # timestepvalue = config_params['time_step'][0]['value']
+        #
+        # # default to a timestep of seconds
+        # timestepname = config_params['time_step'][0].get('name') or 'seconds'
+        # timestepabbv = config_params['time_step'][0].get('abbreviation') or ' '
+        #
         elog.info('Saving Complete, elapsed time = %3.5f' % (time.time() - st))
 
 def run_time_step(obj, ds=None):

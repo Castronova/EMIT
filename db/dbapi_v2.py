@@ -74,7 +74,7 @@ class sqlite():
     def create_input_dataset(self, connection, resultids,type,code="",title="",abstract=""):
         pass
 
-    def create_simulation(self, coupledSimulationName, user_obj, config_params, ei):
+    def create_simulation(self, coupledSimulationName, user_obj, config_params, ei, simulation_start, simulation_end, timestep_value, timestep_unit, description, name):
         """
         Inserts a simulation record into the database
         :param simulationName: user provided name for simulation
@@ -83,18 +83,18 @@ class sqlite():
         :param ei: list of exchange item objects (stdlib.ExchangeItem)
         """
 
-        # parse simulation configuration parameters
-        description = config_params['general'][0]['description']
-        simstart = datetime.datetime.strptime(config_params['general'][0]['simulation_start'], '%m/%d/%Y %H:%M:%S' )
-        simend = datetime.datetime.strptime(config_params['general'][0]['simulation_end'], '%m/%d/%Y %H:%M:%S' )
-        modelcode = config_params['model'][0]['code']
-        modelname = config_params['model'][0]['name']
-        modeldesc = config_params['model'][0]['description']
-        timestepvalue = config_params['time_step'][0]['value']
-
-        # default to a timestep of seconds
-        timestepname = config_params['time_step'][0].get('name') or 'seconds'
-        timestepabbv = config_params['time_step'][0].get('abbreviation') or ' '
+        # # parse simulation configuration parameters
+        # description = config_params['general'][0]['description']
+        # simstart = datetime.datetime.strptime(config_params['general'][0]['simulation_start'], '%m/%d/%Y %H:%M:%S' )
+        # simend = datetime.datetime.strptime(config_params['general'][0]['simulation_end'], '%m/%d/%Y %H:%M:%S' )
+        # modelcode = config_params['model'][0]['code']
+        # modelname = config_params['model'][0]['name']
+        # modeldesc = config_params['model'][0]['description']
+        # timestepvalue = config_params['time_step'][0]['value']
+        #
+        # # default to a timestep of seconds
+        # timestepname = config_params['time_step'][0].get('name') or 'seconds'
+        # timestepabbv = config_params['time_step'][0].get('abbreviation') or ' '
 
         # create person / organization / affiliation
         # affiliation = self.set_user_preferences(preferences_path)
@@ -107,7 +107,7 @@ class sqlite():
 
         # get the timestep unit id
         #todo: This is not returning a timestepunit!!!  This may need to be added to the database
-        timestepunit = self.createTimeStepUnit(timestepabbv, timestepname)
+        timestepunit = self.createTimeStepUnit(timestep_unit, timestep_unit)
 
         method = self.createMethod(organization)
 
@@ -129,8 +129,8 @@ class sqlite():
 
         # create dataset
         dataset = self.write.createDataset(dstype='Simulation Input',
-                                           dscode='Input_%s'%modelname,
-                                           dstitle='Input for Simulation: %s'%modelname,
+                                           dscode='Input_%s'%name,
+                                           dstitle='Input for Simulation: %s'%name,
                                            dsabstract=description)
 
 
@@ -207,7 +207,7 @@ class sqlite():
 
                 # create time series result
                 # using the sqlalchemy function results in: FlushError: Instance <TimeSeriesResults at 0x1174b5fd0> has a NULL identity key.
-                timeseriesresult = self.insert_timeseries_result(resultid=result.ResultID, timespacing=timestepvalue, timespacing_unitid=timestepunit.UnitsID)
+                timeseriesresult = self.insert_timeseries_result(resultid=result.ResultID, timespacing=timestep_value, timespacing_unitid=timestepunit.UnitsID)
 
                 # todo: consider utc offset for each result value.
                 # todo: get timezone based on geometry, use this to determine utc offset
@@ -221,7 +221,7 @@ class sqlite():
                     d = dict(ResultID = result.ResultID,
                              CensorCodeCV = 'nc',
                              QualityCodeCV = 'unknown',
-                             TimeAggregationInterval = timestepvalue,
+                             TimeAggregationInterval = timestep_value,
                              TimeAggregationIntervalUnitsID = timestepunit.UnitsID,
                              DataValue = values[i],
                              ValueDateTime = dates[i][1],
@@ -235,7 +235,7 @@ class sqlite():
                 df['ValueDateTime'] = df['ValueDateTime'].apply(lambda x: x.strftime('%Y-%m-%d %H:%M:%S'))
                 self.insert_timeseries_result_values(dataframe=df)
 
-        model = self.createModel(modelcode, modeldesc, modelname)
+        model = self.createModel(name, description, name)
 
         # create simulation
 
@@ -247,11 +247,11 @@ class sqlite():
                                           modelID=model.ModelID,
                                           simulationName=coupledSimulationName,
                                           simulationDescription=description,
-                                          simulationStartDateTime=simstart ,
+                                          simulationStartDateTime=simulation_start ,
                                           simulationStartOffset=-6,
-                                          simulationEndDateTime=simend,
+                                          simulationEndDateTime=simulation_end,
                                           simulationEndOffset=-6,
-                                          timeStepValue =timestepvalue,
+                                          timeStepValue =timestep_value,
                                           timeStepUnitID=timestepunit.UnitsID,
                                           inputDatasetID=dataset.DataSetID)
 

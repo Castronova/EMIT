@@ -91,7 +91,6 @@ class TimeSeriesObjectCtrl(TimeSeriesPlotView):
 
     def previewPlot(self, event):
 
-
         id = self.getSelectedId()
         date_time_objects, value, resobj = self.parentClass.getData(resultID=id)
 
@@ -111,8 +110,8 @@ class TimeSeriesObjectCtrl(TimeSeriesPlotView):
     def plotGraph(self, data, var_name, yunits=None, no_data=None):
         self.plot.clearPlot()
         if data is not None:
-            self.plot.setAxisLabel(" ", yunits)
-            self.plot.plotData(data, str(var_name), no_data)
+            # self.plot.setAxisLabel(" ", yunits)
+            self.plot.plotData(data, str(var_name), no_data, yunits)
         else:
             elog.info("Received no data to plot")
             elog.info("data is None")

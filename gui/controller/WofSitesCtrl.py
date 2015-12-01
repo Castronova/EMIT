@@ -132,22 +132,25 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
         else:
             elog.info("Select a variable to export")
 
-    def getSelectedObject(self):
-        code = self.getSelectedVariableSiteCode()
-        for i in range(len(self._objects)):
-            if code == self._objects[i].code:
-                return self._objects[i]
+    # def getSelectedObject(self):
+    #     code = self.getSelectedVariableSiteCode()
+    #     for i in range(len(self._objects)):
+    #         if code == self._objects[i].code:
+    #             return self._objects[i]
 
     def getSelectedVariable(self):
         code = self.getSelectedVariableSiteCode()
         return self._data[code]
 
     def getSelectedVariableName(self):
+        vars = []
         num = self.variableList.GetItemCount()
         for i in range(num):
             if self.variableList.IsSelected(i):
-                checkedVar = self.variableList.GetItemText(i)
-                return checkedVar
+                vars.append(self.variableList.GetItemText(i))
+                # checkedVar = self.variableList.GetItemText(i)
+                # return checkedVar
+        return vars
 
     def getSelectedVariableCode(self):
         variableCode = None
@@ -160,12 +163,14 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
         return variableCode
 
     def getSelectedVariableSiteCode(self):
+        sites = []
         num = self.variableList.GetItemCount()
         for i in range(num):
             if self.variableList.IsSelected(i):
                 v_name = self.variableList.GetItemText(i)
-                return self.getSiteCodeByVariableName(v_name)
-
+                sites.append(self.getSiteCodeByVariableName(v_name))
+                # return self.getSiteCodeByVariableName(v_name)
+        return sites
 
     def getSiteCodeByVariableName(self, checkedVar):
         for key, value in self._data.iteritems():
@@ -174,33 +179,46 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
 
 
     def previewPlot(self, event):
-        var_code = self.getSelectedVariableSiteCode()
-        var_name = self.getSelectedVariableName()
+        var_codes = self.getSelectedVariableSiteCode()
+        var_names = self.getSelectedVariableName()
 
-        if len(var_code) > 0:
+        if len(var_codes) > 0:
             self.plot.clearPlot()
 
-            data = self.Parent.api.getValues(self.siteobject.site_code, var_code,
-                                             self.start_date.FormatISODate(), self.end_date.FormatISODate())
-            plotData = []
-            noData = None
-            # make sure data is found
-            if data is not None:
-                # get the first data element only
-                if len(data[0].values[0]) > 1:
-                    values = data[0].values[0].value
-                else:
-                    elog.info("There are no values.  Try selecting a larger date range")
-                    return
+            # plot each of the selected items
+            for i in range(len(var_codes)):
 
-                for value in values:
-                    plotData.append((value._dateTime, value.value))
+                # limit support to 2 line plots for now
+                # todo: extend this functionality to support more than 2 line plots
+                if i > 1:
+                    elog.warning('Cannot plot more the two time series at a time.  Support for this feature is coming soon.')
+                    break
 
-                noData = data[0].variable.noDataValue
+                var_code = var_codes[i]
+                var_name = var_names[i]
 
-            # self.plot.setTitle(self.getSelectedVariableName())
-            self.plot.setAxisLabel(" ", data[0].variable.unit.unitName)
-            self.plot.plotData(plotData, var_name, noData)
+                data = self.Parent.api.getValues(self.siteobject.site_code, var_code,
+                                                 self.start_date.FormatISODate(), self.end_date.FormatISODate())
+                plotData = []
+                noData = None
+                # make sure data is found
+                if data is not None:
+                    # get the first data element only
+                    if len(data[0].values[0]) > 1:
+                        values = data[0].values[0].value
+                    else:
+                        elog.info("There are no values.  Try selecting a larger date range")
+                        return
+
+                    for value in values:
+                        plotData.append((value._dateTime, value.value))
+
+                    noData = data[0].variable.noDataValue
+
+                # self.plot.setTitle(self.getSelectedVariableName())
+                # self.plot.setAxisLabel(" ", data[0].variable.unit.unitName)
+                ylabel = data[0].variable.unit.unitName
+                self.plot.plotData(plotData, var_name, noData, ylabel)
 
     def populateVariablesList(self, api, sitecode):
         data = api.buildAllSiteCodeVariables(sitecode)

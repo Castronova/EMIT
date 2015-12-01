@@ -11,8 +11,9 @@ from gui.controller.SpatialPlotCtrl import LogicSpatialPlot
 
 class ViewModel(wx.Frame):
     def __init__(self, parent, edit=True, spatial=False, temporal=False, properties=True, configuration=False):
-        wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=wx.EmptyString, pos=wx.DefaultPosition,
-                          size=wx.Size(665, 640), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
+        wx.Frame.__init__(self, parent, id=wx.ID_ANY, title='Model Properties', pos=wx.DefaultPosition,
+                          size=wx.Size(650, 700),
+                          style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         self.edit = edit
         self.spatial = spatial
@@ -49,7 +50,7 @@ class ViewModel(wx.Frame):
                                                pos=wx.Point(0, 0),
                                                # size=wx.Size(700,500))
                                                size=wx.Size(423, 319))
-            self.txtNotebook.AddPage(self.PropertyGrid, u"Properties", True)
+            self.txtNotebook.AddPage(self.PropertyGrid, u"General", True)
 
 
         # make the spatial view
@@ -92,7 +93,7 @@ class ViewModel(wx.Frame):
 
             panel.SetSizer(mainSizer)
             panel.Layout()
-            self.txtNotebook.AddPage(panel, u"Spatial Definition", False)
+            self.txtNotebook.AddPage(panel, u"Spatial", False)
 
             # m_bitmap1 = wx.StaticBitmap( self, wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, 0 )
             # s = wx.BoxSizer(wx.VERTICAL)

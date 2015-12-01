@@ -6,7 +6,7 @@ import stdlib
 from utilities import mdl
 from coordinator.emitLogging import elog
 
-class multiply(feed_forward.feed_forward_wrapper):
+class multiply(feed_forward.Wrapper):
 
 
     def __init__(self,config_params):

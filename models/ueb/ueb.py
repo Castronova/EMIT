@@ -405,7 +405,7 @@ class ueb(feed_forward.feed_forward_wrapper):
             # get the input data for the current geometry
             prcp = self.inputs()['precipitation'].getValues2(geom_idx_start=i, geom_idx_end=i)
 
-            m = max(prcp)
+            # m = max(prcp)
 
             # set the input data for this geometry
             for i in range(len(prcp)):

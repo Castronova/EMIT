@@ -124,14 +124,14 @@ class NetcdfCtrl(NetcdfViewer):
                     wms = ds.find('.//{%s}access[@serviceName="wms"]' % self.thredds)
                     size = ds.find('.//{%s}dataSize' % self.thredds)
                     date = ds.find('.//{%s}date' % self.thredds)
-
+                    print size
                     fileSize = size.itertext().next()
                     lastmodified = date.itertext().next()
                     dap_url = dict(dap.items())['urlPath']
                     wms_url = dict(wms.items())['urlPath']
                     name = dict(ds.items())['name']
                     mod = lastmodified.replace("T", " ")
-                    self.TableValues.append([name, fileSize + " " + dict(size.items())['units'], mod, url + dap_url])
+                    self.TableValues.append([name, fileSize, mod, url + dap_url])
 
 
             #self.status_bar.SetStatusText("Almost done...")

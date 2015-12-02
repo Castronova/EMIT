@@ -33,7 +33,7 @@ class NetcdfViewer(wx.Frame):
         hbox_url = wx.BoxSizer(wx.HORIZONTAL)
 
         self.variable_list.InsertColumn(0, "File Name")
-        self.variable_list.InsertColumn(1, "Size")
+        self.variable_list.InsertColumn(1, "Size (bytes)")
         self.variable_list.InsertColumn(2, "Last Updated")
         self.variable_list.InsertColumn(3, "URL")
 

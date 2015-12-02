@@ -16,7 +16,7 @@ from utilities import mdl, geometry
 import netCDF4 as nc
 
 
-class ueb(feed_forward.feed_forward_wrapper):
+class ueb(feed_forward.Wrapper):
 
     def __init__(self, config_params):
         super(ueb,self).__init__(config_params)

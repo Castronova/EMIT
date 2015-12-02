@@ -198,8 +198,8 @@ def run_feed_forward(obj, ds=None):
                                  ei=items,
                                  simulation_start = model_inst.simulation_start(),
                                  simulation_end = model_inst.simulation_end(),
-                                 timestep_value = model_inst.time_step()[0],
-                                 timestep_unit = model_inst.time_step()[1],
+                                 timestep_value = model_inst.time_step(),
+                                 timestep_unit = 'seconds',
                                  description = model_inst.description(),
                                  name = model_inst.name()
                                  )

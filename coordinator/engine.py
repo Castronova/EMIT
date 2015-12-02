@@ -920,12 +920,12 @@ class Coordinator(object):
                 types.extend(inspect.getmro(model.instance().__class__))
 
             # make sure that feed forward and time-step models are not mixed together
-            if (feed_forward.feed_forward_wrapper in types) and (time_step.time_step_wrapper in types):
+            if (feed_forward.Wrapper in types) and (time_step.time_step_wrapper in types):
                 return dict(success=False, message='Cannot mix feed-forward and time-step models')
 
             else:
                 # threadManager = ThreadManager()
-                if feed_forward.feed_forward_wrapper in types:
+                if feed_forward.Wrapper in types:
                     t = threading.Thread(target=run.run_feed_forward, args=(self,ds), name='Engine_RunFeedForward')
                     t.start()
                     # run.run_feed_forward(self)

@@ -85,7 +85,11 @@ def update_links_feed_forward(obj, links, output_exchange_items, spatial_maps):
         target_times = []
         while t <= target_et:
             target_times.append(t)
-            t += timedelta(**{target_ts[1]:target_ts[0]})
+
+            # increment time by seconds
+            t += timedelta(seconds=target_ts)
+
+            # t += timedelta(**{target_ts[1]:target_ts[0]})
 
 
         # get oei data (source)

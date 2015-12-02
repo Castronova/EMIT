@@ -6,7 +6,7 @@ import stdlib
 from utilities import mdl
 from datetime import datetime as dt
 
-class weatherReader(feed_forward.feed_forward_wrapper):
+class weatherReader(feed_forward.Wrapper):
     def __init__(self, config_params):
         super(weatherReader, self).__init__(config_params)
 

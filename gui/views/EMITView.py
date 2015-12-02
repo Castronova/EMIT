@@ -161,16 +161,18 @@ class ViewEMIT(wx.Frame):
         separator = self.view_menu.Append(wx.NewId(), 'separate', 'separate', wx.ITEM_SEPARATOR)
         MinimizeConsole = self.view_menu.Append(wx.NewId(), '&Console Off', 'Minimizes the Console', wx.ITEM_CHECK)
 
-        defaultview = self.view_menu.Append(wx.NewId(), '&Default View', 'Returns the view to the default (inital) state', wx.ITEM_NORMAL)
+        defaultview = self.view_menu.Append(wx.NewId(), '&Restore Default View', 'Returns the view to the default (initial) state', wx.ITEM_NORMAL)
 
         self._menubar.Append(self.view_menu, "&View")
 
         self.data_menu = wx.Menu()
         self._menubar.Append(self.data_menu, "Data")
         add_file = self.data_menu.Append(wx.NewId(), "&Add CSV File")
+        # todo: implement and enable the CSV menu option below
+        add_file.Enable(False)
         add_netcdf = self.data_menu.Append(wx.NewId(), '&Add NetCDF')
 
-        open_dap_viewer = self.data_menu.Append(wx.NewId(), "&Open Dap Viewer")
+        open_dap_viewer = self.data_menu.Append(wx.NewId(), "&OpenDap Explorer")
 
         self.SetMenuBar(self._menubar)
 

@@ -141,7 +141,7 @@ class ModelBox(FC.Group):
         font = wx.Font(16, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
         font_size = 15
         self.label = FC.ScaledTextBox(text, XY, Color="Black", Size=font_size,
-                                      Width=bmp.Width-10, Position="cc",
+                                      Width=bmp.Width-30, Position="cc",
                                       Alignment="center", Weight=wx.BOLD,
                                       InForeground=True, Font=font, LineWidth=0,
                                       LineColor=None)

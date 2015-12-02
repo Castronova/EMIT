@@ -17,7 +17,7 @@ class LogicPlot(ViewPlot):
 
     def __init__(self, parent, title='', xlabel='', ylabel='', selector=True):
 
-        ViewPlot.__init__(self, parent, title=title, xlabel=xlabel, ylabel=ylabel, selector=selector)
+        ViewPlot.__init__(self, parent, title='test', xlabel=xlabel, ylabel=ylabel, selector=selector)
 
 
     def getSymbology(self, value):

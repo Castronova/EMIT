@@ -7,6 +7,7 @@ from utilities import spatial
 from api_old.ODM2.Simulation.services import readSimulation
 from wx.lib.pubsub import pub as Publisher, __all__
 from gui.controller.ModelCtrl import LogicModel
+from gui.controller.SimulationPlotCtrl import SimulationPlotCtrl
 from gui.controller.PlotCtrl import LogicPlot
 from gui.controller.PreRunCtrl import logicPreRun
 import coordinator.engineAccessors as engine
@@ -487,7 +488,6 @@ class SimulationContextMenu(ContextMenu):
                 return res
 
     def OnPlot(self, event):
-
         obj, id = self.Selected()
 
         # create a plot frame
@@ -501,15 +501,25 @@ class SimulationContextMenu(ContextMenu):
         y_series = []
         labels = []
         id = self.parent.GetFirstSelected()
+
+        variable_list_entries = {}
         while id != -1:
 
             # get the result
             simulationID = obj.GetItem(id, 0).GetText()
-
+            print obj.GetItem(id, 2).GetText()
             name = obj.GetItem(id, 1).GetText()
 
             # get data for this row
             results = self.getData(simulationID)
+            variable_list_entries[simulationID] = [obj.GetItem(id,1).GetText(),obj.GetItem(id,2).GetText(),
+                                                   obj.GetItem(id,3).GetText(),obj.GetItem(id,4).GetText(),
+                                                   obj.GetItem(id,5).GetText(),obj.GetItem(id,6).GetText()]
+            print variable_list_entries
+            id = obj.GetNextSelected(id)
+        SimulationPlotCtrl(parentClass=self, timeseries_variables=variable_list_entries)
+        #below it the old code just in case.
+        """
             if results is None:
                 return
 
@@ -528,7 +538,7 @@ class SimulationContextMenu(ContextMenu):
                 units = resobj.UnitObj.UnitsName
                 title = '%s: %s [%s]' % (name, variable, units)
 
-                PlotFrame = LogicPlot(self.Parent, ylabel=ylabel, title=title)
+                PlotFrame = SimulationPlotCtrl(self.Parent, ylabel=ylabel, title=title)
 
                 for x,y,resobj in results[key]:
                     # store the x and Y data
@@ -541,7 +551,6 @@ class SimulationContextMenu(ContextMenu):
                           'Some of the selected time series will not be shown :( '
 
             # get the next selected item
-            id = obj.GetNextSelected(id)
 
         if warning:
             dlg = wx.MessageDialog(self.parent, warning, '', wx.OK | wx.ICON_WARNING)
@@ -550,7 +559,7 @@ class SimulationContextMenu(ContextMenu):
 
         # plot the data
         PlotFrame.plot(xlist=x_series, ylist=y_series, labels=labels)
-        PlotFrame.Show()
+        PlotFrame.Show()"""
 
     def onExport(self, event):
         #  User will choose where to save the csv file

@@ -11,6 +11,7 @@ import urlparse
 import urllib
 from gui.controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
 from gui.views.NetcdfDetailsView import NetcdfDetailsView
+import netCDF4 as nc
 
 class NetcdfCtrl(NetcdfViewer):
 
@@ -70,9 +71,45 @@ class NetcdfCtrl(NetcdfViewer):
         self.download_btn.Disable()
 
     def downloadFile(self, event):
-        location = self.getSelectedInformation()
-        print self.TableValues[location][1]
-        urllib.urlretrieve(self.TableValues[location][1], self.TableValues[location][0])
+
+        # get the file url by rowid and colid
+        rowid = self.getSelectedInformation()
+        colid = self.getListCtrlColumnByName('url')
+        url = self.TableValues[rowid][colid]
+
+        # open a dialog to get save path
+        saveFileDialog = wx.FileDialog(self, "Save NetCDF file", "", "", "nc files (*.nc)|*.nc", wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+        if saveFileDialog.ShowModal() == wx.ID_CANCEL:
+            return
+        output_path = saveFileDialog.GetPath()
+
+        # remove file if it already exists
+        os.remove(output_path) if os.path.exists(output_path) else None
+
+        # get the input data file and create the empty output file
+        dsin = nc.Dataset(url)
+        dsout = nc.Dataset(output_path, 'w')
+
+        # write all dimensions to the output file
+        for dname, the_dim in dsin.dimensions.iteritems():
+            dsout.createDimension(dname, len(the_dim) if not the_dim.isunlimited() else None)
+
+        # write all the variables to the output file
+        for v_name, varin in dsin.variables.iteritems():
+
+            # create the variable
+            outVar = dsout.createVariable(v_name, varin.datatype, varin.dimensions)
+
+            # copy variable attributes
+            outVar.setncatts({k: varin.getncattr(k) for k in varin.ncattrs()})
+
+            # copy variable data
+            outVar[:] = varin[:]
+
+        # close the input and output files
+        dsin.close()
+        dsout.close()
+
 
     def enableBtns(self, event):
         self.add_to_canvas_btn.Enable()
@@ -124,7 +161,7 @@ class NetcdfCtrl(NetcdfViewer):
                     wms = ds.find('.//{%s}access[@serviceName="wms"]' % self.thredds)
                     size = ds.find('.//{%s}dataSize' % self.thredds)
                     date = ds.find('.//{%s}date' % self.thredds)
-                    print size
+
                     fileSize = size.itertext().next()
                     lastmodified = date.itertext().next()
                     dap_url = dict(dap.items())['urlPath']
@@ -157,3 +194,20 @@ class NetcdfCtrl(NetcdfViewer):
                 colNumber += 1
             colNumber = 0
             rowNumber += 1
+
+    def getListCtrlColumnByName(self, name):
+        """
+        Gets the list control column index by search for column name
+        :param name: name of the column to search for
+        :return: index of the column, -1 of none is found
+        """
+
+        # get the list control columns
+        cols = [col_name.upper() for col_name in self.list_ctrl_columns]
+        search_name = name.upper()
+        i = 0
+        for col in cols:
+            if col == search_name:
+                return i
+            i += 1
+        return -1

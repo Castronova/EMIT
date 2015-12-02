@@ -32,10 +32,17 @@ class NetcdfViewer(wx.Frame):
         vbox_bottom_panel = wx.BoxSizer(wx.VERTICAL)
         hbox_url = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.variable_list.InsertColumn(0, "File Name")
-        self.variable_list.InsertColumn(1, "Size (bytes)")
-        self.variable_list.InsertColumn(2, "Last Updated")
-        self.variable_list.InsertColumn(3, "URL")
+        # build a list of columns for the list control
+        self.list_ctrl_columns = ["File Name", "File Name", "Last Updated", "URL"]
+
+        # insert columns to list control
+        for i in range(len(self.list_ctrl_columns)):
+            self.variable_list.InsertColumn(i, self.list_ctrl_columns[i])
+
+        # self.variable_list.InsertColumn(0, "File Name")
+        # self.variable_list.InsertColumn(1, "File Name")
+        # self.variable_list.InsertColumn(2, "Last Updated")
+        # self.variable_list.InsertColumn(3, "URL")
 
         self.url_textbox = wx.TextCtrl(parent=self.bottom_panel, value="http://129.123.51.203/opendap", size=(-1, 25))
         self.get_btn = wx.Button(parent=self.bottom_panel, label="Get Files", size=(-1, 27))

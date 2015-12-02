@@ -9,7 +9,7 @@ from utilities import mdl
 import numpy
 import datetime
 
-class randomizer(feed_forward.feed_forward_wrapper):
+class randomizer(feed_forward.Wrapper):
     def __init__(self, config_params):
         super(randomizer, self).__init__(config_params)
 

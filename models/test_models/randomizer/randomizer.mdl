@@ -3,7 +3,7 @@ filepath  = ./randomizer.py
 classname = randomizer
 
 [model]
-code = Test Component: Random Number Generator
+code = Random Number Generator
 name = Random Number Generator Component
 description = This is a module that generates random numbers to test the development of new model components.
 

@@ -79,10 +79,13 @@ class Wrapper(base.BaseWrapper):
             # create a unit
             unit = stdlib.Unit()
             unit.UnitName(handle.variables[var].units)
+            unit.UnitTypeCV("N/A")
+            unit.UnitAbbreviation("N/A")
 
             # create a variable
             variable = stdlib.Variable()
             variable.VariableNameCV(handle.variables[var].name)
+            variable.VariableDefinition("N/A")
 
             # create geometries
             geoms = geometry.build_point_geometries(xcoords, ycoords)

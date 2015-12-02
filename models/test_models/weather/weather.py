@@ -1,6 +1,5 @@
 __author__ = 'tonycastronova'
 
-import os
 from wrappers import feed_forward
 import stdlib
 from utilities import mdl

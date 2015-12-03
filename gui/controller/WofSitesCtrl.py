@@ -44,7 +44,7 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
         self.start_date = self.startDatePicker.GetValue()
 
     def _preparationToGetValues(self):
-        var = self.getSelectedVariableCode()
+        code = self.getSelectedVariableCode()
         parent = self.Parent
         siteobject = self.siteobject
 
@@ -53,7 +53,7 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
                                      "%Y-%m-%dT%H:%M:%S")
         end = dt.datetime.strptime('%sT%s'%(self.end_date.FormatISODate(), self.end_date.FormatISOTime()),
                                      "%Y-%m-%dT%H:%M:%S")
-        return end, parent, siteobject, start, var
+        return end, parent, siteobject, start, code
 
     def addToCanvas(self, event):
         end, parent, siteobject, start, variable_code = self._preparationToGetValues()
@@ -90,8 +90,9 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
         return temp
 
     def onExport(self, event):
-        var = self.Parent.selectedVariables = self.getSelectedVariableSiteCode()
-        if var > 0:
+        # var_code = self.Parent.selectedVariables = self.getAllSelectedVariableSiteCodes()
+        var_code = self.Parent.selectedVariables = self.getSelectedVariableSiteCode()
+        if var_code > 0:
             save = wx.FileDialog(parent=self.GetTopLevelParent(), message="Choose Path",
                                  defaultDir=os.getcwd(),
                                  wildcard="CSV Files (*.csv)|*.csv",
@@ -103,17 +104,16 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
                 file = open(path, 'w')
                 writer = csv.writer(file, delimiter=',')
                 varInfo = self.getSelectedVariable()
-                end, parent, siteobject, start, var = self._preparationToGetValues()
+                end, parent, siteobject, start, var_code = self._preparationToGetValues()
                 values = parent.getParsedValues(siteobject, start, end)
 
-                writer.writerow([
-                                    "#-------------------------Disclaimer:  This is a data set that was exported by EMIT ... use at your own risk..."])
+                writer.writerow(["#-------------------------Disclaimer:  This is a data set that was exported by EMIT ... use at your own risk..."])
                 writer.writerow(["#"])
                 writer.writerow(["#Date Exported: %s" % getTodayDate()])
                 writer.writerow(["#Site Name: %s" % siteobject.site_name])
                 writer.writerow(["#Site Code: %s" % siteobject.site_code])
                 writer.writerow(["#Variable Name: %s" % varInfo[0]])
-                writer.writerow(["#Variable Code: %s" % var])
+                writer.writerow(["#Variable Code: %s" % var_code])
                 writer.writerow(["#Unit: %s" % varInfo[1]])
                 writer.writerow(["#Category: %s" % varInfo[2]])
                 writer.writerow(["#Type: %s" % varInfo[3]])
@@ -138,11 +138,18 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
     #         if code == self._objects[i].code:
     #             return self._objects[i]
 
+    def getAllSelectedVariables(self):
+        code = self.getAllSelectedVariableSiteCodes()
+        variables = []
+        for i in code:
+            variables.append(self._data[i])
+        return variables
+
     def getSelectedVariable(self):
         code = self.getSelectedVariableSiteCode()
         return self._data[code]
 
-    def getSelectedVariableName(self):
+    def getAllSelectedVariableName(self):
         vars = []
         num = self.variableList.GetItemCount()
         for i in range(num):
@@ -162,7 +169,7 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
                 break
         return variableCode
 
-    def getSelectedVariableSiteCode(self):
+    def getAllSelectedVariableSiteCodes(self):
         sites = []
         num = self.variableList.GetItemCount()
         for i in range(num):
@@ -172,6 +179,13 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
                 # return self.getSiteCodeByVariableName(v_name)
         return sites
 
+    def getSelectedVariableSiteCode(self):
+        num = self.variableList.GetItemCount()
+        for i in range(num):
+            if self.variableList.IsSelected(i):
+                v_name = self.variableList.GetItemText(i)
+                return self.getSiteCodeByVariableName(v_name)
+
     def getSiteCodeByVariableName(self, checkedVar):
         for key, value in self._data.iteritems():
             if value[0] == checkedVar:
@@ -179,8 +193,8 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
 
 
     def previewPlot(self, event):
-        var_codes = self.getSelectedVariableSiteCode()
-        var_names = self.getSelectedVariableName()
+        var_codes = self.getAllSelectedVariableSiteCodes()
+        var_names = self.getAllSelectedVariableName()
 
         if len(var_codes) > 0:
             self.plot.clearPlot()

@@ -713,8 +713,10 @@ class LogicCanvas(ViewCanvas):
 
     def loadsimulation(self, file):
 
-        self.loadingpath = file
+        file = os.path.abspath(file)
+        elog.info('Begin loading simulation: %s\n'%file)
 
+        # self.loadingpath = file
         tree = et.parse(file)
 
         # make sure the required database connections are loaded
@@ -732,6 +734,9 @@ class LogicCanvas(ViewCanvas):
 
         dbconnections = tree.findall("./DbConnection")
         for connection in dbconnections:
+
+            elog.info('Adding database connections...')
+
             con_engine = connection.find('engine').text
             con_address = connection.find('address').text
             con_db = connection.find('db').text
@@ -781,21 +786,22 @@ class LogicCanvas(ViewCanvas):
 
         total = len(models) + len(datamodels) + len(self.models) + self.failed_models
 
-        elog.debug("There are " + str(total) + " models in the file")
         waitingThread = threading.Thread(target=self.waiting, args=(total, links), name="LoadLinks")
         self.logicCanvasThreads[waitingThread.name] = waitingThread
         waitingThread.start()
 
         # loop through all of the models and load each one individually
         for model in models:
+            name = model.find('name').text
             x = float(model.find('xcoordinate').text)
             y = float(model.find('ycoordinate').text)
-            name = model.find('name').text
             id = model.find('id').text
             arguments = model.find('Arguments').getchildren()
             args = {}
             for arg in arguments:
                 args[arg.tag] = arg.text
+
+            elog.info('Adding model: %s...' % name)
 
             # save these coordinates for drawing once the model is loaded
             self.set_model_coords(id, x=x, y=y)
@@ -822,11 +828,9 @@ class LogicCanvas(ViewCanvas):
 
     def waiting(self, total, links):
         #  This method waits for all the models in the file to be loaded before linking
-        elog.info("Waiting for all models to be loaded before creating link")
         while len(self.models) < total:
             time.sleep(0.5)
         self.LoadLinks(links)
-        elog.debug(str(len(self.models)) + " were models loaded")
         return
 
     def LoadModels(self, models):
@@ -884,6 +888,8 @@ class LogicCanvas(ViewCanvas):
             # if both models exist on the canvas, create and draw the link
             else:
 
+                elog.info('Adding link between: %s and %s... ' % (from_model_name, to_model_name))
+
                 # get the spatial and temporal transformations
                 transformation = link.find("./transformation")
                 temporal_transformation_name = transformation.find('./temporal').text
@@ -904,6 +910,8 @@ class LogicCanvas(ViewCanvas):
 
                 # this draws the line
                 wx.CallAfter(self.createLine, from_model, to_model)
+
+        elog.info('Loading simulation complete')
 
     def SetLoadingPath(self, path):
         self.loadingpath = path

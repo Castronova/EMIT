@@ -325,8 +325,8 @@ class Coordinator(object):
     def add_model(self, id=None, attrib=None):
         """
         stores model component objects when added to a configuration
-        stores model component objects when added to a configuration
         """
+
         thisModel = None
 
         if id is None:
@@ -352,7 +352,8 @@ class Coordinator(object):
                               desc=inst.description(),
                               input_exchange_items= iei,
                               output_exchange_items=  oei,
-                              params=None)
+                              params=attrib)
+            thisModel.attrib(attrib)
 
         elif 'mdl' in attrib:
         # if type == datatypes.ModelTypes.FeedForward or type == datatypes.ModelTypes.TimeStep:

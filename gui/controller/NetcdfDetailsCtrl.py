@@ -24,7 +24,7 @@ class NetcdfDetailsCtrl(NetcdfDetailsView):
             self.x_spatial_var_combo.AppendItems(self.variables)
             self.y_spatial_var_combo.AppendItems(self.variables)
             self.time_var_combo.AppendItems(self.variables)
-        self.time_step_combo.AppendItems(['days', 'minutes', 'seconds', 'years'])
+        self.time_step_combo.AppendItems(['seconds', 'minutes', 'hours', 'days', 'years'])
         self.Bind(wx.EVT_BUTTON, self.addToCanvasBTn, self.add_to_canvas_btn)
 
         self.time_step_combo.Bind(wx.EVT_COMBOBOX, self.checkComboBoxSelections)

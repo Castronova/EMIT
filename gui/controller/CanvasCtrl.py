@@ -514,10 +514,6 @@ class LogicCanvas(ViewCanvas):
 
     def SaveSimulation(self, path):
 
-        # if len(self.models.keys()) == 0:
-        #     elog.warning('Nothing to save!')
-        #     return
-
         # create an xml tree
         tree = et.Element('Simulation')
 
@@ -564,41 +560,6 @@ class LogicCanvas(ViewCanvas):
             if 'databaseid' in model['attrib']:
                 if model['attrib']['databaseid'] not in db_ids:
                     db_ids.append(model['attrib']['databaseid'])
-
-
-            # if model['type'] == datatypes.ModelTypes.FeedForward:
-            #     attributes['mdl'] = model['attrib']['mdl']
-            #
-            #     modelelement = et.SubElement(tree, 'Model')
-            #
-            #     modelnameelement = et.SubElement(modelelement, "name")
-            #     modelnameelement.text = attributes['name']
-            #     modelidelement = et.SubElement(modelelement, "id")
-            #     modelidelement.text = attributes['id']
-            #     modelxelement = et.SubElement(modelelement, "xcoordinate")
-            #     modelxelement.text = attributes['x']
-            #     modelyelement = et.SubElement(modelelement, "ycoordinate")
-            #     modelyelement.text = attributes['y']
-            #     modelpathelement = et.SubElement(modelelement, "path")
-            #     modelpathelement.text = model['attrib']['mdl']
-            #
-            # elif model['type'] == datatypes.ModelTypes.Data:
-            #     attributes['databaseid'] = model['attrib']['databaseid']
-            #     attributes['resultid'] = model['attrib']['resultid']
-            #     dataelement = et.SubElement(tree, 'DataModel')
-            #     datamodelnameelement = et.SubElement(dataelement, "name")
-            #     datamodelnameelement.text = attributes['name']
-            #     datamodelidelement = et.SubElement(dataelement, "id")
-            #     datamodelidelement.text = attributes['id']
-            #     datamodelxelement = et.SubElement(dataelement, "xcoordinate")
-            #     datamodelxelement.text = attributes['x']
-            #     datamodelyelement = et.SubElement(dataelement, "ycoordinate")
-            #     datamodelyelement.text = attributes['y']
-            #     datamodelidelement = et.SubElement(dataelement, "databaseid")
-            #     datamodelidelement.text = attributes['databaseid']
-            #     datamodelresultidelement = et.SubElement(dataelement, "resultid")
-            #     datamodelresultidelement.text = attributes['resultid']
-            #
 
 
         # add links to the xml tree
@@ -811,20 +772,6 @@ class LogicCanvas(ViewCanvas):
 
             # draw the model
             wx.CallAfter(self.FloatCanvas.Draw)
-
-
-
-        #
-        # #  Models from database and non database will load async.
-        # t1 = threading.Thread(target=self.LoadModels, args=(models,), name="LoadModels")
-        # self.logicCanvasThreads[t1.name] = t1
-        # t1.start()
-        #
-        # t2 = threading.Thread(target=self.LoadDataModels, args=(datamodels, conn_ids,), name="LoadDataModel")
-        # self.logicCanvasThreads[t2.name] = t2
-        # t2.start()
-
-
 
     def waiting(self, total, links):
         #  This method waits for all the models in the file to be loaded before linking

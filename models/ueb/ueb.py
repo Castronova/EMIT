@@ -372,10 +372,6 @@ class ueb(feed_forward.Wrapper):
         swe = self.outputs()['Snow Water Equivalent']
         swit = self.outputs()['Surface Water Input Total']
 
-        # get the input data
-        # prcp = self.inputs()['precipitation'].getValues2()
-
-
         # Initialize SiteState
         SiteState = numpy.zeros((32,))
 
@@ -400,49 +396,25 @@ class ueb(feed_forward.Wrapper):
             C_SiteState = (c_float * len(SiteState))(*SiteState)
 
 
+            # todo: get all data at beginning of run, then slice as necessary here
             # get the input data for the current geometry
             prcp = self.inputs()['Precipitation'].getValues2(geom_idx_start=i, geom_idx_end=i)
             temp = self.inputs()['Temperature'].getValues2(geom_idx_start=i, geom_idx_end=i)
 
-            # set the input data for this geometry
-            for i in range(len(prcp)):
-                # set air temperature and precipitation values in tsvarArray (index 0 and 1)
-                self.C_tsvarArray.contents[0][i] = temp[i][0]
-                self.C_tsvarArray.contents[1][i] = prcp[i][0]
+            # skip calculation if no temperatures are provided for the current point (i.e completely missing data)
+            if max(temp[:-1]) > 0:
+                # set the input data for this geometry
+                for idx in range(len(prcp)):
+                    # set air temperature and precipitation values in tsvarArray (index 0 and 1)
+                    self.C_tsvarArray.contents[0][idx] = temp[idx][0]
+                    self.C_tsvarArray.contents[1][idx] = prcp[idx][0]
 
+                # RUN THE UEB CALCS
+                self.__uebLib.RUNUEB(self.C_tsvarArray, C_SiteState, self.C_parvalArray,
+                                     byref(pointer(self.C_outvarArray)), self.C_ModelStartDate, self.C_ModelStartHour,
+                                     self.C_ModelEndDate, self.C_ModelEndHour, self.C_ModelDt, self.C_ModelUTCOffset)
 
-            # for t in xrange(13):
-            #
-            #     # HACK: Everything inside this 'if' statement needs to be checked!!!!
-            #
-            #     # todo: what does infType == 1 mean?
-            #     if self.C_strinpforcArray.contents[t].infType == 1:
-            #         print 'You are in un-tested code! '
-            #         ncTotaltimestep = 0;
-            #
-            #         for numNc in xrange(self.C_strinpforcArray[it].numNcfiles):
-            #             # read 3D netcdf data
-            #             tsInputfile = self.C_strinpforcArray[t].infFile + numNc + '.nc'
-            #
-            #             retvalue = self.__uebLib.readNC_TS(tsInputfile, self.C_strinpforcArray.contents[t].infvarName, self.C_strinpforcArray.contents[t].inftimeVar, C_wsycorName, C_wsxcorName, byref(C_tsvarArrayTemp[numNc]), byref(C_tcorvar[it]), self.C_uebCellY, self.C_uebCellX, byref(C_ntimesteps[numNc]));
-            #
-            #             ncTotaltimestep += C_ntimesteps[numNc];
-            #
-            #         self.C_tsvarArray[t] = (c_float * ncTotaltimestep)
-            #         tinitTime = 0
-            #         for numNc in xrange(self.C_strinpforcArray.contents[t].numNcFiles):
-            #             for tts in xrange(C_ntimesteps[numNc]):
-            #                 self.C_tsvarArray.contents[t][tts + tinitTime] = C_tsvarArrayTemp.contents[numNc][tts]
-            #             tinitTime += C_ntimesteps[numNc]
-
-
-
-            # RUN THE UEB CALCS
-            ModelStartHour = 1
-
-            self.__uebLib.RUNUEB(self.C_tsvarArray, C_SiteState, self.C_parvalArray, byref(pointer(self.C_outvarArray)), self.C_ModelStartDate, self.C_ModelStartHour, self.C_ModelEndDate, self.C_ModelEndHour, self.C_ModelDt, self.C_ModelUTCOffset);
-
-            if i % 10 == 0:
+            if i % round((len(self.activeCells)) / 10) == 0:
                 elog.info("%d of %d elements complete " % ((i+1), len(self.activeCells)))
 
 

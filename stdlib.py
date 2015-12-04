@@ -249,7 +249,7 @@ class ExchangeItem(object):
 
             # make sure that the length of values matches the length of times
             if len(timevalue) != len(values):
-                elog.critical('Could not set data values. Length of timevalues and datavalues lists must be equal.')
+                elog.warning('Could not set data values. Length of timevalues and datavalues lists must be equal.')
                 return 0
 
             invalid_dates = False
@@ -270,15 +270,8 @@ class ExchangeItem(object):
             return 1
 
         else:
-            elog.critical('Could not set data values.  Time value was not of type datetime.')
+            elog.warning('Could not set data values.  Time value was not of type datetime.')
             return 0
-
-        # if idx < len(self.__values2):
-        #     self.__values2[idx] = values
-        # else:
-        #     self.__values2.append(values)
-        #     idx = len(self.__values2) - 1
-        # return idx
 
     def _setValues2(self, values, timevalue):
 

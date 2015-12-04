@@ -54,7 +54,11 @@ class SimulationPlotCtrl(TimeSeriesPlotView):
             if self.variableList.IsSelected(i):
                 id = self.variableList.GetItemText(i)
                 return int(id)
-
+            # for x, y, resobj in results[keys]:
+            #     #  store the x and y data
+            #     x_series.append(x)
+            #     y_series.append(y)
+            #     labels.append(int(resobj.ResultID))
     def onExport(self, event):
         save = wx.FileDialog(parent=self, message="Choose Path",
                              defaultDir=os.getcwd(),

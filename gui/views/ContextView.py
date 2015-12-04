@@ -489,35 +489,78 @@ class SimulationContextMenu(ContextMenu):
 
     def OnPlot(self, event):
         obj, id = self.Selected()
-
-        # create a plot frame
-        PlotFrame = None
-        xlabel = None
-        title = None
-        variable = None
-        units = None
-        warning = None
         x_series = []
         y_series = []
         labels = []
+
+        # get the list of all control objects
+        objects = obj.GetObjects()
+
+        #  dictionary for storing table records
+        variable_list_entries = {}
+
         id = self.parent.GetFirstSelected()
 
-        variable_list_entries = {}
-        while id != -1:
+        if id != -1:
 
-            # get the result
-            simulationID = obj.GetItem(id, 0).GetText()
-            print obj.GetItem(id, 2).GetText()
+            simulation_id = obj.GetItem(id, 0).GetText()
             name = obj.GetItem(id, 1).GetText()
 
-            # get data for this row
-            results = self.getData(simulationID)
-            variable_list_entries[simulationID] = [obj.GetItem(id,1).GetText(),obj.GetItem(id,2).GetText(),
-                                                   obj.GetItem(id,3).GetText(),obj.GetItem(id,4).GetText(),
-                                                   obj.GetItem(id,5).GetText(),obj.GetItem(id,6).GetText()]
-            print variable_list_entries
-            id = obj.GetNextSelected(id)
-        SimulationPlotCtrl(parentClass=self, timeseries_variables=variable_list_entries)
+            #  get the data for this row
+            results = self.getData(simulation_id)
+            if results is not None:
+                keys = results.keys()[0]
+            for x, y, resobj in results[keys]:
+                #  store the x and y data
+                x_series.append(x)
+                y_series.append(y)
+                labels.append(int(resobj.ResultID))
+                #  Get the variables/models that belong to a simulation
+                sub_variables = results[keys]
+                for sub in sub_variables:
+                    variable_list_entries[sub[2].ResultID] = [sub[2].ResultID,
+                                                              sub[2].FeatureActionID,
+                                                              sub[2].VariableObj.VariableNameCV,
+                                                              sub[2].UnitObj.UnitsName,
+                                                              sub[2].ResultTypeCVObj.DataType,
+                                                              sub[2].FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName]
+                                                              # sub[0], sub[1]] # sub[0] is the date object and sub[1] are the values
+
+
+            #  get the object associated with this id
+            # object = objects[id]
+
+            #  This excludes the variables/models that belong to a simulation
+            # variable_list_entries[object.simulation_id] = [object.simulation_name,
+            #                                                object.model_name,
+            #                                                object.simulation_start,
+            #                                                object.simulation_end,
+            #                                                object.date_created,
+            #                                                object.owner]
+
+            # this contains the data associated with the models in the simulation
+            # this is not finished
+            # for x, y, resobj in results[keys]:
+            #     #  store the x and y data
+            #     x_series.append(x)
+            #     y_series.append(y)
+            #     labels.append(int(resobj.ResultID))
+
+
+            # # get the result
+            # simulationID = obj.GetItem(id, 0).GetText()
+            # print obj.GetItem(id, 2).GetText()
+            # name = obj.GetItem(id, 1).GetText()
+            #
+            # # get data for this row
+            # results = self.getData(simulationID)
+            # variable_list_entries[simulationID] = [obj.GetItem(id,1).GetText(),obj.GetItem(id,2).GetText(),
+            #                                        obj.GetItem(id,3).GetText(),obj.GetItem(id,4).GetText(),
+            #                                        obj.GetItem(id,5).GetText(),obj.GetItem(id,6).GetText()]
+            # print variable_list_entries
+            # id = obj.GetNextSelected(id)
+        sim_plot_ctrl = SimulationPlotCtrl(parentClass=self, timeseries_variables=variable_list_entries)
+        sim_plot_ctrl._objects = results[keys]
         #below it the old code just in case.
         """
             if results is None:

@@ -184,7 +184,7 @@ class LogicCanvas(ViewCanvas):
             self.FloatCanvas.Draw()
 
             elog.info(name + ' has been added to the canvas.')
-            elog.debug(name + ' has been added to the canvas.')
+            # elog.debug(name + ' has been added to the canvas.')
 
     def draw_box(self, evt):
 
@@ -279,6 +279,7 @@ class LogicCanvas(ViewCanvas):
         if ext == '.mdl' or ext == '.sim':
 
             if ext == '.mdl':
+                print 'ADDING MODEL'
                 # load the model within the engine process
                 engine.addModel(id=uid, attrib={'mdl': filepath})
 
@@ -513,9 +514,9 @@ class LogicCanvas(ViewCanvas):
 
     def SaveSimulation(self, path):
 
-        if len(self.models.keys()) == 0:
-            elog.warning('Nothing to save!')
-            return
+        # if len(self.models.keys()) == 0:
+        #     elog.warning('Nothing to save!')
+        #     return
 
         # create an xml tree
         tree = et.Element('Simulation')
@@ -532,42 +533,73 @@ class LogicCanvas(ViewCanvas):
             attributes['name'] = model['name']
             attributes['id'] = model['id']
 
-            if model['type'] == datatypes.ModelTypes.FeedForward:
-                attributes['mdl'] = model['attrib']['mdl']
+            print '-------------------------------------------\n'
+            print model['name']
+            print model['attrib']
+            print '-------------------------------------------\n'
 
-                modelelement = et.SubElement(tree, 'Model')
+            x = str((bbox[0][0] + bbox[1][0]) / 2)
+            y = str((bbox[0][1] + bbox[1][1]) / 2)
+            name = model['name']
+            id = model['id']
+            args = model['attrib']
 
-                modelnameelement = et.SubElement(modelelement, "name")
-                modelnameelement.text = attributes['name']
-                modelidelement = et.SubElement(modelelement, "id")
-                modelidelement.text = attributes['id']
-                modelxelement = et.SubElement(modelelement, "xcoordinate")
-                modelxelement.text = attributes['x']
-                modelyelement = et.SubElement(modelelement, "ycoordinate")
-                modelyelement.text = attributes['y']
-                modelpathelement = et.SubElement(modelelement, "path")
-                modelpathelement.text = model['attrib']['mdl']
+            el = et.SubElement(tree, 'Model')
+            el_name = et.SubElement(el, "name")
+            el_name.text = name
+            el_id = et.SubElement(el, "id")
+            el_id.text = id
+            el_x = et.SubElement(el, "xcoordinate")
+            el_x.text = x
+            el_y = et.SubElement(el, "ycoordinate")
+            el_y.text = y
 
-            elif model['type'] == datatypes.ModelTypes.Data:
-                attributes['databaseid'] = model['attrib']['databaseid']
-                attributes['resultid'] = model['attrib']['resultid']
-                dataelement = et.SubElement(tree, 'DataModel')
-                datamodelnameelement = et.SubElement(dataelement, "name")
-                datamodelnameelement.text = attributes['name']
-                datamodelidelement = et.SubElement(dataelement, "id")
-                datamodelidelement.text = attributes['id']
-                datamodelxelement = et.SubElement(dataelement, "xcoordinate")
-                datamodelxelement.text = attributes['x']
-                datamodelyelement = et.SubElement(dataelement, "ycoordinate")
-                datamodelyelement.text = attributes['y']
-                datamodelidelement = et.SubElement(dataelement, "databaseid")
-                datamodelidelement.text = attributes['databaseid']
-                datamodelresultidelement = et.SubElement(dataelement, "resultid")
-                datamodelresultidelement.text = attributes['resultid']
+            # encode model arguments in xml
+            el_args = et.SubElement(el, 'Arguments')
+            for key, value in args.iteritems():
+                el_arg = et.SubElement(el_args, key)
+                el_arg.text = str(value)
 
-                # save this db id
+            # save db id if the model depends on one
+            if 'databaseid' in model['attrib']:
                 if model['attrib']['databaseid'] not in db_ids:
                     db_ids.append(model['attrib']['databaseid'])
+
+
+            # if model['type'] == datatypes.ModelTypes.FeedForward:
+            #     attributes['mdl'] = model['attrib']['mdl']
+            #
+            #     modelelement = et.SubElement(tree, 'Model')
+            #
+            #     modelnameelement = et.SubElement(modelelement, "name")
+            #     modelnameelement.text = attributes['name']
+            #     modelidelement = et.SubElement(modelelement, "id")
+            #     modelidelement.text = attributes['id']
+            #     modelxelement = et.SubElement(modelelement, "xcoordinate")
+            #     modelxelement.text = attributes['x']
+            #     modelyelement = et.SubElement(modelelement, "ycoordinate")
+            #     modelyelement.text = attributes['y']
+            #     modelpathelement = et.SubElement(modelelement, "path")
+            #     modelpathelement.text = model['attrib']['mdl']
+            #
+            # elif model['type'] == datatypes.ModelTypes.Data:
+            #     attributes['databaseid'] = model['attrib']['databaseid']
+            #     attributes['resultid'] = model['attrib']['resultid']
+            #     dataelement = et.SubElement(tree, 'DataModel')
+            #     datamodelnameelement = et.SubElement(dataelement, "name")
+            #     datamodelnameelement.text = attributes['name']
+            #     datamodelidelement = et.SubElement(dataelement, "id")
+            #     datamodelidelement.text = attributes['id']
+            #     datamodelxelement = et.SubElement(dataelement, "xcoordinate")
+            #     datamodelxelement.text = attributes['x']
+            #     datamodelyelement = et.SubElement(dataelement, "ycoordinate")
+            #     datamodelyelement.text = attributes['y']
+            #     datamodelidelement = et.SubElement(dataelement, "databaseid")
+            #     datamodelidelement.text = attributes['databaseid']
+            #     datamodelresultidelement = et.SubElement(dataelement, "resultid")
+            #     datamodelresultidelement.text = attributes['resultid']
+            #
+
 
         # add links to the xml tree
         links = engine.getAllLinks()
@@ -615,6 +647,7 @@ class LogicCanvas(ViewCanvas):
 
 
         # save required databases
+        print db_ids
         for db_id in db_ids:
             attributes = {}
 
@@ -680,72 +713,73 @@ class LogicCanvas(ViewCanvas):
 
     def loadsimulation(self, file):
 
-        self.loadingpath = file
-
-        tree = et.parse(file)
-
-        # get the root
-        root = tree.getroot()
-
-        # make sure the required database connections are loaded
-        connections = engine.getDbConnections()
-        conn_ids = {}
-
         # get all known transformations
         space = SpatialInterpolation()
         time = TemporalInterpolation()
         spatial_transformations = {i.name(): i for i in space.methods()}
         temporal_transformations = {i.name(): i for i in time.methods()}
 
+        self.loadingpath = file
 
-        # TODO: This needs to be refactored to remove 'for' looping!
-        for child in root._children:
-            if child.tag == 'DbConnection':
-                attrib = self.appendChild(child)
+        tree = et.parse(file)
 
-                connection_string = attrib['connection_string']
+        # make sure the required database connections are loaded
+        connections = engine.getDbConnections()
+        existing_connections = {}
+        for id, condict in connections.iteritems():
+            conargs = condict['args']
+            unique_conn = '%s:%s:%s' % (conargs['engine'],
+                                     conargs['address'],
+                                     conargs['db'] if conargs['db'] is not None else '')
+            existing_connections[unique_conn] = id
 
-                database_exists = False
-                # db_elements = db_conn.getchildren()
+        conn_ids = {}
 
-                for id, dic in connections.iteritems():
-                    try:
-                        if str(dic['args']['connection_string']) == connection_string:
-                            # dic['args']['id'] = db_conn.attrib['id']
-                            database_exists = True
 
-                            # map the connection ids
-                            conn_ids[attrib['databaseid']] = dic['args']['id']
-                            break
-                    except Exception, e:
-                        elog.error(e.message)
+        dbconnections = tree.findall("./DbConnection")
+        for connection in dbconnections:
+            con_engine = connection.find('engine').text
+            con_address = connection.find('address').text
+            con_db = connection.find('db').text
+            con_id = connection.find('databaseid').text
+            con_name = connection.find('name').text
+            con_pass = connection.find('pwd').text
+            con_user = connection.find('user').text
+            con_desc = connection.find('desc').text
 
-                # if database doesn't exist, then connect to it
-                if not database_exists:
-                    connect = wx.MessageBox('This database connection does not currently exist.  Click OK to connect.',
-                                            'Info', wx.OK | wx.CANCEL)
+            # build a unique connection string
+            unique_conn_string = '%s:%s:%s' % (con_engine,
+                                               con_address,
+                                               con_db if con_db != 'None' else '')
 
-                    if connect == wx.OK:
+            # if connection already exists
+            if unique_conn_string in existing_connections.keys():
 
-                        # attempt to connect to the database
-                        title = dic['args']['name']
-                        desc = dic['args']['desc']
-                        db_engine = dic['args']['engine']
-                        address = dic['args']['address']
-                        name = dic['args']['db']
-                        user = dic['args']['user']
-                        pwd = dic['args']['pwd']
+                # map the connection ids
 
-                        if not self.AddDatabaseConnection(title, desc, db_engine, address, name, user, pwd):
-                            wx.MessageBox('I was unable to connect to the database with the information provided :(',
-                                          'Info', wx.OK | wx.ICON_ERROR)
-                            return
+                conn_ids[con_id] = existing_connections[unique_conn_string]
 
-                        # map the connection id
-                        conn_ids[attrib['databaseid']] = attrib['databaseid']
+            # open the dialog to add a new connection
+            else:
+                connect = wx.MessageBox('This database connection does not currently exist.  Click OK to connect.', 'Info', wx.OK | wx.CANCEL)
 
-                    else:
+                if connect == wx.OK:
+
+                    # attempt to connect to the database
+                    title = con_name
+                    desc = con_desc
+                    db_engine = con_engine
+                    address = con_address
+                    name = con_db
+                    user = con_user
+                    pwd = con_pass
+
+                    if not self.AddDatabaseConnection(title, desc, db_engine, address, name, user, pwd):
+                        wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
                         return
+
+                    # map the connection id
+                    conn_ids[con_id] = con_id
 
         models = tree.findall("./Model")  # Returns a list of all models in the file
         datamodels = tree.findall("./DataModel")  # Returns a list of all data models in the file
@@ -758,14 +792,37 @@ class LogicCanvas(ViewCanvas):
         self.logicCanvasThreads[waitingThread.name] = waitingThread
         waitingThread.start()
 
-        #  Models from database and non database will load async.
-        t1 = threading.Thread(target=self.LoadModels, args=(models,), name="LoadModels")
-        self.logicCanvasThreads[t1.name] = t1
-        t1.start()
+        # loop through all of the models and load each one individually
+        for model in models:
+            x = float(model.find('xcoordinate').text)
+            y = float(model.find('ycoordinate').text)
+            name = model.find('name').text
+            id = model.find('id').text
+            arguments = model.find('Arguments').getchildren()
+            args = {}
+            for arg in arguments:
+                args[arg.tag] = arg.text
 
-        t2 = threading.Thread(target=self.LoadDataModels, args=(datamodels, conn_ids,), name="LoadDataModel")
-        self.logicCanvasThreads[t2.name] = t2
-        t2.start()
+            # save these coordinates for drawing once the model is loaded
+            self.set_model_coords(id, x=x, y=y)
+
+            # load the model in the engine
+            engine.addModel(id=id, attrib=args)
+
+            # draw the model
+            wx.CallAfter(self.FloatCanvas.Draw)
+
+
+
+        #
+        # #  Models from database and non database will load async.
+        # t1 = threading.Thread(target=self.LoadModels, args=(models,), name="LoadModels")
+        # self.logicCanvasThreads[t1.name] = t1
+        # t1.start()
+        #
+        # t2 = threading.Thread(target=self.LoadDataModels, args=(datamodels, conn_ids,), name="LoadDataModel")
+        # self.logicCanvasThreads[t2.name] = t2
+        # t2.start()
 
 
 

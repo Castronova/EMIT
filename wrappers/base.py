@@ -7,9 +7,8 @@ import dateutil.parser as dtparser
 
 class BaseWrapper(object):
 
-    def __init__(self, params):
+    def __init__(self):
 
-        self.__params = params
         self.__outputs = {}
         self.__inputs = {}
 
@@ -59,7 +58,6 @@ class BaseWrapper(object):
             self.__timestep_in_seconds = timestepinseconds
         return self.__timestep_in_seconds
 
-
     def outputs(self, value = None):
 
         if value is not None:
@@ -74,8 +72,6 @@ class BaseWrapper(object):
 
         return self.__outputs
 
-
-
     def inputs(self, value = None, name = None):
 
         if value is not None:
@@ -89,7 +85,6 @@ class BaseWrapper(object):
                     self.__inputs[eitem.name()] = eitem
 
         return self.__inputs
-
 
     def simulation_start(self, value = None):
         """

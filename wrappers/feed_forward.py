@@ -20,7 +20,7 @@ class Wrapper(base.BaseWrapper):
         model description, general simulation_start, general simulation_end
         '''
 
-        super(Wrapper, self).__init__(self)
+        super(Wrapper, self).__init__()
 
         try:
 

@@ -25,7 +25,7 @@ class Wrapper(base.BaseWrapper):
 
 
     def __init__(self, args):
-        super(Wrapper, self).__init__(self)
+        super(Wrapper, self).__init__()
 
         handle = netCDF4.Dataset(args['ncpath'], 'r')
 
@@ -78,7 +78,8 @@ class Wrapper(base.BaseWrapper):
 
             # create a unit
             unit = stdlib.Unit()
-            unit.UnitName(handle.variables[var].units)
+
+            unit.UnitName(handle.variables[var].units if 'units' in dir(handle.variables[var]) else 'N/A')
             unit.UnitTypeCV("N/A")
             unit.UnitAbbreviation("N/A")
 
@@ -102,10 +103,12 @@ class Wrapper(base.BaseWrapper):
             values = [v.flatten() for v in handle.variables[var][:]]
 
             # set these data
-            oei.setValues2(values, times)
+            success = oei.setValues2(values, times)
 
-            # save the oei
-            self.outputs(oei)
+            # only expose the exchange item if data was set properly
+            if success:
+                # save the oei
+                self.outputs(oei)
 
         # set metadata
         name = args['ncpath'].split('/')[-1]

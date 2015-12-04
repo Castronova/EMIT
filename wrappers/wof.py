@@ -5,21 +5,32 @@ import wrappers
 from wrappers import base
 from suds.client import Client
 from utilities import geometry
-
+import datetime
+from dateutil import parser
 class Wrapper(base.BaseWrapper):
 
 
     def __init__(self, args):
-        super(Wrapper, self).__init__(self)
+        super(Wrapper, self).__init__()
 
         self.args = args
-
         wsdl = self.args['wsdl']
         network = self.args['network']
         variable = '%s:%s' % (network, self.args['variable'])
         site = '%s:%s'%(network, self.args['site'])
-        start = self.args['start'].strftime('%Y-%m-%dT%H:%M:%S')
-        end = self.args['end'].strftime('%Y-%m-%dT%H:%M:%S')
+
+        st = self.args['start']
+        et = self.args['end']
+
+        # make sure that start and end time are valid date time objects
+        if not isinstance(st, datetime.datetime):
+            st = parser.parse(st)
+        if not isinstance(et, datetime.datetime):
+            et = parser.parse(et)
+
+        # format start and end datetime into wof acceptable format
+        start = st.strftime('%Y-%m-%dT%H:%M:%S')
+        end = et.strftime('%Y-%m-%dT%H:%M:%S')
 
         # connect to the server
         client = Client(wsdl)

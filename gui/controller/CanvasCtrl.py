@@ -713,12 +713,6 @@ class LogicCanvas(ViewCanvas):
 
     def loadsimulation(self, file):
 
-        # get all known transformations
-        space = SpatialInterpolation()
-        time = TemporalInterpolation()
-        spatial_transformations = {i.name(): i for i in space.methods()}
-        temporal_transformations = {i.name(): i for i in time.methods()}
-
         self.loadingpath = file
 
         tree = et.parse(file)
@@ -784,11 +778,11 @@ class LogicCanvas(ViewCanvas):
         models = tree.findall("./Model")  # Returns a list of all models in the file
         datamodels = tree.findall("./DataModel")  # Returns a list of all data models in the file
         links = tree.findall("./Link")  # Returns a list of all links in the file
-        transform = tree.findall("./transformation")
+
         total = len(models) + len(datamodels) + len(self.models) + self.failed_models
 
         elog.debug("There are " + str(total) + " models in the file")
-        waitingThread = threading.Thread(target=self.waiting, args=(total, links, transform, temporal_transformations, spatial_transformations), name="LoadLinks")
+        waitingThread = threading.Thread(target=self.waiting, args=(total, links), name="LoadLinks")
         self.logicCanvasThreads[waitingThread.name] = waitingThread
         waitingThread.start()
 
@@ -826,12 +820,12 @@ class LogicCanvas(ViewCanvas):
 
 
 
-    def waiting(self, total, links, transform, temporal_transformations, spatial_transformations):
+    def waiting(self, total, links):
         #  This method waits for all the models in the file to be loaded before linking
         elog.info("Waiting for all models to be loaded before creating link")
         while len(self.models) < total:
             time.sleep(0.5)
-        self.LoadLinks(links, transform, temporal_transformations, spatial_transformations)
+        self.LoadLinks(links)
         elog.debug(str(len(self.models)) + " were models loaded")
         return
 
@@ -855,42 +849,61 @@ class LogicCanvas(ViewCanvas):
                               title=attrib['name'], uniqueId=attrib['resultid'])
         wx.CallAfter(self.FloatCanvas.Draw)
 
-    def LoadLinks(self, links, transformation, temp_trans, spat_trans):
+    def LoadLinks(self, links):
+
+        # get all known transformations
+        space = SpatialInterpolation()
+        time = TemporalInterpolation()
+        spatial_transformations = {i.name(): i for i in space.methods()}
+        temporal_transformations = {i.name(): i for i in time.methods()}
+
         for link in links:
-            attrib = self.appendChild(link)
 
-            R1, R2 = None, None  # Rename R1 to From Model and R2 to To Model
-            for key, value in self.models.iteritems():
-                if value == attrib['from_id']:
-                        R1 = key
-                elif value == attrib['to_id']:
-                        R2 = key
-            if R1 is None or R2 is None:
+            # get 'from' and 'to' model attributes
+            from_model = None
+            from_model_id = link.find('./from_id').text
+            from_model_item = link.find('./from_item').text
+            from_model_name = link.find('./from_name').text
+            to_model = None
+            to_model_id = link.find('./to_id').text
+            to_model_item = link.find('./to_item').text
+            to_model_name = link.find('./to_name').text
+
+            # Find the model objects that correspond to from_model_id and to_model_id
+            for canvas_model_object, canvas_model_id in self.models.iteritems():
+                if canvas_model_id == from_model_id:
+                    from_model = canvas_model_object
+                elif canvas_model_id == to_model_id:
+                    to_model = canvas_model_object
+
+            # display error message if both models don't exist on the canvas
+            if from_model is None or to_model is None:
                 # raise Exception('Could not find Model identifier in loaded models')
-                elog.error("Could not find model id in loaded models")
-                return
+                elog.critical("Failed to create link between %s and %s." % (from_model_name, to_model_name))
 
-            temporal = None
-            spatial = None
-            # set the temporal and spatial interpolation
-            for transform_child in transformation:
-                    if transform_child.text.upper() != 'NONE':
-                        if transform_child.tag == 'temporal':
-                            temporal = temp_trans[transform_child.text]
-                        elif transform_child.tag == 'spatial':
-                            spatial = spat_trans[transform_child.text]
+            # if both models exist on the canvas, create and draw the link
+            else:
 
-            # create the link
-            l = engine.addLink(source_id=attrib['from_id'],
-                               source_item=attrib['from_item'],
-                               target_id=attrib['to_id'],
-                               target_item=attrib['to_item'],
-                               spatial_interpolation=spatial,
-                               temporal_interpolation=temporal
-                               )
+                # get the spatial and temporal transformations
+                transformation = link.find("./transformation")
+                temporal_transformation_name = transformation.find('./temporal').text
+                spatial_transformation_name = transformation.find('./spatial').text
 
-            # this draws the line
-            wx.CallAfter(self.createLine, R1, R2)
+                # set the transformation values
+                temporal = temporal_transformations[temporal_transformation_name] if temporal_transformation_name.lower() != 'none' else None
+                spatial = spatial_transformations[spatial_transformation_name] if spatial_transformation_name.lower() != 'none' else None
+
+                # create the link
+                l = engine.addLink(source_id=from_model_id,
+                                   source_item=from_model_item,
+                                   target_id=to_model_id,
+                                   target_item=to_model_item,
+                                   spatial_interpolation=spatial,
+                                   temporal_interpolation=temporal
+                                   )
+
+                # this draws the line
+                wx.CallAfter(self.createLine, from_model, to_model)
 
     def SetLoadingPath(self, path):
         self.loadingpath = path

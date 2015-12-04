@@ -102,13 +102,14 @@ class Wrapper(base.BaseWrapper):
             # flatten each timestep of the data
             values = [v.flatten() for v in handle.variables[var][:]]
 
-            # set these data
-            success = oei.setValues2(values, times)
+            # set these data.  Skip occurrences with mismatched values and times arrays
+            if len(values) == len(times):
+                success = oei.setValues2(values, times)
 
-            # only expose the exchange item if data was set properly
-            if success:
-                # save the oei
-                self.outputs(oei)
+                # only expose the exchange item if data was set properly
+                if success:
+                    # save the oei
+                    self.outputs(oei)
 
         # set metadata
         name = args['ncpath'].split('/')[-1]

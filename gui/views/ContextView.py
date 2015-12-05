@@ -495,7 +495,7 @@ class SimulationContextMenu(ContextMenu):
 
         id = self.parent.GetFirstSelected()
 
-        if id != -1 and id != 0 and id != None:
+        if id != -1:
 
             simulation_id = obj.GetItem(id, 0).GetText()
             name = obj.GetItem(id, 1).GetText()

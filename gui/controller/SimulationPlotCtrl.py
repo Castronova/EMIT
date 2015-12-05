@@ -6,6 +6,7 @@ import wx
 import os
 import csv
 import time
+import datetime
 
 class SimulationPlotCtrl(TimeSeriesPlotView):
 
@@ -140,6 +141,8 @@ class SimulationPlotCtrl(TimeSeriesPlotView):
                 pos = self.variableList.InsertStringItem(colNumber, str(key))
                 colNumber += 1
                 for value in values:
+                    if self.isDateTimeObject(value) is not None:
+                        value = self.isDateTimeObject(value)
                     self.variableList.SetStringItem(pos, colNumber, str(value))
                     colNumber += 1
                 colNumber = 0
@@ -162,5 +165,11 @@ class SimulationPlotCtrl(TimeSeriesPlotView):
 
     def setPlotTitle(self, title):
         self.plot.setTitle(title)
+
+    def isDateTimeObject(self, object):
+        if type(object) is not datetime.datetime:
+            return None
+        else:
+            return object.strftime("%m/%d/%Y")
 
 

@@ -38,8 +38,8 @@ class Affiliation(object):
             raise Exception('Required parameter not given')
 
 
-        # if not isinstance(startDate, datetime.datetime) and (not isinstance(affiliationEnd, datetime.datetime) or affiliationEnd is None):
-        #     raise Exception('startDate and affiliationEnd must be python datetimes')
+        if not isinstance(startDate, datetime.datetime) and (not isinstance(affiliationEnd, datetime.datetime) or affiliationEnd is None):
+            raise Exception('startDate and affiliationEnd must be python datetimes')
 
         self.email = email
         self.startDate = startDate
@@ -86,14 +86,13 @@ def BuildAffiliationfromJSON(j):
 
     json_dict = json.loads(j, object_hook=date_hook)
     print json_dict
-    for element in json_dict:
-        for key, value in element.iteritems():
+    for key, value in json_dict.iteritems():
 
-            p = Person(**value['person'])
-            o = Organization(**value['organization'])
-            value['affiliation'].update(dict(person=p,organization=o))
-            a = Affiliation(**value['affiliation'])
-            affiliations.append(a)
+        p = Person(**value['person'])
+        o = Organization(**value['organization'])
+        value['affiliation'].update(dict(person=p,organization=o))
+        a = Affiliation(**value['affiliation'])
+        affiliations.append(a)
 
     return affiliations
 

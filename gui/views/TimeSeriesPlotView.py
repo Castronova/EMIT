@@ -35,22 +35,18 @@ class TimeSeriesPlotView(wx.Frame):
 
         hboxMidPanel = wx.BoxSizer(wx.HORIZONTAL)
 
-        # self.startDateBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Start Date")
         self.startDateText = wx.StaticText(middlepanel, id=wx.ID_ANY, label="Start")
         self.startDatePicker = wx.DatePickerCtrl(middlepanel, id=wx.ID_ANY, dt=self.start_date)
-        # self.endDateBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="End Date")
         self.endDateText = wx.StaticText(middlepanel, id=wx.ID_ANY, label="End")
         self.endDatePicker = wx.DatePickerCtrl(middlepanel, id=wx.ID_ANY, dt=self.end_date)
         self.exportBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Export")
         self.addToCanvasBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Add to Canvas")
         self.PlotBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Preview")
 
-        # hboxMidPanel.Add(self.startDateBtn, 1, wx.EXPAND | wx.ALL, 2)
         hboxMidPanel.Add(self.startDateText, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
         hboxMidPanel.AddSpacer(2)
         hboxMidPanel.Add(self.startDatePicker, 1, wx.EXPAND | wx.ALL, 2)
         hboxMidPanel.AddSpacer(2)
-        # hboxMidPanel.Add(self.endDateBtn, 1, wx.EXPAND | wx.ALL, 2)
         hboxMidPanel.Add(self.endDateText, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
         hboxMidPanel.AddSpacer(2)
         hboxMidPanel.Add(self.endDatePicker, 1, wx.EXPAND | wx.ALL, 2)

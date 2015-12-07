@@ -118,11 +118,15 @@ def run_feed_forward(obj, ds=None):
     for modelid in exec_order:
         model_obj = obj.get_model_by_id(modelid)
         model_inst = model_obj.instance()
-        if model_inst.status() != Status.Ready:
-            model_inst.prepare()
+        model_inst.prepare()
+
+        if model_inst.status() != stdlib.Status.READY:
+            elog.critical('Cannot continue with simulation because model "%s" has a status of "%s" after the preparation'
+                          ' phase.  Status must be "%s" in order to proceed with simulation '
+                          % (model_inst.name(), model_inst.status(), stdlib.Status.READY))
+            return False
 
     # loop through models and execute run
-
     for modelid in exec_order:
 
         st = time.time()

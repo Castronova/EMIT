@@ -47,8 +47,6 @@ class Wrapper(base.BaseWrapper):
             elog.error('Malformed parameters found in *.mdl')
 
 
-        self.status(stdlib.Status.READY)
-
     def type(self):
         return wrappers.Types.FEEDFORWARD
 
@@ -63,4 +61,17 @@ class Wrapper(base.BaseWrapper):
         Called before simulation run to prepare the model
         :return: READY status
         '''
+
+        try:
+            # initialize the date and value containers
+            sd = self.simulation_start()
+            ed = self.simulation_end()
+            ts = self.time_step()
+            for output in self.outputs().itervalues():
+                output.initializeDatesValues(sd, ed, ts)
+        except Exception, e:
+            elog.critical(e)
+            elog.critical('Failed to prepare model: %s' % self.name())
+            self.status(stdlib.Status.ERROR)
+
         self.status(stdlib.Status.READY)

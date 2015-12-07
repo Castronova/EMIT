@@ -138,7 +138,7 @@ class Geometry2(ogr.Geometry):
         self.update_hash()
 
 class ExchangeItem(object):
-    def __init__(self, id=None, name=None, desc=None, geometry=[], unit=None, variable=None, srs_epsg=4269, type=ExchangeItemType.INPUT):
+    def __init__(self, id=None, name=None, desc=None, geometry=[], unit=None, variable=None, noData=-999, srs_epsg=4269, type=ExchangeItemType.INPUT):
 
         self.__name = name
         self.__description = desc
@@ -163,8 +163,8 @@ class ExchangeItem(object):
         if geometry is not None:
             self.addGeometries2(geometry)
 
-        # no data values will be represented as None
-        self.__noData = None
+        # no data values
+        self.__noData = noData
 
         self.__id = uuid.uuid4().hex
         if id is not None:
@@ -187,6 +187,23 @@ class ExchangeItem(object):
         self.__session = None
         self.__saved = False
         self.__seriesID = None
+
+    def initializeDatesValues(self, start_datetime, end_datetime, timestep_in_seconds):
+        date = start_datetime
+        dates = []
+        while date <= end_datetime:
+            dates.append(date)
+            date = date + datetime.timedelta(seconds=timestep_in_seconds)
+
+        self.__times2 = numpy.array(dates)
+        geoms = self.__geoms2
+        self.__values2 = numpy.zeros(shape=(len(dates), len(geoms)))
+        self.__values2[:] = self.__noData
+
+    def noData(self, value = None):
+        if value is not None:
+            self.__noData = value
+        return self.__noData
 
     def srs(self, srs_epsg=None):
         if srs_epsg is not None:
@@ -235,6 +252,70 @@ class ExchangeItem(object):
             elog.info("Attempted to add unsupported geometry type to ExchangeItem %s, in stdlib.addGeometries(geom)" % type(geom))
             return 0
         return 1
+
+    def setValuesBySlice (self, values, time_index_slice=(None, None, None), geometry_index_slice=(None, None, None)):
+        """
+        sets datavalues for the component.
+        :param values:  Values to set
+        # :param value_index_slice: tuple representing the start, stop, and step range of the values
+        :param time_index_slice: tuple representing the start, stop, and step range of the date times
+        :param geometry_index_slice: tuple representing the start, stop, and step range of the geometries
+        :return: True if successful, otherwise False
+        """
+
+        if len(self.__values2) == 0 or len(self.__times2) == 0:
+            elog.critical('Exchange item values and/or times arrays were not set properly.  Make sure "initializeDatesValues" is being called during/after component initialization.')
+            return False
+
+        try:
+            # get index ranges
+            tb, te, tstep = time_index_slice
+            gb, ge, gstep = geometry_index_slice
+
+            # set initial values for missing slice indices
+            tb = 0 if tb is None else tb
+            gb = 0 if gb is None else gb
+            te = len(self.__times2) if te is None else te
+            ge = len(self.__geoms2) if ge is None else ge
+            tstep = 1 if tstep is None else tstep
+            gstep = 1 if gstep is None else gstep
+
+            # convert the values into a numpy array if they aren't already
+            if not isinstance(values, numpy.ndarray):
+                values = numpy.array(values)
+
+            # set the values[times][geoms]
+            # reshape the input array to fit the desired slicing
+            target_shape = ((te-tb) / tstep, (ge-gb) / gstep)
+            values = values.reshape(target_shape)
+            self.__values2[tb:te:tstep, gb:ge:gstep] = values
+
+
+        except Exception, e:
+            elog.error(e)
+            elog.error('Error setting values for times %s, geometries %s' % (str(time_index_slice), str(geometry_index_slice)))
+            return False
+        return True
+
+    def setValuesByTime(self, values, timevalue, geometry_index_slice=(None, None, None)):
+        try:
+            # get time index
+            idx, date = self.getDates2(timevalue)
+
+            # get index ranges
+            gb, ge, gstep = geometry_index_slice
+
+            # convert the values into a numpy array if they aren't already
+            if not isinstance(values, numpy.ndarray):
+                values = numpy.array(values)
+
+            # set the values[times][geoms]
+            self.__values2[idx, gb:ge:gstep] = values
+
+        except:
+            elog.error('Error setting values for times %s, geometries %s' % (str(time_index_slice), str(geometry_index_slice)))
+            return False
+        return True
 
     def setValues2(self, values, timevalue):
         """
@@ -322,10 +403,10 @@ class ExchangeItem(object):
         for i in range(start_time_slice_idx, end_time_slice_idx):
             values.append(self.__values2[i][geom_idx_start:geom_idx_end])
 
-        if ndarray:
-            return numpy.array(values)
-        else:
-            return values
+        # if ndarray:
+        return numpy.array(values)
+        # else:
+        #     return values
 
     def setDates2(self, timevalue):
         """

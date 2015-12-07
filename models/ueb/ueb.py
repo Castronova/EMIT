@@ -327,8 +327,11 @@ class ueb(feed_forward.Wrapper):
             xcoords.append(self.C_pOut[pid].xcoord)
             ycoords.append(self.C_pOut[pid].ycoord)
         self.pts = geometry.build_point_geometries(xcoords, ycoords)
-        self.outputs()['Snow Water Equivalent'].addGeometries2(self.pts)
-        self.outputs()['Surface Water Input Total'].addGeometries2(self.pts)
+        self.__swe = self.outputs()['Snow Water Equivalent']
+        self.__swit = self.outputs()['Surface Water Input Total']
+        self.__swe.addGeometries2(self.pts)
+        self.__swit.addGeometries2(self.pts)
+
 
 
         # build input exchange items
@@ -339,14 +342,14 @@ class ueb(feed_forward.Wrapper):
         self.inputs()['Precipitation'].addGeometries2(self.geoms)
         self.inputs()['Temperature'].addGeometries2(self.geoms)
 
-        # set component parameters
+        # set start, end, and timestep parameters
         ts = datetime.timedelta(hours=ModelDt)
         self.time_step(ts.total_seconds())
-
         sd = datetime.datetime(*ModelStartDate)
         ed = datetime.datetime(*ModelEndDate)
         self.simulation_start(sd)
         self.simulation_end(ed)
+
 
 
     def run(self, inputs):
@@ -368,9 +371,9 @@ class ueb(feed_forward.Wrapper):
         # C_tsvarArray[11] --> Tmax
         # C_tsvarArray[12] --> Vapor Pressure of air
 
-        # get output exchange items
-        swe = self.outputs()['Snow Water Equivalent']
-        swit = self.outputs()['Surface Water Input Total']
+        # # get output exchange items
+        # self.swe = self.outputs()['Snow Water Equivalent']
+        # swit = self.outputs()['Surface Water Input Total']
 
         # Initialize SiteState
         SiteState = numpy.zeros((32,))
@@ -414,9 +417,23 @@ class ueb(feed_forward.Wrapper):
                                      byref(pointer(self.C_outvarArray)), self.C_ModelStartDate, self.C_ModelStartHour,
                                      self.C_ModelEndDate, self.C_ModelEndHour, self.C_ModelDt, self.C_ModelUTCOffset)
 
-            if i % round((len(self.activeCells)) / 10) == 0:
-                elog.info("%d of %d elements complete " % ((i+1), len(self.activeCells)))
+                # outvararray 70var * numtimesteps
 
+            # set output data
+            numtimesteps = len(self.__swe.getDates2())
+            values = numpy.array(self.C_outvarArray[17][0:numtimesteps])            # convert C_type into numpy array
+            values[numpy.isnan(values)] = self.__swe.noData()                       # set nan values to noData
+            self.__swe.setValuesBySlice(values, geometry_index_slice=(i, i+1, 1))   # set data in wrapper
+
+            values = numpy.array(self.C_outvarArray[25][0:numtimesteps])            # convert C_type into numpy array
+            values[numpy.isnan(values)] = self.__swit.noData()                      # set nan values to noData
+            self.__swit.setValuesBySlice(values, geometry_index_slice=(i, i+1, 1))  # set data in wrapper
+
+
+            # if i % round((len(self.activeCells)) / 10) == 0:
+            # print "%d of %d elements complete " % ((i+1), len(self.activeCells))
+            # sys.stdout.flush()
+            elog.info("... %d of %d elements complete " % ((i+1), len(self.activeCells)), overwrite=True)
 
         # # # todo: set output data (point)
         # # print 'set output data'
@@ -482,7 +499,7 @@ class ueb(feed_forward.Wrapper):
 
 
     def initialize_timeseries_variable_array(self, forcing_data, number_of_timesteps):
-
+        # number_of_timesteps += 10
         variables = {'Ta':0, 'Prec':1, 'v':2, 'RH':3, 'AP':4, 'Qsi':5, 'Qli':6, 'Qnet':7, 'Qg':8, 'Snowalb':9, 'Tmin':10, 'Tmax':11, 'Vp':12}
 
         # loop over all of the variables
@@ -637,3 +654,86 @@ class ueb(feed_forward.Wrapper):
         # build point geometries
         return geometry.build_point_geometries(x, y)
 
+
+
+"""
+Metadata Notes:
+
+C_outvar_Array
+        0	Year	        Year
+        1	Month           Month
+        2	Day	            Day
+        3	dHour	        dHour
+        4	atff	        Atmospheric transmission factor
+        5	HRI	            Radiation index
+        6	Eacl	        Clear sky emissivity
+        7	Ema	            Atmospheric emissivity
+        8	conZen	        Cos of solar zenith angle (Zen)
+        9	Ta	            Air temperature(C)
+        10	P	            Precipitation (m/hr)
+        11	V	            Wind speed (m/s)
+        12	RH	            Relative humidity
+        13	Qsi	            Incoming solar radiation (kJ/m2/hr)
+        14	Qli	            Incoming longwave radiation (kJ/m2/hr)
+        15	Qnet	        Input net radiation (kJ/m2/hr)
+        16	Us	            Energy content (kJ/m2)
+        17	Ws	            Surface snow water equivalent (m)
+        18	tausn	        Dimensionless age of the snow surface
+        19	Pr	            Precipitation in the form of rain (m/hr)
+        20	Ps	            Precipitation in the form of snow (m/hr)
+        21	Alb	            Snow surface albedo
+        22	QHs	            Surface Sensible heat flux (kJ/m2/hr)
+        23	QEs	            Surface Latent heat flux (kJ/m2/hr)
+        24	Es	            Surface sublimation (m)
+        25	SWIT	        Total outflow (m/hr).  This combines rainfall (in the case of no snow/glacier)
+                              snow/glacier melt, and it the surface water input to the runoff generation process.
+        26	QMs	            Surface melt energy (kJ/m2/hr)
+        27	Q	            Net surface energy exchange (kJ/m2/hr)
+        28	FM	            Net surface mass exchange (m/h)
+        29	Tave	        Average snow temperature (C)
+        30	TSURFs	        Surface snow temperature (C)
+        31	cump	        Cumulative precipitation (m)
+        32	cumes	        Cumulative surface sublimation (m)
+        33	cumMr	        Cumulative surface melt (m)
+        34	Qnet	        Modeled surface net radiation (kJ/m2/hr)
+        35	smelt	        Melt generated at surface (m/hr).  This is melt generated at the surface and modeled to
+                            infiltrate into the snow or glacier where it may refreeze.  It is not base of the
+                            snow/glacier outflow.
+        36	refDepth	    Depth of penetration of top refreezing (m)
+        37	totalRefDepth	Total depth of refreezing (m)
+        38	cf	            Cloudiness fraction
+        39	Taufb	        Direct solar radiation fraction
+        40	Taufd	        Diffuse solar radiation fraction
+        41	Qsib	        Direct solar radiation
+        42	Qsid	        Diffuse solar radiation
+        43	Taub	        Direct solar radiation canopy transmission fraction
+        44	Taud	        Diffuse solar radiation canopy transmission fraction
+        45	Qsns	        Solar radiation absorbed at surface (kJ/m2/hr)
+        46	Qsnc	        Solar radiation absorbed in canopy (kJ/m2/hr)
+        47	Qlns	        Longwave radiation absorbed a tsurface (kJ/m2/hr)
+        48	Qlnc 	        Longwave radiation absorbed in canopy (kJ/m2/hr)
+        49	Vz	            Modeled wind beneath canopy (m/s)
+        50	Rkinsc	        Was canopy aerodynamic resistance -not used presently
+        51	Rkinc	        Aerodynamic resistance of surface (below canopy)
+        52	Inmax	        Canopy snow interception capacity (m)
+        53	intc	        Canopy snow interception (m/hr)
+        54	ieff	        Fraction of precipitation intercepted (m/hr)
+        55	Ur	            Canopy mass unloading (m/hr)
+        56	Wc	            Canopy snow water equivalent (m)
+        57	Tc	            Canopy temperature(C)
+        58	Tac	            Air temperature within canopy (C)
+        59	QHc	            Canopy sensible heat flux (kJ/m2/hr)
+        60	QEc	            Canopy latent heat flux (kJ/m2/hr)
+        61	Ec	            Canopy sublimation (m/hr)
+        62	Qpc	            Precipitation energy advected to canopy (kJ/m2/hr)
+        63	Qmc	            Canopy melt energy (kJ/m2/hr)
+        64	Mc	            Melt from canopy (m/hr)
+        65	FMc	            Net canopy energy exchange (m/hr)
+        66	SWIGM	        Glacier melt outflow (m/hr).  This is the part of total outflow that originates from
+                            glacier melting.
+        67	SWISM	        Rainfall outflow (m/hr).  This is the part of total outflow that is from rainfall in the
+                            case of no snow/glacier.
+        68	SWIR	        Snow melt outflow (m/hr).  This is the part of total outflow that originates from the
+                            melting of seasonal snow pack (as distinct from glacier ice)
+        69	errMB	        Mass balance closure error (m)
+"""

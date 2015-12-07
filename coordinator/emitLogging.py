@@ -37,7 +37,7 @@ class _Log:
             self.__root.addHandler(sh)
 
             # setup rotating log
-            rotating_log = logging.handlers.RotatingFileHandler(LOG_FILENAME, maxBytes=50000, backupCount=500)
+            rotating_log = logging.handlers.RotatingFileHandler(LOG_FILENAME, maxBytes=50000000, backupCount=500)
             rotating_log.setFormatter(formatter)
             self.__root.addHandler(rotating_log)
 
@@ -68,6 +68,7 @@ class _Log:
     def _get_logger(self):
         return self.__root
 
+# todo: change this to a socket handler and have the console listen to socket messages
 class PickleHandler(logging.FileHandler):
 
     def __init__(self, filename, mode='a+b', encoding=None, delay=0):
@@ -133,12 +134,14 @@ class Log(object):
         if env_vars.LOGGING_SHOWERROR:
             self.log._error(detailed_text)
 
-    def info(self, text):
-        inf = env_vars.LOGGING_SHOWINFO
+    def info(self, text, overwrite=False):
         if env_vars.LOGGING_SHOWINFO:
+            text = 'OVERWRITE:%s'%text if overwrite else text
             self.log._info(text)
 
     def critical(self, text):
+        # f = inspect.getouterframes(inspect.currentframe(),2)
+        # detailed_text = " [%s, %s (line %d)] --- %s " % (f[1][1].split('/')[-1], f[1][3], f[1][2], text)
         if env_vars.LOGGING_SHOWCRITICAL:
             self.log._critical(text)
 

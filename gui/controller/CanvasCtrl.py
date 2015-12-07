@@ -900,4 +900,5 @@ class LogicCanvas(ViewCanvas):
 
     def simulation_finished(self, evt):
         # todo: this should open a dialog box showing the execution summary
-        elog.info('Simulation finished')
+        pass
+        # elog.info('Simulation finished')

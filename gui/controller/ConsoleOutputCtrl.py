@@ -28,7 +28,7 @@ def follow(logging, target):
 
             # need to include this sleep timer to ensure that CPU does not go to 100%
             if lines == last_lines:
-                time.sleep(.01)
+                time.sleep(.5)
             else:
                 last_lines = lines
                 line_list = lines.split('\n')
@@ -42,7 +42,7 @@ def follow(logging, target):
 
                         # todo: this is a hack
                         overwrite = False
-                        if 'OVERWRITE' in record['message']:
+                        if 'OVERWRITE:' in record['message']:
                             overwrite = True
                             message = record['message'].replace('OVERWRITE:','')
                         else:

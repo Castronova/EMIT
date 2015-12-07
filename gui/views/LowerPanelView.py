@@ -30,13 +30,13 @@ class viewLowerPanel:
         notebook.AddPage(simulations, "Simulations")
 
         # deactivate the console if we are in debug mode
-        if not sys.gettrace():
+        # if not sys.gettrace():
             # redir = RedirectText(self.log)
             # sys.stdout = redir
 
             #  Thread starts here to ensure its on the main thread
-            t = threading.Thread(target=ConsoleOutputCtrl.follow, name='CONSOLE THREAD', args=(elog, console.log))
-            t.start()
+        t = threading.Thread(target=ConsoleOutputCtrl.follow, name='CONSOLE THREAD', args=(elog, console.log))
+        t.start()
 
 class ConsoleTab(wx.Panel):
     def __init__(self, parent):

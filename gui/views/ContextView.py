@@ -9,7 +9,7 @@ from wx.lib.pubsub import pub as Publisher, __all__
 from gui.controller.ModelCtrl import LogicModel
 from gui.controller.SimulationPlotCtrl import SimulationPlotCtrl
 from gui.controller.PlotCtrl import LogicPlot
-from gui.controller.PreRunCtrl import logicPreRun
+from gui.controller.PreRunCtrl import PreRunCtrl
 import coordinator.engineAccessors as engine
 from gui import events
 from coordinator.emitLogging import elog
@@ -187,7 +187,7 @@ class CanvasContextMenu(wx.Menu):
         self.parent.run()
 
     def OnRunModel(self, e):
-        preRunDialog = logicPreRun()
+        preRunDialog = PreRunCtrl()
         preRunDialog.Show()
 
 
@@ -489,12 +489,6 @@ class SimulationContextMenu(ContextMenu):
 
     def OnPlot(self, event):
         obj, id = self.Selected()
-        x_series = []
-        y_series = []
-        labels = []
-
-        # get the list of all control objects
-        objects = obj.GetObjects()
 
         #  dictionary for storing table records
         variable_list_entries = {}
@@ -510,99 +504,27 @@ class SimulationContextMenu(ContextMenu):
             results = self.getData(simulation_id)
             if results is not None:
                 keys = results.keys()[0]
-            for x, y, resobj in results[keys]:
-                #  store the x and y data
-                x_series.append(x)
-                y_series.append(y)
-                labels.append(int(resobj.ResultID))
+
                 #  Get the variables/models that belong to a simulation
+                plot_data = {}
                 sub_variables = results[keys]
                 for sub in sub_variables:
-                    variable_list_entries[sub[2].ResultID] = [sub[2].ResultID,
-                                                              sub[2].FeatureActionID,
+                    variable_list_entries[sub[2].ResultID] = [sub[2].VariableObj.VariableCode,
+                                                              sub[2].UnitObj.UnitsAbbreviation,
+                                                              sub[2].FeatureActionObj.ActionObj.BeginDateTime,
+                                                              sub[2].FeatureActionObj.ActionObj.EndDateTime,
                                                               sub[2].VariableObj.VariableNameCV,
-                                                              sub[2].UnitObj.UnitsName,
-                                                              sub[2].ResultTypeCVObj.DataType,
                                                               sub[2].FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName]
-                                                              # sub[0], sub[1]] # sub[0] is the date object and sub[1] are the values
 
+                    # Get the data belonging to the model
+                    plot_data[sub[2].ResultID] = [sub[0], sub[1]]
 
-            #  get the object associated with this id
-            # object = objects[id]
-
-            #  This excludes the variables/models that belong to a simulation
-            # variable_list_entries[object.simulation_id] = [object.simulation_name,
-            #                                                object.model_name,
-            #                                                object.simulation_start,
-            #                                                object.simulation_end,
-            #                                                object.date_created,
-            #                                                object.owner]
-
-            # this contains the data associated with the models in the simulation
-            # this is not finished
-            # for x, y, resobj in results[keys]:
-            #     #  store the x and y data
-            #     x_series.append(x)
-            #     y_series.append(y)
-            #     labels.append(int(resobj.ResultID))
-
-
-            # # get the result
-            # simulationID = obj.GetItem(id, 0).GetText()
-            # print obj.GetItem(id, 2).GetText()
-            # name = obj.GetItem(id, 1).GetText()
-            #
-            # # get data for this row
-            # results = self.getData(simulationID)
-            # variable_list_entries[simulationID] = [obj.GetItem(id,1).GetText(),obj.GetItem(id,2).GetText(),
-            #                                        obj.GetItem(id,3).GetText(),obj.GetItem(id,4).GetText(),
-            #                                        obj.GetItem(id,5).GetText(),obj.GetItem(id,6).GetText()]
-            # print variable_list_entries
-            # id = obj.GetNextSelected(id)
-        sim_plot_ctrl = SimulationPlotCtrl(parentClass=self, timeseries_variables=variable_list_entries)
-        sim_plot_ctrl._objects = results[keys]
-        #below it the old code just in case.
-        """
-            if results is None:
-                return
-
-            if PlotFrame is None:
-
-                # todo: plot more than just this first variable
-                key = results.keys()[0]
-
-                resobj = results[key][0][2]
-
-                # set metadata based on first series
-                ylabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
-
-                # save the variable and units to validate future time series
-                variable = resobj.VariableObj.VariableNameCV
-                units = resobj.UnitObj.UnitsName
-                title = '%s: %s [%s]' % (name, variable, units)
-
-                PlotFrame = SimulationPlotCtrl(self.Parent, ylabel=ylabel, title=title)
-
-                for x,y,resobj in results[key]:
-                    # store the x and Y data
-                    x_series.append(x)
-                    y_series.append(y)
-                    labels.append(int(resobj.ResultID))
-
-            elif warning is None:
-                warning = 'Multiple Variables/Units were selected.  I currently don\'t support plotting heterogeneous time series. ' +\
-                          'Some of the selected time series will not be shown :( '
-
-            # get the next selected item
-
-        if warning:
-            dlg = wx.MessageDialog(self.parent, warning, '', wx.OK | wx.ICON_WARNING)
-            dlg.ShowModal()
-            dlg.Destroy()
-
-        # plot the data
-        PlotFrame.plot(xlist=x_series, ylist=y_series, labels=labels)
-        PlotFrame.Show()"""
+                sim_plot_ctrl = SimulationPlotCtrl(parentClass=self, timeseries_variables=variable_list_entries)
+                sim_plot_ctrl.SetTitle("Results for Simulation: " + str(name))
+                sim_plot_ctrl.plot_data = plot_data
+        else:
+            elog.debug("Failed, perhaps no model has been selected")
+            elog.info("Detected that no simulation was selected")
 
     def onExport(self, event):
         #  User will choose where to save the csv file

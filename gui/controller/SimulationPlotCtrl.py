@@ -6,29 +6,32 @@ import wx
 import os
 import csv
 import time
+import datetime
 
 class SimulationPlotCtrl(TimeSeriesPlotView):
 
     def __init__(self, parent=None, parentClass=None, timeseries_variables={}):
 
-        table_cols = ["Simulation ID", "Simulation Name","Model Name","Simulation Start","Simulation End","Date Created",
-                      "Owner"]
+        table_cols = ["id", "Variable", "Units", "Begin Date",
+                      "End Date", "Description", "Organization"]
 
-        TimeSeriesPlotView.__init__(self, parent, "No Title", table_cols)
-        # TimeSeriesObjectViewer.__init__(self, parent=parent)
+        TimeSeriesPlotView.__init__(self, parent, "", table_cols)
 
         self.populateVariableList(timeseries_variables)
 
         self.parentClass = parentClass  # used to access methods from parent class
-        self.SetTitle("TimeSeries Viewer")
 
         self.Bind(wx.EVT_DATE_CHANGED, self.setstartDate, self.startDatePicker)
         self.Bind(wx.EVT_DATE_CHANGED, self.setEndDate, self.endDatePicker)
         self.Bind(wx.EVT_BUTTON, self.onExport, self.exportBtn)
         self.Bind(wx.EVT_BUTTON, self.addToCanvas, self.addToCanvasBtn)
         self.Bind(wx.EVT_BUTTON, self.previewPlot, self.PlotBtn)
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.enableBtns)
+        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.disableBtns)
 
         self.autoSizeColumns()
+        self.disableBtns(None)
+        self.plot_data = None
         self._objects = None
 
     def addToCanvas(self, event):
@@ -42,6 +45,17 @@ class SimulationPlotCtrl(TimeSeriesPlotView):
         else:
             elog.debug("Column list received is empty")
 
+    def disableBtns(self, event):
+        self.PlotBtn.Disable()
+        self.exportBtn.Disable()
+        self.addToCanvasBtn.Disable()
+
+    def enableBtns(self, event):
+        self.PlotBtn.Enable()
+        # Commented out until implementation is complete
+        # self.exportBtn.Enable()
+        # self.addToCanvasBtn.Enable()
+
     def getSelectedObject(self):
         id = self.getSelectedId()
         for object in self._objects:
@@ -54,11 +68,7 @@ class SimulationPlotCtrl(TimeSeriesPlotView):
             if self.variableList.IsSelected(i):
                 id = self.variableList.GetItemText(i)
                 return int(id)
-            # for x, y, resobj in results[keys]:
-            #     #  store the x and y data
-            #     x_series.append(x)
-            #     y_series.append(y)
-            #     labels.append(int(resobj.ResultID))
+
     def onExport(self, event):
         save = wx.FileDialog(parent=self, message="Choose Path",
                              defaultDir=os.getcwd(),
@@ -97,16 +107,17 @@ class SimulationPlotCtrl(TimeSeriesPlotView):
     def previewPlot(self, event):
 
         id = self.getSelectedId()
-        date_time_objects, value, resobj = self.parentClass.getData(resultID=id)
+
+        date_time_objects, value = self.plot_data[id]
 
         data = []
         for i in range(len(date_time_objects)):
             data.append((date_time_objects[i], value[i]))
 
         try:
-            variable_name = str(resobj.VariableObj.VariableNameCV)
-            unit_name = '%s [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
-            self.plotGraph(data=data, var_name=variable_name, yunits=unit_name)
+            name = self._data[id][0]
+            units = self._data[id][1]
+            self.plotGraph(data=data, var_name=name, yunits=units)
 
         except Exception as e:
             elog.debug("DetachedInstanceError. See resobj.VariableObj" + str(e))
@@ -130,6 +141,8 @@ class SimulationPlotCtrl(TimeSeriesPlotView):
                 pos = self.variableList.InsertStringItem(colNumber, str(key))
                 colNumber += 1
                 for value in values:
+                    if self.isDateTimeObject(value) is not None:
+                        value = self.isDateTimeObject(value)
                     self.variableList.SetStringItem(pos, colNumber, str(value))
                     colNumber += 1
                 colNumber = 0
@@ -152,5 +165,11 @@ class SimulationPlotCtrl(TimeSeriesPlotView):
 
     def setPlotTitle(self, title):
         self.plot.setTitle(title)
+
+    def isDateTimeObject(self, object):
+        if type(object) is not datetime.datetime:
+            return None
+        else:
+            return object.strftime("%m/%d/%Y")
 
 

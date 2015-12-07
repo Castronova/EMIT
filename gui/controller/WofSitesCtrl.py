@@ -58,6 +58,9 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
     def addToCanvas(self, event):
         end, parent, siteobject, start, variable_code = self._preparationToGetValues()
 
+        var_codes_temp = self.getAllSelectedVariableSiteCodes()
+        if len(var_codes_temp) > 1:
+            elog.warning("We do not support adding more then one item to the canvas at this point. We added " + var_codes_temp[0])
         if variable_code is None:
             # no table row selected
             return
@@ -91,8 +94,13 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
 
     def onExport(self, event):
         # var_code = self.Parent.selectedVariables = self.getAllSelectedVariableSiteCodes()
+        var_codes_temp = self.getAllSelectedVariableSiteCodes()
         var_code = self.Parent.selectedVariables = self.getSelectedVariableSiteCode()
-        if var_code > 0:
+        print len(var_codes_temp)
+        if len(var_codes_temp) > 1:
+            elog.warning("We currently only support exporting 1 variable at a time, we are exporting: " + var_codes_temp[0] + " for you")
+        var_code = var_codes_temp[0]
+        if var_code > 0 :
             save = wx.FileDialog(parent=self.GetTopLevelParent(), message="Choose Path",
                                  defaultDir=os.getcwd(),
                                  wildcard="CSV Files (*.csv)|*.csv",

@@ -16,6 +16,7 @@ from coordinator.emitLogging import elog
 from gui.controller import ConsoleOutputCtrl
 # from db.ODM1.WebServiceAPI import WebServiceApi
 from gui.controller.WofSitesCtrl import WofSitesViewerCtrl
+from gui.controller.AddConnectionCtrl import AddConnectionCtrl
 from webservice import wateroneflow
 
 class viewLowerPanel:
@@ -146,6 +147,8 @@ class TimeSeriesTab(wx.Panel):
     def AddConnection(self, event):
 
         params = []
+        #p = self
+        #newConnection = AddConnectionCtrl(p)
 
         while 1:
             dlg = AddConnectionDialog(self, -1, "Sample Dialog", size=(350, 200),
@@ -165,7 +168,6 @@ class TimeSeriesTab(wx.Panel):
             # this does not return until the dialog is closed.
             val = dlg.ShowModal()
 
-
             if val == 5101:
                 # cancel is selected
                 return
@@ -183,7 +185,7 @@ class TimeSeriesTab(wx.Panel):
                                       name=params[4],
                                       user=params[5],
                                       pwd=params[6])
-
+                print self.connection_added_status()
                 if self.connection_added_status():
                     Publisher.sendMessage('getDatabases')
                     return
@@ -580,8 +582,10 @@ class DataSeries(wx.Panel):
                 return
             elif val == 5100:
                 params = dlg.getConnectionParams()
-
+                print len(params)
+                print params[6]
                 dlg.Destroy()
+                pwd = params[6]
 
                 # create the database connection
                 Publisher.sendMessage('DatabaseConnection',
@@ -591,7 +595,7 @@ class DataSeries(wx.Panel):
                                       address = params[3],
                                       name = params[4],
                                       user = params[5],
-                                      pwd = params[6])
+                                      pwd = pwd)
 
                 if self.connection_added_status():
                     Publisher.sendMessage('getDatabases')

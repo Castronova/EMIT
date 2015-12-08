@@ -20,54 +20,35 @@ class PreRunCtrl(viewPreRun):
 
         self._data = None
 
+        # populate outputs table
         self.populateVariableList()
 
+        # initialize bindings for Run, Add, and Cancel
         self.cancel_button.Bind(wx.EVT_BUTTON, self.OnCancel)
         self.run_button.Bind(wx.EVT_BUTTON, self.OnRun)
         self.add_account_button.Bind(wx.EVT_BUTTON, self.OnAddNew)
 
+        # initialize the dialog for adding new users
         self.dlg = self.onAddUser()
 
-        self.accounts = self.loadAccounts()
+        # populate the database_combo control with known databases
+        dbs = self.getDatabases()
+        db_names = [db['name'] for db in dbs.itervalues()]
+        self.database_combo.AppendItems(db_names)
+        self.database_combo.SetSelection(0)
 
-        # Old code
-        # self.dlg = self.summary_page.onAddUser()
-        # self.logfilename = "prerunlog.txt"
-        # self.initBinding()
-        #
-        # # load data
-        # dbs = self.getDatabases()
-        # db_names = [db['name'] for db in dbs.itervalues()]
-        # self.summary_page.databaseCombo.AppendItems(db_names)
-        # self.summary_page.databaseCombo.SetSelection(0)
-        #
-        # # Load account drop down
-        # self.accounts = self.summary_page.loadAccounts()
-        # account_names = [' '.join([affil.person.lastname,'['+affil.organization.code+']']) for affil in self.accounts]
-        # self.summary_page.accountCombo.AppendItems(account_names)
-        # self.summary_page.accountCombo.SetSelection(0)
-        #
-        # # change the selection to the index of the first local db that is found
-        # for i in range(0,len(db_names)):
-        #     if '(local)' in db_names[i]:
-        #         self.summary_page.databaseCombo.SetSelection(i)
+        # populate the account droplist with known users
+        self.accounts = self.loadAccounts()
+        account_names = [' '.join([affil.person.lastname,'['+affil.organization.code+']']) for affil in self.accounts]
+        self.account_combo.AppendItems(account_names)
+        self.account_combo.SetSelection(0)
 
     def loadAccounts(self):
-        # todo: get path from environment variables
-        currentdir = os.path.dirname(os.path.abspath(__file__))  # Get the directory
         known_users = []
-        # with open(os.path.abspath(os.path.join(currentdir, '../../app_data/configuration/users.pkl')),'rb') as f:
-        #     users.extend(dill.load(f))
-
-        # todo: get from environments
-        # build affiliation/person/org objects from the users.yaml file
-        # with open(os.path.abspath(os.path.join(currentdir, '../../app_data/configuration/users.json')),'r') as f:
-
         userjson = env_vars.USER_JSON
         elog.debug('userjson ' + userjson)
         with open(userjson,'r') as f:
             known_users.extend(Users.BuildAffiliationfromJSON(f.read()))
-
         return known_users
 
     def populateVariableList(self):
@@ -107,43 +88,19 @@ class PreRunCtrl(viewPreRun):
             self.autoSizeColumns()
             self.alternateRowColor()
 
-
-        #     # build checkbox elements for each output exchange item found above
-        #     y_pos = 30
-        #     for key, value in self.output_name_list.iteritems():
-        #         wx.StaticText(scrollWin, id=wx.ID_ANY, label=key, pos=(30, y_pos))
-        #         y_pos += 20
-        #
-        #         for i in value:
-        #             # todo: cb_id should be modelID_itemID to provide easy lookup in engine.
-        #             cb_id = key + '_' + i
-        #             cb = wx.CheckBox(scrollWin, id=wx.ID_ANY, label=i, pos=(50, y_pos), name=cb_id)
-        #             cb.SetValue(True)
-        #             y_pos += 20
-        #             self.cb_list.append(cb)
-
-    # def initBinding(self):
-    #     self.summary_page.cancelButton.Bind(wx.EVT_BUTTON, self.OnCancel)
-    #     self.summary_page.runButton.Bind(wx.EVT_BUTTON, self.OnRun)
-    #     self.summary_page.addAccountButton.Bind(wx.EVT_BUTTON, self.OnAddNew)
-    #     self.dlg.okbutton.Bind(wx.EVT_BUTTON, self.OnOkButton)
-
     def OnCancel(self, e):
         self.Close(True)
 
     def OnRun(self, e):
 
-        # fixme: this doesn't look like it is setting anything in the engine.
-        # send database info into the engine
+        # get data to send to the engine
         name = self.simulation_name_textbox.GetValue()
         db = self.database_combo.GetValue()
         user_name = self.account_combo.GetValue()
-
-        # todo: pass simulation name, database id, and user info into the engine
-        datasets = self.GetDataToSave()
+        datasets = self.getSelectedItems()
 
         # get the user account from selected user_name
-        user_info = None
+        user_info_json = None
         for affil in self.accounts:
             if affil.ID() == user_name:
                 user_info_json = affil.toJSON()
@@ -151,10 +108,12 @@ class PreRunCtrl(viewPreRun):
         # todo: check all constraints before executing a simulation
         # raise exceptions before executing the simulation
         if user_info_json is None:
-            raise Exception('Cannot execute simulation if no user account is provided')
+            elog.critical('Cannot execute simulation if no user account is provided')
+            return
+
+        # set a default simulation name if none is provided
         if name.strip() == '':
             name = "Simulation_run_" + time.strftime('%m-%d-%Y')
-            # raise Exception('Cannot execute simulation if no simulation name is provided')
 
         # build kwargs to pass to engineAccessors
         kwargs = dict(simulationName=name, dbName=db, user_json=user_info_json, datasets=datasets)
@@ -174,29 +133,6 @@ class PreRunCtrl(viewPreRun):
 
         return selected
 
-
-    def GetDataToSave(self):
-
-        # if len(self.data_page.cb_list) < 1:
-        #     return
-        selected = self.getSelectedItems()
-        print "self._data: " + str(self._data)
-        print "selected: " + str(selected)
-        if len(selected) < 1:
-            elog.info("Nothing was selected")
-            return
-        else:
-            # eitems = {}
-            return selected
-            # model_item_tuples = [(c.GetName().split('_')) for c in self.data_page.cb_list if c.GetValue()]
-
-            # for model, item in model_item_tuples:
-            #     if model not in eitems.keys():
-            #         eitems[model] = [item]
-            #     else:
-            #         eitems[model].append(item)
-            # return eitems
-
     def getDatabases(self):
         '''
         Queries the engine for the known databases
@@ -211,64 +147,60 @@ class PreRunCtrl(viewPreRun):
         self.dlg.CenterOnScreen()
         self.dlg.ShowModal()
 
-    def OnOkButton(self, event):
+    # def OnOkButton(self, event):
+    #
+    #     usersjson = env_vars.USERS_JSON
+    #     with open(usersjson, 'a') as f:
+    #         self.accountinfo = self.dlg.GetTextBoxValues()
+    #         accounttxt = "[person]\n" \
+    #                      "firstname = " + self.accountinfo[0] + "\n" \
+    #                      + "lastname = " + self.accountinfo[1] + "\n" \
+    #                      + "organizationcode = " + self.accountinfo[2] + "\n" \
+    #                      + "phone = " + self.accountinfo[3] + "\n" \
+    #                      + "email = " + self.accountinfo[4] + "\n" \
+    #                      + "address = " + self.accountinfo[5] + "\n" \
+    #                      + "start_date = " + self.accountinfo[6] + "\n" \
+    #                      + "\n"
+    #     self.RefreshCombo()
+    #
+    #     file.write(accounttxt)
+    #     file.close()
+    #     self.dlg.Close(True)
 
-        # currentdir = os.path.dirname(os.path.abspath(__file__))
-        # connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/preferences'))
-        # file = open(connections_txt, 'a')
+    # def RefreshCombo(self):
+    #     # Simply appends the item to the combobox
+    #     self.summary_page.accountCombo.AppendItems([self.accountinfo[1]])
 
-        usersjson = env_vars.USERS_JSON
-        with open(usersjson, 'a') as f:
-            self.accountinfo = self.dlg.GetTextBoxValues()
-            accounttxt = "[person]\n" \
-                         "firstname = " + self.accountinfo[0] + "\n" \
-                         + "lastname = " + self.accountinfo[1] + "\n" \
-                         + "organizationcode = " + self.accountinfo[2] + "\n" \
-                         + "phone = " + self.accountinfo[3] + "\n" \
-                         + "email = " + self.accountinfo[4] + "\n" \
-                         + "address = " + self.accountinfo[5] + "\n" \
-                         + "start_date = " + self.accountinfo[6] + "\n" \
-                         + "\n"
-        self.RefreshCombo()
-
-        file.write(accounttxt)
-        file.close()
-        self.dlg.Close(True)
-
-    def RefreshCombo(self):
-        # Simply appends the item to the combobox
-        self.summary_page.accountCombo.AppendItems([self.accountinfo[1]])
-
-    def LogSimulation(self):
-        currentdir = os.path.dirname(os.path.abspath(__file__))
-        connections_txt = os.path.abspath(os.path.join(currentdir, '../../log/' + self.logfilename))
-        file = open(connections_txt, 'a')
-        loginfo = self.summary_page.GetLogValues()
-        logtxt = "[Simulation]\n" + \
-                 "Simulation Name = " + loginfo[0] + "\n" + \
-                 "Database = " + loginfo[1] + "\n" + \
-                 "User = " + loginfo[2] + "\n" +\
-                 "Date = " + time.strftime("%m/%d/%Y") + "\n" + \
-                 "\n\n"
-        file.write(logtxt)
-        file.close()
-
-    def CheckSimulationName(self, simname):
-        filepath = self.CreatePreRunLogFile()
-        file = open(filepath, 'r')
-        if simname in file.read():
-            file.close()
-            return True
-        else:
-            file.close()
-            return False
-
-    def CreatePreRunLogFile(self):
-        currentdir = os.path.dirname(os.path.abspath(__file__))
-        filepath = os.path.abspath(os.path.join(currentdir, '../../log/' + self.logfilename))
-        if os.path.exists(filepath):
-            return filepath
-        else:
-            file = open(filepath, 'w')
-            file.close()
-            return filepath
+    # def LogSimulation(self):
+    #     currentdir = os.path.dirname(os.path.abspath(__file__))
+    #     connections_txt = os.path.abspath(os.path.join(currentdir, '../../log/' + self.logfilename))
+    #     file = open(connections_txt, 'a')
+    #     loginfo = self.summary_page.GetLogValues()
+    #     logtxt = "[Simulation]\n" + \
+    #              "Simulation Name = " + loginfo[0] + "\n" + \
+    #              "Database = " + loginfo[1] + "\n" + \
+    #              "User = " + loginfo[2] + "\n" +\
+    #              "Date = " + time.strftime("%m/%d/%Y") + "\n" + \
+    #              "\n\n"
+    #     file.write(logtxt)
+    #     file.close()
+    #
+    # def CheckSimulationName(self, simname):
+    #     filepath = self.CreatePreRunLogFile()
+    #     file = open(filepath, 'r')
+    #     if simname in file.read():
+    #         file.close()
+    #         return True
+    #     else:
+    #         file.close()
+    #         return False
+    #
+    # def CreatePreRunLogFile(self):
+    #     currentdir = os.path.dirname(os.path.abspath(__file__))
+    #     filepath = os.path.abspath(os.path.join(currentdir, '../../log/' + self.logfilename))
+    #     if os.path.exists(filepath):
+    #         return filepath
+    #     else:
+    #         file = open(filepath, 'w')
+    #         file.close()
+    #         return filepath

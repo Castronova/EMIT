@@ -13,7 +13,7 @@ from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin, CheckListCtrlMixin
 
 class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin, CheckListCtrlMixin):
     def __init__(self, parent):
-        wx.ListCtrl.__init__(self, parent, -1, size=(545, 140), style=wx.LC_REPORT)
+        wx.ListCtrl.__init__(self, parent, -1, size=(545, 140), style=wx.LC_REPORT | wx.VSCROLL)
         ListCtrlAutoWidthMixin.__init__(self)
         CheckListCtrlMixin.__init__(self)
 
@@ -22,14 +22,14 @@ class viewPreRun(wx.Frame):
         wx.Frame.__init__(self, parent=parent, title="Pre Run", size=(400, 300),
                           style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
+        # define top and bottom panels
         panel = wx.Panel(self)
         top_panel = wx.Panel(panel)
         lower_panel = wx.Panel(panel)
 
         grid_bag_sizer = wx.GridBagSizer(vgap=5, hgap=5)
 
-        top_panel.SetBackgroundColour("#AABBCC")
-
+        # build top panel
         #  Creating components for the top panel
         self.simulation_name_static_text = wx.StaticText(top_panel, label="Simulation Name:")
         self.simulation_name_textbox = wx.TextCtrl(top_panel)
@@ -53,27 +53,20 @@ class viewPreRun(wx.Frame):
         grid_bag_sizer.Add(self.cancel_button, pos=(4, 2), flag=wx.BOTTOM | wx.RIGHT, border=5)
 
         self.run_button.SetDefault()
-
-        # top panel uses grid bag sizer
         top_panel.SetSizer(grid_bag_sizer)
 
-        lower_panel.SetBackgroundColour("#CCBBAA")
-
-
-        hbox_low_panel = wx.BoxSizer(wx.HORIZONTAL)
-
-        # Build time series table
+        # build lower panel
+        lower_grid_bag_sizer = wx.GridBagSizer(vgap=5, hgap=5)
+        lower_panel_title = wx.StaticText(lower_panel, label="Select Outputs to Save:")
         self.variableList = CheckListCtrl(lower_panel)
-        # for i in range(len(table_columns)):
-        #     self.variableList.InsertColumn(i, str(table_columns[i]))
-
-        hbox_low_panel.Add(self.variableList, 1, wx.EXPAND | wx.ALL, 2)
-        lower_panel.SetSizer(hbox_low_panel)
+        lower_grid_bag_sizer.Add(lower_panel_title, pos=(0, 0), flag=wx.LEFT, border=10)
+        lower_grid_bag_sizer.Add(self.variableList, pos=(1, 0), span=(3,3), flag=wx.CENTER, border=10)
+        lower_panel.SetSizer(lower_grid_bag_sizer)
 
 
         vbox = wx.BoxSizer(wx.VERTICAL)
         vbox.Add(top_panel, 1, wx.EXPAND | wx.ALL, 2)
-        vbox.Add(lower_panel, 1, wx.EXPAND | wx.ALL, 2)
+        vbox.Add(lower_panel, 1, wx.EXPAND | wx.ALL, 5)
 
         panel.SetSizer(vbox)
         self.Show()

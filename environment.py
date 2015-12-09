@@ -1,6 +1,44 @@
 __author__ = 'mike'
 import os, sys
 import ConfigParser
+from api_old.ODMconnection import  dbconnection
+
+
+# This is an interface for
+class ConnectionVars(object):
+    '''
+    implemented as a singleton with 'from environment import con_vars'
+    everything is parsed from
+    '''
+    def __init__(self):
+        currentdir = os.path.dirname(os.path.abspath(__file__))
+        self.connections_path = os.path.abspath(os.path.join(currentdir, './data/connections'))
+        self.Config = ConfigParser.ConfigParser(allow_no_value=True)
+
+    def load_connections(self, ConnPath = None):
+        ConnPath = self.connections_path if ConnPath is None else ConnPath
+
+        self.config = ConfigParser.ConfigParser(allow_no_value=True)
+
+    def Write_New_Connection(self, ValueDic):
+        currentdir = os.path.dirname(os.path.abspath(__file__))
+        self.connections_path = os.path.abspath(os.path.join(currentdir, './data/connections'))
+        f = open(self.connections_path, 'a')
+        db = dbconnection()
+        if db.createConnection(ValueDic[2],ValueDic[3], ValueDic[4], ValueDic[5], ValueDic[6]):
+            f.write("\n")
+            f.write("[connection]\n")
+            f.write("name = " + ValueDic[0] +"\n")
+            f.write("desc = " + ValueDic[1] +"\n")
+            f.write("engine = " + ValueDic[2] +"\n")
+            f.write("address = " + ValueDic[3] +"\n")
+            f.write("db = " + ValueDic[4] +"\n")
+            f.write("user = " + ValueDic[5] +"\n")
+            f.write("pwd = " + ValueDic[6] +"\n")
+            f.close()
+            return True
+        return False
+
 
 # This is an interface for the settings file in the data directory
 class EnvironmentVars(object):

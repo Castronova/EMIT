@@ -14,7 +14,7 @@ import datetime as dt
 class WofSitesViewerCtrl(TimeSeriesPlotView):
     def __init__(self, parent, siteObject):
 
-        table_cols = ["Variable Name", "Unit","Category","Type","Begin Date Time","End Date Time","Description"]
+        table_cols = ["Variable Name", "Unit", "Category", "Type", "Begin Date Time", "End Date Time", "Description"]
         TimeSeriesPlotView.__init__(self, parent, siteObject.site_name, table_cols)
 
         self.siteobject = siteObject

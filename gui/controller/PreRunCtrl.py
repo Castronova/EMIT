@@ -10,8 +10,8 @@ from coordinator.emitLogging import elog
 import coordinator.users as Users
 
 class PreRunCtrl(viewPreRun):
-    def __init__(self):
-        viewPreRun.__init__(self)
+    def __init__(self, parent=None):
+        viewPreRun.__init__(self, parent=parent)
 
         # Defining the table columns
         table_columns = ["Name", "Component"]

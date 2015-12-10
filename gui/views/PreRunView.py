@@ -1,9 +1,7 @@
 __author__ = 'Francisco'
 
 import os
-
 import wx
-
 import coordinator.users as Users
 from coordinator import engineAccessors
 from environment import env_vars
@@ -13,13 +11,13 @@ from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin, CheckListCtrlMixin
 
 class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin, CheckListCtrlMixin):
     def __init__(self, parent):
-        wx.ListCtrl.__init__(self, parent, -1, size=(545, 140), style=wx.LC_REPORT | wx.VSCROLL)
+        wx.ListCtrl.__init__(self, parent, -1, size=(350, 400), style=wx.LC_REPORT)
         ListCtrlAutoWidthMixin.__init__(self)
         CheckListCtrlMixin.__init__(self)
 
 class viewPreRun(wx.Frame):
     def __init__(self, parent=None):                                                     # this style makes the window non-resizable
-        wx.Frame.__init__(self, parent=parent, title="Pre Run", size=(400, 300),
+        wx.Frame.__init__(self, parent=parent, title="Pre Run", size=(405, 375),
                           style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         # define top and bottom panels
@@ -56,17 +54,17 @@ class viewPreRun(wx.Frame):
         top_panel.SetSizer(grid_bag_sizer)
 
         # build lower panel
-        lower_grid_bag_sizer = wx.GridBagSizer(vgap=5, hgap=5)
-        lower_panel_title = wx.StaticText(lower_panel, label="Select Outputs to Save:")
         self.variableList = CheckListCtrl(lower_panel)
-        lower_grid_bag_sizer.Add(lower_panel_title, pos=(0, 0), flag=wx.LEFT, border=10)
-        lower_grid_bag_sizer.Add(self.variableList, pos=(1, 0), span=(3,3), flag=wx.CENTER, border=10)
-        lower_panel.SetSizer(lower_grid_bag_sizer)
+        lower_panel_title = wx.StaticText(lower_panel, label="Select Outputs to Save:")
+        hbox_lower_panel = wx.BoxSizer(wx.VERTICAL)
+        hbox_lower_panel.Add(lower_panel_title, 0, wx.EXPAND | wx.LEFT, 5)
+        hbox_lower_panel.Add(self.variableList, 1, wx.EXPAND | wx.ALL, 2)
+        lower_panel.SetSizer(hbox_lower_panel)
 
 
         vbox = wx.BoxSizer(wx.VERTICAL)
         vbox.Add(top_panel, 1, wx.EXPAND | wx.ALL, 2)
-        vbox.Add(lower_panel, 1, wx.EXPAND | wx.ALL, 5)
+        vbox.Add(lower_panel, 1, wx.EXPAND | wx.ALL, 2)
 
         panel.SetSizer(vbox)
         self.Show()
@@ -229,79 +227,79 @@ class SummaryPage(wx.Panel):
         return loginfo
 
 
-class DataPage(wx.Panel):
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent)
-        scrollWin = wx.ScrolledWindow(self, -1, size=(440, 325))
-        self.cb_list = []
+# class DataPage(wx.Panel):
+#     def __init__(self, parent):
+#         wx.Panel.__init__(self, parent)
+#         scrollWin = wx.ScrolledWindow(self, -1, size=(440, 325))
+#         self.cb_list = []
+#
+#         if len(engineAccessors.getAllLinks()) < 1:
+#             wx.StaticText(scrollWin, id=wx.ID_ANY, label="No links have been added", pos=(10, 10))
+#         else:
+#             wx.StaticText(scrollWin, id=wx.ID_ANY, label="Specify output data sets to be saved", pos=(10, 10))
+#             # query the engine for all output exchange items for each model in each link. store these in a dictionary
+#             model_name_list = []
+#             self.output_name_list = {}
+#             temp_list = []
+#
+#
+#             # compile a list of model ids and names that exist in the configuration
+#             models = {}
+#             links = engineAccessors.getAllLinks()
+#             for link in links:
+#                 s_id = link['source_component_id']
+#                 t_id = link['target_component_id']
+#                 if s_id not in models.keys():
+#                     models[s_id] = link['source_component_name']
+#                 if t_id not in models.keys():
+#                     models[t_id] = link['target_component_name']
+#
+#             # sort models and loop over them to populate checkboxes
+#             for model_id, model_name in sorted(models.items(), key=lambda x: x[1]):
+#                 oei = engineAccessors.getOutputExchangeItems(model_id, returnGeoms=False)
+#                 self.output_name_list[model_name] = [ei['name'] for ei in oei]
+#
+#             # for i in engineAccessors.getAllLinks():
+#             #
+#             #
+#             #
+#             #     # get output exchange items from all source components
+#             #     if i['source_component_name'] not in model_name_list:  # Outputs only
+#             #         model_name_list.append(i['source_component_name'])
+#             #         oei = engineAccessors.getOutputExchangeItems(i['source_component_id'], returnGeoms=False)
+#             #         temp_list = [ei['name'] for ei in oei] #temp_list.append(item['name'])
+#             #         self.output_name_list[i['source_component_name']] = temp_list
+#             #         temp_list = []
+#             #
+#             #     if i['target_component_name'] not in model_name_list:
+#             #         model_name_list.append(i['target_component_name'])
+#             #         for item in engineAccessors.getOutputExchangeItems(i['target_component_id'], returnGeoms=False):
+#             #             temp_list.append(item['name'])
+#             #         self.output_name_list[i['target_component_name']] = temp_list
+#             #         temp_list = []
+#
+#             # build checkbox elements for each output exchange item found above
+#             y_pos = 30
+#             for key, value in self.output_name_list.iteritems():
+#                 wx.StaticText(scrollWin, id=wx.ID_ANY, label=key, pos=(30, y_pos))
+#                 y_pos += 20
+#
+#                 for i in value:
+#                     # todo: cb_id should be modelID_itemID to provide easy lookup in engine.
+#                     cb_id = key + '_' + i
+#                     cb = wx.CheckBox(scrollWin, id=wx.ID_ANY, label=i, pos=(50, y_pos), name=cb_id)
+#                     cb.SetValue(True)
+#                     y_pos += 20
+#                     self.cb_list.append(cb)
+#
+#             scrollWin.SetScrollbars(0, 30, 0, y_pos/30+1)
+#             scrollWin.SetScrollRate(0, 15)  # Scroll speed
 
-        if len(engineAccessors.getAllLinks()) < 1:
-            wx.StaticText(scrollWin, id=wx.ID_ANY, label="No links have been added", pos=(10, 10))
-        else:
-            wx.StaticText(scrollWin, id=wx.ID_ANY, label="Specify output data sets to be saved", pos=(10, 10))
-            # query the engine for all output exchange items for each model in each link. store these in a dictionary
-            model_name_list = []
-            self.output_name_list = {}
-            temp_list = []
 
-
-            # compile a list of model ids and names that exist in the configuration
-            models = {}
-            links = engineAccessors.getAllLinks()
-            for link in links:
-                s_id = link['source_component_id']
-                t_id = link['target_component_id']
-                if s_id not in models.keys():
-                    models[s_id] = link['source_component_name']
-                if t_id not in models.keys():
-                    models[t_id] = link['target_component_name']
-
-            # sort models and loop over them to populate checkboxes
-            for model_id, model_name in sorted(models.items(), key=lambda x: x[1]):
-                oei = engineAccessors.getOutputExchangeItems(model_id, returnGeoms=False)
-                self.output_name_list[model_name] = [ei['name'] for ei in oei]
-
-            # for i in engineAccessors.getAllLinks():
-            #
-            #
-            #
-            #     # get output exchange items from all source components
-            #     if i['source_component_name'] not in model_name_list:  # Outputs only
-            #         model_name_list.append(i['source_component_name'])
-            #         oei = engineAccessors.getOutputExchangeItems(i['source_component_id'], returnGeoms=False)
-            #         temp_list = [ei['name'] for ei in oei] #temp_list.append(item['name'])
-            #         self.output_name_list[i['source_component_name']] = temp_list
-            #         temp_list = []
-            #
-            #     if i['target_component_name'] not in model_name_list:
-            #         model_name_list.append(i['target_component_name'])
-            #         for item in engineAccessors.getOutputExchangeItems(i['target_component_id'], returnGeoms=False):
-            #             temp_list.append(item['name'])
-            #         self.output_name_list[i['target_component_name']] = temp_list
-            #         temp_list = []
-
-            # build checkbox elements for each output exchange item found above
-            y_pos = 30
-            for key, value in self.output_name_list.iteritems():
-                wx.StaticText(scrollWin, id=wx.ID_ANY, label=key, pos=(30, y_pos))
-                y_pos += 20
-
-                for i in value:
-                    # todo: cb_id should be modelID_itemID to provide easy lookup in engine.
-                    cb_id = key + '_' + i
-                    cb = wx.CheckBox(scrollWin, id=wx.ID_ANY, label=i, pos=(50, y_pos), name=cb_id)
-                    cb.SetValue(True)
-                    y_pos += 20
-                    self.cb_list.append(cb)
-
-            scrollWin.SetScrollbars(0, 30, 0, y_pos/30+1)
-            scrollWin.SetScrollRate(0, 15)  # Scroll speed
-
-
-class PageThree(wx.Panel):
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent)
-        t = wx.StaticText(self, -1, "This is a Page Three\nThis is here in case we want to add another tab. ", (60, 60))
+# class PageThree(wx.Panel):
+#     def __init__(self, parent):
+#         wx.Panel.__init__(self, parent)
+#         t = wx.StaticText(self, -1, "This is a Page Three\nThis is here in case we want to add another tab. ", (60, 60))
 
 class AddNewUserDialog(wx.Dialog):
     def __init__(self, parent, id=wx.ID_ANY, title="", size=wx.DefaultSize, pos=wx.DefaultPosition, style=wx.DEFAULT_DIALOG_STYLE):
@@ -426,6 +424,7 @@ class AddNewUserDialog(wx.Dialog):
             self.okbutton.Disable()
         else:
             self.okbutton.Enable()
+        self.firstname = ""
 
     def GetTextBoxValues(self):
         accountinfo = [self.firstnameTextBox.GetValue(), self.lastnameTextBox.GetValue(),

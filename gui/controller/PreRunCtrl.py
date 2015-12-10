@@ -39,7 +39,7 @@ class PreRunCtrl(viewPreRun):
 
         # populate the account droplist with known users
         self.accounts = self.loadAccounts()
-        account_names = [' '.join([affil.person.lastname,'['+affil.organization.code+']']) for affil in self.accounts]
+        account_names = [' '.join([affil.person.lastname, '['+affil.organization.code+']']) for affil in self.accounts]
         self.account_combo.AppendItems(account_names)
         self.account_combo.SetSelection(0)
 
@@ -47,7 +47,7 @@ class PreRunCtrl(viewPreRun):
         known_users = []
         userjson = env_vars.USER_JSON
         elog.debug('userjson ' + userjson)
-        with open(userjson,'r') as f:
+        with open(userjson, 'r') as f:
             known_users.extend(Users.BuildAffiliationfromJSON(f.read()))
         return known_users
 
@@ -126,7 +126,6 @@ class PreRunCtrl(viewPreRun):
     def getSelectedItems(self):
         selected = []
         num = self.variableList.GetItemCount()
-        print "num: " + str(num)
         for i in range(num):
             if self.variableList.IsChecked(i):
                 selected.append(self.variableList.GetItemText(i))

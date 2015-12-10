@@ -49,6 +49,8 @@ class SimulationPlotCtrl(TimeSeriesPlotView):
         self.PlotBtn.Disable()
         self.exportBtn.Disable()
         self.addToCanvasBtn.Disable()
+        self.startDatePicker.Disable()
+        self.endDatePicker.Disable()
 
     def enableBtns(self, event):
         self.PlotBtn.Enable()

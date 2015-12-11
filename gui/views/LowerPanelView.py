@@ -147,9 +147,10 @@ class TimeSeriesTab(wx.Panel):
     def AddConnection(self, event):
 
         params = []
-        #p = self
-        #newConnection = AddConnectionCtrl(p)
+        p = self
+        newConnection = AddConnectionCtrl(p)
 
+        '''
         while 1:
             dlg = AddConnectionDialog(self, -1, "Sample Dialog", size=(350, 200),
                              style=wx.DEFAULT_DIALOG_STYLE,
@@ -191,7 +192,7 @@ class TimeSeriesTab(wx.Panel):
                     return
                 else:
                     wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
-
+            '''
     def getPossibleConnections(self):
         wsdl = {}
         wsdl["Red Butte Creek"] = "http://data.iutahepscor.org/RedButteCreekWOF/cuahsi_1_1.asmx?WSDL"
@@ -557,9 +558,11 @@ class DataSeries(wx.Panel):
     def AddConnection(self, event):
 
         params = []
-
+        p = self
+        newConnection = AddConnectionCtrl(p)
+        """
         while 1:
-            dlg = AddConnectionDialog(self, -1, "Sample Dialog", size=(350, 200),
+            dlg = AddConnectionDialog(self, -1, "Sample Dialog2", size=(350, 200),
                              style=wx.DEFAULT_DIALOG_STYLE,
                              )
             dlg.CenterOnScreen()
@@ -603,7 +606,7 @@ class DataSeries(wx.Panel):
                 else:
 
                     wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
-
+            """
     def load_data(self):
         elog.error('Abstract method. Must be overridden!')
         raise Exception('Abstract method. Must be overridden!')

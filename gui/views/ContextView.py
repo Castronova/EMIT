@@ -187,7 +187,7 @@ class CanvasContextMenu(wx.Menu):
         self.parent.run()
 
     def OnRunModel(self, e):
-        preRunDialog = PreRunCtrl()
+        preRunDialog = PreRunCtrl(self.parent)
         preRunDialog.Show()
 
 

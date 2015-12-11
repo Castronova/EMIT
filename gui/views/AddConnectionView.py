@@ -95,12 +95,12 @@ class AddConnectionView(wx.Frame):
 
         btnsizer = wx.StdDialogButtonSizer()
 
-        self.btnok = wx.Button(self, wx.ID_ANY, label="Ok")
-        btnsizer.AddButton(self.btnok)
+        self.btnok = wx.Button(self, wx.ID_OK)#, label="Ok")
         self.btnok.Disable()
 
-        btn = wx.Button(self, wx.ID_CANCEL)
-        btnsizer.AddButton(btn)
+        self.btn = wx.Button(self, wx.ID_CANCEL)
+        btnsizer.AddButton(self.btn)
+        btnsizer.AddButton(self.btnok)
         btnsizer.Realize()
 
         sizer.Add(btnsizer, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)

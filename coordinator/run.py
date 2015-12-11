@@ -175,8 +175,12 @@ def run_feed_forward(obj, ds=None):
         elog.info('Saving Simulation Results...')
         st = time.time()
 
-        # build an instance of dbv22
-        db = dbv2.connect(ds.session)
+        try:
+            # build an instance of dbv22
+            db = dbv2.connect(ds.session)
+        except Exception, e:
+            elog.error(e)
+            elog.error('An error was encountered when connecting to the database to save the simulation results.')
 
         # insert data!
         for modelid in exec_order:
@@ -192,21 +196,22 @@ def run_feed_forward(obj, ds=None):
             for oei in oeis:
                 items.append(model_inst.outputs()[oei])
 
-            # get config parameters
-            config_params=model_obj.get_config_params()
+            if len(items) > 0:
+                # get config parameters
+                config_params=model_obj.get_config_params()
 
 
-            db.create_simulation(coupledSimulationName=ds.simulationName,
-                                 user_obj=ds.user,
-                                 config_params=config_params,
-                                 ei=items,
-                                 simulation_start = model_inst.simulation_start(),
-                                 simulation_end = model_inst.simulation_end(),
-                                 timestep_value = model_inst.time_step(),
-                                 timestep_unit = 'seconds',
-                                 description = model_inst.description(),
-                                 name = model_inst.name()
-                                 )
+                db.create_simulation(coupledSimulationName=ds.simulationName,
+                                     user_obj=ds.user,
+                                     config_params=config_params,
+                                     ei=items,
+                                     simulation_start = model_inst.simulation_start(),
+                                     simulation_end = model_inst.simulation_end(),
+                                     timestep_value = model_inst.time_step(),
+                                     timestep_unit = 'seconds',
+                                     description = model_inst.description(),
+                                     name = model_inst.name()
+                                     )
 
         # description = config_params['general'][0]['description']
         # simstart = datetime.datetime.strptime(config_params['general'][0]['simulation_start'], '%m/%d/%Y %H:%M:%S' )

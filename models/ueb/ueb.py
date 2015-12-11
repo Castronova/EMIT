@@ -375,83 +375,74 @@ class ueb(feed_forward.Wrapper):
         # self.swe = self.outputs()['Snow Water Equivalent']
         # swit = self.outputs()['Surface Water Input Total']
 
-        # Initialize SiteState
-        SiteState = numpy.zeros((32,))
+        try:
 
-        # loop over all activeCells
-        for i in xrange(len(self.activeCells)):
+            # Initialize SiteState
+            SiteState = numpy.zeros((32,))
 
-            # todo: remove, this is for debugging
-            # if i > 10:
-            #     break
+            # loop over all activeCells
+            for i in xrange(len(self.activeCells)):
 
-            # track grid cell
-            self.C_uebCellY = self.activeCells[i][0]
-            self.C_uebCellX = self.activeCells[i][1]
+                # todo: remove, this is for debugging
+                # if i > 10:
+                #     break
 
-            for s in xrange(32):
-                if self.C_strsvArray.contents[s].svType == 1:
-                    SiteState[s] = self.C_strsvArray.contents[s].svArrayValues[self.C_uebCellY][self.C_uebCellX]
-                else:
-                    SiteState[s] = self.C_strsvArray.contents[s].svdefValue
+                # track grid cell
+                self.C_uebCellY = self.activeCells[i][0]
+                self.C_uebCellX = self.activeCells[i][1]
 
-            # convert SiteState into a ctype
-            C_SiteState = (c_float * len(SiteState))(*SiteState)
+                for s in xrange(32):
+                    if self.C_strsvArray.contents[s].svType == 1:
+                        SiteState[s] = self.C_strsvArray.contents[s].svArrayValues[self.C_uebCellY][self.C_uebCellX]
+                    else:
+                        SiteState[s] = self.C_strsvArray.contents[s].svdefValue
 
-
-            # todo: get all data at beginning of run, then slice as necessary here
-            # get the input data for the current geometry
-            prcp = self.inputs()['Precipitation'].getValues2(geom_idx_start=i, geom_idx_end=i)
-            temp = self.inputs()['Temperature'].getValues2(geom_idx_start=i, geom_idx_end=i)
-
-            # skip calculation if no temperatures are provided for the current point (i.e completely missing data)
-            if max(temp[:-1]) > 0:
-                # set the input data for this geometry
-                for idx in range(len(prcp)):
-                    # set air temperature and precipitation values in tsvarArray (index 0 and 1)
-                    self.C_tsvarArray.contents[0][idx] = temp[idx][0]
-                    self.C_tsvarArray.contents[1][idx] = prcp[idx][0]
-
-                # RUN THE UEB CALCS
-                self.__uebLib.RUNUEB(self.C_tsvarArray, C_SiteState, self.C_parvalArray,
-                                     byref(pointer(self.C_outvarArray)), self.C_ModelStartDate, self.C_ModelStartHour,
-                                     self.C_ModelEndDate, self.C_ModelEndHour, self.C_ModelDt, self.C_ModelUTCOffset)
-
-                # outvararray 70var * numtimesteps
-
-            # set output data
-            numtimesteps = len(self.__swe.getDates2())
-            values = numpy.array(self.C_outvarArray[17][0:numtimesteps])            # convert C_type into numpy array
-            values[numpy.isnan(values)] = self.__swe.noData()                       # set nan values to noData
-            self.__swe.setValuesBySlice(values, geometry_index_slice=(i, i+1, 1))   # set data in wrapper
-
-            values = numpy.array(self.C_outvarArray[25][0:numtimesteps])            # convert C_type into numpy array
-            values[numpy.isnan(values)] = self.__swit.noData()                      # set nan values to noData
-            self.__swit.setValuesBySlice(values, geometry_index_slice=(i, i+1, 1))  # set data in wrapper
+                # convert SiteState into a ctype
+                C_SiteState = (c_float * len(SiteState))(*SiteState)
 
 
-            # if i % round((len(self.activeCells)) / 10) == 0:
-            # print "%d of %d elements complete " % ((i+1), len(self.activeCells))
-            # sys.stdout.flush()
-            elog.info("... %d of %d elements complete " % ((i+1), len(self.activeCells)), overwrite=True)
+                # todo: get all data at beginning of run, then slice as necessary here
+                # get the input data for the current geometry
+                prcp = self.inputs()['Precipitation'].getValues2(geom_idx_start=i, geom_idx_end=i)
+                temp = self.inputs()['Temperature'].getValues2(geom_idx_start=i, geom_idx_end=i)
 
-        # # # todo: set output data (point)
-        # # print 'set output data'
-        #
-        #     # todo: make more efficient
-        #     # write point outputs
-        #     for i in xrange(self.C_npout.value):
-        #         if self.C_uebCellY == self.C_pOut[i].ycoord and self.C_uebCellX == self.C_pOut[i].xcoord:
-        #             print '\n' + 100 *'-'
-        #             print 'Writing Output for Point :  %d, %d' % ( self.C_uebCellX, self.C_uebCellY)
-        #             # print 'Year, Month, Day, Hour, Ta, P, Ws, SWISM, SWIR, errMB '
-        #             for step in xrange(self.numTimeStep):
-        #                 # print '%d %d %d %8.3f %16.6f %16.6f %16.6f %16.6f %16.6f %16.6f' % (self.C_outvarArray[0][step],  self.C_outvarArray[1][step], self.C_outvarArray[2][step], self.C_outvarArray[3][step], self.C_outvarArray[9][step], self.C_outvarArray[10][step],self.C_outvarArray[17][step],self.C_outvarArray[67][step],self.C_outvarArray[68][step], self.C_outvarArray[69][step])
-        #                 print '%d %d %d %8.3f %16.6f %16.6f %16.6f %16.6f' % (self.C_outvarArray[0][step],  self.C_outvarArray[1][step], self.C_outvarArray[2][step], self.C_outvarArray[3][step], self.C_outvarArray[4][step], self.C_outvarArray[5][step],self.C_outvarArray[6][step],self.C_outvarArray[7][step])
-        #
-        #                 if step == 10:
-        #                     print "...\n", 100*'-'
-        #                     break
+                # skip calculation if no temperatures are provided for the current point (i.e completely missing data)
+                if max(temp[:-1]) > 0:
+                    # set the input data for this geometry
+                    for idx in range(len(prcp)):
+                        # set air temperature and precipitation values in tsvarArray (index 0 and 1)
+                        self.C_tsvarArray.contents[0][idx] = temp[idx][0]
+                        self.C_tsvarArray.contents[1][idx] = prcp[idx][0]
+
+                    # RUN THE UEB CALCS
+                    self.__uebLib.RUNUEB(self.C_tsvarArray, C_SiteState, self.C_parvalArray,
+                                         byref(pointer(self.C_outvarArray)), self.C_ModelStartDate, self.C_ModelStartHour,
+                                         self.C_ModelEndDate, self.C_ModelEndHour, self.C_ModelDt, self.C_ModelUTCOffset)
+
+                    # outvararray 70var * numtimesteps
+
+                # set output data
+                numtimesteps = len(self.__swe.getDates2())
+                values = numpy.array(self.C_outvarArray[17][0:numtimesteps])            # convert C_type into numpy array
+                values[numpy.isnan(values)] = self.__swe.noData()                       # set nan values to noData
+                self.__swe.setValuesBySlice(values, geometry_index_slice=(i, i+1, 1))   # set data in wrapper
+
+                values = numpy.array(self.C_outvarArray[25][0:numtimesteps])            # convert C_type into numpy array
+                values[numpy.isnan(values)] = self.__swit.noData()                      # set nan values to noData
+                self.__swit.setValuesBySlice(values, geometry_index_slice=(i, i+1, 1))  # set data in wrapper
+
+
+                # if i % round((len(self.activeCells)) / 10) == 0:
+                # print "%d of %d elements complete " % ((i+1), len(self.activeCells))
+                # sys.stdout.flush()
+                elog.info("... %d of %d elements complete " % ((i+1), len(self.activeCells)), overwrite=True)
+
+        except Exception, e:
+            elog.critical('UEB run failed.')
+            elog.critical(e)
+            return False
+
+
 
     def finish(self):
 

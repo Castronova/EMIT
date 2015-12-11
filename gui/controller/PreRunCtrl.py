@@ -124,14 +124,25 @@ class PreRunCtrl(viewPreRun):
         self.Close()
 
     def getSelectedItems(self):
-        selected = []
+        '''
+        builds a dictionary containing lists of all output variables that have been selected for saving,
+         by component name
+        :return: dictionary of datasets to save
+        '''
+        datasets = {}
         num = self.variableList.GetItemCount()
-        print "num: " + str(num)
         for i in range(num):
-            if self.variableList.IsChecked(i):
-                selected.append(self.variableList.GetItemText(i))
+            # get the component name and add it to the datasets dictionary
+            component_name = self.variableList.GetItemText(i,1)
+            if component_name not in datasets:
+                datasets[component_name] = []
 
-        return selected
+            # add variable if selected
+            if self.variableList.IsChecked(i):
+                variable_name = self.variableList.GetItemText(i,0)
+                datasets[component_name].append(variable_name)
+
+        return datasets
 
     def getDatabases(self):
         '''

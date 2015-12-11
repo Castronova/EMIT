@@ -19,6 +19,14 @@ from db.dbapi_v2 import sqlite
 # from EM.src.api.ODMconnection import dbconnection
 # from ODM2PythonAPI_.src.api.ODM2.services.readService import ReadODM2
 
+import stdlib
+
+from utilities import mdl, gui
+from shapely.geometry import Point
+import random
+from datetime import datetime as dt
+from datetime import timedelta
+from utilities import geometry
 
 class test_sqlite_db(unittest.TestCase):
 
@@ -53,15 +61,19 @@ class test_sqlite_db(unittest.TestCase):
         # connect to each database
         empty_connection = dbconnection.createConnection('sqlite', self.empty_db_path)
         pop_connection = dbconnection.createConnection('sqlite', self.pop_db_path)
+
         self.emptysqlite = sqlite(empty_connection)
         self.popsqlite = sqlite(pop_connection)
         # initialize the in-memory database, loop through each command (skip first and last lines)
         for line in empty_dump_script.split(';\n'):
             # conn.getSession().execute(line)
             self.emptysqlite.write.getSession().execute(line)
-            self.popsqlite.write.getSession().execute(line)
-        for line in populated_dump_script.split(';\n'):
-            self.popsqlite.write.getSession().execute(line)
+
+        # for line in empty_dump_script.split(';\n'):
+        #     self.popsqlite.write.getSession().execute(line)
+
+        # for line in populated_dump_script.split(';\n'):
+        #     self.popsqlite.write.getSession().execute(line)
 
         # connection = dbconnection.createConnection('sqlite', ':memory:')
 
@@ -69,10 +81,10 @@ class test_sqlite_db(unittest.TestCase):
 
 
         # create database connections that will be used in test cases
-        # self.empty_connection = dbconnection.createConnection('sqlite', self.empty_db_path)
+        self.empty_connection = dbconnection.createConnection('sqlite', self.empty_db_path)
 
         # self.pop_connection = dbconnection.createConnection('sqlite', self.pop_db_path)
-        self.pop_connection = self.sqlite.connection
+        # self.pop_connection = self.sqlite.connection
 
 
     #
@@ -245,6 +257,74 @@ class test_sqlite_db(unittest.TestCase):
 
 
 
+    def test_insert_many(self):
+
+        # create an exchange item
+        unit = mdl.create_unit('cubic meters per second')
+        variable = mdl.create_variable('streamflow')
+
+        # create exchange item
+        item = stdlib.ExchangeItem(name='Test', desc='Test Exchange Item', unit=unit, variable=variable)
 
 
+        # set exchange item geometries
+        # coords = [(1,2),(2,3),(3,4)]
+        xcoords = [i for i in range(1000)]
+        ycoords = [i*1.5 for i in range(1000)]
+        geoms = geometry.build_point_geometries(xcoords, ycoords)
+        item.addGeometries2(geoms)
+        self.assertTrue(len(item.getGeometries2()) == len(geoms))
 
+        # set exchange item values
+        start_time = dt.now()
+        end_time = start_time+timedelta(days=2000)
+        time_step = 60*60*24
+        item.initializeDatesValues(start_datetime=start_time, end_datetime=end_time, timestep_in_seconds=time_step)
+        dates = [start_time + i*timedelta(days=1) for i in range(2000)]
+        values = [random.random() for g in geoms]
+
+        for i in range(len(dates)):
+            item.setValuesBySlice(values, time_index_slice=(i,i+1,1))
+
+
+        self.assertTrue(len(item.getDates2()) == len(item.getValues2()))
+        self.assertTrue(len(item.getGeometries2()) == len(item.getValues2()[0]))
+
+        # preferences
+        pref = None
+
+        # config_params
+        config = None
+
+        # list of exchange items
+        ei = [item]
+
+        params = {'general': [{'simulation_end': '03/01/2014 23:00:00',
+                               'simulation_start': '03/01/2014 12:00:00',
+                               'description': 'Some description',
+                               'name': 'test simulation'}],
+                  'model': [{'code': 'TOPMODEL',
+                             'name': 'test model',
+                             'description': 'Some model descipription'}],
+                  'time_step' : [{'abbreviation': 'hr',
+                                'unit_type_cv': 'hour',
+                                'name': 'hours',
+                                'value': '1'}]}
+
+
+        # build user object
+        user_json = open(env_vars.USER_JSON).read()
+        user_obj = user.BuildAffiliationfromJSON(user_json)[0]
+
+        self.emptysqlite.create_simulation(  coupledSimulationName='my simulation',
+                                             user_obj=user_obj,
+                                             config_params=params,
+                                             ei=ei,
+                                             simulation_start = start_time,
+                                             simulation_end = end_time,
+                                             timestep_value = time_step,
+                                             timestep_unit = 'seconds',
+                                             description = 'my description',
+                                             name = 'my test model'
+                                        )
+        print 'done'

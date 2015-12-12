@@ -12,6 +12,7 @@ from gui.controller.SpatialPlotCtrl import LogicSpatialPlot
 # from gui.views.viewLinkSpatialPlot import ViewLinkSpatialPlot
 from coordinator.emitLogging import elog
 from utilities import geometry
+import collections
 
 LinkUpdatedEvent, EVT_LINKUPDATED = ne.NewEvent()
 
@@ -35,13 +36,10 @@ class LinkViewCtrl(LinkView):
 
         self.__link_source_id = self.output_component['id']
         self.__link_target_id = self.input_component['id']
-        self.__links = {}
-        # self.__links = []
+        self.__links = collections.OrderedDict()
         self.link_obj_hit = False
 
-        #  Loaded twice for when links go both ways
         self.OnStartUp(self.output_component, self.input_component)
-        # self.OnStartUp(self.input_component, self.output_component)
 
         self.InitBindings()
 
@@ -203,8 +201,6 @@ class LinkViewCtrl(LinkView):
             return
 
         # get the link id
-        # selection = self.LinkNameListBox.GetStringSelection()
-        # linkid = selection.split('|')[0].strip()
         linkid = self.getSelectedLinkId()
 
         self.links_to_delete.append(linkid)
@@ -225,7 +221,7 @@ class LinkViewCtrl(LinkView):
 
     def onNewButton(self, event):
 
-        # set the exchange item values
+        # set the exchange item values to ---
         self.InputComboBox.SetSelection(0)
         self.OutputComboBox.SetSelection(0)
 
@@ -248,8 +244,8 @@ class LinkViewCtrl(LinkView):
 
         self.OnChange(None)
 
-        # self.outputLabel.SetLabel("Output of " + self.GetModelFrom())
-        # self.inputLabel.SetLabel("Input of " + self.GetModelTo())
+        self.outputLabel.SetLabel("Output of " + self.GetModelFrom())
+        self.inputLabel.SetLabel("Input of " + self.GetModelTo())
 
     def OnPlot(self, event):
         '''__init__(self, Window parent, int id=-1, String title=EmptyString,
@@ -416,8 +412,16 @@ class LinkViewCtrl(LinkView):
         self.InputComboBox.SetItems(['---'] + self.InputComboBoxChoices())
         self.OutputComboBox.SetItems(['---'] + self.OutputComboBoxChoices())
 
+        links = []
+        x = engine.getLinksBtwnModels(component1['id'], component2['id'])
+        y = engine.getLinksBtwnModels(component2['id'], component1['id'])
+        if x:
+            for l in x:
+                links.append(l)
+        if y:
+            for l in y:
+                links.append(l)
 
-        links = engine.getLinksBtwnModels(component1['id'], component2['id'])
         if links:
             for l in links:
                 link = LinkInfo(l['source_item'],
@@ -443,17 +447,13 @@ class LinkViewCtrl(LinkView):
         self.InputComboBox.SetSelection(0)
         self.OutputComboBox.SetSelection(0)
 
-        # set the selection to the first link
-        selected = self.LinkNameListBox.GetStringSelection()
-        selected_id = selected.split('|')[0].strip()
-        if selected != '':
-            try:
-                l = self.__links[selected_id]
-                self.OutputComboBox.SetSelection(self.OutputComboBoxChoices().index(l.oei) + 1)
-                self.InputComboBox.SetSelection(self.InputComboBoxChoices().index(l.iei) + 1)
-            except:
-                elog.debug("Error here")
-                print "Error happened here"
+        # # set the selection to the first link
+        # selected = self.LinkNameListBox.GetStringSelection()
+        # selected_id = selected.split('|')[0].strip()
+        # if selected != '':
+        #     l = self.__links[selected_id]
+        #     self.OutputComboBox.SetSelection(self.OutputComboBoxChoices().index(l.oei) + 1)
+        #     self.InputComboBox.SetSelection(self.InputComboBoxChoices().index(l.iei) + 1)
 
     def OnSwap(self, event):
         try:
@@ -479,6 +479,7 @@ class LinkViewCtrl(LinkView):
         self.OutputComboBox.SetItems(['---'] + self.OutputComboBoxChoices())
         self.InputComboBox.SetSelection(0)
         self.OutputComboBox.SetSelection(0)
+
 
         self.onNewButton(1)
 

@@ -9,12 +9,12 @@ from transform.space import *
 import coordinator.engineAccessors as engine
 import sys
 
-class ViewLink(wx.Frame):
+class LinkView(wx.Frame):
     def __init__(self, parent, output, input):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=wx.EmptyString, pos=wx.DefaultPosition,
                           size=wx.Size(700, 625),
                           style=wx.DEFAULT_FRAME_STYLE | wx.FRAME_FLOAT_ON_PARENT
-                          ^(wx.RESIZE_BORDER | wx.MINIMIZE_BOX | wx.MAXIMIZE_BOX))
+                                                         ^ (wx.RESIZE_BORDER | wx.MINIMIZE_BOX | wx.MAXIMIZE_BOX))
 
         if sys.platform == 'darwin':
             self.SetSize((700, 520))

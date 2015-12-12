@@ -20,7 +20,7 @@ from utilities.threading import EVT_CREATE_BOX, EVT_UPDATE_CONSOLE, ThreadManage
 from gui.views.CanvasView import ViewCanvas
 import gui.controller.CanvasObjectsCtrl as LogicCanvasObjects
 from gui.controller.CanvasObjectsCtrl import SmoothLineWithArrow, ModelBox
-from gui.controller.LinkCtrl import LogicLink
+from gui.controller.LinkCtrl import LinkViewCtrl
 import coordinator.engineAccessors as engine
 import utilities.db as dbUtilities
 import coordinator.events as engineEvent
@@ -448,7 +448,7 @@ class LogicCanvas(ViewCanvas):
         if len(self.links) > 1:
             bidirectional = self.CheckIfBidirectionalLink(r1.ID, r2.ID)
 
-        linkstart = LogicLink(self.FloatCanvas, from_model, to_model, bidirectional)
+        linkstart = LinkViewCtrl(self.FloatCanvas, from_model, to_model, bidirectional)
         linkstart.Show()
 
     def CheckIfBidirectionalLink(self, id1, id2):

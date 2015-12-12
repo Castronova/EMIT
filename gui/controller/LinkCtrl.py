@@ -44,7 +44,10 @@ class LogicLink(ViewLink):
         self.OnStartUp(self.input_component, self.output_component)
         self.InitBindings()
 
-        self.__checkbox_states = [None,None]
+        self.__checkbox_states = [None, None]
+
+        #  holds the links that will be deleted when deleting->save and close
+        self.links_to_delete = []
 
 
     def InitBindings(self):
@@ -329,6 +332,7 @@ class LogicLink(ViewLink):
             return None
 
     def OnDelete(self, event):
+        #  Links are placed in a queue that will be deleted permanently when clicking on save and close.
 
         if self.LinkNameListBox.GetSelection() < 0:
             elog.info("Please select a link to delete")
@@ -337,19 +341,11 @@ class LogicLink(ViewLink):
         # get the link id
         selection = self.LinkNameListBox.GetStringSelection()
         linkid = selection.split('|')[0].strip()
-        success = engine.removeLinkById(linkid)
 
-        if success:
+        self.links_to_delete.append(linkid)
 
-            # remove the link name from the links list box
-            index = self.LinkNameListBox.GetSelection()
-            self.LinkNameListBox.Delete(index)
-
-            # remove link from __links list so that it isn't repopulated on page refresh
-            self.__links.pop(index)
-        else:
-            elog.error('An error was encountered when attempting to remove link %s' % linkid)
-
+        index = self.LinkNameListBox.GetSelection()
+        self.LinkNameListBox.Delete(index)
 
     def populate_output_metadata(self, l):
 
@@ -481,6 +477,11 @@ class LogicLink(ViewLink):
         Saves all link objects to the engine and then closes the link creation window
         """
 
+        # Deleting the links that are in the delete queue
+        for link_id in self.links_to_delete:
+            engine.removeLinkById(link_id)
+            self.__links.pop(link_id)
+
         warnings = []
         errors = []
         for l in self.__links.values():
@@ -502,9 +503,9 @@ class LogicLink(ViewLink):
                     engine.removeLinkById(l.uid)
 
                     # add a new link inside the engine
-                    linkid = engine.addLink(**kwargs)
+                    link_id = engine.addLink(**kwargs)
 
-                    if linkid:
+                    if link_id:
                         l.saved = True
 
                     wx.PostEvent(self, LinkUpdatedEvent())

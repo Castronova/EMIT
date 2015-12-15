@@ -149,6 +149,18 @@ class LinkViewCtrl(LinkView):
             self.populate_output_metadata(self.__selected_link)
             self.populate_input_metadata(self.__selected_link)
 
+            #  Setting the labels that indicate which metadata is input and output
+            if self.input_component['id'] == self.__selected_link.target_id:
+                self.inputLabel.SetLabel("Input of: " + str(self.input_component['name']))
+            else:
+                self.inputLabel.SetLabel("Input of: " + str(self.output_component['name']))
+
+            if self.output_component['id'] == self.__selected_link.source_id:
+                self.outputLabel.SetLabel("Output of: " + str(self.output_component['name']))
+            else:
+                self.outputLabel.SetLabel("Output of: " + str(self.input_component['name']))
+
+
         else:
             # deactivate controls if nothing is selected
             self.activateControls(False)

@@ -432,9 +432,24 @@ class TimeSeriesContextMenu(ContextMenu):
     def __init__(self, parent):
         super(TimeSeriesContextMenu, self).__init__(parent)
 
+        # deactivate menu items
+        menuID = self.FindItem('Delete')
+        self.FindItemById(menuID).Enable(False)
+
+
 class SimulationContextMenu(ContextMenu):
     def __init__(self, parent):
         super(SimulationContextMenu, self).__init__(parent)
+
+        # deactivate menu items
+        menuID = self.FindItem('Add')
+        self.FindItemById(menuID).Enable(False)
+
+        menuID = self.FindItem('Delete')
+        self.FindItemById(menuID).Enable(False)
+
+        menuID = self.FindItem('Export')
+        self.FindItemById(menuID).Enable(False)
 
     def getData(self,simulationID):
 

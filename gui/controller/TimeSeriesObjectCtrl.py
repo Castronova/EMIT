@@ -20,13 +20,16 @@ class TimeSeriesObjectCtrl(TimeSeriesPlotView):
 
         self.parentClass = parentClass  # used to access methods from parent class
         self.SetTitle("TimeSeries Viewer")
-
+        self.endDatePicker.Disable()
+        self.startDatePicker.Disable()
         self.Bind(wx.EVT_DATE_CHANGED, self.setstartDate, self.startDatePicker)
         self.Bind(wx.EVT_DATE_CHANGED, self.setEndDate, self.endDatePicker)
         self.Bind(wx.EVT_BUTTON, self.onExport, self.exportBtn)
         self.Bind(wx.EVT_BUTTON, self.addToCanvas, self.addToCanvasBtn)
         self.Bind(wx.EVT_BUTTON, self.previewPlot, self.PlotBtn)
-
+        self.disableBtns(None)
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.enableBtns)
+        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.disableBtns)
         self.autoSizeColumns()
         self._objects = None
 
@@ -40,6 +43,16 @@ class TimeSeriesObjectCtrl(TimeSeriesPlotView):
             self.autoSizeColumns()
         else:
             elog.debug("Column list received is empty")
+
+    def disableBtns(self, event):
+        self.exportBtn.Disable()
+        self.addToCanvasBtn.Disable()
+        self.PlotBtn.Disable()
+
+    def enableBtns(self, event):
+        print "hello"
+        self.exportBtn.Enable()
+        self.PlotBtn.Enable()
 
     def getSelectedObject(self):
         id = self.getSelectedId()

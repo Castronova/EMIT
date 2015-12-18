@@ -1,6 +1,5 @@
 __author__ = 'francisco'
 
-# from gui.views.TimeSeriesObjectViewer import TimeSeriesObjectViewer
 from gui.views.TimeSeriesPlotView import TimeSeriesPlotView
 from coordinator.emitLogging import elog
 import wx
@@ -12,14 +11,12 @@ class TimeSeriesObjectCtrl(TimeSeriesPlotView):
 
     def __init__(self, parent=None, parentClass=None, timeseries_variables={}):
 
-        table_cols = ["Result ID", "Feature Code","Variable","Unit","Type","Organization","Date Created"]
-        TimeSeriesPlotView.__init__(self, parent, "No Title", table_cols)
-        # TimeSeriesObjectViewer.__init__(self, parent=parent)
+        table_cols = ["Result ID", "Feature Code", "Variable", "Unit", "Type", "Organization", "Date Created"]
+        TimeSeriesPlotView.__init__(self, parent, "TimeSeries Viewer", table_cols)
 
         self.populateVariableList(timeseries_variables)
 
         self.parentClass = parentClass  # used to access methods from parent class
-        self.SetTitle("TimeSeries Viewer")
         self.endDatePicker.Disable()
         self.startDatePicker.Disable()
         self.Bind(wx.EVT_DATE_CHANGED, self.setstartDate, self.startDatePicker)
@@ -34,7 +31,7 @@ class TimeSeriesObjectCtrl(TimeSeriesPlotView):
         self._objects = None
 
     def addToCanvas(self, event):
-        pass
+        elog.info("Add to canvas has not been implementd")  # Remove this print when it is implemented
 
     def createColumns(self, column_name_list):
         if column_name_list is not None:
@@ -50,15 +47,15 @@ class TimeSeriesObjectCtrl(TimeSeriesPlotView):
         self.PlotBtn.Disable()
 
     def enableBtns(self, event):
-        print "hello"
         self.exportBtn.Enable()
         self.PlotBtn.Enable()
 
-    def getSelectedObject(self):
+    def getSelectedRow(self):
         id = self.getSelectedId()
-        for object in self._objects:
-            if id == object.resultid:
-                return object
+        row = self._data[id]
+        row.insert(0, id)  # Attaching the id to return value
+        return row
+
 
     def getSelectedId(self):
         num = self.variableList.GetItemCount()
@@ -78,20 +75,20 @@ class TimeSeriesObjectCtrl(TimeSeriesPlotView):
                 path += '.csv'
             file = open(path, 'w')
             writer = csv.writer(file, delimiter=',')
-            varInfo = self.getSelectedObject()
+            varInfo = self.getSelectedRow()
             id = self.getSelectedId()
             date_time_object, values, resojb = self.parentClass.getData(resultID=id)
 
             writer.writerow(["#---Disclaimer: "])
             writer.writerow(["#"])
-            writer.writerow(["Date Created: %s" % str(varInfo.date_created.strftime("%m/%d/%Y"))])
+            writer.writerow(["Date Created: %s" % str(varInfo[-1].strftime("%m/%d/%Y"))])
             writer.writerow(["Date Exported: %s" % str(time.strftime("%m/%d/%Y"))])
             writer.writerow(["ID: %s" % str(id)])
-            writer.writerow(["Feature Code: %s" % str(varInfo.featurecode)])
-            writer.writerow(["Variable Name: %s" % str(varInfo.variable)])
-            writer.writerow(["Unit: %s" % str(varInfo.unit)])
-            writer.writerow(["Type: %s" % str(varInfo.type)])
-            writer.writerow(["Organization: %s" % str(varInfo.organization)])
+            writer.writerow(["Feature Code: %s" % str(varInfo[1])])
+            writer.writerow(["Variable Name: %s" % str(varInfo[2])])
+            writer.writerow(["Unit: %s" % str(varInfo[3])])
+            writer.writerow(["Type: %s" % str(varInfo[4])])
+            writer.writerow(["Organization: %s" % str(varInfo[5])])
             writer.writerow(["#"])
             writer.writerow(["#---End Disclaimer"])
             writer.writerow(["#"])
@@ -123,7 +120,6 @@ class TimeSeriesObjectCtrl(TimeSeriesPlotView):
     def plotGraph(self, data, var_name, yunits=None, no_data=None):
         self.plot.clearPlot()
         if data is not None:
-            # self.plot.setAxisLabel(" ", yunits)
             self.plot.plotData(data, str(var_name), no_data, yunits)
         else:
             elog.info("Received no data to plot")

@@ -93,10 +93,8 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
         return temp
 
     def onExport(self, event):
-        # var_code = self.Parent.selectedVariables = self.getAllSelectedVariableSiteCodes()
         var_codes_temp = self.getAllSelectedVariableSiteCodes()
         var_code = self.Parent.selectedVariables = self.getSelectedVariableSiteCode()
-        print len(var_codes_temp)
         if len(var_codes_temp) > 1:
             elog.warning("We currently only support exporting 1 variable at a time, we are exporting: " + var_codes_temp[0] + " for you")
         var_code = var_codes_temp[0]
@@ -163,8 +161,6 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
         for i in range(num):
             if self.variableList.IsSelected(i):
                 vars.append(self.variableList.GetItemText(i))
-                # checkedVar = self.variableList.GetItemText(i)
-                # return checkedVar
         return vars
 
     def getSelectedVariableCode(self):
@@ -184,7 +180,6 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
             if self.variableList.IsSelected(i):
                 v_name = self.variableList.GetItemText(i)
                 sites.append(self.getSiteCodeByVariableName(v_name))
-                # return self.getSiteCodeByVariableName(v_name)
         return sites
 
     def getSelectedVariableSiteCode(self):
@@ -262,19 +257,19 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
         self.autoSizeColumns()
         self.alternateRowColor()
 
-    def build_timeseries_table(self):
-
-        # Column names
-        # self.variableList = CheckListCtrl(lowerpanel)
-        self.variableList.InsertColumn(0, "Variable Name")
-        self.variableList.InsertColumn(1, "Unit")
-        self.variableList.InsertColumn(2, "Category")
-        self.variableList.InsertColumn(3, "Type")
-        self.variableList.InsertColumn(4, "Begin Date Time")
-        self.variableList.InsertColumn(5, "End Date Time")
-        self.variableList.InsertColumn(6, "Description")
-
-        self.refresh_timeseries_table()
+    # def build_timeseries_table(self):
+    #
+    #     # Column names
+    #     # self.variableList = CheckListCtrl(lowerpanel)
+    #     self.variableList.InsertColumn(0, "Variable Name")
+    #     self.variableList.InsertColumn(1, "Unit")
+    #     self.variableList.InsertColumn(2, "Category")
+    #     self.variableList.InsertColumn(3, "Type")
+    #     self.variableList.InsertColumn(4, "Begin Date Time")
+    #     self.variableList.InsertColumn(5, "End Date Time")
+    #     self.variableList.InsertColumn(6, "Description")
+    #
+    #     self.refresh_timeseries_table()
 
 
 

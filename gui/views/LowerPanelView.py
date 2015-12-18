@@ -211,13 +211,11 @@ class TimeSeriesTab(wx.Panel):
 
     def getParsedValues(self, siteObject, startDate, endDate):
         values = self.api.parseValues(siteObject.site_code, self.selectedVariables, startDate, endDate)
-        elog.info("AddToCanvas has not been implemented.  The above variable value contains the data.")
         return values
 
     def setup_wof_table(self, api):
         self.wofsites = api.getSites()
         api.network_code = self.wofsites[0].siteInfo.siteCode[0]._network
-        # data = api.getSiteInfo()
         self.table_columns = ["Site Name", "Network", "County", "State", "Site Type", "Site Code"]
         self.m_olvSeries.DefineColumns(self.table_columns)
 

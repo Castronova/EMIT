@@ -222,7 +222,8 @@ class PreRunCtrl(viewPreRun):
 
 
 class AddNewUserDialog(wx.Dialog):
-    def __init__(self, parent, id=wx.ID_ANY, title="", size=wx.DefaultSize, pos=wx.DefaultPosition, style=wx.DEFAULT_DIALOG_STYLE):
+    def __init__(self, parent, id=wx.ID_ANY, title="", size=wx.DefaultSize,
+                 pos=wx.DefaultPosition, style=wx.DEFAULT_DIALOG_STYLE | wx.STAY_ON_TOP):
 
         pre = wx.PreDialog()
         pre.SetExtraStyle(wx.DIALOG_EX_CONTEXTHELP)
@@ -232,6 +233,7 @@ class AddNewUserDialog(wx.Dialog):
         self.parent = parent
 
         self.sizer = wx.GridBagSizer(5, 5)
+        today = wx.DateTime_Now()
 
         #  Static Text
         self.firstname = wx.StaticText(self, label="First Name: ")
@@ -250,7 +252,8 @@ class AddNewUserDialog(wx.Dialog):
         self.phoneTextBox = wx.TextCtrl(self)
         self.emailTextBox = wx.TextCtrl(self)
         self.addressTextBox = wx.TextCtrl(self)
-        self.startdateTextBox = wx.TextCtrl(self)
+        # self.startdateTextBox = wx.TextCtrl(self)
+        self.startDatePicker = wx.DatePickerCtrl(self, id=wx.ID_ANY, dt=today)
 
         #  Static Text
         self.sizer.Add(self.firstname, pos=(1, 0), flag=wx.LEFT, border=15)
@@ -269,7 +272,7 @@ class AddNewUserDialog(wx.Dialog):
         self.sizer.Add(self.phoneTextBox, pos=(4, 1), span=(1, 2), flag=wx.TOP | wx.EXPAND)
         self.sizer.Add(self.emailTextBox, pos=(5, 1), span=(1, 2), flag=wx.TOP | wx.EXPAND)
         self.sizer.Add(self.addressTextBox, pos=(6, 1), span=(1, 2), flag=wx.TOP | wx.EXPAND)
-        self.sizer.Add(self.startdateTextBox, pos=(7, 1), span=(1, 2), flag=wx.TOP | wx.EXPAND)
+        self.sizer.Add(self.startDatePicker, pos=(7, 1), span=(1, 1), flag=wx.TOP | wx.EXPAND)
 
         #  Line Break After all the textboxes
         self.lineBreak = wx.StaticLine(self)
@@ -302,7 +305,7 @@ class AddNewUserDialog(wx.Dialog):
         self.phoneTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
         self.emailTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
         self.addressTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
-        self.startdateTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
+        self.startDatePicker.Bind(wx.EVT_TEXT, self.OnTextEnter)
         self.okbutton.Bind(wx.EVT_BUTTON, self.onOkBtn)
 
     def setvalues(self, first, last, org, phone, email, address, date):
@@ -312,7 +315,7 @@ class AddNewUserDialog(wx.Dialog):
         self.phoneTextBox = phone
         self.emailTextBox = email
         self.addressTextBox = address
-        self.startdateTextBox = date
+        self.startDatePicker = date
 
     def onOkBtn(self, event):
         # This works by reading the user file and getting all the users.
@@ -325,19 +328,11 @@ class AddNewUserDialog(wx.Dialog):
         phone = new_user[3]
         email = new_user[4]
         address = new_user[5]
-        # start_date = new_user[6]
-
-        elog.info("Feature is in repair")
+        start_date = new_user[6]
+        #  The date needs to be converted to a datetime.datetime object
+        start_date = datetime.datetime.strptime(start_date.FormatISOCombined(), "%Y-%m-%dT%H:%M:%S")
 
         # These are only samples for testing
-        # firstname = "Sam"
-        # lastname = "Billy"
-        # organization = "school"
-        # phone = "123456789"
-        # email = "email@email.com"
-        # address = "planet earth"
-        start_date = getTodayDate()  # need a way to validate date is in correct format to convert to datetime object
-        start_date = datetime.datetime.strptime(start_date, "%m/%d/%Y")
         user_json_filepath = env_vars.USER_JSON  # get the file path of the user.json
         person = users.Person(firstname=firstname, lastname=lastname)
 
@@ -376,7 +371,7 @@ class AddNewUserDialog(wx.Dialog):
                         self.phoneTextBox.GetValue() == '' or \
                         self.emailTextBox.GetValue() == '' or \
                         self.addressTextBox.GetValue() == '' or \
-                        self.startdateTextBox.GetValue == '':
+                        self.startDatePicker.GetValue == '':
             self.okbutton.Disable()
         else:
             self.okbutton.Enable()
@@ -385,9 +380,5 @@ class AddNewUserDialog(wx.Dialog):
         accountinfo = [self.firstnameTextBox.GetValue(), self.lastnameTextBox.GetValue(),
                        self.organizationTextBox.GetValue(), self.phoneTextBox.GetValue(),
                        self.emailTextBox.GetValue(), self.addressTextBox.GetValue(),
-                       self.startdateTextBox.GetValue()]
+                       self.startDatePicker.GetValue()]
         return accountinfo
-
-
-def getTodayDate():
-    return time.strftime("%m/%d/%Y")

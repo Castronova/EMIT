@@ -5,6 +5,7 @@ import json
 import copy
 import uuid
 import datetime
+from coordinator.emitLogging import elog
 
 '''
  These are a set of classes for encapsulating user/affiliation data.  This should replace the preferences.txt file and
@@ -47,9 +48,9 @@ class Affiliation(object):
         self.address = address
         self.organization = organization
         self.person = person
-        self.isPrimaryOrganizationContact=isPrimaryOrganizationContact
-        self.affiliationEnd=affiliationEnd
-        self.personLink=personLink
+        self.isPrimaryOrganizationContact = isPrimaryOrganizationContact
+        self.affiliationEnd = affiliationEnd
+        self.personLink = personLink
 
     def ID(self):
         '''
@@ -76,23 +77,23 @@ class Affiliation(object):
 def date_hook(json_dict):
     for (key, value) in json_dict.items():
         try:
-            json_dict[key] = datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S")
+            json_dict[key] = datetime.datetime.strptime(value, "%m/%d/%Y %H:%M:%S")
         except:
-            pass
+            elog.debug("Failed to convert date into datetime object")
     return json_dict
 
 def BuildAffiliationfromJSON(j):
     affiliations = []
 
-    json_dict = json.loads(j, object_hook=date_hook)
-    print json_dict
-    for key, value in json_dict.iteritems():
+    json_dict = json.loads(j, object_hook=date_hook)  # json_dict is a list with dictionaries, like this [{}]
+    for item in json_dict:
+        for key, value in item.iteritems():
 
-        p = Person(**value['person'])
-        o = Organization(**value['organization'])
-        value['affiliation'].update(dict(person=p,organization=o))
-        a = Affiliation(**value['affiliation'])
-        affiliations.append(a)
+            p = Person(**value['person'])
+            o = Organization(**value['organization'])
+            value['affiliation'].update(dict(person=p, organization=o))
+            a = Affiliation(**value['affiliation'])
+            affiliations.append(a)
 
     return affiliations
 

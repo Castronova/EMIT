@@ -7,7 +7,8 @@ import time
 from coordinator import engineAccessors
 from environment import env_vars
 from coordinator.emitLogging import elog
-import coordinator.users as Users
+import coordinator.users as users
+import datetime
 
 class PreRunCtrl(viewPreRun):
     def __init__(self, parent=None):
@@ -45,7 +46,7 @@ class PreRunCtrl(viewPreRun):
         userjson = env_vars.USER_JSON
         elog.debug('userjson ' + userjson)
         with open(userjson, 'r') as f:
-            known_users.extend(Users.BuildAffiliationfromJSON(f.read()))
+            known_users.extend(users.BuildAffiliationfromJSON(f.read()))
         return known_users
 
     def populateVariableList(self):
@@ -337,10 +338,34 @@ class AddNewUserDialog(wx.Dialog):
         # email = new_user[4]
         # address = new_user[5]
         # start_date = new_user[6]
-        # import json
-        #
-        # user_json_filepath = env_vars.USER_JSON  # get the filepath of the user.json
-        elog.info("Feature is in rrepair")
+
+        elog.info("Feature is in repair")
+
+        # These are only samples for testing
+        firstname = "Sam"
+        lastname = "Billy"
+        organization = "school"
+        phone = "123456789"
+        email = "email@email.com"
+        address = "planet earth"
+        start_date = getTodayDate()
+        start_date = datetime.datetime.strptime(start_date, "%m/%d/%Y")
+        user_json_filepath = env_vars.USER_JSON  # get the file path of the user.json
+        person = users.Person(firstname=firstname, lastname=lastname)
+
+        organ = users.Organization(typeCV=organization, name=organization, code=organization)
+
+        affilations = [users.Affiliation(email=email, startDate=start_date,
+                                         organization=organ, person=person,
+                                         phone=phone, address=address)]
+
+        # with open(user_json_filepath, "a") as f:
+        j = {}
+        for a in affilations:
+            affil = a._affilationToDict()
+            j.update(affil)
+
+        print j
 
         self.Close()
 
@@ -362,3 +387,7 @@ class AddNewUserDialog(wx.Dialog):
                        self.emailTextBox.GetValue(), self.addressTextBox.GetValue(),
                        self.startdateTextBox.GetValue()]
         return accountinfo
+
+
+def getTodayDate():
+    return time.strftime("%m/%d/%Y")

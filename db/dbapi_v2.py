@@ -4,7 +4,7 @@ import datetime
 import uuid
 import numpy
 import time
-import pyspatialite.dbapi2 as spatialite
+# import pyspatialite.dbapi2 as spatialite
 import pandas
 
 # This is our API for simulation data that uses the latest ODM2PythonAPI code

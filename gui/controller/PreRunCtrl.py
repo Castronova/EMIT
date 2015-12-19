@@ -36,8 +36,13 @@ class PreRunCtrl(viewPreRun):
         self.database_combo.SetSelection(0)
 
         # populate the account droplist with known users
+        self.refreshUserAccount()
+
+    def refreshUserAccount(self):
+        self.account_combo.Clear()
         self.accounts = self.loadAccounts()
-        account_names = [' '.join([affil.person.lastname, '['+affil.organization.code+']']) for affil in self.accounts]
+        account_names = [' '.join([affil.person.lastname, '[' + affil.organization.code + ']']) for affil in
+                         self.accounts]
         self.account_combo.AppendItems(account_names)
         self.account_combo.SetSelection(0)
 
@@ -219,26 +224,6 @@ class PreRunCtrl(viewPreRun):
 class AddNewUserDialog(wx.Dialog):
     def __init__(self, parent, id=wx.ID_ANY, title="", size=wx.DefaultSize, pos=wx.DefaultPosition, style=wx.DEFAULT_DIALOG_STYLE):
 
-        #  Variables
-        self.parent = ""
-        self.firstname = ""
-        self.firstnameTextBox = ""
-        self.lastname = ""
-        self.lastnameTextBox = ""
-        self.organization = ""
-        self.phone = ""
-        self.phoneTextBox = ""
-        self.email = ""
-        self.emailTextBox = ""
-        self.address = ""
-        self.addressTextBox = ""
-        self.startdate = ""
-        self.startdateTextBox = ""
-        self.whitespace = ""
-        self.okbutton = ""
-        self.cancelButton = ""
-        self.sizer = ""
-
         pre = wx.PreDialog()
         pre.SetExtraStyle(wx.DIALOG_EX_CONTEXTHELP)
         pre.Create(parent, id, title, pos, size, style)
@@ -330,25 +315,28 @@ class AddNewUserDialog(wx.Dialog):
         self.startdateTextBox = date
 
     def onOkBtn(self, event):
-        # new_user = self.GetTextBoxValues()
-        # firstname = new_user[0]
-        # lastname = new_user[1]
-        # organization = new_user[2]
-        # phone = new_user[3]
-        # email = new_user[4]
-        # address = new_user[5]
+        # This works by reading the user file and getting all the users.
+        # Then it writes to the user file with the old users + the new one added.
+
+        new_user = self.GetTextBoxValues()
+        firstname = new_user[0]
+        lastname = new_user[1]
+        organization = new_user[2]
+        phone = new_user[3]
+        email = new_user[4]
+        address = new_user[5]
         # start_date = new_user[6]
 
         elog.info("Feature is in repair")
 
         # These are only samples for testing
-        firstname = "Sam"
-        lastname = "Billy"
-        organization = "school"
-        phone = "123456789"
-        email = "email@email.com"
-        address = "planet earth"
-        start_date = getTodayDate()
+        # firstname = "Sam"
+        # lastname = "Billy"
+        # organization = "school"
+        # phone = "123456789"
+        # email = "email@email.com"
+        # address = "planet earth"
+        start_date = getTodayDate()  # need a way to validate date is in correct format to convert to datetime object
         start_date = datetime.datetime.strptime(start_date, "%m/%d/%Y")
         user_json_filepath = env_vars.USER_JSON  # get the file path of the user.json
         person = users.Person(firstname=firstname, lastname=lastname)
@@ -359,13 +347,25 @@ class AddNewUserDialog(wx.Dialog):
                                          organization=organ, person=person,
                                          phone=phone, address=address)]
 
-        # with open(user_json_filepath, "a") as f:
-        j = {}
-        for a in affilations:
-            affil = a._affilationToDict()
-            j.update(affil)
+        import json
+        with open(user_json_filepath, 'r') as f:
+            previous_user = f.read()
 
-        print j
+        with open(user_json_filepath, 'w') as f:
+            new_user = {}
+            for a in affilations:
+                affil = a._affilationToDict()
+                new_user.update(affil)
+            new_user = json.dumps(new_user, sort_keys=True, indent=4, separators=(',', ': '))
+
+
+            # Removes the last } of previous_user and first { of new_user
+            previous_user = previous_user[:-1]
+            new_user = new_user[1:]
+            f.write(previous_user + ',' + new_user)
+            f.close()
+
+        self.parent.refreshUserAccount()
 
         self.Close()
 

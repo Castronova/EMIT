@@ -77,7 +77,7 @@ class Affiliation(object):
 def date_hook(json_dict):
     for (key, value) in json_dict.items():
         try:
-            json_dict[key] = datetime.datetime.strptime(value, "%m/%d/%Y %H:%M:%S")
+            json_dict[key] = datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S")
         except:
             elog.debug("Failed to convert date into datetime object")
     return json_dict
@@ -86,14 +86,13 @@ def BuildAffiliationfromJSON(j):
     affiliations = []
 
     json_dict = json.loads(j, object_hook=date_hook)  # json_dict is a list with dictionaries, like this [{}]
-    for item in json_dict:
-        for key, value in item.iteritems():
+    for key, value in json_dict.iteritems():
 
-            p = Person(**value['person'])
-            o = Organization(**value['organization'])
-            value['affiliation'].update(dict(person=p, organization=o))
-            a = Affiliation(**value['affiliation'])
-            affiliations.append(a)
+        p = Person(**value['person'])
+        o = Organization(**value['organization'])
+        value['affiliation'].update(dict(person=p, organization=o))
+        a = Affiliation(**value['affiliation'])
+        affiliations.append(a)
 
     return affiliations
 

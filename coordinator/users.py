@@ -85,7 +85,7 @@ def date_hook(json_dict):
 def BuildAffiliationfromJSON(j):
     affiliations = []
 
-    json_dict = json.loads(j, object_hook=date_hook)  # json_dict is a list with dictionaries, like this [{}]
+    json_dict = json.loads(j, object_hook=date_hook)
     for key, value in json_dict.iteritems():
 
         p = Person(**value['person'])

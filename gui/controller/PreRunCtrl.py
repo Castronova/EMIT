@@ -355,8 +355,8 @@ class AddNewUserDialog(wx.Dialog):
 
 
             # Removes the last } of previous_user and first { of new_user
-            previous_user = previous_user[:-1]
-            new_user = new_user[1:]
+            previous_user = previous_user.lstrip().rstrip().rstrip('}').rstrip()
+            new_user = new_user.lstrip().rstrip().lstrip('{').lstrip()
             f.write(previous_user + ',' + new_user)
             f.close()
 

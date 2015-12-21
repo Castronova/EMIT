@@ -59,7 +59,7 @@ class LinkViewCtrl(LinkView):
         self.ButtonSwap.Bind(wx.EVT_BUTTON, self.OnSwap)
         self.ButtonCancel.Bind(wx.EVT_BUTTON, self.OnCancel)
         self.ButtonSave.Bind(wx.EVT_BUTTON, self.OnSave)
-        self.ButtonPlot.Bind(wx.EVT_BUTTON, self.OnPlot)
+        self.ButtonPlot.Bind(wx.EVT_BUTTON, self.onPlotGeometries)
         self.Bind(EVT_LINKUPDATED, self.linkSelected)
         self.Bind(wx.EVT_CLOSE, self.OnCancel)
         self.outputGrid.Bind(gridlib.EVT_GRID_CELL_LEFT_CLICK, self.OutputGridHover)
@@ -97,6 +97,12 @@ class LinkViewCtrl(LinkView):
             self.ButtonPlot.Disable()
             self.ButtonSwap.Disable()
 
+    def getInputModelText(self):
+        if self.input_component['id'] == self.__selected_link.target_id:
+            return self.input_component['name']
+        else:
+            return self.output_component['name']
+
     def getLinkByName(self, name):
         for l in self.__links.values():
             if l.name() == name:
@@ -114,6 +120,12 @@ class LinkViewCtrl(LinkView):
             return self.input_component['name']
         else:
             return None
+
+    def getOutputModelText(self):
+        if self.output_component['id'] == self.__selected_link.source_id:
+            return self.output_component['name']
+        else:
+            return self.input_component['name']
 
     def getSelectedLinkId(self):
         selection = self.LinkNameListBox.GetStringSelection()
@@ -150,16 +162,8 @@ class LinkViewCtrl(LinkView):
             self.populate_input_metadata(self.__selected_link)
 
             #  Setting the labels that indicate which metadata is input and output
-            if self.input_component['id'] == self.__selected_link.target_id:
-                self.inputLabel.SetLabel("Input of: " + str(self.input_component['name']))
-            else:
-                self.inputLabel.SetLabel("Input of: " + str(self.output_component['name']))
-
-            if self.output_component['id'] == self.__selected_link.source_id:
-                self.outputLabel.SetLabel("Output of: " + str(self.output_component['name']))
-            else:
-                self.outputLabel.SetLabel("Output of: " + str(self.input_component['name']))
-
+            self.inputLabel.SetLabel("Input of: " + str(self.getInputModelText()))
+            self.outputLabel.SetLabel("Output of: " + str(self.getOutputModelText()))
 
         else:
             # deactivate controls if nothing is selected
@@ -259,13 +263,10 @@ class LinkViewCtrl(LinkView):
         self.outputLabel.SetLabel("Output of " + self.GetModelFrom())
         self.inputLabel.SetLabel("Input of " + self.GetModelTo())
 
-    def OnPlot(self, event):
-        '''__init__(self, Window parent, int id=-1, String title=EmptyString,
-            Point pos=DefaultPosition, Size size=DefaultSize,
-            long style=DEFAULT_FRAME_STYLE, String name=FrameNameStr) -> Frame'''
-
-        title = self.__selected_link.name()
-        plot_window = wx.Frame(self.parent, id=wx.ID_ANY, title=title, pos=wx.DefaultPosition, size=wx.Size(625, 625))
+    def onPlotGeometries(self, event):
+        title = self.getOutputModelText() + " --> " + self.getInputModelText()
+        plot_window = wx.Frame(self.parent, id=wx.ID_ANY, title=title, size=(625, 625),
+                               style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         # create a spatial plot instance
         plot_panel = LogicSpatialPlot(plot_window)
@@ -473,7 +474,6 @@ class LinkViewCtrl(LinkView):
             engine.removeLinkById(selected)
             self.__links.pop(selected)
 
-            # self.OnDelete(1)
         except Exception as e:
             elog.debug(e)
             elog.warning("Please select which link to swap")

@@ -140,6 +140,21 @@ class NetcdfCtrl(NetcdfViewer):
         except StandardError:
             return None
 
+
+    def CalculateBytes(self, fileSize):
+        if fileSize > 1000 and fileSize < 1000000:
+            fileSize = fileSize / 1000.0
+            return "%0.2f Kilobytes" % fileSize
+        elif fileSize > 1000000 and fileSize < 1000000000:
+            fileSize = fileSize / 1000000.0
+            return "%0.2f Megabytes" %fileSize
+        elif fileSize > 1000000000 and fileSize < 1000000000000:
+            fileSize = float(fileSize) / 1000000000.0
+            return "%0.2f Gigabytes" % fileSize
+        else:
+            return str(fileSize) + " bytes"
+
+
     def RunCrawler(self, event):
         #self.status_bar.SetStatusText("Loading")
         self.update_statusbar(self.status_bar, 'loading...')
@@ -168,7 +183,8 @@ class NetcdfCtrl(NetcdfViewer):
                     wms_url = dict(wms.items())['urlPath']
                     name = dict(ds.items())['name']
                     mod = lastmodified.replace("T", " ")
-                    self.TableValues.append([name, fileSize, mod, url + dap_url])
+                    fileString = self.CalculateBytes(int(fileSize))
+                    self.TableValues.append([name, fileString, mod, url + dap_url])
 
 
             #self.status_bar.SetStatusText("Almost done...")

@@ -19,7 +19,7 @@ class test_spatial_plotting(unittest.TestCase):
 
         frame = wx.Frame(None, -1)
 
-        plot = LogicSpatialPlot(frame)
+        plot = SpatialPlotCtrl(frame)
 
 
         # create some test polygons
@@ -57,7 +57,7 @@ class test_spatial_plotting(unittest.TestCase):
         self.assertEqual(plot.get_input_geom('testvar'), test_data['testvar'],msg="Data was not set correctly in logicSpatialPlot")
 
         plot.set_selection_input('testvar')
-        plot.UpdatePlot()
+        plot.updatePlot()
 
         del app
 
@@ -67,7 +67,7 @@ class test_spatial_plotting(unittest.TestCase):
 
         frame = wx.Frame(None, -1)
 
-        plot = LogicSpatialPlot(frame)
+        plot = SpatialPlotCtrl(frame)
 
 
         pts = []
@@ -87,7 +87,7 @@ class test_spatial_plotting(unittest.TestCase):
         self.assertEqual(plot.get_input_geom('testvar'), test_data['testvar'],msg="Data was not set correctly in logicSpatialPlot")
 
         plot.set_selection_input('testvar')
-        plot.UpdatePlot()
+        plot.updatePlot()
 
         del app
 
@@ -97,7 +97,7 @@ class test_spatial_plotting(unittest.TestCase):
 
         frame = wx.Frame(None, -1)
 
-        plot = LogicSpatialPlot(frame)
+        plot = SpatialPlotCtrl(frame)
 
 
         lines = []
@@ -118,7 +118,7 @@ class test_spatial_plotting(unittest.TestCase):
         self.assertEqual(plot.get_input_geom('testvar'), test_data['testvar'],msg="Data was not set correctly in logicSpatialPlot")
 
         plot.set_selection_input('testvar')
-        plot.UpdatePlot()
+        plot.updatePlot()
 
         del app
 
@@ -128,7 +128,7 @@ class test_spatial_plotting(unittest.TestCase):
 
         frame = wx.Frame(None, -1)
 
-        plot = LogicSpatialPlot(frame)
+        plot = SpatialPlotCtrl(frame)
 
         wkt = 'POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))'
         geom = utilities.geometry.fromWKT(wkt)
@@ -137,6 +137,6 @@ class test_spatial_plotting(unittest.TestCase):
         test_data = {'testvar':geom}
         plot.set_input_data(test_data)
         plot.set_selection_input('testvar')
-        plot.UpdatePlot()
+        plot.updatePlot()
 
         del app

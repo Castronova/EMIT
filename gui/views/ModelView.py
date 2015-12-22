@@ -6,7 +6,7 @@ import wx
 import wx.xrc
 import wx.propgrid as wxpg
 from gui.views import PlotView
-from gui.controller.SpatialPlotCtrl import LogicSpatialPlot
+from gui.controller.SpatialPlotCtrl import SpatialPlotCtrl
 # from gui.views.viewPanel import SpatialPanel
 
 class ViewModel(wx.Frame):
@@ -55,13 +55,13 @@ class ViewModel(wx.Frame):
 
         # make the spatial view
         if spatial:
-            # self.plotPanel = LogicSpatialPlot(self.txtNotebook)
+            # self.plotPanel = SpatialPlotCtrl(self.txtNotebook)
             # inputSelection = wx.CheckBox(self.plotPanel, 998,label='Input Exchange Item: ')
             # self.txtNotebook.AddPage(self.plotPanel, u"Spatial Definition", False)
 
             panel = wx.Panel(self.txtNotebook, size=wx.Size(500, 300))
 
-            self.plotPanel = LogicSpatialPlot(panel)
+            self.plotPanel = SpatialPlotCtrl(panel)
             # self.inputSelection = wx.CheckBox(panel, 998,label='Input Exchange Item: ')
 
             # self.inputSelections = wx.Choice( panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0, choices=None )

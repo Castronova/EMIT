@@ -7,7 +7,7 @@ from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 
 class ViewSpatialPlot(wx.Frame):
     def __init__(self, parent):
-        wx.Frame.__init__(self, parent=parent, name="SpatialPlot", size=(650, 700),
+        wx.Frame.__init__(self, parent=parent, name="SpatialPlot", size=(650, 575),
                           style=wx.TAB_TRAVERSAL | wx.DEFAULT_FRAME_STYLE | wx.FRAME_FLOAT_ON_PARENT)
 
         self.parent = parent
@@ -32,18 +32,18 @@ class ViewSpatialPlot(wx.Frame):
         top_panel.SetSizer(vbox_plot_panel)
 
         #  Bottom Panel/Info Panel
-        textLabel = wx.StaticText(bottom_panel, wx.ID_ANY, label='Toggle the Input and Output exchange element sets: ')
-        textLabel.SetFont(wx.Font(14, 70, 90, 92, False, wx.EmptyString))
-        inputLabel = wx.StaticText(bottom_panel, label="Input Features: ")
-        outputLabel = wx.StaticText(bottom_panel, label="Output Features: ")
+        text_label = wx.StaticText(bottom_panel, wx.ID_ANY, label='Toggle the Input and Output exchange element sets: ')
+        text_label.SetFont(wx.Font(14, 70, 90, 92, False, wx.EmptyString))
+        input_label = wx.StaticText(bottom_panel, label="Input Features: ")
+        output_label = wx.StaticText(bottom_panel, label="Output Features: ")
         self.inputSelection = wx.CheckBox(bottom_panel, id=998, label="Input Exchange Item: ")
         self.outputSelection = wx.CheckBox(bottom_panel, id=999, label="Output Exchange Item: ")
 
-        gbs.Add(textLabel, pos=(1, 0), span=(1, 3), flag=wx.LEFT, border=10)
-        gbs.Add(inputLabel, pos=(2, 0), flag=wx.LEFT, border=10)
-        gbs.Add(self.inputSelection, pos=(2, 1), flag=wx.LEFT, border=10)
-        gbs.Add(outputLabel, pos=(3, 0), flag=wx.LEFT, border=10)
-        gbs.Add(self.outputSelection, pos=(3, 1), flag=wx.LEFT, border=10)
+        gbs.Add(text_label, pos=(0, 0), span=(1, 3), flag=wx.LEFT, border=10)
+        gbs.Add(input_label, pos=(1, 0), flag=wx.LEFT, border=10)
+        gbs.Add(self.inputSelection, pos=(1, 1), flag=wx.LEFT, border=10)
+        gbs.Add(output_label, pos=(2, 0), flag=wx.LEFT, border=10)
+        gbs.Add(self.outputSelection, pos=(2, 1), flag=wx.LEFT, border=10)
         bottom_panel.SetSizer(gbs)
 
         # bottom_panel.SetBackgroundColour("#CCBBAA")

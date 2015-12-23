@@ -140,11 +140,10 @@ class SpatialPlotCtrl(ViewSpatialPlot):
                   max(0, colors[0][2] - mc)]
 
             # build a polygon collection
-            pcoll = PolyCollection(poly_list, closed=True, facecolor=colors, alpha=0.1, edgecolor=bc, linewidths=(2,))
-
+            # alpha is the transparency. alpha must be float 0-1
+            pcoll = PolyCollection(poly_list, closed=True, facecolor=colors, alpha=0.5, edgecolor=bc, linewidths=(2,))
             # add the polygon collection to the plot
             self.ax.add_collection(pcoll, autolim=True)
-
 
         # LINESTRING
         elif geom_list[0].GetGeometryName() == stdlib.GeomType.LINESTRING:

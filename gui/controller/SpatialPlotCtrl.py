@@ -1,66 +1,42 @@
 __author__ = 'tonycastronova'
 
+import wx
 import matplotlib.pyplot as plt
 from gui.views.SpatialPlotView import ViewSpatialPlot
 from coordinator.emitLogging import elog
 import stdlib
 from matplotlib.collections import PolyCollection, LineCollection
 import numpy
-import wx
-
 
 class SpatialPlotCtrl(ViewSpatialPlot):
-    def __init__(self, parent, link):
 
-        ViewSpatialPlot.__init__(self, parent)
+    def __init__(self, parent, title='', xlabel='', ylabel=''):
 
-        self.link = link
+        ViewSpatialPlot.__init__(self, parent, title=title,xlabel=xlabel,ylabel=ylabel)
+
         self.__input_data = []
         self.__output_data = []
 
         self.__iei = None
         self.__oei = None
-        self.__checkbox_states = [link.iei, link.oei]
-
-        self.inputSelection.SetValue(True)
-        self.outputSelection.SetValue(True)
-
-        self.Bind(wx.EVT_CHECKBOX, self.onChecked, self.inputSelection)
-        self.Bind(wx.EVT_CHECKBOX, self.onChecked, self.outputSelection)
-
-    def buildGradientColor(self, num, cmap='Blues'):
-        # get the color map
-        c = getattr(plt.cm, cmap)
-
-        # add two so that the median color is chosen if only one geometry
-        num += 2
-
-        # generate the color definitions
-        colors = [c(1. * i / num) for i in range(0, num)]
-
-        # omit the ends of the spectrum so that the correct number of colors is provided
-        return colors[1:-1]
 
     def log(self, fmt, *args):
         elog.info((fmt % args))
 
-    def onChecked(self, event):
-        chk = event.Checked()
-        if event.Id == 998:
-            if chk:
-                self.__checkbox_states[0] = self.link.iei
-            else:
-                self.__checkbox_states[0] = None
-        if event.Id == 999:
-            if chk:
-                self.__checkbox_states[1] = self.link.oei
-            else:
-                self.__checkbox_states[1] = None
+    def OnClick(self,event):
+        self.log("button clicked, id#%d\n", event.GetId())
 
-        self.set_selection_input(self.__checkbox_states[0])
-        self.set_selection_output(self.__checkbox_states[1])
+    def set_selection_output(self, oei_name):
+        if oei_name in self.__output_data:
+            self.__oei = oei_name
+        else:
+            self.__oei = None
 
-        self.updatePlot()
+    def set_selection_input(self, iei_name):
+        if iei_name in self.__input_data:
+            self.__iei = iei_name
+        else:
+            self.__iei = None
 
     def set_input_data(self, value):
         """
@@ -68,11 +44,6 @@ class SpatialPlotCtrl(ViewSpatialPlot):
         :return:
         """
         self.__input_data = value
-
-    def get_output_geom(self, var_name):
-        if var_name in self.__output_data:
-            return self.__output_data[var_name]
-        return None
 
     def get_input_geom(self, var_name):
         if var_name in self.__input_data:
@@ -86,7 +57,56 @@ class SpatialPlotCtrl(ViewSpatialPlot):
         """
         self.__output_data = value
 
-    def setPlotData(self, geom_list, colors):
+    def get_output_geom(self, var_name):
+        if var_name in self.__output_data:
+            return self.__output_data[var_name]
+        return None
+
+    def buildGradientColor(self, num, cmap='Blues'):
+        # get the color map
+        c = getattr(plt.cm, cmap)
+
+        # add two so that the median color is chosen if only one geometry
+        num += 2
+
+        # generate the color definitions
+        colors = [c(1.*i/num) for i in range(0,num)]
+
+        # omit the ends of the spectrum so that the correct number of colors is provided
+        return colors[1:-1]
+
+    def updatePlot(self, event=None):
+
+        # clear the canvas
+        self.ax.cla()
+
+        # set the iei and oei geometries
+        iei = self.__iei
+        oei = self.__oei
+        datain = self.get_input_geom(iei)
+        if datain is not None:
+            colors = self.buildGradientColor(len(datain),'Reds')
+            self.SetPlotData(datain,colors=colors)
+
+        dataout = self.get_output_geom(oei)
+        if dataout is not None:
+            colors = self.buildGradientColor(len(dataout),'Blues')
+            self.SetPlotData(dataout,colors=colors)
+
+        # set the plot titles
+        iei_title = iei if iei is not None else ''
+        oei_title = oei if oei is not None else ''
+        self.set_titles(iei_title,oei_title)
+
+
+        # draw the canvas
+        self.canvas.draw()
+
+    def set_titles(self, input, output):
+        self.outtext.set_text(output)
+        self.intext.set_text(input)
+
+    def SetPlotData(self, geom_list, colors):
 
         try:
             self.ax.scatter.cla()
@@ -97,6 +117,7 @@ class SpatialPlotCtrl(ViewSpatialPlot):
             self.ax.plot.cla()
         except:
             pass
+
 
         i = 0
 
@@ -123,6 +144,7 @@ class SpatialPlotCtrl(ViewSpatialPlot):
 
                 # loop through each polygon (most of the time this will only be 1)
                 for i in range(polycount):
+
                     # get geometry reference
                     ring = geom.GetGeometryRef(i)
 
@@ -140,10 +162,11 @@ class SpatialPlotCtrl(ViewSpatialPlot):
                   max(0, colors[0][2] - mc)]
 
             # build a polygon collection
-            # alpha is the transparency. alpha must be float 0-1
             pcoll = PolyCollection(poly_list, closed=True, facecolor=colors, alpha=0.5, edgecolor=bc, linewidths=(2,))
+
             # add the polygon collection to the plot
             self.ax.add_collection(pcoll, autolim=True)
+
 
         # LINESTRING
         elif geom_list[0].GetGeometryName() == stdlib.GeomType.LINESTRING:
@@ -171,46 +194,3 @@ class SpatialPlotCtrl(ViewSpatialPlot):
         self.ax.grid()
         self.ax.axis('auto')
         self.ax.margins(0.1)
-
-
-    def set_selection_input(self, iei_name):
-        if iei_name in self.__input_data:
-            self.__iei = iei_name
-        else:
-            self.__iei = None
-
-    def set_selection_output(self, oei_name):
-        if oei_name in self.__output_data:
-            self.__oei = oei_name
-        else:
-            self.__oei = None
-
-    def set_titles(self, input, output):
-        self.outtext.set_text(output)
-        self.intext.set_text(input)
-
-    def updatePlot(self, event=None):
-
-        # clear the canvas
-        self.ax.cla()
-
-        # set the iei and oei geometries
-        iei = self.__iei
-        oei = self.__oei
-        datain = self.get_input_geom(iei)
-        if datain is not None:
-            colors = self.buildGradientColor(len(datain), 'Reds')
-            self.setPlotData(datain, colors=colors)
-
-        dataout = self.get_output_geom(oei)
-        if dataout is not None:
-            colors = self.buildGradientColor(len(dataout), 'Blues')
-            self.setPlotData(dataout, colors=colors)
-
-        # set the plot titles
-        iei_title = iei if iei is not None else ''
-        oei_title = oei if oei is not None else ''
-        self.set_titles(iei_title, oei_title)
-
-        # draw the canvas
-        self.canvas.draw()

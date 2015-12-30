@@ -17,7 +17,7 @@ import collections
 LinkUpdatedEvent, EVT_LINKUPDATED = ne.NewEvent()
 
 
-class LinkViewCtrl(LinkView):
+class LinkCtrl(LinkView):
 
     odesc = ""
     idesc = ""
@@ -265,12 +265,11 @@ class LinkViewCtrl(LinkView):
 
     def onPlotGeometries(self, event):
         title = self.getOutputModelText() + " --> " + self.getInputModelText()
-        # plot_window = wx.Frame(self.parent, id=wx.ID_ANY, title=title, size=(625, 625),
-        #                        style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
+        plot_window = wx.Frame(self.parent, id=wx.ID_ANY, title=title, size=(625, 625),
+                               style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         # create a spatial plot instance
-        spatial_plot = SpatialPlotCtrl(self, link=self.__selected_link)
-        spatial_plot.SetTitle(title)
+        plot_panel = SpatialPlotCtrl(plot_window)
 
         # get the source and target ids from the link object
         source_model_id = self.__selected_link.source_id
@@ -293,71 +292,66 @@ class LinkViewCtrl(LinkView):
             igeoms[name] = geoms
 
         # set input and output geometries
-        spatial_plot.set_input_data(value=igeoms)
-        spatial_plot.set_output_data(value=ogeoms)
-
-        spatial_plot.set_selection_input(self.__selected_link.iei)
-        spatial_plot.set_selection_output(self.__selected_link.oei)
-        spatial_plot.updatePlot()  # update the plot to reflect the input/output selection
-
+        plot_panel.set_input_data(value=igeoms)
+        plot_panel.set_output_data(value=ogeoms)
 
         # add some selection
-        # textLabel = wx.StaticText(plot_window, wx.ID_ANY, label='Toggle the Input and Output exchange element sets: ')
-        # textLabel.SetFont( wx.Font(14, 70, 90, 92, False, wx.EmptyString))
-        # inputSelection = wx.CheckBox(plot_window, 998,label='Input Exchange Item: '+self.__selected_link.iei)
-        # outputSelection = wx.CheckBox(plot_window, 999,label='Output Exchange Item: '+self.__selected_link.oei)
-        # self.__checkbox_states = [self.__selected_link.iei, self.__selected_link.oei]  # initialize checkbox state
+        textLabel = wx.StaticText(plot_window, wx.ID_ANY, label='Toggle the Input and Output exchange element sets: ')
+        textLabel.SetFont( wx.Font( 14, 70, 90, 92, False, wx.EmptyString ) )
+        inputSelection = wx.CheckBox(plot_window, 998,label='Input Exchange Item: '+self.__selected_link.iei)
+        outputSelection = wx.CheckBox(plot_window, 999,label='Output Exchange Item: '+self.__selected_link.oei)
+        self.__checkbox_states = [self.__selected_link.iei, self.__selected_link.oei]  # initialize checkbox state
 
-        # def checked(event):
-        #     chk = event.Checked()
-        #
-        #     # make changes if selection is false
-        #     if event.Id == 998:
-        #         if chk: self.__checkbox_states[0] = self.__selected_link.iei
-        #         else:   self.__checkbox_states[0] = None
-        #     if event.Id == 999:
-        #         if chk: self.__checkbox_states[1] = self.__selected_link.oei
-        #         else:   self.__checkbox_states[1] = None
-        #
-        #     # set the selected datasets in the controller
-        #     spatial_plot.set_selection_input(self.__checkbox_states[0])
-        #     spatial_plot.set_selection_output(self.__checkbox_states[1])
-        #
-        #     # update the plot
-        #     spatial_plot.UpdatePlot()
+        def checked(event):
+            chk = event.Checked()
 
-        # add some handlersd_
-        # inputSelection.Bind(wx.EVT_CHECKBOX, checked)
-        # outputSelection.Bind(wx.EVT_CHECKBOX, checked)
+            # make changes if selection is false
+            if event.Id == 998:
+                if chk: self.__checkbox_states[0] = self.__selected_link.iei
+                else:   self.__checkbox_states[0] = None
+            if event.Id == 999:
+                if chk: self.__checkbox_states[1] = self.__selected_link.oei
+                else:   self.__checkbox_states[1] = None
+
+            # set the selected datasets in the controller
+            plot_panel.set_selection_input(self.__checkbox_states[0])
+            plot_panel.set_selection_output(self.__checkbox_states[1])
+
+            # update the plot
+            plot_panel.updatePlot()
+
+        # add some handlers
+        inputSelection.Bind(wx.EVT_CHECKBOX, checked)
+        outputSelection.Bind(wx.EVT_CHECKBOX, checked)
 
         # set the initial state of the input and output selectors
-        # inputSelection.SetValue(True)
-        # outputSelection.SetValue(True)
+        inputSelection.SetValue(True)
+        outputSelection.SetValue(True)
 
-        # spatial_plot.set_selection_input(self.__selected_link.iei)
-        # spatial_plot.set_selection_output(self.__selected_link.oei)
-        # spatial_plot.updatePlot()  # update the plot to reflect the input/output selection
+        plot_panel.set_selection_input(self.__selected_link.iei)
+        plot_panel.set_selection_output(self.__selected_link.oei)
+        plot_panel.updatePlot()  # update the plot to reflect the input/output selection
 
         # add controls to frame
-        # mainSizer = wx.BoxSizer(wx.VERTICAL)
-        # plotSizer = wx.BoxSizer(wx.VERTICAL)
-        # SelectionSizer= wx.BoxSizer(wx.VERTICAL)
+        mainSizer = wx.BoxSizer(wx.VERTICAL)
+        plotSizer = wx.BoxSizer(wx.VERTICAL)
+        SelectionSizer= wx.BoxSizer(wx.VERTICAL)
 
         # nest sizers to pad both the top and left borders
-        # b = wx.BoxSizer(wx.VERTICAL)
-        # b.Add(textLabel, flag=wx.LEFT, border=20 )
-        # SelectionSizer.AddSizer(b, flag=wx.BOTTOM, border=10)
-        # SelectionSizer.Add(inputSelection, flag=wx.LEFT, border=20)
-        # SelectionSizer.Add(outputSelection, flag=wx.LEFT, border=20)
-        # plotSizer.Add(spatial_plot)
+        b = wx.BoxSizer(wx.VERTICAL)
+        b.Add(textLabel, flag=wx.LEFT, border=20 )
+        SelectionSizer.AddSizer(b, flag=wx.BOTTOM, border=10)
+        SelectionSizer.Add(inputSelection, flag=wx.LEFT, border=20)
+        SelectionSizer.Add(outputSelection, flag=wx.LEFT, border=20)
+        plotSizer.Add(plot_panel)
 
         # add elements back to mainSizer
-        # mainSizer.Add(plotSizer)
-        # mainSizer.Add(SelectionSizer)
-        # plot_window.SetSizer(mainSizer)
+        mainSizer.Add(plotSizer)
+        mainSizer.Add(SelectionSizer)
+        plot_window.SetSizer(mainSizer)
 
-        # plot_window.Layout()
-        # plot_window.Show()
+        plot_window.Layout()
+        plot_window.Show()
 
     def on_select_output(self, event):
         """
@@ -669,4 +663,3 @@ class LinkInfo:
             if inputs is not None:
                 for input in inputs:
                     self.input_metadata[input['name']] = input
-

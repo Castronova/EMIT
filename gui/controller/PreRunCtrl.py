@@ -49,9 +49,23 @@ class PreRunCtrl(viewPreRun):
     def loadAccounts(self):
         known_users = []
         userjson = env_vars.USER_JSON
-        elog.debug('userjson ' + userjson)
-        with open(userjson, 'r') as f:
-            known_users.extend(users.BuildAffiliationfromJSON(f.read()))
+
+        #  Create the file if it does not exist
+        if os.path.isfile(userjson):
+            with open(userjson, 'r') as file:
+                content = file.read()
+                file.close()
+            if not (content.isspace() or len(content) < 1):  # check if file is empty
+                # file does exist so proceed like normal and there is content in it
+                elog.debug('userjson ' + userjson)
+                with open(userjson, 'r') as f:
+                    known_users.extend(users.BuildAffiliationfromJSON(f.read()))
+                    f.close()
+        else:
+            # file does not exist so we'll create one.
+            file = open(userjson, 'w')
+            file.close()
+
         return known_users
 
     def populateVariableList(self):
@@ -142,7 +156,7 @@ class PreRunCtrl(viewPreRun):
 
             # add variable if selected
             if self.variableList.IsChecked(i):
-                variable_name = self.variableList.GetItemText(i,0)
+                variable_name = self.variableList.GetItemText(i, 0)
                 datasets[component_name].append(variable_name)
 
         return datasets
@@ -354,10 +368,14 @@ class AddNewUserDialog(wx.Dialog):
             new_user = json.dumps(new_user, sort_keys=True, indent=4, separators=(',', ': '))
 
 
-            # Removes the last } of previous_user and first { of new_user
-            previous_user = previous_user.lstrip().rstrip().rstrip('}').rstrip()
-            new_user = new_user.lstrip().rstrip().lstrip('{').lstrip()
-            f.write(previous_user + ',' + new_user)
+            if not previous_user.isspace() and len(previous_user) > 0:
+                # Removes the last } of previous_user and first { of new_user
+                previous_user = previous_user.lstrip().rstrip().rstrip('}').rstrip()
+                new_user = new_user.lstrip().rstrip().lstrip('{').lstrip()
+                f.write(previous_user + ',' + new_user)
+            else:
+                # No previous users were found so only adding the new one.
+                f.write(new_user)
             f.close()
 
         self.parent.refreshUserAccount()

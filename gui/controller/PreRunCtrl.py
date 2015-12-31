@@ -43,8 +43,9 @@ class PreRunCtrl(viewPreRun):
         self.accounts = self.loadAccounts()
         account_names = [' '.join([affil.person.lastname, '[' + affil.organization.code + ']']) for affil in
                          self.accounts]
-        self.account_combo.AppendItems(account_names)
-        self.account_combo.SetSelection(0)
+        if len(account_names) > 0:
+            self.account_combo.AppendItems(account_names)
+            self.account_combo.SetSelection(0)
 
     def loadAccounts(self):
         known_users = []

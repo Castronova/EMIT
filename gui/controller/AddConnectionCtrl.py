@@ -20,14 +20,20 @@ class AddConnectionCtrl(AddConnectionView):
         self.engine.Bind(wx.EVT_COMBOBOX, self.DropBoxChange)
 
     def DropBoxChange(self, event):
-        print "fire away!"
-        if self.engine.GetValue() is "MySQL" or self.engine.GetValue() is "PostgreSQL":
+        if self.engine.GetValue() == "MySQL" or self.engine.GetValue() == "PostgreSQL":
             self.address.Enable()
-            #use labelTExt
             self.name.Enable()
+            self.namel.LabelText = "*Database :"
             self.user.Enable()
-        else:
+            self.userl.LabelText = "*User :"
+            self.password.Enable()
+        if self.engine.GetValue() == "SQLite":
             self.user.Disable()
+            self.userl.LabelText = "User :"
+            self.password.Disable()
+            self.passwordl.LabelText = "Password :"
+            self.name.Disable()
+            self.namel.LabelText = "Database :"
 
     def CloseHit(self, event):
         self.Close()
@@ -51,10 +57,16 @@ class AddConnectionCtrl(AddConnectionView):
             if self.address.GetValue() == '' or  \
                     self.name.GetValue() == '' or  \
                     self.user.GetValue() == '' or \
+                    self.password.GetValue() == '' or \
                     self.title.GetValue() == '':
                 self.btnok.Disable()
             else:
                 self.btnok.Enable()
+        if self.engine.GetValue() is "SQLite":
+            if self.address.GetValue() == '':
+                self.btnok.Disable()
+            else:
+                self.btnok.Enable
 
     def AddButtonHit(self, event):
         params = self.getConnectionParams()
@@ -73,4 +85,4 @@ class AddConnectionCtrl(AddConnectionView):
             self.Close()
             return
         else:
-            wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
+            wx.MessageBox('\aI was unable to connect to the database with the information provided\nPlease review the information and try again.', 'Info', wx.OK | wx.ICON_ERROR)

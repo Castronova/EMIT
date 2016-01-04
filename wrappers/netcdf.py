@@ -74,7 +74,10 @@ class Wrapper(base.BaseWrapper):
 
 
         # loop through the remaining variables and expose them as outputs
-        for var in variables:
+        # for var in variables:
+        for v in range(len(variables)):
+
+            var = variables[v]
 
             # create a unit
             unit = stdlib.Unit()

@@ -17,15 +17,26 @@ class AddConnectionCtrl(AddConnectionView):
         self.title.Bind(wx.EVT_TEXT, self.OnTextEnter)
         self.btnok.Bind(wx.EVT_BUTTON, self.AddButtonHit)
         self.btn.Bind(wx.EVT_BUTTON, self.CloseHit)
+        self.engine.Bind(wx.EVT_COMBOBOX, self.DropBoxChange)
+
+    def DropBoxChange(self, event):
+        print "fire away!"
+        if self.engine.GetValue() is "MySQL" or self.engine.GetValue() is "PostgreSQL":
+            self.address.Enable()
+            #use labelTExt
+            self.name.Enable()
+            self.user.Enable()
+        else:
+            self.user.Disable()
 
     def CloseHit(self, event):
         self.Close()
 
     def getConnectionParams(self):
 
-        engine = self.engine.GetStringSelection().lower()
+        #engine = self.engine.GetStringSelection().lower()
 
-        #engine = self.engine.GetValue()
+        engine = self.engine.GetValue()
         address = self.address.GetValue()
         name = self.name.GetValue()
         user = self.user.GetValue()
@@ -35,13 +46,15 @@ class AddConnectionCtrl(AddConnectionView):
 
         return title,desc, engine,address,name,user,pwd,title,desc
     def OnTextEnter(self, event):
-        if self.address.GetValue() == '' or  \
-                self.name.GetValue() == '' or  \
-                self.user.GetValue() == '' or \
-                self.title.GetValue() == '':
-            self.btnok.Disable()
-        else:
-            self.btnok.Enable()
+
+        if self.engine.GetValue() is "MySQL" or self.engine.GetValue() is "PostgreSQL":
+            if self.address.GetValue() == '' or  \
+                    self.name.GetValue() == '' or  \
+                    self.user.GetValue() == '' or \
+                    self.title.GetValue() == '':
+                self.btnok.Disable()
+            else:
+                self.btnok.Enable()
 
     def AddButtonHit(self, event):
         params = self.getConnectionParams()

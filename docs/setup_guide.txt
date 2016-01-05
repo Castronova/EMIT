@@ -1,0 +1,13 @@
+Progress on the installer
+
+setup.py contains the code that sets up the installer.  If it works properly it will also grab all of the packages like wx, gdal, matplotlib, etc.
+The setup.py has a similar design to ODM2StreamingDataLoader and ODMToolsPython.  They are called setup.py and make.py respectifully on github.
+
+From the terminal run the follow:
+1. python setup.py       This will create a folder on the directory called setup.  This is supposed to contain the .app file but there are issues
+
+Another technique I have tried is doing the following the in the terminal:
+1. pyinstaller EMIT.py --windowed --clean       This will create two folders dist and build.  The .app file is in the dist folder but it does not execute so
+            open it then Contents/MacOS/ then look for the EMIT executable.  This may or may not run.
+
+Issues I have had are that certain packages or directories do not exist even though they do.

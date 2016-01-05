@@ -11,3 +11,5 @@ Another technique I have tried is doing the following the in the terminal:
             open it then Contents/MacOS/ then look for the EMIT executable.  This may or may not run.
 
 Issues I have had are that certain packages or directories do not exist even though they do.
+Lastly, In line about 215,  there is a cp that is supposed to copy the libwx_osx_cocoau-3.0.0.0.0.dylib.
+Look for that file on your computer and change the path to match it.

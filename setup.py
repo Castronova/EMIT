@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from __future__ import with_statement
-__author__ = 'stephanie'
 import os, sys, shutil, zipfile, platform
 from contextlib import closing
 from zipfile import ZipFile, ZIP_DEFLATED
@@ -101,7 +100,7 @@ def zipdir(basedir, archivename):
                 z.write(absfn, zfn)
 def printInfo():
     print "============================================================="
-    print "=             SDL Installer                             "
+    print "=             EMIT Installer                             "
     print "= Be sure to update src/meta/data with every release    "
     print "= Building release: {version}".format(version="1.0"),
     print "\n= Platform: {platform}, {architecture}".format(platform=sys.platform, architecture=platform.architecture()), "\n="

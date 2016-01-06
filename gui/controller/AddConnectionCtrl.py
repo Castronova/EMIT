@@ -5,70 +5,64 @@ from environment import ConnectionVars
 from wx.lib.pubsub import pub as Publisher
 
 class AddConnectionCtrl(AddConnectionView):
-    def __init__(self,parent):
+    def __init__(self, parent):
         AddConnectionView.__init__(self, parent)
-        print "starting"
-        engine = self.engine.GetStringSelection().lower()
-        self.con = ConnectionVars();
+        self.con = ConnectionVars()
 
-        self.address.Bind(wx.EVT_TEXT, self.OnTextEnter)
-        self.name.Bind(wx.EVT_TEXT, self.OnTextEnter)
-        self.user.Bind(wx.EVT_TEXT, self.OnTextEnter)
-        self.title.Bind(wx.EVT_TEXT, self.OnTextEnter)
-        self.btnok.Bind(wx.EVT_BUTTON, self.AddButtonHit)
-        self.btn.Bind(wx.EVT_BUTTON, self.CloseHit)
-        self.engine.Bind(wx.EVT_COMBOBOX, self.DropBoxChange)
+        self.address_txtctrl.Bind(wx.EVT_TEXT, self.OnTextEnter)
+        self.database_txtctrl.Bind(wx.EVT_TEXT, self.OnTextEnter)
+        self.user_txtctrl.Bind(wx.EVT_TEXT, self.OnTextEnter)
+        self.title_txtctrl.Bind(wx.EVT_TEXT, self.OnTextEnter)
+        self.ok_btn.Bind(wx.EVT_BUTTON, self.onOktBtn)
+        self.engine_combo.Bind(wx.EVT_COMBOBOX, self.DropBoxChange)
 
     def DropBoxChange(self, event):
-        if self.engine.GetValue() == "MySQL" or self.engine.GetValue() == "PostgreSQL":
+        if self.engine_combo.GetValue() == "MySQL" or self.engine_combo.GetValue() == "PostgreSQL":
             self.address.Enable()
-            self.name.Enable()
-            self.namel.LabelText = "*Database :"
+            self.address_txtctrl.Enable()
+            self.database.Enable()
+            self.database_txtctrl.Enable
+            self.database.LabelText = "*Database:"
             self.user.Enable()
-            self.userl.LabelText = "*User :"
+            self.user.LabelText = "*User:"
             self.password.Enable()
-        if self.engine.GetValue() == "SQLite":
+        elif self.engine_combo.GetValue() == "SQLite":
             self.user.Disable()
-            self.userl.LabelText = "User :"
+            self.user_txtctrl.Disable()
+            # self.user.LabelText = "User:"
             self.password.Disable()
-            self.passwordl.LabelText = "Password :"
-            self.name.Disable()
-            self.namel.LabelText = "Database :"
-
-    def CloseHit(self, event):
-        self.Close()
+            self.password_txtctrl.Disable()
+            # self.password.LabelText = "Password:"
+            self.database.Disable()
+            self.database_txtctrl.Disable()
+            # self.database.LabelText = "Database:"
 
     def getConnectionParams(self):
+        engine = self.engine_combo.GetValue()
+        address = self.address_txtctrl.GetValue()
+        name = self.database_txtctrl.GetValue()
+        user = self.user_txtctrl.GetValue()
+        pwd = self.password_txtctrl.GetValue()
+        title = self.title_txtctrl.GetValue()
+        desc = self.description_txtctrl.GetValue()
 
-        #engine = self.engine.GetStringSelection().lower()
-
-        engine = self.engine.GetValue()
-        address = self.address.GetValue()
-        name = self.name.GetValue()
-        user = self.user.GetValue()
-        pwd = self.password.GetValue()
-        title = self.title.GetValue()
-        desc = self.description.GetValue()
-
-        return title,desc, engine,address,name,user,pwd,title,desc
+        return title, desc, engine,address, name, user, pwd, title, desc
     def OnTextEnter(self, event):
-
-        if self.engine.GetValue() is "MySQL" or self.engine.GetValue() is "PostgreSQL":
-            if self.address.GetValue() == '' or  \
-                    self.name.GetValue() == '' or  \
-                    self.user.GetValue() == '' or \
-                    self.password.GetValue() == '' or \
-                    self.title.GetValue() == '':
-                self.btnok.Disable()
+        if self.engine_combo.GetValue() == "MySQL" or self.engine_combo.GetValue() == "PostgreSQL":
+            if self.address_txtctrl.GetValue() == '' or  \
+                    self.database_txtctrl.GetValue() == '' or  \
+                    self.user_txtctrl.GetValue() == '' or \
+                    self.title_txtctrl.GetValue() == '':
+                self.ok_btn.Disable()
             else:
-                self.btnok.Enable()
-        if self.engine.GetValue() is "SQLite":
-            if self.address.GetValue() == '':
-                self.btnok.Disable()
+                self.ok_btn.Enable()
+        if self.engine_combo.GetValue() == "SQLite":
+            if self.address_txtctrl.GetValue() == '' or self.title_txtctrl.GetValue() == '':
+                self.ok_btn.Disable()
             else:
-                self.btnok.Enable
+                self.ok_btn.Enable()
 
-    def AddButtonHit(self, event):
+    def onOktBtn(self, event):
         params = self.getConnectionParams()
         if self.con.Write_New_Connection(params) :
             print Publisher.sendMessage('DatabaseConnection',

@@ -78,7 +78,7 @@ class TimeSeriesTab(wx.Panel):
         self.m_olvSeries.DefineColumns(self.table_columns)
 
         self.addConnectionButton.Bind(wx.EVT_LEFT_DOWN, self.AddConnection)
-        self.addConnectionButton.Bind(wx.EVT_MOUSEWHEEL, self.AddConnection_MouseWheel)
+        # self.addConnectionButton.Bind(wx.EVT_MOUSEWHEEL, self.AddConnection_MouseWheel)
 
         self.connection_refresh_button.Bind(wx.EVT_LEFT_DOWN, self.OLVRefresh)
         self.connection_combobox.Bind(wx.EVT_CHOICE, self.DbChanged)
@@ -136,19 +136,17 @@ class TimeSeriesTab(wx.Panel):
             self._conection_string = connection_string
         return self._connection_added
 
-    def AddConnection_MouseWheel(self, event):
-        '''
-        This is intentionally empty to disable mouse scrolling in the AddConnection combobox
-        :param event: EVT_MOUSEWHEEL
-        :return: None
-        '''
-        pass
+    # def AddConnection_MouseWheel(self, event):
+    #     '''
+    #     This is intentionally empty to disable mouse scrolling in the AddConnection combobox
+    #     :param event: EVT_MOUSEWHEEL
+    #     :return: None
+    #     '''
+    #     pass
 
     def AddConnection(self, event):
 
-        params = []
-        p = self
-        newConnection = AddConnectionCtrl(p)
+        connection = AddConnectionCtrl(self)
 
         '''
         while 1:

@@ -21,7 +21,7 @@ class AddConnectionCtrl(AddConnectionView):
             self.address.Enable()
             self.address_txtctrl.Enable()
             self.database.Enable()
-            self.database_txtctrl.Enable
+            self.database_txtctrl.Enable()
             self.database.LabelText = "*Database:"
             self.user.Enable()
             self.user.LabelText = "*User:"
@@ -29,24 +29,21 @@ class AddConnectionCtrl(AddConnectionView):
         elif self.engine_combo.GetValue() == "SQLite":
             self.user.Disable()
             self.user_txtctrl.Disable()
-            # self.user.LabelText = "User:"
             self.password.Disable()
             self.password_txtctrl.Disable()
-            # self.password.LabelText = "Password:"
             self.database.Disable()
             self.database_txtctrl.Disable()
-            # self.database.LabelText = "Database:"
 
     def getConnectionParams(self):
-        engine = self.engine_combo.GetValue()
-        address = self.address_txtctrl.GetValue()
-        name = self.database_txtctrl.GetValue()
-        user = self.user_txtctrl.GetValue()
-        pwd = self.password_txtctrl.GetValue()
         title = self.title_txtctrl.GetValue()
         desc = self.description_txtctrl.GetValue()
+        engine = self.engine_combo.GetValue().lower()
+        address = self.address_txtctrl.GetValue()
+        db = self.database_txtctrl.GetValue()
+        user = self.user_txtctrl.GetValue()
+        pwd = self.password_txtctrl.GetValue()
 
-        return title, desc, engine,address, name, user, pwd, title, desc
+        return title, desc, engine, address, db, user, pwd, title, desc
     def OnTextEnter(self, event):
         if self.engine_combo.GetValue() == "MySQL" or self.engine_combo.GetValue() == "PostgreSQL":
             if self.address_txtctrl.GetValue() == '' or  \
@@ -64,7 +61,7 @@ class AddConnectionCtrl(AddConnectionView):
 
     def onOktBtn(self, event):
         params = self.getConnectionParams()
-        if self.con.Write_New_Connection(params) :
+        if self.con.Write_New_Connection(params):
             print Publisher.sendMessage('DatabaseConnection',
                                           title=params[0],
                                           desc=params[1],

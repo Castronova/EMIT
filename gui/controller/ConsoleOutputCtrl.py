@@ -5,8 +5,58 @@ import coordinator.emitLogging as l
 import wx
 import json
 import wx.lib.newevent
+from socket import AF_INET, SOCK_DGRAM, socket
+from gui.views.ConsoleView import ConsoleView
+import threading
+
+class consoleCtrl(ConsoleView):
+
+    def __init__(self, parent):
+        ConsoleView.__init__(self, parent=parent)
+
+        # todo: get the port number from the environment variables so that the user can change as necessary
+        self.buf = 1024
+        self.port = 9271  # random port number
+        self.host = ''
+        self.addr = (self.host, self.port)
+
+        # start the message server
+        self.thread = threading.Thread(target=self.messageServer)
+        self.thread.start()
+
+    def Print(self, text, type):
+
+        wx.CallAfter(self.log.SetInsertionPoint, 0)
+        if type == 'INFO':
+                wx.CallAfter(self.log.BeginTextColour, (42, 78, 110))
+        elif type == 'WARNING':
+            wx.CallAfter(self.log.BeginTextColour, (255, 140, 0))
+        elif type =='ERROR':
+            wx.CallAfter(self.log.BeginTextColour, (255, 0, 0))
+        elif type == 'DEBUG':
+            wx.CallAfter(self.log.BeginTextColour, (0, 0, 0))
+        elif type == 'CRITICAL':
+            wx.CallAfter(self.log.BeginTextColour, (170, 57, 57))
+        wx.CallAfter(self.log.WriteText, text + '\n')
+        wx.CallAfter(self.log.EndTextColour, )
+        wx.CallAfter(self.log.Refresh, )
+
+    def messageServer(self):
+
+        udpsocket = socket(AF_INET, SOCK_DGRAM)
+        udpsocket.bind(self.addr)
+
+        while True:
+
+            # receive the message from the socket
+            (data, addr) = udpsocket.recvfrom(self.buf)
+            type, text = data.split('|')
+
+            # print the message
+            self.Print(text, type)
 
 
+# todo: remove this function (deprecated)
 def follow(logging, target):
     path = None
     handlers = logging.get_logger().handlers
@@ -79,7 +129,7 @@ def follow(logging, target):
 
                 last_processed = line_list
 
-
+# todo: remove this function (deprecated)
 def tail(f, lines=20):
     total_lines_wanted = lines
 

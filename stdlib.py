@@ -15,6 +15,7 @@ from coordinator.emitLogging import elog
 from bisect import bisect_left, bisect_right
 from osgeo import osr, ogr
 import numpy
+from sprint import *
 
 class Status:
     READY = 'READY'
@@ -174,10 +175,13 @@ class ExchangeItem(object):
         self.__srs = osr.SpatialReference()
         try:
             self.__srs.ImportFromEPSG(srs_epsg)
-        except:
+        except(Exception, e):
             # set default
-            elog.error('Could not create spatial reference object from code: %s. '
-                       'Using the default spatial reference system: North American Datum 1983.'% str(srs_epsg))
+            elog.error('Error ExchangeItem.__init__: %s' % e)
+            sPrint('Could not create spatial reference object from code: %s. '
+                       'Using the default spatial reference system: North American Datum 1983.'% str(srs_epsg),
+                   MessageType.ERROR)
+
             self.__srs.ImportFromEPSG(4269)
 
 
@@ -210,10 +214,12 @@ class ExchangeItem(object):
             self.__srs = osr.SpatialReference()
             try:
                 self.__srs.ImportFromEPSG(srs_epsg)
-            except:
+            except (Exception, e):
                 # set default
-                elog.error('Could not create spatial reference object from code: %s. '
-                           'Using the default spatial reference system: North American Datum 1983.'% str(srs_epsg))
+                elog.error('Error ExchangeItem.srs: %s' % e)
+                sPrint('Could not create spatial reference object from code: %s. '
+                           'Using the default spatial reference system: North American Datum 1983.'% str(srs_epsg),
+                       MessageType.ERROR)
                 self.__srs.ImportFromEPSG(4269)
 
         return self.__srs
@@ -249,7 +255,7 @@ class ExchangeItem(object):
         elif isinstance(geom, Geometry2):
             self.__geoms2.append(geom)
         else:
-            elog.info("Attempted to add unsupported geometry type to ExchangeItem %s, in stdlib.addGeometries(geom)" % type(geom))
+            sPrint("Attempted to add unsupported geometry type to ExchangeItem %s, in stdlib.addGeometries(geom)" % type(geom))
             return 0
         return 1
 
@@ -264,7 +270,8 @@ class ExchangeItem(object):
         """
 
         if len(self.__values2) == 0 or len(self.__times2) == 0:
-            elog.critical('Exchange item values and/or times arrays were not set properly.  Make sure "initializeDatesValues" is being called during/after component initialization.')
+            elog.critical('Error ExchangeItem.setValuesBySlice: Exchange item values and/or times arrays were not set properly')
+            sPrint('Exchange item values and/or times arrays were not set properly Make sure "initializeDatesValues" is being called during/after component initialization.', MessageType.CRITICAL)
             return False
 
         try:
@@ -292,8 +299,9 @@ class ExchangeItem(object):
 
 
         except Exception, e:
-            elog.error(e)
-            elog.error('Error setting values for times %s, geometries %s' % (str(time_index_slice), str(geometry_index_slice)))
+            elog.error('Error ExchangeItem.setValuesBySlice: %s' % e)
+            sPrint('Error setting values for times %s, geometries %s' % (str(time_index_slice), str(geometry_index_slice)),
+                   MessageType.ERROR)
             return False
         return True
 
@@ -312,8 +320,10 @@ class ExchangeItem(object):
             # set the values[times][geoms]
             self.__values2[idx, gb:ge:gstep] = values
 
-        except:
-            elog.error('Error setting values for times %s, geometries %s' % (str(time_index_slice), str(geometry_index_slice)))
+        except(Exception, e):
+            elog.error('Error ExchangeItem.setValuesByTime: %s' % e)
+            sPrint('Error setting values for times %s, geometries %s' % (str(time_index_slice), str(geometry_index_slice)),
+                   MessageType.ERROR)
             return False
         return True
 
@@ -330,7 +340,8 @@ class ExchangeItem(object):
 
             # make sure that the length of values matches the length of times
             if len(timevalue) != len(values):
-                elog.warning('Could not set data values. Length of timevalues and datavalues lists must be equal.')
+                sPrint('Could not set data values. Length of timevalues and datavalues lists must be equal.',
+                       MessageType.WARNING)
                 return 0
 
             invalid_dates = False
@@ -340,7 +351,8 @@ class ExchangeItem(object):
                 else: invalid_dates = True
 
             if invalid_dates:
-                elog.warning('Invalid datetimes were found while setting values.  Data values may not be set correctly.')
+                sPrint('Invalid datetimes were found while setting values.  Data values may not be set correctly.',
+                             MessageType.WARNING)
 
 
             return 1
@@ -351,7 +363,8 @@ class ExchangeItem(object):
             return 1
 
         else:
-            elog.warning('Could not set data values.  Time value was not of type datetime.')
+            sPrint('Could not set data values.  Time value was not of type datetime.',
+                         MessageType.WARNING)
             return 0
 
     def _setValues2(self, values, timevalue):
@@ -441,7 +454,8 @@ class ExchangeItem(object):
 
         elif start is not None and end is not None:
             if not isinstance(start, datetime.datetime) or not isinstance(end, datetime.datetime):
-                elog.critical('Could not fetch date time from range because the "start" and/or "endtimes" are not valued datetime objects.')
+                elog.critical('ERROR ExchangeItem.getDates2: Could not fetch date time from range because the "start" and/or "endtimes" are not valued datetime objects.')
+                sPrint('Could not fetch date time from range because the "start" and/or "endtimes" are not valued datetime objects.', MessageType.CRITICAL)
                 return 0, None
 
             st = self._nearest(self.__times2, start, 'left')

@@ -1,23 +1,13 @@
 __author__ = 'Mario'
 
 import os
-import wx
 from gui.views.EMITView import ViewEMIT
 import coordinator.engineAccessors as engine
 import sqlite3 as lite
-from coordinator.emitLogging import elog
-import threading
-from environment import env_vars
 
 
 class LogicEMIT(ViewEMIT):
     def __init__(self, parent):
-
-        # sPrint("You have %d threads started: " % threading.activeCount(), MessageType.DEBUG)
-        # # elog.debug("You have %d threads started: " % threading.activeCount())
-        # for t in threading.enumerate():
-        #     sPrint(t, MessageType.DEBUG)
-        #     # elog.debug(t)
 
 
         ViewEMIT.__init__(self, parent)

@@ -8,14 +8,9 @@ import cPickle as pickle
 import imp
 from api_old.ODMconnection import dbconnection
 from ODM2PythonAPI.src.api.ODMconnection import dbconnection as dbconnection2
-
-# from ODMconnection import dbconnection
-import uuid
-# import coordinator.emitLogging as l
-# logging = l.log()
-
+from sprint import *
 from coordinator.emitLogging import elog
-
+import uuid
 
 
 class multidict(dict):
@@ -137,9 +132,11 @@ def validate_config_ini(ini_path):
                     m = getattr(module, classname)
                 except Exception, e:
                     elog.error('Configuration Parsing Error: '+str(e))
+                    sPrint('Configuration Parsing Error: '+str(e), MessageType.ERROR)
 
     except Exception, e:
         elog.error('Configuration Parsing Error: '+str(e))
+        sPrint('Configuration Parsing Error: '+str(e), MessageType.ERROR)
         return 0
 
 
@@ -255,8 +252,10 @@ def connect_to_ODM2_db(title, desc, engine, address, db, user, pwd):
                                  'args': {'name':title,'desc':desc ,'engine':engine,'address':address,'db': db, 'user': user,'pwd': pwd}}
 
         elog.info('Connected to : %s [%s]'%(connection_string,db_id))
+        sPrint('Connected to : %s [%s]'%(connection_string,db_id))
     else:
         elog.error('Could not establish a connection with the database')
+        sPrint('Could not establish a connection with the database', MessageType.ERROR)
         return None
 
     return db_connections
@@ -306,8 +305,10 @@ def create_database_connections_from_args(title, desc, engine, address, db, user
                                  'args': d}
 
         elog.info('Connected to : %s [%s]'%(connection_string,db_id))
+        sPrint('Connected to : %s [%s]'%(connection_string,db_id))
     else:
         elog.error('Could not establish a connection with the database')
+        sPrint('Could not establish a connection with the database', MessageType.ERROR)
         return None
 
     return db_connections
@@ -365,9 +366,11 @@ def connect_to_db(title, desc, engine, address, name, user, pwd):
                                   user=None, pwd=None,default=False,db=None)}
 
         elog.info('Connected to : %s [%s]'%(connection_string,db_id))
+        sPrint('Connected to : %s [%s]'%(connection_string,db_id))
 
     else:
         elog.error('Could not establish a connection with the database')
+        sPrint('Could not establish a connection with the database', MessageType.ERROR)
 
     return d
 
@@ -415,10 +418,11 @@ def create_database_connections_from_file(ini):
                                      'description':d['desc'],
                                      'args': d}
             elog.info('Connected to : %s [%s]'%(connection_string,db_id))
-
+            sPrint('Connected to : %s [%s]'%(connection_string,db_id))
 
         else:
             elog.error('Could not establish a connection with the database')
+            sPrint('Could not establish a connection with the database', MessageType.ERROR)
             #return None
 
 

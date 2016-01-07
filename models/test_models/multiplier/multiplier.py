@@ -6,6 +6,8 @@ import stdlib
 from utilities import mdl
 from coordinator.emitLogging import elog
 
+from sprint import *
+
 class multiply(feed_forward.Wrapper):
 
 
@@ -25,6 +27,7 @@ class multiply(feed_forward.Wrapper):
         self.inputs(value=io[stdlib.ExchangeItemType.INPUT])
         self.outputs(value=io[stdlib.ExchangeItemType.OUTPUT])
 
+        sPrint('Multiplier initialization complete.')
 
     def run(self,inputs):
         """

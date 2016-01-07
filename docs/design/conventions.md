@@ -3,17 +3,17 @@ This document outlines the code conventions that all programmers must follow whi
 
 
 
-## Code 
+#### Wx GUI
 
-* Wx GUI
+* All WX gui elements are coded using MVC conventions.
 
-    * All WX gui elements are coded using MVC conventions.
-    
-        * View File - contains **only** the logic necessary for displaying the GUI element or form
-        * Controller File - contains **all** backend logic for the forms defined in the view
-        * Model - currently not being used
+    * View File - contains **only** the logic necessary for displaying the GUI element or form
+    * Controller File - contains **all** backend logic for the forms defined in the view
+    * Model - currently not being used
 
-* File Naming (MVC)
+####  Code 
+
+* File  (MVC)
 
     - controller files 
         - *ShortDescription* + **Ctrl**
@@ -23,11 +23,11 @@ This document outlines the code conventions that all programmers must follow whi
         - *ShortDescription* + **View**
         - e.g. `ConsoleView`, `DirectoryView`
 
-* Class Naming
+* Class 
     - camelCased with the first letter always lowercase
     - `myClass`
 
-* Function Naming
+* Function 
     
     - public `myFunction`
         - camelCased with the first letter always lowercase
@@ -36,7 +36,7 @@ This document outlines the code conventions that all programmers must follow whi
         - camelCased with the first letter always lowercase
         - preceded by an underscore ( `_` )
         
-* Variable Naming
+* Variable 
 
     - private variables:  `self.__my_private_var`
         - consist of a short description, underscore separated ( `_` )
@@ -46,26 +46,28 @@ This document outlines the code conventions that all programmers must follow whi
     - public variable `my_public_var`
         - consist of a short description, underscore separated ( `_` )
         
-* GIT
-    * Commits
-        - Always include issue number in commit message, e.g. [#123] (if applicable)
-        - Commits should only contain files pertaining to a single issue 
-        - Incremental commits are always better
-        
-    * Branches
-        - Branch naming follows the version naming convention `major_minor_sprint`, e.g. `0.1.5`
-        - New branches are created for **every** sprint
-        - New branches are created for temporary/testing development
-        - Branches are merged via pull requests
-        
-    * NEVER USE THE FOLLOWING COMMANDS
-        - `git push --force`
-        
+#### GIT
+* Commits
+    - Always include issue number in commit message, e.g. [#123] (if applicable)
+    - Commits should only contain files pertaining to a single issue 
+    - Incremental commits are always better
+    
+* Branches
+    - Branch naming follows the version naming convention `major_minor_sprint`, e.g. `0.1.5`
+    - New branches are created for **every** sprint
+    - New branches are created for temporary/testing development
+    - Branches are merged via pull requests
+    
+* NEVER USE THE FOLLOWING COMMANDS
+    - `git push --force`
+
+#### Internal Messaging and Logging
+
 * Logging 
     
     * Anything that breaks the application must be entered into the log
     
-    * All errors must be prefixed by the class and function names, and include an exception messeage if applicable
+    * All errors must be prefixed by the class and function names, and include an exception message if applicable
         - `elog.error("Error myClass.testfunction: Something broke %s" % e)` 
         - `elog.critical("Error myClass.testfunction: Something broke %s" % e)` 
         - `elog.warning("Error myClass.testfunction: Something broke %s" % e)` 

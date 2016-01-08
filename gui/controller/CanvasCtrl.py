@@ -27,6 +27,7 @@ import coordinator.events as engineEvent
 from gui import events
 from coordinator.emitLogging import elog
 import random
+from sprint import *
 
 class LogicCanvas(ViewCanvas):
     def __init__(self, parent):
@@ -184,6 +185,8 @@ class LogicCanvas(ViewCanvas):
             self.FloatCanvas.Draw()
 
             elog.info(name + ' has been added to the canvas.')
+            sPrint(name + ' has been added to the canvas.')
+
             # elog.debug(name + ' has been added to the canvas.')
 
     def draw_box(self, evt):
@@ -203,6 +206,7 @@ class LogicCanvas(ViewCanvas):
 
         if R1 is None or R2 is None:
             elog.warning("Could not find Model identifier in loaded models")
+            sPrint("Could not find Model identifier in loaded models", MessageType.WARNING)
             raise Exception('Could not find Model identifier in loaded models')
 
         # This is what actually draws the line
@@ -225,6 +229,7 @@ class LogicCanvas(ViewCanvas):
 
         if R1 == R2:
             elog.error('Cannot link a model to itself')
+            sPrint('Cannot link a model to itself', MessageType.ERROR)
             return
         else:
             # Get the center of the objects on the canvas
@@ -289,6 +294,7 @@ class LogicCanvas(ViewCanvas):
                     self.loadsimulation(filepath)
                 except Exception, e:
                     elog.error('Configuration failed to load: %s'%e.message)
+                    sPrint('Configuration failed to load: %s'%e.message, MessageType.ERROR)
         else:
             #  Model is from a database
             attrib = dict(databaseid=self._dbid, resultid=name)
@@ -322,6 +328,7 @@ class LogicCanvas(ViewCanvas):
                 success = engine.removeLinkById(link['id'])
                 if not success:
                     elog.error('ERROR|Could not remove link: %s' % link['id'])
+                    sPrint('ERROR|Could not remove link: %s' % link['id'], MessageType.ERROR)
 
             # Using SmoothLineWithArrow's builtin remove helper function
             link_obj.Remove(self.FloatCanvas)
@@ -659,8 +666,10 @@ class LogicCanvas(ViewCanvas):
         except Exception, e:
             elog.error('An error occurred when attempting to save the project ')
             elog.error(e)
+            sPrint('An error occurred when attempting to save the project', MessageType.ERROR)
 
-        elog.info('Configuration Saved Successfully! ')
+        elog.info('Configuration saved: ', path)
+        sPrint('Configuration was saved successfully: ', path)
 
     def appendChild(self, child):
         taglist = []
@@ -675,7 +684,7 @@ class LogicCanvas(ViewCanvas):
     def loadsimulation(self, file):
 
         file = os.path.abspath(file)
-        elog.info('Begin loading simulation: %s\n'%file)
+        sPrint('Begin loading simulation: %s\n'%file)
 
         # self.loadingpath = file
         tree = et.parse(file)
@@ -696,7 +705,7 @@ class LogicCanvas(ViewCanvas):
         dbconnections = tree.findall("./DbConnection")
         for connection in dbconnections:
 
-            elog.info('Adding database connections...')
+            sPrint('Adding database connections...')
 
             con_engine = connection.find('engine').text
             con_address = connection.find('address').text
@@ -762,7 +771,7 @@ class LogicCanvas(ViewCanvas):
             for arg in arguments:
                 args[arg.tag] = arg.text
 
-            elog.info('Adding model: %s...' % name)
+            sPrint('Adding model: %s...' % name)
 
             # save these coordinates for drawing once the model is loaded
             self.set_model_coords(id, x=x, y=y)
@@ -831,11 +840,12 @@ class LogicCanvas(ViewCanvas):
             if from_model is None or to_model is None:
                 # raise Exception('Could not find Model identifier in loaded models')
                 elog.critical("Failed to create link between %s and %s." % (from_model_name, to_model_name))
+                sPrint("Failed to create link between %s and %s." % (from_model_name, to_model_name), MessageType.CRITICAL)
 
             # if both models exist on the canvas, create and draw the link
             else:
 
-                elog.info('Adding link between: %s and %s... ' % (from_model_name, to_model_name))
+                sPrint('Adding link between: %s and %s... ' % (from_model_name, to_model_name))
 
                 # get the spatial and temporal transformations
                 transformation = link.find("./transformation")
@@ -858,7 +868,7 @@ class LogicCanvas(ViewCanvas):
                 # this draws the line
                 wx.CallAfter(self.createLine, from_model, to_model)
 
-        elog.info('Loading simulation complete')
+
 
     def SetLoadingPath(self, path):
         self.loadingpath = path
@@ -901,4 +911,3 @@ class LogicCanvas(ViewCanvas):
     def simulation_finished(self, evt):
         # todo: this should open a dialog box showing the execution summary
         pass
-        # elog.info('Simulation finished')

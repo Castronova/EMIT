@@ -9,7 +9,10 @@ import wx.lib.agw.aui as aui
 from gui import events
 from wx.lib.newevent import NewEvent
 from coordinator.emitLogging import elog
+
+
 from LowerPanelView import viewLowerPanel
+
 import os
 from environment import env_vars
 from gui.controller.NetcdfCtrl import NetcdfCtrl

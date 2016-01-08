@@ -18,45 +18,18 @@ from gui.controller import ConsoleOutputCtrl
 from gui.controller.WofSitesCtrl import WofSitesViewerCtrl
 from gui.controller.AddConnectionCtrl import AddConnectionCtrl
 from webservice import wateroneflow
+from gui.controller.ConsoleOutputCtrl import consoleCtrl
 
 class viewLowerPanel:
     def __init__(self, notebook):
 
-        console = ConsoleTab(notebook)
+        console =  consoleCtrl(notebook)
         timeseries = TimeSeriesTab(notebook)
         simulations = SimulationDataTab(notebook)
 
         notebook.AddPage(console, "Console")
         notebook.AddPage(timeseries, "Time Series")
         notebook.AddPage(simulations, "Simulations")
-
-        # deactivate the console if we are in debug mode
-        # if not sys.gettrace():
-            # redir = RedirectText(self.log)
-            # sys.stdout = redir
-
-            #  Thread starts here to ensure its on the main thread
-        t = threading.Thread(target=ConsoleOutputCtrl.follow, name='CONSOLE THREAD', args=(elog, console.log))
-        t.start()
-
-class ConsoleTab(wx.Panel):
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent)
-
-        self.log = wx.richtext.RichTextCtrl(self, -1, size=(100,100),
-                                            style = wx.TE_MULTILINE | wx.TE_READONLY | wx.HSCROLL | wx.SIMPLE_BORDER|wx.CURSOR_NONE)
-
-        self.log.Bind(wx.EVT_CONTEXT_MENU, self.onRightUp)
-
-        # Add widgets to a sizer
-        sizer = wx.BoxSizer()
-        sizer.Add(self.log, 1, wx.ALL|wx.EXPAND, 5)
-        self.SetSizer(sizer)
-
-        self.SetSizerAndFit(sizer)
-
-    def onRightUp(self, event):
-        self.log.PopupMenu(ConsoleContextMenu(self, event))
 
 class TimeSeriesTab(wx.Panel):
     def __init__(self, parent):
@@ -78,7 +51,7 @@ class TimeSeriesTab(wx.Panel):
         self.m_olvSeries.DefineColumns(self.table_columns)
 
         self.addConnectionButton.Bind(wx.EVT_LEFT_DOWN, self.AddConnection)
-        self.addConnectionButton.Bind(wx.EVT_MOUSEWHEEL, self.AddConnection_MouseWheel)
+        # self.addConnectionButton.Bind(wx.EVT_MOUSEWHEEL, self.AddConnection_MouseWheel)
 
         self.connection_refresh_button.Bind(wx.EVT_LEFT_DOWN, self.OLVRefresh)
         self.connection_combobox.Bind(wx.EVT_CHOICE, self.DbChanged)
@@ -136,19 +109,17 @@ class TimeSeriesTab(wx.Panel):
             self._conection_string = connection_string
         return self._connection_added
 
-    def AddConnection_MouseWheel(self, event):
-        '''
-        This is intentionally empty to disable mouse scrolling in the AddConnection combobox
-        :param event: EVT_MOUSEWHEEL
-        :return: None
-        '''
-        pass
+    # def AddConnection_MouseWheel(self, event):
+    #     '''
+    #     This is intentionally empty to disable mouse scrolling in the AddConnection combobox
+    #     :param event: EVT_MOUSEWHEEL
+    #     :return: None
+    #     '''
+    #     pass
 
     def AddConnection(self, event):
 
-        params = []
-        p = self
-        newConnection = AddConnectionCtrl(p)
+        connection = AddConnectionCtrl(self)
 
         '''
         while 1:

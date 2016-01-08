@@ -1,6 +1,6 @@
 __author__ = 'Mario'
 
-import os
+import os, sys
 from gui.views.EMITView import ViewEMIT
 import coordinator.engineAccessors as engine
 import sqlite3 as lite
@@ -17,11 +17,23 @@ class LogicEMIT(ViewEMIT):
         # connect to known databases
         currentdir = os.path.dirname(os.path.abspath(__file__))
         connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/connections'))
-        engine.connectToDbFromFile(dbtextfile=connections_txt)
-
+        script_path = os.path.join(os.path.abspath(__file__), "app_data/db/.dbload")
+        
         # todo: this path should come from the app settings file, not hardcoded
-        filepath = os.getcwd() + "/app_data/db/local.db" # The path of where the database is created
+        filepath = os.getcwd() + "/app_data/db/local.db" # The path of where the database is create
+        if getattr(sys, 'frozen', False):
+            connections_txt = os.path.join(sys._MEIPASS, 'data/connections')
+            filepath = os.path.join(sys._MEIPASS, 'app_data/db/local.db')
+            script_path = os.path.join(sys._MEIPASS, "app_data/db/.dbload")
 
+        # create db directory if it doesn't exist
+#        db_dirpath = os.path.dirname(filepath)
+#        if not os.path.exists(db_dirpath):
+#            os.mkdir(db_dirpath)
+
+        engine.connectToDbFromFile(dbtextfile=connections_txt)
+        
+        # if the database is not found in the dir (dev mode) or app (install mode), create it
         if not os.path.exists(filepath):
 
         # # fixme: will this always recreate the database, because that is not what we want
@@ -29,7 +41,7 @@ class LogicEMIT(ViewEMIT):
 
             # todo: only do this if the database doesn't exist
             conn = lite.connect(filepath)
-            script = open(os.getcwd() + "/app_data/db/.dbload")
+            script = open(script_path) 
             with conn:
                 cur = conn.cursor()
                 cur.executescript(script.read())

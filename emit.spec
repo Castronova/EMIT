@@ -40,6 +40,11 @@ a.binaries = filter(lambda x: 'pandas' not in x[0], a.binaries)
 # ADD APP DATA FILES
 a.datas += [('./app_data/config/.settings.ini', './app_data/config/.settings.ini', 'DATA')]
 a.datas += [('./log/.emptyfile', './log/.emptyfile', 'DATA')]
+a.datas += [('./data/connections', './data/connections', 'DATA')]
+a.datas += [('./data/preferences', './data/preferences', 'DATA')]
+a.datas += [('./app_data/db/.dbload', './app_data/db/.dbload', 'DATA')]
+#a.datas += [('./data/connections', './data/connections', 'DATA')]
+#a.datas += [('./data/connections', './data/connections', 'DATA')]
 
 pyz = PYZ(a.pure, a.zipped_data,
             cipher=block_cipher)

@@ -1,4 +1,4 @@
-name: temp
+name: testing
 dependencies:
 - conda-env=2.4.5=py27_0
 - curl=7.43.0=1
@@ -46,6 +46,7 @@ dependencies:
 - zlib=1.2.8=0
 - pip:
   - geoalchemy2==0.2.6
+  - pyinstaller==3.0
   - pyshp==1.2.3
   - suds==0.4
   - wxpython-common==3.0.0.0

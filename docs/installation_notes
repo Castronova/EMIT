@@ -10,11 +10,11 @@ Install conda-env
 
 #### Create a new environment and install dependencies 
 
-`$ conda env create -n [my_env_name] -f emit_env python=2.7`
+`$ conda env create -n [my_env_name] -f emit-env python=2.7`
 
 #### Freezing current environment
 
-`$ conda env export -n [my_env_name] -f emit_env`
+`$ conda env export -n [my_env_name] -f emit-env`
 
 
 # Installing pysqlite 
@@ -33,15 +33,13 @@ Install conda-env
 
 `git clone https://github.com/ghaering/pysqlite.git`
 
-`cd pysqlite`
-
 `wget http://www.sqlite.org/snapshot/sqlite-amalgamation-201601111252.zip`
 
-`unzip sqlite-amalgamation-201601111252.zip`
-
-`cp sqlite-amalgamation-201601111252.zip/* .`
+`unzip sqlite-amalgamation-201601111252.zip -d pysqlite`
 
 `rm -rf sqlite-amalgamation-201601111252.zip`
+
+`cd pysqlite`
 
 `vim setup.cfg`
 ```

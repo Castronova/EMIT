@@ -5,6 +5,9 @@ import wx.xrc
 import wx.aui
 from gui.controller.EMITCtrl import LogicEMIT
 from coordinator import engineManager
+import os
+import sys
+
 
 class EMITApp(wx.App):
     def OnInit(self):
@@ -15,10 +18,14 @@ class EMITApp(wx.App):
         # tends to add clutter to our console.
         wx.Log.SetLogLevel(0)
 
-        self.logicEmit = LogicEMIT(None)
+        self.logicEmit = LogicEMIT(self)
         return True
 
 if __name__ == '__main__':
 
     app = EMITApp()
     app.MainLoop()
+    pid = os.getpid()
+    os.system("kill -9 " + str(pid))
+    print "hello its me"
+

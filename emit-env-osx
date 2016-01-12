@@ -1,6 +1,5 @@
 name: testing
 dependencies:
-- conda-env=2.4.5=py27_0
 - curl=7.43.0=1
 - cycler=0.9.0=py27_0
 - dateutil=2.4.1=py27_0

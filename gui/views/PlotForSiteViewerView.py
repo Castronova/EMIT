@@ -34,7 +34,7 @@ class ViewPlotForSiteViewer:
         '''
         self.axes.legend(loc=location)
 
-    def setAxisLabel(self, x, y):
+    def setAxisLabel(self, x="", y=""):
         self.axes.set_xlabel(x)
         self.axes.set_ylabel(y)
 

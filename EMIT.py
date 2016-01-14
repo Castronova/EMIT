@@ -5,6 +5,9 @@ import wx.xrc
 import wx.aui
 from gui.controller.EMITCtrl import LogicEMIT
 from coordinator import engineManager
+import os
+import sys
+
 
 class EMITApp(wx.App):
     def OnInit(self):
@@ -22,3 +25,6 @@ if __name__ == '__main__':
 
     app = EMITApp()
     app.MainLoop()
+    pid = os.getpid()
+    os.system("kill -9 " + str(pid))
+

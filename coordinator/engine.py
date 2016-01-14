@@ -11,9 +11,6 @@ import os
 from coordinator import help as h
 from utilities.gui import *
 from utilities.mdl import *
-from api_old.ODM2.Core.services import readCore
-# from ODM2.Core.services import readCore
-#import wrappers
 from transform import space_base
 from transform import time_base
 from wrappers import odm2_data

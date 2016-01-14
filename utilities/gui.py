@@ -7,7 +7,7 @@ import datetime
 import cPickle as pickle
 import imp
 from api_old.ODMconnection import dbconnection
-from ODM2PythonAPI.src.api.ODMconnection import dbconnection as dbconnection2
+from odm2api.ODMconnection import dbconnection as dbconnection2
 from sprint import *
 from coordinator.emitLogging import elog
 import uuid

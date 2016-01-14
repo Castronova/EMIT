@@ -2,7 +2,7 @@ __author__ = 'mike'
 import os, sys
 import ConfigParser
 from api_old.ODMconnection import  dbconnection
-
+from sprint import *
 
 # This is an interface for
 class ConnectionVars(object):
@@ -55,6 +55,11 @@ class EnvironmentVars(object):
         if not EnvironmentVars.__monostate:
             currentdir = os.path.dirname(os.path.abspath(__file__))
             self.settings_path = os.path.abspath(os.path.join(currentdir, './app_data/config/.settings.ini'))
+            
+            # create this directory if it doesn't exist yet
+            if not os.path.exists(self.settings_path):
+                sPrint('Settings file could not be found, loading default settings', MessageType.INFO, PrintTarget.CONSOLE)    
+                os.mkdir(os.path.dirname(self.settings_path))
 
             self.config = ConfigParser.ConfigParser(allow_no_value = True)
 

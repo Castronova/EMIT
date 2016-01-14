@@ -23,6 +23,7 @@ dependencies:
 - pandas=0.17.1=np110py27_0
 - pil=1.1.7=py27_2
 - pip=7.1.2=py27_0
+- psycopg2=2.6.1=py27_0
 - pyodbc=3.0.10=py27_0
 - pyparsing=2.0.3=py27_0
 - pyqt=4.11.4=py27_1
@@ -40,13 +41,14 @@ dependencies:
 - sip=4.16.9=py27_0
 - six=1.10.0=py27_0
 - sqlalchemy=0.8.3=py27_0
-- sqlite=3.8.4.1=1
+- sqlite=3.9.2=0
 - tk=8.5.18=0
 - wheel=0.26.0=py27_1
 - wxpython=3.0=py27_0
 - zlib=1.2.8=0
 - pip:
   - geoalchemy==0.7.2
+  - geoalchemy2==0.2.6
   - pyinstaller==3.0
   - pyshp==1.2.3
   - suds==0.4

@@ -13,7 +13,7 @@ from transform.space import *
 from utilities.status import Status
 import update
 from coordinator.emitLogging import elog
-from ODM2PythonAPI.src.api.ODMconnection import dbconnection
+from odm2api.ODMconnection import dbconnection
 
 import db.dbapi_v2 as dbv2
 

@@ -2,27 +2,15 @@ __author__ = 'mike'
 
 import unittest
 import os, sys
-import pyspatialite.dbapi2 as sqlite3
 import subprocess
 import coordinator.users as user
 from environment import env_vars
-
-# odm2_api_path = os.path.abspath(os.path.join(__file__, '../../../ODM2PythonAPI'))
-odm2_api_path = os.path.abspath(os.path.join(__file__, '../../../ODM2PythonAPI/src'))
-sys.path.append(odm2_api_path)
-# from api.ODMconnection import dbconnection
-# from api.ODM2.services.readService import ReadODM2
-from ODM2PythonAPI.src.api.ODMconnection import dbconnection
-from ODM2PythonAPI.src.api.ODM2.services.readService import ReadODM2
+from odm2api.ODMconnection import dbconnection
+from odm2api.ODM2.services.readService import ReadODM2
 from db.dbapi_v2 import sqlite
-
-# from EM.src.api.ODMconnection import dbconnection
-# from ODM2PythonAPI_.src.api.ODM2.services.readService import ReadODM2
-
+import apsw as sqlite3
 import stdlib
-
-from utilities import mdl, gui
-from shapely.geometry import Point
+from utilities import mdl
 import random
 from datetime import datetime as dt
 from datetime import timedelta
@@ -42,52 +30,23 @@ class test_sqlite_db(unittest.TestCase):
         if os.path.exists(self.pop_db_path):
             os.remove(self.pop_db_path)
 
-
-        # get the database dump files
-        empty_dump_script = open('./data/build_empty.sql','r').read()
-        populated_dump_script = open('./data/insert_test_data.sql','r').read()
-
-
-
-        # create temp databases
-        empty_odm2_db = sqlite3.connect(self.empty_db_path)
-        pop_odm2_db = sqlite3.connect(self.pop_db_path)
-
-
-        # load the dump files into the databases
-        # empty_odm2_db.executescript(empty_dump_script)
-        # pop_odm2_db.executescript(populated_dump_script)
-
         # connect to each database
         empty_connection = dbconnection.createConnection('sqlite', self.empty_db_path)
         pop_connection = dbconnection.createConnection('sqlite', self.pop_db_path)
 
         self.emptysqlite = sqlite(empty_connection)
         self.popsqlite = sqlite(pop_connection)
+
         # initialize the in-memory database, loop through each command (skip first and last lines)
+        empty_dump_script = open('./data/empty_dump.sql','r').read()
         for line in empty_dump_script.split(';\n'):
-            # conn.getSession().execute(line)
-            self.emptysqlite.write.getSession().execute(line)
-
-        # for line in empty_dump_script.split(';\n'):
-        #     self.popsqlite.write.getSession().execute(line)
-
-        # for line in populated_dump_script.split(';\n'):
-        #     self.popsqlite.write.getSession().execute(line)
-
-        # connection = dbconnection.createConnection('sqlite', ':memory:')
+            self.emptysqlite.cursor.execute(line)
+        populated_dump_script = open('./data/populated_dump.sql','r').read()
+        for line in populated_dump_script.split(';\n'):
+            self.popsqlite.cursor.execute(line)
 
 
 
-
-        # create database connections that will be used in test cases
-        self.empty_connection = dbconnection.createConnection('sqlite', self.empty_db_path)
-
-        # self.pop_connection = dbconnection.createConnection('sqlite', self.pop_db_path)
-        # self.pop_connection = self.sqlite.connection
-
-
-    #
     def tearDown(self):
 
         # remove temp databases
@@ -98,67 +57,57 @@ class test_sqlite_db(unittest.TestCase):
 
 
     def test_get_people(self):
-        r = ReadODM2(self.pop_connection)
 
-        people = r.getPeople()
-        # self.assertTrue(len(people) == 4)
+        people = self.popsqlite.read.getPeople()
+        self.assertTrue(len(people) == 5)
 
-        person = r.getPersonById(1)
+        person = self.popsqlite.read.getPersonById(2)
         self.assertTrue(person.PersonFirstName == 'tony')
 
-    # def test_get_simulations(self):
-    #     r = ReadODM2(self.pop_connection)
-    #
-    #     # THIS SHOULD NOT RETURN NONE!!!!
-    #     simulations = r.getAllSimulations()
-    #
-    #     self.assertTrue(len(simulations) == 1)
 
     def test_create_user(self):
-        tempPerson = {'firstName': 'Bob', 'lastName': 'Charles'}
-        self.sqlite.create_user(tempPerson)
+        testPerson = {'firstName': 'Bob', 'lastName': 'Charles'}
 
-        # TODO:  Must make sure that an affiliation is created otherwise the user entry will fail during actionby creation
-    def test_validate_new_user(self):
+        people = self.emptysqlite.read.getPeople()
+        self.assertTrue(len(people) == 0)
 
-        #  Validating that the person was added
-        r = ReadODM2(self.pop_connection)
-        person = r.getPersonByName('Bob', 'Charles')
+        self.emptysqlite.create_user(testPerson)
+
+        people = self.emptysqlite.read.getPeople()
+        self.assertTrue(len(people) == 1)
+
+        person = self.emptysqlite.read.getPersonByName('Bob', 'Charles')
         self.assertTrue('Bob' == person.PersonFirstName, msg="Match! Person was inserted in the database")
 
-        # TODO:  Must make sure that an affiliation is created otherwise the user entry will fail during actionby creation
+        p = self.emptysqlite.read.getPersonById(person.PersonID)
+        self.assertTrue(person == p)
 
-    def test_add_new_user(self):
-        tempPerson = {'firstName': 'Bob', 'lastName': 'Charles'}
-
-        # TODO:  Must make sure that an affiliation is created otherwise the user entry will fail during actionby creation
-        self.sqlite.create_user(tempPerson)
-
-        r = ReadODM2(self.pop_connection)
-        person = r.getPersonByName('Bob', 'Charles')
-        id = r.getPersonById(person.PersonID)
-        self.assertTrue(person == id)
 
     def test_create_organization(self):
-        temporgan = {'cvType': 'University', 'code': 'usu',
-                      'name': 'GoAggies', 'desc': 'GoAggies',
-                      'link': 'GoAggies', 'parentOrgId': 'GoAggies'}
+        testOrg = {'cvType': 'University', 'code': 'usu',
+                      'name': 'GoAggies', 'desc': 'a university in utah',
+                      'link': 'SomeLink', 'parentOrgId': None}
 
-        self.sqlite.create_organization(temporgan)
+        orgs = self.emptysqlite.read.getOrganizations()
+        self.assertTrue(len(orgs) == 0)
 
-    # def test_validate_new_organization(self):
-    #
-    #     #  Validating that the organization was added
-    #     r = ReadODM2(self.empty_connection)
-    #     print r.getOrganizations()
-    #     group = r.getOrganizationByCode('GoAggies')
-    #
-    #     id = r.getOrganizationById(group.OrganizationID)
-    #     #     self.assertTrue(group == id)
+        self.emptysqlite.write.createOrganization(**testOrg)
+        o = self.emptysqlite.read.getOrganizations()
+        self.assertTrue(len(o) == 1)
+
+        o = self.emptysqlite.read.getOrganizationByCode('usu')
+        self.assertTrue(o.OrganizationName == 'GoAggies')
+
+        o = self.emptysqlite.read.getOrganizationById(1)
+        self.assertTrue(o.ParentOrganizationID is None)
+
+        cvs = self.emptysqlite.read.getCVOrganizationTypes()
+        self.assertTrue(len(cvs) > 1)
 
 
-
+    # todo: re-write
     def test_create_simulation(self):
+
 
         import stdlib
 
@@ -226,9 +175,9 @@ class test_sqlite_db(unittest.TestCase):
                              'name': 'test model',
                              'description': 'Some model descipription'}],
                   'time_step' : [{'abbreviation': 'hr',
-                                'unit_type_cv': 'hour',
-                                'name': 'hours',
-                                'value': '1'}]}
+                                  'unit_type_cv': 'hour',
+                                  'name': 'hours',
+                                  'value': '1'}]}
 
 
         # # model parameters that will be accessed via engine during simualtion (hardcoded for the test case)
@@ -257,6 +206,8 @@ class test_sqlite_db(unittest.TestCase):
 
 
 
+
+    # todo: re-write
     def test_insert_many(self):
 
         # create an exchange item

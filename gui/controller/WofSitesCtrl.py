@@ -235,8 +235,8 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
                 # self.plot.setTitle(self.getSelectedVariableName())
                 # self.plot.setAxisLabel(" ", data[0].variable.unit.unitName)
                 ylabel = data[0].variable.unit.unitName
-                self.plot.plotData(plotData, var_name, noData)
-                self.plot.setAxisLabel(y=ylabel)
+                self.plot.plotData(plotData, var_name, noData, ylabel)
+                # self.plot.setAxisLabel(y=ylabel)
 
     def populateVariablesList(self, api, sitecode):
         data = api.buildAllSiteCodeVariables(sitecode)

@@ -4,17 +4,16 @@ import datetime
 import uuid
 import numpy
 import time
-#import pyspatialite.dbapi2 as spatialite
-import pandas
+from odm2api.ODM2.services.readService import ReadODM2
+from odm2api.ODM2.services.createService import CreateODM2
+from odm2api.ODM2.services.updateService import UpdateODM2
+from odm2api.ODM2.services.deleteService import DeleteODM2
+from odm2api.ODM2 import models
+import apsw as sqlite3
+
 
 # This is our API for simulation data that uses the latest ODM2PythonAPI code
 
-from ODM2PythonAPI.src.api.ODMconnection import dbconnection
-from ODM2PythonAPI.src.api.ODM2.services.readService import ReadODM2
-from ODM2PythonAPI.src.api.ODM2.services.createService import CreateODM2
-from ODM2PythonAPI.src.api.ODM2.services.updateService import UpdateODM2
-from ODM2PythonAPI.src.api.ODM2.services.deleteService import DeleteODM2
-from ODM2PythonAPI.src.api.ODM2 import models
 
 from coordinator.emitLogging import elog
 
@@ -46,6 +45,7 @@ class sqlite():
 
     def __init__(self, session):
 
+
         # build sqlalchemy connection
         # self.connection = dbconnection.createConnection('sqlite', sqlitepath)
         self.connection = session
@@ -58,8 +58,13 @@ class sqlite():
         self.delete = DeleteODM2(self.connection)
 
         # create connection using spatialite for custom sql queries
-        self.spatial_connection = spatialite.connect(sqlitepath)
-        self.spatialDb = self.spatial_connection.cursor()
+        self.conn = sqlite3.Connection(sqlitepath)
+        self.cursor = self.conn.cursor()
+
+        # load mod_spatialite extension
+        self.conn.enableloadextension(True)
+        self.cursor.execute('SELECT load_extension("mod_spatialite")')
+
 
     def create_user(self, userInfo):
         person = self.write.createPerson(userInfo['firstName'], userInfo['lastName'])
@@ -492,15 +497,15 @@ class sqlite():
         ElevationDatumCV=elevationDatum
 
         # get the last record index
-        res = self.spatialDb.execute('SELECT last_insert_rowid() FROM SamplingFeatures')
+        res = self.cursor.execute('SELECT last_insert_rowid() FROM SamplingFeatures')
         ID = res.fetchone() or (-1,)
         ID = ID[0] + 1 # increment the last id
 
         values = [ID,UUID,FeatureTypeCV,FeatureCode,FeatureName,FeatureDescription, FeatureGeoTypeCV, FeatureGeometry, Elevation,ElevationDatumCV]
-        self.spatialDb.execute('INSERT INTO SamplingFeatures VALUES (?, ?, ?, ?, ?, ?, ?, geomFromText(?), ?, ?)'
-                               ,values)
+        self.cursor.execute('INSERT INTO SamplingFeatures VALUES (?, ?, ?, ?, ?, ?, ?, geomFromText(?), ?, ?)'
+                            , values)
 
-        self.spatial_connection.commit()
+        self.conn.commit()
 
         featureObj = models.SamplingFeatures()
         featureObj.SamplingFeatureID = ID
@@ -536,11 +541,11 @@ class sqlite():
 
         # insert these data
         values = [resultid, xloc, xloc_unitid, yloc, yloc_unitid, zloc, zloc_unitid, srsID, timespacing, timespacing_unitid, aggregationstatistic]
-        self.spatialDb.execute('INSERT INTO TimeSeriesResults VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', values)
-        self.spatial_connection.commit()
+        self.cursor.execute('INSERT INTO TimeSeriesResults VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', values)
+        self.conn.commit()
 
         # return the id of the inserted record
-        return self.spatialDb.lastrowid
+        return self.cursor.lastrowid
 
     def insert_timeseries_result_values_bulk(self, ResultIDs = [], DataValues = [], ValueDateTimes = [],
                                              QualityCodeCV = 'unknown', TimeAggregationIntervalUnitsID = 1,
@@ -580,7 +585,7 @@ class sqlite():
         # cannot be empty: datavale, valuedatetime
         # self.spatialDb.execute('INSERT INTO')
         # get the last record index
-        res = self.spatialDb.execute('SELECT last_insert_rowid() FROM TimeSeriesResultValues')
+        res = self.cursor.execute('SELECT last_insert_rowid() FROM TimeSeriesResultValues')
         startID = res.fetchone() or (-1,)
         startID = startID[0] + 1 # increment the last id
 
@@ -596,10 +601,10 @@ class sqlite():
             eidx = i + chunk_size if (i + chunk_size) < len(vals) else len(vals)
             percent_complete = float(i) / float(len(vals)) * 100
             print '.. inserting records %3.1f %% complete' % (percent_complete)
-            self.spatialDb.executemany('INSERT INTO TimeSeriesResultValues VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', vals[sidx:eidx])
+            self.cursor.executemany('INSERT INTO TimeSeriesResultValues VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', vals[sidx:eidx])
 
         print '.. committing changes to database'
-        self.spatial_connection.commit()
+        self.conn.commit()
 
 
         return 1
@@ -620,14 +625,14 @@ class sqlite():
         valCount = len(SamplingFeatureIDs)
 
         # get the last record index
-        res = self.spatialDb.execute('SELECT last_insert_rowid() FROM FeatureActions')
+        res = self.cursor.execute('SELECT last_insert_rowid() FROM FeatureActions')
         startID = res.fetchone() or (-1,)
         startID = startID[0] + 1 # increment the last id
 
         FeatureActionIDs = range(startID, startID + valCount, 1)
         vals = zip(FeatureActionIDs, SamplingFeatureIDs, ActionIDs)
-        self.spatialDb.executemany('INSERT INTO FeatureActions VALUES (?, ?, ?)', vals)
-        self.spatial_connection.commit()
+        self.cursor.executemany('INSERT INTO FeatureActions VALUES (?, ?, ?)', vals)
+        self.conn.commit()
 
 
         # return the feature action ids
@@ -664,7 +669,7 @@ class sqlite():
         valCount = len(FeatureActionIDs)
 
         # get the last record index
-        res = self.spatialDb.execute('SELECT last_insert_rowid() FROM Results')
+        res = self.cursor.execute('SELECT last_insert_rowid() FROM Results')
         startID = res.fetchone() or (-1,)
         startID = startID[0] + 1 # increment the last id
 
@@ -690,8 +695,8 @@ class sqlite():
         vals = zip(ResultIDs, uuids, FeatureActionIDs, ResultTypeCV, VariableID, UnitsID, TaxonomicClassfierID,
                    ProcessingLevelID, ResultDateTime, ResultDateTimeUTCOffset, ValidDateTime, ValidDateTimeUTCOffset,
                    StatusCV, SampledMediumCV, ValueCount)
-        self.spatialDb.executemany('INSERT INTO Results VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', vals)
-        self.spatial_connection.commit()
+        self.cursor.executemany('INSERT INTO Results VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', vals)
+        self.conn.commit()
 
 
         # return the feature action ids
@@ -745,8 +750,8 @@ class sqlite():
         # zip the values up
         vals = zip(resultIDs, aggregationstatistic, xloc, xloc_unitid, yloc, yloc_unitid, zloc, zloc_unitid, srsID,
                    timespacing, timespacing_unitid)
-        self.spatialDb.executemany('INSERT INTO TimeSeriesResults VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', vals)
-        self.spatial_connection.commit()
+        self.cursor.executemany('INSERT INTO TimeSeriesResults VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', vals)
+        self.conn.commit()
 
 
         # return the feature action ids
@@ -761,8 +766,8 @@ class sqlite():
         """
 
         # convert pandas table into an insert_many query
-        dataframe.to_sql(name='TimeSeriesResultValues', con=self.spatial_connection, flavor='sqlite', if_exists='append', index=False)
-        self.spatial_connection.commit()
+        dataframe.to_sql(name='TimeSeriesResultValues', con=self.conn, flavor='sqlite', if_exists='append', index=False)
+        self.conn.commit()
 
         # return true
         return 1
@@ -774,7 +779,7 @@ class sqlite():
     def getSamplingFeatureID__Geometry_EQUALS(self, wkt_geometry):
 
         try:
-            res = self.spatialDb.execute('SELECT SamplingFeatureID,'
+            res = self.cursor.execute('SELECT SamplingFeatureID,'
                                          'SamplingFeatureUUID,'
                                          'SamplingFeatureTypeCV,'
                                          'SamplingFeatureCode,'

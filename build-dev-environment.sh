@@ -44,25 +44,44 @@ done
 }
 
 
-# Clone the pysqlite project
-echo 'Cloning and building the pysqlite package.'
-git clone https://github.com/ghaering/pysqlite.git
 
-# download the sqlite amalgamation
-wget http://www.sqlite.org/snapshot/sqlite-amalgamation-201601111252.zip
+# clone the apsw project
+echo 'Cloning the apsw project'
+git clone https://github.com/rogerbinns/apsw.git
 
-# extract sqlite contents into pysqlite directory
-unzip sqlite-amalgamation* -d pysqlite
+# add EXPERIMERTAL to setup.cfg, otherwise enableloadextension fails
+echo "define=EXPERIMENTAL" >> ./apsw/setup.cfg
 
-# build sqlite
-cd pysqlite
-python setup.py install
+# build apsw
+cd apsw
+
+{ # try catch block
+
+    python setup.py fetch --all build --enable-all-extensions install 
+
+} ||
+{
+    while true; do
+        read -p 'No Checksum is available for SQLite. Do you want to continue without a checksum? [yes/no]' yn
+        case $yn in 
+            [Yy]* ) python setup.py fetch --all --missing-checksum-ok build --enable-all-extensions install;break;;
+            [Nn]* ) rm -rf ./apsw;exit 1;;
+            * ) echo "Please answer yes or no.";;
+        esac
+    done
+}
 cd ..
+
+
+
+# install odm2api
+pip install git+https://github.com/ODM2/ODM2PythonAPI.git
+
 
 # clean up
 echo 'Cleaning up the build directory.'
-rm -rf sqlite-amalgamation*
-rm -rf pysqlite
+rm -rf apsw
+
 
 echo '#'
 echo '# To activate this environment, use:'

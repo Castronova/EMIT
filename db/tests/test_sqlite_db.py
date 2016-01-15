@@ -2,19 +2,17 @@ __author__ = 'mike'
 
 import unittest
 import os, sys
-import subprocess
 import coordinator.users as user
 from environment import env_vars
 from odm2api.ODMconnection import dbconnection
 from odm2api.ODM2.services.readService import ReadODM2
 from db.dbapi_v2 import sqlite
-import apsw as sqlite3
+from utilities import geometry
 import stdlib
-from utilities import mdl
+from utilities import mdl, gui
 import random
 from datetime import datetime as dt
 from datetime import timedelta
-from utilities import geometry
 
 class test_sqlite_db(unittest.TestCase):
 
@@ -109,14 +107,6 @@ class test_sqlite_db(unittest.TestCase):
     def test_create_simulation(self):
 
 
-        import stdlib
-
-        from utilities import mdl, gui
-        from shapely.geometry import Point
-        import random
-        from datetime import datetime as dt
-        from datetime import timedelta
-
         # create an exchange item
         unit = mdl.create_unit('cubic meters per second')
         variable = mdl.create_variable('streamflow')
@@ -125,13 +115,11 @@ class test_sqlite_db(unittest.TestCase):
         item = stdlib.ExchangeItem(name='Test', desc='Test Exchange Item', unit=unit, variable=variable)
 
         # set exchange item geometries
-        coords = [(1,2),(2,3),(3,4)]
-        geoms = []
-        for x,y in coords:
-            point = Point(x,y)
-            geoms.append(stdlib.Geometry(point))
-        item.addGeometries2(geoms)
-        self.assertTrue(len(item.getGeometries2()) == len(geoms))
+        xcoords = [1,2,3]
+        ycoords = [2,3,4]
+        points = geometry.build_point_geometries(xcoords, ycoords)
+        item.addGeometries2(points)
+        self.assertTrue(len(item.getGeometries2()) == len(points))
 
         # set exchange item values
         start_time = dt.now()                       # set start time to 'now'
@@ -147,7 +135,7 @@ class test_sqlite_db(unittest.TestCase):
             dates.append(current_time)
 
             # add some random values for each geometry
-            values.append([random.random() for g in geoms] )
+            values.append([random.random() for pt in points] )
 
             # increment time by 1 day
             current_time += timedelta(days=1)
@@ -191,13 +179,13 @@ class test_sqlite_db(unittest.TestCase):
         # )
 
         # build user object
-        user_json = open(env_vars.USER_JSON).read()
-        user_obj = user.BuildAffiliationfromJSON(user_json)
+        # user_json = open(env_vars.USER_JSON).read()
+        # user_obj = user.BuildAffiliationfromJSON(user_json)
 
-        # get affiliation
-        r = ReadODM2(self.pop_connection)
-        # affiliation = r.getAffiliationsByPerson('tony','castronova')
-        self.sqlite.create_simulation('My Simulation', user_obj[0], params, item)
+        # # get affiliation
+        # r = ReadODM2(self.pop_connection)
+        # # affiliation = r.getAffiliationsByPerson('tony','castronova')
+        # self.sqlite.create_simulation('My Simulation', user_obj[0], params, item)
 
 
 

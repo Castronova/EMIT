@@ -87,32 +87,10 @@ class sqlite():
         :param ei: list of exchange item objects (stdlib.ExchangeItem)
         """
 
-        bench_insert_result = 0
-        bench_insert_tsresult = 0
-        bench_insert_tsresultvalues = 0
-        bench_assemble_tsresultvalues = 0
-        bench_assemble_tsrvpandas = 0
-        bench_insert_sf = 0
         bench_insert_fa = 0
 
-        # # parse simulation configuration parameters
-        # description = config_params['general'][0]['description']
-        # simstart = datetime.datetime.strptime(config_params['general'][0]['simulation_start'], '%m/%d/%Y %H:%M:%S' )
-        # simend = datetime.datetime.strptime(config_params['general'][0]['simulation_end'], '%m/%d/%Y %H:%M:%S' )
-        # modelcode = config_params['model'][0]['code']
-        # modelname = config_params['model'][0]['name']
-        # modeldesc = config_params['model'][0]['description']
-        # timestepvalue = config_params['time_step'][0]['value']
-        #
-        # # default to a timestep of seconds
-        # timestepname = config_params['time_step'][0].get('name') or 'seconds'
-        # timestepabbv = config_params['time_step'][0].get('abbreviation') or ' '
-
-        # create person / organization / affiliation
-        # affiliation = self.set_user_preferences(preferences_path)
 
         # todo: handle multiple affiliations
-        # for obj in user_obj:
         person = self.createPerson(user_obj)
         organization = self.createOrganization(user_obj)
         affiliation = self.createAffiliation(organization.OrganizationID, person.PersonID, user_obj)
@@ -129,8 +107,7 @@ class sqlite():
                                          begindatetimeoffset=int((datetime.datetime.now() - datetime.datetime.utcnow()).total_seconds()/3600))
 
         # create actionby
-        # aff_id = odm2_affiliation[0].AffiliationID if len(odm2_affiliation) > 0 else None
-        actionby = self.write.createActionBy(actionid=action.ActionID,
+        self.write.createActionBy(actionid=action.ActionID,
                                              affiliationid=affiliation.AffiliationID)
 
         # create processing level
@@ -152,9 +129,6 @@ class sqlite():
 
         # loop over output exchange items
         for e in ei:
-
-
-
 
             geometries = numpy.array(e.getGeometries2())
             dates = numpy.array(e.getDates2())
@@ -204,16 +178,6 @@ class sqlite():
             bench_insert_fa += (time.time() - st)
             print 'Inserting Feature Actions (bulk) %3.5f sec' % bench_insert_fa
 
-            # st = time.time()
-            # featureactions = []
-            # for i in range(len(samplingfeaturesids)):
-            #     # create feature action
-            #     featureAction = self.write.createFeatureAction(samplingfeatureid=samplingfeaturesids[i], actionid=action.ActionID)
-            #     featureactions.append(featureAction)
-            # bench_insert_fa += (time.time() - st)
-            # print 'Inserting Feature Actions (not bulk) %3.5f sec' % bench_insert_fa
-
-
             st = time.time()
             resultids = self.insert_results_bulk(FeatureActionIDs=featureactionids, ResultTypeCV='time series', VariableID=variable.VariableID,
                                      UnitsID=unit.UnitsID, ValueCount=len(dates), ProcessingLevelID=processinglevel.ProcessingLevelID,
@@ -221,51 +185,16 @@ class sqlite():
             print 'Inserting Results (bulk) %3.5f sec' % (time.time() - st)
 
 
-            # st = time.time()
-            # results = []
-            # for i in range(len(featureactionids)):
-            #     # create a result record
-            #     result = self.write.createResult(featureactionid=featureactionids[i],
-            #                                      variableid=variable.VariableID,
-            #                                      unitid=unit.UnitsID,
-            #                                      processinglevelid=processinglevel.ProcessingLevelID,
-            #                                      valuecount=len(dates),
-            #                                      sampledmedium='unknown',          # todo: this should be determined from variable/unit
-            #                                      resulttypecv='time series',       # todo: this should be determined from unit/variable
-            #                                      taxonomicclass=None,
-            #                                      resultdatetime=None,
-            #                                      resultdatetimeutcoffset=None,
-            #                                      validdatetime=None,
-            #                                      validdatetimeutcoffset=None,
-            #                                      statuscv=None
-            #                                      )
-            #     results.append(result)
-            # bench_insert_result +=  (time.time() - st)
-            # print 'Inserting Results (not bulk) %3.5f sec' % bench_insert_result
-
-            st = time.time()
             # create time series result
-            timeseriesresult = self.insert_timeseries_results_bulk(resultIDs=resultids, timespacing=timestep_value, timespacing_unitid=timestepunit.UnitsID)
+            st = time.time()
+            self.insert_timeseries_results_bulk(resultIDs=resultids, timespacing=timestep_value, timespacing_unitid=timestepunit.UnitsID)
             print 'Inserting Timeseries Results (bulk) %3.5f sec' % (time.time() - st)
 
-            # st = time.time()
-            # for i in range(len(results)):
-            #     # create time series result
-            #     timeseriesresult = self.insert_timeseries_result(resultid=results[i].ResultID, timespacing=timestep_value, timespacing_unitid=timestepunit.UnitsID)
-            # bench_insert_tsresult += (time.time() - st)
-            # print 'Inserting Timeseries Results (not bulk) %3.5f sec' % bench_insert_tsresult
-
-            # for i in range(len(geometries)):
-            #     v = datavalues[:,i]   # all dates for geometry(i)
-
-            # datavalues[times, geoms]
             values = datavalues.flatten(order='C') # flatten row-wise, [t1g1, t1g2, ..., t1gn, t2g1, t2g2, ..., t2gn, ...]
             valuedates = dates[:,1]  # get all rows of the datetime column of the dates array [t1, t2, t3, ..., tn]
             flattened_ids = []
             flattened_dates = []
             geom_count = len(geometries)
-            # for id in resultids:
-            #     flattened_ids.extend([id] * geom_count)
 
             for dt in valuedates:
                 flattened_dates.extend([dt] * geom_count)  # [t1, t1, ..., t1, t2, t2, ..., t2, tn, tn, ..., tn]
@@ -273,13 +202,9 @@ class sqlite():
             for i in range(geom_count):
                 flattened_ids.extend(resultids)     # [id1, id2, ..., idn, id1, id2, ..., idn, ...]
 
-                # flattened_dates.extend(valuedates)
-            # valuedates [valuedates] * geom_count
-
             st = time.time()
             print 'Bulk Inserting Timeseries Results Values (%d records)' % (len(flattened_ids))
-            # TimeAggregationIntervalUnitsID = None, DataValue = [], ValueDateTime = [], ValueDateTimeUTCOffset = -6):
-            success = self.insert_timeseries_result_values_bulk(  ResultIDs = flattened_ids, TimeAggregationInterval= timestep_value,
+            self.insert_timeseries_result_values_bulk(  ResultIDs = flattened_ids, TimeAggregationInterval= timestep_value,
                                                                   TimeAggregationIntervalUnitsID=timestepunit.UnitsID,
                                                                   DataValues = values, ValueDateTimes = flattened_dates,
                                                                   ValueDateTimeUTCOffset=-6, CensorCodeCV='nc', QualityCodeCV='unknown')
@@ -287,127 +212,10 @@ class sqlite():
             print 'Elapsed time: %3.5f sec' % bulk
 
 
-            # # loop over geometries
-            # for i in range(0, len(geometries)):
-            #     # elog.info('OVERWRITE: Saving %s series %d of %d' % (e.variable().VariableNameCV(), i, len(geometries)))
-            #     total = (bench_insert_sf / (i+1)) + \
-            #             (bench_insert_fa / (i+1)) + \
-            #             (bench_insert_result / (i+1)) + \
-            #             (bench_insert_tsresult / (i+1)) + \
-            #             (bench_assemble_tsresultvalues / (i+1)) + \
-            #             (bench_assemble_tsrvpandas / (i+1)) + \
-            #             (bench_insert_tsresultvalues / (i+1)) + 0.001
-            #     print '\n[%d of %d] ' %(i, len(geometries))
-            #     print '%-15s %-15s %-15s %-15s' % ('Operation', 'Total [sec]', 'Ave [sec]', '%')
-            #     print '-' * (15*4+3)
-            #     print '%-15s %-15s %-15s %-15s' % ('insert sf', str(round(bench_insert_sf,5)), str(round(bench_insert_sf / (i+1), 5)), str(round(bench_insert_sf/(i+1)/total * 100., 1)))
-            #     print '%-15s %-15s %-15s %-15s' % ('insert fa', str(round(bench_insert_fa,5)), str(round(bench_insert_fa / (i+1), 5)), str(round(bench_insert_fa/(i+1)/total * 100., 1)))
-            #     print '%-15s %-15s %-15s %-15s' % ('insert result', str(round(bench_insert_result,5)), str(round(bench_insert_result / (i+1), 5)), str(round(bench_insert_result/(i+1)/total * 100., 1)))
-            #     print '%-15s %-15s %-15s %-15s ' % ('insert tsr',  str(round(bench_insert_tsresult,5)), str(round(bench_insert_tsresult / (i+1), 5)), str(round(bench_insert_tsresult/ (i+1)/total * 100., 1)))
-            #     print '%-15s %-15s %-15s %-15s ' % ('assemble trsv', str(round(bench_assemble_tsresultvalues,5)), str(round(bench_assemble_tsresultvalues / (i+1), 5)), str(round(bench_assemble_tsresultvalues/ (i+1)/total * 100., 1)))
-            #     print '%-15s %-15s %-15s %-15s ' % ('tsrv pandas', str(round(bench_assemble_tsrvpandas,5)), str(round(bench_assemble_tsrvpandas / (i+1), 5)), str(round(bench_assemble_tsrvpandas/ (i+1)/total * 100., 1)))
-            #     print '%-15s %-15s %-15s %-15s ' % ('insert tsrv', str(round(bench_insert_tsresultvalues,5)), str(round(bench_insert_tsresultvalues / (i+1), 5)), str(round(bench_insert_tsresultvalues/ (i+1)/total * 100., 1)))
-            #     print '-' * (15*4+3)
-            #     print 'Total Estimated Time is %3.5f minutes' % ((total* len(geometries)) / 60)
-            #
-            #
-            #     geom_wkt = geometries[i].ExportToWkt()
-            #     geom_type = geometries[i].type
-            #
-            #     values = datavalues[:,i]   # all dates for geometry(i)
-            #
-            #     st = time.time()
-            #     # create sampling feature
-            #     samplingFeature = self.getSamplingFeatureID__Geometry_EQUALS(geom_wkt)
-            #     if not samplingFeature:
-            #         samplingFeature = self.insert_sampling_feature(type='site',geometryType=geom_type, WKTgeometry=geom_wkt)
-            #     bench_insert_sf += (time.time() - st)
-            #
-            #     st = time.time()
-            #     # create feature action
-            #     featureaction = self.write.createFeatureAction(samplingfeatureid=samplingFeature.SamplingFeatureID,
-            #                                                    actionid=action.ActionID)
-            #     bench_insert_fa += (time.time() - st)
-            #
-            #     st = time.time()
-            #     # create a result record
-            #     result = self.write.createResult(featureactionid=featureaction.FeatureActionID,
-            #                                      variableid=variable.VariableID,
-            #                                      unitid=unit.UnitsID,
-            #                                      processinglevelid=processinglevel.ProcessingLevelID,
-            #                                      valuecount=len(dates),
-            #                                      sampledmedium='unknown',          # todo: this should be determined from variable/unit
-            #                                      resulttypecv='time series',       # todo: this should be determined from unit/variable
-            #                                      taxonomicclass=None,
-            #                                      resultdatetime=None,
-            #                                      resultdatetimeutcoffset=None,
-            #                                      validdatetime=None,
-            #                                      validdatetimeutcoffset=None,
-            #                                      statuscv=None
-            #                                      )
-            #     bench_insert_result +=  (time.time() - st)
-            #
-            #     # create time series result
-            #     # using the sqlalchemy function results in: FlushError: Instance <TimeSeriesResults at 0x1174b5fd0> has a NULL identity key.
-            #
-            #     st = time.time()
-            #     timeseriesresult = self.insert_timeseries_result(resultid=result.ResultID, timespacing=timestep_value, timespacing_unitid=timestepunit.UnitsID)
-            #     bench_insert_tsresult += (time.time() - st)
-            #
-            #
-            #     # todo: consider utc offset for each result value.
-            #     # todo: get timezone based on geometry, use this to determine utc offset
-            #     # todo: implement censorcodecv
-            #     # todo: implement qualitycodecv
-            #
-            #
-            #     st = time.time()
-            #     # assemble the timeseriesresultvalues into a dictionary that will be used to build a pandas dataframe object
-            #     data = []
-            #     for ii in xrange(len(values)):
-            #         d = dict(ResultID = result.ResultID,
-            #                  CensorCodeCV = 'nc',
-            #                  QualityCodeCV = 'unknown',
-            #                  TimeAggregationInterval = timestep_value,
-            #                  TimeAggregationIntervalUnitsID = timestepunit.UnitsID,
-            #                  DataValue = values[ii],
-            #                  ValueDateTime = dates[ii][1],
-            #                  ValueDateTimeUTCOffset = -6)
-            #         data.append(d)
-            #     bench_assemble_tsresultvalues += (time.time() - st)
-            #
-            #     st = time.time()
-            #     # create pandas dataframe
-            #     df = pandas.DataFrame(data=data)
-            #     bench_assemble_tsrvpandas += (time.time() - st)
-            #
-            #
-            #     st = time.time()
-            #     # strftime datetime objects (required for SQLite bc lack of datetime64 support) YYYY-MM-DD HH:MM:SS
-            #     df['ValueDateTime'] = df['ValueDateTime'].apply(lambda x: x.strftime('%Y-%m-%d %H:%M:%S'))
-            #     self.insert_timeseries_result_values(dataframe=df)
-            #     bench_insert_tsresultvalues += (time.time() - st)
-            #
-            #     st = time.time()
-            #     # TimeAggregationIntervalUnitsID = None, DataValue = [], ValueDateTime = [], ValueDateTimeUTCOffset = -6):
-            #     success = self.insert_timeseries_result_values_bulk(  ResultID=result.ResultID, TimeAggregationInterval= timestep_value,
-            #                                                           TimeAggregationIntervalUnitsID=timestepunit.UnitsID,
-            #                                                           DataValues = values, ValueDateTimes = dates[:,1],
-            #                                                           ValueDateTimeUTCOffset=-6, CensorCodeCV='nc', QualityCodeCV='unknown')
-            #     bulk = time.time() - st
-            #     print 'Bulk Insert %3.5f sec' % (bulk)
-            #     total_sqlalchemy = (bench_assemble_tsrvpandas + bench_assemble_tsresultvalues + bench_insert_tsresultvalues) / (i+1)
-            #     print 'Non-Bulk Insert %3.5f sec' % (total_sqlalchemy)
-            #     print 'Speedup of %3.fX' % (total_sqlalchemy / bulk)
-
-
+        # create the model instance
         model = self.createModel(name, description, name)
 
         # create simulation
-
-        #start = min([i.getStartTime() for i in output_exchange_items])
-        #end = max([i.getEndTime() for i in output_exchange_items])
-
         # TODO: remove hardcoded time offsets!
         sim = self.write.createSimulation(actionid=action.ActionID,
                                           modelID=model.ModelID,
@@ -505,7 +313,7 @@ class sqlite():
         self.cursor.execute('INSERT INTO SamplingFeatures VALUES (?, ?, ?, ?, ?, ?, ?, geomFromText(?), ?, ?)'
                             , values)
 
-        self.conn.commit()
+        # self.conn.commit()
 
         featureObj = models.SamplingFeatures()
         featureObj.SamplingFeatureID = ID
@@ -579,6 +387,10 @@ class sqlite():
         time_unit_ids = [TimeAggregationIntervalUnitsID] * valCount
         time_intervals = [TimeAggregationInterval] * valCount
         time_offsets = [ValueDateTimeUTCOffset] * valCount
+
+        # convert datetime into apsw accepted format
+        value_date_times = [d.strftime('%d-%m-%Y %H:%M:%S.%f') for d in ValueDateTimes]
+
         # result_ids = [ResultID] * valCount
 
         # cannot be none: resultid, timeaggregation interval
@@ -591,7 +403,7 @@ class sqlite():
 
         valueIDs = range(startID, startID + valCount, 1)
         # vals = [ID, ResultID, DataValue, ValueDateTime, ValueDateTimeUTCOffset, CensorCodeCV, QualityCodeCV, TimeAggregationInterval, TimeAggregationIntervalUnitsID]
-        vals = zip(valueIDs, ResultIDs, DataValues, ValueDateTimes, time_offsets, censor_codes, quality_codes, time_intervals, time_unit_ids)
+        vals = zip(valueIDs, ResultIDs, DataValues, value_date_times, time_offsets, censor_codes, quality_codes, time_intervals, time_unit_ids)
 
         # insert values in chunks of 10,000
         chunk_size = 10000
@@ -602,9 +414,6 @@ class sqlite():
             percent_complete = float(i) / float(len(vals)) * 100
             print '.. inserting records %3.1f %% complete' % (percent_complete)
             self.cursor.executemany('INSERT INTO TimeSeriesResultValues VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', vals[sidx:eidx])
-
-        print '.. committing changes to database'
-        self.conn.commit()
 
 
         return 1
@@ -632,7 +441,6 @@ class sqlite():
         FeatureActionIDs = range(startID, startID + valCount, 1)
         vals = zip(FeatureActionIDs, SamplingFeatureIDs, ActionIDs)
         self.cursor.executemany('INSERT INTO FeatureActions VALUES (?, ?, ?)', vals)
-        self.conn.commit()
 
 
         # return the feature action ids
@@ -696,7 +504,6 @@ class sqlite():
                    ProcessingLevelID, ResultDateTime, ResultDateTimeUTCOffset, ValidDateTime, ValidDateTimeUTCOffset,
                    StatusCV, SampledMediumCV, ValueCount)
         self.cursor.executemany('INSERT INTO Results VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', vals)
-        self.conn.commit()
 
 
         # return the feature action ids
@@ -751,7 +558,6 @@ class sqlite():
         vals = zip(resultIDs, aggregationstatistic, xloc, xloc_unitid, yloc, yloc_unitid, zloc, zloc_unitid, srsID,
                    timespacing, timespacing_unitid)
         self.cursor.executemany('INSERT INTO TimeSeriesResults VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', vals)
-        self.conn.commit()
 
 
         # return the feature action ids

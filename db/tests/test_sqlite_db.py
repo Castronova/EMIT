@@ -168,21 +168,22 @@ class test_sqlite_db(unittest.TestCase):
                                   'value': '1'}]}
 
 
-        # # model parameters that will be accessed via engine during simualtion (hardcoded for the test case)
-        # params = dict(  name = 'test_simulation',
-        #                 description = 'this is a sample description',
-        #                 simulation_start = '03/01/2014 12:00:00',
-        #                 simulation_end = '03/01/2014 23:00:00',
-        #                 code = 'testmodel',
-        #                 unit_type_cv = 'hour',
-        #                 value = '1',
-        # )
-
         # build user object
-        # user_json = open(env_vars.USER_JSON).read()
-        # user_obj = user.BuildAffiliationfromJSON(user_json)
+        user_json = '{"3987225b-9466-4f98-bf85-49c9aa82b079": {"affiliation": {"address": "8200 old main, logan ut, 84322","affiliationEnd": null,"email": "tony.castronova@usu.edu","isPrimaryOrganizationContact": false,"personLink": null,"phone": "435-797-0853","startDate": "2014-03-10T00:00:00"},"organization": {"code": "usu","description": null,"link": null,"name": "Utah State University","parent": null,"typeCV": "university"},"person": {"firstname": "tony","lastname": "castronova","middlename": null}},"ef323a55-39df-4cb8-b267-06e53298f1bb": {"affiliation": {"address": "8200 old main, logan ut, 84322","affiliationEnd": null,"email": "tony.castronova@usu.edu","isPrimaryOrganizationContact": false,"personLink": null,"phone": null,"startDate": "2014-03-10T00:00:00"},"organization": {"code": "uwrl","description": "description = research laboratory Affiliated with utah state university","link": null,"name": "Utah Water Research Laboratory","parent": "usu","typeCV": "university"},"person": {"firstname": "tony","lastname": "castronova","middlename": null}}}'
+        user_obj = user.BuildAffiliationfromJSON(user_json)
 
-        # # get affiliation
+
+
+        # get affiliation
+        affiliation = self.emptysqlite.read.getAffiliationsByPerson('tony','castronova')
+
+        # create the simulation
+        st = dt(2014, 3, 1, 12, 0, 0)
+        et = dt(2014, 3, 1, 23, 0, 0)
+        description = 'Some model descipription'
+        name = 'test simulation'
+        self.emptysqlite.create_simulation('My Simulation', user_obj[0], params, item, st, et, 1, 'hours', description, name)
+
         # r = ReadODM2(self.pop_connection)
         # # affiliation = r.getAffiliationsByPerson('tony','castronova')
         # self.sqlite.create_simulation('My Simulation', user_obj[0], params, item)

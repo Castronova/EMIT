@@ -1,10 +1,11 @@
-
-import os, sys
-from os import path
-import wx
-import datatypes
+import os
 from math import *
+from os import path
+
+import wx
 from wx.lib.floatcanvas import FloatCanvas as FC
+
+import datatypes
 
 sys.path.append("..")
 

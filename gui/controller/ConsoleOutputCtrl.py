@@ -1,13 +1,16 @@
 __author__ = 'Tony'
 
-import time
-import coordinator.emitLogging as l
-import wx
 import json
-import wx.lib.newevent
-from socket import AF_INET, SOCK_DGRAM, socket
-from gui.views.ConsoleView import ConsoleView
 import threading
+import time
+from socket import AF_INET, SOCK_DGRAM, socket
+
+import wx
+import wx.lib.newevent
+
+import coordinator.emitLogging as l
+from gui.views.ConsoleView import ConsoleView
+
 
 class consoleCtrl(ConsoleView):
 

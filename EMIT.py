@@ -1,13 +1,13 @@
 __author__ = 'Mario'
 
 import wx
-import wx.xrc
 import wx.aui
-from gui.controller.EMITCtrl import LogicEMIT
-from coordinator import engineManager
-import os
-import sys
+import wx.xrc
+
 import environment
+from coordinator import engineManager
+from gui.controller.EMITCtrl import LogicEMIT
+
 
 class EMITApp(wx.App):
     def OnInit(self):

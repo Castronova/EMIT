@@ -186,7 +186,3 @@ def getEnvironmentVars(settings=None):
 
     # load the default environment
     loadEnvironment(config)
-
-
-
-# env_vars = EnvironmentVars()

@@ -7,10 +7,14 @@ from gui.controller.EMITCtrl import LogicEMIT
 from coordinator import engineManager
 import os
 import sys
-
+import environment
 
 class EMITApp(wx.App):
     def OnInit(self):
+
+        # load environment variables
+        environment.getEnvironmentVars()
+
         # Don't delete this line, instantiating the Borg Engine main thread here
         engine = engineManager.Engine()
 

@@ -28,6 +28,7 @@ from datetime import datetime
 import users as Users
 import wrappers
 from wrappers import Types
+from sprint import *
 
 """
 Purpose: This file contains the logic used to run coupled model simulations
@@ -1114,6 +1115,8 @@ class Coordinator(object):
             except Exception, e:
                 elog.error(e)
                 elog.error('Could not create connections from file ' + filepath)
+                sPrint('Could not create connection: %s'%e, MessageType.ERROR, PrintTarget.CONSOLE)
+
                 return {'success':False}
 
         else:

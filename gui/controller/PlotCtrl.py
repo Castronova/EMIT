@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw
 from matplotlib.dates import date2num
 import matplotlib.pyplot as plt
 from gui.controller.enums import PlotEnum
-from environment import env_vars
+import environment
 from wx.lib.pubsub import pub as Publisher
 
 sns.set_style("ticks")
@@ -71,13 +71,13 @@ class LogicPlot(ViewPlot):
 
     def Onlegend_right(self,event):
 
-        env_vars.set_environment_variable('LEGEND', 'locationright', 1)
-        env_vars.set_environment_variable('LEGEND', 'locationbottom', 0)
+        environment.setEnvironmentVar('LEGEND', 'locationright', 1)
+        environment.setEnvironmentVar('LEGEND', 'locationbottom', 0)
 
     def Onlegend_bottom(self,event):
 
-        env_vars.set_environment_variable('LEGEND', 'locationright', 0)
-        env_vars.set_environment_variable('LEGEND', 'locationbottom', 1)
+        environment.setEnvironmentVar('LEGEND', 'locationright', 0)
+        environment.setEnvironmentVar('LEGEND', 'locationbottom', 1)
 
 
     def OnPlotPoint(self,event):

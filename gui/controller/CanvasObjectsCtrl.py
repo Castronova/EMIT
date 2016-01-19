@@ -1,19 +1,10 @@
-__author__ = 'marioharper'
 
-__author__ = 'Mario'
-
-
-import sys
-import numpy as np
-import wx
-from math import *
-import math
-from numpy import linspace
-import matplotlib.colors as mcolors
-from wx.lib.floatcanvas import FloatCanvas as FC
-from environment import env_vars
-import datatypes
+import os, sys
 from os import path
+import wx
+import datatypes
+from math import *
+from wx.lib.floatcanvas import FloatCanvas as FC
 
 sys.path.append("..")
 
@@ -99,7 +90,7 @@ class SmoothLineWithArrow(SmoothLine):
     '''
     def __init__(self, Points, LineColor="#3F51B5", LineStyle="Solid", LineWidth = 4):
         super(SmoothLineWithArrow, self).__init__(Points, LineColor, LineStyle, LineWidth)
-        imgs_base_path = env_vars.IMAGES_PATH
+        imgs_base_path = os.environ['APP_IMAGES_PATH']
         arrow_image = path.join(imgs_base_path, 'rightArrowBlue60.png')
         arrow_bitmap = wx.Image(arrow_image, wx.BITMAP_TYPE_PNG)
         self.Arrow = ScaledBitmapWithRotation(Angle=self.GetAngleRadians(), Bitmap=arrow_bitmap, XY=self.MidPoint)
@@ -123,7 +114,7 @@ class ModelBox(FC.Group):
         self.ID = id
 
         # Set box color based on model type
-        imgs_base_path = env_vars.IMAGES_PATH
+        imgs_base_path = os.environ['APP_IMAGES_PATH']
         bmp = None
         if type == datatypes.ModelTypes.TimeStep:
             bmp = wx.Image(path.join(imgs_base_path,'E.png'), wx.BITMAP_TYPE_PNG)

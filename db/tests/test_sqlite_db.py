@@ -1,15 +1,13 @@
 __author__ = 'mike'
 
 import unittest
-import os, sys
+import os
 import coordinator.users as user
-from environment import env_vars
 from odm2api.ODMconnection import dbconnection
-from odm2api.ODM2.services.readService import ReadODM2
 from db.dbapi_v2 import sqlite
 from utilities import geometry
 import stdlib
-from utilities import mdl, gui
+from utilities import mdl
 import random
 from datetime import datetime as dt
 from datetime import timedelta
@@ -42,6 +40,9 @@ class test_sqlite_db(unittest.TestCase):
         populated_dump_script = open('./data/populated_dump.sql','r').read()
         for line in populated_dump_script.split(';\n'):
             self.popsqlite.cursor.execute(line)
+
+
+        # todo: load environment variables
 
 
 
@@ -172,18 +173,6 @@ class test_sqlite_db(unittest.TestCase):
 
 
 
-        # r = ReadODM2(self.pop_connection)
-        # # affiliation = r.getAffiliationsByPerson('tony','castronova')
-        # self.sqlite.create_simulation('My Simulation', user_obj[0], params, item)
-
-
-
-
-
-
-
-
-
     # todo: re-write
     def test_insert_many(self):
 
@@ -196,7 +185,6 @@ class test_sqlite_db(unittest.TestCase):
 
 
         # set exchange item geometries
-        # coords = [(1,2),(2,3),(3,4)]
         xcoords = [i for i in range(1000)]
         ycoords = [i*1.5 for i in range(1000)]
         geoms = geometry.build_point_geometries(xcoords, ycoords)
@@ -218,41 +206,13 @@ class test_sqlite_db(unittest.TestCase):
         self.assertTrue(len(item.getDates2()) == len(item.getValues2()))
         self.assertTrue(len(item.getGeometries2()) == len(item.getValues2()[0]))
 
-        # preferences
-        pref = None
-
-        # config_params
-        config = None
-
-        # list of exchange items
-        ei = [item]
-
-        params = {'general': [{'simulation_end': '03/01/2014 23:00:00',
-                               'simulation_start': '03/01/2014 12:00:00',
-                               'description': 'Some description',
-                               'name': 'test simulation'}],
-                  'model': [{'code': 'TOPMODEL',
-                             'name': 'test model',
-                             'description': 'Some model descipription'}],
-                  'time_step' : [{'abbreviation': 'hr',
-                                'unit_type_cv': 'hour',
-                                'name': 'hours',
-                                'value': '1'}]}
-
+        description = 'Some description'
+        name = 'test simulation'
 
         # build user object
-        user_json = open(env_vars.USER_JSON).read()
-        user_obj = user.BuildAffiliationfromJSON(user_json)[0]
+        user_json = '{"3987225b-9466-4f98-bf85-49c9aa82b079": {"affiliation": {"address": "8200 old main, logan ut, 84322","affiliationEnd": null,"email": "tony.castronova@usu.edu","isPrimaryOrganizationContact": false,"personLink": null,"phone": "435-797-0853","startDate": "2014-03-10T00:00:00"},"organization": {"code": "usu","description": null,"link": null,"name": "Utah State University","parent": null,"typeCV": "university"},"person": {"firstname": "tony","lastname": "castronova","middlename": null}},"ef323a55-39df-4cb8-b267-06e53298f1bb": {"affiliation": {"address": "8200 old main, logan ut, 84322","affiliationEnd": null,"email": "tony.castronova@usu.edu","isPrimaryOrganizationContact": false,"personLink": null,"phone": null,"startDate": "2014-03-10T00:00:00"},"organization": {"code": "uwrl","description": "description = research laboratory Affiliated with utah state university","link": null,"name": "Utah Water Research Laboratory","parent": "usu","typeCV": "university"},"person": {"firstname": "tony","lastname": "castronova","middlename": null}}}'
+        user_obj = user.BuildAffiliationfromJSON(user_json)
 
-        self.emptysqlite.create_simulation(  coupledSimulationName='my simulation',
-                                             user_obj=user_obj,
-                                             config_params=params,
-                                             ei=ei,
-                                             simulation_start = start_time,
-                                             simulation_end = end_time,
-                                             timestep_value = time_step,
-                                             timestep_unit = 'seconds',
-                                             description = 'my description',
-                                             name = 'my test model'
-                                        )
-        print 'done'
+        self.emptysqlite.create_simulation('My Simulation', user_obj[0], None, item, start_time, end_time, 1, 'days', description, name)
+
+

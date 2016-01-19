@@ -81,12 +81,21 @@ class sqlite():
     def create_simulation(self, coupledSimulationName, user_obj, config_params, ei, simulation_start, simulation_end, timestep_value, timestep_unit, description, name):
         """
         Inserts a simulation record into the database
-        :param simulationName: user provided name for simulation
-        :param user_obj: engine.users.Affiliation object
-        :param config_params: Simulation configuration parameters (from engine)
-        :param ei: list of exchange item objects (stdlib.ExchangeItem)
-        """
+        Args:
+            coupledSimulationName: The name of the coupled model simulation
+            user_obj: object containing the user
+            config_params:
+            ei:
+            simulation_start:
+            simulation_end:
+            timestep_value:
+            timestep_unit:
+            description:
+            name:
 
+        Returns:
+
+        """
         bench_insert_fa = 0
 
 

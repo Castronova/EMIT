@@ -9,17 +9,11 @@ import wx.lib.agw.aui as aui
 from gui import events
 from wx.lib.newevent import NewEvent
 from coordinator.emitLogging import elog
-
-
 from LowerPanelView import viewLowerPanel
-
 import os
-from environment import env_vars
 from gui.controller.NetcdfCtrl import NetcdfCtrl
-import coordinator.engineAccessors as engine
-import wrappers
 from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
-
+import environment
 
 # create custom events
 wxCreateBox, EVT_CREATE_BOX = NewEvent()
@@ -367,11 +361,11 @@ class viewMenuBar(wx.Frame):
         self.c4 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Error Messages")
         self.c5 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Debug Messages")
 
-        self.c1.SetValue(env_vars.LOGGING_SHOWINFO)
-        self.c2.SetValue(env_vars.LOGGING_SHOWWARNING)
-        self.c3.SetValue(env_vars.LOGGING_SHOWCRITICAL)
-        self.c4.SetValue(env_vars.LOGGING_SHOWERROR)
-        self.c5.SetValue(env_vars.LOGGING_SHOWDEBUG)
+        self.c1.SetValue(os.environ['LOGGING_SHOWINFO'])
+        self.c2.SetValue(os.environ['LOGGING_SHOWWARNING'])
+        self.c3.SetValue(os.environ['LOGGING_SHOWCRITICAL'])
+        self.c4.SetValue(os.environ['LOGGING_SHOWERROR'])
+        self.c5.SetValue(os.environ['LOGGING_SHOWDEBUG'])
 
         self.saveButton = wx.Button(self.panel, 1, 'Save')
 
@@ -398,14 +392,12 @@ class viewMenuBar(wx.Frame):
         debchk = int(chkvalues['debug'])
         errchk = int(chkvalues['error'])
 
-        env_vars.set_environment_variable('LOGGING', 'showinfo', infchk)
-        env_vars.set_environment_variable('LOGGING', 'showwarning', wrnchk)
-        env_vars.set_environment_variable('LOGGING', 'showcritical', crtchk)
-        env_vars.set_environment_variable('LOGGING', 'showdebug', debchk)
-        env_vars.set_environment_variable('LOGGING', 'showerror', errchk)
 
-        # write these new settings to file
-        env_vars.save_environment()
+        environment.setEnvironmentVar('LOGGING', 'showinfo', infchk)
+        environment.setEnvironmentVar('LOGGING', 'showwarning', wrnchk)
+        environment.setEnvironmentVar('LOGGING', 'showcritical', crtchk)
+        environment.setEnvironmentVar('LOGGING', 'showdebug', debchk)
+        environment.setEnvironmentVar('LOGGING', 'showerror', errchk)
 
         elog.info('Verbosity Settings Saved')
 

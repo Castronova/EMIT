@@ -12,7 +12,6 @@ from os.path import join, dirname, abspath
 import ConfigParser
 import fnmatch
 from coordinator.emitLogging import elog
-from environment import env_vars
 from sprint import *
 # todo: refactor
 from gui.views.ModelView import ViewModel
@@ -131,7 +130,7 @@ class LogicToolbox(ViewToolbox):
         return self.cat
 
     def sectionKey(self):
-        ini = env_vars.TOOLBOX_PATH
+        ini = os.environ['APP_TOOLBOX_PATH']
         cparser = ConfigParser.ConfigParser(None, multidict)
         cparser.read(ini)
         sections = cparser.sections()

@@ -13,6 +13,7 @@ import ConfigParser
 import fnmatch
 from coordinator.emitLogging import elog
 from environment import env_vars
+from sprint import *
 # todo: refactor
 from gui.views.ModelView import ViewModel
 
@@ -88,7 +89,7 @@ class LogicToolbox(ViewToolbox):
                 # populate models
                 if 'Components' in folder_path:
                     for p in path.split(';'):
-                        apath = join(dirname(abspath(__file__)), '../../' + p)
+                        apath = os.path.realpath(__file__ + "../../../../" + p)
                         matches = []
                         self.dirlist = []
 

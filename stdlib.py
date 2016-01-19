@@ -218,7 +218,7 @@ class ExchangeItem(object):
                 elog.error('Could Not set srs: %s' % msg)
                 sPrint('Unable to load spatial reference %s: %s  ' % (str(srs_epsg), msg), MessageType.ERROR)
                 sPrint('This may cause errors with future operations.  It is recommended that the GDAL_DATA path is fixed in the ' +
-                       'EMIT environment settings before continuing.')
+                       'EMIT environment settings before continuing.', MessageType.CRITICAL)
         return self.__srs
 
     def getEarliestTime2(self):

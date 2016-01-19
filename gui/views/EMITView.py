@@ -1,19 +1,22 @@
-__author__ = 'Mario'
-from gui.controller.DirectoryCtrl import LogicDirectory
-from gui.controller.ToolboxCtrl import LogicToolbox
-from gui.controller.CanvasCtrl import LogicCanvas
+import os
+import threading
+
 import wx
 import wx.html2
-from wx.lib.pubsub import pub as Publisher
 import wx.lib.agw.aui as aui
-from gui import events
 from wx.lib.newevent import NewEvent
-from coordinator.emitLogging import elog
-from LowerPanelView import viewLowerPanel
-import os
-from gui.controller.NetcdfCtrl import NetcdfCtrl
-from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
+from wx.lib.pubsub import pub as Publisher
+
 import environment
+from LowerPanelView import viewLowerPanel
+from coordinator.emitLogging import elog
+from coordinator.engineManager import Engine
+from gui import events
+from gui.controller.CanvasCtrl import LogicCanvas
+from gui.controller.DirectoryCtrl import LogicDirectory
+from gui.controller.NetcdfCtrl import NetcdfCtrl
+from gui.controller.ToolboxCtrl import LogicToolbox
+from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
 
 # create custom events
 wxCreateBox, EVT_CREATE_BOX = NewEvent()
@@ -222,14 +225,58 @@ class ViewEMIT(wx.Frame):
             filename = file_dialog.GetFilename()
             NetcdfDetailsCtrl(self.Parent, path, filename)
 
-
-
-
     def onClose(self, event):
         dial = wx.MessageDialog(None, 'Are you sure to quit?', 'Question',
             wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
         if dial.ShowModal() == wx.ID_YES:
+
+            # kill multiprocessing
+            e = Engine()
+            msg = e.close()
+            elog.debug('Closing Engine Processes: %s' % msg)
+
+
+            # kill all threads
+
+            threads = {t.name:t for t in threading.enumerate()}
+            mainthread = threads.pop('MainThread')
+
+            elog.debug('Closing EMIT Threads: %s' % msg)
+
+            non_daemon = []
+            for t in threads.itervalues():
+
+                # check if the thread is a daemon, if so, it should not cause any problems
+                if t.isDaemon():
+                    elog.debug('%s daemon=%s' %(t.name, t.isDaemon()))
+                else:
+                    # add this thread to the non-daemon list
+                    non_daemon.append(t)
+
+            for t in non_daemon:
+                elog.warning('%s is not a daemon thread and may cause problems while shutting down' % t.name)
+                t.join(1)
+
+            # determine if there are any non-daemon threads that are still alive
+            non_daemon_and_alive = []
+            for t in threads.itervalues():
+                if not t.isDaemon() and t.isAlive():
+                    non_daemon_and_alive.append(t)
+
+            # attempt to stop non-daemon threads
+            try:
+                for t in non_daemon_and_alive:
+                    t._Thread__stop()
+            except(Exception, e):
+                elog.error('Error encountered closing thread %s: %s' % (t.name, e))
+
+            # close the main thread
             self.Destroy()
+            wx.App.ExitMainLoop
+            wx.WakeUpMainThread
+
+
+
 
     def onOpenDapViewer(self, event):
         netcdf = NetcdfCtrl(self)

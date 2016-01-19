@@ -29,6 +29,6 @@ if __name__ == '__main__':
 
     app = EMITApp()
     app.MainLoop()
-    pid = os.getpid()
-    os.system("kill -9 " + str(pid))
+    # pid = os.getpid()
+    # os.system("kill -9 " + str(pid))
 

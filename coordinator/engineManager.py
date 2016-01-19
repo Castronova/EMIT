@@ -181,3 +181,7 @@ class Engine:
 
                 # evt.fire(**result)
 
+    def close(self):
+        # kill all running processes
+        for p in self.Processes:
+            p.terminate()

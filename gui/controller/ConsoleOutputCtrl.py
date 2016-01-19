@@ -21,7 +21,8 @@ class consoleCtrl(ConsoleView):
         self.addr = (self.host, self.port)
 
         # start the message server
-        self.thread = threading.Thread(target=self.messageServer)
+        self.thread = threading.Thread(target=self.messageServer, name='MessageServer')
+        self.thread.daemon = True
         self.thread.start()
 
     def Print(self, text, type):

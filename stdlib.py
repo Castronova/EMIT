@@ -172,17 +172,17 @@ class ExchangeItem(object):
             if isinstance(id, str):
                 self.__id = id
 
-        self.__srs = osr.SpatialReference()
-        try:
-            self.__srs.ImportFromEPSG(srs_epsg)
-        except(Exception, e):
-            # set default
-            elog.error('Error ExchangeItem.__init__: %s' % e)
-            sPrint('Could not create spatial reference object from code: %s. '
-                       'Using the default spatial reference system: North American Datum 1983.'% str(srs_epsg),
-                   MessageType.ERROR)
-
-            self.__srs.ImportFromEPSG(4269)
+        # self.__srs = osr.SpatialReference()
+        self.__srs = self.srs(srs_epsg=srs_epsg)
+        # if self.__srs.ImportFromEPSG(srs_epsg)
+        # except(Exception, e):
+        #     # set default
+        #     elog.error('Error ExchangeItem.__init__: %s' % e)
+        #     sPrint('Could not create spatial reference object from code: %s. '
+        #                'Using the default spatial reference system: North American Datum 1983.'% str(srs_epsg),
+        #            MessageType.ERROR)
+        #
+        #     self.__srs.ImportFromEPSG(4269)
 
 
         # todo: REMOVE THE DEPRECATED VARIABLES BELOW
@@ -212,16 +212,13 @@ class ExchangeItem(object):
     def srs(self, srs_epsg=None):
         if srs_epsg is not None:
             self.__srs = osr.SpatialReference()
-            try:
-                self.__srs.ImportFromEPSG(srs_epsg)
-            except (Exception, e):
-                # set default
-                elog.error('Error ExchangeItem.srs: %s' % e)
-                sPrint('Could not create spatial reference object from code: %s. '
-                           'Using the default spatial reference system: North American Datum 1983.'% str(srs_epsg),
-                       MessageType.ERROR)
-                self.__srs.ImportFromEPSG(4269)
-
+            if self.__srs.ImportFromEPSG(srs_epsg) != 0:
+                from osgeo import gdal
+                msg = gdal.GetLastErrorMsg()
+                elog.error('Could Not set srs: %s' % msg)
+                sPrint('Unable to load spatial reference %s: %s  ' % (str(srs_epsg), msg), MessageType.ERROR)
+                sPrint('This may cause errors with future operations.  It is recommended that the GDAL_DATA path is fixed in the ' +
+                       'EMIT environment settings before continuing.')
         return self.__srs
 
     def getEarliestTime2(self):

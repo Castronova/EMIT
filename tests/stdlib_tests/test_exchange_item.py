@@ -9,6 +9,8 @@ import datetime
 from shapely.wkt import loads
 import random
 from utilities import geometry
+import os, sys
+
 
 class testExchangeItem(unittest.TestCase):
     def setUp(self):
@@ -49,6 +51,33 @@ class testExchangeItem(unittest.TestCase):
         default_srs = osr.SpatialReference()
         default_srs.ImportFromEPSG(4269)
         self.assertTrue(item.srs().ExportToWkt() == default_srs.ExportToWkt())
+
+
+    def test_gdal_environment(self):
+
+        # set the gdal environment
+        gdal_data = os.path.abspath(os.path.join(os.path.dirname(sys.executable), '../share/gdal'))
+        os.environ['GDAL_DATA'] = gdal_data
+
+        # create and exchange item
+        item = ExchangeItem('e1', 'Test', 'Test Exchange Item', srs_epsg=4269)
+
+        # get the srs that was set
+        srs = item.srs()
+
+        # check that the srs is set properly
+        self.assertTrue(srs.AutoIdentifyEPSG() == 0)
+
+    def test_gdal_environment_not_set(self):
+
+        # create and exchange item
+        item = ExchangeItem('e1', 'Test', 'Test Exchange Item', srs_epsg=4269)
+
+        # get the srs that was set
+        srs = item.srs()
+
+        # check that this failes
+        self.assertTrue(srs.AutoIdentifyEPSG() != 0)
 
 
     def test_add_dataset_seq(self):

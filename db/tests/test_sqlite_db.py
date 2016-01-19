@@ -103,7 +103,6 @@ class test_sqlite_db(unittest.TestCase):
         self.assertTrue(len(cvs) > 1)
 
 
-    # todo: re-write
     def test_create_simulation(self):
 
 
@@ -146,43 +145,32 @@ class test_sqlite_db(unittest.TestCase):
         self.assertTrue(len(item.getDates2()) == len(item.getValues2()))
         self.assertTrue(len(item.getGeometries2()) == len(item.getValues2()[0]))
 
-        # preferences
-        pref = None
-
-        # config_params
-        config = None
-
-        # list of exchange items
-        ei = [item]
-
-        params = {'general': [{'simulation_end': '03/01/2014 23:00:00',
-                               'simulation_start': '03/01/2014 12:00:00',
-                               'description': 'Some description',
-                               'name': 'test simulation'}],
-                  'model': [{'code': 'TOPMODEL',
-                             'name': 'test model',
-                             'description': 'Some model descipription'}],
-                  'time_step' : [{'abbreviation': 'hr',
-                                  'unit_type_cv': 'hour',
-                                  'name': 'hours',
-                                  'value': '1'}]}
-
-
         # build user object
         user_json = '{"3987225b-9466-4f98-bf85-49c9aa82b079": {"affiliation": {"address": "8200 old main, logan ut, 84322","affiliationEnd": null,"email": "tony.castronova@usu.edu","isPrimaryOrganizationContact": false,"personLink": null,"phone": "435-797-0853","startDate": "2014-03-10T00:00:00"},"organization": {"code": "usu","description": null,"link": null,"name": "Utah State University","parent": null,"typeCV": "university"},"person": {"firstname": "tony","lastname": "castronova","middlename": null}},"ef323a55-39df-4cb8-b267-06e53298f1bb": {"affiliation": {"address": "8200 old main, logan ut, 84322","affiliationEnd": null,"email": "tony.castronova@usu.edu","isPrimaryOrganizationContact": false,"personLink": null,"phone": null,"startDate": "2014-03-10T00:00:00"},"organization": {"code": "uwrl","description": "description = research laboratory Affiliated with utah state university","link": null,"name": "Utah Water Research Laboratory","parent": "usu","typeCV": "university"},"person": {"firstname": "tony","lastname": "castronova","middlename": null}}}'
         user_obj = user.BuildAffiliationfromJSON(user_json)
 
-
-
         # get affiliation
-        affiliation = self.emptysqlite.read.getAffiliationsByPerson('tony','castronova')
+        self.emptysqlite.read.getAffiliationsByPerson('tony','castronova')
+
+
+        # query simulations
+        simulations = self.emptysqlite.getAllSimulations()
+        self.assertTrue(len(simulations) == 0)
 
         # create the simulation
         st = dt(2014, 3, 1, 12, 0, 0)
         et = dt(2014, 3, 1, 23, 0, 0)
         description = 'Some model descipription'
         name = 'test simulation'
-        self.emptysqlite.create_simulation('My Simulation', user_obj[0], params, item, st, et, 1, 'hours', description, name)
+        self.emptysqlite.create_simulation('My Simulation', user_obj[0], None, item, st, et, 1, 'hours', description, name)
+
+        # query simulations
+        simulations = self.emptysqlite.read.getAllSimulations()
+        self.assertTrue(len(simulations) == 1)
+        simulation = self.emptysqlite.read.getSimulationByName('My Simulation')
+        self.assertTrue(simulation is not None)
+
+
 
         # r = ReadODM2(self.pop_connection)
         # # affiliation = r.getAffiliationsByPerson('tony','castronova')

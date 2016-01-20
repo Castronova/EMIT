@@ -39,14 +39,13 @@ dependencies:
 - shapely=1.5.13=py27_0
 - sip=4.16.9=py27_0
 - six=1.10.0=py27_0
-- sqlalchemy=0.8.3=py27_0
+- sqlalchemy=1.0.11=py27_0
 - sqlite=3.9.2=0
 - tk=8.5.18=0
 - wheel=0.26.0=py27_1
 - wxpython=3.0=py27_0
 - zlib=1.2.8=0
 - pip:
-  - geoalchemy==0.7.2
   - geoalchemy2==0.2.6
   - pyinstaller==3.0
   - pyshp==1.2.3

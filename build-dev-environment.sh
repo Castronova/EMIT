@@ -75,7 +75,7 @@ cd ..
 
 
 # install odm2api
-pip install git+https://github.com/ODM2/ODM2PythonAPI.git
+pip install --process-dependency-links git+https://github.com/ODM2/ODM2PythonAPI.git
 
 
 # clean up

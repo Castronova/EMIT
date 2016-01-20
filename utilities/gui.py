@@ -11,7 +11,7 @@ from odm2api.ODMconnection import dbconnection as dbconnection2
 from sprint import *
 from coordinator.emitLogging import elog
 import uuid
-
+import utilities.io as io
 
 class multidict(dict):
     _unique = 0
@@ -59,9 +59,13 @@ def validate_config_ini(ini_path):
         # load lookup tables
         dir = os.path.dirname(__file__)
 
+        var_cv = os.path.join(io.getAppDataDir(), 'dat/var_cv.dat') 
+        unit_cv= os.path.join(io.getAppDataDir(), 'dat/units_cv.dat')
+        var = pickle.load(open(var_cv, 'rb'))
+        unit= pickle.load(open(unit_cv, 'rb'))
 
-        var = pickle.load(open(os.path.join(dir,'../data/var_cv.dat'),'rb'))
-        unit = pickle.load(open(os.path.join(dir,'../data/units_cv.dat'),'rb'))
+#        var = pickle.load(open(os.path.join(dir,'../data/var_cv.dat'),'rb'))
+#        unit = pickle.load(open(os.path.join(dir,'../data/units_cv.dat'),'rb'))
 
         # check to see if 'ignorecv' option has been provided
         ignorecv = False

@@ -7,7 +7,7 @@ from wx.lib.floatcanvas import FloatCanvas as FC
 
 import datatypes
 
-sys.path.append("..")
+#sys.path.append("..")
 
 
 class ShapeType():

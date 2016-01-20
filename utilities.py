@@ -14,7 +14,7 @@ from stdlib import Variable, Unit
 #from odm2.src.api import dbconnection
 from ODMconnection import dbconnection
 from coordinator.emitLogging import elog
-
+from sprint import *
 from db.dbapi import postgresdb
 import uuid
 
@@ -142,6 +142,7 @@ def validate_config_ini(ini_path):
 
     except Exception, e:
         elog.error('Configuration Parsing Error: '+str(e))
+        sPrint('Error parsing configuration file: %s' % e, MessageType.ERROR)
         return 0
 
 
@@ -453,8 +454,10 @@ def create_database_connections_from_args(title, desc, engine, address, db, user
                                  'args': d}
 
         elog.info('Connected to : %s [%s]'%(connection_string,db_id))
+        sPrint('Connected to : %s [%s]'%(connection_string,db_id), MessageType.INFO)
     else:
         elog.error('Could not establish a connection with the database')
+        sPrint('Could not establish a connection with the database: %s'%address, MessageType.ERROR)
         return None
 
     return db_connections
@@ -529,9 +532,10 @@ def create_database_connections_from_file(ini):
                                      'args': d}
 
             elog.info('Connected to : %s [%s]'%(connection_string,db_id))
+            sPrint('Connected to : %s [%s]'%(connection_string,db_id), MessageType.INFO)
         else:
             elog.error('Could not establish a connection with the database')
-            #return None
+            sPrint('Could not establish a connection with the database: %s'%d['address'], MessageType.ERROR)
 
 
 

@@ -1,5 +1,6 @@
-from gui.views.PlotForSiteViewerView import ViewPlotForSiteViewer
 import numpy
+
+from gui.views.PlotForSiteViewerView import ViewPlotForSiteViewer
 
 
 class logicPlotForSiteViewer(ViewPlotForSiteViewer):

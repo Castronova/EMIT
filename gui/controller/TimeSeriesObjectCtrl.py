@@ -1,11 +1,12 @@
-__author__ = 'francisco'
-
-from gui.views.TimeSeriesPlotView import TimeSeriesPlotView
-from coordinator.emitLogging import elog
-import wx
-import os
 import csv
+import os
 import time
+
+import wx
+
+from coordinator.emitLogging import elog
+from gui.views.TimeSeriesPlotView import TimeSeriesPlotView
+
 
 class TimeSeriesObjectCtrl(TimeSeriesPlotView):
 

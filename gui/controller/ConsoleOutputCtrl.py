@@ -1,5 +1,3 @@
-__author__ = 'Tony'
-
 import json
 import threading
 import time

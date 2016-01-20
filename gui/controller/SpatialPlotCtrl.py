@@ -1,12 +1,11 @@
-__author__ = 'tonycastronova'
-
-import wx
 import matplotlib.pyplot as plt
-from gui.views.SpatialPlotView import ViewSpatialPlot
-from coordinator.emitLogging import elog
-import stdlib
-from matplotlib.collections import PolyCollection, LineCollection
 import numpy
+from matplotlib.collections import PolyCollection, LineCollection
+
+import stdlib
+from coordinator.emitLogging import elog
+from gui.views.SpatialPlotView import ViewSpatialPlot
+
 
 class SpatialPlotCtrl(ViewSpatialPlot):
 

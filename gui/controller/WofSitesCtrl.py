@@ -1,15 +1,14 @@
-__author__ = 'tonycastronova'
-
-import os
 import csv
-import time
-import wx
-import wx.calendar as cal
-from gui.views.TimeSeriesPlotView import TimeSeriesPlotView
-from coordinator.emitLogging import elog
-import coordinator.engineAccessors as engine
-import uuid
 import datetime as dt
+import os
+import time
+
+import wx
+
+import coordinator.engineAccessors as engine
+from coordinator.emitLogging import elog
+from gui.views.TimeSeriesPlotView import TimeSeriesPlotView
+
 
 class WofSitesViewerCtrl(TimeSeriesPlotView):
     def __init__(self, parent, siteObject):

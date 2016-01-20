@@ -1,10 +1,8 @@
-__author__ = 'tonycastronova'
-
 import wx
 from wx.lib.pubsub import pub as Publisher
+
 from gui.views.DatabaseView import ViewDatabase
 from utilities import db as dbutils
-
 from ..ObjectListView import ColumnDefn
 
 

@@ -1,8 +1,9 @@
-__author__ = "ryan"
 import wx
-from gui.views.AddConnectionView import AddConnectionView
-from environment import ConnectionVars
 from wx.lib.pubsub import pub as Publisher
+
+from environment import ConnectionVars
+from gui.views.AddConnectionView import AddConnectionView
+
 
 class AddConnectionCtrl(AddConnectionView):
     def __init__(self, parent):

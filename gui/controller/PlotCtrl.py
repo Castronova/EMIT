@@ -1,14 +1,12 @@
-__author__ = 'tonycastronova'
-
-import wx
+import matplotlib.pyplot as plt
 import seaborn as sns
-from gui.views.PlotView import ViewPlot, Data
+import wx
 from PIL import Image, ImageDraw
 from matplotlib.dates import date2num
-import matplotlib.pyplot as plt
-from gui.controller.enums import PlotEnum
+
 import environment
-from wx.lib.pubsub import pub as Publisher
+from gui.controller.enums import PlotEnum
+from gui.views.PlotView import ViewPlot, Data
 
 sns.set_style("ticks")
 

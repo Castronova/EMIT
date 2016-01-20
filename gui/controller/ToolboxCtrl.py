@@ -1,20 +1,20 @@
-__author__ = 'tonycastronova'
-
-import os
-import random
-from gui.views.ToolboxView import ViewToolbox
-from gui.views.ContextView import ToolboxContextMenu
-from gui.controller.ModelCtrl import LogicModel
-from gui import events
-import wx
-from wx.lib.pubsub import pub as Publisher
-from os.path import join, dirname, abspath
 import ConfigParser
 import fnmatch
+import os
+import random
+from os.path import join, dirname, abspath
+
+import wx
+from wx.lib.pubsub import pub as Publisher
+
 from coordinator.emitLogging import elog
-from sprint import *
+from gui import events
+from gui.controller.ModelCtrl import LogicModel
+from gui.views.ContextView import ToolboxContextMenu
+from gui.views.ToolboxView import ViewToolbox
+
+
 # todo: refactor
-from gui.views.ModelView import ViewModel
 
 
 class LogicToolbox(ViewToolbox):

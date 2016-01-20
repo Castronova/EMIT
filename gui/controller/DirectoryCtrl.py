@@ -1,14 +1,12 @@
-__author__ = 'tonycastronova'
-
-
 import os
-from gui.views.DirectoryView import ViewDirectory, HomeID, PreviousID, UpID, RefreshID
-from gui.views.ContextView import DirectoryContextMenu
-from gui.views.ModelView import ViewModel
-from gui.controller.ModelCtrl import LogicModel
-from wx.lib.pubsub import pub as Publisher
+
 import wx
+from wx.lib.pubsub import pub as Publisher
+
 from coordinator.emitLogging import elog
+from gui.controller.ModelCtrl import LogicModel
+from gui.views.ContextView import DirectoryContextMenu
+from gui.views.DirectoryView import ViewDirectory, HomeID, PreviousID, UpID, RefreshID
 
 
 class LogicDirectory(ViewDirectory):

@@ -1,18 +1,15 @@
-__author__ = 'tonycastronova'
-
+import collections
 import uuid
 
 import wx
-import wx.lib.newevent as ne
 import wx.grid as gridlib
+import wx.lib.newevent as ne
 
-from gui.views.LinkView import LinkView
 import coordinator.engineAccessors as engine
-from gui.controller.SpatialPlotCtrl import SpatialPlotCtrl
-# from gui.views.viewLinkSpatialPlot import ViewLinkSpatialPlot
 from coordinator.emitLogging import elog
+from gui.controller.SpatialPlotCtrl import SpatialPlotCtrl
+from gui.views.LinkView import LinkView
 from utilities import geometry
-import collections
 
 LinkUpdatedEvent, EVT_LINKUPDATED = ne.NewEvent()
 

@@ -1,13 +1,14 @@
-__author__ = 'Francisco'
-
-import wx
-from gui.views.PreRunView import viewPreRun
+import datetime
 import os
 import time
+
+import wx
+
+import coordinator.users as users
 from coordinator import engineAccessors
 from coordinator.emitLogging import elog
-import coordinator.users as users
-import datetime
+from gui.views.PreRunView import viewPreRun
+
 
 class PreRunCtrl(viewPreRun):
     def __init__(self, parent=None):

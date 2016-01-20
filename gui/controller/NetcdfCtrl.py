@@ -1,17 +1,16 @@
-__author__ = 'francisco'
-
-from gui.views.NetcdfViewer import NetcdfViewer
-import os
-import wx
-from xml.etree import cElementTree
-from urlparse import urljoin
-import requests
 import httplib
+import os
 import urlparse
-import urllib
-from gui.controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
-from gui.views.NetcdfDetailsView import NetcdfDetailsView
+from urlparse import urljoin
+from xml.etree import cElementTree
+
 import netCDF4 as nc
+import requests
+import wx
+
+from gui.controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
+from gui.views.NetcdfViewer import NetcdfViewer
+
 
 class NetcdfCtrl(NetcdfViewer):
 

@@ -1,12 +1,13 @@
-__author__ = 'ryan'
-
-from gui.views.TimeSeriesPlotView import TimeSeriesPlotView
-from coordinator.emitLogging import elog
-import wx
-import os
 import csv
-import time
 import datetime
+import os
+import time
+
+import wx
+
+from coordinator.emitLogging import elog
+from gui.views.TimeSeriesPlotView import TimeSeriesPlotView
+
 
 class SimulationPlotCtrl(TimeSeriesPlotView):
 

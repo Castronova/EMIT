@@ -1,33 +1,33 @@
-import math
-import textwrap as tw
-import sys
 import os
+import random
+import threading
+import time
+import uuid
 import xml.etree.ElementTree as et
 from xml.dom import minidom
-import uuid
-import threading, time
+
+import numpy as N
 import wx
 from wx.lib.floatcanvas import FloatCanvas as FC
 from wx.lib.floatcanvas.NavCanvas import NavCanvas
 from wx.lib.pubsub import pub as Publisher
-import numpy as N
-from matplotlib.pyplot import cm
-from gui.views.ContextView import LinkContextMenu, ModelContextMenu, CanvasContextMenu
-from transform.space import SpatialInterpolation
-from transform.time import TemporalInterpolation
+
+import coordinator.engineAccessors as engine
+import coordinator.events as engineEvent
 import datatypes
-from utilities.threading import EVT_CREATE_BOX, EVT_UPDATE_CONSOLE, ThreadManager
-from gui.views.CanvasView import ViewCanvas
 import gui.controller.CanvasObjectsCtrl as LogicCanvasObjects
+import utilities.db as dbUtilities
+from coordinator.emitLogging import elog
+from gui import events
 from gui.controller.CanvasObjectsCtrl import SmoothLineWithArrow, ModelBox
 from gui.controller.LinkCtrl import LinkCtrl
-import coordinator.engineAccessors as engine
-import utilities.db as dbUtilities
-import coordinator.events as engineEvent
-from gui import events
-from coordinator.emitLogging import elog
-import random
+from gui.views.CanvasView import ViewCanvas
+from gui.views.ContextView import LinkContextMenu, ModelContextMenu, CanvasContextMenu
 from sprint import *
+from transform.space import SpatialInterpolation
+from transform.time import TemporalInterpolation
+from utilities.threading import EVT_UPDATE_CONSOLE
+
 
 class LogicCanvas(ViewCanvas):
     def __init__(self, parent):

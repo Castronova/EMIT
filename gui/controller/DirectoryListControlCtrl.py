@@ -1,6 +1,5 @@
-__author__ = 'tonycastronova'
-import os
 import glob
+import os
 import time
 
 import wx

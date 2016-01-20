@@ -1,12 +1,13 @@
-__author__ = 'Ryan'
-
-from gui.views.NetcdfDetailsView import NetcdfDetailsView
-import wx
-import netCDF4 as nc
-import wx.propgrid as wxpg
-from coordinator import engineAccessors as engine
 import datetime as dt
+
+import netCDF4 as nc
+import wx
+import wx.propgrid as wxpg
+
 import wrappers
+from coordinator import engineAccessors as engine
+from gui.views.NetcdfDetailsView import NetcdfDetailsView
+
 
 class NetcdfDetailsCtrl(NetcdfDetailsView):
 

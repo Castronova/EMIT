@@ -1,9 +1,9 @@
-__author__ = 'Mario'
-
-import os, sys
-from gui.views.EMITView import ViewEMIT
-import coordinator.engineAccessors as engine
+import os
 import sqlite3 as lite
+import sys
+
+import coordinator.engineAccessors as engine
+from gui.views.EMITView import ViewEMIT
 
 
 class LogicEMIT(ViewEMIT):

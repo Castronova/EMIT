@@ -12,6 +12,7 @@ import jdutil
 import math
 import numpy
 from coordinator.emitLogging import elog
+from sprint import *
 from utilities import mdl, geometry
 import netCDF4 as nc
 from dateutil import parser
@@ -435,11 +436,11 @@ class ueb(feed_forward.Wrapper):
                 # if i % round((len(self.activeCells)) / 10) == 0:
                 # print "%d of %d elements complete " % ((i+1), len(self.activeCells))
                 # sys.stdout.flush()
-                elog.info("... %d of %d elements complete " % ((i+1), len(self.activeCells)), overwrite=True)
+                # elog.info("... %d of %d elements complete " % ((i+1), len(self.activeCells)), overwrite=True)
 
         except Exception, e:
-            elog.critical('UEB run failed.')
-            elog.critical(e)
+            elog.critical('UEB run failed: %s' % e)
+            sPrint('An error was encountered while running the UEB model: %s' % e)
             return False
 
 

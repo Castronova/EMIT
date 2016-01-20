@@ -7,6 +7,7 @@ from utilities import mdl, spatial, geometry
 import math
 from shapely.geometry import Point
 from coordinator.emitLogging import elog
+from sprint import *
 import numpy as np
 from distutils.version import LooseVersion
 
@@ -23,14 +24,16 @@ class topmodel(feed_forward.Wrapper):
 
         if LooseVersion(np.__version__) < LooseVersion('1.9.0'):
             elog.error('Could not load TOPMODEL, NumPY version 1.9.0 or greater required')
+            sPrint('Could not load TOPMODEL, NumPY version 1.9.0 or greater required', MessageType.ERROR)
             raise Exception('Could not load TOPMODEL, NumPY version 1.9.0 or greater required')
 
 
 
-        elog.info('Begin Component Initialization')
+        sPrint('Begin Component Initialization')
+
 
         # build inputs and outputs
-        elog.info('Building exchange items')
+        sPrint('Building exchange items')
         io = mdl.build_exchange_items_from_config(config_params)
 
         # set inputs and outputs
@@ -41,7 +44,7 @@ class topmodel(feed_forward.Wrapper):
         inputs = config_params['model inputs'][0]
 
         # read input parameters
-        elog.info('Reading input parameters')
+        sPrint('Reading input parameters')
         self.topo_input = inputs["ti"];
         self.fac_input = inputs["fac"];
 
@@ -54,16 +57,16 @@ class topmodel(feed_forward.Wrapper):
         self.freq = []
 
         # read topographic input file
-        elog.info('Reading topographic input data')
+        sPrint('Reading topographic input data')
         self.read_topo_input()
 
-        elog.info('Building input/output geometries')
+        sPrint('Building input/output geometries')
         self.ti_geoms = None
         self.output_soil_moisture_geoms = None
         self.calc_ti_geometries()
 
         # set precipitation geometries
-        elog.info('Setting excess precipitation geometries')
+        sPrint('Setting excess precipitation geometries')
         self.outputs()['excess'].addGeometries2(self.ti_geoms)
 
         # set saturation geometries
@@ -71,7 +74,7 @@ class topmodel(feed_forward.Wrapper):
         # self.outputs()['soil moisture'].addGeometries2(self.ti_geoms)
 
         # ---- calculate saturation deficit
-        elog.info('Calculating initial saturation deficit')
+        sPrint('Calculating initial saturation deficit')
         TI_freq = [x*y for x,y in zip(self.ti, self.freq)]
 
         self.lamda_average = sum(TI_freq) / sum(self.freq)
@@ -79,7 +82,7 @@ class topmodel(feed_forward.Wrapper):
         # catchment average saturation deficit(S_bar)
         self.s_average = (-1.)*self.c * ((math.log10(self.R / self.Tmax)) + self.lamda_average)
 
-        elog.info('Component Initialization Completed Successfully')
+        sPrint('Component Initialization Completed Successfully')
 
     def run(self,inputs):
 
@@ -178,7 +181,7 @@ class topmodel(feed_forward.Wrapper):
 
     def calc_ti_geometries(self):
 
-        elog.info('TOPMODEL: Building Geometry Objects')
+        sPrint('Building Geometry Objects')
         tigeoms = []
         satgeoms = []
         with open(self.topo_input, 'r') as sr:

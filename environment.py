@@ -109,7 +109,7 @@ def setEnvironmentVar(section, var, value=None, settings=None):
     var = var.upper()
     if not config.has_section(section):
         config.add_section(section)
-    config.set(section, var, value)
+    config.set(section, var, str(value))
 
     # reload the environment variables
     loadEnvironment(config)
@@ -129,7 +129,7 @@ def readEnvironment(settings):
 
     # settings_dict = parse(config)
 
-    # return settings_dict
+    # return settings_dictx
 
 def loadEnvironment(config):
 
@@ -150,10 +150,7 @@ def parseConfigIntoDict(config):
     for section in config.sections():
         for option in config.options(section):
             value = config.get(section, option)
-            if not value.isdigit():
-                d['_'.join([section, option])] = value
-            else:
-                d['_'.join([section, option])] = int(value)
+            d['_'.join([section, option])] = str(value)
 
     return d
 

@@ -83,7 +83,6 @@ class LogicCanvas(ViewCanvas):
         self.FloatCanvas.Bind(FC.EVT_MOTION, self.OnMove)
         self.FloatCanvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp)
         self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.LaunchContext)
-        self.Bind(EVT_UPDATE_CONSOLE, self.onUpdateConsole)
 
         # engine bindings
         engineEvent.onModelAdded += self.draw_box
@@ -156,13 +155,6 @@ class LogicCanvas(ViewCanvas):
 
             self.lastPos = cursorPos
             self.FloatCanvas.Draw(True)
-
-    def onUpdateConsole(self, evt):
-        """
-        Updates the output console
-        """
-        if evt.message:
-            elog.debug("DEBUG|", evt.message)
 
     def createBox(self, xCoord, yCoord, id=None, name=None, type=datatypes.ModelTypes.TimeStep):
 

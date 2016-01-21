@@ -34,8 +34,8 @@ a = Analysis(['./EMIT.py'],
             cipher=block_cipher)
 
 
-a.datas += [('./app_data/config/.settings.ini', './app_data/config/.settings.ini', 'DATA')]
-a.datas += [('./log/.emptyfile', './log/.emptyfile', 'DATA')]
+#a.datas += [('./app_data/config/.settings.ini', './app_data/config/.settings.ini', 'DATA')]
+#a.datas += [('./log/.emptyfile', './log/.emptyfile', 'DATA')]
 a.datas += [('./data/connections', './data/connections', 'DATA')]
 a.datas += [('./data/preferences', './data/preferences', 'DATA')]
 a.datas += [('./app_data/db/.dbload', './app_data/db/.dbload', 'DATA')]

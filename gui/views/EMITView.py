@@ -15,6 +15,7 @@ from gui import events
 from gui.controller.CanvasCtrl import LogicCanvas
 from gui.controller.DirectoryCtrl import LogicDirectory
 from gui.controller.NetcdfCtrl import NetcdfCtrl
+from gui.controller.UserCtrl import UserCtrl
 from gui.controller.ToolboxCtrl import LogicToolbox
 from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
 
@@ -37,6 +38,7 @@ class ViewEMIT(wx.Frame):
         self.parent = parent
 
         self.initMenu()
+        #self.checkUsers()
 
         # creating components
         self.Directory = LogicDirectory(self.pnlDocking)
@@ -55,6 +57,11 @@ class ViewEMIT(wx.Frame):
         self.Show()
 
         self.defaultLoadDirectory = os.getcwd() + "/models/MyConfigurations/"
+
+    def checkUsers(self):
+        userPath = os.environ['APP_USER_PATH']
+        if os.path.isfile(userPath) == False:
+            uc = UserCtrl(self)
 
 
     def _init_sizers(self):

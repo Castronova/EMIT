@@ -1,6 +1,27 @@
 import numpy
 
 from gui.views.PlotForSiteViewerView import ViewPlotForSiteViewer
+import matplotlib as mpl
+
+class color_cycle(object):
+    def __init__(self):
+
+        # get the matplotlib color cycle
+        self.__colors = [c['color'] for c in list(mpl.rcParams['axes.prop_cycle'])]
+        self.current = -1
+        self.max = len(self.__colors)
+
+    def __iter__(self):
+        'Returns itself as an iterator object'
+        return self
+
+    def next(self):
+        'Returns the next value (cyclic)'
+        self.current += 1
+        print '%s < %s'%(self.current, self.max)
+        if self.current == self.max:
+            self.current = 0
+        return self.__colors[self.current]
 
 
 class logicPlotForSiteViewer(ViewPlotForSiteViewer):
@@ -15,7 +36,7 @@ class logicPlotForSiteViewer(ViewPlotForSiteViewer):
         self.__axis = []
 
         # matplotlib color cycle used to ensure primary and secondary axis are not displayed with the same color
-        self.__color_cycle = self.axes._get_lines.color_cycle
+        self.__color_cycle = color_cycle()
 
     def plotData(self, data, name, noDataValue, ylabel=""):
 

@@ -122,7 +122,7 @@ class NetcdfCtrl(NetcdfViewer):
                 return i
     
     def update_statusbar(self, status_bar, text):
-        status_bar.SetStatusText(text);
+        status_bar.SetStatusText(text)
         wx.Yield()
 
     def get_server_status_code(self, url):

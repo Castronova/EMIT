@@ -18,7 +18,6 @@ class color_cycle(object):
     def next(self):
         'Returns the next value (cyclic)'
         self.current += 1
-        print '%s < %s'%(self.current, self.max)
         if self.current == self.max:
             self.current = 0
         return self.__colors[self.current]

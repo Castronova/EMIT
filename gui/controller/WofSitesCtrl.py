@@ -8,16 +8,19 @@ import wx
 import coordinator.engineAccessors as engine
 from coordinator.emitLogging import elog
 from gui.views.TimeSeriesPlotView import TimeSeriesPlotView
-
+import threading
+from sprint import *
 
 class WofSitesViewerCtrl(TimeSeriesPlotView):
-    def __init__(self, parent, siteObject):
+    def __init__(self, parent, siteObject, api):
+        self.wof = api
 
         table_cols = ["Variable Name", "Unit", "Category", "Type", "Begin Date Time", "End Date Time", "Description"]
         TimeSeriesPlotView.__init__(self, parent, siteObject.site_name, table_cols)
 
         self.siteobject = siteObject
-        self.Bind(wx.EVT_BUTTON, self.previewPlot, self.PlotBtn)
+        # self.Bind(wx.EVT_BUTTON, self.previewPlot, self.PlotBtn)
+        self.Bind(wx.EVT_BUTTON, self.onPreview, self.PlotBtn)
         self.Bind(wx.EVT_DATE_CHANGED, self.setStartDate, self.startDatePicker)
         self.Bind(wx.EVT_DATE_CHANGED, self.setEndDate, self.endDatePicker)
         self.Bind(wx.EVT_BUTTON, self.onExport, self.exportBtn)
@@ -25,6 +28,14 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.enableBtns)
         self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.disableBtns)
         self.disableBtns(None)
+
+        # instantiate a container for the wof data
+        self.wofSeries = wofSeries()
+
+        # threaded web service call so that the gui does not hang
+        t = threading.Thread(target=self.populateVariablesList, args=(api, siteObject.site_code), name='WOF_GetVariables')
+        t.setDaemon(True)
+        t.start()
 
     def enableBtns(self, event):
         self.PlotBtn.Enable()
@@ -137,12 +148,6 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
         else:
             elog.info("Select a variable to export")
 
-    # def getSelectedObject(self):
-    #     code = self.getSelectedVariableSiteCode()
-    #     for i in range(len(self._objects)):
-    #         if code == self._objects[i].code:
-    #             return self._objects[i]
-
     def getAllSelectedVariables(self):
         code = self.getAllSelectedVariableSiteCodes()
         variables = []
@@ -193,52 +198,104 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
             if value[0] == checkedVar:
                 return key        # Column names
 
+    def onPreview(self, event):
 
-    def previewPlot(self, event):
+        # update the WOF plot data in a thread so that the gui is not blocked
+        t = threading.Thread(target=self.updatePlotData, name='UpdateWofPlotData')
+        t.setDaemon(True)
+        t.start()
+
+    # THREADED
+    def updatePlotData(self):
+
+        # get selected variables
         var_codes = self.getAllSelectedVariableSiteCodes()
         var_names = self.getAllSelectedVariableName()
 
-        if len(var_codes) > 0:
-            self.plot.clearPlot()
+        # get start and end dates
+        sd = self.start_date.FormatISODate()
+        ed = self.end_date.FormatISODate()
 
-            # plot each of the selected items
-            for i in range(len(var_codes)):
+        #   - check which data needs to be queried
+        series_keys = []
+        for i in range(len(var_codes)):
+            # add this series to the wof series container
+            key = self.wofSeries.addDataSeries(self.siteobject.site_code, var_codes[i], var_names[i], sd, ed)
 
-                # limit support to 2 line plots for now
-                # todo: extend this functionality to support more than 2 line plots
-                if i > 1:
-                    elog.warning('Cannot plot more the two time series at a time.  Support for this feature is coming soon.')
-                    break
+            # save the key that is returned
+            series_keys.append(key)
 
-                var_code = var_codes[i]
-                var_name = var_names[i]
+            sPrint('Added key to wof series container: %s' % key, MessageType.DEBUG)
 
-                data = self.Parent.api.getValues(self.siteobject.site_code, var_code,
-                                                 self.start_date.FormatISODate(), self.end_date.FormatISODate())
-                plotData = []
-                noData = None
-                # make sure data is found
-                if data is not None:
-                    # get the first data element only
-                    if len(data[0].values[0]) > 1:
-                        values = data[0].values[0].value
-                    else:
-                        elog.info("There are no values.  Try selecting a larger date range")
-                        return
+        # prune to only the keys that were added
+        pruned = self.wofSeries.prune(series_keys)
 
-                    for value in values:
-                        plotData.append((value._dateTime, value.value))
+        # query which data series are missing data
+        series_missing_data = self.wofSeries.getSeriesMissingData()
 
-                    noData = data[0].variable.noDataValue
+        #   - query wof values
+        for series in series_missing_data:
 
-                # self.plot.setTitle(self.getSelectedVariableName())
-                # self.plot.setAxisLabel(" ", data[0].variable.unit.unitName)
-                ylabel = data[0].variable.unit.unitName
-                self.plot.plotData(plotData, var_name, noData, ylabel)
-                # self.plot.setAxisLabel(y=ylabel)
+            # query the data using WOF
+            sPrint('Querying WOF using this following parameters: %s, %s, %s, %s ' % (series.site_code, series.var_code, series.sd, series.ed), MessageType.INFO)
+            data = self.wof.getValues(series.site_code, series.var_code, series.sd, series.ed)
 
+            # save these data to the wofSeries object
+            self.wofSeries.addData(series, data)
+
+        # update the plot canvase
+        wx.CallAfter(self.updatePlotArea, series_keys)
+
+
+    def updatePlotArea(self, series_keys):
+        """
+        Updates the WOF plot with the selected data
+        Args:
+            series_keys: list of series keys of the data that will be plot
+        Returns: None
+        """
+
+        self.plot.clearPlot()
+
+        for key in series_keys:
+
+            series_info = self.wofSeries.series_info[key]
+            data = self.wofSeries.getData(key)
+
+            plotData = []
+            noData = None
+
+            # make sure data is found
+            if data is not None:
+
+                # get the first data element only
+                if len(data[0].values[0]) > 1:
+                    values = data[0].values[0].value
+                else:
+                    elog.info("There are no values.  Try selecting a larger date range")
+                    return
+
+                for value in values:
+                    plotData.append((value._dateTime, value.value))
+
+                noData = data[0].variable.noDataValue
+
+            # self.plot.setTitle(self.getSelectedVariableName())
+            # self.plot.setAxisLabel(" ", data[0].variable.unit.unitName)
+            ylabel = data[0].variable.unit.unitName
+            self.plot.plotData(plotData, series_info.var_name, noData, ylabel)
+
+
+    # THREADED
     def populateVariablesList(self, api, sitecode):
         data = api.buildAllSiteCodeVariables(sitecode)
+        sPrint('Finished querying WOF service for site variables, threaded', MessageType.DEBUG)
+
+        # uses wx callafter to update the variables table.  This is necessary since wx is being called within a thread
+        wx.CallAfter(self.updateVariablesTable, data)
+
+
+    def updateVariablesTable(self, data):
         self._data = data
         self._objects = self.dicToObj(data)
         rowNumber = 0
@@ -253,24 +310,95 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
                 colNumber += 1
             colNumber = 0
             rowNumber += 1
-
         self.autoSizeColumns()
         self.alternateRowColor()
 
-    # def build_timeseries_table(self):
-    #
-    #     # Column names
-    #     # self.variableList = CheckListCtrl(lowerpanel)
-    #     self.variableList.InsertColumn(0, "Variable Name")
-    #     self.variableList.InsertColumn(1, "Unit")
-    #     self.variableList.InsertColumn(2, "Category")
-    #     self.variableList.InsertColumn(3, "Type")
-    #     self.variableList.InsertColumn(4, "Begin Date Time")
-    #     self.variableList.InsertColumn(5, "End Date Time")
-    #     self.variableList.InsertColumn(6, "Description")
-    #
-    #     self.refresh_timeseries_table()
 
+class wofSeries(object):
+    """
+    This class stores the wof data series that currently plotted in the WOFSitesViewer.  It has been optimized to
+    reduce unnecessary webservice calls (i.e. redundant calls).
+    """
+
+    def __init__(self, cache = 5):
+
+        self.series_info = {}
+        self.data = {}
+        self.cache = cache
+
+    def getDataSeries(self):
+        return self.series_info
+
+    def getData(self, key):
+        return self.data[key]
+
+
+    def addDataSeries(self, site_code, var_code, var_name, sd, ed):
+        info = seriesInfo(site_code, var_code, var_name, sd, ed)
+
+        if str(info) not in self.series_info.keys():
+            self.series_info[str(info)] = info
+
+        return str(info)
+
+    def addData(self, seriesInfo, data):
+
+        self.data[str(seriesInfo)] = data
+
+    def clearDataSeries(self):
+        self.series_info = {}
+        self.data = {}
+
+    def prune(self, keys):
+        """
+        Prunes the data series to contain only the keys provided as args
+        Args:
+            keys: list of keys to keep in the wofSeries object
+        Returns: list of removed keys
+        """
+
+        # find which keys to remove
+        keys_to_remove = [k for k in self.series_info.keys() if k not in keys]
+
+        total_series = len(self.series_info.keys())
+
+        # only remove data series if storage exceeds the cache
+        if total_series > self.cache:
+
+            # remove series info and data for each of these keys
+            for k in keys_to_remove:
+                sPrint('Pruning the following keys: %s' % k, MessageType.DEBUG)
+                self.series_info.pop(k)
+                self.data.pop(k)
+
+                # exits pruning loop when storage is within cache limit again
+                if len(self.series_info.keys()) <= self.cache:
+                    break
+
+        return keys_to_remove
+
+    def getSeriesMissingData(self):
+        """
+        Determines which of the data series are missing data
+        Returns: seriesInfo objects for all data series that are missing data
+
+        """
+        series_missing_data = []
+        for key in self.series_info.keys():
+            if key not in self.data.keys():
+                series_missing_data.append(self.series_info[key])
+        return series_missing_data
+
+class seriesInfo(object):
+    def __init__(self, site_code, var_code, var_name, sd, ed):
+        self.site_code = site_code
+        self.var_code = var_code
+        self.var_name = var_name
+        self.sd = sd
+        self.ed = ed
+
+    def __str__(self):
+        return '%s__%s__%s__%s' % (self.site_code, self.var_code, self.sd, self.ed)
 
 
 class DicToObj(object):

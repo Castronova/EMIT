@@ -174,10 +174,7 @@ class TimeSeriesTab(wx.Panel):
 
     def prepareODM1_Model(self, siteObject):
         self.selectedVariables = None
-        # siteObject = self.api.objects[siteObjectID]
-        # print siteObject
-        siteview = WofSitesViewerCtrl(self, siteObject)
-        siteview.populateVariablesList(self.api, siteObject.site_code)
+        siteview = WofSitesViewerCtrl(self, siteObject, self.api)
         return
 
     def getParsedValues(self, siteObject, startDate, endDate):

@@ -267,7 +267,7 @@ class ViewEMIT(wx.Frame):
             try:
                 for t in non_daemon_and_alive:
                     t._Thread__stop()
-            except(Exception, e):
+            except Exception, e:
                 elog.error('Error encountered closing thread %s: %s' % (t.name, e))
 
             # close the main thread

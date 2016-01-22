@@ -53,15 +53,12 @@ class MessageType:
     CRITICAL = 'CRITICAL'
 
 def getStackTrace():
-    caller = 'unknown caller'
+    """
+    Gets the function caller via stack tracing
+    Returns: "(caller, line #)"
+    """
     stack = inspect.stack()
     return '(%s, line %s)' % (basename(stack[2][1]), stack[2][2])
-    # for s in stack[1:]:
-    #     caller_path = s[1]
-    #     if 'pydevd' not in caller_path:
-    #         caller = '(%s, line %s)' % (basename(s[1]), s[2])
-    #         break
-    # return caller
 
 def sPrint(text,  messageType=MessageType.INFO, printTarget=PrintTarget.CONSOLE):
     '''
@@ -95,11 +92,11 @@ class dBlock():
 
         # print header
         header_msg = '%s %s %s' % (20*'-', title, 20 * '-')
-        # self.udpsocket.sendto('|'.join([MessageType.DEBUG,'\n']), self.addr)
         self.udpsocket.sendto('|'.join([MessageType.DEBUG,header_msg]), self.addr)
 
     def sPrint(self, text):
 
+        # get the calling file so that it can be appended to the message
         caller = getStackTrace()
 
         # parse the text
@@ -111,5 +108,4 @@ class dBlock():
     def close(self):
         footer_msg = self.title_length * '-'
         self.udpsocket.sendto('|'.join([MessageType.DEBUG, footer_msg]), self.addr)
-        # self.udpsocket.sendto('|'.join([MessageType.DEBUG, '\n']), self.addr)
         del self

@@ -140,7 +140,7 @@ def validate_config_ini(ini_path):
                 except:
                     elog.error('Configuration Parsing Error: '+classname+' is not a valid class name')
 
-    except Exception, e:
+    except Exception as e:
         elog.error('Configuration Parsing Error: '+str(e))
         sPrint('Error parsing configuration file: %s' % e, MessageType.ERROR)
         return 0

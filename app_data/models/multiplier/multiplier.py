@@ -19,7 +19,6 @@ class multiply(feed_forward.Wrapper):
 
         super(multiply,self).__init__(config_params)
 
-
         # build inputs and outputs
         io = mdl.build_exchange_items_from_config(config_params)
 

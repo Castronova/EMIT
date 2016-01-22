@@ -326,22 +326,28 @@ class Coordinator(object):
         """
 
         thisModel = None
-
+        sPrint('Adding Model in Engine')
         if id is None:
             id = 'M' + uuid.uuid4().hex
 
 
         if 'type' in attrib.keys():
 
+            sPrint('Found type')
+
             try:
                 getattr(wrappers, attrib['type'])
             except:
                 elog.critical('Could not locate wrapper of type %s.  Make sure the wrapper is specified in wrappers.__init__.' % (attrib['type']))
+                sPrint('Could not locate wrapper of type %s.  Make sure the wrapper is specified in wrappers.__init__.' % (attrib['type']), MessageType.CRITICAL)
 
+            sPrint('Instantiating the component wrapper')
+            sPrint(attrib)
             # instantiate the component wrapper
             inst = getattr(wrappers, attrib['type']).Wrapper(attrib)
             oei = inst.outputs().values()
             iei = inst.inputs().values()
+            sPrint('Model Instantiated')
 
             # create a model instance
             thisModel = Model(id=id,
@@ -356,18 +362,24 @@ class Coordinator(object):
         elif 'mdl' in attrib:
         # if type == datatypes.ModelTypes.FeedForward or type == datatypes.ModelTypes.TimeStep:
 
+            sPrint('Found MDL')
+
             ini_path = attrib['mdl']
 
             # parse the model configuration parameters
             params = parse_config(ini_path)
 
             if params is not None:
-                # load model
-                name, model_inst = load_model(params)
 
+                # load model
+                sPrint('Loading Model')
+                sPrint(params)
+                name, model_inst = load_model(params)
+                sPrint('Finished Loading')
                 # make sure this model doesnt already exist
                 if name in self.__models:
                     elog.warning('Model named '+name+' already exists in configuration')
+                    sPrint('Model named '+name+' already exists in configuration', MessageType.WARNING)
                     return None
 
                 iei = model_inst.inputs().values()
@@ -401,6 +413,7 @@ class Coordinator(object):
             # List of canvas models are kept as a dict with keys in the format of 'NAME-ID'
             if inst.name()+'-'+resultid in self.__models:
                 elog.warning('Series named '+inst.name()+' already exists in configuration')
+                sPrint('Series named '+inst.name()+' already exists in configuration', MessageType.WARNING)
                 return None
 
             # create a model instance
@@ -421,9 +434,11 @@ class Coordinator(object):
         if thisModel is not None:
             # save the model
             self.__models[thisModel.name()] = thisModel
+            sPrint('Model Loaded')
             return {'id':thisModel.id(), 'name':thisModel.name(), 'model_type':thisModel.type()}
         else:
             elog.error('Failed to load model.')
+            sPrint('Failed to load model.', MessageType.ERROR)
             return None
 
     def remove_model(self, linkablecomponent):

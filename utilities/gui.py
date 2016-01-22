@@ -324,23 +324,36 @@ def load_model(config_params):
     """
     # parse module config
     #items = parse_config(ini)
+    debug_msgs = dBlock('Loading Model (gui.py, load_model)')
+    try:
+        # get source attributes
+        software = config_params['software']
+        classname = software[0]['classname']
+        relpath = software[0]['filepath']
 
-    # get source attributes
-    software = config_params['software']
-    classname = software[0]['classname']
-    relpath = software[0]['filepath']
+        debug_msgs.sPrint('Classname: %s' % classname)
+        debug_msgs.sPrint('Relpath: %s' % relpath)
 
-    # load the model
-    basedir = config_params['basedir']
-    abspath = os.path.abspath(os.path.join(basedir,relpath))
-    filename = os.path.basename(abspath)
-    module = imp.load_source(filename, abspath)
-    model_class = getattr(module, classname)
+        # load the model
+        basedir = config_params['basedir']
+        abspath = os.path.abspath(os.path.join(basedir,relpath))
+        debug_msgs.sPrint('AbsPath: %s'%abspath)
 
-    # Initialize the component
-    instance = model_class(config_params)
+        filename = os.path.basename(abspath)
+        module = imp.load_source(filename, abspath)
+        model_class = getattr(module, classname)
+        debug_msgs.sPrint('Model Class Extracted Successfully')
 
-    #return (config_params['general'][0]['name'], instance)
+        # Initialize the component
+        instance = model_class(config_params)
+        debug_msgs.sPrint('Mode Initialization Successful')
+
+    except Exception as e:
+        sPrint('An error has occurred while loading model: %s'% e, MessageType.CRITICAL)
+        raise Exception(e)
+    finally:
+        debug_msgs.close()
+
     return (instance.name(), instance)
 
 def connect_to_db(title, desc, engine, address, name, user, pwd):

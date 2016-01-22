@@ -2,7 +2,7 @@ import json
 import threading
 import time
 from socket import AF_INET, SOCK_DGRAM, socket
-
+from sprint import *
 import wx
 import wx.lib.newevent
 
@@ -17,7 +17,7 @@ class consoleCtrl(ConsoleView):
 
         # todo: get the port number from the environment variables so that the user can change as necessary
         self.buf = 1024
-        self.port = 9271  # random port number
+        self.port = PrintTarget.CONSOLE  # random port number
         self.host = ''
         self.addr = (self.host, self.port)
 

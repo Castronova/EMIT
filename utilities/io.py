@@ -20,5 +20,9 @@ def getAppDataDir():
     
     return app_path
 
+def getRelativeToAppData(relative_path):
 
+    app_data = getAppDataDir()
+
+    return abspath(join(app_data, relative_path))
 

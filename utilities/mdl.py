@@ -10,21 +10,29 @@ from utilities import geometry
 import stdlib
 from coordinator.emitLogging import elog
 import numpy
-
+from sprint import *
+from utilities import io
 def create_variable(variable_name_cv):
     """
     creates a variable object using the lookup table
     """
+    sPrint(variable_name_cv)
+    var_path = io.getRelativeToAppData('dat/var_cv.dat')
+    sPrint(var_path)
+    var = pickle.load(open(var_path,'rb'))
+    # dir = os.path.dirname(__file__)
+    # var = pickle.load(open(os.path.join(dir,'../data/var_cv.dat'),'rb'))
 
-    dir = os.path.dirname(__file__)
-    var = pickle.load(open(os.path.join(dir,'../data/var_cv.dat'),'rb'))
+    sPrint('Loaded var_cv', MessageType.DEBUG)
 
     if variable_name_cv in var:
+        sPrint('var name in var', MessageType.DEBUG)
         V = stdlib.Variable()
         V.VariableNameCV(value=variable_name_cv)
         V.VariableDefinition(value=var[variable_name_cv].strip())
         return V
     else:
+        sPrint('var name not in var', MessageType.DEBUG)
         V = stdlib.Variable()
         V.VariableNameCV(value=variable_name_cv)
         V.VariableDefinition(value='unknown')
@@ -35,8 +43,11 @@ def create_unit(unit_name):
     """
     creates a unit object using the lookup table
     """
-    dir = os.path.dirname(__file__)
-    var = pickle.load(open(os.path.join(dir,'../data/units_cv.dat'),'rb'))
+
+    unit_path = io.getRelativeToAppData('dat/units_cv.dat')
+    var = pickle.load(open(unit_path,'rb'))
+    # dir = os.path.dirname(__file__)
+    # var = pickle.load(open(os.path.join(dir,'../data/units_cv.dat'),'rb'))
 
     if unit_name in var:
         U = stdlib.Unit()
@@ -65,7 +76,6 @@ def build_exchange_items_from_config(params):
 
     items = {stdlib.ExchangeItemType.INPUT:[],stdlib.ExchangeItemType.OUTPUT:[]}
 
-
     # loop through each input/output and create an exchange item
     for io in eitems:
         variable = None
@@ -76,9 +86,12 @@ def build_exchange_items_from_config(params):
         iotype = stdlib.ExchangeItemType.OUTPUT if io['type'].upper() == stdlib.ExchangeItemType.OUTPUT else stdlib.ExchangeItemType.INPUT
 
         for key,value in io.iteritems():
+            sPrint(key, MessageType.DEBUG)
 
             if key == 'variable_name_cv':
+                sPrint('Creating Variable', MessageType.DEBUG)
                 variable = create_variable(value)
+                sPrint('Done Creating Variable', MessageType.DEBUG)
                 if 'variable_definition' in io.keys():
                     variable.VariableDefinition(io['variable_definition'])
             elif key == 'unit_type_cv': unit = create_unit(value)
@@ -93,7 +106,6 @@ def build_exchange_items_from_config(params):
 
                     # parse the geometry from the shapefile
                     geom, srs = utilities.spatial.read_shapefile(gen_path)
-
 
                 # otherwise it must be a wkt
                 else:
@@ -123,7 +135,6 @@ def build_exchange_items_from_config(params):
                                 unit= unit,
                                 variable=variable,
                                 type=iotype)
-
 
         # add geometry to exchange item (NEW)
         ei.addGeometries2(geom)

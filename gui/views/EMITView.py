@@ -15,10 +15,11 @@ from gui import events
 from gui.controller.CanvasCtrl import LogicCanvas
 from gui.controller.DirectoryCtrl import LogicDirectory
 from gui.controller.NetcdfCtrl import NetcdfCtrl
-from gui.controller.UserCtrl import UserCtrl
+from gui.controller.PreRunCtrl import AddNewUserDialog
 from gui.controller.ToolboxCtrl import LogicToolbox
 from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
 
+import coordinator.users as users
 # create custom events
 wxCreateBox, EVT_CREATE_BOX = NewEvent()
 wxStdOut, EVT_STDDOUT= NewEvent()
@@ -38,7 +39,6 @@ class ViewEMIT(wx.Frame):
         self.parent = parent
 
         self.initMenu()
-        #self.checkUsers()
 
         # creating components
         self.Directory = LogicDirectory(self.pnlDocking)
@@ -58,10 +58,45 @@ class ViewEMIT(wx.Frame):
 
         self.defaultLoadDirectory = os.getcwd() + "/models/MyConfigurations/"
 
+        self.checkUsers()
+
+
+    def loadAccounts(self):
+        known_users = []
+        userjson = os.environ['APP_USER_PATH']
+
+        #  Create the file if it does not exist
+        if os.path.isfile(userjson):
+            with open(userjson, 'r') as file:
+                content = file.read()
+                file.close()
+            if not (content.isspace() or len(content) < 1):  # check if file is empty
+                # file does exist so proceed like normal and there is content in it
+                elog.debug('userjson ' + userjson)
+                with open(userjson, 'r') as f:
+                    known_users.extend(users.BuildAffiliationfromJSON(f.read()))
+                    f.close()
+        else:
+            # file does not exist so we'll create one.
+            file = open(userjson, 'w')
+            file.close()
+
+        return known_users
+
     def checkUsers(self):
         userPath = os.environ['APP_USER_PATH']
+        print userPath
         if os.path.isfile(userPath) == False:
-            uc = UserCtrl(self)
+            file = open(userPath, 'w+')
+            dlg = AddNewUserDialog(self, title="Create User")
+            dlg.CenterOnScreen()
+            dlg.ShowModal()
+        else:
+            users = self.loadAccounts()
+            if len(users) < 1:
+                dlg = AddNewUserDialog(self, title="Create User")
+                dlg.CenterOnScreen()
+                dlg.ShowModal()
 
 
     def _init_sizers(self):

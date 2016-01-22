@@ -26,13 +26,19 @@ a = Analysis(['./EMIT.py'],
             binaries=None,
             datas=None,
             hiddenimports=[],
-            hookspath=['./hooks'], 
+            hookspath=['./hooks'],
             runtime_hooks=None,
             excludes=['PyQt4', 'PyQt4.QtCore', 'PyQt4.QtGui'],
             win_no_prefer_redirects=None,
             win_private_assemblies=None,
             cipher=block_cipher)
 
+
+#a.datas += [('./app_data/config/.settings.ini', './app_data/config/.settings.ini', 'DATA')]
+#a.datas += [('./log/.emptyfile', './log/.emptyfile', 'DATA')]
+a.datas += [('./data/connections', './data/connections', 'DATA')]
+a.datas += [('./data/preferences', './data/preferences', 'DATA')]
+a.datas += [('./app_data/db/.dbload', './app_data/db/.dbload', 'DATA')]
 dict_tree = Tree(get_pandas_path(), prefix='pandas', excludes=["*.pyc"])
 a.datas += dict_tree
 a.binaries = filter(lambda x: 'pandas' not in x[0], a.binaries)

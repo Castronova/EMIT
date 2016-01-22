@@ -408,11 +408,11 @@ class viewMenuBar(wx.Frame):
         self.c4 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Error Messages")
         self.c5 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Debug Messages")
 
-        self.c1.SetValue(os.environ['LOGGING_SHOWINFO'])
-        self.c2.SetValue(os.environ['LOGGING_SHOWWARNING'])
-        self.c3.SetValue(os.environ['LOGGING_SHOWCRITICAL'])
-        self.c4.SetValue(os.environ['LOGGING_SHOWERROR'])
-        self.c5.SetValue(os.environ['LOGGING_SHOWDEBUG'])
+        self.c1.SetValue(int(os.environ['LOGGING_SHOWINFO']))
+        self.c2.SetValue(int(os.environ['LOGGING_SHOWWARNING']))
+        self.c3.SetValue(int(os.environ['LOGGING_SHOWCRITICAL']))
+        self.c4.SetValue(int(os.environ['LOGGING_SHOWERROR']))
+        self.c5.SetValue(int(os.environ['LOGGING_SHOWDEBUG']))
 
         self.saveButton = wx.Button(self.panel, 1, 'Save')
 

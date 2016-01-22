@@ -3,10 +3,11 @@ import sys
 import logging
 import logging.handlers
 import os
+from os.path import *
 import json
 import ConfigParser
 import inspect
-
+from utilities import io
 class _Log:
     __monostate = None
 
@@ -14,9 +15,13 @@ class _Log:
         if not _Log.__monostate:
             _Log.__monostate = self.__dict__
 
-            current_dir = os.path.dirname(__file__)
-            LOG_FILENAME = os.path.abspath(os.path.join(current_dir, '../log/EmitEngine.log'))
-            CONSOLE_FILENAME = os.path.abspath(os.path.join(current_dir, '../log/temp_console_log.log'))
+            app_data = io.getAppDataDir()
+            LOG_FILENAME = abspath(join(app_data, 'log/engine.log'))
+            CONSOLE_FILENAME = abspath(join(app_data, 'log/temp.log'))
+
+            # make sure this path exists
+            if not exists(dirname(LOG_FILENAME)):
+                os.mkdir(dirname(LOG_FILENAME))
 
             # remove the temp console log
             if os.path.exists(CONSOLE_FILENAME):

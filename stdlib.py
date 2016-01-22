@@ -175,7 +175,7 @@ class ExchangeItem(object):
         # self.__srs = osr.SpatialReference()
         self.__srs = self.srs(srs_epsg=srs_epsg)
         # if self.__srs.ImportFromEPSG(srs_epsg)
-        # except(Exception, e):
+        # except Exception, e:
         #     # set default
         #     elog.error('Error ExchangeItem.__init__: %s' % e)
         #     sPrint('Could not create spatial reference object from code: %s. '
@@ -295,7 +295,7 @@ class ExchangeItem(object):
             self.__values2[tb:te:tstep, gb:ge:gstep] = values
 
 
-        except Exception, e:
+        except Exception as e:
             elog.error('Error ExchangeItem.setValuesBySlice: %s' % e)
             sPrint('Error setting values for times %s, geometries %s' % (str(time_index_slice), str(geometry_index_slice)),
                    MessageType.ERROR)
@@ -317,7 +317,7 @@ class ExchangeItem(object):
             # set the values[times][geoms]
             self.__values2[idx, gb:ge:gstep] = values
 
-        except(Exception, e):
+        except Exception as e:
             elog.error('Error ExchangeItem.setValuesByTime: %s' % e)
             sPrint('Error setting values for times %s, geometries %s' % (str(time_index_slice), str(geometry_index_slice)),
                    MessageType.ERROR)

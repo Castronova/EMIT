@@ -63,7 +63,7 @@ def writeDefaultEnvironment(settings=None):
     config.set('LOGGING', 'SHOWWARNING', 1)
     config.set('LOGGING', 'SHOWCRITICAL', 1)
     config.set('LOGGING', 'SHOWERROR', 1)
-    config.set('LOGGING', 'SHOWDEBUG', 0)
+    config.set('LOGGING', 'SHOWDEBUG', 1)
 
 
     config.add_section('APP')

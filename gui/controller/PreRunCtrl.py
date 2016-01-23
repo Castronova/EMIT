@@ -49,7 +49,7 @@ class PreRunCtrl(viewPreRun):
 
     def loadAccounts(self):
         known_users = []
-        userjson = os.environ['USER_JSON']
+        userjson = os.environ['APP_USER_PATH']
 
         #  Create the file if it does not exist
         if os.path.isfile(userjson):
@@ -348,7 +348,7 @@ class AddNewUserDialog(wx.Dialog):
         start_date = datetime.datetime.strptime(start_date.FormatISOCombined(), "%Y-%m-%dT%H:%M:%S")
 
         # These are only samples for testing
-        user_json_filepath = os.environ['USER_JSON']  # get the file path of the user.json
+        user_json_filepath = os.environ['APP_USER_PATH']  # get the file path of the user.json
         person = users.Person(firstname=firstname, lastname=lastname)
 
         organ = users.Organization(typeCV=organization, name=organization, code=organization)

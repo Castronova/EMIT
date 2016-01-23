@@ -77,9 +77,13 @@ class Affiliation(object):
 def date_hook(json_dict):
     for (key, value) in json_dict.items():
         try:
-            json_dict[key] = datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S")
+            #  Search string for keyword date
+            if key.lower().find('date') != -1:
+                # Convert only those that are dates otherwise you get unnecessary errors
+                json_dict[key] = datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S")
         except:
             elog.debug("Failed to convert date into datetime object")
+            pass
     return json_dict
 
 def BuildAffiliationfromJSON(j):

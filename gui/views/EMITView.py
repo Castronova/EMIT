@@ -98,6 +98,11 @@ class ViewEMIT(wx.Frame):
                 dlg.CenterOnScreen()
                 dlg.ShowModal()
 
+    def refreshUserAccount(self):
+        # This method is here because AddNewUserDialog.onOkBtn looks for this method at the end of the function
+        # The refresh was implemented
+        return
+
 
     def _init_sizers(self):
         self.s = wx.BoxSizer(wx.VERTICAL)

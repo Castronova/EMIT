@@ -6,7 +6,7 @@ import coordinator.engineAccessors as engine
 from gui.views.EMITView import ViewEMIT
 
 
-class LogicEMIT(ViewEMIT):
+class EMITCtrl(ViewEMIT):
     def __init__(self, parent):
 
 

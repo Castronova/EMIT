@@ -100,7 +100,7 @@ class ViewEMIT(wx.Frame):
 
     def refreshUserAccount(self):
         # This method is here because AddNewUserDialog.onOkBtn looks for this method at the end of the function
-        # The refresh was implemented
+        # The refresh was implemented so the pre-run dialog user account box would refresh after adding new user
         return
 
 

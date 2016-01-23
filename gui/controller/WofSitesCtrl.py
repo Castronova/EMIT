@@ -28,6 +28,7 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.enableBtns)
         self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.disableBtns)
         self.disableBtns(None)
+        self.done_querying = True
 
         # instantiate a container for the wof data
         self.wofSeries = wofSeries()
@@ -38,9 +39,10 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
         t.start()
 
     def enableBtns(self, event):
-        self.PlotBtn.Enable()
-        self.exportBtn.Enable()
-        self.addToCanvasBtn.Enable()
+        if self.done_querying:
+            self.PlotBtn.Enable()
+            self.exportBtn.Enable()
+            self.addToCanvasBtn.Enable()
 
     def disableBtns(self, event):
         self.PlotBtn.Disable()
@@ -205,8 +207,26 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
         t.setDaemon(True)
         t.start()
 
+    def populateVariablesList(self, api, sitecode):
+    # THREADED
+        self.updateStatusBar("Querying ...")
+
+        #  Theading the updateStatusBarLoading to animate loading
+        self.threadStatusBarLoading()
+
+        data = api.buildAllSiteCodeVariables(sitecode)
+        sPrint('Finished querying WOF service for site variables, threaded', MessageType.DEBUG)
+
+        # uses wx callafter to update the variables table.  This is necessary since wx is being called within a thread
+        wx.CallAfter(self.updateVariablesTable, data)
+        self.done_querying = True
+        self.updateStatusBar("Ready")
+
     # THREADED
     def updatePlotData(self):
+        self.updateStatusBar("Querying ...")
+
+        self.threadStatusBarLoading()
 
         # get selected variables
         var_codes = self.getAllSelectedVariableSiteCodes()
@@ -246,6 +266,16 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
         # update the plot canvase
         wx.CallAfter(self.updatePlotArea, series_keys)
 
+        self.done_querying = True
+        self.updateStatusBar("Ready")
+
+    # THREADED
+    def threadStatusBarLoading(self):
+        #  Theading the updateStatusBarLoading to animate loading
+        self.done_querying = False
+        status_bar_loading_thread = threading.Thread(target=self.updateStatusBarLoading, name="StatusBarLoading")
+        status_bar_loading_thread.setDaemon(True)
+        status_bar_loading_thread.start()
 
     def updatePlotArea(self, series_keys):
         """
@@ -287,13 +317,24 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
 
 
     # THREADED
-    def populateVariablesList(self, api, sitecode):
-        data = api.buildAllSiteCodeVariables(sitecode)
-        sPrint('Finished querying WOF service for site variables, threaded', MessageType.DEBUG)
+    def updateStatusBarLoading(self):
+        #  self.done_querying must be set to True in the method that is running the long process
+        status_list = ["Querying .", "Querying ..", "Querying ...", "Querying ....", "Querying ....."]
+        i = 0
+        self.disableBtns(None)
+        while not self.done_querying:  # self.done_querying is created in the method that calls this one
+            if i < len(status_list):
+                self.updateStatusBar(status_list[i])
+                i += 1
+            else:
+                i = 0
+                self.updateStatusBar(status_list[i])
+            time.sleep(0.5)
+        self.enableBtns(None)
 
-        # uses wx callafter to update the variables table.  This is necessary since wx is being called within a thread
-        wx.CallAfter(self.updateVariablesTable, data)
-
+    def updateStatusBar(self, text):
+        self.status_bar.SetStatusText(str(text))
+        wx.Yield()
 
     def updateVariablesTable(self, data):
         self._data = data

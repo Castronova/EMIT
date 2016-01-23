@@ -10,6 +10,7 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
         wx.ListCtrl.__init__(self, parent, -1, size=(545, 140), style=wx.LC_REPORT)
         ListCtrlAutoWidthMixin.__init__(self)
 
+
 class TimeSeriesPlotView(wx.Frame):
     def __init__(self, parent, title, table_columns):
         wx.Frame.__init__(self, parent=parent, id=-1, title=title, pos=wx.DefaultPosition, size=(650, 700),
@@ -77,6 +78,8 @@ class TimeSeriesPlotView(wx.Frame):
         panel.SetSizer(vbox)
 
         self.autoSizeColumns()
+        self.status_bar = self.CreateStatusBar()
+        self.status_bar.SetStatusText("Ready")
 
         self.Show()
 

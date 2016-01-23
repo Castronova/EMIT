@@ -220,7 +220,6 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
         # uses wx callafter to update the variables table.  This is necessary since wx is being called within a thread
         wx.CallAfter(self.updateVariablesTable, data)
         self.done_querying = True
-        self.updateStatusBar("Ready")
 
     # THREADED
     def updatePlotData(self):
@@ -267,7 +266,6 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
         wx.CallAfter(self.updatePlotArea, series_keys)
 
         self.done_querying = True
-        self.updateStatusBar("Ready")
 
     # THREADED
     def threadStatusBarLoading(self):
@@ -331,6 +329,7 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
                 self.updateStatusBar(status_list[i])
             time.sleep(0.5)
         self.enableBtns(None)
+        self.updateStatusBar("Ready")
 
     def updateStatusBar(self, text):
         self.status_bar.SetStatusText(str(text))

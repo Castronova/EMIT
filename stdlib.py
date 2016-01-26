@@ -509,15 +509,15 @@ class ExchangeItem(object):
         else:
             self.__description = value
 
-    def _nearest(self, lst, time, direction='left'):
+    def _nearest(self, array, time, direction='left'):
         """
         get the nearst datetime in list
-        :param lst: search list (sorted)
+        :param array: sorted numpy array of datetimes
         :param time: desired datetime
         :param direction: the bisect direction.  'left' for start_time and 'right' for end_time
         :return: list index
         """
-
+        lst = list(array)
         if len(lst) == 0:
             return 0
 
@@ -530,5 +530,8 @@ class ExchangeItem(object):
             nearest = min(lst[max(0, i-1): i+2], key=lambda t: abs(time - t))
             return lst.index(nearest)
 
-
-
+        # idx = numpy.searchsorted(array, time, side=direction)
+        # if abs((time - array[idx-1]).total_seconds()) < abs((time - array[idx]).total_seconds()) :
+        #     return idx-1
+        # else:
+        #     return idx

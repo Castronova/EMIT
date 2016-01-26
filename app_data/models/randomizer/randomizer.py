@@ -33,12 +33,13 @@ class randomizer(feed_forward.Wrapper):
 
         # Note: this calculation requires no input timeseries
 
-        outputs = [self.get_output_by_name('random POLYGON 1-10'),
-                   self.get_output_by_name('random POLYGON 10-100'),
-                   self.get_output_by_name('random POLYGON 100-1000'),
-                   self.get_output_by_name('random POINT 1-10'),
-                   self.get_output_by_name('random POINT 10-100'),
-                   self.get_output_by_name('random POINT 100-1000'),
+        o = self.outputs()
+        outputs = [o['random POLYGON 1-10'],
+                   o['random POLYGON 10-100'],
+                   o['random POLYGON 100-1000'],
+                   o['random POINT 1-10'],
+                   o['random POINT 10-100'],
+                   o['random POINT 100-1000'],
                    ]
 
 
@@ -87,7 +88,7 @@ class randomizer(feed_forward.Wrapper):
         # save output locally
         with open(base+'/output.out', 'w') as f:
             for oei in self.outputs().keys():
-                output = self.get_output_by_name(oei)
+                output = self.outputs()[oei]
                 geoms = output.getGeometries2()
                 dates = output.getDates2(ndarray=True)
                 values = output.getValues2(ndarray=True)
@@ -95,7 +96,7 @@ class randomizer(feed_forward.Wrapper):
                 f.write(oei+'\n')
                 f.write('GEOMETRIES AS WKT \n')
                 for i in range(0, len(geoms)):
-                    f.write(str(i+1)+'\t'+geoms[i].geom().to_wkt()+'\n')
+                    f.write(str(i+1)+'\t'+geoms[i].ExportToWkt()+'\n')
 
                 # write header
                 f.write('\n\ntime index\tdate time\t')

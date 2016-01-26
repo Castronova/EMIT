@@ -49,7 +49,7 @@ class PreRunCtrl(viewPreRun):
 
     def loadAccounts(self):
         known_users = []
-        userjson = os.environ['USER_JSON']
+        userjson = os.environ['APP_USER_PATH']
 
         #  Create the file if it does not exist
         if os.path.isfile(userjson):

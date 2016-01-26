@@ -3,6 +3,7 @@ import threading
 
 import wx
 import wx.html2
+import time
 import wx.lib.agw.aui as aui
 from wx.lib.newevent import NewEvent
 from wx.lib.pubsub import pub as Publisher
@@ -58,7 +59,6 @@ class ViewEMIT(wx.Frame):
 
         self.defaultLoadDirectory = os.getcwd() + "/models/MyConfigurations/"
 
-        self.checkUsers()
 
 
     def loadAccounts(self):
@@ -97,6 +97,30 @@ class ViewEMIT(wx.Frame):
                 dlg = AddNewUserDialog(self, title="Create User")
                 dlg.CenterOnScreen()
                 dlg.ShowModal()
+
+        users = self.loadAccounts()
+        userAdded = False
+        no = False
+        if len(users) > 0:
+            userAdded = True
+        while userAdded == False:# and no == False:
+
+            users = self.loadAccounts()
+            if len(users) == 0 and no == False:
+                dial = wx.MessageDialog(None, 'You must add a user to continue', 'Question',
+                    wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
+                if dial.ShowModal() == wx.ID_NO:
+                    pid = os.getpid()
+                    #os.system("kill -9 " + pid)
+                    no = True
+                else:
+                    dlg = AddNewUserDialog(self, title="Create User")
+                    dlg.CenterOnScreen()
+                    dlg.ShowModal()
+            else:
+                userAdded = True
+                self.onClose(None)
+
 
 
     def _init_sizers(self):
@@ -270,7 +294,7 @@ class ViewEMIT(wx.Frame):
     def onClose(self, event):
         dial = wx.MessageDialog(None, 'Are you sure to quit?', 'Question',
             wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
-        if dial.ShowModal() == wx.ID_YES:
+        if event == None or dial.ShowModal() == wx.ID_YES:
 
             # kill multiprocessing
             e = Engine()

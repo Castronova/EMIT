@@ -12,7 +12,6 @@ class LogicEMIT(ViewEMIT):
 
         ViewEMIT.__init__(self, parent)
         self.FloatCanvas = self.Canvas.FloatCanvas
-
         # todo: the connections file should be a binary object (pickle)
         # connect to known databases
         currentdir = os.path.dirname(os.path.abspath(__file__))
@@ -50,6 +49,11 @@ class LogicEMIT(ViewEMIT):
         # load the local database into the engine
         engine.connectToDb(title='ODM2 SQLite (local)',desc='Local SQLite database',engine='sqlite',address=filepath, name=None, user=None, pwd=None)
 
+        self.checkUsers()
+
+    def refreshUserAccount(self):
+        #self.account_combo.Clear()
+        self.accounts = self.loadAccounts()
 
 def removedb(file):
     try:

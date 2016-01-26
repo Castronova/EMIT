@@ -36,6 +36,7 @@ class SocketBinding:
 # try to bind to this CONSOLE address.  This will happen at first import
 sbindings = SocketBinding()
 
+
 class PrintTarget:
     """
     Enum for the socket ports for each print method
@@ -108,4 +109,45 @@ class dBlock():
     def close(self):
         footer_msg = self.title_length * '-'
         self.udpsocket.sendto('|'.join([MessageType.DEBUG, footer_msg]), self.addr)
+        del self
+
+
+# print initial message to each target port
+targets = [attr for attr in dir(PrintTarget()) if not callable(attr) and not attr.startswith("__")]
+for t in targets:
+    print 'Broadcasting %s messages to port %d ' % (t, getattr(PrintTarget, t))
+print 50*'- '
+
+
+class DebugListener(object):
+    def __init__(self, port=PrintTarget.CONSOLE):
+
+        import threading
+        self.buf = 1024
+        self.port = port
+        self.host = ''
+        self.addr = (self.host, self.port)
+
+        # start the message server
+        self.thread = threading.Thread(target=self.messageServer, name='MessageServer')
+        self.thread.daemon = True
+        self.thread.start()
+
+        print 'DebugListener listening on port %d' %port
+
+    def messageServer(self):
+
+        udpsocket = socket(AF_INET, SOCK_DGRAM)
+        udpsocket.bind(self.addr)
+
+        while True:
+
+            # receive the message from the socket
+            (data, addr) = udpsocket.recvfrom(self.buf)
+            type, text = data.split('|')
+
+            # print the message
+            print text
+
+    def __del__(self):
         del self

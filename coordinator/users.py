@@ -77,9 +77,13 @@ class Affiliation(object):
 def date_hook(json_dict):
     for (key, value) in json_dict.items():
         try:
-            json_dict[key] = datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S")
+            #  Search string for keyword date
+            if key.lower().find('date') != -1:
+                # Convert only those that are dates otherwise you get unnecessary errors
+                json_dict[key] = datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S")
         except:
             elog.debug("Failed to convert date into datetime object")
+            pass
     return json_dict
 
 def BuildAffiliationfromJSON(j):
@@ -120,7 +124,7 @@ if __name__ == "__main__":
     #
 
     # # write object to json
-    settings_path = os.path.abspath(os.path.join(os.path.dirname(__file__),'../app_data/configuration/'))
+    settings_path = os.path.abspath(os.path.join(os.path.dirname(__file__),'../app_data/config/'))
     # with open(settings_path + '/users.json', 'w') as f:
     #     j = {}
     #     for a in affilations:

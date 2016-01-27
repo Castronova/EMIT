@@ -1,3 +1,4 @@
+import os
 import json
 import threading
 import time
@@ -54,8 +55,10 @@ class consoleCtrl(ConsoleView):
             (data, addr) = udpsocket.recvfrom(self.buf)
             type, text = data.split('|')
 
-            # print the message
-            self.Print(text, type)
+            # print the message in the console if the environment variable is set to True
+            key = 'LOGGING_SHOW'+type.upper()
+            if int(os.environ[key]):
+                self.Print(text, type)
 
 
 # todo: remove this function (deprecated)

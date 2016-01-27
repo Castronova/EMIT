@@ -179,8 +179,9 @@ def run_feed_forward(obj, ds=None):
             # build an instance of dbv22
             db = dbv2.connect(ds.session)
         except Exception, e:
-            elog.error(e)
-            elog.error('An error was encountered when connecting to the database to save the simulation results.')
+            elog.error('An error was encountered when connecting to the database to save the simulation results: %s', e)
+            sPrint('An error was encountered when connecting to the database to save the simulation results.', MessageType.ERROR)
+            return
 
         # insert data!
         for modelid in exec_order:

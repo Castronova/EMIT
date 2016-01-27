@@ -215,9 +215,11 @@ class ViewEMIT(wx.Frame):
         self.file_menu = wx.Menu()
         Load = self.file_menu.Append(wx.NewId(), '&Load\tCtrl+O', 'Load Configuration')
         Save = self.file_menu.Append(wx.NewId(), '&Save Configuration\tCtrl+S', 'Save Configuration')
+        AddUser = self.file_menu.Append(wx.NewId(), 'Add User', 'Add New User')
         SaveAs = self.file_menu.Append(wx.NewId(), '&Save Configuration As', 'Save Configuration')
         Settings = self.file_menu.Append(wx.NewId(), "Settings...")
         exit = self.file_menu.Append(wx.NewId(), '&Quit\tCtrl+Q', 'Quit application')
+
 
         self._menubar.Append(self.file_menu, "&File")
 
@@ -254,6 +256,7 @@ class ViewEMIT(wx.Frame):
         self.Bind(wx.EVT_MENU, self.LoadConfiguration, Load)
         self.Bind(wx.EVT_MENU, self.Settings, Settings)
         self.Bind(wx.EVT_MENU, self.onClose, exit)
+        self.Bind(wx.EVT_MENU, self.onAddUser, AddUser)
         events.onSaveFromCanvas += self.SaveConfigurationAs
 
         # View Option Bindings
@@ -280,6 +283,11 @@ class ViewEMIT(wx.Frame):
 
         if file_dialog.ShowModal() == wx.ID_OK:
             path = file_dialog.GetPath()
+
+    def onAddUser(self, event):
+        dlg = AddNewUserDialog(self, title="Create User")
+        dlg.CenterOnScreen()
+        dlg.ShowModal()
 
     def onAddNetcdfFile(self, event):
         file_dialog = wx.FileDialog(self.Parent,

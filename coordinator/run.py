@@ -140,21 +140,22 @@ def run_feed_forward(obj, ds=None):
                   '------------------' + len(model_inst.name()) * '-')
 
         #  retrieve inputs from database
-        elog.info('[1 of 4] Retrieving input data... ')
+        sPrint("[1 of 4] Retrieving input data... ")
 
         input_data = model_inst.inputs()
 
-        elog.info('[2 of 4] Performing calculation... ')
+        sPrint("[2 of 4] Performing calculation... ")
+
 
         # pass these inputs ts to the models' run function
         model_inst.run(input_data)
 
         # save these results
-        elog.info('[3 of 4] Saving calculations to database... ')
+        sPrint("[3 of 4] Saving calculations to database... ")
 
 
         # update links
-        elog.info('[4 of 4] Updating links... ')
+        sPrint("[4 of 4] Updating links... ")
 
         oei = model_inst.outputs()
         update.update_links_feed_forward(obj, links[modelid], oei, spatial_maps)
@@ -162,7 +163,7 @@ def run_feed_forward(obj, ds=None):
         model_inst.finish()
         elog.info('module simulation completed in %3.2f seconds' % (time.time() - st))
 
-    elog.info('------------------------------------------\n' +
+    sPrint('------------------------------------------\n' +
               '         Simulation Summary \n' +
               '------------------------------------------\n' +
               'Completed without error :)\n' +
@@ -179,7 +180,7 @@ def run_feed_forward(obj, ds=None):
             # build an instance of dbv22
             db = dbv2.connect(ds.session)
         except Exception, e:
-            elog.error('An error was encountered when connecting to the database to save the simulation results: %s', e)
+            elog.error('An error was encountered when connecting to the database to save the simulation results: %s' % e)
             sPrint('An error was encountered when connecting to the database to save the simulation results.', MessageType.ERROR)
             return
 

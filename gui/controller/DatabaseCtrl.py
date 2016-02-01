@@ -5,6 +5,8 @@ from gui.views.DatabaseView import ViewDatabase
 from utilities import db as dbutils
 from ..ObjectListView import ColumnDefn
 
+import db.dbapi_v2 as db2
+from odm2api.ODMconnection import dbconnection
 
 class LogicDatabase(ViewDatabase):
     def __init__(self, *args, **kwargs):
@@ -89,8 +91,6 @@ class LogicDatabase(ViewDatabase):
             # get the database session associated with the selected name
             if db['name'] == selected_db:
                 if db['args']['engine'] == 'sqlite':
-                    import db.dbapi_v2 as db2
-                    from ODM2PythonAPI.src.api.ODMconnection import dbconnection
                     session = dbconnection.createConnection(engine=db['args']['engine'], address=db['args']['address'])
                     conn = db2.connect(session)
                     return conn

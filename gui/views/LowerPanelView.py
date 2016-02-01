@@ -14,11 +14,12 @@ from db import dbapi as dbapi
 from gui import events
 from coordinator.emitLogging import elog
 from gui.controller import ConsoleOutputCtrl
-# from db.ODM1.WebServiceAPI import WebServiceApi
 from gui.controller.WofSitesCtrl import WofSitesViewerCtrl
 from gui.controller.AddConnectionCtrl import AddConnectionCtrl
 from webservice import wateroneflow
 from gui.controller.ConsoleOutputCtrl import consoleCtrl
+import db.dbapi_v2 as db2
+from odm2api.ODMconnection import dbconnection
 
 class viewLowerPanel:
     def __init__(self, notebook):
@@ -232,8 +233,6 @@ class TimeSeriesTab(wx.Panel):
                 series = None
                 # fixme: This breaks for SQLite since it is implemented in dbapi_v2
                 if db['args']['engine'] == 'sqlite':
-                    import db.dbapi_v2 as db2
-                    from ODM2PythonAPI.src.api.ODMconnection import dbconnection
                     session = dbconnection.createConnection(engine=db['args']['engine'], address=db['args']['address'])
                     # gui_utils.connect_to_db()
                     s = db2.connect(session)
@@ -624,8 +623,6 @@ class SimulationDataTab(DataSeries):
                 simulations = None
 
                 if db['args']['engine'] == 'sqlite':
-                    import db.dbapi_v2 as db2
-                    from ODM2PythonAPI.src.api.ODMconnection import dbconnection
                     session = dbconnection.createConnection(engine=db['args']['engine'], address=db['args']['address'])
                     self.conn = db2.connect(session)
                     simulations = self.conn.getAllSimulations()

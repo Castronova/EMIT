@@ -55,8 +55,11 @@ class testFeedForwardSimulation(unittest.TestCase):
         links = self.engine.get_all_links()
         self.assertTrue(len(links) == 1)
 
-        # run the simulation
+
+
+        # run the simulation, without saving results
         self.engine.run_simulation()
+
         time.sleep(5)  # give the simulation a chance to run
 
         # check that output data was generated

@@ -183,3 +183,5 @@ def getEnvironmentVars(settings=None):
 
     # load the default environment
     loadEnvironment(config)
+
+getEnvironmentVars()

@@ -217,32 +217,38 @@ class sqlite():
                                                  SampledMediumCV='unknown')
             print 'Inserting Results (bulk) %3.5f sec' % (time.time() - st)
 
+            for resultid in resultids:
 
-            # create time series result
-            st = time.time()
-            self.insert_timeseries_results_bulk(resultIDs=resultids, timespacing=timestep_value, timespacing_unitid=timestepunit.UnitsID)
-            print 'Inserting Timeseries Results (bulk) %3.5f sec' % (time.time() - st)
+                # hack: this is necessary since createTimeSeries requires a Result object. This can be removed when the function is fixed
+                resultObj = models.Results
+                resultObj.ResultID = resultid
 
-            values = datavalues.flatten(order='C') # flatten row-wise, [t1g1, t1g2, ..., t1gn, t2g1, t2g2, ..., t2gn, ...]
-            valuedates = dates[:,1]  # get all rows of the datetime column of the dates array [t1, t2, t3, ..., tn]
-            flattened_ids = []
-            flattened_dates = []
-            geom_count = len(geometries)
+                # create time series result
+                st = time.time()
+                tsr = self.write.createTimeSeriesResult(resultObj, aggregationstatistic='Unknown')
+                # self.insert_timeseries_results_bulk(resultIDs=resultid, timespacing=timestep_value, timespacing_unitid=timestepunit.UnitsID)
+                print 'Inserting Timeseries Results %3.5f sec' % (time.time() - st)
 
-            for dt in valuedates:
-                flattened_dates.extend([dt] * geom_count)  # [t1, t1, ..., t1, t2, t2, ..., t2, tn, tn, ..., tn]
+                values = datavalues.flatten(order='C') # flatten row-wise, [t1g1, t1g2, ..., t1gn, t2g1, t2g2, ..., t2gn, ...]
+                valuedates = dates[:,1]  # get all rows of the datetime column of the dates array [t1, t2, t3, ..., tn]
+                flattened_ids = []
+                flattened_dates = []
+                geom_count = len(geometries)
 
-            for i in range(geom_count):
-                flattened_ids.extend(resultids)     # [id1, id2, ..., idn, id1, id2, ..., idn, ...]
+                for dt in valuedates:
+                    flattened_dates.extend([dt] * geom_count)  # [t1, t1, ..., t1, t2, t2, ..., t2, tn, tn, ..., tn]
 
-            st = time.time()
-            print 'Bulk Inserting Timeseries Results Values (%d records)' % (len(flattened_ids))
-            self.insert_timeseries_result_values_bulk(  ResultIDs = flattened_ids, TimeAggregationInterval= timestep_value,
-                                                                  TimeAggregationIntervalUnitsID=timestepunit.UnitsID,
-                                                                  DataValues = values, ValueDateTimes = flattened_dates,
-                                                                  ValueDateTimeUTCOffset=-6, CensorCodeCV='nc', QualityCodeCV='unknown')
-            bulk = time.time() - st
-            print 'Elapsed time: %3.5f sec' % bulk
+                # for i in range(geom_count):
+                #     flattened_ids.extend(resultids)     # [id1, id2, ..., idn, id1, id2, ..., idn, ...]
+
+                st = time.time()
+                print 'Bulk Inserting Timeseries Results Values (%d records)' % (len(flattened_ids))
+                self.insert_timeseries_result_values_bulk(  ResultIDs = resultid, TimeAggregationInterval= timestep_value,
+                                                                      TimeAggregationIntervalUnitsID=timestepunit.UnitsID,
+                                                                      DataValues = values, ValueDateTimes = flattened_dates,
+                                                                      ValueDateTimeUTCOffset=-6, CensorCodeCV='nc', QualityCodeCV='unknown')
+                bulk = time.time() - st
+                print 'Elapsed time: %3.5f sec' % bulk
 
 
         # create the model instance
@@ -386,7 +392,7 @@ class sqlite():
         # return the id of the inserted record
         return self.cursor.lastrowid
 
-    def insert_timeseries_result_values_bulk(self, ResultIDs = [], DataValues = [], ValueDateTimes = [],
+    def insert_timeseries_result_values_bulk(self, ResultIDs = 1, DataValues = [], ValueDateTimes = [],
                                              QualityCodeCV = 'unknown', TimeAggregationIntervalUnitsID = 1,
                                              TimeAggregationInterval = 1, CensorCodeCV = 'nc', ValueDateTimeUTCOffset = -6):
         """
@@ -418,6 +424,7 @@ class sqlite():
         time_unit_ids = [TimeAggregationIntervalUnitsID] * valCount
         time_intervals = [TimeAggregationInterval] * valCount
         time_offsets = [ValueDateTimeUTCOffset] * valCount
+        result_ids = [ResultIDs] * valCount
 
         # convert datetime into apsw accepted format
         value_date_times = [d.strftime('%Y-%m-%d %H:%M:%S.%f') for d in ValueDateTimes]
@@ -433,7 +440,7 @@ class sqlite():
 
         valueIDs = range(nextID, nextID + valCount, 1)
         # vals = [ID, ResultID, DataValue, ValueDateTime, ValueDateTimeUTCOffset, CensorCodeCV, QualityCodeCV, TimeAggregationInterval, TimeAggregationIntervalUnitsID]
-        vals = zip(valueIDs, ResultIDs, DataValues, value_date_times, time_offsets, censor_codes, quality_codes, time_intervals, time_unit_ids)
+        vals = zip(valueIDs, result_ids, DataValues, value_date_times, time_offsets, censor_codes, quality_codes, time_intervals, time_unit_ids)
 
         # insert values in chunks of 10,000
         chunk_size = 10000
@@ -539,8 +546,7 @@ class sqlite():
         # return the feature action ids
         return ResultIDs
 
-    def insert_timeseries_results_bulk(self, resultIDs = [], aggregationstatistic='Unknown', xloc=None, xloc_unitid=None, yloc=None, yloc_unitid=None,
-        zloc=None, zloc_unitid=None, srsID=None, timespacing=None, timespacing_unitid=None):
+    def insert_timeseries_results_bulk(self, resultIDs = None, aggregationstatistic='Unknown', xloc=None, xloc_unitid=None, yloc=None, yloc_unitid=None, zloc=None, zloc_unitid=None, srsID=None, timespacing=None, timespacing_unitid=None):
         """
         Performs a bulk insert of timeseries results
         :param resultid: An ID corresponding to a result record (must exist) (int, not null)

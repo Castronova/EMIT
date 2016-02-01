@@ -11,6 +11,8 @@ from odm2api.ODM2.services.deleteService import DeleteODM2
 from odm2api.ODM2 import models
 import apsw as sqlite3
 
+import sqlalchemy
+from sqlalchemy.orm import class_mapper
 
 # This is our API for simulation data that uses the latest ODM2PythonAPI code
 
@@ -65,6 +67,28 @@ class sqlite():
         self.conn.enableloadextension(True)
         self.cursor.execute('SELECT load_extension("mod_spatialite")')
 
+
+    def get_next_insert_id(self, cls):
+
+        # get the column attributes for the table
+        atts = [prop.key for prop in class_mapper(cls).iterate_properties
+                if isinstance(prop, sqlalchemy.orm.ColumnProperty)]
+
+
+        # get the table name
+        clsname = None
+        for classname in cls._decl_class_registry:
+            if classname.lower() == cls.__tablename__:
+                clsname = classname
+                break
+
+        # query the objects in this table
+        res = self.cursor.execute('SELECT {} FROM {} ORDER BY {} DESC'.format(atts[0], clsname, atts[0]))
+
+        # return the next insert it
+        lastID = res.fetchone() or (-1,)
+        nextID = lastID[0] + 1 # increment the last id
+        return nextID
 
     def create_user(self, userInfo):
         person = self.write.createPerson(userInfo['firstName'], userInfo['lastName'])
@@ -314,18 +338,16 @@ class sqlite():
         ElevationDatumCV=elevationDatum
 
         # get the last record index
-        res = self.cursor.execute('SELECT last_insert_rowid() FROM SamplingFeatures')
-        ID = res.fetchone() or (-1,)
-        ID = ID[0] + 1 # increment the last id
+        nextID = self.get_next_insert_id(models.TimeSeriesResultValues)
 
-        values = [ID,UUID,FeatureTypeCV,FeatureCode,FeatureName,FeatureDescription, FeatureGeoTypeCV, FeatureGeometry, Elevation,ElevationDatumCV]
+        values = [nextID,UUID,FeatureTypeCV,FeatureCode,FeatureName,FeatureDescription, FeatureGeoTypeCV, FeatureGeometry, Elevation,ElevationDatumCV]
         self.cursor.execute('INSERT INTO SamplingFeatures VALUES (?, ?, ?, ?, ?, ?, ?, geomFromText(?), ?, ?)'
                             , values)
 
         # self.conn.commit()
 
         featureObj = models.SamplingFeatures()
-        featureObj.SamplingFeatureID = ID
+        featureObj.SamplingFeatureID = nextID
         featureObj.SamplingFeatureUUID = UUID
         featureObj.SamplingFeatureTypeCV = FeatureTypeCV
         featureObj.SamplingFeatureCode = FeatureName
@@ -398,19 +420,18 @@ class sqlite():
         time_offsets = [ValueDateTimeUTCOffset] * valCount
 
         # convert datetime into apsw accepted format
-        value_date_times = [d.strftime('%d-%m-%Y %H:%M:%S.%f') for d in ValueDateTimes]
+        value_date_times = [d.strftime('%Y-%m-%d %H:%M:%S.%f') for d in ValueDateTimes]
 
         # result_ids = [ResultID] * valCount
 
         # cannot be none: resultid, timeaggregation interval
         # cannot be empty: datavale, valuedatetime
         # self.spatialDb.execute('INSERT INTO')
-        # get the last record index
-        res = self.cursor.execute('SELECT last_insert_rowid() FROM TimeSeriesResultValues')
-        startID = res.fetchone() or (-1,)
-        startID = startID[0] + 1 # increment the last id
 
-        valueIDs = range(startID, startID + valCount, 1)
+        # get the last record index
+        nextID = self.get_next_insert_id(models.TimeSeriesResultValues)
+
+        valueIDs = range(nextID, nextID + valCount, 1)
         # vals = [ID, ResultID, DataValue, ValueDateTime, ValueDateTimeUTCOffset, CensorCodeCV, QualityCodeCV, TimeAggregationInterval, TimeAggregationIntervalUnitsID]
         vals = zip(valueIDs, ResultIDs, DataValues, value_date_times, time_offsets, censor_codes, quality_codes, time_intervals, time_unit_ids)
 
@@ -449,7 +470,7 @@ class sqlite():
 
         FeatureActionIDs = range(startID, startID + valCount, 1)
         vals = zip(FeatureActionIDs, SamplingFeatureIDs, ActionIDs)
-        self.cursor.executemany('INSERT INTO FeatureActions VALUES (?, ?, ?)', vals)
+        self.cursor.executemany('INSERT OR IGNORE INTO FeatureActions VALUES (?, ?, ?)', vals)
 
 
         # return the feature action ids
@@ -486,7 +507,7 @@ class sqlite():
         valCount = len(FeatureActionIDs)
 
         # get the last record index
-        res = self.cursor.execute('SELECT last_insert_rowid() FROM Results')
+        res = self.cursor.execute('SELECT ResultID FROM Results ORDER BY ResultID DESC')
         startID = res.fetchone() or (-1,)
         startID = startID[0] + 1 # increment the last id
 

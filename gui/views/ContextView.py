@@ -458,18 +458,18 @@ class SimulationContextMenu(ContextMenu):
             if session.__module__ == 'db.dbapi_v2':
                 conn = session
                 # results = conn.read.getResultsBySimulationID(simulationID)
-                results = conn.read.getResultByResultID(simulationID)
+                results = conn.read.getResultsBySimulationID(simulationID)
 
                 res = {}
                 for r in results:
                     variable_name = r.VariableObj.VariableCode
-                    result_values = conn.read.getTimeSeriesResultValuesByResultID(r.ResultID)
+                    result_values = conn.read.getTimeSeriesResultValuesByResultId(r.ResultID)
 
-                    dates = []
-                    values = []
-                    for val in result_values:
-                        dates.append(val.ValueDateTime)
-                        values.append(val.DataValue)
+                    dates = list(result_values.ValueDateTime)
+                    values = list(result_values.DataValue)
+                    # for val in result_values:
+                    #     dates.append(val.ValueDateTime)
+                    #     values.append(val.DataValue)
 
                     if variable_name in res:
                         res[variable_name].append([dates, values, r])
@@ -525,7 +525,7 @@ class SimulationContextMenu(ContextMenu):
                 sub_variables = results[keys]
                 for sub in sub_variables:
                     variable_list_entries[sub[2].ResultID] = [sub[2].VariableObj.VariableCode,
-                                                              sub[2].UnitObj.UnitsAbbreviation,
+                                                              sub[2].UnitsObj.UnitsAbbreviation,
                                                               sub[2].FeatureActionObj.ActionObj.BeginDateTime,
                                                               sub[2].FeatureActionObj.ActionObj.EndDateTime,
                                                               sub[2].VariableObj.VariableNameCV,

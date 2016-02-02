@@ -326,14 +326,14 @@ class Coordinator(object):
         """
 
         thisModel = None
-        sPrint('Adding Model in Engine')
+        sPrint('Adding Model in Engine', MessageType.DEBUG)
         if id is None:
             id = 'M' + uuid.uuid4().hex
 
 
         if 'type' in attrib.keys():
 
-            sPrint('Found type')
+            sPrint('Found type', MessageType.DEBUG)
 
             try:
                 getattr(wrappers, attrib['type'])
@@ -341,13 +341,12 @@ class Coordinator(object):
                 elog.critical('Could not locate wrapper of type %s.  Make sure the wrapper is specified in wrappers.__init__.' % (attrib['type']))
                 sPrint('Could not locate wrapper of type %s.  Make sure the wrapper is specified in wrappers.__init__.' % (attrib['type']), MessageType.CRITICAL)
 
-            sPrint('Instantiating the component wrapper')
-            sPrint(attrib)
+            sPrint('Instantiating the component wrapper', MessageType.DEBUG)
             # instantiate the component wrapper
             inst = getattr(wrappers, attrib['type']).Wrapper(attrib)
             oei = inst.outputs().values()
             iei = inst.inputs().values()
-            sPrint('Model Instantiated')
+            sPrint('Model Instantiated', MessageType.DEBUG)
 
             # create a model instance
             thisModel = Model(id=id,
@@ -362,7 +361,7 @@ class Coordinator(object):
         elif 'mdl' in attrib:
         # if type == datatypes.ModelTypes.FeedForward or type == datatypes.ModelTypes.TimeStep:
 
-            sPrint('Found MDL')
+            sPrint('Found MDL', MessageType.DEBUG)
 
             ini_path = attrib['mdl']
 
@@ -372,10 +371,9 @@ class Coordinator(object):
             if params is not None:
 
                 # load model
-                sPrint('Loading Model')
-                sPrint(params)
+                sPrint('Loading Model', MessageType.DEBUG)
                 name, model_inst = load_model(params)
-                sPrint('Finished Loading')
+                sPrint('Finished Loading', MessageType.DEBUG)
                 # make sure this model doesnt already exist
                 if name in self.__models:
                     elog.warning('Model named '+name+' already exists in configuration')
@@ -434,7 +432,7 @@ class Coordinator(object):
         if thisModel is not None:
             # save the model
             self.__models[thisModel.name()] = thisModel
-            sPrint('Model Loaded')
+            sPrint('Model Loaded', MessageType.DEBUG)
             return {'id':thisModel.id(), 'name':thisModel.name(), 'model_type':thisModel.type()}
         else:
             elog.error('Failed to load model.')

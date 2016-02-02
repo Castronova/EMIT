@@ -16,12 +16,9 @@ def create_variable(variable_name_cv):
     """
     creates a variable object using the lookup table
     """
-    sPrint(variable_name_cv)
+    sPrint('Loading variable: '+variable_name_cv, MessageType.DEBUG)
     var_path = io.getRelativeToAppData('dat/var_cv.dat')
-    sPrint(var_path)
     var = pickle.load(open(var_path,'rb'))
-    # dir = os.path.dirname(__file__)
-    # var = pickle.load(open(os.path.join(dir,'../data/var_cv.dat'),'rb'))
 
     sPrint('Loaded var_cv', MessageType.DEBUG)
 

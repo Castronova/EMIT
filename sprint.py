@@ -56,10 +56,15 @@ class MessageType:
 def getStackTrace():
     """
     Gets the function caller via stack tracing
-    Returns: "(caller, line #)"
+    Returns: "(caller, line #, depth)"
     """
     stack = inspect.stack()
-    return '(%s, line %s)' % (basename(stack[2][1]), stack[2][2])
+
+    # filter stack trace element that do not contain EMIT
+    filtered = [i[1] for i in stack if 'EMIT' in i[1]]
+    depth = len(filtered) - 2
+
+    return (basename(stack[2][1]), stack[2][2], depth)
 
 def sPrint(text,  messageType=MessageType.INFO, printTarget=PrintTarget.CONSOLE):
     '''
@@ -76,41 +81,16 @@ def sPrint(text,  messageType=MessageType.INFO, printTarget=PrintTarget.CONSOLE)
     udpsocket = socket(AF_INET, SOCK_DGRAM)
 
     # add a stack trace if this a debug message
-    caller = ''
+    debug_text = ''
+    indent = ''
     if messageType == MessageType.DEBUG:
         caller = getStackTrace()
+        indent = '-'*caller[2] + '> '
+        debug_text = ' (%s, line %s)' % (caller[0], caller[1])
 
     text = str(text) if type(text) != str else text
-    text = '%s %s' % (text, caller)
+    text = '%s%s%s' % (indent, text, debug_text )
     udpsocket.sendto('|'.join([messageType,text]), addr)
-
-class dBlock():
-    def __init__(self, title, port=PrintTarget.CONSOLE):
-
-        self.addr = ('localhost', port)
-        self.udpsocket = socket(AF_INET, SOCK_DGRAM)
-        self.title_length = 42 + len(title)
-
-        # print header
-        header_msg = '%s %s %s' % (20*'-', title, 20 * '-')
-        self.udpsocket.sendto('|'.join([MessageType.DEBUG,header_msg]), self.addr)
-
-    def sPrint(self, text):
-
-        # get the calling file so that it can be appended to the message
-        caller = getStackTrace()
-
-        # parse the text
-        text = str(text) if type(text) != str else text
-        text = '-> %s %s' % (text, caller)
-        # send the message
-        self.udpsocket.sendto('|'.join([MessageType.DEBUG,text]), self.addr)
-
-    def close(self):
-        footer_msg = self.title_length * '-'
-        self.udpsocket.sendto('|'.join([MessageType.DEBUG, footer_msg]), self.addr)
-        del self
-
 
 # print initial message to each target port
 targets = [attr for attr in dir(PrintTarget()) if not callable(attr) and not attr.startswith("__")]

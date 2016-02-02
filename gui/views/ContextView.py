@@ -18,6 +18,7 @@ import time
 import os
 from osgeo import ogr
 from gui.controller.TimeSeriesObjectCtrl import TimeSeriesObjectCtrl
+from sprint import *
 
 
 #todo:  this needs to be split up into view and logic code
@@ -457,19 +458,24 @@ class SimulationContextMenu(ContextMenu):
         if session is not None:
             if session.__module__ == 'db.dbapi_v2':
                 conn = session
-                # results = conn.read.getResultsBySimulationID(simulationID)
-                results = conn.read.getResultsBySimulationID(simulationID)
+
+                try:
+                    sPrint('getting result id from simulation id', MessageType.DEBUG)
+                    # results = conn.read.getResultsBySimulationID(simulationID)
+                    results = conn.read.getResultsBySimulationID(simulationID)
+                except Exception, e:
+                    sPrint('Encountered and exeption: %s' % e, MessageType.ERROR)
 
                 res = {}
                 for r in results:
                     variable_name = r.VariableObj.VariableCode
+
+                    sPrint('retrieving time series results for resultid: '+r.ResultID, MessageType.DEBUG)
                     result_values = conn.read.getTimeSeriesResultValuesByResultId(r.ResultID)
 
+                    sPrint('parsing dates and values from pandas object', MessageType.DEBUG)
                     dates = list(result_values.ValueDateTime)
                     values = list(result_values.DataValue)
-                    # for val in result_values:
-                    #     dates.append(val.ValueDateTime)
-                    #     values.append(val.DataValue)
 
                     if variable_name in res:
                         res[variable_name].append([dates, values, r])

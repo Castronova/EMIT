@@ -16,7 +16,6 @@ class ViewToolbox(wx.Panel):
         self.__currently_selected_item_path = None
 
         wx.Panel.__init__(self, parent)
-        self.SetBackgroundColour((0, 0, 0))
 
         self.tree = CT.CustomTreeCtrl(self, -1, style=wx.TR_DEFAULT_STYLE )
         self.tree.SetBackgroundColour((255,255,255))

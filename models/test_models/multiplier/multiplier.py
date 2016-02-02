@@ -6,7 +6,9 @@ import stdlib
 from utilities import mdl
 from coordinator.emitLogging import elog
 
-class multiply(feed_forward.feed_forward_wrapper):
+from sprint import *
+
+class multiply(feed_forward.Wrapper):
 
 
     def __init__(self,config_params):
@@ -25,6 +27,7 @@ class multiply(feed_forward.feed_forward_wrapper):
         self.inputs(value=io[stdlib.ExchangeItemType.INPUT])
         self.outputs(value=io[stdlib.ExchangeItemType.OUTPUT])
 
+        sPrint('Multiplier initialization complete.')
 
     def run(self,inputs):
         """
@@ -50,10 +53,5 @@ class multiply(feed_forward.feed_forward_wrapper):
         oei_name = self.outputs().keys()[0]
         oei = self.outputs()[oei_name]
         oei.setValues2(values=new_vals, timevalue=dates)
-
-
-
-    def save(self):
-        return self.outputs()
 
 

@@ -1,11 +1,11 @@
 __author__ = 'tonycastronova'
 
 
-from wrappers import feed_forward
 import stdlib
 from utilities import mdl
+from wrappers import feed_forward
 
-class multiply(feed_forward.feed_forward_wrapper):
+class multiply(feed_forward.Wrapper):
 
 
     def __init__(self,config_params):
@@ -61,12 +61,3 @@ class multiply(feed_forward.feed_forward_wrapper):
 
             # save results to this geometry as an output variable
             #self.set_geom_values('multipliedValue',geom,ts)
-
-
-
-
-
-    def save(self):
-        return self.outputs()
-
-

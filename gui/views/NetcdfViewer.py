@@ -13,8 +13,8 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
 class NetcdfViewer(wx.Frame):
 
     def __init__(self, parent):
-        wx.Frame.__init__(self, parent=parent, id=wx.ID_ANY, title="Netcdf Viewer", pos=wx.DefaultPosition,
-                          size=(400, 500), style=wx.DEFAULT_FRAME_STYLE)
+        wx.Frame.__init__(self, parent=parent, id=wx.ID_ANY, title="THREDDS File Browser", pos=wx.DefaultPosition, size=(400, 500), style= wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE)
+
         self.parent = parent
 
         panel = wx.Panel(self)
@@ -32,15 +32,22 @@ class NetcdfViewer(wx.Frame):
         vbox_bottom_panel = wx.BoxSizer(wx.VERTICAL)
         hbox_url = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.variable_list.InsertColumn(0, "File Name")
-        self.variable_list.InsertColumn(1, "URL")
-        self.variable_list.InsertColumn(2, "Size")
-        self.variable_list.InsertColumn(3, "Last Updated")
+        # build a list of columns for the list control
+        self.list_ctrl_columns = ["File Name", "File Name", "Last Updated", "URL"]
+
+        # insert columns to list control
+        for i in range(len(self.list_ctrl_columns)):
+            self.variable_list.InsertColumn(i, self.list_ctrl_columns[i])
+
+        # self.variable_list.InsertColumn(0, "File Name")
+        # self.variable_list.InsertColumn(1, "File Name")
+        # self.variable_list.InsertColumn(2, "Last Updated")
+        # self.variable_list.InsertColumn(3, "URL")
 
         self.url_textbox = wx.TextCtrl(parent=self.bottom_panel, value="http://129.123.51.203/opendap", size=(-1, 25))
-        self.get_btn = wx.Button(parent=self.bottom_panel, label="Get", size=(-1, 27))
+        self.get_btn = wx.Button(parent=self.bottom_panel, label="Get Files", size=(-1, 27))
         self.download_btn = wx.Button(parent=self.bottom_panel, id=wx.ID_ANY, label="Download")
-        self.add_to_canvas_btn = wx.Button(parent=self.bottom_panel, id=wx.ID_ANY, label="Add To Canvas")
+        self.add_to_canvas_btn = wx.Button(parent=self.bottom_panel, id=wx.ID_ANY, label="View")
 
         hbox_url.Add(self.url_textbox, 1, 0)
         hbox_url.Add(self.get_btn, 0, wx.ALL)

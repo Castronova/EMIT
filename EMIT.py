@@ -1,19 +1,20 @@
 __author__ = 'Mario'
 
 import wx
-import wx.xrc
 import wx.aui
-from gui.controller.EMITCtrl import LogicEMIT
-from coordinator import engineManager
-# import coordinator.emitLogging as l
-#
-#
-# logging = l.Log()
+import wx.xrc
 
-from coordinator.emitLogging import elog
+import environment
+from coordinator import engineManager
+from gui.controller.EMITCtrl import EMITCtrl
+import os
 
 class EMITApp(wx.App):
     def OnInit(self):
+
+        # load environment variables
+        environment.getEnvironmentVars()
+
         # Don't delete this line, instantiating the Borg Engine main thread here
         engine = engineManager.Engine()
 
@@ -21,10 +22,16 @@ class EMITApp(wx.App):
         # tends to add clutter to our console.
         wx.Log.SetLogLevel(0)
 
-        self.logicEmit = LogicEMIT(None)
+        self.logicEmit = EMITCtrl(None)
         return True
 
 if __name__ == '__main__':
 
+    userPath = os.getcwd() + '/app_data/config/user.json'
+    if os.environ.has_key('APP_USER_PATH') == False:
+        os.environ['APP_USER_PATH'] = userPath
     app = EMITApp()
     app.MainLoop()
+    # pid = os.getpid()
+    # os.system("kill -9 " + str(pid))
+

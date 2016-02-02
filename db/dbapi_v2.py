@@ -4,20 +4,20 @@ import datetime
 import uuid
 import numpy
 import time
-import pyspatialite.dbapi2 as spatialite
-import pandas
+from odm2api.ODM2.services.readService import ReadODM2
+from odm2api.ODM2.services.createService import CreateODM2
+from odm2api.ODM2.services.updateService import UpdateODM2
+from odm2api.ODM2.services.deleteService import DeleteODM2
+from odm2api.ODM2 import models
+import apsw as sqlite3
+
+import sqlalchemy
+from sqlalchemy.orm import class_mapper
 
 # This is our API for simulation data that uses the latest ODM2PythonAPI code
 
-from ODM2PythonAPI.src.api.ODMconnection import dbconnection
-from ODM2PythonAPI.src.api.ODM2.services.readService import ReadODM2
-from ODM2PythonAPI.src.api.ODM2.services.createService import CreateODM2
-from ODM2PythonAPI.src.api.ODM2.services.updateService import UpdateODM2
-from ODM2PythonAPI.src.api.ODM2.services.deleteService import DeleteODM2
-from ODM2PythonAPI.src.api.ODM2 import models
 
 from coordinator.emitLogging import elog
-
 
 def connect(session):
 
@@ -47,6 +47,7 @@ class sqlite():
 
     def __init__(self, session):
 
+
         # build sqlalchemy connection
         # self.connection = dbconnection.createConnection('sqlite', sqlitepath)
         self.connection = session
@@ -59,8 +60,35 @@ class sqlite():
         self.delete = DeleteODM2(self.connection)
 
         # create connection using spatialite for custom sql queries
-        self.spatial_connection = spatialite.connect(sqlitepath)
-        self.spatialDb = self.spatial_connection.cursor()
+        self.conn = sqlite3.Connection(sqlitepath)
+        self.cursor = self.conn.cursor()
+
+        # load mod_spatialite extension
+        self.conn.enableloadextension(True)
+        self.cursor.execute('SELECT load_extension("mod_spatialite")')
+
+
+    def get_next_insert_id(self, cls):
+
+        # get the column attributes for the table
+        atts = [prop.key for prop in class_mapper(cls).iterate_properties
+                if isinstance(prop, sqlalchemy.orm.ColumnProperty)]
+
+
+        # get the table name
+        clsname = None
+        for classname in cls._decl_class_registry:
+            if classname.lower() == cls.__tablename__:
+                clsname = classname
+                break
+
+        # query the objects in this table
+        res = self.cursor.execute('SELECT {} FROM {} ORDER BY {} DESC'.format(atts[0], clsname, atts[0]))
+
+        # return the next insert it
+        lastID = res.fetchone() or (-1,)
+        nextID = lastID[0] + 1 # increment the last id
+        return nextID
 
     def create_user(self, userInfo):
         person = self.write.createPerson(userInfo['firstName'], userInfo['lastName'])
@@ -74,40 +102,35 @@ class sqlite():
     def create_input_dataset(self, connection, resultids,type,code="",title="",abstract=""):
         pass
 
-    def create_simulation(self, coupledSimulationName, user_obj, config_params, ei):
+    def create_simulation(self, coupledSimulationName, user_obj, config_params, ei, simulation_start, simulation_end, timestep_value, timestep_unit, description, name):
         """
         Inserts a simulation record into the database
-        :param simulationName: user provided name for simulation
-        :param user_obj: engine.users.Affiliation object
-        :param config_params: Simulation configuration parameters (from engine)
-        :param ei: list of exchange item objects (stdlib.ExchangeItem)
+        Args:
+            coupledSimulationName: The name of the coupled model simulation
+            user_obj: object containing the user
+            config_params:
+            ei:
+            simulation_start:
+            simulation_end:
+            timestep_value:
+            timestep_unit:
+            description:
+            name:
+
+        Returns:
+
         """
+        bench_insert_fa = 0
 
-        # parse simulation configuration parameters
-        description = config_params['general'][0]['description']
-        simstart = datetime.datetime.strptime(config_params['general'][0]['simulation_start'], '%m/%d/%Y %H:%M:%S' )
-        simend = datetime.datetime.strptime(config_params['general'][0]['simulation_end'], '%m/%d/%Y %H:%M:%S' )
-        modelcode = config_params['model'][0]['code']
-        modelname = config_params['model'][0]['name']
-        modeldesc = config_params['model'][0]['description']
-        timestepvalue = config_params['time_step'][0]['value']
-
-        # default to a timestep of seconds
-        timestepname = config_params['time_step'][0].get('name') or 'seconds'
-        timestepabbv = config_params['time_step'][0].get('abbreviation') or ' '
-
-        # create person / organization / affiliation
-        # affiliation = self.set_user_preferences(preferences_path)
 
         # todo: handle multiple affiliations
-        # for obj in user_obj:
         person = self.createPerson(user_obj)
         organization = self.createOrganization(user_obj)
         affiliation = self.createAffiliation(organization.OrganizationID, person.PersonID, user_obj)
 
         # get the timestep unit id
         #todo: This is not returning a timestepunit!!!  This may need to be added to the database
-        timestepunit = self.createTimeStepUnit(timestepabbv, timestepname)
+        timestepunit = self.createTimeStepUnit(timestep_unit, timestep_unit)
 
         method = self.createMethod(organization)
 
@@ -117,8 +140,7 @@ class sqlite():
                                          begindatetimeoffset=int((datetime.datetime.now() - datetime.datetime.utcnow()).total_seconds()/3600))
 
         # create actionby
-        # aff_id = odm2_affiliation[0].AffiliationID if len(odm2_affiliation) > 0 else None
-        actionby = self.write.createActionBy(actionid=action.ActionID,
+        self.write.createActionBy(actionid=action.ActionID,
                                              affiliationid=affiliation.AffiliationID)
 
         # create processing level
@@ -129,8 +151,8 @@ class sqlite():
 
         # create dataset
         dataset = self.write.createDataset(dstype='Simulation Input',
-                                           dscode='Input_%s'%modelname,
-                                           dstitle='Input for Simulation: %s'%modelname,
+                                           dscode='Input_%s'%name,
+                                           dstitle='Input for Simulation: %s'%name,
                                            dsabstract=description)
 
 
@@ -140,7 +162,6 @@ class sqlite():
 
         # loop over output exchange items
         for e in ei:
-
 
             geometries = numpy.array(e.getGeometries2())
             dates = numpy.array(e.getDates2())
@@ -170,86 +191,80 @@ class sqlite():
                                                                srsDescription="%s|%s|%s"%(srs.GetAttrValue("PROJCS", 0),
                                                                                           srs.GetAttrValue("GEOGCS", 0),
                                                                                           srs.GetAttrValue("DATUM", 0)))
-
-            # loop over geometries
+            st = time.time()
+            samplingfeaturesids = []
             for i in range(0, len(geometries)):
-
-
-                geom = geometries[i].geom()
-                values = datavalues[:,i]   # all dates for geometry(i)
-
-                # create sampling feature
-                samplingFeature = self.getSamplingFeatureID__Geometry_EQUALS(geom.wkt)
+                # create sampling features
+                geom_wkt = geometries[i].ExportToWkt()
+                geom_type = geometries[i].type
+                samplingFeature = self.getSamplingFeatureID__Geometry_EQUALS(geom_wkt)
                 if not samplingFeature:
-                    samplingFeature = self.insert_sampling_feature(type='site',geometryType=geom.type, WKTgeometry=geom.wkt)
+                    samplingFeature = self.insert_sampling_feature(type='site',geometryType=geom_type, WKTgeometry=geom_wkt)
+                samplingfeaturesids.append(samplingFeature.SamplingFeatureID)
+            bench_insert_sf = (time.time() - st)
+            print 'Inserting Sampling Features (not bulk) %3.5f sec' % bench_insert_sf
 
-                # create feature action
-                featureaction = self.write.createFeatureAction(samplingfeatureid=samplingFeature.SamplingFeatureID,
-                                                               actionid=action.ActionID)
+            st = time.time()
+            featureactions = []
+            action_ids = [action.ActionID] * len(samplingfeaturesids)
+            featureactionids = self.insert_feature_actions_bulk(samplingfeaturesids, action_ids)
+            bench_insert_fa += (time.time() - st)
+            print 'Inserting Feature Actions (bulk) %3.5f sec' % bench_insert_fa
 
-                # create a result record
-                result = self.write.createResult(featureactionid=featureaction.FeatureActionID,
-                                                 variableid=variable.VariableID,
-                                                 unitid=unit.UnitsID,
-                                                 processinglevelid=processinglevel.ProcessingLevelID,
-                                                 valuecount=len(dates),
-                                                 sampledmedium='unknown',          # todo: this should be determined from variable/unit
-                                                 resulttypecv='time series',       # todo: this should be determined from unit/variable
-                                                 taxonomicclass=None,
-                                                 resultdatetime=None,
-                                                 resultdatetimeutcoffset=None,
-                                                 validdatetime=None,
-                                                 validdatetimeutcoffset=None,
-                                                 statuscv=None
-                                                 )
+            st = time.time()
+            resultids = self.insert_results_bulk(FeatureActionIDs=featureactionids, ResultTypeCV='time series', VariableID=variable.VariableID,
+                                     UnitsID=unit.UnitsID, ValueCount=len(dates), ProcessingLevelID=processinglevel.ProcessingLevelID,
+                                                 SampledMediumCV='unknown')
+            print 'Inserting Results (bulk) %3.5f sec' % (time.time() - st)
+
+            for resultid in resultids:
+
+                # hack: this is necessary since createTimeSeries requires a Result object. This can be removed when the function is fixed
+                resultObj = models.Results
+                resultObj.ResultID = resultid
 
                 # create time series result
-                # using the sqlalchemy function results in: FlushError: Instance <TimeSeriesResults at 0x1174b5fd0> has a NULL identity key.
-                timeseriesresult = self.insert_timeseries_result(resultid=result.ResultID, timespacing=timestepvalue, timespacing_unitid=timestepunit.UnitsID)
+                st = time.time()
+                tsr = self.write.createTimeSeriesResult(resultObj, aggregationstatistic='Unknown')
+                # self.insert_timeseries_results_bulk(resultIDs=resultid, timespacing=timestep_value, timespacing_unitid=timestepunit.UnitsID)
+                print 'Inserting Timeseries Results %3.5f sec' % (time.time() - st)
 
-                # todo: consider utc offset for each result value.
-                # todo: get timezone based on geometry, use this to determine utc offset
-                # todo: implement censorcodecv
-                # todo: implement qualitycodecv
+                values = datavalues.flatten(order='C') # flatten row-wise, [t1g1, t1g2, ..., t1gn, t2g1, t2g2, ..., t2gn, ...]
+                valuedates = dates[:,1]  # get all rows of the datetime column of the dates array [t1, t2, t3, ..., tn]
+                flattened_ids = []
+                flattened_dates = []
+                geom_count = len(geometries)
+
+                for dt in valuedates:
+                    flattened_dates.extend([dt] * geom_count)  # [t1, t1, ..., t1, t2, t2, ..., t2, tn, tn, ..., tn]
+
+                # for i in range(geom_count):
+                #     flattened_ids.extend(resultids)     # [id1, id2, ..., idn, id1, id2, ..., idn, ...]
+
+                st = time.time()
+                print 'Bulk Inserting Timeseries Results Values (%d records)' % (len(flattened_ids))
+                self.insert_timeseries_result_values_bulk(  ResultIDs = resultid, TimeAggregationInterval= timestep_value,
+                                                                      TimeAggregationIntervalUnitsID=timestepunit.UnitsID,
+                                                                      DataValues = values, ValueDateTimes = flattened_dates,
+                                                                      ValueDateTimeUTCOffset=-6, CensorCodeCV='nc', QualityCodeCV='unknown')
+                bulk = time.time() - st
+                print 'Elapsed time: %3.5f sec' % bulk
 
 
-                # assemble the timeseriesresultvalues into a dictionary that will be used to build a pandas dataframe object
-                data = []
-                for i in xrange(len(values)):
-                    d = dict(ResultID = result.ResultID,
-                             CensorCodeCV = 'nc',
-                             QualityCodeCV = 'unknown',
-                             TimeAggregationInterval = timestepvalue,
-                             TimeAggregationIntervalUnitsID = timestepunit.UnitsID,
-                             DataValue = values[i],
-                             ValueDateTime = dates[i][1],
-                             ValueDateTimeUTCOffset = -6)
-                    data.append(d)
-
-                # create pandas dataframe
-                df = pandas.DataFrame(data=data)
-
-                # strftime datetime objects (required for SQLite bc lack of datetime64 support) YYYY-MM-DD HH:MM:SS
-                df['ValueDateTime'] = df['ValueDateTime'].apply(lambda x: x.strftime('%Y-%m-%d %H:%M:%S'))
-                self.insert_timeseries_result_values(dataframe=df)
-
-        model = self.createModel(modelcode, modeldesc, modelname)
+        # create the model instance
+        model = self.createModel(name, description, name)
 
         # create simulation
-
-        #start = min([i.getStartTime() for i in output_exchange_items])
-        #end = max([i.getEndTime() for i in output_exchange_items])
-
         # TODO: remove hardcoded time offsets!
         sim = self.write.createSimulation(actionid=action.ActionID,
                                           modelID=model.ModelID,
                                           simulationName=coupledSimulationName,
                                           simulationDescription=description,
-                                          simulationStartDateTime=simstart ,
+                                          simulationStartDateTime=simulation_start ,
                                           simulationStartOffset=-6,
-                                          simulationEndDateTime=simend,
+                                          simulationEndDateTime=simulation_end,
                                           simulationEndOffset=-6,
-                                          timeStepValue =timestepvalue,
+                                          timeStepValue =timestep_value,
                                           timeStepUnitID=timestepunit.UnitsID,
                                           inputDatasetID=dataset.DataSetID)
 
@@ -329,18 +344,16 @@ class sqlite():
         ElevationDatumCV=elevationDatum
 
         # get the last record index
-        res = self.spatialDb.execute('SELECT last_insert_rowid() FROM SamplingFeatures')
-        ID = res.fetchone() or (-1,)
-        ID = ID[0] + 1 # increment the last id
+        nextID = self.get_next_insert_id(models.TimeSeriesResultValues)
 
-        values = [ID,UUID,FeatureTypeCV,FeatureCode,FeatureName,FeatureDescription, FeatureGeoTypeCV, FeatureGeometry, Elevation,ElevationDatumCV]
-        self.spatialDb.execute('INSERT INTO SamplingFeatures VALUES (?, ?, ?, ?, ?, ?, ?, geomFromText(?), ?, ?)'
-                               ,values)
+        values = [nextID,UUID,FeatureTypeCV,FeatureCode,FeatureName,FeatureDescription, FeatureGeoTypeCV, FeatureGeometry, Elevation,ElevationDatumCV]
+        self.cursor.execute('INSERT INTO SamplingFeatures VALUES (?, ?, ?, ?, ?, ?, ?, geomFromText(?), ?, ?)'
+                            , values)
 
-        self.spatial_connection.commit()
+        # self.conn.commit()
 
         featureObj = models.SamplingFeatures()
-        featureObj.SamplingFeatureID = ID
+        featureObj.SamplingFeatureID = nextID
         featureObj.SamplingFeatureUUID = UUID
         featureObj.SamplingFeatureTypeCV = FeatureTypeCV
         featureObj.SamplingFeatureCode = FeatureName
@@ -373,12 +386,218 @@ class sqlite():
 
         # insert these data
         values = [resultid, xloc, xloc_unitid, yloc, yloc_unitid, zloc, zloc_unitid, srsID, timespacing, timespacing_unitid, aggregationstatistic]
-        self.spatialDb.execute('INSERT INTO TimeSeriesResults VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', values)
-        self.spatial_connection.commit()
+        self.cursor.execute('INSERT INTO TimeSeriesResults VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', values)
+        self.conn.commit()
 
         # return the id of the inserted record
-        return self.spatialDb.lastrowid
+        return self.cursor.lastrowid
 
+    def insert_timeseries_result_values_bulk(self, ResultIDs = 1, DataValues = [], ValueDateTimes = [],
+                                             QualityCodeCV = 'unknown', TimeAggregationIntervalUnitsID = 1,
+                                             TimeAggregationInterval = 1, CensorCodeCV = 'nc', ValueDateTimeUTCOffset = -6):
+        """
+        Performs a bulk insert of time series result values
+        :return: True if successful, else False
+        ValueID                         (integer)
+        ResultID                        (integer)
+        DataValue                       (float)
+        ValueDateTime                   (datetime)
+        ValueDateTimeUTCOffset          (integer)
+        CensorCodeCV                    (varchar(255))
+        QualityCodeCV                   (varchar(255))
+        TimeAggregationInterval         (float)
+        TimeAggregationIntervalUnitsID  (integer)
+        """
+        if ResultIDs == None:
+            elog.error('Result ID cannot be None')
+            return False
+
+        if len(DataValues) != len(ValueDateTimes):
+            elog.error('Length of Values and Dates must be equal')
+            return False
+
+        valCount = len(DataValues)
+
+        # convert parameters values into array values
+        censor_codes = [CensorCodeCV] * valCount
+        quality_codes = [QualityCodeCV] * valCount
+        time_unit_ids = [TimeAggregationIntervalUnitsID] * valCount
+        time_intervals = [TimeAggregationInterval] * valCount
+        time_offsets = [ValueDateTimeUTCOffset] * valCount
+        result_ids = [ResultIDs] * valCount
+
+        # convert datetime into apsw accepted format
+        value_date_times = [d.strftime('%Y-%m-%d %H:%M:%S.%f') for d in ValueDateTimes]
+
+        # result_ids = [ResultID] * valCount
+
+        # cannot be none: resultid, timeaggregation interval
+        # cannot be empty: datavale, valuedatetime
+        # self.spatialDb.execute('INSERT INTO')
+
+        # get the last record index
+        nextID = self.get_next_insert_id(models.TimeSeriesResultValues)
+
+        valueIDs = range(nextID, nextID + valCount, 1)
+        # vals = [ID, ResultID, DataValue, ValueDateTime, ValueDateTimeUTCOffset, CensorCodeCV, QualityCodeCV, TimeAggregationInterval, TimeAggregationIntervalUnitsID]
+        vals = zip(valueIDs, result_ids, DataValues, value_date_times, time_offsets, censor_codes, quality_codes, time_intervals, time_unit_ids)
+
+        # insert values in chunks of 10,000
+        chunk_size = 10000
+        percent_complete = 0
+        for i in range(0, len(vals), chunk_size):
+            sidx = i
+            eidx = i + chunk_size if (i + chunk_size) < len(vals) else len(vals)
+            percent_complete = float(i) / float(len(vals)) * 100
+            print '.. inserting records %3.1f %% complete' % (percent_complete)
+            self.cursor.executemany('INSERT INTO TimeSeriesResultValues VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', vals[sidx:eidx])
+
+
+        return 1
+
+    def insert_feature_actions_bulk(self, SamplingFeatureIDs = [], ActionIDs = []):
+        """
+        Performs a bulk insert of feature action ids
+        :return: list of feature action ids
+        FeatureActionID                (integer)
+        SamplingFeatureID              (integer)
+        ActionID                       (integer)
+        """
+
+        if len(SamplingFeatureIDs) != len(ActionIDs):
+            elog.error('Length SamplingFeatureIDs, and ActionIDs must be equal')
+            return False
+
+        valCount = len(SamplingFeatureIDs)
+
+        # get the last record index
+        res = self.cursor.execute('SELECT last_insert_rowid() FROM FeatureActions')
+        startID = res.fetchone() or (-1,)
+        startID = startID[0] + 1 # increment the last id
+
+        FeatureActionIDs = range(startID, startID + valCount, 1)
+        vals = zip(FeatureActionIDs, SamplingFeatureIDs, ActionIDs)
+        self.cursor.executemany('INSERT OR IGNORE INTO FeatureActions VALUES (?, ?, ?)', vals)
+
+
+        # return the feature action ids
+        return FeatureActionIDs
+
+    def insert_results_bulk(self, FeatureActionIDs=[], ResultTypeCV=None, VariableID=None, UnitsID=None, TaxonomicClassfierID=None,
+        ProcessingLevelID=None, ResultDateTime=None, ResultDateTimeUTCOffset=None, ValidDateTime=None, ValidDateTimeUTCOffset=None,
+                            StatusCV=None, SampledMediumCV=None, ValueCount=None):
+        """
+        Performs a bulk insert of results
+        :return: list of result ids
+        ResultID
+        ResultUUID
+        FeatureActionID
+        ResultTypeCV
+        VariableID
+        UnitsID
+        TaxonomicClassfierID
+        ProcessingLevelID
+        ResultDateTime
+        ResultDateTimeUTCOffset
+        ValidDateTime
+        ValidDateTimeUTCOffset
+        StatusCV
+        SampledMediumCV
+        ValueCount
+        """
+
+        if VariableID is None or UnitsID is None or ProcessingLevelID is None or ValueCount is None \
+                        or SampledMediumCV is None or FeatureActionIDs == []:
+            elog.error('Failed to bulk insert Results.  VariableID, UnitID, ProcessingLevelID, ValueCount, SampledMediumCV, FeatureActionIDs are required fields.')
+            return False
+
+        valCount = len(FeatureActionIDs)
+
+        # get the last record index
+        res = self.cursor.execute('SELECT ResultID FROM Results ORDER BY ResultID DESC')
+        startID = res.fetchone() or (-1,)
+        startID = startID[0] + 1 # increment the last id
+
+        # generate UUIDs for each Result record
+        uuids = [uuid.uuid4().hex for i in range(valCount)]
+        ResultIDs = range(startID, startID + valCount, 1)
+
+        # convert parameter values into lists
+        ResultTypeCV = [ResultTypeCV] * valCount
+        VariableID = [VariableID] * valCount
+        UnitsID = [UnitsID] * valCount
+        TaxonomicClassfierID = [TaxonomicClassfierID] * valCount
+        ProcessingLevelID = [ProcessingLevelID] * valCount
+        ResultDateTime = [ResultDateTime] * valCount
+        ResultDateTimeUTCOffset = [ResultDateTimeUTCOffset] * valCount
+        ValidDateTime = [ValidDateTime] * valCount
+        ValidDateTimeUTCOffset = [ValidDateTimeUTCOffset] * valCount
+        StatusCV = [StatusCV] * valCount
+        SampledMediumCV = [SampledMediumCV] * valCount
+        ValueCount = [ValueCount] * valCount
+
+        # zip the values up
+        vals = zip(ResultIDs, uuids, FeatureActionIDs, ResultTypeCV, VariableID, UnitsID, TaxonomicClassfierID,
+                   ProcessingLevelID, ResultDateTime, ResultDateTimeUTCOffset, ValidDateTime, ValidDateTimeUTCOffset,
+                   StatusCV, SampledMediumCV, ValueCount)
+        self.cursor.executemany('INSERT INTO Results VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', vals)
+
+
+        # return the feature action ids
+        return ResultIDs
+
+    def insert_timeseries_results_bulk(self, resultIDs = None, aggregationstatistic='Unknown', xloc=None, xloc_unitid=None, yloc=None, yloc_unitid=None, zloc=None, zloc_unitid=None, srsID=None, timespacing=None, timespacing_unitid=None):
+        """
+        Performs a bulk insert of timeseries results
+        :param resultid: An ID corresponding to a result record (must exist) (int, not null)
+        :param aggregationstatistic:  The time interval over which the recorded value represents an aggregation (varchar, not null)
+        :param xloc: XLocation, numeric values and Units can be specified for all three dimensions (float, nullable)
+        :param xloc_unitid: The unit id for the xloc (int, nullable)
+        :param yloc: YLocation, numeric values and Units can be specified for all three dimensions (float, , nullable)
+        :param yloc_unitid: The unit id for the yloc (int, nullable)
+        :param zloc: ZLocation, numeric values and Units can be specified for all three dimensions (float, nullable)
+        :param zloc_unitid: The unit id for the zloc (int, nullable)
+        :param srsID: Spatial reference id for used for the x,y,z locations (int, nullable)
+        :param timespacing:  Spacing of the time series values (float, nullable)
+        :param timespacing_unitid: Unit of the spacing variable (int, nullable)
+        :return: Time series result id
+        """
+
+        # if VariableID is None or UnitsID is None or ProcessingLevelID is None or ValueCount is None \
+        #                 or SampledMediumCV is None or FeatureActionIDs == []:
+        #     elog.error('Failed to bulk insert Results.  VariableID, UnitID, ProcessingLevelID, ValueCount, SampledMediumCV, FeatureActionIDs are required fields.')
+        #     return False
+
+        valCount = len(resultIDs)
+
+        # # get the last record index
+        # res = self.spatialDb.execute('SELECT last_insert_rowid() FROM TimeSeriesResults')
+        # startID = res.fetchone() or (-1,)
+        # startID = startID[0] + 1 # increment the last id
+        #
+        # # generate UUIDs for each Result record
+        # ResultIDs = range(startID, startID + valCount, 1)
+
+        # convert parameter values into lists
+        aggregationstatistic = [aggregationstatistic] * valCount
+        xloc = [xloc] * valCount
+        xloc_unitid = [xloc_unitid] * valCount
+        yloc = [yloc] * valCount
+        yloc_unitid = [yloc_unitid] * valCount
+        zloc = [zloc] * valCount
+        zloc_unitid = [zloc_unitid] * valCount
+        srsID = [srsID] * valCount
+        timespacing = [timespacing] * valCount
+        timespacing_unitid = [timespacing_unitid] * valCount
+
+        # zip the values up
+        vals = zip(resultIDs, aggregationstatistic, xloc, xloc_unitid, yloc, yloc_unitid, zloc, zloc_unitid, srsID,
+                   timespacing, timespacing_unitid)
+        self.cursor.executemany('INSERT INTO TimeSeriesResults VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', vals)
+
+
+        # return the feature action ids
+        return None
 
 
     def insert_timeseries_result_values(self, dataframe):
@@ -389,12 +608,11 @@ class sqlite():
         """
 
         # convert pandas table into an insert_many query
-        dataframe.to_sql(name='TimeSeriesResultValues', con=self.spatial_connection, flavor='sqlite', if_exists='append', index=False)
-        self.spatial_connection.commit()
+        dataframe.to_sql(name='TimeSeriesResultValues', con=self.conn, flavor='sqlite', if_exists='append', index=False)
+        self.conn.commit()
 
         # return true
         return 1
-
 
     ###################
     #### GETTERS ######
@@ -403,7 +621,7 @@ class sqlite():
     def getSamplingFeatureID__Geometry_EQUALS(self, wkt_geometry):
 
         try:
-            res = self.spatialDb.execute('SELECT SamplingFeatureID,'
+            res = self.cursor.execute('SELECT SamplingFeatureID,'
                                          'SamplingFeatureUUID,'
                                          'SamplingFeatureTypeCV,'
                                          'SamplingFeatureCode,'

@@ -1,21 +1,14 @@
-__author__ = 'marioharper'
-
-__author__ = 'Mario'
-
-
-import sys
-import numpy as np
-import wx
-from math import *
+import os
 import math
-from numpy import linspace
-import matplotlib.colors as mcolors
-from wx.lib.floatcanvas import FloatCanvas as FC
-from environment import env_vars
-import datatypes
+from math import *
 from os import path
 
-sys.path.append("..")
+import wx
+from wx.lib.floatcanvas import FloatCanvas as FC
+
+import datatypes
+
+#sys.path.append("..")
 
 
 class ShapeType():
@@ -99,7 +92,7 @@ class SmoothLineWithArrow(SmoothLine):
     '''
     def __init__(self, Points, LineColor="#3F51B5", LineStyle="Solid", LineWidth = 4):
         super(SmoothLineWithArrow, self).__init__(Points, LineColor, LineStyle, LineWidth)
-        imgs_base_path = env_vars.IMAGES_PATH
+        imgs_base_path = os.environ['APP_IMAGES_PATH']
         arrow_image = path.join(imgs_base_path, 'rightArrowBlue60.png')
         arrow_bitmap = wx.Image(arrow_image, wx.BITMAP_TYPE_PNG)
         self.Arrow = ScaledBitmapWithRotation(Angle=self.GetAngleRadians(), Bitmap=arrow_bitmap, XY=self.MidPoint)
@@ -123,16 +116,16 @@ class ModelBox(FC.Group):
         self.ID = id
 
         # Set box color based on model type
-        imgs_base_path = env_vars.IMAGES_PATH
+        imgs_base_path = os.environ['APP_IMAGES_PATH']
         bmp = None
         if type == datatypes.ModelTypes.TimeStep:
-            bmp = wx.Image(path.join(imgs_base_path,'rectGreen.png'), wx.BITMAP_TYPE_PNG)
+            bmp = wx.Image(path.join(imgs_base_path,'E.png'), wx.BITMAP_TYPE_PNG)
         elif type == datatypes.ModelTypes.FeedForward:
-            bmp = wx.Image(path.join(imgs_base_path,'rectBlue.png'), wx.BITMAP_TYPE_PNG)
+            bmp = wx.Image(path.join(imgs_base_path,'B.png'), wx.BITMAP_TYPE_PNG)
         elif type == datatypes.ModelTypes.Data:
-            bmp = wx.Image(path.join(imgs_base_path, 'rectPurple.png'), wx.BITMAP_TYPE_PNG)
+            bmp = wx.Image(path.join(imgs_base_path, 'N.png'), wx.BITMAP_TYPE_PNG)
         else: # default type
-            bmp = wx.Image(path.join(imgs_base_path, 'rectPurple.png'), wx.BITMAP_TYPE_PNG)
+            bmp = wx.Image(path.join(imgs_base_path, 'M.png'), wx.BITMAP_TYPE_PNG)
 
         self.box = FC.Bitmap(bmp, XY, Position="cc", InForeground=True)
         self.Width = bmp.Width
@@ -141,7 +134,7 @@ class ModelBox(FC.Group):
         font = wx.Font(16, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
         font_size = 15
         self.label = FC.ScaledTextBox(text, XY, Color="Black", Size=font_size,
-                                      Width=bmp.Width-10, Position="cc",
+                                      Width=bmp.Width-30, Position="cc",
                                       Alignment="center", Weight=wx.BOLD,
                                       InForeground=True, Font=font, LineWidth=0,
                                       LineColor=None)

@@ -3,7 +3,7 @@ __author__ = 'tonycastronova'
 
 class Space(object):
     def __init__(self):
-        pass
+        self.__params = {}
 
     def transform(self, ingeoms, outgeoms):
         """
@@ -21,11 +21,14 @@ class Space(object):
         """
         raise Exception('Not Implemented')
 
-    def get_params(self):
+    def get_params(self, value=None):
         """
         :return: the names and default values of any parameters
         """
-        raise Exception('Not Implemented')
+        if value is not None:
+            if value in self.__params:
+                return self.__params[value]
+        return self.__params
 
     def set_param(self, name, value):
         """
@@ -33,4 +36,25 @@ class Space(object):
         :param value: value to set
         :return: None
         """
-        raise Exception('Not Implemented')
+        self.__params[name] = value
+
+
+    def source_geometry(self, stdlib_geometry_type = None):
+        """
+        get/set the source geometry type for the interpolation method
+        :param stdlib_geometry_type: a geometry type defined by stdlib.GeomType
+        :return: source geometry type
+        """
+        if stdlib_geometry_type is not None:
+            self.__source_geometry_type = stdlib_geometry_type
+        return self.__source_geometry_type
+
+    def target_geometry(self, stdlib_geometry_type = None):
+        """
+        get/set the target geometry type for the interpolation method
+        :param stdlib_geometry_type: a geometry type defined by stdlib.GeomType
+        :return: target geometry type
+        """
+        if stdlib_geometry_type is not None:
+            self.__target_geometry_type = stdlib_geometry_type
+        return self.__target_geometry_type

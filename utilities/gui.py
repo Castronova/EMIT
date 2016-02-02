@@ -7,16 +7,11 @@ import datetime
 import cPickle as pickle
 import imp
 from api_old.ODMconnection import dbconnection
-from ODM2PythonAPI.src.api.ODMconnection import dbconnection as dbconnection2
-
-# from ODMconnection import dbconnection
-import uuid
-# import coordinator.emitLogging as l
-# logging = l.log()
-
+from odm2api.ODMconnection import dbconnection as dbconnection2
+from sprint import *
 from coordinator.emitLogging import elog
-
-
+import uuid
+import utilities.io as io
 
 class multidict(dict):
     _unique = 0
@@ -64,9 +59,13 @@ def validate_config_ini(ini_path):
         # load lookup tables
         dir = os.path.dirname(__file__)
 
+        var_cv = os.path.join(io.getAppDataDir(), 'dat/var_cv.dat') 
+        unit_cv= os.path.join(io.getAppDataDir(), 'dat/units_cv.dat')
+        var = pickle.load(open(var_cv, 'rb'))
+        unit= pickle.load(open(unit_cv, 'rb'))
 
-        var = pickle.load(open(os.path.join(dir,'../data/var_cv.dat'),'rb'))
-        unit = pickle.load(open(os.path.join(dir,'../data/units_cv.dat'),'rb'))
+#        var = pickle.load(open(os.path.join(dir,'../data/var_cv.dat'),'rb'))
+#        unit = pickle.load(open(os.path.join(dir,'../data/units_cv.dat'),'rb'))
 
         # check to see if 'ignorecv' option has been provided
         ignorecv = False
@@ -137,9 +136,11 @@ def validate_config_ini(ini_path):
                     m = getattr(module, classname)
                 except Exception, e:
                     elog.error('Configuration Parsing Error: '+str(e))
+                    sPrint('Configuration Parsing Error: '+str(e), MessageType.ERROR)
 
     except Exception, e:
         elog.error('Configuration Parsing Error: '+str(e))
+        sPrint('Configuration Parsing Error: '+str(e), MessageType.ERROR)
         return 0
 
 
@@ -255,8 +256,10 @@ def connect_to_ODM2_db(title, desc, engine, address, db, user, pwd):
                                  'args': {'name':title,'desc':desc ,'engine':engine,'address':address,'db': db, 'user': user,'pwd': pwd}}
 
         elog.info('Connected to : %s [%s]'%(connection_string,db_id))
+        sPrint('Connected to : %s [%s]'%(connection_string,db_id))
     else:
         elog.error('Could not establish a connection with the database')
+        sPrint('Could not establish a connection with the database', MessageType.ERROR)
         return None
 
     return db_connections
@@ -306,8 +309,10 @@ def create_database_connections_from_args(title, desc, engine, address, db, user
                                  'args': d}
 
         elog.info('Connected to : %s [%s]'%(connection_string,db_id))
+        sPrint('Connected to : %s [%s]'%(connection_string,db_id))
     else:
         elog.error('Could not establish a connection with the database')
+        sPrint('Could not establish a connection with the database', MessageType.ERROR)
         return None
 
     return db_connections
@@ -319,23 +324,33 @@ def load_model(config_params):
     """
     # parse module config
     #items = parse_config(ini)
+    try:
+        # get source attributes
+        software = config_params['software']
+        classname = software[0]['classname']
+        relpath = software[0]['filepath']
 
-    # get source attributes
-    software = config_params['software']
-    classname = software[0]['classname']
-    relpath = software[0]['filepath']
+        sPrint('Classname: %s' % classname, MessageType.DEBUG)
+        sPrint('Relpath: %s' % relpath, MessageType.DEBUG)
 
-    # load the model
-    basedir = config_params['basedir']
-    abspath = os.path.abspath(os.path.join(basedir,relpath))
-    filename = os.path.basename(abspath)
-    module = imp.load_source(filename, abspath)
-    model_class = getattr(module, classname)
+        # load the model
+        basedir = config_params['basedir']
+        abspath = os.path.abspath(os.path.join(basedir,relpath))
+        sPrint('AbsPath: %s'%abspath, MessageType.DEBUG)
 
-    # Initialize the component
-    instance = model_class(config_params)
+        filename = os.path.basename(abspath)
+        module = imp.load_source(filename, abspath)
+        model_class = getattr(module, classname)
+        sPrint('Model Class Extracted Successfully', MessageType.DEBUG)
 
-    #return (config_params['general'][0]['name'], instance)
+        # Initialize the component
+        instance = model_class(config_params)
+        sPrint('Mode Initialization Successful', MessageType.DEBUG)
+
+    except Exception as e:
+        sPrint('An error has occurred while loading model: %s'% e, MessageType.CRITICAL)
+        raise Exception(e)
+
     return (instance.name(), instance)
 
 def connect_to_db(title, desc, engine, address, name, user, pwd):
@@ -365,9 +380,11 @@ def connect_to_db(title, desc, engine, address, name, user, pwd):
                                   user=None, pwd=None,default=False,db=None)}
 
         elog.info('Connected to : %s [%s]'%(connection_string,db_id))
+        sPrint('Connected to : %s [%s]'%(connection_string,db_id))
 
     else:
         elog.error('Could not establish a connection with the database')
+        sPrint('Could not establish a connection with the database', MessageType.ERROR)
 
     return d
 
@@ -415,10 +432,11 @@ def create_database_connections_from_file(ini):
                                      'description':d['desc'],
                                      'args': d}
             elog.info('Connected to : %s [%s]'%(connection_string,db_id))
-
+            sPrint('Connected to : %s [%s]'%(connection_string,db_id))
 
         else:
             elog.error('Could not establish a connection with the database')
+            sPrint('Could not establish a connection with the database', MessageType.ERROR)
             #return None
 
 

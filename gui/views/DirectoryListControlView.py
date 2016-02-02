@@ -5,6 +5,7 @@ import os
 import wx
 
 from gui.Resources import icons
+from os.path import expanduser
 
 ID_BUTTON = 100
 ID_EXIT = 200
@@ -16,7 +17,8 @@ class ViewDirectoryListControl(wx.ListCtrl):
         wx.ListCtrl.__init__(self, parent=parent, id=id, size=size, pos=pos, style=style)
 
         currentdir = os.path.dirname(os.path.realpath(__file__))
-        home = os.path.join(currentdir,'../../tests/data')
+        home = expanduser('~')
+        #home = os.path.join(currentdir,'../../tests/data')
         dirpath = os.path.abspath(home)
         self.home = dirpath
         self.currentdirectory = dirpath

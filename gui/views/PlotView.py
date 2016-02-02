@@ -1,14 +1,11 @@
 __author__ = 'Mario'
 
-from matplotlib.dates import date2num
-import seaborn as sns
+import os
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
-from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg as NavToolbar
 import wx
 import wx.lib.newevent
 from wx.lib.pubsub import pub as Publisher
-from environment import env_vars
 from gui.controller.enums import PlotEnum
 
 
@@ -124,7 +121,7 @@ class ViewPlot(wx.Frame):
 
         self.selector = selector
         self.__image_list = None
-        if env_vars.LEGEND_LOCATIONRIGHT == 1:
+        if os.environ['LEGEND_LOCATIONRIGHT'] == 1:
 
             if selector:
                 # increase the panel width to fit the selector
@@ -146,7 +143,7 @@ class ViewPlot(wx.Frame):
         wx.Frame.__init__(self, parent=parent, id=wx.ID_ANY, title=wx.EmptyString,
                           pos=wx.DefaultPosition, size=wx.Size(width, height-30),
                           style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
-        if env_vars.LEGEND_LOCATIONRIGHT == 1:
+        if os.environ['LEGEND_LOCATIONRIGHT'] == 1:
             #  self.Sizer = wx.BoxSizer(wx.VERTICAL)
             self.Sizer = wx.BoxSizer(wx.HORIZONTAL)
             self.HSizer = wx.BoxSizer(wx.HORIZONTAL)

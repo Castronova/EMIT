@@ -14,48 +14,23 @@ from db import dbapi as dbapi
 from gui import events
 from coordinator.emitLogging import elog
 from gui.controller import ConsoleOutputCtrl
-# from db.ODM1.WebServiceAPI import WebServiceApi
 from gui.controller.WofSitesCtrl import WofSitesViewerCtrl
+from gui.controller.AddConnectionCtrl import AddConnectionCtrl
 from webservice import wateroneflow
+from gui.controller.ConsoleOutputCtrl import consoleCtrl
+import db.dbapi_v2 as db2
+from odm2api.ODMconnection import dbconnection
 
 class viewLowerPanel:
     def __init__(self, notebook):
 
-        console = ConsoleTab(notebook)
+        console =  consoleCtrl(notebook)
         timeseries = TimeSeriesTab(notebook)
         simulations = SimulationDataTab(notebook)
 
         notebook.AddPage(console, "Console")
         notebook.AddPage(timeseries, "Time Series")
         notebook.AddPage(simulations, "Simulations")
-
-        # deactivate the console if we are in debug mode
-        if not sys.gettrace():
-            # redir = RedirectText(self.log)
-            # sys.stdout = redir
-
-            #  Thread starts here to ensure its on the main thread
-            t = threading.Thread(target=ConsoleOutputCtrl.follow, name='CONSOLE THREAD', args=(elog, console.log))
-            t.start()
-
-class ConsoleTab(wx.Panel):
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent)
-
-        self.log = wx.richtext.RichTextCtrl(self, -1, size=(100,100),
-                                            style = wx.TE_MULTILINE | wx.TE_READONLY | wx.HSCROLL | wx.SIMPLE_BORDER|wx.CURSOR_NONE)
-
-        self.log.Bind(wx.EVT_CONTEXT_MENU, self.onRightUp)
-
-        # Add widgets to a sizer
-        sizer = wx.BoxSizer()
-        sizer.Add(self.log, 1, wx.ALL|wx.EXPAND, 5)
-        self.SetSizer(sizer)
-
-        self.SetSizerAndFit(sizer)
-
-    def onRightUp(self, event):
-        self.log.PopupMenu(ConsoleContextMenu(self, event))
 
 class TimeSeriesTab(wx.Panel):
     def __init__(self, parent):
@@ -75,12 +50,6 @@ class TimeSeriesTab(wx.Panel):
                                          style=wx.LC_REPORT | wx.SUNKEN_BORDER)
         self.table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
         self.m_olvSeries.DefineColumns(self.table_columns)
-
-        self.addConnectionButton.Bind(wx.EVT_LEFT_DOWN, self.AddConnection)
-        self.addConnectionButton.Bind(wx.EVT_MOUSEWHEEL, self.AddConnection_MouseWheel)
-
-        self.connection_refresh_button.Bind(wx.EVT_LEFT_DOWN, self.OLVRefresh)
-        self.connection_combobox.Bind(wx.EVT_CHOICE, self.DbChanged)
 
         seriesSelectorSizer = wx.BoxSizer(wx.VERTICAL)
         buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -104,6 +73,15 @@ class TimeSeriesTab(wx.Panel):
 
         # object to hold the current session
         self.__current_session = None
+
+        # intialize key bindings
+        self.initBindings()
+
+    def initBindings(self):
+        self.addConnectionButton.Bind(wx.EVT_LEFT_DOWN, self.AddConnection)
+        self.connection_refresh_button.Bind(wx.EVT_LEFT_DOWN, self.OLVRefresh)
+        self.connection_combobox.Bind(wx.EVT_CHOICE, self.DbChanged)
+
 
     def DbChanged(self, event):
         # refresh the database
@@ -135,60 +113,9 @@ class TimeSeriesTab(wx.Panel):
             self._conection_string = connection_string
         return self._connection_added
 
-    def AddConnection_MouseWheel(self, event):
-        '''
-        This is intentionally empty to disable mouse scrolling in the AddConnection combobox
-        :param event: EVT_MOUSEWHEEL
-        :return: None
-        '''
-        pass
-
     def AddConnection(self, event):
+        connection = AddConnectionCtrl(self)
 
-        params = []
-
-        while 1:
-            dlg = AddConnectionDialog(self, -1, "Sample Dialog", size=(350, 200),
-                             style=wx.DEFAULT_DIALOG_STYLE,
-                             )
-            dlg.CenterOnScreen()
-
-            if params:
-                dlg.set_values(title=params[0],
-                                  desc = params[1],
-                                  engine = params[2],
-                                  address = params[3],
-                                  name = params[4],
-                                  user = params[5],
-                                  pwd = params[6])
-
-            # this does not return until the dialog is closed.
-            val = dlg.ShowModal()
-
-
-            if val == 5101:
-                # cancel is selected
-                return
-            elif val == 5100:
-                params = dlg.getConnectionParams()
-
-                dlg.Destroy()
-
-                # create the database connection
-                Publisher.sendMessage('DatabaseConnection',
-                                      title=params[0],
-                                      desc=params[1],
-                                      dbengine=params[2],
-                                      address=params[3],
-                                      name=params[4],
-                                      user=params[5],
-                                      pwd=params[6])
-
-                if self.connection_added_status():
-                    Publisher.sendMessage('getDatabases')
-                    return
-                else:
-                    wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
 
     def getPossibleConnections(self):
         wsdl = {}
@@ -200,21 +127,16 @@ class TimeSeriesTab(wx.Panel):
 
     def prepareODM1_Model(self, siteObject):
         self.selectedVariables = None
-        # siteObject = self.api.objects[siteObjectID]
-        # print siteObject
-        siteview = WofSitesViewerCtrl(self, siteObject)
-        siteview.populateVariablesList(self.api, siteObject.site_code)
+        siteview = WofSitesViewerCtrl(self, siteObject, self.api)
         return
 
     def getParsedValues(self, siteObject, startDate, endDate):
         values = self.api.parseValues(siteObject.site_code, self.selectedVariables, startDate, endDate)
-        elog.info("AddToCanvas has not been implemented.  The above variable value contains the data.")
         return values
 
     def setup_wof_table(self, api):
         self.wofsites = api.getSites()
         api.network_code = self.wofsites[0].siteInfo.siteCode[0]._network
-        # data = api.getSiteInfo()
         self.table_columns = ["Site Name", "Network", "County", "State", "Site Type", "Site Code"]
         self.m_olvSeries.DefineColumns(self.table_columns)
 
@@ -263,8 +185,6 @@ class TimeSeriesTab(wx.Panel):
                 series = None
                 # fixme: This breaks for SQLite since it is implemented in dbapi_v2
                 if db['args']['engine'] == 'sqlite':
-                    import db.dbapi_v2 as db2
-                    from ODM2PythonAPI.src.api.ODMconnection import dbconnection
                     session = dbconnection.createConnection(engine=db['args']['engine'], address=db['args']['address'])
                     # gui_utils.connect_to_db()
                     s = db2.connect(session)
@@ -507,11 +427,7 @@ class DataSeries(wx.Panel):
         self.table = LogicDatabase(self, pos=wx.DefaultPosition, size=wx.DefaultSize, id=wx.ID_ANY,
                                    style=wx.LC_REPORT | wx.SUNKEN_BORDER)
 
-        # Bindings
-        self.addConnectionButton.Bind(wx.EVT_LEFT_DOWN, self.AddConnection)
 
-        self.connection_refresh_button.Bind(wx.EVT_LEFT_DOWN, self.database_refresh)
-        self.connection_combobox.Bind(wx.EVT_CHOICE, self.DbChanged)
 
         # Sizers
         seriesSelectorSizer = wx.BoxSizer(wx.VERTICAL)
@@ -529,6 +445,15 @@ class DataSeries(wx.Panel):
         self.Layout()
 
         engineEvent.onDatabaseConnected += self.refreshConnectionsListBox
+
+        # initialize key bindings
+        self.initBindings()
+
+    def initBindings(self):
+        # Bindings
+        self.addConnectionButton.Bind(wx.EVT_LEFT_DOWN, self.AddConnection)
+        self.connection_refresh_button.Bind(wx.EVT_LEFT_DOWN, self.database_refresh)
+        self.connection_combobox.Bind(wx.EVT_CHOICE, self.DbChanged)
 
     def DbChanged(self, event):
         self.database_refresh(event)
@@ -555,9 +480,11 @@ class DataSeries(wx.Panel):
     def AddConnection(self, event):
 
         params = []
-
+        p = self
+        newConnection = AddConnectionCtrl(p)
+        """
         while 1:
-            dlg = AddConnectionDialog(self, -1, "Sample Dialog", size=(350, 200),
+            dlg = AddConnectionDialog(self, -1, "Sample Dialog2", size=(350, 200),
                              style=wx.DEFAULT_DIALOG_STYLE,
                              )
             dlg.CenterOnScreen()
@@ -580,8 +507,10 @@ class DataSeries(wx.Panel):
                 return
             elif val == 5100:
                 params = dlg.getConnectionParams()
-
+                print len(params)
+                print params[6]
                 dlg.Destroy()
+                pwd = params[6]
 
                 # create the database connection
                 Publisher.sendMessage('DatabaseConnection',
@@ -591,7 +520,7 @@ class DataSeries(wx.Panel):
                                       address = params[3],
                                       name = params[4],
                                       user = params[5],
-                                      pwd = params[6])
+                                      pwd = pwd)
 
                 if self.connection_added_status():
                     Publisher.sendMessage('getDatabases')
@@ -599,6 +528,7 @@ class DataSeries(wx.Panel):
                 else:
 
                     wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
+            """
 
     def load_data(self):
         elog.error('Abstract method. Must be overridden!')
@@ -651,8 +581,6 @@ class SimulationDataTab(DataSeries):
                 simulations = None
 
                 if db['args']['engine'] == 'sqlite':
-                    import db.dbapi_v2 as db2
-                    from ODM2PythonAPI.src.api.ODMconnection import dbconnection
                     session = dbconnection.createConnection(engine=db['args']['engine'], address=db['args']['address'])
                     self.conn = db2.connect(session)
                     simulations = self.conn.getAllSimulations()

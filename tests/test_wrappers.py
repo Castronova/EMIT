@@ -219,3 +219,33 @@ class testNetcdfWrapper(unittest.TestCase):
         self.assertTrue(model_wrapper.type() == wrappers.Types.NETCDF)
 
 
+class testFeedForwardWrapper(unittest.TestCase):
+
+    def test_ff_initialization(self):
+
+        # path to the mdl file
+        mdl = './data/multiplier.py'
+
+
+
+        args = dict(network = 'iutah',
+                    site = 'LR_WaterLab_AA',
+                    variable = 'RH_enc',
+                    start = datetime.datetime(2015, 10, 26, 0, 0, 0),
+                    end = datetime.datetime(2015, 10, 30, 0, 0, 0),
+                    wsdl = 'http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL')
+
+
+        model_wrapper = getattr(wrappers, wrappers.Types.WOF).Wrapper(args)
+
+
+        self.assertTrue(model_wrapper.description() != 'No Description Provided')
+        self.assertTrue(model_wrapper.name() != 'Unspecified')
+        self.assertTrue(len(model_wrapper.outputs().keys()) > 0)
+        self.assertTrue(model_wrapper.simulation_end() == args['end'])
+        self.assertTrue(model_wrapper.simulation_start() == args['start'])
+
+        # make sure date, values, and geometries are set correctly
+        self.assertTrue(len(model_wrapper.outputs().values()[0].getValues2()) > 0)
+        self.assertTrue(len(model_wrapper.outputs().values()[0].getDates2()) > 0)
+        self.assertTrue(len(model_wrapper.outputs().values()[0].getGeometries2()) == 1)

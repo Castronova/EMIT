@@ -13,23 +13,30 @@ description = none
 simulation_start = 03/01/2009 12:00:00
 simulation_end = 05/01/2010 13:00:00
 
-
 [time_step]
 name = days
-abbreviation = days
-value = 1
+abbreviation = hours
+value = .1
 
 [output]
-variable_name_cv = Snow Melt Equivalent
-unit_type_cv = inches
+variable_name_cv = Snow Water Equivalent
+unit_type_cv = meters
+
+[output]
+variable_name_cv = Surface Water Input Total
+unit_type_cv = meters
 
 [input]
-variable_name_cv = precipitation
+variable_name_cv = Precipitation
 unit_type_cv = meters per hour
+
+[input]
+variable_name_cv = Temperature
+unit_type_cv = degrees celsius
 
 [options]
 ignorecv = 1
 
 [model_inputs]
-control = ./test/TWDEF_distributed/control.dat
-lib = ./bin/ueb.dylib
+control = ./RBCreekUEB2/control.dat
+lib = ./bin/debug/libUEBHydroCoupleComponent.dylib

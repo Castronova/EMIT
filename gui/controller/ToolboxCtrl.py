@@ -1,20 +1,20 @@
-__author__ = 'tonycastronova'
-
-import os
-import random
-from gui.views.ToolboxView import ViewToolbox
-from gui.views.ContextView import ToolboxContextMenu
-from gui.controller.ModelCtrl import LogicModel
-from gui import events
-import wx
-from wx.lib.pubsub import pub as Publisher
-from os.path import join, dirname, abspath
 import ConfigParser
 import fnmatch
+import os
+import random
+from os.path import join, dirname, abspath
+
+import wx
+from wx.lib.pubsub import pub as Publisher
+
 from coordinator.emitLogging import elog
-from environment import env_vars
+from gui import events
+from gui.controller.ModelCtrl import LogicModel
+from gui.views.ContextView import ToolboxContextMenu
+from gui.views.ToolboxView import ViewToolbox
+
+
 # todo: refactor
-from gui.views.ModelView import ViewModel
 
 
 class LogicToolbox(ViewToolbox):
@@ -28,12 +28,12 @@ class LogicToolbox(ViewToolbox):
         self.p = parent
         # config_params = {}
 
-        self.modelpaths = []
         self.cat = ""
         self.items = {}
         self.filepath = {}
+        self.modelpaths = self.parseModelPaths()
 
-        self.sectionKey()
+        # initialize event bindings
         self.initBinding()
 
         self.loadToolbox(self.getModelPath())
@@ -88,7 +88,7 @@ class LogicToolbox(ViewToolbox):
                 # populate models
                 if 'Components' in folder_path:
                     for p in path.split(';'):
-                        apath = join(dirname(abspath(__file__)), '../../' + p)
+                        apath = os.path.realpath(__file__ + "../../../../" + p)
                         matches = []
                         self.dirlist = []
 
@@ -129,8 +129,14 @@ class LogicToolbox(ViewToolbox):
     def getCat(self):
         return self.cat
 
-    def sectionKey(self):
-        ini = env_vars.TOOLBOX_PATH
+    def parseModelPaths(self):
+        """
+        reads the APP_TOOLBOX_PATH and parses the model/config paths
+        Returns: modelpaths lists
+
+        """
+
+        ini = os.environ['APP_TOOLBOX_PATH']
         cparser = ConfigParser.ConfigParser(None, multidict)
         cparser.read(ini)
         sections = cparser.sections()
@@ -149,7 +155,8 @@ class LogicToolbox(ViewToolbox):
                 kvp[option] = cparser.get(s, option)
             d.append(kvp)
 
-        self.modelpaths = d
+        return d
+
 
     def loadMDLFile(self, cat, txt, fullpath):
         mdl_parser = ConfigParser.ConfigParser(None, multidict)

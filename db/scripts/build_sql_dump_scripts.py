@@ -1,7 +1,8 @@
 import os
 import cvload
 import load_wof_to_ODM2
-import pyspatialite.dbapi2 as sqlite3
+import apsw as sqlite3
+import io
 
 print 'This script will perform the following tasks: '
 print '1. Create an ODM2 database '
@@ -21,28 +22,36 @@ if os.path.exists(dbpath):
 print 'done'
 
 # connect to the sqlite database
-conn = sqlite3.connect(dbpath)
+conn = sqlite3.Connection(dbpath)
 c = conn.cursor()
 
 # build database schema
 print 'Building Database Schemas...',
 ddl = open('ODM2_for_SQLite.sql','r').read()
-c.executescript(ddl)
-conn.commit()
+c.execute(ddl)
 print 'done'
 
 # load controlled vocabularies
-cvload.load_cv("sqlite:///"+dbpath)
+# cvload.load_cv("sqlite:///"+dbpath)
 
-# create empty database SQL dump file
-with open('../tests/data/empty_dump.sql', 'w') as f:
-    for line in conn.iterdump():
-        try:
-            # handle unicode characters such as greek letters
-            line = line.encode('ascii', 'ignore')
-            f.write('%s\n' % line)
-        except Exception, e:
-            print e
+output = io.StringIO()
+shell=sqlite3.Shell(stdout=output, db=conn)
+shell.process_command(".dump")
+with open('build_empty.sql', 'w') as f:
+    lines = output.getvalue().split('\n')
+    new_data = '\n'.join(lines)
+    f.writelines(new_data)
+del shell
+
+# # create empty database SQL dump file
+# with open('../tests/data/empty_dump.sql', 'w') as f:
+#     for line in conn.iterdump():
+#         try:
+#             # handle unicode characters such as greek letters
+#             line = line.encode('ascii', 'ignore')
+#             f.write('%s\n' % line)
+#         except Exception, e:
+#             print e
 
 # load some data
 load_wof_to_ODM2.load_wof(dbpath)
@@ -50,37 +59,47 @@ load_wof_to_ODM2.load_wof(dbpath)
 # add some people
 print 'Adding Person Records...',
 ddl = open('insert_people.sql','r').read()
-c.executescript(ddl)
-conn.commit()
+c.execute(ddl)
+# conn.commit()
 print 'done'
 
 # add some simulation data
 print 'Adding Simulation Records...',
 ddl = open('insert_simulation.sql','r').read()
-c.executescript(ddl)
-conn.commit()
+c.execute(ddl)
+# conn.commit()
 print 'done'
 
 # add some observations data
 print 'Adding Observation Records...',
 ddl = open('insert_observation.sql','r').read()
-c.executescript(ddl)
-conn.commit()
+c.execute(ddl)
+# conn.commit()
 print 'done'
 
-# create populated database SQL dump file
-with open('../tests/data/populated_dump.sql', 'w') as f:
-    for line in conn.iterdump():
-        try:
-            # handle unicode characters such as greek letters
-            line = line.encode('ascii', 'ignore')
-            f.write('%s\n' % line)
-        except Exception, e:
-            print e
+# # create populated database SQL dump file
+# with open('../tests/data/populated_dump.sql', 'w') as f:
+#     for line in conn.iterdump():
+#         try:
+#             # handle unicode characters such as greek letters
+#             line = line.encode('ascii', 'ignore')
+#             f.write('%s\n' % line)
+#         except Exception, e:
+#             print e
+
+output = io.StringIO()
+shell=sqlite3.Shell(stdout=output, db=conn)
+shell.process_command(".dump")
+with open('populated_dump.sql', 'w') as f:
+    lines = output.getvalue().split('\n')
+    new_data = '\n'.join(lines)
+    f.writelines(new_data)
+del shell
 
 # close database connection
 c.close()
 conn.close()
+
 
 # remove temp sqlite database
 print 'Cleaning...',

@@ -11,9 +11,6 @@ import os
 from coordinator import help as h
 from utilities.gui import *
 from utilities.mdl import *
-from api_old.ODM2.Core.services import readCore
-# from ODM2.Core.services import readCore
-#import wrappers
 from transform import space_base
 from transform import time_base
 from wrappers import odm2_data
@@ -31,6 +28,7 @@ from datetime import datetime
 import users as Users
 import wrappers
 from wrappers import Types
+from sprint import *
 
 """
 Purpose: This file contains the logic used to run coupled model simulations
@@ -325,24 +323,30 @@ class Coordinator(object):
     def add_model(self, id=None, attrib=None):
         """
         stores model component objects when added to a configuration
-        stores model component objects when added to a configuration
         """
-        thisModel = None
 
+        thisModel = None
+        sPrint('Adding Model in Engine', MessageType.DEBUG)
         if id is None:
-            id = uuid.uuid4().hex
+            id = 'M' + uuid.uuid4().hex
+
 
         if 'type' in attrib.keys():
+
+            sPrint('Found type', MessageType.DEBUG)
 
             try:
                 getattr(wrappers, attrib['type'])
             except:
                 elog.critical('Could not locate wrapper of type %s.  Make sure the wrapper is specified in wrappers.__init__.' % (attrib['type']))
+                sPrint('Could not locate wrapper of type %s.  Make sure the wrapper is specified in wrappers.__init__.' % (attrib['type']), MessageType.CRITICAL)
 
+            sPrint('Instantiating the component wrapper', MessageType.DEBUG)
             # instantiate the component wrapper
             inst = getattr(wrappers, attrib['type']).Wrapper(attrib)
             oei = inst.outputs().values()
             iei = inst.inputs().values()
+            sPrint('Model Instantiated', MessageType.DEBUG)
 
             # create a model instance
             thisModel = Model(id=id,
@@ -351,12 +355,13 @@ class Coordinator(object):
                               desc=inst.description(),
                               input_exchange_items= iei,
                               output_exchange_items=  oei,
-                              params=None)
-
+                              params=attrib)
+            thisModel.attrib(attrib)
 
         elif 'mdl' in attrib:
-            elog.warning('Usage deprecated.  Please pass wrapper type to engine add_model.')
         # if type == datatypes.ModelTypes.FeedForward or type == datatypes.ModelTypes.TimeStep:
+
+            sPrint('Found MDL', MessageType.DEBUG)
 
             ini_path = attrib['mdl']
 
@@ -364,20 +369,19 @@ class Coordinator(object):
             params = parse_config(ini_path)
 
             if params is not None:
-                # load model
-                name, model_inst = load_model(params)
 
+                # load model
+                sPrint('Loading Model', MessageType.DEBUG)
+                name, model_inst = load_model(params)
+                sPrint('Finished Loading', MessageType.DEBUG)
                 # make sure this model doesnt already exist
                 if name in self.__models:
                     elog.warning('Model named '+name+' already exists in configuration')
+                    sPrint('Model named '+name+' already exists in configuration', MessageType.WARNING)
                     return None
 
                 iei = model_inst.inputs().values()
                 oei = model_inst.outputs().values()
-
-                # generate a unique model id
-                if id is None:
-                    id = uuid.uuid4().hex[:5]
 
                 # create a model instance
                 thisModel = Model(id= id,
@@ -392,8 +396,6 @@ class Coordinator(object):
                 thisModel.attrib(attrib)
 
         elif 'databaseid' in attrib and 'resultid' in attrib:
-            elog.warning('Usage deprecated.  Please pass wrapper type to engine add_model.')
-        # elif type == datatypes.ModelTypes.Data:
 
             databaseid = attrib['databaseid']
             resultid = attrib['resultid']
@@ -409,6 +411,7 @@ class Coordinator(object):
             # List of canvas models are kept as a dict with keys in the format of 'NAME-ID'
             if inst.name()+'-'+resultid in self.__models:
                 elog.warning('Series named '+inst.name()+' already exists in configuration')
+                sPrint('Series named '+inst.name()+' already exists in configuration', MessageType.WARNING)
                 return None
 
             # create a model instance
@@ -429,9 +432,11 @@ class Coordinator(object):
         if thisModel is not None:
             # save the model
             self.__models[thisModel.name()] = thisModel
+            sPrint('Model Loaded', MessageType.DEBUG)
             return {'id':thisModel.id(), 'name':thisModel.name(), 'model_type':thisModel.type()}
         else:
             elog.error('Failed to load model.')
+            sPrint('Failed to load model.', MessageType.ERROR)
             return None
 
     def remove_model(self, linkablecomponent):
@@ -615,7 +620,7 @@ class Coordinator(object):
                 temporal = link.temporal_interpolation().name() \
                     if link.temporal_interpolation() is not None \
                     else 'None'
-                link_dict = dict(id=link.id(),
+                link_dict = dict(id=link.get_id(),
                                  source_id=source_id,
                                  target_id=target_id,
                                  source_name=link.source_component().name(),
@@ -927,12 +932,12 @@ class Coordinator(object):
                 types.extend(inspect.getmro(model.instance().__class__))
 
             # make sure that feed forward and time-step models are not mixed together
-            if (feed_forward.feed_forward_wrapper in types) and (time_step.time_step_wrapper in types):
+            if (feed_forward.Wrapper in types) and (time_step.time_step_wrapper in types):
                 return dict(success=False, message='Cannot mix feed-forward and time-step models')
 
             else:
                 # threadManager = ThreadManager()
-                if feed_forward.feed_forward_wrapper in types:
+                if feed_forward.Wrapper in types:
                     t = threading.Thread(target=run.run_feed_forward, args=(self,ds), name='Engine_RunFeedForward')
                     t.start()
                     # run.run_feed_forward(self)
@@ -1123,6 +1128,8 @@ class Coordinator(object):
             except Exception, e:
                 elog.error(e)
                 elog.error('Could not create connections from file ' + filepath)
+                sPrint('Could not create connection: %s'%e, MessageType.ERROR, PrintTarget.CONSOLE)
+
                 return {'success':False}
 
         else:

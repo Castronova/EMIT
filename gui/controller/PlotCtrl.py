@@ -1,14 +1,12 @@
-__author__ = 'tonycastronova'
-
-import wx
+import matplotlib.pyplot as plt
 import seaborn as sns
-from gui.views.PlotView import ViewPlot, Data
+import wx
 from PIL import Image, ImageDraw
 from matplotlib.dates import date2num
-import matplotlib.pyplot as plt
+
+import environment
 from gui.controller.enums import PlotEnum
-from environment import env_vars
-from wx.lib.pubsub import pub as Publisher
+from gui.views.PlotView import ViewPlot, Data
 
 sns.set_style("ticks")
 
@@ -17,7 +15,7 @@ class LogicPlot(ViewPlot):
 
     def __init__(self, parent, title='', xlabel='', ylabel='', selector=True):
 
-        ViewPlot.__init__(self, parent, title=title, xlabel=xlabel, ylabel=ylabel, selector=selector)
+        ViewPlot.__init__(self, parent, title='test', xlabel=xlabel, ylabel=ylabel, selector=selector)
 
 
     def getSymbology(self, value):
@@ -71,13 +69,13 @@ class LogicPlot(ViewPlot):
 
     def Onlegend_right(self,event):
 
-        env_vars.set_environment_variable('LEGEND', 'locationright', 1)
-        env_vars.set_environment_variable('LEGEND', 'locationbottom', 0)
+        environment.setEnvironmentVar('LEGEND', 'locationright', 1)
+        environment.setEnvironmentVar('LEGEND', 'locationbottom', 0)
 
     def Onlegend_bottom(self,event):
 
-        env_vars.set_environment_variable('LEGEND', 'locationright', 0)
-        env_vars.set_environment_variable('LEGEND', 'locationbottom', 1)
+        environment.setEnvironmentVar('LEGEND', 'locationright', 0)
+        environment.setEnvironmentVar('LEGEND', 'locationbottom', 1)
 
 
     def OnPlotPoint(self,event):

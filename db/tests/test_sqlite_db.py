@@ -1,24 +1,17 @@
 __author__ = 'mike'
 
 import unittest
-import os, sys
-import pyspatialite.dbapi2 as sqlite3
-import subprocess
+import os
 import coordinator.users as user
-from environment import env_vars
-
-# odm2_api_path = os.path.abspath(os.path.join(__file__, '../../../ODM2PythonAPI'))
-odm2_api_path = os.path.abspath(os.path.join(__file__, '../../../ODM2PythonAPI/src'))
-sys.path.append(odm2_api_path)
-# from api.ODMconnection import dbconnection
-# from api.ODM2.services.readService import ReadODM2
-from ODM2PythonAPI.src.api.ODMconnection import dbconnection
-from ODM2PythonAPI.src.api.ODM2.services.readService import ReadODM2
+from odm2api.ODMconnection import dbconnection
 from db.dbapi_v2 import sqlite
-
-# from EM.src.api.ODMconnection import dbconnection
-# from ODM2PythonAPI_.src.api.ODM2.services.readService import ReadODM2
-
+from utilities import geometry
+import stdlib
+from utilities import mdl
+import random
+from datetime import datetime as dt
+from datetime import timedelta
+import environment
 
 class test_sqlite_db(unittest.TestCase):
 
@@ -34,48 +27,26 @@ class test_sqlite_db(unittest.TestCase):
         if os.path.exists(self.pop_db_path):
             os.remove(self.pop_db_path)
 
-
-        # get the database dump files
-        empty_dump_script = open('./data/build_empty.sql','r').read()
-        populated_dump_script = open('./data/insert_test_data.sql','r').read()
-
-
-
-        # create temp databases
-        empty_odm2_db = sqlite3.connect(self.empty_db_path)
-        pop_odm2_db = sqlite3.connect(self.pop_db_path)
-
-
-        # load the dump files into the databases
-        # empty_odm2_db.executescript(empty_dump_script)
-        # pop_odm2_db.executescript(populated_dump_script)
-
         # connect to each database
         empty_connection = dbconnection.createConnection('sqlite', self.empty_db_path)
         pop_connection = dbconnection.createConnection('sqlite', self.pop_db_path)
+
         self.emptysqlite = sqlite(empty_connection)
         self.popsqlite = sqlite(pop_connection)
+
         # initialize the in-memory database, loop through each command (skip first and last lines)
+        empty_dump_script = open('./data/empty_dump.sql','r').read()
         for line in empty_dump_script.split(';\n'):
-            # conn.getSession().execute(line)
-            self.emptysqlite.write.getSession().execute(line)
-            self.popsqlite.write.getSession().execute(line)
+            self.emptysqlite.cursor.execute(line)
+        populated_dump_script = open('./data/populated_dump.sql','r').read()
         for line in populated_dump_script.split(';\n'):
-            self.popsqlite.write.getSession().execute(line)
-
-        # connection = dbconnection.createConnection('sqlite', ':memory:')
+            self.popsqlite.cursor.execute(line)
 
 
+        # todo: load environment variables
 
 
-        # create database connections that will be used in test cases
-        # self.empty_connection = dbconnection.createConnection('sqlite', self.empty_db_path)
 
-        # self.pop_connection = dbconnection.createConnection('sqlite', self.pop_db_path)
-        self.pop_connection = self.sqlite.connection
-
-
-    #
     def tearDown(self):
 
         # remove temp databases
@@ -86,75 +57,56 @@ class test_sqlite_db(unittest.TestCase):
 
 
     def test_get_people(self):
-        r = ReadODM2(self.pop_connection)
 
-        people = r.getPeople()
-        # self.assertTrue(len(people) == 4)
+        people = self.popsqlite.read.getPeople()
+        self.assertTrue(len(people) == 5)
 
-        person = r.getPersonById(1)
+        person = self.popsqlite.read.getPersonById(2)
         self.assertTrue(person.PersonFirstName == 'tony')
 
-    # def test_get_simulations(self):
-    #     r = ReadODM2(self.pop_connection)
-    #
-    #     # THIS SHOULD NOT RETURN NONE!!!!
-    #     simulations = r.getAllSimulations()
-    #
-    #     self.assertTrue(len(simulations) == 1)
 
     def test_create_user(self):
-        tempPerson = {'firstName': 'Bob', 'lastName': 'Charles'}
-        self.sqlite.create_user(tempPerson)
+        testPerson = {'firstName': 'Bob', 'lastName': 'Charles'}
 
-        # TODO:  Must make sure that an affiliation is created otherwise the user entry will fail during actionby creation
-    def test_validate_new_user(self):
+        people = self.emptysqlite.read.getPeople()
+        self.assertTrue(len(people) == 0)
 
-        #  Validating that the person was added
-        r = ReadODM2(self.pop_connection)
-        person = r.getPersonByName('Bob', 'Charles')
+        self.emptysqlite.create_user(testPerson)
+
+        people = self.emptysqlite.read.getPeople()
+        self.assertTrue(len(people) == 1)
+
+        person = self.emptysqlite.read.getPersonByName('Bob', 'Charles')
         self.assertTrue('Bob' == person.PersonFirstName, msg="Match! Person was inserted in the database")
 
-        # TODO:  Must make sure that an affiliation is created otherwise the user entry will fail during actionby creation
+        p = self.emptysqlite.read.getPersonById(person.PersonID)
+        self.assertTrue(person == p)
 
-    def test_add_new_user(self):
-        tempPerson = {'firstName': 'Bob', 'lastName': 'Charles'}
-
-        # TODO:  Must make sure that an affiliation is created otherwise the user entry will fail during actionby creation
-        self.sqlite.create_user(tempPerson)
-
-        r = ReadODM2(self.pop_connection)
-        person = r.getPersonByName('Bob', 'Charles')
-        id = r.getPersonById(person.PersonID)
-        self.assertTrue(person == id)
 
     def test_create_organization(self):
-        temporgan = {'cvType': 'University', 'code': 'usu',
-                      'name': 'GoAggies', 'desc': 'GoAggies',
-                      'link': 'GoAggies', 'parentOrgId': 'GoAggies'}
+        testOrg = {'cvType': 'University', 'code': 'usu',
+                      'name': 'GoAggies', 'desc': 'a university in utah',
+                      'link': 'SomeLink', 'parentOrgId': None}
 
-        self.sqlite.create_organization(temporgan)
+        orgs = self.emptysqlite.read.getOrganizations()
+        self.assertTrue(len(orgs) == 0)
 
-    # def test_validate_new_organization(self):
-    #
-    #     #  Validating that the organization was added
-    #     r = ReadODM2(self.empty_connection)
-    #     print r.getOrganizations()
-    #     group = r.getOrganizationByCode('GoAggies')
-    #
-    #     id = r.getOrganizationById(group.OrganizationID)
-    #     #     self.assertTrue(group == id)
+        self.emptysqlite.write.createOrganization(**testOrg)
+        o = self.emptysqlite.read.getOrganizations()
+        self.assertTrue(len(o) == 1)
 
+        o = self.emptysqlite.read.getOrganizationByCode('usu')
+        self.assertTrue(o.OrganizationName == 'GoAggies')
+
+        o = self.emptysqlite.read.getOrganizationById(1)
+        self.assertTrue(o.ParentOrganizationID is None)
+
+        cvs = self.emptysqlite.read.getCVOrganizationTypes()
+        self.assertTrue(len(cvs) > 1)
 
 
     def test_create_simulation(self):
 
-        import stdlib
-
-        from utilities import mdl, gui
-        from shapely.geometry import Point
-        import random
-        from datetime import datetime as dt
-        from datetime import timedelta
 
         # create an exchange item
         unit = mdl.create_unit('cubic meters per second')
@@ -164,13 +116,11 @@ class test_sqlite_db(unittest.TestCase):
         item = stdlib.ExchangeItem(name='Test', desc='Test Exchange Item', unit=unit, variable=variable)
 
         # set exchange item geometries
-        coords = [(1,2),(2,3),(3,4)]
-        geoms = []
-        for x,y in coords:
-            point = Point(x,y)
-            geoms.append(stdlib.Geometry(point))
-        item.addGeometries2(geoms)
-        self.assertTrue(len(item.getGeometries2()) == len(geoms))
+        xcoords = [1,2,3]
+        ycoords = [2,3,4]
+        points = geometry.build_point_geometries(xcoords, ycoords)
+        item.addGeometries2(points)
+        self.assertTrue(len(item.getGeometries2()) == len(points))
 
         # set exchange item values
         start_time = dt.now()                       # set start time to 'now'
@@ -186,7 +136,7 @@ class test_sqlite_db(unittest.TestCase):
             dates.append(current_time)
 
             # add some random values for each geometry
-            values.append([random.random() for g in geoms] )
+            values.append([random.random() for pt in points] )
 
             # increment time by 1 day
             current_time += timedelta(days=1)
@@ -197,54 +147,73 @@ class test_sqlite_db(unittest.TestCase):
         self.assertTrue(len(item.getDates2()) == len(item.getValues2()))
         self.assertTrue(len(item.getGeometries2()) == len(item.getValues2()[0]))
 
-        # preferences
-        pref = None
-
-        # config_params
-        config = None
-
-        # list of exchange items
-        ei = [item]
-
-        params = {'general': [{'simulation_end': '03/01/2014 23:00:00',
-                               'simulation_start': '03/01/2014 12:00:00',
-                               'description': 'Some description',
-                               'name': 'test simulation'}],
-                  'model': [{'code': 'TOPMODEL',
-                             'name': 'test model',
-                             'description': 'Some model descipription'}],
-                  'time_step' : [{'abbreviation': 'hr',
-                                'unit_type_cv': 'hour',
-                                'name': 'hours',
-                                'value': '1'}]}
-
-
-        # # model parameters that will be accessed via engine during simualtion (hardcoded for the test case)
-        # params = dict(  name = 'test_simulation',
-        #                 description = 'this is a sample description',
-        #                 simulation_start = '03/01/2014 12:00:00',
-        #                 simulation_end = '03/01/2014 23:00:00',
-        #                 code = 'testmodel',
-        #                 unit_type_cv = 'hour',
-        #                 value = '1',
-        # )
-
         # build user object
-        user_json = open(env_vars.USER_JSON).read()
+        user_json = '{"3987225b-9466-4f98-bf85-49c9aa82b079": {"affiliation": {"address": "8200 old main, logan ut, 84322","affiliationEnd": null,"email": "tony.castronova@usu.edu","isPrimaryOrganizationContact": false,"personLink": null,"phone": "435-797-0853","startDate": "2014-03-10T00:00:00"},"organization": {"code": "usu","description": null,"link": null,"name": "Utah State University","parent": null,"typeCV": "university"},"person": {"firstname": "tony","lastname": "castronova","middlename": null}},"ef323a55-39df-4cb8-b267-06e53298f1bb": {"affiliation": {"address": "8200 old main, logan ut, 84322","affiliationEnd": null,"email": "tony.castronova@usu.edu","isPrimaryOrganizationContact": false,"personLink": null,"phone": null,"startDate": "2014-03-10T00:00:00"},"organization": {"code": "uwrl","description": "description = research laboratory Affiliated with utah state university","link": null,"name": "Utah Water Research Laboratory","parent": "usu","typeCV": "university"},"person": {"firstname": "tony","lastname": "castronova","middlename": null}}}'
         user_obj = user.BuildAffiliationfromJSON(user_json)
 
         # get affiliation
-        r = ReadODM2(self.pop_connection)
-        # affiliation = r.getAffiliationsByPerson('tony','castronova')
-        self.sqlite.create_simulation('My Simulation', user_obj[0], params, item)
+        self.emptysqlite.read.getAffiliationsByPerson('tony','castronova')
+
+
+        # query simulations
+        simulations = self.emptysqlite.getAllSimulations()
+        self.assertTrue(len(simulations) == 0)
+
+        # create the simulation
+        st = dt(2014, 3, 1, 12, 0, 0)
+        et = dt(2014, 3, 1, 23, 0, 0)
+        description = 'Some model descipription'
+        name = 'test simulation'
+        self.emptysqlite.create_simulation('My Simulation', user_obj[0], None, item, st, et, 1, 'hours', description, name)
+
+        # query simulations
+        simulations = self.emptysqlite.read.getAllSimulations()
+        self.assertTrue(len(simulations) == 1)
+        simulation = self.emptysqlite.read.getSimulationByName('My Simulation')
+        self.assertTrue(simulation is not None)
 
 
 
+    # todo: re-write
+    def test_insert_many(self):
+
+        # create an exchange item
+        unit = mdl.create_unit('cubic meters per second')
+        variable = mdl.create_variable('streamflow')
+
+        # create exchange item
+        item = stdlib.ExchangeItem(name='Test', desc='Test Exchange Item', unit=unit, variable=variable)
 
 
+        # set exchange item geometries
+        xcoords = [i for i in range(1000)]
+        ycoords = [i*1.5 for i in range(1000)]
+        geoms = geometry.build_point_geometries(xcoords, ycoords)
+        item.addGeometries2(geoms)
+        self.assertTrue(len(item.getGeometries2()) == len(geoms))
+
+        # set exchange item values
+        start_time = dt.now()
+        end_time = start_time+timedelta(days=2000)
+        time_step = 60*60*24
+        item.initializeDatesValues(start_datetime=start_time, end_datetime=end_time, timestep_in_seconds=time_step)
+        dates = [start_time + i*timedelta(days=1) for i in range(2000)]
+        values = [random.random() for g in geoms]
+
+        for i in range(len(dates)):
+            item.setValuesBySlice(values, time_index_slice=(i,i+1,1))
 
 
+        self.assertTrue(len(item.getDates2()) == len(item.getValues2()))
+        self.assertTrue(len(item.getGeometries2()) == len(item.getValues2()[0]))
 
+        description = 'Some description'
+        name = 'test simulation'
 
+        # build user object
+        user_json = '{"3987225b-9466-4f98-bf85-49c9aa82b079": {"affiliation": {"address": "8200 old main, logan ut, 84322","affiliationEnd": null,"email": "tony.castronova@usu.edu","isPrimaryOrganizationContact": false,"personLink": null,"phone": "435-797-0853","startDate": "2014-03-10T00:00:00"},"organization": {"code": "usu","description": null,"link": null,"name": "Utah State University","parent": null,"typeCV": "university"},"person": {"firstname": "tony","lastname": "castronova","middlename": null}},"ef323a55-39df-4cb8-b267-06e53298f1bb": {"affiliation": {"address": "8200 old main, logan ut, 84322","affiliationEnd": null,"email": "tony.castronova@usu.edu","isPrimaryOrganizationContact": false,"personLink": null,"phone": null,"startDate": "2014-03-10T00:00:00"},"organization": {"code": "uwrl","description": "description = research laboratory Affiliated with utah state university","link": null,"name": "Utah Water Research Laboratory","parent": "usu","typeCV": "university"},"person": {"firstname": "tony","lastname": "castronova","middlename": null}}}'
+        user_obj = user.BuildAffiliationfromJSON(user_json)
+
+        self.emptysqlite.create_simulation('My Simulation', user_obj[0], None, item, start_time, end_time, 1, 'days', description, name)
 
 

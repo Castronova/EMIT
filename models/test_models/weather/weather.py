@@ -1,12 +1,11 @@
 __author__ = 'tonycastronova'
 
-import os
 from wrappers import feed_forward
 import stdlib
 from utilities import mdl
 from datetime import datetime as dt
 
-class weatherReader(feed_forward.feed_forward_wrapper):
+class weatherReader(feed_forward.Wrapper):
     def __init__(self, config_params):
         super(weatherReader, self).__init__(config_params)
 
@@ -55,13 +54,3 @@ class weatherReader(feed_forward.feed_forward_wrapper):
 
         # set output data
         self.p.setValues2(incremental_precip, dates)
-
-
-    def save(self):
-        """
-        This function is used to build output exchange items
-        :return: list of output exchange items
-        """
-
-        # save all timeseries
-        return self.outputs()

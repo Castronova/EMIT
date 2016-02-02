@@ -1,10 +1,9 @@
-__author__ = 'tonycastronova'
+import wx
+import wx.propgrid as wxpg
+from wx.lib.pubsub import pub as Publisher
 
 from gui.views.ModelView import ViewModel
 from utilities import gui
-import wx.propgrid as wxpg
-from wx.lib.pubsub import pub as Publisher
-import wx
 
 
 class LogicModel(ViewModel):
@@ -26,12 +25,12 @@ class LogicModel(ViewModel):
     def update_plot_output(self, event):
         received_data = event.EventObject.StringSelection
         self.TopLevelParent.plotPanel.set_selection_output(received_data)
-        self.TopLevelParent.plotPanel.UpdatePlot()
+        self.TopLevelParent.plotPanel.updatePlot()
 
     def update_plot_input(self, event):
         received_data = event.EventObject.StringSelection
         self.TopLevelParent.plotPanel.set_selection_input(received_data)
-        self.TopLevelParent.plotPanel.UpdatePlot()
+        self.TopLevelParent.plotPanel.updatePlot()
 
 
     def PopulateEdit(self, fileExtension):

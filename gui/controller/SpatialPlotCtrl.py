@@ -1,14 +1,13 @@
-__author__ = 'tonycastronova'
-
-import wx
 import matplotlib.pyplot as plt
-from gui.views.SpatialPlotView import ViewSpatialPlot
-from coordinator.emitLogging import elog
-import stdlib
-from matplotlib.collections import PolyCollection, LineCollection
 import numpy
+from matplotlib.collections import PolyCollection, LineCollection
 
-class LogicSpatialPlot(ViewSpatialPlot):
+import stdlib
+from coordinator.emitLogging import elog
+from gui.views.SpatialPlotView import ViewSpatialPlot
+
+
+class SpatialPlotCtrl(ViewSpatialPlot):
 
     def __init__(self, parent, title='', xlabel='', ylabel=''):
 
@@ -75,7 +74,7 @@ class LogicSpatialPlot(ViewSpatialPlot):
         # omit the ends of the spectrum so that the correct number of colors is provided
         return colors[1:-1]
 
-    def UpdatePlot(self,event=None):
+    def updatePlot(self, event=None):
 
         # clear the canvas
         self.ax.cla()
@@ -129,14 +128,14 @@ class LogicSpatialPlot(ViewSpatialPlot):
         if geom_list[0].GetGeometryName() == stdlib.GeomType.POINT:
 
             # get x,y points
-            x,y = zip(*[(g.GetX(), g.GetY()) for g in geom_list])
+            x, y = zip(*[(g.GetX(), g.GetY()) for g in geom_list])
             self.ax.scatter(x, y, color=colors)
 
 
         # POLYGON
         elif geom_list[0].GetGeometryName() == stdlib.GeomType.POLYGON:
 
-            poly_list= []
+            poly_list = []
             for geom in geom_list:
 
                 # get then number of polygons
@@ -152,17 +151,17 @@ class LogicSpatialPlot(ViewSpatialPlot):
                     pts = numpy.array(ring.GetPoints())
 
                     # p = pts[:,0:2]
-                    a = tuple(map(tuple, pts[:,0:2]))
+                    a = tuple(map(tuple, pts[:, 0:2]))
                     poly_list.append(a)
 
             # generate a border color based off the first value
             mc = min(colors[0])
-            bc = [ max(0, colors[0][0] - mc),
-                    max(0, colors[0][1] - mc),
-                    max(0, colors[0][2] - mc)]
+            bc = [max(0, colors[0][0] - mc),
+                  max(0, colors[0][1] - mc),
+                  max(0, colors[0][2] - mc)]
 
             # build a polygon collection
-            pcoll = PolyCollection(poly_list, closed=True, facecolor=colors, alpha=0.1, edgecolor=bc, linewidths=(2,))
+            pcoll = PolyCollection(poly_list, closed=True, facecolor=colors, alpha=0.5, edgecolor=bc, linewidths=(2,))
 
             # add the polygon collection to the plot
             self.ax.add_collection(pcoll, autolim=True)
@@ -179,7 +178,7 @@ class LogicSpatialPlot(ViewSpatialPlot):
                 pts = numpy.array(geom.GetPoints())
 
                 # p = pts[:,0:2]
-                a = tuple(map(tuple, pts[:,0:2]))
+                a = tuple(map(tuple, pts[:, 0:2]))
                 line_list.append(a)
 
             # build a line collection

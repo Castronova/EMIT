@@ -1,32 +1,33 @@
-import math
-import textwrap as tw
-import sys
 import os
+import random
+import threading
+import time
+import uuid
 import xml.etree.ElementTree as et
 from xml.dom import minidom
-import uuid
-import threading, time
+
+import numpy as N
 import wx
 from wx.lib.floatcanvas import FloatCanvas as FC
 from wx.lib.floatcanvas.NavCanvas import NavCanvas
 from wx.lib.pubsub import pub as Publisher
-import numpy as N
-from matplotlib.pyplot import cm
+
+import coordinator.engineAccessors as engine
+import coordinator.events as engineEvent
+import datatypes
+import gui.controller.CanvasObjectsCtrl as LogicCanvasObjects
+import utilities.db as dbUtilities
+from coordinator.emitLogging import elog
+from gui import events
+from gui.controller.CanvasObjectsCtrl import SmoothLineWithArrow, ModelBox
+from gui.controller.LinkCtrl import LinkCtrl
+from gui.views.CanvasView import ViewCanvas
 from gui.views.ContextView import LinkContextMenu, ModelContextMenu, CanvasContextMenu
+from sprint import *
 from transform.space import SpatialInterpolation
 from transform.time import TemporalInterpolation
-import datatypes
-from utilities.threading import EVT_CREATE_BOX, EVT_UPDATE_CONSOLE, ThreadManager
-from gui.views.CanvasView import ViewCanvas
-import gui.controller.CanvasObjectsCtrl as LogicCanvasObjects
-from gui.controller.CanvasObjectsCtrl import SmoothLineWithArrow, ModelBox
-from gui.controller.LinkCtrl import LogicLink
-import coordinator.engineAccessors as engine
-import utilities.db as dbUtilities
-import coordinator.events as engineEvent
-from gui import events
-from coordinator.emitLogging import elog
-import random
+from utilities.threading import EVT_UPDATE_CONSOLE
+
 
 class LogicCanvas(ViewCanvas):
     def __init__(self, parent):
@@ -82,7 +83,6 @@ class LogicCanvas(ViewCanvas):
         self.FloatCanvas.Bind(FC.EVT_MOTION, self.OnMove)
         self.FloatCanvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp)
         self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.LaunchContext)
-        self.Bind(EVT_UPDATE_CONSOLE, self.onUpdateConsole)
 
         # engine bindings
         engineEvent.onModelAdded += self.draw_box
@@ -156,13 +156,6 @@ class LogicCanvas(ViewCanvas):
             self.lastPos = cursorPos
             self.FloatCanvas.Draw(True)
 
-    def onUpdateConsole(self, evt):
-        """
-        Updates the output console
-        """
-        if evt.message:
-            elog.debug("DEBUG|", evt.message)
-
     def createBox(self, xCoord, yCoord, id=None, name=None, type=datatypes.ModelTypes.TimeStep):
 
         if name:
@@ -178,18 +171,18 @@ class LogicCanvas(ViewCanvas):
             B = ModelBox(type, (x,y), name, id)
             self.FloatCanvas.AddObject(B)
             self.models[B] = id
-            print self.models
 
             B.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit)
             B.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
             self.FloatCanvas.Draw()
 
             elog.info(name + ' has been added to the canvas.')
-            elog.debug(name + ' has been added to the canvas.')
+            sPrint(name + ' has been added to the canvas.')
+
+            # elog.debug(name + ' has been added to the canvas.')
 
     def draw_box(self, evt):
 
-        print 'CANVAS: ' + evt.id
         x, y = self.get_model_coords(id=evt.id)
         self.createBox(name=evt.name, id=evt.id, xCoord=x, yCoord=y, type=evt.model_type)
 
@@ -205,6 +198,7 @@ class LogicCanvas(ViewCanvas):
 
         if R1 is None or R2 is None:
             elog.warning("Could not find Model identifier in loaded models")
+            sPrint("Could not find Model identifier in loaded models", MessageType.WARNING)
             raise Exception('Could not find Model identifier in loaded models')
 
         # This is what actually draws the line
@@ -227,6 +221,7 @@ class LogicCanvas(ViewCanvas):
 
         if R1 == R2:
             elog.error('Cannot link a model to itself')
+            sPrint('Cannot link a model to itself', MessageType.ERROR)
             return
         else:
             # Get the center of the objects on the canvas
@@ -281,6 +276,7 @@ class LogicCanvas(ViewCanvas):
         if ext == '.mdl' or ext == '.sim':
 
             if ext == '.mdl':
+                print 'ADDING MODEL'
                 # load the model within the engine process
                 engine.addModel(id=uid, attrib={'mdl': filepath})
 
@@ -290,6 +286,7 @@ class LogicCanvas(ViewCanvas):
                     self.loadsimulation(filepath)
                 except Exception, e:
                     elog.error('Configuration failed to load: %s'%e.message)
+                    sPrint('Configuration failed to load: %s'%e.message, MessageType.ERROR)
         else:
             #  Model is from a database
             attrib = dict(databaseid=self._dbid, resultid=name)
@@ -323,6 +320,7 @@ class LogicCanvas(ViewCanvas):
                 success = engine.removeLinkById(link['id'])
                 if not success:
                     elog.error('ERROR|Could not remove link: %s' % link['id'])
+                    sPrint('ERROR|Could not remove link: %s' % link['id'], MessageType.ERROR)
 
             # Using SmoothLineWithArrow's builtin remove helper function
             link_obj.Remove(self.FloatCanvas)
@@ -447,15 +445,19 @@ class LogicCanvas(ViewCanvas):
         to_model = engine.getModelById(r2.ID)
 
         if len(self.links) > 1:
-            bidirectional = self.CheckIfBidirectionalLink(r1.Name, r2.Name)
+            bidirectional = self.CheckIfBidirectionalLink(r1.ID, r2.ID)
 
-        linkstart = LogicLink(self.FloatCanvas, from_model, to_model, bidirectional)
+        linkstart = LinkCtrl(self.FloatCanvas, from_model, to_model, bidirectional)
         linkstart.Show()
 
-    def CheckIfBidirectionalLink(self, r1, r2):
+    def CheckIfBidirectionalLink(self, id1, id2):
         count = 0
         for pair in self.pairedModels:
-            if r1 in pair and r2 in pair:
+
+            # get the ids of the models in this link pair
+            pair_ids = [pair[0].ID, pair[1].ID]
+
+            if id1 in pair_ids and id2 in pair_ids:
                 count += 1
 
         if count >= 2:
@@ -511,10 +513,6 @@ class LogicCanvas(ViewCanvas):
 
     def SaveSimulation(self, path):
 
-        if len(self.models.keys()) == 0:
-            elog.warning('Nothing to save!')
-            return
-
         # create an xml tree
         tree = et.Element('Simulation')
 
@@ -530,42 +528,38 @@ class LogicCanvas(ViewCanvas):
             attributes['name'] = model['name']
             attributes['id'] = model['id']
 
-            if model['type'] == datatypes.ModelTypes.FeedForward:
-                attributes['mdl'] = model['attrib']['mdl']
+            print '-------------------------------------------\n'
+            print model['name']
+            print model['attrib']
+            print '-------------------------------------------\n'
 
-                modelelement = et.SubElement(tree, 'Model')
+            x = str((bbox[0][0] + bbox[1][0]) / 2)
+            y = str((bbox[0][1] + bbox[1][1]) / 2)
+            name = model['name']
+            id = model['id']
+            args = model['attrib']
 
-                modelnameelement = et.SubElement(modelelement, "name")
-                modelnameelement.text = attributes['name']
-                modelidelement = et.SubElement(modelelement, "id")
-                modelidelement.text = attributes['id']
-                modelxelement = et.SubElement(modelelement, "xcoordinate")
-                modelxelement.text = attributes['x']
-                modelyelement = et.SubElement(modelelement, "ycoordinate")
-                modelyelement.text = attributes['y']
-                modelpathelement = et.SubElement(modelelement, "path")
-                modelpathelement.text = model['attrib']['mdl']
+            el = et.SubElement(tree, 'Model')
+            el_name = et.SubElement(el, "name")
+            el_name.text = name
+            el_id = et.SubElement(el, "id")
+            el_id.text = id
+            el_x = et.SubElement(el, "xcoordinate")
+            el_x.text = x
+            el_y = et.SubElement(el, "ycoordinate")
+            el_y.text = y
 
-            elif model['type'] == datatypes.ModelTypes.Data:
-                attributes['databaseid'] = model['attrib']['databaseid']
-                attributes['resultid'] = model['attrib']['resultid']
-                dataelement = et.SubElement(tree, 'DataModel')
-                datamodelnameelement = et.SubElement(dataelement, "name")
-                datamodelnameelement.text = attributes['name']
-                datamodelidelement = et.SubElement(dataelement, "id")
-                datamodelidelement.text = attributes['id']
-                datamodelxelement = et.SubElement(dataelement, "xcoordinate")
-                datamodelxelement.text = attributes['x']
-                datamodelyelement = et.SubElement(dataelement, "ycoordinate")
-                datamodelyelement.text = attributes['y']
-                datamodelidelement = et.SubElement(dataelement, "databaseid")
-                datamodelidelement.text = attributes['databaseid']
-                datamodelresultidelement = et.SubElement(dataelement, "resultid")
-                datamodelresultidelement.text = attributes['resultid']
+            # encode model arguments in xml
+            el_args = et.SubElement(el, 'Arguments')
+            for key, value in args.iteritems():
+                el_arg = et.SubElement(el_args, key)
+                el_arg.text = str(value)
 
-                # save this db id
+            # save db id if the model depends on one
+            if 'databaseid' in model['attrib']:
                 if model['attrib']['databaseid'] not in db_ids:
                     db_ids.append(model['attrib']['databaseid'])
+
 
         # add links to the xml tree
         links = engine.getAllLinks()
@@ -613,6 +607,7 @@ class LogicCanvas(ViewCanvas):
 
 
         # save required databases
+        print db_ids
         for db_id in db_ids:
             attributes = {}
 
@@ -663,8 +658,10 @@ class LogicCanvas(ViewCanvas):
         except Exception, e:
             elog.error('An error occurred when attempting to save the project ')
             elog.error(e)
+            sPrint('An error occurred when attempting to save the project', MessageType.ERROR)
 
-        elog.info('Configuration Saved Successfully! ')
+        elog.info('Configuration saved: ', path)
+        sPrint('Configuration was saved successfully: ', path)
 
     def appendChild(self, child):
         taglist = []
@@ -678,102 +675,110 @@ class LogicCanvas(ViewCanvas):
 
     def loadsimulation(self, file):
 
-        self.loadingpath = file
+        file = os.path.abspath(file)
+        sPrint('Begin loading simulation: %s\n'%file)
 
+        # self.loadingpath = file
         tree = et.parse(file)
-
-        # get the root
-        root = tree.getroot()
 
         # make sure the required database connections are loaded
         connections = engine.getDbConnections()
+        existing_connections = {}
+        for id, condict in connections.iteritems():
+            conargs = condict['args']
+            unique_conn = '%s:%s:%s' % (conargs['engine'],
+                                     conargs['address'],
+                                     conargs['db'] if conargs['db'] is not None else '')
+            existing_connections[unique_conn] = id
+
         conn_ids = {}
 
-        # get all known transformations
-        space = SpatialInterpolation()
-        time = TemporalInterpolation()
-        spatial_transformations = {i.name(): i for i in space.methods()}
-        temporal_transformations = {i.name(): i for i in time.methods()}
 
+        dbconnections = tree.findall("./DbConnection")
+        for connection in dbconnections:
 
-        # TODO: This needs to be refactored to remove 'for' looping!
-        for child in root._children:
-            if child.tag == 'DbConnection':
-                attrib = self.appendChild(child)
+            sPrint('Adding database connections...')
 
-                connection_string = attrib['connection_string']
+            con_engine = connection.find('engine').text
+            con_address = connection.find('address').text
+            con_db = connection.find('db').text
+            con_id = connection.find('databaseid').text
+            con_name = connection.find('name').text
+            con_pass = connection.find('pwd').text
+            con_user = connection.find('user').text
+            con_desc = connection.find('desc').text
 
-                database_exists = False
-                # db_elements = db_conn.getchildren()
+            # build a unique connection string
+            unique_conn_string = '%s:%s:%s' % (con_engine,
+                                               con_address,
+                                               con_db if con_db != 'None' else '')
 
-                for id, dic in connections.iteritems():
-                    try:
-                        if str(dic['args']['connection_string']) == connection_string:
-                            # dic['args']['id'] = db_conn.attrib['id']
-                            database_exists = True
+            # if connection already exists
+            if unique_conn_string in existing_connections.keys():
 
-                            # map the connection ids
-                            conn_ids[attrib['databaseid']] = dic['args']['id']
-                            break
-                    except Exception, e:
-                        elog.error(e.message)
+                # map the connection ids
 
-                # if database doesn't exist, then connect to it
-                if not database_exists:
-                    connect = wx.MessageBox('This database connection does not currently exist.  Click OK to connect.',
-                                            'Info', wx.OK | wx.CANCEL)
+                conn_ids[con_id] = existing_connections[unique_conn_string]
 
-                    if connect == wx.OK:
+            # open the dialog to add a new connection
+            else:
+                connect = wx.MessageBox('This database connection does not currently exist.  Click OK to connect.', 'Info', wx.OK | wx.CANCEL)
 
-                        # attempt to connect to the database
-                        title = dic['args']['name']
-                        desc = dic['args']['desc']
-                        db_engine = dic['args']['engine']
-                        address = dic['args']['address']
-                        name = dic['args']['db']
-                        user = dic['args']['user']
-                        pwd = dic['args']['pwd']
+                if connect == wx.OK:
 
-                        if not self.AddDatabaseConnection(title, desc, db_engine, address, name, user, pwd):
-                            wx.MessageBox('I was unable to connect to the database with the information provided :(',
-                                          'Info', wx.OK | wx.ICON_ERROR)
-                            return
+                    # attempt to connect to the database
+                    title = con_name
+                    desc = con_desc
+                    db_engine = con_engine
+                    address = con_address
+                    name = con_db
+                    user = con_user
+                    pwd = con_pass
 
-                        # map the connection id
-                        conn_ids[attrib['databaseid']] = attrib['databaseid']
-
-                    else:
+                    if not self.AddDatabaseConnection(title, desc, db_engine, address, name, user, pwd):
+                        wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
                         return
+
+                    # map the connection id
+                    conn_ids[con_id] = con_id
 
         models = tree.findall("./Model")  # Returns a list of all models in the file
         datamodels = tree.findall("./DataModel")  # Returns a list of all data models in the file
         links = tree.findall("./Link")  # Returns a list of all links in the file
-        transform = tree.findall("./transformation")
+
         total = len(models) + len(datamodels) + len(self.models) + self.failed_models
 
-        elog.debug("There are " + str(total) + " models in the file")
-        waitingThread = threading.Thread(target=self.waiting, args=(total, links, transform, temporal_transformations, spatial_transformations), name="LoadLinks")
+        waitingThread = threading.Thread(target=self.waiting, args=(total, links), name="LoadLinks")
         self.logicCanvasThreads[waitingThread.name] = waitingThread
         waitingThread.start()
 
-        #  Models from database and non database will load async.
-        t1 = threading.Thread(target=self.LoadModels, args=(models,), name="LoadModels")
-        self.logicCanvasThreads[t1.name] = t1
-        t1.start()
+        # loop through all of the models and load each one individually
+        for model in models:
+            name = model.find('name').text
+            x = float(model.find('xcoordinate').text)
+            y = float(model.find('ycoordinate').text)
+            id = model.find('id').text
+            arguments = model.find('Arguments').getchildren()
+            args = {}
+            for arg in arguments:
+                args[arg.tag] = arg.text
 
-        t2 = threading.Thread(target=self.LoadDataModels, args=(datamodels, conn_ids,), name="LoadDataModel")
-        self.logicCanvasThreads[t2.name] = t2
-        t2.start()
+            sPrint('Adding model: %s...' % name)
 
+            # save these coordinates for drawing once the model is loaded
+            self.set_model_coords(id, x=x, y=y)
 
+            # load the model in the engine
+            engine.addModel(id=id, attrib=args)
 
-    def waiting(self, total, links, transform, temporal_transformations, spatial_transformations):
+            # draw the model
+            wx.CallAfter(self.FloatCanvas.Draw)
+
+    def waiting(self, total, links):
         #  This method waits for all the models in the file to be loaded before linking
-        elog.info("Waiting for all models to be loaded before creating link")
         while len(self.models) < total:
             time.sleep(0.5)
-        self.LoadLinks(links, transform, temporal_transformations, spatial_transformations)
-        elog.debug(str(len(self.models)) + " were models loaded")
+        self.LoadLinks(links)
         return
 
     def LoadModels(self, models):
@@ -796,42 +801,66 @@ class LogicCanvas(ViewCanvas):
                               title=attrib['name'], uniqueId=attrib['resultid'])
         wx.CallAfter(self.FloatCanvas.Draw)
 
-    def LoadLinks(self, links, transformation, temp_trans, spat_trans):
+    def LoadLinks(self, links):
+
+        # get all known transformations
+        space = SpatialInterpolation()
+        time = TemporalInterpolation()
+        spatial_transformations = {i.name(): i for i in space.methods()}
+        temporal_transformations = {i.name(): i for i in time.methods()}
+
         for link in links:
-            attrib = self.appendChild(link)
 
-            R1, R2 = None, None  # Rename R1 to From Model and R2 to To Model
-            for key, value in self.models.iteritems():
-                if value == attrib['from_id']:
-                        R1 = key
-                elif value == attrib['to_id']:
-                        R2 = key
-            if R1 is None or R2 is None:
+            # get 'from' and 'to' model attributes
+            from_model = None
+            from_model_id = link.find('./from_id').text
+            from_model_item = link.find('./from_item').text
+            from_model_name = link.find('./from_name').text
+            to_model = None
+            to_model_id = link.find('./to_id').text
+            to_model_item = link.find('./to_item').text
+            to_model_name = link.find('./to_name').text
+
+            # Find the model objects that correspond to from_model_id and to_model_id
+            for canvas_model_object, canvas_model_id in self.models.iteritems():
+                if canvas_model_id == from_model_id:
+                    from_model = canvas_model_object
+                elif canvas_model_id == to_model_id:
+                    to_model = canvas_model_object
+
+            # display error message if both models don't exist on the canvas
+            if from_model is None or to_model is None:
                 # raise Exception('Could not find Model identifier in loaded models')
-                elog.error("Could not find model id in loaded models")
-                return
+                elog.critical("Failed to create link between %s and %s." % (from_model_name, to_model_name))
+                sPrint("Failed to create link between %s and %s." % (from_model_name, to_model_name), MessageType.CRITICAL)
 
-            temporal = None
-            spatial = None
-            # set the temporal and spatial interpolation
-            for transform_child in transformation:
-                    if transform_child.text.upper() != 'NONE':
-                        if transform_child.tag == 'temporal':
-                            temporal = temp_trans[transform_child.text]
-                        elif transform_child.tag == 'spatial':
-                            spatial = spat_trans[transform_child.text]
+            # if both models exist on the canvas, create and draw the link
+            else:
 
-            # create the link
-            l = engine.addLink(source_id=attrib['from_id'],
-                               source_item=attrib['from_item'],
-                               target_id=attrib['to_id'],
-                               target_item=attrib['to_item'],
-                               spatial_interpolation=spatial,
-                               temporal_interpolation=temporal
-                               )
+                sPrint('Adding link between: %s and %s... ' % (from_model_name, to_model_name))
 
-            # this draws the line
-            wx.CallAfter(self.createLine, R1, R2)
+                # get the spatial and temporal transformations
+                transformation = link.find("./transformation")
+                temporal_transformation_name = transformation.find('./temporal').text
+                spatial_transformation_name = transformation.find('./spatial').text
+
+                # set the transformation values
+                temporal = temporal_transformations[temporal_transformation_name] if temporal_transformation_name.lower() != 'none' else None
+                spatial = spatial_transformations[spatial_transformation_name] if spatial_transformation_name.lower() != 'none' else None
+
+                # create the link
+                l = engine.addLink(source_id=from_model_id,
+                                   source_item=from_model_item,
+                                   target_id=to_model_id,
+                                   target_item=to_model_item,
+                                   spatial_interpolation=spatial,
+                                   temporal_interpolation=temporal
+                                   )
+
+                # this draws the line
+                wx.CallAfter(self.createLine, from_model, to_model)
+
+
 
     def SetLoadingPath(self, path):
         self.loadingpath = path
@@ -873,4 +902,4 @@ class LogicCanvas(ViewCanvas):
 
     def simulation_finished(self, evt):
         # todo: this should open a dialog box showing the execution summary
-        elog.info('Simulation finished')
+        pass

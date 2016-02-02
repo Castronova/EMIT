@@ -7,8 +7,9 @@ from utilities import spatial
 from api_old.ODM2.Simulation.services import readSimulation
 from wx.lib.pubsub import pub as Publisher, __all__
 from gui.controller.ModelCtrl import LogicModel
+from gui.controller.SimulationPlotCtrl import SimulationPlotCtrl
 from gui.controller.PlotCtrl import LogicPlot
-from gui.controller.PreRunCtrl import logicPreRun
+from gui.controller.PreRunCtrl import PreRunCtrl
 import coordinator.engineAccessors as engine
 from gui import events
 from coordinator.emitLogging import elog
@@ -16,6 +17,8 @@ import csv
 import time
 import os
 from osgeo import ogr
+from gui.controller.TimeSeriesObjectCtrl import TimeSeriesObjectCtrl
+from sprint import *
 
 
 #todo:  this needs to be split up into view and logic code
@@ -185,7 +188,7 @@ class CanvasContextMenu(wx.Menu):
         self.parent.run()
 
     def OnRunModel(self, e):
-        preRunDialog = logicPreRun()
+        preRunDialog = PreRunCtrl(self.parent)
         preRunDialog.Show()
 
 
@@ -317,7 +320,7 @@ class ContextMenu(wx.Menu):
             if path[-4] != '.':
                 path += '.csv'
             file = open(path, 'w')
-
+#
             writer = csv.writer(file, delimiter=',')
 
             obj = self.__list_obj
@@ -346,7 +349,6 @@ class ContextMenu(wx.Menu):
             writer.writerows(data)
 
             file.close()
-
 
     def Selected(self, list_obj=None, list_id=None):
         if list_id is not None and list_obj is not None:
@@ -377,66 +379,34 @@ class ContextMenu(wx.Menu):
                 dates.append(val.ValueDateTime)
                 values.append(val.DataValue)
 
-            return dates,values,obj
+            return dates, values, obj
 
     def OnPlot(self, event):
 
+        # get the list control objects
         obj = self.__list_obj
+        objects = obj.GetObjects()
 
-        # create a plot frame
-        PlotFrame = None
-        xlabel = None
-        title = None
-        variable = None
-        units = None
-        warning = None
-        x_series = []
-        y_series = []
-        labels = []
-        id = self.parent.GetFirstSelected()
-        while id != -1:
-            # get the result
-            resultID = obj.GetItem(id, 0).GetText()
+        # dictionary for storing table records
+        variable_list_entries = {}
 
-            # get data for this row
-            x,y, resobj = self.getData(resultID)
+        # get the first selected item
+        item = self.parent.GetFirstSelected()
 
-            if PlotFrame is None:
-                # set metadata based on first series
-                ylabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
+        # loop through all selected items and populate the table records dictionary
+        while item != -1:
 
-                # todo: this needs to change based on the axis format decided by matplotlib
-                xlabel = 'DateTime'
+            # get the object associated with this id
+            object = objects[item]
 
-                # todo: this title must be more specific.  e.g. include gage location?
-                title = '%s' % (resobj.VariableObj.VariableCode)
-
-                # save the variable and units to validate future time series
-                variable = resobj.VariableObj.VariableCode
-                units = resobj.UnitObj.UnitsName
-                PlotFrame = LogicPlot(self.Parent, title=title, ylabel=ylabel, xlabel=xlabel)
-
-            if resobj.VariableObj.VariableCode == variable and resobj.UnitObj.UnitsName == units:
-                # store the x and Y data
-                x_series.append(x)
-                y_series.append(y)
-                labels.append(resultID)
-
-            elif warning is None:
-                warning = 'Multiple Variables/Units were selected.  I currently don\'t support plotting heterogeneous time series. ' +\
-                          'Some of the selected time series will not be shown :( '
+            # save the variable metadata
+            variable_list_entries[object.resultid] = [object.featurecode, object.variable, object.unit, object.type, object.organization, object.date_created]
 
             # get the next selected item
-            id = obj.GetNextSelected(id)
+            item = self.parent.GetNextSelected(item)
 
-        if warning:
-            dlg = wx.MessageDialog(self.parent, warning, '', wx.OK | wx.ICON_WARNING)
-            dlg.ShowModal()
-            dlg.Destroy()
-
-        # plot the data
-        PlotFrame.plot(xlist=x_series, ylist=y_series, labels=labels)
-        PlotFrame.Show()
+        # instantiate the time series control
+        TimeSeriesObjectCtrl(parentClass=self, timeseries_variables=variable_list_entries)
 
     def OnDelete(self,event):
         if 'local' in self.parent.Parent.connection_combobox.GetStringSelection():
@@ -461,9 +431,30 @@ class TimeSeriesContextMenu(ContextMenu):
     def __init__(self, parent):
         super(TimeSeriesContextMenu, self).__init__(parent)
 
+        # deactivate menu items
+        menuID = self.FindItem('Add')
+        self.FindItemById(menuID).Enable(False)
+
+        menuID = self.FindItem('Delete')
+        self.FindItemById(menuID).Enable(False)
+
+        menuID = self.FindItem('Export')
+        self.FindItemById(menuID).Enable(False)
+
+
 class SimulationContextMenu(ContextMenu):
     def __init__(self, parent):
         super(SimulationContextMenu, self).__init__(parent)
+
+        # deactivate menu items
+        menuID = self.FindItem('Add')
+        self.FindItemById(menuID).Enable(False)
+
+        menuID = self.FindItem('Delete')
+        self.FindItemById(menuID).Enable(False)
+
+        menuID = self.FindItem('Export')
+        self.FindItemById(menuID).Enable(False)
 
     def getData(self,simulationID):
 
@@ -471,19 +462,30 @@ class SimulationContextMenu(ContextMenu):
         if session is not None:
             if session.__module__ == 'db.dbapi_v2':
                 conn = session
-                # results = conn.read.getResultsBySimulationID(simulationID)
-                results = conn.read.getResultByResultID(simulationID)
+
+                results = []
+                try:
+                    sPrint('getting results for simulationId: %s' % simulationID , MessageType.DEBUG)
+                    # results = conn.read.getResultsBySimulationID(simulationID)
+                    results = conn.read.getResultsBySimulationID(simulationID)
+                except Exception, e:
+                    sPrint('Encountered and exeption: %s' % e, MessageType.ERROR)
+                finally:
+                    sPrint('Found %d result records: ' % len(results), MessageType.DEBUG)
+
+                if len(results) == 0:
+                    sPrint('No results found for simulation id %s. There must be something wrong with the database :(' % simulationID, MessageType.ERROR)
 
                 res = {}
                 for r in results:
                     variable_name = r.VariableObj.VariableCode
-                    result_values = conn.read.getTimeSeriesResultValuesByResultID(r.ResultID)
 
-                    dates = []
-                    values = []
-                    for val in result_values:
-                        dates.append(val.ValueDateTime)
-                        values.append(val.DataValue)
+                    sPrint('retrieving time series results for resultid: %d' % r.ResultID, MessageType.DEBUG)
+                    result_values = conn.read.getTimeSeriesResultValuesByResultId(r.ResultID)
+
+                    sPrint('parsing dates and values from pandas object', MessageType.DEBUG)
+                    dates = list(result_values.ValueDateTime)
+                    values = list(result_values.DataValue)
 
                     if variable_name in res:
                         res[variable_name].append([dates, values, r])
@@ -517,70 +519,43 @@ class SimulationContextMenu(ContextMenu):
                 return res
 
     def OnPlot(self, event):
-
         obj, id = self.Selected()
 
-        # create a plot frame
-        PlotFrame = None
-        xlabel = None
-        title = None
-        variable = None
-        units = None
-        warning = None
-        x_series = []
-        y_series = []
-        labels = []
+        #  dictionary for storing table records
+        variable_list_entries = {}
+
         id = self.parent.GetFirstSelected()
-        while id != -1:
 
-            # get the result
-            simulationID = obj.GetItem(id, 0).GetText()
+        if id != -1:
 
+            simulation_id = obj.GetItem(id, 0).GetText()
             name = obj.GetItem(id, 1).GetText()
 
-            # get data for this row
-            results = self.getData(simulationID)
-            if results is None:
-                return
+            #  get the data for this row
+            results = self.getData(simulation_id)
+            if results is not None:
+                keys = results.keys()[0]
 
-            if PlotFrame is None:
+                #  Get the variables/models that belong to a simulation
+                plot_data = {}
+                sub_variables = results[keys]
+                for sub in sub_variables:
+                    variable_list_entries[sub[2].ResultID] = [sub[2].VariableObj.VariableCode,
+                                                              sub[2].UnitsObj.UnitsAbbreviation,
+                                                              sub[2].FeatureActionObj.ActionObj.BeginDateTime,
+                                                              sub[2].FeatureActionObj.ActionObj.EndDateTime,
+                                                              sub[2].VariableObj.VariableNameCV,
+                                                              sub[2].FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName]
 
-                # todo: plot more than just this first variable
-                key = results.keys()[0]
+                    # Get the data belonging to the model
+                    plot_data[sub[2].ResultID] = [sub[0], sub[1]]
 
-                resobj = results[key][0][2]
-
-                # set metadata based on first series
-                ylabel = '%s, [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
-
-                # save the variable and units to validate future time series
-                variable = resobj.VariableObj.VariableNameCV
-                units = resobj.UnitObj.UnitsName
-                title = '%s: %s [%s]' % (name, variable, units)
-
-                PlotFrame = LogicPlot(self.Parent, ylabel=ylabel, title=title)
-
-                for x,y,resobj in results[key]:
-                    # store the x and Y data
-                    x_series.append(x)
-                    y_series.append(y)
-                    labels.append(int(resobj.ResultID))
-
-            elif warning is None:
-                warning = 'Multiple Variables/Units were selected.  I currently don\'t support plotting heterogeneous time series. ' +\
-                          'Some of the selected time series will not be shown :( '
-
-            # get the next selected item
-            id = obj.GetNextSelected(id)
-
-        if warning:
-            dlg = wx.MessageDialog(self.parent, warning, '', wx.OK | wx.ICON_WARNING)
-            dlg.ShowModal()
-            dlg.Destroy()
-
-        # plot the data
-        PlotFrame.plot(xlist=x_series, ylist=y_series, labels=labels)
-        PlotFrame.Show()
+                sim_plot_ctrl = SimulationPlotCtrl(parentClass=self, timeseries_variables=variable_list_entries)
+                sim_plot_ctrl.SetTitle("Results for Simulation: " + str(name))
+                sim_plot_ctrl.plot_data = plot_data
+        else:
+            elog.debug("Failed, perhaps no model has been selected")
+            elog.info("Detected that no simulation was selected")
 
     def onExport(self, event):
         #  User will choose where to save the csv file

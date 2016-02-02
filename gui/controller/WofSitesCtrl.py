@@ -1,29 +1,53 @@
-__author__ = 'tonycastronova'
-
-import os
 import csv
-import time
-import wx
-import wx.calendar as cal
-from gui.views.WofSitesView import WofSitesViewer
-from coordinator.emitLogging import elog
-import coordinator.engineAccessors as engine
-import uuid
 import datetime as dt
+import os
+import time
 
-class WofSitesViewerCtrl(WofSitesViewer):
-    def __init__(self, parent, siteObject):
+import wx
 
-        WofSitesViewer.__init__(self, parent, siteObject)
+import coordinator.engineAccessors as engine
+from coordinator.emitLogging import elog
+from gui.views.TimeSeriesPlotView import TimeSeriesPlotView
+import threading
+from sprint import *
 
-        self.Bind(wx.EVT_BUTTON, self.previewPlot, self.PlotBtn)
-        # self.Bind(wx.EVT_BUTTON, self.startDateCalender, self.startDateBtn)
+class WofSitesViewerCtrl(TimeSeriesPlotView):
+    def __init__(self, parent, siteObject, api):
+        self.wof = api
+
+        table_cols = ["Variable Name", "Unit", "Category", "Type", "Begin Date Time", "End Date Time", "Description"]
+        TimeSeriesPlotView.__init__(self, parent, siteObject.site_name, table_cols)
+
+        self.siteobject = siteObject
+        # self.Bind(wx.EVT_BUTTON, self.previewPlot, self.PlotBtn)
+        self.Bind(wx.EVT_BUTTON, self.onPreview, self.PlotBtn)
         self.Bind(wx.EVT_DATE_CHANGED, self.setStartDate, self.startDatePicker)
-        # self.Bind(wx.EVT_BUTTON, self.endDateCalender, self.endDateBtn)
         self.Bind(wx.EVT_DATE_CHANGED, self.setEndDate, self.endDatePicker)
         self.Bind(wx.EVT_BUTTON, self.onExport, self.exportBtn)
         self.Bind(wx.EVT_BUTTON, self.addToCanvas, self.addToCanvasBtn)
-        # self.isCalendarOpen = False  # Used to prevent calendar being open twice
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.enableBtns)
+        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.disableBtns)
+        self.disableBtns(None)
+        self.done_querying = True
+
+        # instantiate a container for the wof data
+        self.wofSeries = wofSeries()
+
+        # threaded web service call so that the gui does not hang
+        t = threading.Thread(target=self.populateVariablesList, args=(api, siteObject.site_code), name='WOF_GetVariables')
+        t.setDaemon(True)
+        t.start()
+
+    def enableBtns(self, event):
+        if self.done_querying:
+            self.PlotBtn.Enable()
+            self.exportBtn.Enable()
+            self.addToCanvasBtn.Enable()
+
+    def disableBtns(self, event):
+        self.PlotBtn.Disable()
+        self.exportBtn.Disable()
+        self.addToCanvasBtn.Disable()
 
     def setEndDate(self, event):
         self.end_date = self.endDatePicker.GetValue()
@@ -32,7 +56,7 @@ class WofSitesViewerCtrl(WofSitesViewer):
         self.start_date = self.startDatePicker.GetValue()
 
     def _preparationToGetValues(self):
-        var = self.getSelectedVariableCode()
+        code = self.getSelectedVariableCode()
         parent = self.Parent
         siteobject = self.siteobject
 
@@ -41,16 +65,19 @@ class WofSitesViewerCtrl(WofSitesViewer):
                                      "%Y-%m-%dT%H:%M:%S")
         end = dt.datetime.strptime('%sT%s'%(self.end_date.FormatISODate(), self.end_date.FormatISOTime()),
                                      "%Y-%m-%dT%H:%M:%S")
-        return end, parent, siteobject, start, var
+        return end, parent, siteobject, start, code
 
     def addToCanvas(self, event):
         end, parent, siteobject, start, variable_code = self._preparationToGetValues()
 
+        var_codes_temp = self.getAllSelectedVariableSiteCodes()
+        if len(var_codes_temp) > 1:
+            elog.warning("We do not support adding more then one item to the canvas at this point. We added " + var_codes_temp[0])
         if variable_code is None:
             # no table row selected
             return
 
-        args = dict(type='WaterOneFlow',
+        args = dict(type='wof',
                     wsdl=self.parent.api.wsdl,
                     site=siteobject.site_code,
                     variable=variable_code,
@@ -74,18 +101,16 @@ class WofSitesViewerCtrl(WofSitesViewer):
             d["begin_date"] = value[4]
             d["end_date"] = value[5]
             d["description"] = value[6]
-            temp.append(dicToObj(d))
+            temp.append(DicToObj(d))
         return temp
 
-    # def endDateCalender(self, event):
-    #     if self.isCalendarOpen:
-    #         pass
-    #     else:
-    #         Calendar(self, -1, "Calendar", "end")
-
     def onExport(self, event):
-        var = self.Parent.selectedVariables = self.getSelectedVariableSiteCode()
-        if var > 0:
+        var_codes_temp = self.getAllSelectedVariableSiteCodes()
+        var_code = self.Parent.selectedVariables = self.getSelectedVariableSiteCode()
+        if len(var_codes_temp) > 1:
+            elog.warning("We currently only support exporting 1 variable at a time, we are exporting: " + var_codes_temp[0] + " for you")
+        var_code = var_codes_temp[0]
+        if var_code > 0 :
             save = wx.FileDialog(parent=self.GetTopLevelParent(), message="Choose Path",
                                  defaultDir=os.getcwd(),
                                  wildcard="CSV Files (*.csv)|*.csv",
@@ -97,17 +122,16 @@ class WofSitesViewerCtrl(WofSitesViewer):
                 file = open(path, 'w')
                 writer = csv.writer(file, delimiter=',')
                 varInfo = self.getSelectedVariable()
-                end, parent, siteobject, start, var = self._preparationToGetValues()
+                end, parent, siteobject, start, var_code = self._preparationToGetValues()
                 values = parent.getParsedValues(siteobject, start, end)
 
-                writer.writerow([
-                                    "#-------------------------Disclaimer:  This is a data set that was exported by EMIT ... use at your own risk..."])
+                writer.writerow(["#-------------------------Disclaimer:  This is a data set that was exported by EMIT ... use at your own risk..."])
                 writer.writerow(["#"])
                 writer.writerow(["#Date Exported: %s" % getTodayDate()])
                 writer.writerow(["#Site Name: %s" % siteobject.site_name])
                 writer.writerow(["#Site Code: %s" % siteobject.site_code])
                 writer.writerow(["#Variable Name: %s" % varInfo[0]])
-                writer.writerow(["#Variable Code: %s" % var])
+                writer.writerow(["#Variable Code: %s" % var_code])
                 writer.writerow(["#Unit: %s" % varInfo[1]])
                 writer.writerow(["#Category: %s" % varInfo[2]])
                 writer.writerow(["#Type: %s" % varInfo[3]])
@@ -126,22 +150,24 @@ class WofSitesViewerCtrl(WofSitesViewer):
         else:
             elog.info("Select a variable to export")
 
-    def getSelectedObject(self):
-        code = self.getSelectedVariableSiteCode()
-        for i in range(len(self._objects)):
-            if code == self._objects[i].code:
-                return self._objects[i]
+    def getAllSelectedVariables(self):
+        code = self.getAllSelectedVariableSiteCodes()
+        variables = []
+        for i in code:
+            variables.append(self._data[i])
+        return variables
 
     def getSelectedVariable(self):
         code = self.getSelectedVariableSiteCode()
         return self._data[code]
 
-    def getSelectedVariableName(self):
+    def getAllSelectedVariableName(self):
+        vars = []
         num = self.variableList.GetItemCount()
         for i in range(num):
             if self.variableList.IsSelected(i):
-                checkedVar = self.variableList.GetItemText(i)
-                return checkedVar
+                vars.append(self.variableList.GetItemText(i))
+        return vars
 
     def getSelectedVariableCode(self):
         variableCode = None
@@ -153,49 +179,128 @@ class WofSitesViewerCtrl(WofSitesViewer):
                 break
         return variableCode
 
-    def getSelectedVariableSiteCode(self):
-        # variable_name_code = []
+    def getAllSelectedVariableSiteCodes(self):
+        sites = []
         num = self.variableList.GetItemCount()
-        # checkedVar = []
         for i in range(num):
             if self.variableList.IsSelected(i):
                 v_name = self.variableList.GetItemText(i)
-                # variable_name_code.append((v_name, self.getSiteCodeByVariableName(v_name)))
+                sites.append(self.getSiteCodeByVariableName(v_name))
+        return sites
+
+    def getSelectedVariableSiteCode(self):
+        num = self.variableList.GetItemCount()
+        for i in range(num):
+            if self.variableList.IsSelected(i):
+                v_name = self.variableList.GetItemText(i)
                 return self.getSiteCodeByVariableName(v_name)
-                # checkedVar.append(self.variableList.GetItemText(i))
-
-        # print checkedVar
-
-        # if len(checkedVar) > 0:
-        #     sitecode = self.getSiteCodeByVariableName(checkedVar)
-        #     return sitecode
-        # else:
-        #     return 0
-        # return zip(*variable_name_code)
 
     def getSiteCodeByVariableName(self, checkedVar):
         for key, value in self._data.iteritems():
             if value[0] == checkedVar:
-                return key
+                return key        # Column names
 
-    def previewPlot(self, event):
-        var_code = self.getSelectedVariableSiteCode()
-        var_name = self.getSelectedVariableName()
+    def onPreview(self, event):
 
-        if len(var_code) > 0:
-            self.plot.clearPlot()
+        # update the WOF plot data in a thread so that the gui is not blocked
+        t = threading.Thread(target=self.updatePlotData, name='UpdateWofPlotData')
+        t.setDaemon(True)
+        t.start()
 
-            data = self.Parent.api.getValues(self.siteobject.site_code, var_code,
-                                             self.start_date.FormatISODate(), self.end_date.FormatISODate())
+    def populateVariablesList(self, api, sitecode):
+    # THREADED
+        self.updateStatusBar("Querying ...")
+
+        #  Theading the updateStatusBarLoading to animate loading
+        self.threadStatusBarLoading()
+
+        data = api.buildAllSiteCodeVariables(sitecode)
+        sPrint('Finished querying WOF service for site variables, threaded', MessageType.DEBUG)
+
+        # uses wx callafter to update the variables table.  This is necessary since wx is being called within a thread
+        wx.CallAfter(self.updateVariablesTable, data)
+        self.done_querying = True
+
+    # THREADED
+    def updatePlotData(self):
+        self.updateStatusBar("Querying ...")
+
+        self.threadStatusBarLoading()
+
+        # get selected variables
+        var_codes = self.getAllSelectedVariableSiteCodes()
+        var_names = self.getAllSelectedVariableName()
+
+        # get start and end dates
+        sd = self.start_date.FormatISODate()
+        ed = self.end_date.FormatISODate()
+
+        #   - check which data needs to be queried
+        series_keys = []
+        for i in range(len(var_codes)):
+            # add this series to the wof series container
+            key = self.wofSeries.addDataSeries(self.siteobject.site_code, var_codes[i], var_names[i], sd, ed)
+
+            # save the key that is returned
+            series_keys.append(key)
+
+            sPrint('Added key to wof series container: %s' % key, MessageType.DEBUG)
+
+        # prune to only the keys that were added
+        pruned = self.wofSeries.prune(series_keys)
+
+        # query which data series are missing data
+        series_missing_data = self.wofSeries.getSeriesMissingData()
+
+        #   - query wof values
+        for series in series_missing_data:
+
+            # query the data using WOF
+            sPrint('Querying WOF using this following parameters: %s, %s, %s, %s ' % (series.site_code, series.var_code, series.sd, series.ed), MessageType.INFO)
+            data = self.wof.getValues(series.site_code, series.var_code, series.sd, series.ed)
+
+            # save these data to the wofSeries object
+            self.wofSeries.addData(series, data)
+
+        # update the plot canvase
+        wx.CallAfter(self.updatePlotArea, series_keys)
+
+        self.done_querying = True
+
+    # THREADED
+    def threadStatusBarLoading(self):
+        #  Theading the updateStatusBarLoading to animate loading
+        self.done_querying = False
+        status_bar_loading_thread = threading.Thread(target=self.updateStatusBarLoading, name="StatusBarLoading")
+        status_bar_loading_thread.setDaemon(True)
+        status_bar_loading_thread.start()
+
+    def updatePlotArea(self, series_keys):
+        """
+        Updates the WOF plot with the selected data
+        Args:
+            series_keys: list of series keys of the data that will be plot
+        Returns: None
+        """
+
+        self.plot.clearPlot()
+
+        for key in series_keys:
+
+            series_info = self.wofSeries.series_info[key]
+            data = self.wofSeries.getData(key)
+
             plotData = []
             noData = None
+
             # make sure data is found
             if data is not None:
+
                 # get the first data element only
                 if len(data[0].values[0]) > 1:
                     values = data[0].values[0].value
                 else:
-                    elog.info("There are no values.  Try selecting a bigger date range")
+                    elog.info("There are no values.  Try selecting a larger date range")
                     return
 
                 for value in values:
@@ -203,12 +308,34 @@ class WofSitesViewerCtrl(WofSitesViewer):
 
                 noData = data[0].variable.noDataValue
 
-            self.plot.setTitle(self.getSelectedVariableName())
-            self.plot.setAxisLabel("Date Time", data[0].variable.unit.unitName)
-            self.plot.plotData(plotData, var_name, noData)
+            # self.plot.setTitle(self.getSelectedVariableName())
+            # self.plot.setAxisLabel(" ", data[0].variable.unit.unitName)
+            ylabel = data[0].variable.unit.unitName
+            self.plot.plotData(plotData, series_info.var_name, noData, ylabel)
 
-    def populateVariablesList(self, api, sitecode):
-        data = api.buildAllSiteCodeVariables(sitecode)
+
+    # THREADED
+    def updateStatusBarLoading(self):
+        #  self.done_querying must be set to True in the method that is running the long process
+        status_list = ["Querying .", "Querying ..", "Querying ...", "Querying ....", "Querying ....."]
+        i = 0
+        self.disableBtns(None)
+        while not self.done_querying:  # self.done_querying is created in the method that calls this one
+            if i < len(status_list):
+                self.updateStatusBar(status_list[i])
+                i += 1
+            else:
+                i = 0
+                self.updateStatusBar(status_list[i])
+            time.sleep(0.5)
+        self.enableBtns(None)
+        self.updateStatusBar("Ready")
+
+    def updateStatusBar(self, text):
+        self.status_bar.SetStatusText(str(text))
+        wx.Yield()
+
+    def updateVariablesTable(self, data):
         self._data = data
         self._objects = self.dicToObj(data)
         rowNumber = 0
@@ -223,87 +350,98 @@ class WofSitesViewerCtrl(WofSitesViewer):
                 colNumber += 1
             colNumber = 0
             rowNumber += 1
-
         self.autoSizeColumns()
         self.alternateRowColor()
 
-    # def startDateCalender(self, event):
-    #     if self.isCalendarOpen:
-    #         pass
-    #     else:
-    #         Calendar(self, -1, "Calendar", "start")
+
+class wofSeries(object):
+    """
+    This class stores the wof data series that currently plotted in the WOFSitesViewer.  It has been optimized to
+    reduce unnecessary webservice calls (i.e. redundant calls).
+    """
+
+    def __init__(self, cache = 5):
+
+        self.series_info = {}
+        self.data = {}
+        self.cache = cache
+
+    def getDataSeries(self):
+        return self.series_info
+
+    def getData(self, key):
+        return self.data[key]
 
 
-# class Calendar(wx.Dialog):
-#     def __init__(self, parent, id, title, type):
-#         wx.Dialog.__init__(self, parent, id, title, style=wx.STAY_ON_TOP | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^
-#                                                                            wx.MAXIMIZE_BOX)
-#         self.type = type
-#
-#         self.Parent.isCalendarOpen = True
-#
-#         vbox = wx.BoxSizer(wx.VERTICAL)
-#
-#         # self.calendar = cal.CalendarCtrl(self, -1, style=cal.CAL_SHOW_HOLIDAYS | cal.CAL_SEQUENTIAL_MONTH_SELECTION)
-#         self.datepicker = wx.DatePickerCtrl(self, -1, size=(100, 20), style=wx.DP_DROPDOWN)
-#
-#         # self.rememberCalendarPos()
-#
-#         # vbox.Add(self.calendar, 0, wx.EXPAND | wx.ALL, 5)
-#         vbox.Add(self.datepicker, 0, wx.EXPAND | wx.ALL, 5)
-#
-#         vbox.Add((-1, 20))
-#
-#         hbox = wx.BoxSizer(wx.HORIZONTAL)
-#         self.text = wx.StaticText(self, -1, 'Date')
-#         hbox.Add(self.text)
-#         vbox.Add(hbox, 0, wx.LEFT, 8)
-#
-#         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
-#         btn = wx.Button(self, -1, 'Ok')
-#         hbox2.Add(btn, 1)
-#         vbox.Add(hbox2, 0, wx.ALIGN_CENTER | wx.ALL, 5)
-#
-#         self.Bind(wx.EVT_BUTTON, self.OnQuit, id=btn.GetId())
-#         self.Bind(wx.EVT_CLOSE, self.OnQuit)
-#
-#         self.SetSizerAndFit(vbox)
-#
-#         self.Show(True)
-#         self.Centre()
-#
-#     def OnQuit(self, event):
-#         self.setCalendarDates()
-#         if self.validateDates():
-#             self.Parent.isCalendarOpen = False
-#             self.Destroy()
-#         else:
-#             self.text.SetLabel("Make start before end")
-#
-#     def rememberCalendarPos(self):
-#         if self.type == "start":
-#             self.calendar.SetDate(self.Parent.startDate)
-#         else:
-#             self.calendar.SetDate(self.Parent.endDate)
-#
-#     def setCalendarDates(self):
-#         if self.type == "start":
-#             self.Parent.startDate = self.calendar.GetDate()
-#             self.Parent.startDateBtn.SetLabelText(self.calendar.GetDate().FormatDate())
-#         else:
-#             self.Parent.endDate = self.calendar.GetDate()
-#             self.Parent.endDateBtn.SetLabelText(self.calendar.GetDate().FormatDate())
-#
-#     def validateDates(self):
-#         if self.Parent.startDate < self.Parent.endDate:
-#             elog.debug("Start is before End So its GOOD ")
-#             return True
-#         else:
-#             elog.debug("End date must be after start date")
-#             return False
+    def addDataSeries(self, site_code, var_code, var_name, sd, ed):
+        info = seriesInfo(site_code, var_code, var_name, sd, ed)
+
+        if str(info) not in self.series_info.keys():
+            self.series_info[str(info)] = info
+
+        return str(info)
+
+    def addData(self, seriesInfo, data):
+
+        self.data[str(seriesInfo)] = data
+
+    def clearDataSeries(self):
+        self.series_info = {}
+        self.data = {}
+
+    def prune(self, keys):
+        """
+        Prunes the data series to contain only the keys provided as args
+        Args:
+            keys: list of keys to keep in the wofSeries object
+        Returns: list of removed keys
+        """
+
+        # find which keys to remove
+        keys_to_remove = [k for k in self.series_info.keys() if k not in keys]
+
+        total_series = len(self.series_info.keys())
+
+        # only remove data series if storage exceeds the cache
+        if total_series > self.cache:
+
+            # remove series info and data for each of these keys
+            for k in keys_to_remove:
+                sPrint('Pruning the following keys: %s' % k, MessageType.DEBUG)
+                self.series_info.pop(k)
+                self.data.pop(k)
+
+                # exits pruning loop when storage is within cache limit again
+                if len(self.series_info.keys()) <= self.cache:
+                    break
+
+        return keys_to_remove
+
+    def getSeriesMissingData(self):
+        """
+        Determines which of the data series are missing data
+        Returns: seriesInfo objects for all data series that are missing data
+
+        """
+        series_missing_data = []
+        for key in self.series_info.keys():
+            if key not in self.data.keys():
+                series_missing_data.append(self.series_info[key])
+        return series_missing_data
+
+class seriesInfo(object):
+    def __init__(self, site_code, var_code, var_name, sd, ed):
+        self.site_code = site_code
+        self.var_code = var_code
+        self.var_name = var_name
+        self.sd = sd
+        self.ed = ed
+
+    def __str__(self):
+        return '%s__%s__%s__%s' % (self.site_code, self.var_code, self.sd, self.ed)
 
 
-class dicToObj(object):
+class DicToObj(object):
     def __init__(self, dic):
         self.__dict__ = dic
 

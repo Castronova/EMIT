@@ -25,7 +25,7 @@ class Wrapper(base.BaseWrapper):
 
 
     def __init__(self, args):
-        super(Wrapper, self).__init__(self)
+        super(Wrapper, self).__init__()
 
         handle = netCDF4.Dataset(args['ncpath'], 'r')
 
@@ -35,7 +35,10 @@ class Wrapper(base.BaseWrapper):
         xdim = args['xdim']
         ydim = args['ydim']
         tunit = {args['tunit']: 1}
-        st = parser.parse(args['starttime'])
+        if isinstance(args['starttime'], datetime.datetime):
+            st = args['starttime']
+        else:
+            st = parser.parse(args['starttime'])
 
         # make sure the variables provided exist in the nc file
         assert tdim in variables, 'time variable name not specified.  Cannot continue'
@@ -71,15 +74,22 @@ class Wrapper(base.BaseWrapper):
 
 
         # loop through the remaining variables and expose them as outputs
-        for var in variables:
+        # for var in variables:
+        for v in range(len(variables)):
+
+            var = variables[v]
 
             # create a unit
             unit = stdlib.Unit()
-            unit.UnitName(handle.variables[var].units)
+
+            unit.UnitName(handle.variables[var].units if 'units' in dir(handle.variables[var]) else 'N/A')
+            unit.UnitTypeCV("N/A")
+            unit.UnitAbbreviation("N/A")
 
             # create a variable
             variable = stdlib.Variable()
             variable.VariableNameCV(handle.variables[var].name)
+            variable.VariableDefinition("N/A")
 
             # create geometries
             geoms = geometry.build_point_geometries(xcoords, ycoords)
@@ -95,11 +105,14 @@ class Wrapper(base.BaseWrapper):
             # flatten each timestep of the data
             values = [v.flatten() for v in handle.variables[var][:]]
 
-            # set these data
-            oei.setValues2(values, times)
+            # set these data.  Skip occurrences with mismatched values and times arrays
+            if len(values) == len(times):
+                success = oei.setValues2(values, times)
 
-            # save the oei
-            self.outputs(oei)
+                # only expose the exchange item if data was set properly
+                if success:
+                    # save the oei
+                    self.outputs(oei)
 
         # set metadata
         name = args['ncpath'].split('/')[-1]

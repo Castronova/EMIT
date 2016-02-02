@@ -10,7 +10,7 @@ from coordinator.emitLogging import elog
 import numpy as np
 from distutils.version import LooseVersion
 
-class topmodel(feed_forward.feed_forward_wrapper):
+class topmodel(feed_forward.Wrapper):
 
 
     def __init__(self,config_params):

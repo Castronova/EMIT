@@ -38,5 +38,3 @@ class ViewSpatialPlot(wx.Panel):
 
         self.intext = plt.figtext(0.12, 0.94, " ", fontsize='large', color='b', ha ='left')
         self.outtext = plt.figtext(0.9, 0.94, " ",fontsize='large', color='r', ha ='right')
-
-

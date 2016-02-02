@@ -9,17 +9,14 @@ This approach was inspired by Christian Blouin, who also wrote the initial
 version of the code.
 
 """
-from wx.lib.pubsub import pub as Publisher
+import numpy as N
 import wx
-## fixme: events should live in their own module, so all of FloatCanvas
-##        wouldn't have to be imported here.
 from wx.lib.floatcanvas import FloatCanvas, Resources
 from wx.lib.floatcanvas.Utilities import BBox
-import numpy as N
 from wx.lib.pubsub import pub as Publisher
 
-# from CanvasController import CanvasController
-# from gui.controller.logicCanvas import LogicCanvas
+
+## fixme: events should live in their own module, so all of FloatCanvas
 
 class Cursors(object):
     """

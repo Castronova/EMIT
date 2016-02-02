@@ -1,21 +1,26 @@
-__author__ = 'Mario'
-from gui.controller.DirectoryCtrl import LogicDirectory
-from gui.controller.ToolboxCtrl import LogicToolbox
-from gui.controller.CanvasCtrl import LogicCanvas
+import os
+import threading
+
 import wx
 import wx.html2
-from wx.lib.pubsub import pub as Publisher
+import time
 import wx.lib.agw.aui as aui
-from gui import events
 from wx.lib.newevent import NewEvent
-from coordinator.emitLogging import elog
-from LowerPanelView import viewLowerPanel
-import os
-from environment import env_vars
-from gui.controller.NetcdfCtrl import NetcdfCtrl
-import coordinator.engineAccessors as engine
-import wrappers
+from wx.lib.pubsub import pub as Publisher
 
+import environment
+from LowerPanelView import viewLowerPanel
+from coordinator.emitLogging import elog
+from coordinator.engineManager import Engine
+from gui import events
+from gui.controller.CanvasCtrl import LogicCanvas
+from gui.controller.DirectoryCtrl import LogicDirectory
+from gui.controller.NetcdfCtrl import NetcdfCtrl
+from gui.controller.PreRunCtrl import AddNewUserDialog
+from gui.controller.ToolboxCtrl import LogicToolbox
+from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
+
+import coordinator.users as users
 # create custom events
 wxCreateBox, EVT_CREATE_BOX = NewEvent()
 wxStdOut, EVT_STDDOUT= NewEvent()
@@ -54,6 +59,72 @@ class ViewEMIT(wx.Frame):
 
         self.defaultLoadDirectory = os.getcwd() + "/models/MyConfigurations/"
 
+
+
+    def loadAccounts(self):
+        known_users = []
+        userjson = os.environ['APP_USER_PATH']
+
+        #  Create the file if it does not exist
+        if os.path.isfile(userjson):
+            with open(userjson, 'r') as file:
+                content = file.read()
+                file.close()
+            if not (content.isspace() or len(content) < 1):  # check if file is empty
+                # file does exist so proceed like normal and there is content in it
+                elog.debug('userjson ' + userjson)
+                with open(userjson, 'r') as f:
+                    known_users.extend(users.BuildAffiliationfromJSON(f.read()))
+                    f.close()
+        else:
+            # file does not exist so we'll create one.
+            file = open(userjson, 'w')
+            file.close()
+
+        return known_users
+
+    def checkUsers(self):
+        userPath = os.environ['APP_USER_PATH']
+        print userPath
+        if os.path.isfile(userPath) == False:
+            file = open(userPath, 'w+')
+            dlg = AddNewUserDialog(self, title="Create User")
+            dlg.CenterOnScreen()
+            dlg.ShowModal()
+        else:
+            users = self.loadAccounts()
+            if len(users) < 1:
+                dlg = AddNewUserDialog(self, title="Create User")
+                dlg.CenterOnScreen()
+                dlg.ShowModal()
+
+        users = self.loadAccounts()
+        userAdded = False
+        no = False
+        if len(users) > 0:
+            userAdded = True
+        while userAdded == False:# and no == False:
+
+            users = self.loadAccounts()
+            if len(users) == 0 and no == False:
+                dial = wx.MessageDialog(None, 'You must add a user to continue', 'Question',
+                    wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
+                if dial.ShowModal() == wx.ID_NO:
+                    pid = os.getpid()
+                    #os.system("kill -9 " + pid)
+                    no = True
+                else:
+                    dlg = AddNewUserDialog(self, title="Create User")
+                    dlg.CenterOnScreen()
+                    dlg.ShowModal()
+            else:
+                userAdded = True
+                self.onClose(None)
+
+    def refreshUserAccount(self):
+        # This method is here because AddNewUserDialog.onOkBtn looks for this method at the end of the function
+        # The refresh was implemented so the pre-run dialog user account box would refresh after adding new user
+        return
 
     def _init_sizers(self):
         self.s = wx.BoxSizer(wx.VERTICAL)
@@ -144,9 +215,11 @@ class ViewEMIT(wx.Frame):
         self.file_menu = wx.Menu()
         Load = self.file_menu.Append(wx.NewId(), '&Load\tCtrl+O', 'Load Configuration')
         Save = self.file_menu.Append(wx.NewId(), '&Save Configuration\tCtrl+S', 'Save Configuration')
+        AddUser = self.file_menu.Append(wx.NewId(), 'Add User', 'Add New User')
         SaveAs = self.file_menu.Append(wx.NewId(), '&Save Configuration As', 'Save Configuration')
         Settings = self.file_menu.Append(wx.NewId(), "Settings...")
         exit = self.file_menu.Append(wx.NewId(), '&Quit\tCtrl+Q', 'Quit application')
+
 
         self._menubar.Append(self.file_menu, "&File")
 
@@ -159,16 +232,18 @@ class ViewEMIT(wx.Frame):
         separator = self.view_menu.Append(wx.NewId(), 'separate', 'separate', wx.ITEM_SEPARATOR)
         MinimizeConsole = self.view_menu.Append(wx.NewId(), '&Console Off', 'Minimizes the Console', wx.ITEM_CHECK)
 
-        defaultview = self.view_menu.Append(wx.NewId(), '&Default View', 'Returns the view to the default (inital) state', wx.ITEM_NORMAL)
+        defaultview = self.view_menu.Append(wx.NewId(), '&Restore Default View', 'Returns the view to the default (initial) state', wx.ITEM_NORMAL)
 
         self._menubar.Append(self.view_menu, "&View")
 
         self.data_menu = wx.Menu()
         self._menubar.Append(self.data_menu, "Data")
         add_file = self.data_menu.Append(wx.NewId(), "&Add CSV File")
+        # todo: implement and enable the CSV menu option below
+        add_file.Enable(False)
         add_netcdf = self.data_menu.Append(wx.NewId(), '&Add NetCDF')
 
-        open_dap_viewer = self.data_menu.Append(wx.NewId(), "&Open Dap Viewer")
+        open_dap_viewer = self.data_menu.Append(wx.NewId(), "&OpenDap Explorer")
 
         self.SetMenuBar(self._menubar)
 
@@ -181,6 +256,7 @@ class ViewEMIT(wx.Frame):
         self.Bind(wx.EVT_MENU, self.LoadConfiguration, Load)
         self.Bind(wx.EVT_MENU, self.Settings, Settings)
         self.Bind(wx.EVT_MENU, self.onClose, exit)
+        self.Bind(wx.EVT_MENU, self.onAddUser, AddUser)
         events.onSaveFromCanvas += self.SaveConfigurationAs
 
         # View Option Bindings
@@ -208,6 +284,11 @@ class ViewEMIT(wx.Frame):
         if file_dialog.ShowModal() == wx.ID_OK:
             path = file_dialog.GetPath()
 
+    def onAddUser(self, event):
+        dlg = AddNewUserDialog(self, title="Create User")
+        dlg.CenterOnScreen()
+        dlg.ShowModal()
+
     def onAddNetcdfFile(self, event):
         file_dialog = wx.FileDialog(self.Parent,
                                     message="Add *.nc file",
@@ -218,23 +299,63 @@ class ViewEMIT(wx.Frame):
         # if a file is selected
         if file_dialog.ShowModal() == wx.ID_OK:
             path = file_dialog.GetPath()
-
-            # print path
-
-            from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
-            NetcdfDetailsCtrl(self.Parent, path)
-
-
-
+            filename = file_dialog.GetFilename()
+            NetcdfDetailsCtrl(self.Parent, path, filename)
 
     def onClose(self, event):
         dial = wx.MessageDialog(None, 'Are you sure to quit?', 'Question',
             wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
-        if dial.ShowModal() == wx.ID_YES:
+        if event == None or dial.ShowModal() == wx.ID_YES:
+
+            # kill multiprocessing
+            e = Engine()
+            msg = e.close()
+            elog.debug('Closing Engine Processes: %s' % msg)
+
+
+            # kill all threads
+
+            threads = {t.name:t for t in threading.enumerate()}
+            mainthread = threads.pop('MainThread')
+
+            elog.debug('Closing EMIT Threads: %s' % msg)
+
+            non_daemon = []
+            for t in threads.itervalues():
+
+                # check if the thread is a daemon, if so, it should not cause any problems
+                if t.isDaemon():
+                    elog.debug('%s daemon=%s' %(t.name, t.isDaemon()))
+                else:
+                    # add this thread to the non-daemon list
+                    non_daemon.append(t)
+
+            for t in non_daemon:
+                elog.warning('%s is not a daemon thread and may cause problems while shutting down' % t.name)
+                t.join(1)
+
+            # determine if there are any non-daemon threads that are still alive
+            non_daemon_and_alive = []
+            for t in threads.itervalues():
+                if not t.isDaemon() and t.isAlive():
+                    non_daemon_and_alive.append(t)
+
+            # attempt to stop non-daemon threads
+            try:
+                for t in non_daemon_and_alive:
+                    t._Thread__stop()
+            except Exception, e:
+                elog.error('Error encountered closing thread %s: %s' % (t.name, e))
+
+            # close the main thread
             self.Destroy()
+            wx.App.ExitMainLoop
+            wx.WakeUpMainThread
+
+
+
 
     def onOpenDapViewer(self, event):
-        print "Open Dap Viewer not implemented yet"
         netcdf = NetcdfCtrl(self)
 
     def defaultview(self, event):
@@ -364,11 +485,11 @@ class viewMenuBar(wx.Frame):
         self.c4 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Error Messages")
         self.c5 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Debug Messages")
 
-        self.c1.SetValue(env_vars.LOGGING_SHOWINFO)
-        self.c2.SetValue(env_vars.LOGGING_SHOWWARNING)
-        self.c3.SetValue(env_vars.LOGGING_SHOWCRITICAL)
-        self.c4.SetValue(env_vars.LOGGING_SHOWERROR)
-        self.c5.SetValue(env_vars.LOGGING_SHOWDEBUG)
+        self.c1.SetValue(int(os.environ['LOGGING_SHOWINFO']))
+        self.c2.SetValue(int(os.environ['LOGGING_SHOWWARNING']))
+        self.c3.SetValue(int(os.environ['LOGGING_SHOWCRITICAL']))
+        self.c4.SetValue(int(os.environ['LOGGING_SHOWERROR']))
+        self.c5.SetValue(int(os.environ['LOGGING_SHOWDEBUG']))
 
         self.saveButton = wx.Button(self.panel, 1, 'Save')
 
@@ -395,14 +516,12 @@ class viewMenuBar(wx.Frame):
         debchk = int(chkvalues['debug'])
         errchk = int(chkvalues['error'])
 
-        env_vars.set_environment_variable('LOGGING', 'showinfo', infchk)
-        env_vars.set_environment_variable('LOGGING', 'showwarning', wrnchk)
-        env_vars.set_environment_variable('LOGGING', 'showcritical', crtchk)
-        env_vars.set_environment_variable('LOGGING', 'showdebug', debchk)
-        env_vars.set_environment_variable('LOGGING', 'showerror', errchk)
 
-        # write these new settings to file
-        env_vars.save_environment()
+        environment.setEnvironmentVar('LOGGING', 'showinfo', infchk)
+        environment.setEnvironmentVar('LOGGING', 'showwarning', wrnchk)
+        environment.setEnvironmentVar('LOGGING', 'showcritical', crtchk)
+        environment.setEnvironmentVar('LOGGING', 'showdebug', debchk)
+        environment.setEnvironmentVar('LOGGING', 'showerror', errchk)
 
         elog.info('Verbosity Settings Saved')
 

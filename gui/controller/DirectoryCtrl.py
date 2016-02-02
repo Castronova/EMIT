@@ -1,15 +1,13 @@
-__author__ = 'tonycastronova'
-
-
 import os
-from gui.views.DirectoryView import ViewDirectory, HomeID, PreviousID, UpID, RefreshID
-from gui.views.ContextView import DirectoryContextMenu
-from gui.views.ModelView import ViewModel
-from gui.controller.ModelCtrl import LogicModel
-from wx.lib.pubsub import pub as Publisher
-import wx
-from coordinator.emitLogging import elog
 
+import wx
+from wx.lib.pubsub import pub as Publisher
+
+from coordinator.emitLogging import elog
+from gui.controller.ModelCtrl import LogicModel
+from gui.views.ContextView import DirectoryContextMenu
+from gui.views.DirectoryView import ViewDirectory, HomeID, PreviousID, UpID, RefreshID
+from sprint import *
 
 class LogicDirectory(ViewDirectory):
     def __init__(self, parent):
@@ -80,6 +78,7 @@ class LogicDirectory(ViewDirectory):
             self.dirCtrl.clearItems()
         except:
             elog.error('Home Not Defined')
+            sPrint('Home is not defined for the directory control')
 
     def OnUpClick(self, event):
         parent = os.path.abspath(os.path.join(self.dirCtrl.getcurrentdirectory(), os.pardir))

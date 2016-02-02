@@ -1,51 +1,52 @@
-__author__ = 'Mario'
-
 import os
-import wx
-from gui.views.EMITView import ViewEMIT
-import coordinator.engineAccessors as engine
 import sqlite3 as lite
-from coordinator.emitLogging import elog
-import threading
-from environment import env_vars
+import sys
 
-class LogicEMIT(ViewEMIT):
+import coordinator.engineAccessors as engine
+from gui.views.EMITView import ViewEMIT
+from sprint import *
+
+# todo: the connections file should be a binary object (pickle)
+
+class EMITCtrl(ViewEMIT):
     def __init__(self, parent):
-
-
-        elog.debug("You have %d threads started: " % threading.activeCount())
-        for t in threading.enumerate():
-            elog.debug(t)
 
 
         ViewEMIT.__init__(self, parent)
         self.FloatCanvas = self.Canvas.FloatCanvas
 
-        # todo: the connections file should be a binary object (pickle)
         # connect to known databases
         currentdir = os.path.dirname(os.path.abspath(__file__))
         connections_txt = os.path.abspath(os.path.join(currentdir, '../../data/connections'))
-        engine.connectToDbFromFile(dbtextfile=connections_txt)
+        script_path = os.path.abspath(os.path.join(currentdir, "../../app_data/db/.dbload"))
+        filepath = os.path.abspath(os.path.join(currentdir, "../../app_data/db/local.db"))
 
-        # todo: this path should come from the app settings file, not hardcoded
-        filepath = os.getcwd() + "/app_data/db/local.db" # The path of where the database is created
+        # change file paths if app is running as installed package
+        if getattr(sys, 'frozen', False):
+            connections_txt = os.path.join(sys._MEIPASS, 'data/connections')
+            filepath = os.path.join(sys._MEIPASS, 'app_data/db/local.db')
+            script_path = os.path.join(sys._MEIPASS, "app_data/db/.dbload")
 
+        # if the database is not found in the dir (dev mode) or app (install mode), create it
         if not os.path.exists(filepath):
-
-        # # fixme: will this always recreate the database, because that is not what we want
-        # removedb(filepath)  # Its going to delete the file, than recreate it to avoid errors
-
-            # todo: only do this if the database doesn't exist
             conn = lite.connect(filepath)
-            script = open(os.getcwd() + "/app_data/db/.dbload")
+            script = open(script_path)
             with conn:
                 cur = conn.cursor()
                 cur.executescript(script.read())
             script.close()
 
+
+        # connect to databases defined in the connections file
+        engine.connectToDbFromFile(dbtextfile=connections_txt)
+
         # load the local database into the engine
         engine.connectToDb(title='ODM2 SQLite (local)',desc='Local SQLite database',engine='sqlite',address=filepath, name=None, user=None, pwd=None)
 
+        self.checkUsers()
+
+    def refreshUserAccount(self):
+        self.accounts = self.loadAccounts()
 
 def removedb(file):
     try:

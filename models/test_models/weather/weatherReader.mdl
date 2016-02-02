@@ -3,7 +3,7 @@ filepath  = ./weather.py
 classname = weatherReader
 
 [model]
-code = Test Component: Weather reader
+code = Weather reader
 name = Weather Reading Component
 description = This is a model component that reads weather data from locally stored files
 

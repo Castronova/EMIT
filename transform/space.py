@@ -4,12 +4,85 @@ import stdlib
 import space_base
 from shapely.geometry import LineString, MultiPoint, Point, Polygon
 from coordinator.emitLogging import elog
+import numpy
+
+
+class spatial_nearest_neighbor_radial(space_base.Space):
+
+    def __init__(self, distance=10):
+        super(spatial_nearest_neighbor_radial, self).__init__()
+
+        # set initial parameters
+        self.set_param('max_distance', 10)
+
+        # set source and target geometries
+        self.source_geometry(stdlib.GeomType.POINT)
+        self.target_geometry(stdlib.GeomType.POINT)
+
+    def name(self):
+        return 'Nearest Neighbor - Radial'
+
+    def transform(self, ingeoms, outgeoms):
+
+        mapped_geoms = []
+        distance = self.get_params('max_distance')
+
+        # put points into numpy array
+        in_geoms = numpy.array(ingeoms)
+        # out_geoms = numpy.array(outgeoms)
+
+        # build arrays for out geoms
+        x = numpy.zeros(shape=in_geoms.shape)
+        y = numpy.zeros(shape=in_geoms.shape)
+        z = numpy.zeros(shape=in_geoms.shape)
+        r = numpy.zeros(shape=in_geoms.shape)
+
+        for i in range(len(in_geoms)):
+            xcoord, ycoord, zcoord = in_geoms[i].GetPoint()
+            x[i] = xcoord
+            y[i] = ycoord
+            z[i] = zcoord
+
+
+        # find the nearest ingeom for each outgeom
+        for o in outgeoms:
+            o_x, o_y, o_z = o.GetPoint()
+            # calculate radii for ingeoms
+            xdists = x - o_x
+            ydists = y - o_y
+            zdists = z - o_z
+            r = (xdists**2 + ydists**2)
+
+            # find all elements that are within the specified distance
+            # r_idx = r[r <= self.__distance**2]
+            r_idx = numpy.where(r <= distance**2)[0]
+
+            # if more than one, choose closest
+            matches = len(r_idx)
+            if matches > 1:
+                # get the nearest point
+                idx = numpy.argmin(r[r_idx])
+            elif matches == 1:
+                # get the only match
+                idx = r_idx[0]
+            else:
+                # no match found
+                idx = None
+
+            # only save the geometry if a match is found!
+            if idx is not None:
+                mapped_geoms.append((ingeoms[idx], o))
+
+
+        return mapped_geoms
 
 
 
+    # 1. Calculate difference between point and all points (radial) using numpy indexing
+    # 2. loop through all results that are less than radius provided
+    # 3. select the smallest difference
+    # 4. steps 2 and 3 can be combined by sorting radii less than specified radius
 
-
-# TODO!  These should utilize database queries, see test_spatial.py.  Also, they should take actionID as input?
 
 # adapted from https://github.com/ojdo/python-tools.git
 class spatial_nearest_neighbor(space_base.Space):
@@ -23,10 +96,10 @@ class spatial_nearest_neighbor(space_base.Space):
 
     def transform(self, ingeoms, outgeoms):
 
-        if isinstance(ingeoms[0], stdlib.Geometry):
-            ingeoms = [i.geom() for i in ingeoms]  # convert Geometry objects into a list of shapely geometries
-        if isinstance(outgeoms[0], stdlib.Geometry):
-            outgeoms = [i.geom() for i in outgeoms]  # convert Geometry objects into a list of shapely geometries
+        # if isinstance(ingeoms[0], stdlib.Geometry2):
+        #     ingeoms = [i.geom() for i in ingeoms]  # convert Geometry objects into a list of shapely geometries
+        # if isinstance(outgeoms[0], stdlib.Geometry2):
+        #     outgeoms = [i.geom() for i in outgeoms]  # convert Geometry objects into a list of shapely geometries
 
         # get parameters
         max_distance = self.__params['max_distance']
@@ -183,6 +256,7 @@ class SpatialInterpolation():
     NearestObject = spatial_closest_object()
     ExactMatch = spatial_exact_match()
     IntersectPolygonPoint = spatial_intersect_polygon_point()
+    NearestNeighborRadial = spatial_nearest_neighbor_radial()
 
     def methods(self):
         return [self.Index,
@@ -190,4 +264,5 @@ class SpatialInterpolation():
                 self.NearestObject,
                 self.ExactMatch,
                 self.IntersectPolygonPoint,
+                self.NearestNeighborRadial,
                 ]

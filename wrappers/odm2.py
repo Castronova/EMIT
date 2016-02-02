@@ -12,7 +12,7 @@ class wrapper(base.BaseWrapper):
 
 
     def __init__(self, args):
-        super(wrapper, self).__init__(self)
+        super(wrapper, self).__init__()
         self.args = args
 
         session = self.args['session']

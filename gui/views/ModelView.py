@@ -6,13 +6,14 @@ import wx
 import wx.xrc
 import wx.propgrid as wxpg
 from gui.views import PlotView
-from gui.controller.SpatialPlotCtrl import LogicSpatialPlot
+from gui.controller.SpatialPlotCtrl import SpatialPlotCtrl
 # from gui.views.viewPanel import SpatialPanel
 
 class ViewModel(wx.Frame):
     def __init__(self, parent, edit=True, spatial=False, temporal=False, properties=True, configuration=False):
-        wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=wx.EmptyString, pos=wx.DefaultPosition,
-                          size=wx.Size(665, 640), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
+        wx.Frame.__init__(self, parent, id=wx.ID_ANY, title='Model Properties', pos=wx.DefaultPosition,
+                          size=wx.Size(650, 700),
+                          style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         self.edit = edit
         self.spatial = spatial
@@ -49,18 +50,18 @@ class ViewModel(wx.Frame):
                                                pos=wx.Point(0, 0),
                                                # size=wx.Size(700,500))
                                                size=wx.Size(423, 319))
-            self.txtNotebook.AddPage(self.PropertyGrid, u"Properties", True)
+            self.txtNotebook.AddPage(self.PropertyGrid, u"General", True)
 
 
         # make the spatial view
         if spatial:
-            # self.plotPanel = LogicSpatialPlot(self.txtNotebook)
+            # self.plotPanel = SpatialPlotCtrl(self.txtNotebook)
             # inputSelection = wx.CheckBox(self.plotPanel, 998,label='Input Exchange Item: ')
             # self.txtNotebook.AddPage(self.plotPanel, u"Spatial Definition", False)
 
             panel = wx.Panel(self.txtNotebook, size=wx.Size(500, 300))
 
-            self.plotPanel = LogicSpatialPlot(panel)
+            self.plotPanel = SpatialPlotCtrl(panel)
             # self.inputSelection = wx.CheckBox(panel, 998,label='Input Exchange Item: ')
 
             # self.inputSelections = wx.Choice( panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0, choices=None )
@@ -92,7 +93,7 @@ class ViewModel(wx.Frame):
 
             panel.SetSizer(mainSizer)
             panel.Layout()
-            self.txtNotebook.AddPage(panel, u"Spatial Definition", False)
+            self.txtNotebook.AddPage(panel, u"Spatial", False)
 
             # m_bitmap1 = wx.StaticBitmap( self, wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, 0 )
             # s = wx.BoxSizer(wx.VERTICAL)

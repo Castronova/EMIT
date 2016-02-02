@@ -15,6 +15,7 @@ from coordinator.emitLogging import elog
 from bisect import bisect_left, bisect_right
 from osgeo import osr, ogr
 import numpy
+from sprint import *
 
 class Status:
     READY = 'READY'
@@ -138,7 +139,7 @@ class Geometry2(ogr.Geometry):
         self.update_hash()
 
 class ExchangeItem(object):
-    def __init__(self, id=None, name=None, desc=None, geometry=[], unit=None, variable=None, srs_epsg=4269, type=ExchangeItemType.INPUT):
+    def __init__(self, id=None, name=None, desc=None, geometry=[], unit=None, variable=None, noData=-999, srs_epsg=4269, type=ExchangeItemType.INPUT):
 
         self.__name = name
         self.__description = desc
@@ -163,22 +164,25 @@ class ExchangeItem(object):
         if geometry is not None:
             self.addGeometries2(geometry)
 
-        # no data values will be represented as None
-        self.__noData = None
+        # no data values
+        self.__noData = noData
 
         self.__id = uuid.uuid4().hex
         if id is not None:
             if isinstance(id, str):
                 self.__id = id
 
-        self.__srs = osr.SpatialReference()
-        try:
-            self.__srs.ImportFromEPSG(srs_epsg)
-        except:
-            # set default
-            elog.error('Could not create spatial reference object from code: %s. '
-                       'Using the default spatial reference system: North American Datum 1983.'% str(srs_epsg))
-            self.__srs.ImportFromEPSG(4269)
+        # self.__srs = osr.SpatialReference()
+        self.__srs = self.srs(srs_epsg=srs_epsg)
+        # if self.__srs.ImportFromEPSG(srs_epsg)
+        # except Exception, e:
+        #     # set default
+        #     elog.error('Error ExchangeItem.__init__: %s' % e)
+        #     sPrint('Could not create spatial reference object from code: %s. '
+        #                'Using the default spatial reference system: North American Datum 1983.'% str(srs_epsg),
+        #            MessageType.ERROR)
+        #
+        #     self.__srs.ImportFromEPSG(4269)
 
 
         # todo: REMOVE THE DEPRECATED VARIABLES BELOW
@@ -188,17 +192,33 @@ class ExchangeItem(object):
         self.__saved = False
         self.__seriesID = None
 
+    def initializeDatesValues(self, start_datetime, end_datetime, timestep_in_seconds):
+        date = start_datetime
+        dates = []
+        while date <= end_datetime:
+            dates.append(date)
+            date = date + datetime.timedelta(seconds=timestep_in_seconds)
+
+        self.__times2 = numpy.array(dates)
+        geoms = self.__geoms2
+        self.__values2 = numpy.zeros(shape=(len(dates), len(geoms)))
+        self.__values2[:] = self.__noData
+
+    def noData(self, value = None):
+        if value is not None:
+            self.__noData = value
+        return self.__noData
+
     def srs(self, srs_epsg=None):
         if srs_epsg is not None:
             self.__srs = osr.SpatialReference()
-            try:
-                self.__srs.ImportFromEPSG(srs_epsg)
-            except:
-                # set default
-                elog.error('Could not create spatial reference object from code: %s. '
-                           'Using the default spatial reference system: North American Datum 1983.'% str(srs_epsg))
-                self.__srs.ImportFromEPSG(4269)
-
+            if self.__srs.ImportFromEPSG(srs_epsg) != 0:
+                from osgeo import gdal
+                msg = gdal.GetLastErrorMsg()
+                elog.error('Could Not set srs: %s' % msg)
+                sPrint('Unable to load spatial reference %s: %s  ' % (str(srs_epsg), msg), MessageType.ERROR)
+                sPrint('This may cause errors with future operations.  It is recommended that the GDAL_DATA path is fixed in the ' +
+                       'EMIT environment settings before continuing.', MessageType.CRITICAL)
         return self.__srs
 
     def getEarliestTime2(self):
@@ -232,9 +252,77 @@ class ExchangeItem(object):
         elif isinstance(geom, Geometry2):
             self.__geoms2.append(geom)
         else:
-            elog.info("Attempted to add unsupported geometry type to ExchangeItem %s, in stdlib.addGeometries(geom)" % type(geom))
+            sPrint("Attempted to add unsupported geometry type to ExchangeItem %s, in stdlib.addGeometries(geom)" % type(geom))
             return 0
         return 1
+
+    def setValuesBySlice (self, values, time_index_slice=(None, None, None), geometry_index_slice=(None, None, None)):
+        """
+        sets datavalues for the component.
+        :param values:  Values to set
+        # :param value_index_slice: tuple representing the start, stop, and step range of the values
+        :param time_index_slice: tuple representing the start, stop, and step range of the date times
+        :param geometry_index_slice: tuple representing the start, stop, and step range of the geometries
+        :return: True if successful, otherwise False
+        """
+
+        if len(self.__values2) == 0 or len(self.__times2) == 0:
+            elog.critical('Error ExchangeItem.setValuesBySlice: Exchange item values and/or times arrays were not set properly')
+            sPrint('Exchange item values and/or times arrays were not set properly Make sure "initializeDatesValues" is being called during/after component initialization.', MessageType.CRITICAL)
+            return False
+
+        try:
+            # get index ranges
+            tb, te, tstep = time_index_slice
+            gb, ge, gstep = geometry_index_slice
+
+            # set initial values for missing slice indices
+            tb = 0 if tb is None else tb
+            gb = 0 if gb is None else gb
+            te = len(self.__times2) if te is None else te
+            ge = len(self.__geoms2) if ge is None else ge
+            tstep = 1 if tstep is None else tstep
+            gstep = 1 if gstep is None else gstep
+
+            # convert the values into a numpy array if they aren't already
+            if not isinstance(values, numpy.ndarray):
+                values = numpy.array(values)
+
+            # set the values[times][geoms]
+            # reshape the input array to fit the desired slicing
+            target_shape = ((te-tb) / tstep, (ge-gb) / gstep)
+            values = values.reshape(target_shape)
+            self.__values2[tb:te:tstep, gb:ge:gstep] = values
+
+
+        except Exception as e:
+            elog.error('Error ExchangeItem.setValuesBySlice: %s' % e)
+            sPrint('Error setting values for times %s, geometries %s' % (str(time_index_slice), str(geometry_index_slice)),
+                   MessageType.ERROR)
+            return False
+        return True
+
+    def setValuesByTime(self, values, timevalue, geometry_index_slice=(None, None, None)):
+        try:
+            # get time index
+            idx, date = self.getDates2(timevalue)
+
+            # get index ranges
+            gb, ge, gstep = geometry_index_slice
+
+            # convert the values into a numpy array if they aren't already
+            if not isinstance(values, numpy.ndarray):
+                values = numpy.array(values)
+
+            # set the values[times][geoms]
+            self.__values2[idx, gb:ge:gstep] = values
+
+        except Exception as e:
+            elog.error('Error ExchangeItem.setValuesByTime: %s' % e)
+            sPrint('Error setting values for times %s, geometries %s' % (str(time_index_slice), str(geometry_index_slice)),
+                   MessageType.ERROR)
+            return False
+        return True
 
     def setValues2(self, values, timevalue):
         """
@@ -249,7 +337,8 @@ class ExchangeItem(object):
 
             # make sure that the length of values matches the length of times
             if len(timevalue) != len(values):
-                elog.critical('Could not set data values. Length of timevalues and datavalues lists must be equal.')
+                sPrint('Could not set data values. Length of timevalues and datavalues lists must be equal.',
+                       MessageType.WARNING)
                 return 0
 
             invalid_dates = False
@@ -259,7 +348,8 @@ class ExchangeItem(object):
                 else: invalid_dates = True
 
             if invalid_dates:
-                elog.warning('Invalid datetimes were found while setting values.  Data values may not be set correctly.')
+                sPrint('Invalid datetimes were found while setting values.  Data values may not be set correctly.',
+                             MessageType.WARNING)
 
 
             return 1
@@ -270,15 +360,9 @@ class ExchangeItem(object):
             return 1
 
         else:
-            elog.critical('Could not set data values.  Time value was not of type datetime.')
+            sPrint('Could not set data values.  Time value was not of type datetime.',
+                         MessageType.WARNING)
             return 0
-
-        # if idx < len(self.__values2):
-        #     self.__values2[idx] = values
-        # else:
-        #     self.__values2.append(values)
-        #     idx = len(self.__values2) - 1
-        # return idx
 
     def _setValues2(self, values, timevalue):
 
@@ -329,10 +413,10 @@ class ExchangeItem(object):
         for i in range(start_time_slice_idx, end_time_slice_idx):
             values.append(self.__values2[i][geom_idx_start:geom_idx_end])
 
-        if ndarray:
-            return numpy.array(values)
-        else:
-            return values
+        # if ndarray:
+        return numpy.array(values)
+        # else:
+        #     return values
 
     def setDates2(self, timevalue):
         """
@@ -367,7 +451,8 @@ class ExchangeItem(object):
 
         elif start is not None and end is not None:
             if not isinstance(start, datetime.datetime) or not isinstance(end, datetime.datetime):
-                elog.critical('Could not fetch date time from range because the "start" and/or "endtimes" are not valued datetime objects.')
+                elog.critical('ERROR ExchangeItem.getDates2: Could not fetch date time from range because the "start" and/or "endtimes" are not valued datetime objects.')
+                sPrint('Could not fetch date time from range because the "start" and/or "endtimes" are not valued datetime objects.', MessageType.CRITICAL)
                 return 0, None
 
             st = self._nearest(self.__times2, start, 'left')
@@ -424,15 +509,15 @@ class ExchangeItem(object):
         else:
             self.__description = value
 
-    def _nearest(self, lst, time, direction='left'):
+    def _nearest(self, array, time, direction='left'):
         """
         get the nearst datetime in list
-        :param lst: search list (sorted)
+        :param array: sorted numpy array of datetimes
         :param time: desired datetime
         :param direction: the bisect direction.  'left' for start_time and 'right' for end_time
         :return: list index
         """
-
+        lst = list(array)
         if len(lst) == 0:
             return 0
 
@@ -445,5 +530,8 @@ class ExchangeItem(object):
             nearest = min(lst[max(0, i-1): i+2], key=lambda t: abs(time - t))
             return lst.index(nearest)
 
-
-
+        # idx = numpy.searchsorted(array, time, side=direction)
+        # if abs((time - array[idx-1]).total_seconds()) < abs((time - array[idx]).total_seconds()) :
+        #     return idx-1
+        # else:
+        #     return idx

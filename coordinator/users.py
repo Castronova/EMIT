@@ -5,6 +5,7 @@ import json
 import copy
 import uuid
 import datetime
+from coordinator.emitLogging import elog
 
 '''
  These are a set of classes for encapsulating user/affiliation data.  This should replace the preferences.txt file and
@@ -47,9 +48,9 @@ class Affiliation(object):
         self.address = address
         self.organization = organization
         self.person = person
-        self.isPrimaryOrganizationContact=isPrimaryOrganizationContact
-        self.affiliationEnd=affiliationEnd
-        self.personLink=personLink
+        self.isPrimaryOrganizationContact = isPrimaryOrganizationContact
+        self.affiliationEnd = affiliationEnd
+        self.personLink = personLink
 
     def ID(self):
         '''
@@ -76,8 +77,12 @@ class Affiliation(object):
 def date_hook(json_dict):
     for (key, value) in json_dict.items():
         try:
-            json_dict[key] = datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S")
+            #  Search string for keyword date
+            if key.lower().find('date') != -1:
+                # Convert only those that are dates otherwise you get unnecessary errors
+                json_dict[key] = datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S")
         except:
+            elog.debug("Failed to convert date into datetime object")
             pass
     return json_dict
 
@@ -85,13 +90,11 @@ def BuildAffiliationfromJSON(j):
     affiliations = []
 
     json_dict = json.loads(j, object_hook=date_hook)
-    print json_dict
-
     for key, value in json_dict.iteritems():
 
         p = Person(**value['person'])
         o = Organization(**value['organization'])
-        value['affiliation'].update(dict(person=p,organization=o))
+        value['affiliation'].update(dict(person=p, organization=o))
         a = Affiliation(**value['affiliation'])
         affiliations.append(a)
 
@@ -121,7 +124,7 @@ if __name__ == "__main__":
     #
 
     # # write object to json
-    settings_path = os.path.abspath(os.path.join(os.path.dirname(__file__),'../app_data/configuration/'))
+    settings_path = os.path.abspath(os.path.join(os.path.dirname(__file__),'../app_data/config/'))
     # with open(settings_path + '/users.json', 'w') as f:
     #     j = {}
     #     for a in affilations:

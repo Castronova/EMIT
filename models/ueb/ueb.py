@@ -14,15 +14,15 @@ import numpy
 from coordinator.emitLogging import elog
 from utilities import mdl, geometry
 import netCDF4 as nc
+from dateutil import parser
 
-
-class ueb(feed_forward.feed_forward_wrapper):
+class ueb(feed_forward.Wrapper):
 
     def __init__(self, config_params):
         super(ueb,self).__init__(config_params)
 
         # build inputs and outputs
-        elog.info('Building exchange items')
+        # elog.info('Building exchange items')
         io = mdl.build_exchange_items_from_config(config_params)
 
         # set input and output exchange items
@@ -38,9 +38,6 @@ class ueb(feed_forward.feed_forward_wrapper):
 
         # load the UEB C library
         self.__uebLib = cdll.LoadLibrary(join(os.path.dirname(__file__),lib))
-
-        print join(os.path.dirname(__file__),lib)
-        print lib
 
         # save the current directory for saving output data
         self.curdir = os.path.dirname(os.path.abspath(conFile))
@@ -65,9 +62,9 @@ class ueb(feed_forward.feed_forward_wrapper):
             ModelStartDate = [int(float(l)) for l in lines[9].split(' ') if l != '']
             ModelEndDate = [int(float(l)) for l in lines[10].split(' ') if l != '']
             ModelDt = float(lines[11])
-            self.outtStride, outyStep, outxStep = [int(s) for s in lines[12].split(' ')]
-            ModelUTCOffset = float(lines[13])
-            inpDailyorSubdaily = bool(lines[14]==True)
+            ModelUTCOffset = float(lines[12])
+            inpDailyorSubdaily = bool(lines[13]==True)
+            self.outtStride, outyStep, outxStep = [int(s) for s in lines[14].split(' ')]
 
 
         C_wsxcorArray = c_float()
@@ -173,23 +170,19 @@ class ueb(feed_forward.feed_forward_wrapper):
         for i  in range(0,32):
             a = self.C_strsvArray.contents[i]
             if a.svType == 1:
-                print "%d %s %s\n" % (i, a.svFile,a.svVarName)
+                # print "%d %s %s\n" % (i, a.svFile,a.svVarName)
                 retvalue = self.__uebLib.read2DNC(os.path.join(self.base_dir, a.svFile), a.svVarName, byref(a.svArrayValues))
 
 
         #//read input /forcing control file--all possible entries of input control have to be provided
         #readInputForcVars(inputconFile, strinpforcArray);
-        print 'inputconFile: ',C_inputconFile
-        print 'strinpforcArray: ', self.C_strinpforcArray.contents[0].infFile
 
         # read input force variables (main.cpp, line 219)
         self.__uebLib.readInputForcVars(cast(C_inputconFile,c_char_p), self.C_strinpforcArray)
-        print 'strinpforcArray: ', self.C_strinpforcArray.contents[0].infFile
 
-        ed = datetime.datetime(*ModelEndDate)
-        sd = datetime.datetime(*ModelStartDate)
-        elog.info('UEB Start Date: %s' % sd.strftime("%m-%d-%Y %H:%M:%S"))
-        elog.info('UEB End Date: %s' % ed.strftime("%m-%d-%Y %H:%M:%S"))
+
+        # elog.info('UEB Start Date: %s' % sd.strftime("%m-%d-%Y %H:%M:%S"))
+        # elog.info('UEB End Date: %s' % ed.strftime("%m-%d-%Y %H:%M:%S"))
 
         # calculate model time span as a julian date (main.cpp, line 220)
         modelSpan =  jdutil.datetime_to_jd(datetime.datetime(*ModelEndDate)) - \
@@ -212,7 +205,6 @@ class ueb(feed_forward.feed_forward_wrapper):
 
         # calculate model time steps (main.cpp, line 222)
         self.numTimeStep = int(math.ceil(modelSpan*(24./ModelDt)) ) + 1
-        print 'Number of time steps: ', self.numTimeStep
 
         # initialize C_tsvarArray values (this replaces __uebLib.readTextData)
         self.initialize_timeseries_variable_array(self.C_strinpforcArray, self.numTimeStep)
@@ -312,9 +304,9 @@ class ueb(feed_forward.feed_forward_wrapper):
 
 
         # todo: create output element set
-        print 'Output Calculations available at: '
-        for pid in xrange(self.C_npout.value):
-            print "  Point(",self.C_pOut[pid].xcoord,", ",self.C_pOut[pid].ycoord,') '
+        # print 'Output Calculations available at: '
+        # for pid in xrange(self.C_npout.value):
+        #     print "  Point(",self.C_pOut[pid].xcoord,", ",self.C_pOut[pid].ycoord,') '
 
 
 
@@ -335,7 +327,11 @@ class ueb(feed_forward.feed_forward_wrapper):
             xcoords.append(self.C_pOut[pid].xcoord)
             ycoords.append(self.C_pOut[pid].ycoord)
         self.pts = geometry.build_point_geometries(xcoords, ycoords)
-        self.outputs()['Snow Melt Equivalent'].addGeometries2(self.pts)
+        self.__swe = self.outputs()['Snow Water Equivalent']
+        self.__swit = self.outputs()['Surface Water Input Total']
+        self.__swe.addGeometries2(self.pts)
+        self.__swit.addGeometries2(self.pts)
+
 
 
         # build input exchange items
@@ -343,10 +339,16 @@ class ueb(feed_forward.feed_forward_wrapper):
         Xlist = ds.variables['x']
         Ylist = ds.variables['y']
         self.geoms = self.build_geometries(Xlist, Ylist)
-        self.inputs()['precipitation'].addGeometries2(self.geoms)
+        self.inputs()['Precipitation'].addGeometries2(self.geoms)
+        self.inputs()['Temperature'].addGeometries2(self.geoms)
 
-
-        print 'initialization successful'
+        # set start, end, and timestep parameters
+        ts = datetime.timedelta(hours=ModelDt)
+        self.time_step(ts.total_seconds())
+        sd = datetime.datetime(*ModelStartDate)
+        ed = datetime.datetime(*ModelEndDate)
+        self.simulation_start(sd)
+        self.simulation_end(ed)
 
 
 
@@ -369,106 +371,80 @@ class ueb(feed_forward.feed_forward_wrapper):
         # C_tsvarArray[11] --> Tmax
         # C_tsvarArray[12] --> Vapor Pressure of air
 
-        elog.info("\nBegin UEB Computation")
+        # # get output exchange items
+        # self.swe = self.outputs()['Snow Water Equivalent']
+        # swit = self.outputs()['Surface Water Input Total']
 
-        # get output exchange items
-        sme = self.outputs()['Snow Melt Equivalent']
+        try:
 
-        # get the input data
-        # prcp = self.inputs()['precipitation'].getValues2()
+            # Initialize SiteState
+            SiteState = numpy.zeros((32,))
 
+            # loop over all activeCells
+            for i in xrange(len(self.activeCells)):
 
-        # Initialize SiteState
-        SiteState = numpy.zeros((32,))
+                # todo: remove, this is for debugging
+                # if i > 10:
+                #     break
 
-        # loop over all activeCells
-        for i in xrange(len(self.activeCells)):
+                # track grid cell
+                self.C_uebCellY = self.activeCells[i][0]
+                self.C_uebCellX = self.activeCells[i][1]
 
-            # todo: remove, this is for debugging
-            # if i > 10:
-            #     break
+                for s in xrange(32):
+                    if self.C_strsvArray.contents[s].svType == 1:
+                        SiteState[s] = self.C_strsvArray.contents[s].svArrayValues[self.C_uebCellY][self.C_uebCellX]
+                    else:
+                        SiteState[s] = self.C_strsvArray.contents[s].svdefValue
 
-            # track grid cell
-            self.C_uebCellY = self.activeCells[i][0]
-            self.C_uebCellX = self.activeCells[i][1]
-
-            for s in xrange(32):
-                if self.C_strsvArray.contents[s].svType == 1:
-                    SiteState[s] = self.C_strsvArray.contents[s].svArrayValues[self.C_uebCellY][self.C_uebCellX]
-                else:
-                    SiteState[s] = self.C_strsvArray.contents[s].svdefValue
-
-            # convert SiteState into a ctype
-            C_SiteState = (c_float * len(SiteState))(*SiteState)
+                # convert SiteState into a ctype
+                C_SiteState = (c_float * len(SiteState))(*SiteState)
 
 
-            # get the input data for the current geometry
-            prcp = self.inputs()['precipitation'].getValues2(geom_idx_start=i, geom_idx_end=i)
+                # todo: get all data at beginning of run, then slice as necessary here
+                # get the input data for the current geometry
+                prcp = self.inputs()['Precipitation'].getValues2(geom_idx_start=i, geom_idx_end=i)
+                temp = self.inputs()['Temperature'].getValues2(geom_idx_start=i, geom_idx_end=i)
 
-            m = max(prcp)
+                # skip calculation if no temperatures are provided for the current point (i.e completely missing data)
+                if max(temp[:-1]) > 0:
+                    # set the input data for this geometry
+                    for idx in range(len(prcp)):
+                        # set air temperature and precipitation values in tsvarArray (index 0 and 1)
+                        self.C_tsvarArray.contents[0][idx] = temp[idx][0]
+                        self.C_tsvarArray.contents[1][idx] = prcp[idx][0]
 
-            # set the input data for this geometry
-            for i in range(len(prcp)):
-                # set precipitation values in tsvarArray (index 1)
-                self.C_tsvarArray.contents[1][i] = prcp[i][0]
+                    # RUN THE UEB CALCS
+                    self.__uebLib.RUNUEB(self.C_tsvarArray, C_SiteState, self.C_parvalArray,
+                                         byref(pointer(self.C_outvarArray)), self.C_ModelStartDate, self.C_ModelStartHour,
+                                         self.C_ModelEndDate, self.C_ModelEndHour, self.C_ModelDt, self.C_ModelUTCOffset)
 
+                    # outvararray 70var * numtimesteps
 
-            # for t in xrange(13):
-            #
-            #     # HACK: Everything inside this 'if' statement needs to be checked!!!!
-            #
-            #     # todo: what does infType == 1 mean?
-            #     if self.C_strinpforcArray.contents[t].infType == 1:
-            #         print 'You are in un-tested code! '
-            #         ncTotaltimestep = 0;
-            #
-            #         for numNc in xrange(self.C_strinpforcArray[it].numNcfiles):
-            #             # read 3D netcdf data
-            #             tsInputfile = self.C_strinpforcArray[t].infFile + numNc + '.nc'
-            #
-            #             retvalue = self.__uebLib.readNC_TS(tsInputfile, self.C_strinpforcArray.contents[t].infvarName, self.C_strinpforcArray.contents[t].inftimeVar, C_wsycorName, C_wsxcorName, byref(C_tsvarArrayTemp[numNc]), byref(C_tcorvar[it]), self.C_uebCellY, self.C_uebCellX, byref(C_ntimesteps[numNc]));
-            #
-            #             ncTotaltimestep += C_ntimesteps[numNc];
-            #
-            #         self.C_tsvarArray[t] = (c_float * ncTotaltimestep)
-            #         tinitTime = 0
-            #         for numNc in xrange(self.C_strinpforcArray.contents[t].numNcFiles):
-            #             for tts in xrange(C_ntimesteps[numNc]):
-            #                 self.C_tsvarArray.contents[t][tts + tinitTime] = C_tsvarArrayTemp.contents[numNc][tts]
-            #             tinitTime += C_ntimesteps[numNc]
+                # set output data
+                numtimesteps = len(self.__swe.getDates2())
+                values = numpy.array(self.C_outvarArray[17][0:numtimesteps])            # convert C_type into numpy array
+                values[numpy.isnan(values)] = self.__swe.noData()                       # set nan values to noData
+                self.__swe.setValuesBySlice(values, geometry_index_slice=(i, i+1, 1))   # set data in wrapper
+
+                values = numpy.array(self.C_outvarArray[25][0:numtimesteps])            # convert C_type into numpy array
+                values[numpy.isnan(values)] = self.__swit.noData()                      # set nan values to noData
+                self.__swit.setValuesBySlice(values, geometry_index_slice=(i, i+1, 1))  # set data in wrapper
 
 
+                # if i % round((len(self.activeCells)) / 10) == 0:
+                # print "%d of %d elements complete " % ((i+1), len(self.activeCells))
+                # sys.stdout.flush()
+                elog.info("... %d of %d elements complete " % ((i+1), len(self.activeCells)), overwrite=True)
 
-            # RUN THE UEB CALCS
-            ModelStartHour = 1
-
-            self.__uebLib.RUNUEB(self.C_tsvarArray, C_SiteState, self.C_parvalArray, byref(pointer(self.C_outvarArray)), self.C_ModelStartDate, self.C_ModelStartHour, self.C_ModelEndDate, self.C_ModelEndHour, self.C_ModelDt, self.C_ModelUTCOffset);
-
-            if i % 10 == 0:
-                elog.info("%d of %d elements complete " % ((i+1), len(self.activeCells)))
+        except Exception, e:
+            elog.critical('UEB run failed.')
+            elog.critical(e)
+            return False
 
 
-        # # todo: set output data (point)
-        # print 'set output data'
 
-            # todo: make more efficient
-            # write point outputs
-            for i in xrange(self.C_npout.value):
-                if self.C_uebCellY == self.C_pOut[i].ycoord and self.C_uebCellX == self.C_pOut[i].xcoord:
-                    print '\n' + 100 *'-'
-                    print 'Writing Output for Point :  %d, %d' % ( self.C_uebCellX, self.C_uebCellY)
-                    # print 'Year, Month, Day, Hour, Ta, P, Ws, SWISM, SWIR, errMB '
-                    for step in xrange(self.numTimeStep):
-                        # print '%d %d %d %8.3f %16.6f %16.6f %16.6f %16.6f %16.6f %16.6f' % (self.C_outvarArray[0][step],  self.C_outvarArray[1][step], self.C_outvarArray[2][step], self.C_outvarArray[3][step], self.C_outvarArray[9][step], self.C_outvarArray[10][step],self.C_outvarArray[17][step],self.C_outvarArray[67][step],self.C_outvarArray[68][step], self.C_outvarArray[69][step])
-                        print '%d %d %d %8.3f %16.6f %16.6f %16.6f %16.6f' % (self.C_outvarArray[0][step],  self.C_outvarArray[1][step], self.C_outvarArray[2][step], self.C_outvarArray[3][step], self.C_outvarArray[4][step], self.C_outvarArray[5][step],self.C_outvarArray[6][step],self.C_outvarArray[7][step])
-
-                        if step == 10:
-                            print "...\n", 100*'-'
-                            break
-
-        print 'Run Complete'
-
-    def save(self):
+    def finish(self):
 
 
         # write nc output
@@ -480,7 +456,7 @@ class ueb(feed_forward.feed_forward_wrapper):
             for j in xrange(self.C_outtSteps):
                 self.t_out[j] = self.C_outvarArray[self.outvarindx.value][self.outtStride*j]
 
-            print 'Writing Output: ', os.path.join(self.curdir, self.C_ncOut[i].outfName)
+            # print 'Writing Output: ', os.path.join(self.curdir, self.C_ncOut[i].outfName)
             C_t_out = self.t_out.ctypes.data_as(POINTER(c_float))
             retvalue = self.__uebLib.WriteTSto3DNC(cast(os.path.join(self.curdir, self.C_ncOut[i].outfName), c_char_p), cast(self.C_ncOut[i].symbol, c_char_p), self.C_outDimord, self.C_uebCellY, self.C_uebCellX, self.C_outtSteps, C_t_out)
 
@@ -488,7 +464,7 @@ class ueb(feed_forward.feed_forward_wrapper):
         for i in xrange(self.C_npout.value):
             # todo: this is inefficient
             if self.C_uebCellY == self.C_pOut[i].ycoord and self.C_uebCellX == self.C_pOut[i].xcoord:
-                print 'Writing Output: ', self.C_pOut[i].outfName
+                # print 'Writing Output: ', self.C_pOut[i].outfName
                 with open(self.C_pOut[i].outfName, 'w') as f:
                     for step in xrange(self.numTimeStep):
                         f.write("\n %d %d %d %8.3f " % (self.C_outvarArray[0][step],  self.C_outvarArray[1][step], self.C_outvarArray[2][step], self.C_outvarArray[3][step]) )
@@ -514,32 +490,10 @@ class ueb(feed_forward.feed_forward_wrapper):
 
 
     def initialize_timeseries_variable_array(self, forcing_data, number_of_timesteps):
-
-
-        # initialize the arrays base on number of timesteps.  This assumes that all datasets share a timestep
-        self.C_tsvarArray.contents[0] = (c_float * number_of_timesteps)()  # air temp
-        self.C_tsvarArray.contents[1] = (c_float * number_of_timesteps)()  # precipitation
-        self.C_tsvarArray.contents[2] = (c_float * number_of_timesteps)()  # windspeed
-        self.C_tsvarArray.contents[3] = (c_float * number_of_timesteps)()  # relative humidity
-        self.C_tsvarArray.contents[10] = (c_float * number_of_timesteps)()  # Min Air temperature
-        self.C_tsvarArray.contents[11] = (c_float * number_of_timesteps)()  # Max Air temperature
-
-        # initialize parameter values
-        for i in [4,5,6,7,8,9,12]:
-            #  4: AP: Air pressure   (always required)
-            #  5: Qsi: Incoming shortwave(kJ/m2/hr)   (only required if irad=1 or 2)
-            #  6: Qli: Long wave radiation(kJ/m2/hr)
-            #  7: Qnet: Net radiation(kJ/m2/hr)   (only required if irad=3)
-            #  8: Qg: Ground heat flux   (kJ/m2/hr)
-            #  9: Snowalb: Snow albedo (0-1).  (only required if ireadalb=1) The albedo of the snow surface to be used when the internal albedo calculations are to be overridden
-            # 12: Vp: Air vapor pressure
-            self.C_tsvarArray.contents[i] = (c_float * 2)()  # Qsi: Incoming shortwave(kJ/m2/hr)
-            self.C_tsvarArray.contents[i][0] = self.C_strinpforcArray.contents[i].infType
-            self.C_tsvarArray.contents[i][1] = self.C_strinpforcArray.contents[i].infdefValue
-
+        # number_of_timesteps += 10
         variables = {'Ta':0, 'Prec':1, 'v':2, 'RH':3, 'AP':4, 'Qsi':5, 'Qli':6, 'Qnet':7, 'Qg':8, 'Snowalb':9, 'Tmin':10, 'Tmax':11, 'Vp':12}
 
-        # populate data (loop over the strinpforcArray)
+        # loop over all of the variables
         for i in range(13):
 
             # get the variable name
@@ -548,8 +502,16 @@ class ueb(feed_forward.feed_forward_wrapper):
             # get the index corresponding to this variable
             idx = variables[var_name]
 
-            if self.C_strinpforcArray.contents[i].infType == 0:
-                # read DAT file
+            # get the type of input forcing (0: dat, 1: netcdf, 2: parameter)
+            infType = self.C_strinpforcArray.contents[i].infType
+
+            # dat file
+            if infType == 0:
+
+                # initialize the array
+                self.C_tsvarArray.contents[i] = (c_float * number_of_timesteps)()
+
+                # read the DAT file and set data
                 with open(os.path.join(self.base_dir, self.C_strinpforcArray.contents[i].infFile), 'r') as f:
                     lines = f.readlines()
                     row = 0
@@ -558,10 +520,110 @@ class ueb(feed_forward.feed_forward_wrapper):
                         data = lines[l].strip().split()
 
                         # save the value column
-                        self.C_tsvarArray.contents[idx][row] = float(data[-1])
+                        self.C_tsvarArray.contents[i][row] = float(data[-1])
 
                         # increment the row
                         row += 1
+
+            # netcdf file
+            elif infType == 1:
+
+                # # initialize the array
+                self.C_tsvarArray.contents[i] = (c_float * number_of_timesteps)()
+
+                message = 'NetCDF input files are not supported at this time.  Pass NetCDF values at runtime via data components instead.'
+                elog.warning(message)
+
+                # # initialize the array
+                # self.C_tsvarArray.contents[i] = (c_float * number_of_timesteps)()
+
+                # # get netcdf variables
+                # tvar = self.C_strinpforcArray.contents[i].inftimeVar
+                # var = self.C_strinpforcArray.contents[i].infvarName
+                # numfiles =  self.C_strinpforcArray.contents[i].numNcfiles
+                # # todo add support for multiple netcdf files
+                # if numfiles > 1: raise Exception('Cannot process multiple netcdf files for a single variable.  Support for this feature is coming soon.')
+                # f = self.C_strinpforcArray.contents[i].infFile
+                # f = f + '0.nc' if f[-2:] != '.nc' else f
+                #
+                # # read netcdf data and set values
+                # handle = nc.Dataset(os.path.join(self.base_dir, f), 'r')
+                # values = [v.flatten() for v in handle.variables[var][:]]
+                # for row in range(len(values)):
+                #     self.C_tsvarArray.contents[i][row] = values[row]
+
+
+            # parameter value
+            elif infType == 2:
+
+                # initialize space for parameters and set values
+                self.C_tsvarArray.contents[i] = (c_float * 2)()
+                self.C_tsvarArray.contents[i][0] = self.C_strinpforcArray.contents[i].infType
+                self.C_tsvarArray.contents[i][1] = self.C_strinpforcArray.contents[i].infdefValue
+
+
+            # input component
+            elif infType == 3:
+
+                # initialize the array
+                self.C_tsvarArray.contents[i] = (c_float * number_of_timesteps)()
+
+                pass
+
+            # variable not used (computed internally)
+            else:
+                self.C_tsvarArray.contents[i] = (c_float * 2)()
+                self.C_tsvarArray.contents[i][0] = self.C_strinpforcArray.contents[i].infType
+                self.C_tsvarArray.contents[i][1] = self.C_strinpforcArray.contents[i].infdefValue
+
+
+
+        # # initialize the arrays base on number of timesteps.  This assumes that all datasets share a timestep
+        # self.C_tsvarArray.contents[0] = (c_float * number_of_timesteps)()  # air temp
+        # self.C_tsvarArray.contents[1] = (c_float * number_of_timesteps)()  # precipitation
+        # self.C_tsvarArray.contents[2] = (c_float * number_of_timesteps)()  # windspeed
+        # self.C_tsvarArray.contents[3] = (c_float * number_of_timesteps)()  # relative humidity
+        # self.C_tsvarArray.contents[10] = (c_float * number_of_timesteps)()  # Min Air temperature
+        # self.C_tsvarArray.contents[11] = (c_float * number_of_timesteps)()  # Max Air temperature
+        #
+        # # initialize parameter values
+        # for i in [4,5,6,7,8,9,12]:
+        #     #  4: AP: Air pressure   (always required)
+        #     #  5: Qsi: Incoming shortwave(kJ/m2/hr)   (only required if irad=1 or 2)
+        #     #  6: Qli: Long wave radiation(kJ/m2/hr)
+        #     #  7: Qnet: Net radiation(kJ/m2/hr)   (only required if irad=3)
+        #     #  8: Qg: Ground heat flux   (kJ/m2/hr)
+        #     #  9: Snowalb: Snow albedo (0-1).  (only required if ireadalb=1) The albedo of the snow surface to be used when the internal albedo calculations are to be overridden
+        #     # 12: Vp: Air vapor pressure
+        #     self.C_tsvarArray.contents[i] = (c_float * 2)()  # Qsi: Incoming shortwave(kJ/m2/hr)
+        #     self.C_tsvarArray.contents[i][0] = self.C_strinpforcArray.contents[i].infType
+        #     self.C_tsvarArray.contents[i][1] = self.C_strinpforcArray.contents[i].infdefValue
+        #
+        #
+        #
+        # # populate data (loop over the strinpforcArray)
+        # for i in range(13):
+        #
+        #     # get the variable name
+        #     var_name = self.C_strinpforcArray.contents[i].infName
+        #
+        #     # get the index corresponding to this variable
+        #     idx = variables[var_name]
+        #
+        #     if self.C_strinpforcArray.contents[i].infType == 0:
+        #         # read DAT file
+        #         with open(os.path.join(self.base_dir, self.C_strinpforcArray.contents[i].infFile), 'r') as f:
+        #             lines = f.readlines()
+        #             row = 0
+        #             for l in range(1, len(lines)):
+        #                 # DAT format:  Year	Month	Day	Hour	value
+        #                 data = lines[l].strip().split()
+        #
+        #                 # save the value column
+        #                 self.C_tsvarArray.contents[idx][row] = float(data[-1])
+        #
+        #                 # increment the row
+        #                 row += 1
 
 
     def build_geometries(self, xcoords, ycoords):
@@ -583,3 +645,86 @@ class ueb(feed_forward.feed_forward_wrapper):
         # build point geometries
         return geometry.build_point_geometries(x, y)
 
+
+
+"""
+Metadata Notes:
+
+C_outvar_Array
+        0	Year	        Year
+        1	Month           Month
+        2	Day	            Day
+        3	dHour	        dHour
+        4	atff	        Atmospheric transmission factor
+        5	HRI	            Radiation index
+        6	Eacl	        Clear sky emissivity
+        7	Ema	            Atmospheric emissivity
+        8	conZen	        Cos of solar zenith angle (Zen)
+        9	Ta	            Air temperature(C)
+        10	P	            Precipitation (m/hr)
+        11	V	            Wind speed (m/s)
+        12	RH	            Relative humidity
+        13	Qsi	            Incoming solar radiation (kJ/m2/hr)
+        14	Qli	            Incoming longwave radiation (kJ/m2/hr)
+        15	Qnet	        Input net radiation (kJ/m2/hr)
+        16	Us	            Energy content (kJ/m2)
+        17	Ws	            Surface snow water equivalent (m)
+        18	tausn	        Dimensionless age of the snow surface
+        19	Pr	            Precipitation in the form of rain (m/hr)
+        20	Ps	            Precipitation in the form of snow (m/hr)
+        21	Alb	            Snow surface albedo
+        22	QHs	            Surface Sensible heat flux (kJ/m2/hr)
+        23	QEs	            Surface Latent heat flux (kJ/m2/hr)
+        24	Es	            Surface sublimation (m)
+        25	SWIT	        Total outflow (m/hr).  This combines rainfall (in the case of no snow/glacier)
+                              snow/glacier melt, and it the surface water input to the runoff generation process.
+        26	QMs	            Surface melt energy (kJ/m2/hr)
+        27	Q	            Net surface energy exchange (kJ/m2/hr)
+        28	FM	            Net surface mass exchange (m/h)
+        29	Tave	        Average snow temperature (C)
+        30	TSURFs	        Surface snow temperature (C)
+        31	cump	        Cumulative precipitation (m)
+        32	cumes	        Cumulative surface sublimation (m)
+        33	cumMr	        Cumulative surface melt (m)
+        34	Qnet	        Modeled surface net radiation (kJ/m2/hr)
+        35	smelt	        Melt generated at surface (m/hr).  This is melt generated at the surface and modeled to
+                            infiltrate into the snow or glacier where it may refreeze.  It is not base of the
+                            snow/glacier outflow.
+        36	refDepth	    Depth of penetration of top refreezing (m)
+        37	totalRefDepth	Total depth of refreezing (m)
+        38	cf	            Cloudiness fraction
+        39	Taufb	        Direct solar radiation fraction
+        40	Taufd	        Diffuse solar radiation fraction
+        41	Qsib	        Direct solar radiation
+        42	Qsid	        Diffuse solar radiation
+        43	Taub	        Direct solar radiation canopy transmission fraction
+        44	Taud	        Diffuse solar radiation canopy transmission fraction
+        45	Qsns	        Solar radiation absorbed at surface (kJ/m2/hr)
+        46	Qsnc	        Solar radiation absorbed in canopy (kJ/m2/hr)
+        47	Qlns	        Longwave radiation absorbed a tsurface (kJ/m2/hr)
+        48	Qlnc 	        Longwave radiation absorbed in canopy (kJ/m2/hr)
+        49	Vz	            Modeled wind beneath canopy (m/s)
+        50	Rkinsc	        Was canopy aerodynamic resistance -not used presently
+        51	Rkinc	        Aerodynamic resistance of surface (below canopy)
+        52	Inmax	        Canopy snow interception capacity (m)
+        53	intc	        Canopy snow interception (m/hr)
+        54	ieff	        Fraction of precipitation intercepted (m/hr)
+        55	Ur	            Canopy mass unloading (m/hr)
+        56	Wc	            Canopy snow water equivalent (m)
+        57	Tc	            Canopy temperature(C)
+        58	Tac	            Air temperature within canopy (C)
+        59	QHc	            Canopy sensible heat flux (kJ/m2/hr)
+        60	QEc	            Canopy latent heat flux (kJ/m2/hr)
+        61	Ec	            Canopy sublimation (m/hr)
+        62	Qpc	            Precipitation energy advected to canopy (kJ/m2/hr)
+        63	Qmc	            Canopy melt energy (kJ/m2/hr)
+        64	Mc	            Melt from canopy (m/hr)
+        65	FMc	            Net canopy energy exchange (m/hr)
+        66	SWIGM	        Glacier melt outflow (m/hr).  This is the part of total outflow that originates from
+                            glacier melting.
+        67	SWISM	        Rainfall outflow (m/hr).  This is the part of total outflow that is from rainfall in the
+                            case of no snow/glacier.
+        68	SWIR	        Snow melt outflow (m/hr).  This is the part of total outflow that originates from the
+                            melting of seasonal snow pack (as distinct from glacier ice)
+        69	errMB	        Mass balance closure error (m)
+"""

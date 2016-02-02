@@ -28,12 +28,12 @@ class LogicToolbox(ViewToolbox):
         self.p = parent
         # config_params = {}
 
-        self.modelpaths = []
         self.cat = ""
         self.items = {}
         self.filepath = {}
+        self.modelpaths = self.parseModelPaths()
 
-        self.sectionKey()
+        # initialize event bindings
         self.initBinding()
 
         self.loadToolbox(self.getModelPath())
@@ -129,7 +129,13 @@ class LogicToolbox(ViewToolbox):
     def getCat(self):
         return self.cat
 
-    def sectionKey(self):
+    def parseModelPaths(self):
+        """
+        reads the APP_TOOLBOX_PATH and parses the model/config paths
+        Returns: modelpaths lists
+
+        """
+
         ini = os.environ['APP_TOOLBOX_PATH']
         cparser = ConfigParser.ConfigParser(None, multidict)
         cparser.read(ini)
@@ -149,7 +155,8 @@ class LogicToolbox(ViewToolbox):
                 kvp[option] = cparser.get(s, option)
             d.append(kvp)
 
-        self.modelpaths = d
+        return d
+
 
     def loadMDLFile(self, cat, txt, fullpath):
         mdl_parser = ConfigParser.ConfigParser(None, multidict)

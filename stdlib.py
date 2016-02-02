@@ -418,17 +418,54 @@ class ExchangeItem(object):
         # else:
         #     return values
 
-    def setDates2(self, timevalue):
+    # def setDates2(self, timevalue):
+    #     """
+    #     sets the data-times for a geometry index.  These should directly correspond with
+    #     :param timevalue: datetime object
+    #     :return: index of the datetime value
+    #     """
+    #
+    #     idx = self._nearest(self.__times2, timevalue, 'left') + 1
+    #     self.__times2 = numpy.insert(self.__times2, idx, timevalue)
+    #     # self.__times2.insert(idx+1, timevalue)
+    #     return idx
+
+    def getDates(self):
         """
-        sets the data-times for a geometry index.  These should directly correspond with
-        :param timevalue: datetime object
-        :return: index of the datetime value
+        Get all datetimes for the exchange item
+        Returns: numpy array of datetimes
+
+        """
+        times = [(idx, self.__times2[idx]) for idx in range(0, len(self.__times2))]
+        return numpy.array(times)
+
+    def getNearestDates(self, dateslist, search_direction='left'):
+        """
+        Get the exchange item datetime objects nearest the datelist argument
+        Args:
+            dateslist: list of datetimes to search
+            search_direction: direction of search
+
+        Returns: numpy array((index, datetime),)
+
         """
 
-        idx = self._nearest(self.__times2, timevalue, 'left') + 1
-        # idx = len(self.__times2.keys())
-        self.__times2.insert(idx+1, timevalue)
-        return idx
+        if not isinstance(dateslist, list):
+            sPrint('stdlib.getNearestDates requires input datetimes as a list', MessageType.ERROR)
+            return numpy.empty((0,))
+
+        times = []
+        for t in dateslist:
+            idx = self._nearest(self.__times2, t, search_direction)
+            if len(self.__times2) and idx <= len(self.__times2):
+                times.append((idx, self.__times2[idx]))
+            else:
+                times.append(0, None)
+
+        return numpy.array(times)
+
+
+
 
     def getDates2(self, timevalue=None, start=None, end=None, ndarray=False):
         """
@@ -514,7 +551,7 @@ class ExchangeItem(object):
         get the nearst datetime in list
         :param array: sorted numpy array of datetimes
         :param time: desired datetime
-        :param direction: the bisect direction.  'left' for start_time and 'right' for end_time
+        :param direction: the bisect direction.
         :return: list index
         """
         lst = list(array)
@@ -529,9 +566,3 @@ class ExchangeItem(object):
             i = bisect_right(lst, time)
             nearest = min(lst[max(0, i-1): i+2], key=lambda t: abs(time - t))
             return lst.index(nearest)
-
-        # idx = numpy.searchsorted(array, time, side=direction)
-        # if abs((time - array[idx-1]).total_seconds()) < abs((time - array[idx]).total_seconds()) :
-        #     return idx-1
-        # else:
-        #     return idx

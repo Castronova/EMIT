@@ -1,0 +1,5 @@
+showinfo = True
+showwarning = True
+showcritical = True
+showerror = True
+showdebug = True

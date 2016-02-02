@@ -6,9 +6,12 @@ import ConfigParser
 import datetime
 import cPickle as pickle
 import imp
-from api.ODMconnection import  dbconnection
-# from ODMconnection import dbconnection
+from api_old.ODMconnection import dbconnection
+from odm2api.ODMconnection import dbconnection as dbconnection2
+from sprint import *
+from coordinator.emitLogging import elog
 import uuid
+import utilities.io as io
 
 class multidict(dict):
     _unique = 0
@@ -56,9 +59,13 @@ def validate_config_ini(ini_path):
         # load lookup tables
         dir = os.path.dirname(__file__)
 
+        var_cv = os.path.join(io.getAppDataDir(), 'dat/var_cv.dat') 
+        unit_cv= os.path.join(io.getAppDataDir(), 'dat/units_cv.dat')
+        var = pickle.load(open(var_cv, 'rb'))
+        unit= pickle.load(open(unit_cv, 'rb'))
 
-        var = pickle.load(open(os.path.join(dir,'../data/var_cv.dat'),'rb'))
-        unit = pickle.load(open(os.path.join(dir,'../data/units_cv.dat'),'rb'))
+#        var = pickle.load(open(os.path.join(dir,'../data/var_cv.dat'),'rb'))
+#        unit = pickle.load(open(os.path.join(dir,'../data/units_cv.dat'),'rb'))
 
         # check to see if 'ignorecv' option has been provided
         ignorecv = False
@@ -127,59 +134,30 @@ def validate_config_ini(ini_path):
                     filename = os.path.basename(abspath)
                     module = imp.load_source(filename.split('.')[0], abspath)
                     m = getattr(module, classname)
-                except:
-                    print 'ERROR | Configuration Parsing Error: '+classname+' is not a valid class name'
+                except Exception, e:
+                    elog.error('Configuration Parsing Error: '+str(e))
+                    sPrint('Configuration Parsing Error: '+str(e), MessageType.ERROR)
 
     except Exception, e:
-        print 'ERROR | [Configuration Parsing Error] '+str(e)
+        elog.error('Configuration Parsing Error: '+str(e))
+        sPrint('Configuration Parsing Error: '+str(e), MessageType.ERROR)
         return 0
 
 
     return 1
 
-def parse_config_without_validation(ini):
-    """
-    parses metadata stored in *.ini file
-    """
-
-    config_params = {}
-    cparser = ConfigParser.ConfigParser(None, multidict)
-    cparser.read(ini)
-    sections = cparser.sections()
-
-    for s in sections:
-        # get the section key (minus the random number)
-        section = s.split('^')[0]
-
-        # get the section options
-        options = cparser.options(s)
-
-        # save ini options as dictionary
-        d = {}
-        for option in options:
-            d[option] = cparser.get(s,option)
-        d['type'] = section
-
-
-        if section not in config_params:
-            config_params[section] = [d]
-        else:
-            config_params[section].append(d)
-
-    # save the base path of the model
-    config_params['basedir'] = basedir = os.path.realpath(os.path.dirname(ini))
-
-    return config_params
 
 def parse_config(ini):
     """
-    parses metadata stored in *.ini file
+    parses metadata stored in *.ini file.  This file is use by both the GUI and the ENGINE.
     """
-
+    # isvalid = True
+    # if validate:
     isvalid = validate_config_ini(ini)
-    if isvalid:
-        #raise Exception('Configuration file is not valid!')
 
+
+    if isvalid:
+        basedir = os.path.realpath(os.path.dirname(ini))
         config_params = {}
         cparser = ConfigParser.ConfigParser(None, multidict)
         cparser.read(ini)
@@ -195,9 +173,14 @@ def parse_config(ini):
             # save ini options as dictionary
             d = {}
             for option in options:
-                d[option] = cparser.get(s,option)
-            d['type'] = section
+                value = cparser.get(s,option)
 
+                # convert anything that is recognized as a file path into an absolute paths
+                genpath = os.path.abspath(os.path.join(basedir, value))
+                if os.path.isfile(genpath): # and genpath[-3:] != '.py' :
+                    value = genpath
+                d[option] = value
+            d['type'] = section.upper()
 
             if section not in config_params:
                 config_params[section] = [d]
@@ -205,14 +188,90 @@ def parse_config(ini):
                 config_params[section].append(d)
 
         # save the base path of the model
-        config_params['basedir'] = basedir = os.path.realpath(os.path.dirname(ini))
+        config_params['basedir'] = basedir
 
         return config_params
     else:
         return None
 
+# def parse_config(ini):
+#     """
+#     parses metadata stored in *.ini file
+#     """
+#     basedir = os.path.realpath(os.path.dirname(ini))
+#
+#     isvalid = validate_config_ini(ini)
+#     if isvalid:
+#         #raise Exception('Configuration file is not valid!')
+#
+#         config_params = {}
+#         cparser = ConfigParser.ConfigParser(None, multidict)
+#         cparser.read(ini)
+#         sections = cparser.sections()
+#
+#         for s in sections:
+#             # get the section key (minus the random number)
+#             section = s.split('^')[0]
+#
+#             # get the section options
+#             options = cparser.options(s)
+#
+#             # save ini options as dictionary
+#             d = {}
+#             for option in options:
+#                 d[option] = cparser.get(s,option)
+#             d['type'] = section
+#
+#
+#             if section not in config_params:
+#                 config_params[section] = [d]
+#             else:
+#                 config_params[section].append(d)
+#
+#         # save the base path of the model
+#         config_params['basedir'] = basedir
+#
+#         return config_params
+#     else:
+#         return None
+
+def connect_to_ODM2_db(title, desc, engine, address, db, user, pwd):
+
+    # create a db session
+    session = dbconnection2.createConnection(engine, address, db, user, pwd)
+
+    db_connections = {}
+    if session:
+
+        # get the connection string
+        connection_string = session.engine.url
+
+        # save this session in the db_connections object
+        db_id = uuid.uuid4().hex[:5]
+        d['id'] = db_id
+        db_connections[db_id] = {'name':title,
+                                 'session': session,
+                                 'connection_string':connection_string,
+                                 'description':desc,
+                                 'args': {'name':title,'desc':desc ,'engine':engine,'address':address,'db': db, 'user': user,'pwd': pwd}}
+
+        elog.info('Connected to : %s [%s]'%(connection_string,db_id))
+        sPrint('Connected to : %s [%s]'%(connection_string,db_id))
+    else:
+        elog.error('Could not establish a connection with the database')
+        sPrint('Could not establish a connection with the database', MessageType.ERROR)
+        return None
+
+    return db_connections
+
+
 def create_database_connections_from_args(title, desc, engine, address, db, user, pwd):
 
+    # fixme: all database connections should use the updated ODM library
+    if engine == 'sqlite':
+        return connect_to_db(title, desc, engine, address, db, user, pwd)
+
+    # old database connection api
 
     d = {'name':title,
          'desc':desc ,
@@ -249,9 +308,11 @@ def create_database_connections_from_args(title, desc, engine, address, db, user
                                  'description':d['desc'],
                                  'args': d}
 
-        print 'Connected to : %s [%s]'%(connection_string,db_id)
+        elog.info('Connected to : %s [%s]'%(connection_string,db_id))
+        sPrint('Connected to : %s [%s]'%(connection_string,db_id))
     else:
-        print 'ERROR | Could not establish a connection with the database'
+        elog.error('Could not establish a connection with the database')
+        sPrint('Could not establish a connection with the database', MessageType.ERROR)
         return None
 
     return db_connections
@@ -263,24 +324,69 @@ def load_model(config_params):
     """
     # parse module config
     #items = parse_config(ini)
+    try:
+        # get source attributes
+        software = config_params['software']
+        classname = software[0]['classname']
+        relpath = software[0]['filepath']
 
-    # get source attributes
-    software = config_params['software']
-    classname = software[0]['classname']
-    relpath = software[0]['filepath']
+        sPrint('Classname: %s' % classname, MessageType.DEBUG)
+        sPrint('Relpath: %s' % relpath, MessageType.DEBUG)
 
-    # load the model
-    basedir = config_params['basedir']
-    abspath = os.path.abspath(os.path.join(basedir,relpath))
-    filename = os.path.basename(abspath)
-    module = imp.load_source(filename, abspath)
-    model_class = getattr(module, classname)
+        # load the model
+        basedir = config_params['basedir']
+        abspath = os.path.abspath(os.path.join(basedir,relpath))
+        sPrint('AbsPath: %s'%abspath, MessageType.DEBUG)
 
-    # Initialize the component
-    instance = model_class(config_params)
+        filename = os.path.basename(abspath)
+        module = imp.load_source(filename, abspath)
+        model_class = getattr(module, classname)
+        sPrint('Model Class Extracted Successfully', MessageType.DEBUG)
 
-    #return (config_params['general'][0]['name'], instance)
+        # Initialize the component
+        instance = model_class(config_params)
+        sPrint('Mode Initialization Successful', MessageType.DEBUG)
+
+    except Exception as e:
+        sPrint('An error has occurred while loading model: %s'% e, MessageType.CRITICAL)
+        raise Exception(e)
+
     return (instance.name(), instance)
+
+def connect_to_db(title, desc, engine, address, name, user, pwd):
+
+    d = {}
+
+    # fixme: all database connections should use the updated ODM library
+    if engine == 'sqlite':
+        session = dbconnection2.createConnection(engine, address)
+    else:
+        session = dbconnection.createConnection(engine, address, name, user, pwd)
+
+    if session:
+        # adjusting timeout
+        session.engine.pool._timeout = 30
+
+        connection_string = session.engine.url
+
+        # save this session in the db_connections object
+        db_id = uuid.uuid4().hex[:5]
+
+        d[db_id] = {'name':title,
+                     'session': session,
+                     'connection_string':connection_string,
+                     'description':desc,
+                     'args': dict(address=connection_string, desc=desc, engine=engine,id=db_id,name=name,
+                                  user=None, pwd=None,default=False,db=None)}
+
+        elog.info('Connected to : %s [%s]'%(connection_string,db_id))
+        sPrint('Connected to : %s [%s]'%(connection_string,db_id))
+
+    else:
+        elog.error('Could not establish a connection with the database')
+        sPrint('Could not establish a connection with the database', MessageType.ERROR)
+
+    return d
 
 def create_database_connections_from_file(ini):
 
@@ -325,13 +431,12 @@ def create_database_connections_from_file(ini):
                                      'connection_string':connection_string,
                                      'description':d['desc'],
                                      'args': d}
-
-            print 'Connected to : %s [%s]'%(connection_string,db_id)
-
-
+            elog.info('Connected to : %s [%s]'%(connection_string,db_id))
+            sPrint('Connected to : %s [%s]'%(connection_string,db_id))
 
         else:
-            print 'ERROR | Could not establish a connection with the database'
+            elog.error('Could not establish a connection with the database')
+            sPrint('Could not establish a connection with the database', MessageType.ERROR)
             #return None
 
 
@@ -345,9 +450,9 @@ def generate_link_key(link):
     :return: unique string key
     """
 
-    return '_'.join([ link.source_component().get_name(),
+    return '_'.join([ link.source_component().name(),
                       link.source_exchange_item().name(),
-                      link.target_component().get_name(),
+                      link.target_component().name(),
                       link.target_exchange_item().name()])
 
     #return '_'.join([link[0][0].get_name(),link[0][1].name(),link[1][0].get_name(),link[1][1].name()])
@@ -375,9 +480,9 @@ def get_ts_from_database_link(dbapi, db_sessions, dbactions, links, target_model
     for id,link_inst in links.iteritems():
         f,t = link_inst.get_link()
 
-        dbapi = db_sessions[f[0].get_id()]
+        dbapi = db_sessions[f[0].id()]
 
-        if t[0].get_name() == tname:
+        if t[0].name() == tname:
             mapping[t[1].name()] = f[1].name()
             #print '>  %s -> %s'%(f[1].name(), t[1].name())
 
@@ -386,12 +491,12 @@ def get_ts_from_database_link(dbapi, db_sessions, dbactions, links, target_model
             from_var = f[1].variable()
             to_var = t[1].variable()
             to_item = t[1]
-            name = f[0].get_name()
+            name = f[0].name()
             # start = f[1].getStartTime()
             # end = f[1].getEndTime()
 
-            start = t[0].get_instance().simulation_start()
-            end = t[0].get_instance().simulation_end()
+            start = t[0].instance().simulation_start()
+            end = t[0].instance().simulation_end()
 
             #model = f[0]
 

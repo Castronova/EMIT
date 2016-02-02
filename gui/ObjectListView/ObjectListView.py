@@ -288,7 +288,7 @@ class ObjectListView(wx.ListCtrl):
             StaticText = wx.StaticText
 
         self.stEmptyListMsg = StaticText(self, -1, "This list is empty",
-            wx.Point(0, 0), wx.Size(0, 0), wx.ALIGN_CENTER | wx.ST_NO_AUTORESIZE | wx.FULL_REPAINT_ON_RESIZE)
+                                         wx.Point(0, 0), wx.Size(0, 0), wx.ALIGN_CENTER | wx.ST_NO_AUTORESIZE | wx.FULL_REPAINT_ON_RESIZE)
         self.stEmptyListMsg.Hide()
         self.stEmptyListMsg.SetForegroundColour(wx.LIGHT_GREY)
         self.stEmptyListMsg.SetBackgroundColour(self.GetBackgroundColour())
@@ -425,7 +425,7 @@ class ObjectListView(wx.ListCtrl):
             return
 
         if self.smallImageList == None or \
-           not self.smallImageList.HasName(ObjectListView.NAME_CHECKED_IMAGE):
+                not self.smallImageList.HasName(ObjectListView.NAME_CHECKED_IMAGE):
             self._InitializeCheckBoxImages()
 
         # Is the column already configured to handle check state?
@@ -554,15 +554,29 @@ class ObjectListView(wx.ListCtrl):
         """
         Resize our auto sizing columns to match the data
         """
-        for (iCol, col) in enumerate(self.columns):
-            if col.width == wx.LIST_AUTOSIZE:
-                self.SetColumnWidth(iCol, wx.LIST_AUTOSIZE)
+        # todo: the try gives error when clicking on plot from database, fix this.
+        try:
+            self.SetColumnWidth(0, 100)
+            self.SetColumnWidth(1, 175)
+            self.SetColumnWidth(2, 275)
+            self.SetColumnWidth(3, 150)
+            self.SetColumnWidth(4, 150)
+            self.SetColumnWidth(5, 250)
+            self.SetColumnWidth(6, 1800)
+        except:
+            for (iCol, col) in enumerate(self.columns):
+                if col.width == wx.LIST_AUTOSIZE:
+                    self.SetColumnWidth(iCol, wx.LIST_AUTOSIZE)
 
-                # The new width must be within our minimum and maximum
-                colWidth = self.GetColumnWidth(iCol)
-                boundedWidth = col.CalcBoundedWidth(colWidth)
-                if colWidth != boundedWidth:
-                    self.SetColumnWidth(iCol, boundedWidth)
+                    # The new width must be within our minimum and maximum
+                    colWidth = self.GetColumnWidth(iCol)
+                    boundedWidth = col.CalcBoundedWidth(colWidth)
+                    if colWidth != boundedWidth:
+                        self.SetColumnWidth(iCol, boundedWidth)
+
+                if iCol == 6:
+                    # This is the only place that really lets you resize the columns
+                    self.SetColumnWidth(6, 1800)
 
 
     def Check(self, modelObject):
@@ -653,9 +667,9 @@ class ObjectListView(wx.ListCtrl):
         lenPrefix = len(dummyPrefix)
 
         prefix = MARKER_BLOCK_OUTPUT % (lenPrefix, len(html)+lenPrefix,
-                        fragmentStart+lenPrefix, fragmentEnd+lenPrefix,
-                        selectionStart+lenPrefix, selectionEnd+lenPrefix,
-                        source)
+                                        fragmentStart+lenPrefix, fragmentEnd+lenPrefix,
+                                        selectionStart+lenPrefix, selectionEnd+lenPrefix,
+                                        source)
         htmlForClipboard = (prefix + html)
 
         try:
@@ -935,12 +949,82 @@ class ObjectListView(wx.ListCtrl):
 
         self.RepopulateList()
 
+        # This works but for now to optimize giving a fixed width for columns for now.
+        # self.UpdateColumnSize(models=modelObjects)
+
         if preserveSelection:
             self.SelectObjects(selection)
 
 
     # Synonym as per many wxWindows widgets
     SetValue = SetObjects
+
+    # def UpdateColumnSize(self, models):
+    #     if len(models) <= 1:
+    #         return
+    #     else:
+    #         for i in range(len(models)):
+    #             try:
+    #                 self.TimeSeriesColumns(i, models)
+    #             except:
+    #                 self.SimulationCoumns(i, models)
+    #
+    #         #  The last column will expand all the way out.
+    #         self.SetColumnWidth(6, 1800)
+    #
+    # def SimulationCoumns(self, i, models):
+    #     itemsize = len(str(models[i].simulation_id))
+    #     itemsize = self.SizeColumn(itemsize)
+    #     self.SetColumnWidth(0, itemsize)
+    #     itemsize = len(str(models[i].simulation_name))
+    #     itemsize = self.SizeColumn(itemsize)
+    #     self.SetColumnWidth(1, itemsize)
+    #     itemsize = len(str(models[i].model_name))
+    #     itemsize = self.SizeColumn(itemsize)
+    #     self.SetColumnWidth(2, itemsize)
+    #     itemsize = len(str(models[i].simulation_start))
+    #     itemsize = self.SizeColumn(itemsize)
+    #     self.SetColumnWidth(3, itemsize)
+    #     itemsize = len(str(models[i].simulation_end))
+    #     itemsize = self.SizeColumn(itemsize)
+    #     self.SetColumnWidth(4, itemsize)
+    #     itemsize = len(str(models[i].date_created))
+    #     itemsize = self.SizeColumn(itemsize)
+    #     self.SetColumnWidth(5, itemsize)
+    #
+    # def TimeSeriesColumns(self, i, models):
+    #     #  i is the index
+    #     itemsize = len(str(models[i].resultid))
+    #     itemsize = self.SizeColumn(itemsize)
+    #     self.SetColumnWidth(0, itemsize)
+    #     itemsize = len(str(models[i].featurecode))
+    #     itemsize = self.SizeColumn(itemsize)
+    #     self.SetColumnWidth(1, itemsize)
+    #     itemsize = len(str(models[i].variable))
+    #     itemsize = self.SizeColumn(itemsize)
+    #     self.SetColumnWidth(2, itemsize)
+    #     itemsize = len(str(models[i].unit))
+    #     itemsize = self.SizeColumn(itemsize)
+    #     self.SetColumnWidth(3, itemsize)
+    #     itemsize = len(str(models[i].type))
+    #     itemsize = self.SizeColumn(itemsize)
+    #     self.SetColumnWidth(4, itemsize)
+    #     itemsize = len(str(models[i].organization))
+    #     itemsize = self.SizeColumn(itemsize)
+    #     self.SetColumnWidth(5, itemsize)
+    #
+    # def SizeColumn(self, col):
+    #     min = 100
+    #     max = 350
+    #     col *= 10  #  This is the best ratio for the column size
+    #     if col < min:
+    #         col = min
+    #         return col
+    #     elif col > max:
+    #         col = max
+    #         return col
+    #     else:
+    #         return col
 
 
     def _BuildInnerList(self):
@@ -1344,9 +1428,9 @@ class ObjectListView(wx.ListCtrl):
 
         # Space bar with a selection on a listview with checkboxes toggles the checkboxes
         if (evt.GetKeyCode() == wx.WXK_SPACE and
-            not self.IsCellEditing() and
-            self.checkStateColumn is not None and
-            self.GetSelectedItemCount() > 0):
+                not self.IsCellEditing() and
+                    self.checkStateColumn is not None and
+                    self.GetSelectedItemCount() > 0):
             return self._ToggleCheckBoxForSelection()
 
         if not self.IsCellEditing():
@@ -1635,8 +1719,8 @@ class ObjectListView(wx.ListCtrl):
         #    we should edit on double click and this is a single click, OR
         #    we should edit on single click and this is a double click,
         # THEN we don't try to start a cell edit operation
-        if evt.m_altDown or evt.m_controlDown or evt.m_shiftDown:
-            return
+        # if evt.m_altDown or evt.m_controlDown or evt.m_shiftDown:
+        #     return
         if self.cellEditMode == self.CELLEDIT_NONE:
             return
         if evt.LeftUp() and self.cellEditMode == self.CELLEDIT_DOUBLECLICK:
@@ -1726,7 +1810,7 @@ class ObjectListView(wx.ListCtrl):
         if self.smallImageList is None:
             self.SetImageLists()
         if (not self.smallImageList.HasName(ObjectListView.NAME_DOWN_IMAGE) and
-            self.smallImageList.GetSize(0) == (16,16)):
+                    self.smallImageList.GetSize(0) == (16,16)):
             self.RegisterSortIndicators()
 
 
@@ -2010,7 +2094,7 @@ class ObjectListView(wx.ListCtrl):
 
         # Let the world know the cell editing has started
         evt = OLVEvent.CellEditStartedEvent(self, rowIndex, subItemIndex, modelObject,
-                                             cellValue, cellBounds, defaultEditor)
+                                            cellValue, cellBounds, defaultEditor)
         self.GetEventHandler().ProcessEvent(evt)
 
         self.cellEditor.Show()
@@ -3780,7 +3864,6 @@ class ColumnDefn(object):
         """
         Calculate the given width bounded by the (optional) minimum and maximum column widths
         """
-
         # Values of < 0 have special meanings, so just return them
         if width < 0:
             return width

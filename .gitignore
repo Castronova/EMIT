@@ -47,7 +47,7 @@ coverage.xml
 .ropeproject
 
 # Django stuff:
-*.log
+*.log*
 *.pot
 
 # Sphinx documentation
@@ -75,3 +75,7 @@ examples/swmm/data/b4518.rpt
 examples/swmm/data/insert_simulations_camel_case.sql
 examples/swmm/data/rainfall_data.xlsx
 examples/swmm/src/swmm_model.sim
+
+# Settings
+.*.ini
+

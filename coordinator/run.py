@@ -12,63 +12,70 @@ from transform.time import *
 from transform.space import *
 from utilities.status import Status
 import update
+from coordinator.emitLogging import elog
+from odm2api.ODMconnection import dbconnection
+
+import db.dbapi_v2 as dbv2
+
+class dataSaveInfo():
+    def __init__(self, simulationName, database_args, user, datasets):
+        self.simulationName = simulationName
+        self.database_args = database_args
+        self.user = user
+        self.datasets = datasets
+
+        # self, engine, address, db=None, user=None, password=None, dbtype = 2.0):
+        self.session = dbconnection.createConnection(engine=database_args['engine'],
+                                                     address=database_args['address'],
+                                                     db=database_args['db'],
+                                                     user=database_args['user'],
+                                                     password=database_args['pwd'])
 
 
-def run_feed_forward(obj):
+
+def run_feed_forward(obj, ds=None):
     # store db sessions
     db_sessions = {}
 
-    # ThreadManager
-    dispatcher = ThreadManager().get_dispatcher()
-
-
     # todo: determine unresolved exchange items (utilities)
-
 
     sim_st = time.time()
 
     activethreads = []
 
     # determine execution order
-    msg = '> Determining execution order... '
-    dispatcher.putOutput(msg)
-    # sys.stdout.write(msg)
+    elog.info('Determining execution order... ')
 
     exec_order = obj.determine_execution_order()
-    msg = 'done'
-    dispatcher.putOutput(msg)
-    # sys.stdout.write('done\n')
     for i in range(0, len(exec_order)):
-        msg = '> %d.) %s' % (i + 1, obj.get_model_by_id(exec_order[i]).get_name())
-        dispatcher.putOutput(msg)
-        # print '> %d.) %s'%(i+1,obj.get_model_by_id(exec_order[i]).get_name())
+        elog.info('%d.) %s' % (i + 1, obj.get_model_by_id(exec_order[i]).name()))
 
 
-    # store model db sessions
-    for modelid in exec_order:
-        session = obj.get_model_by_id(modelid).get_instance().session()
 
-        if session is None:
-            try:  # this is necessary if no db connection exists
-                session = obj.get_default_db()['session']
-
-                # todo: need to consider other databases too!
-                db_sessions[modelid] = postgresdb(session)
-            except:
-                db_sessions[modelid] = None
-
-                # todo: this should be stored in the model instance
-                # model_obj = obj.get_model_by_id(modelid)
-                # model_inst = model_obj.get_instance()
-                # model_inst.session
+    # # store model db sessions
+    # for modelid in exec_order:
+    #     session = obj.get_model_by_id(modelid).get_instance().session()
+    #
+    #     if session is None:
+    #         try:  # this is necessary if no db connection exists
+    #             session = obj.get_default_db()['session']
+    #
+    #             # todo: need to consider other databases too!
+    #             db_sessions[modelid] = postgresdb(session)
+    #         except:
+    #             db_sessions[modelid] = None
+    #
+    #             # todo: this should be stored in the model instance
+    #             # model_obj = obj.get_model_by_id(modelid)
+    #             # model_inst = model_obj.get_instance()
+    #             # model_inst.session
 
     links = {}
     spatial_maps = {}
 
     # todo:  move this into function
-    msg = '> [PRE-RUN] Performing spatial mapping... '
-    dispatcher.putOutput(msg)
-    # sys.stdout.write('> [PRE-RUN] Performing spatial mapping... ')
+    elog.info('Generating spatial maps... ')
+
     for modelid in exec_order:
 
         # get links
@@ -80,155 +87,149 @@ def run_feed_forward(obj):
             source = link.source_exchange_item()
             target = link.target_exchange_item()
             key = generate_link_key(link)
+
+            # set default spatial interpolation to ExactMatch
+            if link.spatial_interpolation() is None:
+                link.spatial_interpolation(spatial_index())
+
             spatial_interp = link.spatial_interpolation()
-            if spatial_interp:
-                spatial_maps[key] = spatial_interp.transform(source.get_all_datasets().keys(),
-                                                             target.get_all_datasets().keys())
+            source_geoms = source.getGeometries2()
+            target_geoms = target.getGeometries2()
 
-        # get the database session
-        # simulation_dbapi = postgresdb(obj.get_default_db()['session'])
-        # simulation_dbapi = db_sessions[modelid]
+            # todo: remove these two lines b/c they use deprecated function calls!
+            if len(source_geoms) == 0: source_geoms = source.get_all_datasets().keys()
+            if len(target_geoms) == 0: target_geoms = target.get_all_datasets().keys()
 
-        # store model db sessions
-        session = obj.get_model_by_id(modelid).get_instance().session()
-        if session is None:
-            try:  # this is necessary if no db connection exists
-                session = obj.get_default_db()['session']
-            except:
-                pass
-        db_sessions[modelid] = postgresdb(session)
+            # save the spatial mapping based on link key
+            spatial_maps[key] = spatial_interp.transform(source_geoms, target_geoms)
 
-    # sys.stdout.write('done\n')
+            # # store model db sessions
+            # session = obj.get_model_by_id(modelid).get_instance().session()
+            # if session is None:
+            #     try:  # this is necessary if no db connection exists
+            #         session = obj.get_default_db()['session']
+            #     except:
+            #         pass
+            # db_sessions[modelid] = postgresdb(session)
+
 
     # todo:  move this into function
     # prepare all models
     for modelid in exec_order:
         model_obj = obj.get_model_by_id(modelid)
-        model_inst = model_obj.get_instance()
-        if model_inst.status() != Status.Ready:
-            model_inst.prepare()
+        model_inst = model_obj.instance()
+        model_inst.prepare()
+
+        if model_inst.status() != stdlib.Status.READY:
+            elog.critical('Cannot continue with simulation because model "%s" has a status of "%s" after the preparation'
+                          ' phase.  Status must be "%s" in order to proceed with simulation '
+                          % (model_inst.name(), model_inst.status(), stdlib.Status.READY))
+            return False
 
     # loop through models and execute run
-
     for modelid in exec_order:
 
         st = time.time()
 
         # get the current model instance
         model_obj = obj.get_model_by_id(modelid)
-        model_inst = model_obj.get_instance()
-        msg = '> \n' + \
-              '> ------------------' + len(model_inst.name()) * '-' + '\n' + \
-              '> Executing module: %s \n' % model_inst.name() + \
-              '> ------------------' + len(model_inst.name()) * '-'
-
-        dispatcher.putOutput(msg)
-
-        # print '> '
-        # print '> ------------------'+len(model_inst.name())*'-'
-        # print '> Executing module: %s ' % model_inst.name()
-        # print '> ------------------'+len(model_inst.name())*'-'
+        model_inst = model_obj.instance()
+        elog.info('\n' + \
+                  '------------------' + len(model_inst.name()) * '-' + '\n' + \
+                  'Executing module: %s \n' % model_inst.name() + \
+                  '------------------' + len(model_inst.name()) * '-')
 
         #  retrieve inputs from database
-        msg = '> [1 of 4] Retrieving input data... '
-        dispatcher.putOutput(msg)
-        #sys.stdout.write('> [1 of 4] Retrieving input data... ')
-        #sys.__stdout__.flush()
+        sPrint("[1 of 4] Retrieving input data... ")
 
-        # todo: pass db_sessions instead of simulation_dbapi
-        # try:
-        #     input_data =  get_ts_from_database_link(db_sessions[modelid], db_sessions, obj.DbResults(), obj.Links(), model_inst)
-        # except Exception as e:
-        #     raise Exception (e)
         input_data = model_inst.inputs()
 
-        msg = 'done'
-        dispatcher.putOutput(msg)
-        # sys.stdout.write('done\n')
-        # sys.__stdout__.flush()
+        sPrint("[2 of 4] Performing calculation... ")
 
-        msg = '> [2 of 4] Performing calculation... '
-        dispatcher.putOutput(msg)
-        # sys.stdout.write('> [2 of 4] Performing calculation... ')
-        # sys.__stdout__.flush()
 
         # pass these inputs ts to the models' run function
         model_inst.run(input_data)
 
-        msg = 'done'
-        dispatcher.putOutput(msg)
-        # sys.stdout.write('done\n')
-        # sys.__stdout__.flush()
-
         # save these results
-        msg = '> [3 of 4] Saving calculations to database... '
-        dispatcher.putOutput(msg)
-        # sys.stdout.write('> [3 of 4] Saving calculations to database... ')
-        # sys.__stdout__.flush()
-        exchangeitems = model_inst.save()
+        sPrint("[3 of 4] Saving calculations to database... ")
 
-        # only insert data if its not already in a database
-        if type(model_inst) != odm2_data.odm2:
-            pass
-            # todo: not saving result b/c it is to slow over wireless!
-            # #  set these input data as exchange items in stdlib or wrapper class
-            # simulation = simulation_dbapi.create_simulation(preferences_path=obj.preferences,
-            #                                config_params=model_obj.get_config_params(),
-            #                                output_exchange_items=exchangeitems,
-            #                                )
-            #
-            #
-            # # store the database action associated with this simulation
-            # obj.DbResults(key=model_inst.name(), value = (simulation.ActionID,model_inst.session(),'action'))
-
-        else:
-            if db_sessions[modelid] is not None:
-                obj.DbResults(key=model_inst.name(), value=(model_inst.resultid(), model_inst.session(), 'result'))
-
-        msg = 'done'
-        dispatcher.putOutput(msg)
-        # sys.stdout.write('done\n')
-        # sys.__stdout__.flush()
 
         # update links
-        msg = '> [4 of 4] Updating links... '
-        dispatcher.putOutput(msg)
-        # sys.stdout.write('> [4 of 4] Updating links... ')
-        # sys.__stdout__.flush()
+        sPrint("[4 of 4] Updating links... ")
 
-        #obj.update_links(model_inst,exchangeitems)
-        update.update_links_feed_forward(obj, links[modelid], exchangeitems, spatial_maps)
+        oei = model_inst.outputs()
+        update.update_links_feed_forward(obj, links[modelid], oei, spatial_maps)
 
-        msg = 'done'
-        dispatcher.putOutput(msg)
-        # sys.stdout.write('done\n')
-        # sys.__stdout__.flush()
+        model_inst.finish()
+        elog.info('module simulation completed in %3.2f seconds' % (time.time() - st))
+
+    sPrint('------------------------------------------\n' +
+              '         Simulation Summary \n' +
+              '------------------------------------------\n' +
+              'Completed without error :)\n' +
+              'Simulation duration: %3.2f seconds\n' % (time.time() - sim_st) +
+              '------------------------------------------')
+
+    # save results if ds is provided
+    # todo: move this outside run.py
+    if ds is not None:
+        elog.info('Saving Simulation Results...')
+        st = time.time()
+
+        try:
+            # build an instance of dbv22
+            db = dbv2.connect(ds.session)
+        except Exception, e:
+            elog.error('An error was encountered when connecting to the database to save the simulation results: %s' % e)
+            sPrint('An error was encountered when connecting to the database to save the simulation results.', MessageType.ERROR)
+            return
+
+        # insert data!
+        for modelid in exec_order:
+
+            # get the current model instance
+            model_obj = obj.get_model_by_id(modelid)
+            model_inst = model_obj.instance()
+            model_name = model_inst.name()
+
+            # get the output exchange items to save for this model
+            oeis =  ds.datasets[model_name]
+            items = []
+            for oei in oeis:
+                items.append(model_inst.outputs()[oei])
+
+            if len(items) > 0:
+                # get config parameters
+                config_params=model_obj.get_config_params()
 
 
-        msg = '> module simulation completed in %3.2f seconds' % (time.time() - st)
-        dispatcher.putOutput(msg)
-        # sys.stdout.write('> module simulation completed in %3.2f seconds' % (time.time() - st))
-        # sys.__stdout__.flush()
+                db.create_simulation(coupledSimulationName=ds.simulationName,
+                                     user_obj=ds.user,
+                                     config_params=config_params,
+                                     ei=items,
+                                     simulation_start = model_inst.simulation_start(),
+                                     simulation_end = model_inst.simulation_end(),
+                                     timestep_value = model_inst.time_step(),
+                                     timestep_unit = 'seconds',
+                                     description = model_inst.description(),
+                                     name = model_inst.name()
+                                     )
 
-    msg = '> \n' + \
-          '> ------------------------------------------\n' + \
-          '>           Simulation Summary \n' + \
-          '> ------------------------------------------\n' + \
-          '> Completed without error :)\n' + \
-          '> Simulation duration: %3.2f seconds\n' % (time.time() - sim_st) + \
-          '> ------------------------------------------'
-    dispatcher.putOutput(msg)
+        # description = config_params['general'][0]['description']
+        # simstart = datetime.datetime.strptime(config_params['general'][0]['simulation_start'], '%m/%d/%Y %H:%M:%S' )
+        # simend = datetime.datetime.strptime(config_params['general'][0]['simulation_end'], '%m/%d/%Y %H:%M:%S' )
+        # modelcode = config_params['model'][0]['code']
+        # modelname = config_params['model'][0]['name']
+        # modeldesc = config_params['model'][0]['description']
+        # timestepvalue = config_params['time_step'][0]['value']
+        #
+        # # default to a timestep of seconds
+        # timestepname = config_params['time_step'][0].get('name') or 'seconds'
+        # timestepabbv = config_params['time_step'][0].get('abbreviation') or ' '
+        #
+        elog.info('Saving Complete, elapsed time = %3.5f' % (time.time() - st))
 
-    # print '> '
-    # print '> ------------------------------------------'
-    # print '>           Simulation Summary '
-    # print '> ------------------------------------------'
-    # print '> Completed without error :)'
-    # print '> Simulation duration: %3.2f seconds' % (time.time()-sim_st)
-    # print '> ------------------------------------------'
-
-
-def run_time_step(obj):
+def run_time_step(obj, ds=None):
     # store db sessions
     db_sessions = {}
 
@@ -241,16 +242,13 @@ def run_time_step(obj):
     # determine execution order
     msg = '> Determining execution order... '
     dispatcher.putOutput(msg)
-    # sys.stdout.write('> [PRE-RUN] Determining execution order... ')
     exec_order = obj.determine_execution_order()
 
     msg = 'done'
     dispatcher.putOutput(msg)
-    # sys.stdout.write('done\n')
     for i in range(0, len(exec_order)):
-        msg = '> %d.) %s' % (i + 1, obj.get_model_by_id(exec_order[i]).get_name())
+        msg = '> %d.) %s' % (i + 1, obj.get_model_by_id(exec_order[i]).name())
         dispatcher.putOutput(msg)
-        # print '> %d.) %s'%(i+1,obj.get_model_by_id(exec_order[i]).get_name())
 
     links = {}
     spatial_maps = {}
@@ -259,7 +257,6 @@ def run_time_step(obj):
     # todo:  move this into function
     msg = '> [PRE-RUN] Performing spatial mapping... '
     dispatcher.putOutput(msg)
-    # sys.stdout.write('> [PRE-RUN] Performing spatial mapping... ')
     for modelid in exec_order:
         # get links
         l = obj.get_from_links_by_model(modelid)
@@ -284,13 +281,13 @@ def run_time_step(obj):
                                                              target.get_all_datasets().keys())
 
         # set model status to RUNNING
-        obj.get_model_by_id(modelid).get_instance().status(Status.Running)
+        obj.get_model_by_id(modelid).instance().status(Status.Running)
 
         # initialize the simulation_status dictionary
-        simulation_status[modelid] = obj.get_model_by_id(modelid).get_instance().status()
+        simulation_status[modelid] = obj.get_model_by_id(modelid).instance().status()
 
         # store model db sessions
-        session = obj.get_model_by_id(modelid).get_instance().session()
+        session = obj.get_model_by_id(modelid).instance().session()
         if session is None:
             try:  # this is necessary if no db connection exists
                 session = obj.get_default_db()['session']
@@ -299,7 +296,6 @@ def run_time_step(obj):
 
         # todo: need to consider other databases too!
         db_sessions[modelid] = postgresdb(session)
-    # sys.stdout.write('done\n')
 
     msg = 'done'
     dispatcher.putOutput(msg)
@@ -307,20 +303,18 @@ def run_time_step(obj):
     # todo: move this into a time-horizon checking function.
     # this should check that the time-horizon is valid.
     # determine minimum overlapping timespan to set start and end times
-    # sys.stdout.write('> [PRE-RUN] Validating simulation time-horizon... ')
     msg = '> [PRE-RUN] Validating simulation time-horizon... '
     dispatcher.putOutput(msg)
     global_simulation_start = datetime.datetime(3000, 1, 1)
     global_simulation_end = datetime.datetime(1800, 1, 1)
     for modelid in exec_order:
-        inst = obj.get_model_by_id(modelid).get_instance()
+        inst = obj.get_model_by_id(modelid).instance()
         global_simulation_start = inst.simulation_start() if inst.simulation_start() < global_simulation_start else global_simulation_start
         global_simulation_end = inst.simulation_end() if inst.simulation_end() > global_simulation_end else global_simulation_end
 
     if global_simulation_start >= global_simulation_end:
         raise Exception("Invalid start and end times!\nstart:%s\nend:%s" % (
         str(global_simulation_start), str(global_simulation_end)))
-    # sys.stdout.write('done\n')
 
     msg = 'done'
     dispatcher.putOutput(msg)
@@ -329,7 +323,7 @@ def run_time_step(obj):
     # prepare all models
     for modelid in exec_order:
         model_obj = obj.get_model_by_id(modelid)
-        model_inst = model_obj.get_instance()
+        model_inst = model_obj.instance()
         if model_inst.status() != Status.Ready:
             model_inst.prepare()
 
@@ -348,7 +342,7 @@ def run_time_step(obj):
 
             # get the current model instance
             model_obj = obj.get_model_by_id(modelid)
-            model_inst = model_obj.get_instance()
+            model_inst = model_obj.instance()
 
             # get the target simulation times from the model links (including its own endtime)
             target_times = []
@@ -358,7 +352,7 @@ def run_time_step(obj):
                 for linkid, link in links[modelid].iteritems():
                     #target_model  = target[0]
                     target_model = link.target_component()
-                    target_times.append(target_model.get_instance().current_time())
+                    target_times.append(target_model.instance().current_time())
 
 
             else:
@@ -385,8 +379,6 @@ def run_time_step(obj):
                     msg = '> %s | %s \n' % (model_inst.name(), model_inst.status())
                     dispatcher.putOutput(msg)
 
-                    # sys.stdout.write('> %s  ' % (datetime.datetime.strftime(current_time,"%m-%d-%Y %H:%M:%S")))
-                    # sys.stdout.write('> %s | %s \n' % (model_inst.name(),model_inst.status()))
 
                     break
 
@@ -399,9 +391,6 @@ def run_time_step(obj):
 
                 msg = '> %s | %s \n' % (model_inst.name(), model_inst.status())
                 dispatcher.putOutput(msg)
-
-                # sys.stdout.write('> %s  ' % (datetime.datetime.strftime(current_time, "%m-%d-%Y %H:%M:%S")))
-                # sys.stdout.write('> %s | %s \n' % (model_inst.name(), model_inst.status()))
 
                 # run model timestep
                 model_inst.run_timestep(input_data, current_time)
@@ -474,7 +463,7 @@ def run_time_step(obj):
 
         # get the current model instance
         model_obj = obj.get_model_by_id(modelid)
-        model_inst = model_obj.get_instance()
+        model_inst = model_obj.instance()
 
         # save results
         items = model_inst.save()
@@ -506,12 +495,3 @@ def run_time_step(obj):
         '> Simulation duration: %3.2f seconds\n' % (time.time()-sim_st) + \
         '> ------------------------------------------'
     dispatcher.putOutput(msg)
-
-    #
-    # print '> '
-    # print '> ------------------------------------------'
-    # print '>           Simulation Summary '
-    # print '> ------------------------------------------'
-    # print '> Completed without error :)'
-    # print '> Simulation duration: %3.2f seconds' % (time.time() - sim_st)
-    # print '> ------------------------------------------'

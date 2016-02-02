@@ -13,7 +13,8 @@ import imp
 from stdlib import Variable, Unit
 #from odm2.src.api import dbconnection
 from ODMconnection import dbconnection
-
+from coordinator.emitLogging import elog
+from sprint import *
 from db.dbapi import postgresdb
 import uuid
 
@@ -137,10 +138,11 @@ def validate_config_ini(ini_path):
                     module = imp.load_source(filename.split('.')[0], abspath)
                     m = getattr(module, classname)
                 except:
-                    print 'ERROR | Configuration Parsing Error: '+classname+' is not a valid class name'
+                    elog.error('Configuration Parsing Error: '+classname+' is not a valid class name')
 
-    except Exception, e:
-        print 'ERROR | [Configuration Parsing Error] '+str(e)
+    except Exception as e:
+        elog.error('Configuration Parsing Error: '+str(e))
+        sPrint('Error parsing configuration file: %s' % e, MessageType.ERROR)
         return 0
 
 
@@ -451,9 +453,11 @@ def create_database_connections_from_args(title, desc, engine, address, db, user
                                  'description':d['desc'],
                                  'args': d}
 
-        print 'Connected to : %s [%s]'%(connection_string,db_id)
+        elog.info('Connected to : %s [%s]'%(connection_string,db_id))
+        sPrint('Connected to : %s [%s]'%(connection_string,db_id), MessageType.INFO)
     else:
-        print 'ERROR | Could not establish a connection with the database'
+        elog.error('Could not establish a connection with the database')
+        sPrint('Could not establish a connection with the database: %s'%address, MessageType.ERROR)
         return None
 
     return db_connections
@@ -527,10 +531,11 @@ def create_database_connections_from_file(ini):
                                      'description':d['desc'],
                                      'args': d}
 
-            print 'Connected to : %s [%s]'%(connection_string,db_id)
+            elog.info('Connected to : %s [%s]'%(connection_string,db_id))
+            sPrint('Connected to : %s [%s]'%(connection_string,db_id), MessageType.INFO)
         else:
-            print 'ERROR | Could not establish a connection with the database'
-            #return None
+            elog.error('Could not establish a connection with the database')
+            sPrint('Could not establish a connection with the database: %s'%d['address'], MessageType.ERROR)
 
 
 
@@ -556,7 +561,7 @@ def get_ts_from_link(dbapi, dbactions, links, target_model):
     tname = target_model.name()
     for id,link_inst in links.iteritems():
         f,t = link_inst.get_link()
-        if t[0].get_name() == tname:
+        if t[0].name() == tname:
             mapping[t[1].name()] = f[1].name()
             #print '>  %s -> %s'%(f[1].name(), t[1].name())
 
@@ -565,12 +570,12 @@ def get_ts_from_link(dbapi, dbactions, links, target_model):
             from_var = f[1].variable()
             to_var = t[1].variable()
             to_item = t[1]
-            name = f[0].get_name()
+            name = f[0].name()
             # start = f[1].getStartTime()
             # end = f[1].getEndTime()
 
-            start = t[0].get_instance().simulation_start()
-            end = t[0].get_instance().simulation_end()
+            start = t[0].instance().simulation_start()
+            end = t[0].instance().simulation_end()
 
             #model = f[0]
 

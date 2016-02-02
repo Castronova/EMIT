@@ -83,9 +83,16 @@ def sPrint(text,  messageType=MessageType.INFO, printTarget=PrintTarget.CONSOLE)
     # add a stack trace if this a debug message
     debug_text = ''
     indent = ''
+
+    # format DEBUG messages i.e. "--> my message (file.py, line 1003)
     if messageType == MessageType.DEBUG:
         caller = getStackTrace()
         indent = '-'*caller[2] + '> '
+        debug_text = ' (%s, line %s)' % (caller[0], caller[1])
+
+    # format ERROR and CRITICAL messages i.e. "my message (file.py, line 1003)
+    elif messageType == MessageType.ERROR or messageType == MessageType.CRITICAL:
+        caller = getStackTrace()
         debug_text = ' (%s, line %s)' % (caller[0], caller[1])
 
     text = str(text) if type(text) != str else text

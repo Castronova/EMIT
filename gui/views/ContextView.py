@@ -350,7 +350,6 @@ class ContextMenu(wx.Menu):
 
             file.close()
 
-
     def Selected(self, list_obj=None, list_id=None):
         if list_id is not None and list_obj is not None:
             self.__list_obj = list_obj
@@ -409,7 +408,6 @@ class ContextMenu(wx.Menu):
         # instantiate the time series control
         TimeSeriesObjectCtrl(parentClass=self, timeseries_variables=variable_list_entries)
 
-
     def OnDelete(self,event):
         if 'local' in self.parent.Parent.connection_combobox.GetStringSelection():
             dlg = wx.MessageDialog(self.parent, 'Are you sure you want to delete this simulation?', 'Question',
@@ -434,7 +432,13 @@ class TimeSeriesContextMenu(ContextMenu):
         super(TimeSeriesContextMenu, self).__init__(parent)
 
         # deactivate menu items
+        menuID = self.FindItem('Add')
+        self.FindItemById(menuID).Enable(False)
+
         menuID = self.FindItem('Delete')
+        self.FindItemById(menuID).Enable(False)
+
+        menuID = self.FindItem('Export')
         self.FindItemById(menuID).Enable(False)
 
 

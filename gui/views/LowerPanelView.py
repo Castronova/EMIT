@@ -51,12 +51,6 @@ class TimeSeriesTab(wx.Panel):
         self.table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
         self.m_olvSeries.DefineColumns(self.table_columns)
 
-        self.addConnectionButton.Bind(wx.EVT_LEFT_DOWN, self.AddConnection)
-        # self.addConnectionButton.Bind(wx.EVT_MOUSEWHEEL, self.AddConnection_MouseWheel)
-
-        self.connection_refresh_button.Bind(wx.EVT_LEFT_DOWN, self.OLVRefresh)
-        self.connection_combobox.Bind(wx.EVT_CHOICE, self.DbChanged)
-
         seriesSelectorSizer = wx.BoxSizer(wx.VERTICAL)
         buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
         buttonSizer.SetMinSize(wx.Size(-1, 45))
@@ -79,6 +73,15 @@ class TimeSeriesTab(wx.Panel):
 
         # object to hold the current session
         self.__current_session = None
+
+        # intialize key bindings
+        self.initBindings()
+
+    def initBindings(self):
+        self.addConnectionButton.Bind(wx.EVT_LEFT_DOWN, self.AddConnection)
+        self.connection_refresh_button.Bind(wx.EVT_LEFT_DOWN, self.OLVRefresh)
+        self.connection_combobox.Bind(wx.EVT_CHOICE, self.DbChanged)
+
 
     def DbChanged(self, event):
         # refresh the database
@@ -110,61 +113,10 @@ class TimeSeriesTab(wx.Panel):
             self._conection_string = connection_string
         return self._connection_added
 
-    # def AddConnection_MouseWheel(self, event):
-    #     '''
-    #     This is intentionally empty to disable mouse scrolling in the AddConnection combobox
-    #     :param event: EVT_MOUSEWHEEL
-    #     :return: None
-    #     '''
-    #     pass
-
     def AddConnection(self, event):
-
         connection = AddConnectionCtrl(self)
 
-        '''
-        while 1:
-            dlg = AddConnectionDialog(self, -1, "Sample Dialog", size=(350, 200),
-                             style=wx.DEFAULT_DIALOG_STYLE,
-                             )
-            dlg.CenterOnScreen()
 
-            if params:
-                dlg.set_values(title=params[0],
-                                  desc = params[1],
-                                  engine = params[2],
-                                  address = params[3],
-                                  name = params[4],
-                                  user = params[5],
-                                  pwd = params[6])
-
-            # this does not return until the dialog is closed.
-            val = dlg.ShowModal()
-
-            if val == 5101:
-                # cancel is selected
-                return
-            elif val == 5100:
-                params = dlg.getConnectionParams()
-
-                dlg.Destroy()
-
-                # create the database connection
-                Publisher.sendMessage('DatabaseConnection',
-                                      title=params[0],
-                                      desc=params[1],
-                                      dbengine=params[2],
-                                      address=params[3],
-                                      name=params[4],
-                                      user=params[5],
-                                      pwd=params[6])
-                print self.connection_added_status()
-                if self.connection_added_status():
-                    Publisher.sendMessage('getDatabases')
-                    return
-                else:
-                    wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
-            '''
     def getPossibleConnections(self):
         wsdl = {}
         wsdl["Red Butte Creek"] = "http://data.iutahepscor.org/RedButteCreekWOF/cuahsi_1_1.asmx?WSDL"
@@ -475,11 +427,7 @@ class DataSeries(wx.Panel):
         self.table = LogicDatabase(self, pos=wx.DefaultPosition, size=wx.DefaultSize, id=wx.ID_ANY,
                                    style=wx.LC_REPORT | wx.SUNKEN_BORDER)
 
-        # Bindings
-        self.addConnectionButton.Bind(wx.EVT_LEFT_DOWN, self.AddConnection)
 
-        self.connection_refresh_button.Bind(wx.EVT_LEFT_DOWN, self.database_refresh)
-        self.connection_combobox.Bind(wx.EVT_CHOICE, self.DbChanged)
 
         # Sizers
         seriesSelectorSizer = wx.BoxSizer(wx.VERTICAL)
@@ -497,6 +445,15 @@ class DataSeries(wx.Panel):
         self.Layout()
 
         engineEvent.onDatabaseConnected += self.refreshConnectionsListBox
+
+        # initialize key bindings
+        self.initBindings()
+
+    def initBindings(self):
+        # Bindings
+        self.addConnectionButton.Bind(wx.EVT_LEFT_DOWN, self.AddConnection)
+        self.connection_refresh_button.Bind(wx.EVT_LEFT_DOWN, self.database_refresh)
+        self.connection_combobox.Bind(wx.EVT_CHOICE, self.DbChanged)
 
     def DbChanged(self, event):
         self.database_refresh(event)
@@ -572,6 +529,7 @@ class DataSeries(wx.Panel):
 
                     wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
             """
+
     def load_data(self):
         elog.error('Abstract method. Must be overridden!')
         raise Exception('Abstract method. Must be overridden!')

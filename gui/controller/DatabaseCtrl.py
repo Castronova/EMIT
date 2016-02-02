@@ -7,6 +7,7 @@ from ..ObjectListView import ColumnDefn
 
 import db.dbapi_v2 as db2
 from odm2api.ODMconnection import dbconnection
+from sprint import *
 
 class LogicDatabase(ViewDatabase):
     def __init__(self, *args, **kwargs):
@@ -63,26 +64,37 @@ class LogicDatabase(ViewDatabase):
         self.__list_id = event.GetIndex()
 
     def onDoubleClick(self, event):
+        """
+        Opens the data previewer view
+        Args:
+            event: double click
+
+        Returns: None
+
+        """
+
         id = event.GetIndex()
         obj = event.GetEventObject()
-        filename = obj.GetItem(id).GetText()
-        uniqueId = obj.GetItem(id).GetText()
+        # filename = obj.GetItem(id).GetText()
+        # uniqueId = obj.GetItem(id).GetText()
 
         # todo: this should check the type of data instead i.e. ODM2, WOF, etc...
         try:
             sitecode = obj.GetObjectAt(id).site_code
-        except:
-            sitecode = None
-
-        if sitecode is None:
-            try:
-                title = obj.GetObjectAt(id).model_name
-            except:
-                title = obj.GetObjectAt(id).variable
-            Publisher.sendMessage('AddModel', filepath=filename, x=0, y=0, uniqueId=uniqueId, title=title)  # sends message to LogicCanvas.addModel
-
-        else:
             self.Parent.prepareODM1_Model(obj.GetObjectAt(id))
+        except:
+            sPrint('Could not open the data previewer', MessageType.ERROR)
+            # sitecode = None
+
+        # if sitecode is None:
+        #     try:
+        #         title = obj.GetObjectAt(id).model_name
+        #     except:
+        #         title = obj.GetObjectAt(id).variable
+        #     Publisher.sendMessage('AddModel', filepath=filename, x=0, y=0, uniqueId=uniqueId, title=title)  # sends message to LogicCanvas.addModel
+        #
+        # else:
+        #
             # self.Parent.prepareODM1_Model(id)
 
     def getDbSession(self):

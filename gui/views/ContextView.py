@@ -459,18 +459,24 @@ class SimulationContextMenu(ContextMenu):
             if session.__module__ == 'db.dbapi_v2':
                 conn = session
 
+                results = []
                 try:
-                    sPrint('getting result id from simulation id', MessageType.DEBUG)
+                    sPrint('getting results for simulationId: %s' % simulationID , MessageType.DEBUG)
                     # results = conn.read.getResultsBySimulationID(simulationID)
                     results = conn.read.getResultsBySimulationID(simulationID)
                 except Exception, e:
                     sPrint('Encountered and exeption: %s' % e, MessageType.ERROR)
+                finally:
+                    sPrint('Found %d result records: ' % len(results), MessageType.DEBUG)
+
+                if len(results) == 0:
+                    sPrint('No results found for simulation id %s. There must be something wrong with the database :(' % simulationID, MessageType.ERROR)
 
                 res = {}
                 for r in results:
                     variable_name = r.VariableObj.VariableCode
 
-                    sPrint('retrieving time series results for resultid: '+r.ResultID, MessageType.DEBUG)
+                    sPrint('retrieving time series results for resultid: %d' % r.ResultID, MessageType.DEBUG)
                     result_values = conn.read.getTimeSeriesResultValuesByResultId(r.ResultID)
 
                     sPrint('parsing dates and values from pandas object', MessageType.DEBUG)

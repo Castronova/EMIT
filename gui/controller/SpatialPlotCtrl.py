@@ -99,28 +99,17 @@ class SpatialPlotCtrl(ViewSpatialPlot):
             x, y = zip(*[(g.GetX(), g.GetY()) for g in geom_list])
             self.ax.scatter(x, y, color=colors)
 
-
         # POLYGON
         elif geom_list[0].GetGeometryName() == stdlib.GeomType.POLYGON:
 
             poly_list = []
-            for geom in geom_list:
+            # get geometry reference
+            ref = geom_list[0].GetGeometryRef(0)
 
-                # get then number of polygons
-                polycount = geom.GetGeometryCount()
-
-                # loop through each polygon (most of the time this will only be 1)
-                for i in range(polycount):
-
-                    # get geometry reference
-                    ring = geom.GetGeometryRef(i)
-
-                    # build a list of points
-                    pts = numpy.array(ring.GetPoints())
-
-                    # p = pts[:,0:2]
-                    a = tuple(map(tuple, pts[:, 0:2]))
-                    poly_list.append(a)
+            # build a list of points
+            pts = numpy.array(ref.GetPoints())
+            a = tuple(map(tuple, pts[:, 0:2]))
+            poly_list.append(a)
 
             # build a polygon collection
             pcoll = PolyCollection(poly_list, closed=True, facecolor=colors, alpha=0.5, edgecolor=None, linewidths=(2,))
@@ -132,15 +121,12 @@ class SpatialPlotCtrl(ViewSpatialPlot):
         elif geom_list[0].GetGeometryName() == stdlib.GeomType.LINESTRING:
 
             line_list = []
-            for geom in geom_list:
-                # if geom.GetGeometryName() == stdlib.GeomType.LINESTRING:
-
                 # build a list of points
-                pts = numpy.array(geom.GetPoints())
+            pts = numpy.array(geom_list[0].GetPoints())
 
-                # p = pts[:,0:2]
-                a = tuple(map(tuple, pts[:, 0:2]))
-                line_list.append(a)
+            # p = pts[:,0:2]
+            a = tuple(map(tuple, pts[:, 0:2]))
+            line_list.append(a)
 
             # build a line collection
             lcoll = LineCollection(line_list, colors=colors)

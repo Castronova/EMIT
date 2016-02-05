@@ -8,6 +8,7 @@ import coordinator.users as users
 from coordinator import engineAccessors
 from coordinator.emitLogging import elog
 from gui.views.PreRunView import viewPreRun
+from utilities.gui import loadAccounts
 
 
 class PreRunCtrl(viewPreRun):
@@ -40,34 +41,12 @@ class PreRunCtrl(viewPreRun):
 
     def refreshUserAccount(self):
         self.account_combo.Clear()
-        self.accounts = self.loadAccounts()
+        self.accounts = loadAccounts()
         account_names = [' '.join([affil.person.lastname, '[' + affil.organization.code + ']']) for affil in
                          self.accounts]
         if len(account_names) > 0:
             self.account_combo.AppendItems(account_names)
             self.account_combo.SetSelection(0)
-
-    def loadAccounts(self):
-        known_users = []
-        userjson = os.environ['APP_USER_PATH']
-
-        #  Create the file if it does not exist
-        if os.path.isfile(userjson):
-            with open(userjson, 'r') as file:
-                content = file.read()
-                file.close()
-            if not (content.isspace() or len(content) < 1):  # check if file is empty
-                # file does exist so proceed like normal and there is content in it
-                elog.debug('userjson ' + userjson)
-                with open(userjson, 'r') as f:
-                    known_users.extend(users.BuildAffiliationfromJSON(f.read()))
-                    f.close()
-        else:
-            # file does not exist so we'll create one.
-            file = open(userjson, 'w')
-            file.close()
-
-        return known_users
 
     def populateVariableList(self):
         if len(engineAccessors.getAllLinks()) < 1:

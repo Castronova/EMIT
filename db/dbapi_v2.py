@@ -427,7 +427,7 @@ class sqlite():
         result_ids = [ResultIDs] * valCount
 
         # convert datetime into apsw accepted format
-        value_date_times = [d.strftime('%Y-%m-%d %H:%M:%S.%f') for d in ValueDateTimes]
+        value_date_times = [str(d) for d in ValueDateTimes]
 
         # result_ids = [ResultID] * valCount
 
@@ -436,13 +436,20 @@ class sqlite():
         # self.spatialDb.execute('INSERT INTO')
 
         # get the last record index
+
         nextID = self.get_next_insert_id(models.TimeSeriesResultValues)
 
+
         valueIDs = range(nextID, nextID + valCount, 1)
+
+
         # vals = [ID, ResultID, DataValue, ValueDateTime, ValueDateTimeUTCOffset, CensorCodeCV, QualityCodeCV, TimeAggregationInterval, TimeAggregationIntervalUnitsID]
         vals = zip(valueIDs, result_ids, DataValues, value_date_times, time_offsets, censor_codes, quality_codes, time_intervals, time_unit_ids)
 
         # insert values in chunks of 10,000
+        print 'Begin inserting %d value' % len(vals)
+
+        self.cursor.execute("BEGIN TRANSACTION;")
         chunk_size = 10000
         percent_complete = 0
         for i in range(0, len(vals), chunk_size):
@@ -451,7 +458,7 @@ class sqlite():
             percent_complete = float(i) / float(len(vals)) * 100
             print '.. inserting records %3.1f %% complete' % (percent_complete)
             self.cursor.executemany('INSERT INTO TimeSeriesResultValues VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', vals[sidx:eidx])
-
+        self.cursor.execute("COMMIT;")
 
         return 1
 

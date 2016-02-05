@@ -6,13 +6,14 @@ import wrappers
 import stdlib
 import datetime
 from utilities import geometry
+import environment
 
 class testBaseWrapper(unittest.TestCase):
 
     def setUp(self):
         pass
         args = {}
-        self.base = wrappers.BaseWrapper(args)
+        self.base = wrappers.BaseWrapper()
 
     def tearDown(self):
         pass

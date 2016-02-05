@@ -45,8 +45,10 @@ class testNewDataOrg(unittest.TestCase):
         # get one geom
         g = self.item.getGeometries2(4)
         self.assertTrue(isinstance(g, Geometry2))
-        self.assertTrue(g.geom().x == 5)
-        self.assertTrue(g.geom().y == 6)
+        x,y,z = g.GetPoint()
+        self.assertTrue(x == 5)
+        self.assertTrue(y == 6)
+        self.assertTrue(z == 0)
 
     def test_add_geoms2(self):
 
@@ -161,6 +163,6 @@ class testNewDataOrg(unittest.TestCase):
         self.assertTrue(invalid == (0, None))
 
         # test getting datavalue geometry subsets
-        values = self.item.getValues2(idx_start=3, idx_end=5, start_time=st, end_time=et)
+        values = self.item.getValues2(geom_idx_start=3, geom_idx_end=5, start_time=st, end_time=et)
         self.assertTrue(len(values) == 5)
         self.assertTrue(len(values[0]) == 3)

@@ -119,6 +119,23 @@ def fromGdalLinestring(gdallinestring):
     return numpy.array([g])
 
 
+def build_point_geometry(x, y, z=0):
+    """
+    Builds stdlib point Geometry object
+    :param x: single value (float)
+    :param y: single value (float)
+    :return: stdlib point geometru
+    """
+
+    # create an empty point
+    point = stdlib.Geometry2(ogr.wkbPoint)
+    try:
+        # add the x, y, z coordinates
+        point.AddPoint(float(x), float(y), float(z))
+    except Exception, e:
+        print e
+    return point
+
 def build_point_geometries(x, y):
     """
     Builds stdlib Geometry objects from a list of  x and y coordinates
@@ -134,7 +151,7 @@ def build_point_geometries(x, y):
 
     try:
         if not isinstance(x, numpy.ndarray) and not isinstance(y, numpy.ndarray):
-            if isinstance(x, list) and isinstance(y, list):
+            if (isinstance(x, list) or isinstance(x, tuple) ) and ( isinstance(y, list) or isinstance(y, tuple) ):
                 x = numpy.asarray(x)
                 y = numpy.asarray(y)
             else:

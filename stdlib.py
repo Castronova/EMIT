@@ -240,20 +240,57 @@ class ExchangeItem(object):
                 return numpy.array(self.__geoms2)
             return self.__geoms2
 
-    def addGeometries2(self, geom=None):
+    def addGeometry(self, geometry):
+
+        geoms = []
+        try:
+            if isinstance(geometry, Geometry2):
+                geoms.append(geometry)
+            else:
+                elog.error('Attempt to add unsupported geometry type: %s'%type(geometry))
+                sPrint('Attempt to add unsupported geometry type: %s'%type(geometry), MessageType.ERROR)
+                return 0
+        except Exception, e:
+            elog.error('Encountered an error while adding geometry: %s'%e)
+            sPrint('Encountered an error while adding geometry: %s'%e, MessageType.ERROR)
+
+        # save the geometry
+        self.__geoms2.extend(geoms)
+
+        return 1
+
+    def addGeometries2(self, geometries=None):
         """
         adds geometries to the exchange item
         :param geom: list of geometries or a single value
         :return: None
         """
 
-        if isinstance(geom,list) or isinstance(geom,numpy.ndarray):
-            self.__geoms2.extend(geom)
-        elif isinstance(geom, Geometry2):
-            self.__geoms2.append(geom)
-        else:
-            sPrint("Attempted to add unsupported geometry type to ExchangeItem %s, in stdlib.addGeometries(geom)" % type(geom))
+        # make sure the input geometries are iterable
+        if not isinstance(geometries,list) and not isinstance(geometries,numpy.ndarray):
+            elog.error('Encountered an error while adding geometries: Unsupported argument type: %s'%type(geometries))
+            sPrint('Encountered an error while adding geometries: Unsupported argument type: %s'%type(geometries), MessageType.ERROR)
             return 0
+
+
+        geoms = []
+        count = 0
+        for g in geometries:
+            if isinstance(g, Geometry2):
+                geoms.append(g)
+            count += 1
+
+        # save geometries
+        self.__geoms2.extend(geoms)
+
+        # notify that not all geometries were saved
+        if len(geoms) != count:
+            elog.error('Encountered unsupported geometry types while adding geometries to exchange item. Not all items may have been saved.')
+            sPrint('Encountered unsupported geometry types while adding geometries to exchange item. Not all items may have been saved.', MessageType.WARNING)
+            return 0
+
+
+
         return 1
 
     def setValuesBySlice (self, values, time_index_slice=(None, None, None), geometry_index_slice=(None, None, None)):

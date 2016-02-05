@@ -78,6 +78,7 @@ def build_exchange_items_from_config(params):
         variable = None
         unit = None
         geom = None
+        geoms = []
 
         # get all input and output exchange items as a list
         iotype = stdlib.ExchangeItemType.OUTPUT if io['type'].upper() == stdlib.ExchangeItemType.OUTPUT else stdlib.ExchangeItemType.INPUT
@@ -103,6 +104,7 @@ def build_exchange_items_from_config(params):
 
                     # parse the geometry from the shapefile
                     geom, srs = utilities.spatial.read_shapefile(gen_path)
+                    geoms.append(geom)
 
                 # otherwise it must be a wkt
                 else:
@@ -112,6 +114,7 @@ def build_exchange_items_from_config(params):
 
                         # parse the wkt string into a stdlib.Geometry object
                         geom = utilities.geometry.fromWKT(value)
+                        geoms.append(geom)
 
                     except:
                         elog.warning('Could not load component geometry from *.mdl file')
@@ -134,7 +137,7 @@ def build_exchange_items_from_config(params):
                                 type=iotype)
 
         # add geometry to exchange item (NEW)
-        ei.addGeometries2(geom)
+        ei.addGeometries2(geoms)
 
         # save exchange items based on type
         items[ei.type()].append(ei)

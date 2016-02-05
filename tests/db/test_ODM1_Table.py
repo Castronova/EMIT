@@ -1,9 +1,11 @@
 __author__ = 'francisco'
 
+import WebServiceApi as wsapi
 import wx
 import wx.grid
+
 import test_ODM1
-import WebServiceApi as wsapi
+
 
 class GridFrame(wx.Frame):
 

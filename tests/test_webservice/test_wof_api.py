@@ -1,7 +1,9 @@
 __author__ = 'ryan'
 
-import test_ODM1 as tODM1
 import collections
+
+from tests.db import test_ODM1 as tODM1
+
 
 class WebServiceApi:
 

@@ -569,3 +569,26 @@ def get_data_by_exchange_item(exchangeitemlist, variableName, unitName):
     :return: exchange item associated with variable and unit
     """
     pass
+
+def loadAccounts():
+    import coordinator.users as users
+    known_users = []
+    userjson = os.environ['APP_USER_PATH']
+
+    #  Create the file if it does not exist
+    if os.path.isfile(userjson):
+        with open(userjson, 'r') as file:
+            content = file.read()
+            file.close()
+        if not (content.isspace() or len(content) < 1):  # check if file is empty
+            # file does exist so proceed like normal and there is content in it
+            elog.debug('userjson ' + userjson)
+            with open(userjson, 'r') as f:
+                known_users.extend(users.BuildAffiliationfromJSON(f.read()))
+                f.close()
+    else:
+        # file does not exist so we'll create one.
+        file = open(userjson, 'w')
+        file.close()
+
+    return known_users

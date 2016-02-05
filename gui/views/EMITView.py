@@ -19,6 +19,7 @@ from gui.controller.NetcdfCtrl import NetcdfCtrl
 from gui.controller.PreRunCtrl import AddNewUserDialog
 from gui.controller.ToolboxCtrl import LogicToolbox
 from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
+from utilities.gui import loadAccounts
 
 import coordinator.users as users
 # create custom events
@@ -59,67 +60,6 @@ class ViewEMIT(wx.Frame):
 
         self.defaultLoadDirectory = os.getcwd() + "/models/MyConfigurations/"
 
-
-
-    def loadAccounts(self):
-        known_users = []
-        userjson = os.environ['APP_USER_PATH']
-
-        #  Create the file if it does not exist
-        if os.path.isfile(userjson):
-            with open(userjson, 'r') as file:
-                content = file.read()
-                file.close()
-            if not (content.isspace() or len(content) < 1):  # check if file is empty
-                # file does exist so proceed like normal and there is content in it
-                elog.debug('userjson ' + userjson)
-                with open(userjson, 'r') as f:
-                    known_users.extend(users.BuildAffiliationfromJSON(f.read()))
-                    f.close()
-        else:
-            # file does not exist so we'll create one.
-            file = open(userjson, 'w')
-            file.close()
-
-        return known_users
-
-    def checkUsers(self):
-        userPath = os.environ['APP_USER_PATH']
-        print userPath
-        if os.path.isfile(userPath) == False:
-            file = open(userPath, 'w+')
-            dlg = AddNewUserDialog(self, title="Create User")
-            dlg.CenterOnScreen()
-            dlg.ShowModal()
-        else:
-            users = self.loadAccounts()
-            if len(users) < 1:
-                dlg = AddNewUserDialog(self, title="Create User")
-                dlg.CenterOnScreen()
-                dlg.ShowModal()
-
-        users = self.loadAccounts()
-        userAdded = False
-        no = False
-        if len(users) > 0:
-            userAdded = True
-        while userAdded == False:# and no == False:
-
-            users = self.loadAccounts()
-            if len(users) == 0 and no == False:
-                dial = wx.MessageDialog(None, 'You must add a user to continue', 'Question',
-                    wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
-                if dial.ShowModal() == wx.ID_NO:
-                    pid = os.getpid()
-                    #os.system("kill -9 " + pid)
-                    no = True
-                else:
-                    dlg = AddNewUserDialog(self, title="Create User")
-                    dlg.CenterOnScreen()
-                    dlg.ShowModal()
-            else:
-                userAdded = True
-                self.onClose(None)
 
     def refreshUserAccount(self):
         # This method is here because AddNewUserDialog.onOkBtn looks for this method at the end of the function
@@ -270,9 +210,48 @@ class ViewEMIT(wx.Frame):
         self.Bind(wx.EVT_MENU, self.onAddNetcdfFile, add_netcdf)
         self.Bind(wx.EVT_MENU, self.onOpenDapViewer, open_dap_viewer)
 
-    def Settings(self, event):
-        settings = viewMenuBar()
-        settings.Show()
+
+
+    def checkUsers(self):
+        userPath = os.environ['APP_USER_PATH']
+        print userPath
+        if os.path.isfile(userPath) == False:
+            file = open(userPath, 'w+')
+            dlg = AddNewUserDialog(self, title="Create User")
+            dlg.CenterOnScreen()
+            dlg.ShowModal()
+        else:
+            # users = self.loadAccounts()
+            users = loadAccounts()
+            if len(users) < 1:
+                dlg = AddNewUserDialog(self, title="Create User")
+                dlg.CenterOnScreen()
+                dlg.ShowModal()
+
+        # users = self.loadAccounts()
+        users = loadAccounts()
+        userAdded = False
+        no = False
+        if len(users) > 0:
+            userAdded = True
+        while userAdded == False:# and no == False:
+
+            # users = self.loadAccounts()
+            users = loadAccounts()
+            if len(users) == 0 and no == False:
+                dial = wx.MessageDialog(None, 'You must add a user to continue', 'Question',
+                    wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
+                if dial.ShowModal() == wx.ID_NO:
+                    pid = os.getpid()
+                    #os.system("kill -9 " + pid)
+                    no = True
+                else:
+                    dlg = AddNewUserDialog(self, title="Create User")
+                    dlg.CenterOnScreen()
+                    dlg.ShowModal()
+            else:
+                userAdded = True
+                self.onClose(None)
 
     def onAddCsvFile(self, event):
         file_dialog = wx.FileDialog(self.Parent,
@@ -352,9 +331,6 @@ class ViewEMIT(wx.Frame):
             wx.App.ExitMainLoop
             wx.WakeUpMainThread
 
-
-
-
     def onOpenDapViewer(self, event):
         netcdf = NetcdfCtrl(self)
 
@@ -391,6 +367,10 @@ class ViewEMIT(wx.Frame):
             self.filename = openFileDialog.GetFilename()
             self.loadingpath = filepath
             self.defaultLoadDirectory = os.path.dirname(filepath)
+
+    def Settings(self, event):
+        settings = viewMenuBar()
+        settings.Show()
 
     def SaveConfiguration(self,event):
         if self.loadingpath == None:

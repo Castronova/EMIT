@@ -12,7 +12,7 @@ from shapely.geometry import Point
 from advanced_geometry import *
 from datetime import timedelta
 from datetime import datetime as dt
-
+import environment
 import random
 
 class testNewDataOrg(unittest.TestCase):
@@ -45,7 +45,7 @@ class testNewDataOrg(unittest.TestCase):
 
         # get one geom
         g = self.item.getGeometries2(4)
-        self.assertTrue(isinstance(g, Geometry))
+        self.assertTrue(isinstance(g, Geometry2))
         self.assertTrue(g.geom().x == 5)
         self.assertTrue(g.geom().y == 6)
 
@@ -53,10 +53,10 @@ class testNewDataOrg(unittest.TestCase):
 
         # add a single geom
         pt = Point(10,11)
-        ret = self.item.addGeometries2(Geometry(pt))
+        ret = self.item.addGeometries2(Geometry2(pt))
         self.assertTrue(ret)
         g = self.item.getGeometries2(-1)
-        self.assertTrue(isinstance(g, Geometry))
+        self.assertTrue(isinstance(g, Geometry2))
         self.assertTrue(g.geom().x == 10)
         self.assertTrue(g.geom().y == 11)
 
@@ -67,11 +67,11 @@ class testNewDataOrg(unittest.TestCase):
         # add many of geometries
         geoms = []
         for i in range(100,110):
-            geoms.append(Geometry(Point(i,i+1)))
+            geoms.append(Geometry2(Point(i,i+1)))
         ret = self.item.addGeometries2(geoms)
         self.assertTrue(ret)
         g = self.item.getGeometries2(-1)
-        self.assertTrue(isinstance(g, Geometry))
+        self.assertTrue(isinstance(g, Geometry2))
         self.assertTrue(g.geom().x == 109)
         self.assertTrue(g.geom().y == 110)
 
@@ -79,13 +79,13 @@ class testNewDataOrg(unittest.TestCase):
         geoms = []
         for i in range(100,110):
             if i % 2 == 0:
-                geoms.append(Geometry(Point(i,i+1)))
+                geoms.append(Geometry2(Point(i,i+1)))
             else:
                 geoms.append(Point(i,i+1))
                 ret = self.item.addGeometries2(geoms)
         self.assertFalse(ret)
         g = self.item.getGeometries2(-1)
-        self.assertTrue(isinstance(g, Geometry))
+        self.assertTrue(isinstance(g, Geometry2))
         self.assertTrue(g.geom().x == 109)
         self.assertTrue(g.geom().y == 110)
 

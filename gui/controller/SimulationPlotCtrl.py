@@ -38,14 +38,6 @@ class SimulationPlotCtrl(TimeSeriesPlotView):
     def addToCanvas(self, event):
         pass
 
-    def createColumns(self, column_name_list):
-        if column_name_list is not None:
-            for i in range(len(column_name_list)):
-                self.variableList.InsertColumn(i, column_name_list[i])
-            self.autoSizeColumns()
-        else:
-            elog.debug("Column list received is empty")
-
     def disableBtns(self, event):
         self.PlotBtn.Disable()
         self.exportBtn.Disable()
@@ -64,13 +56,6 @@ class SimulationPlotCtrl(TimeSeriesPlotView):
         for object in self._objects:
             if id == object.resultid:
                 return object
-
-    def getSelectedId(self):
-        num = self.variableList.GetItemCount()
-        for i in range(num):
-            if self.variableList.IsSelected(i):
-                id = self.variableList.GetItemText(i)
-                return int(id)
 
     def onExport(self, event):
         save = wx.FileDialog(parent=self, message="Choose Path",
@@ -120,20 +105,11 @@ class SimulationPlotCtrl(TimeSeriesPlotView):
         try:
             name = self._data[id][0]
             units = self._data[id][1]
-            self.plotGraph(data=data, var_name=name, yunits=units)
+            self.plotGraph(data=data, var_name=name, y_units=units)
 
         except Exception as e:
             elog.debug("DetachedInstanceError. See resobj.VariableObj" + str(e))
             elog.error("Failed to load the graph.  Try restarting.")
-
-    def plotGraph(self, data, var_name, yunits=None, no_data=None):
-        self.plot.clearPlot()
-        if data is not None:
-            # self.plot.setAxisLabel(" ", yunits)
-            self.plot.plotData(data, str(var_name), no_data, yunits)
-        else:
-            elog.info("Received no data to plot")
-            elog.info("data is None")
 
     def populateVariableList(self, data):
         if isinstance(data, dict):

@@ -51,8 +51,8 @@ class PreRunCtrl(viewPreRun):
     def populateVariableList(self):
         if len(engineAccessors.getAllLinks()) < 1:
             elog.info("No links have been added")
+            return
         else:
-            output_name_list = {}
             models = {}
             # compile a list of model ids and names that exist in the configuration
             links = engineAccessors.getAllLinks()
@@ -65,15 +65,15 @@ class PreRunCtrl(viewPreRun):
                     models[t_id] = link['target_component_name']
 
             # sort models
-            for model_id, model_name in sorted(models.items(), key=lambda x: x[1]):
-                oei = engineAccessors.getOutputExchangeItems(model_id, returnGeoms=False)
-                output_name_list[model_name] = [ei['name'] for ei in oei]
+            self._data = self.sort_output_model(models)
+            self.insert_data(self._data)
+            self.autoSizeColumns()
+            self.alternateRowColor()
 
-            data = output_name_list
-            self._data = output_name_list
+    def insert_data(self, data):
+        if isinstance(data, dict):
             col_number = 0
             row_number = 0
-
             for key, values in data.iteritems():
                 for value in values:
                     pos = self.variableList.InsertStringItem(col_number, str(value))
@@ -81,9 +81,16 @@ class PreRunCtrl(viewPreRun):
                     self.variableList.SetStringItem(pos, col_number, str(key))
                     row_number += 1
                     col_number = 0
+        else:
+            elog.debug("PreRunCtrl.insert_data must be a dictionary")
+        return
 
-            self.autoSizeColumns()
-            self.alternateRowColor()
+    def sort_output_model(self, models):
+        output_name_list = {}
+        for model_id, model_name in sorted(models.items(), key=lambda x: x[1]):
+            oei = engineAccessors.getOutputExchangeItems(model_id, returnGeoms=False)
+            output_name_list[model_name] = [ei['name'] for ei in oei]
+        return output_name_list
 
     def OnCancel(self, e):
         self.Close(True)

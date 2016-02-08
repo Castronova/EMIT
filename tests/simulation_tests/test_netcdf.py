@@ -1,11 +1,13 @@
 
 
-import os
+import os, sys
 import time
 import unittest
 import datetime
 import wrappers
 from coordinator.engine import Coordinator
+import environment
+from sprint import *
 
 class testNetcdfSimulation(unittest.TestCase):
 
@@ -13,13 +15,25 @@ class testNetcdfSimulation(unittest.TestCase):
     def setUp(self):
         self.engine = Coordinator()
 
+        if sys.gettrace():
+            print 'Detected Debug Mode'
+            # initialize debug listener (reroute messages to console)
+            self.d = DebugListener()
+
+        self.engine = Coordinator()
+        PrintTarget.CONSOLE = 1134
+
+        self.basepath = os.path.dirname(__file__)
+
     def tearDown(self):
         pass
 
 
     def test_netcdf_feedforward(self):
 
-        args = dict(ncpath = '../data/prcp.nc',
+        nc_path = os.path.join(self.basepath, 'data/prcp.nc')
+        self.assertTrue(os.path.exists(nc_path))
+        args = dict(ncpath = nc_path,
                     tdim = 'time',
                     xdim = 'x',
                     ydim = 'y',
@@ -27,13 +41,11 @@ class testNetcdfSimulation(unittest.TestCase):
                     starttime = '10-26-2015 00:00:00',
                     type = wrappers.Types.NETCDF)
 
-        self.assertTrue(os.path.exists(args['ncpath']))
-
         # add the WaterOneFlow component to the engine
         self.engine.add_model(id=1234, attrib=args)
 
         # load a test component
-        multiplier_mdl = os.path.abspath('./data/multiplier/multiplier.mdl')
+        multiplier_mdl = os.path.join(self.basepath, '../../app_data/models/multiplier/multiplier.mdl')
         self.assertTrue(os.path.exists(multiplier_mdl), 'Path does not exist: %s'%multiplier_mdl)
         args = dict(mdl=multiplier_mdl)
         self.engine.add_model(id=1235, attrib=args)

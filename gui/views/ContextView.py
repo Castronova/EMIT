@@ -9,7 +9,7 @@ from wx.lib.pubsub import pub as Publisher, __all__
 from gui.controller.ModelCtrl import LogicModel
 from gui.controller.SimulationPlotCtrl import SimulationPlotCtrl
 from gui.controller.PlotCtrl import LogicPlot
-from gui.controller.PreRunCtrl import PreRunCtrl
+from gui.controller.PreRunCtrl import PreRunViewCtrl
 import coordinator.engineAccessors as engine
 from gui import events
 from coordinator.emitLogging import elog
@@ -188,7 +188,7 @@ class CanvasContextMenu(wx.Menu):
         self.parent.run()
 
     def OnRunModel(self, e):
-        preRunDialog = PreRunCtrl(self.parent)
+        preRunDialog = PreRunViewCtrl(self.parent)
         preRunDialog.Show()
 
 

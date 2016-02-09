@@ -7,13 +7,13 @@ import wx
 import coordinator.users as users
 from coordinator import engineAccessors
 from coordinator.emitLogging import elog
-from gui.views.PreRunView import viewPreRun
+from gui.views.PreRunView import PreRunView
 from utilities.gui import loadAccounts
 
 
-class PreRunCtrl(viewPreRun):
+class PreRunViewCtrl(PreRunView):
     def __init__(self, parent=None):
-        viewPreRun.__init__(self, parent=parent)
+        PreRunView.__init__(self, parent=parent)
 
         # Defining the table columns
         table_columns = ["Name", "Component"]
@@ -82,7 +82,7 @@ class PreRunCtrl(viewPreRun):
                     row_number += 1
                     col_number = 0
         else:
-            elog.debug("PreRunCtrl.insert_data must be a dictionary")
+            elog.debug("PreRunViewCtrl.insert_data must be a dictionary")
         return
 
     def sort_output_model(self, models):

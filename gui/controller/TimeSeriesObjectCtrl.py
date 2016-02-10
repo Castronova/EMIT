@@ -24,7 +24,7 @@ class TimeSeriesObjectCtrl(TimeSeriesPlotView):
         self.Bind(wx.EVT_DATE_CHANGED, self.setEndDate, self.endDatePicker)
         self.Bind(wx.EVT_BUTTON, self.onExport, self.exportBtn)
         self.Bind(wx.EVT_BUTTON, self.addToCanvas, self.addToCanvasBtn)
-        self.Bind(wx.EVT_BUTTON, self.previewPlot, self.PlotBtn)
+        self.Bind(wx.EVT_BUTTON, self.preview_plot, self.PlotBtn)
         self.disableBtns(None)
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.enableBtns)
         self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.disableBtns)
@@ -84,10 +84,10 @@ class TimeSeriesObjectCtrl(TimeSeriesPlotView):
 
             file.close()
 
-    def previewPlot(self, event):
+    def preview_plot(self, event):
 
         id = self.getSelectedId()
-        date_time_objects, value, resobj = self.parentClass.getData(resultID=id)
+        date_time_objects, value, resobj = self.parentClass.menu.getData(id)
 
         data = []
         for i in range(len(date_time_objects)):

@@ -69,8 +69,8 @@ class TimeSeriesTab(wx.Panel):
         engineEvent.onDatabaseConnected += self.refreshConnectionsListBoxTS
 
         # build custom context menu
-        menu = TimeSeriesContextMenu(self.m_olvSeries)
-        self.m_olvSeries.setContextMenu(menu)
+        self.menu = TimeSeriesContextMenu(self.m_olvSeries)
+        self.m_olvSeries.setContextMenu(self.menu)
 
         # object to hold the current session
         self.__current_session = None
@@ -82,7 +82,6 @@ class TimeSeriesTab(wx.Panel):
         self.addConnectionButton.Bind(wx.EVT_LEFT_DOWN, self.AddConnection)
         self.connection_refresh_button.Bind(wx.EVT_LEFT_DOWN, self.OLVRefresh)
         self.connection_combobox.Bind(wx.EVT_CHOICE, self.DbChanged)
-
 
     def DbChanged(self, event):
         # refresh the database

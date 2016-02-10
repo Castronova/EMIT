@@ -284,6 +284,7 @@ class ToolboxContextMenu(wx.Menu):
     def OnRemove(self, e):
         self.parent.Remove(e)
 
+
 class ContextMenu(wx.Menu):
 
     def __init__(self, parent):
@@ -295,9 +296,9 @@ class ContextMenu(wx.Menu):
         self.AppendItem(mmi)
         self.Bind(wx.EVT_MENU, self.OnAdd, mmi)
 
-        mmi = wx.MenuItem(self, wx.NewId(), 'Plot')
+        mmi = wx.MenuItem(self, wx.NewId(), 'View')
         self.AppendItem(mmi)
-        self.Bind(wx.EVT_MENU, self.OnPlot, mmi)
+        self.Bind(wx.EVT_MENU, self.on_view, mmi)
 
         mmi = wx.MenuItem(self, wx.NewId(), 'Delete')
         self.AppendItem(mmi)
@@ -362,7 +363,7 @@ class ContextMenu(wx.Menu):
         id = self.__list_id
         filename = obj.GetItem(id).GetText()
 
-        Publisher.sendMessage('AddModel', filepath=filename, x=0, y=0) # sends message to CanvasController
+        Publisher.sendMessage('AddModel', filepath=filename, x=0, y=0)  # sends message to CanvasController
 
     def getData(self,resultID):
         session = self.parent.getDbSession()
@@ -381,32 +382,18 @@ class ContextMenu(wx.Menu):
 
             return dates, values, obj
 
-    def OnPlot(self, event):
-
+    def on_view(self, event):
         # get the list control objects
-        obj = self.__list_obj
-        objects = obj.GetObjects()
+        # obj = self.__list_obj
+        # objects = obj.GetObjects()
 
-        # dictionary for storing table records
-        variable_list_entries = {}
+        if self.parent.Parent.connection_combobox.GetStringSelection() in self.parent.Parent.get_possible_wof_connections():
+            self.parent.Parent.open_wof_viewer(self.parent.GetSelectedObject())
+            return
+        if "ODM2" in self.parent.Parent.connection_combobox.GetStringSelection():
+            self.parent.Parent.open_odm2_viewer(self.parent.GetSelectedObject())
+            return
 
-        # get the first selected item
-        item = self.parent.GetFirstSelected()
-
-        # loop through all selected items and populate the table records dictionary
-        while item != -1:
-
-            # get the object associated with this id
-            object = objects[item]
-
-            # save the variable metadata
-            variable_list_entries[object.resultid] = [object.featurecode, object.variable, object.unit, object.type, object.organization, object.date_created]
-
-            # get the next selected item
-            item = self.parent.GetNextSelected(item)
-
-        # instantiate the time series control
-        TimeSeriesObjectCtrl(parentClass=self, timeseries_variables=variable_list_entries)
 
     def OnDelete(self,event):
         if 'local' in self.parent.Parent.connection_combobox.GetStringSelection():
@@ -518,7 +505,7 @@ class SimulationContextMenu(ContextMenu):
 
                 return res
 
-    def OnPlot(self, event):
+    def on_view(self, event):
         obj, id = self.Selected()
 
         #  dictionary for storing table records

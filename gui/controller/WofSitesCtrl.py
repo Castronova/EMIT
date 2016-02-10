@@ -11,7 +11,8 @@ from gui.views.TimeSeriesPlotView import TimeSeriesPlotView
 import threading
 from sprint import *
 
-class WofSitesViewerCtrl(TimeSeriesPlotView):
+
+class WofSitesCtrl(TimeSeriesPlotView):
     def __init__(self, parent, siteObject, api):
         self.wof = api
 

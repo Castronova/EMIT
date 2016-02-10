@@ -4,33 +4,34 @@ import threading
 import sys
 import wx
 from wx.lib.pubsub import pub as Publisher
-from wx import richtext
-from gui.controller.DatabaseCtrl import LogicDatabase
+from gui.controller.DatabaseCtrl import DatabaseCtrl
 import coordinator.events as engineEvent
-from ContextView import TimeSeriesContextMenu, SimulationContextMenu, ConsoleContextMenu
+from wx import richtext
+from ContextView import TimeSeriesContextMenu, SimulationContextMenu #, ConsoleContextMenu
 import coordinator.engineAccessors as engine
 from utilities import db as dbUtilities
 from db import dbapi as dbapi
 from gui import events
 from coordinator.emitLogging import elog
-from gui.controller import ConsoleOutputCtrl
-from gui.controller.WofSitesCtrl import WofSitesViewerCtrl
+from gui.controller.WofSitesCtrl import WofSitesCtrl
 from gui.controller.AddConnectionCtrl import AddConnectionCtrl
 from webservice import wateroneflow
 from gui.controller.ConsoleOutputCtrl import consoleCtrl
 import db.dbapi_v2 as db2
 from odm2api.ODMconnection import dbconnection
+from gui.controller.TimeSeriesObjectCtrl import TimeSeriesObjectCtrl
 
 class viewLowerPanel:
     def __init__(self, notebook):
 
-        console =  consoleCtrl(notebook)
+        console = consoleCtrl(notebook)
         timeseries = TimeSeriesTab(notebook)
         simulations = SimulationDataTab(notebook)
 
         notebook.AddPage(console, "Console")
         notebook.AddPage(timeseries, "Time Series")
         notebook.AddPage(simulations, "Simulations")
+
 
 class TimeSeriesTab(wx.Panel):
     def __init__(self, parent):
@@ -46,8 +47,8 @@ class TimeSeriesTab(wx.Panel):
 
         self.connection_refresh_button = wx.Button(self, wx.ID_ANY, u"Refresh", wx.DefaultPosition, wx.DefaultSize, 0)
         self.addConnectionButton = wx.Button(self, wx.ID_ANY, u"Add Connection", wx.DefaultPosition, wx.DefaultSize, 0)
-        self.m_olvSeries = LogicDatabase(self, pos=wx.DefaultPosition, size=wx.DefaultSize, id=wx.ID_ANY,
-                                         style=wx.LC_REPORT | wx.SUNKEN_BORDER)
+        self.m_olvSeries = DatabaseCtrl(self, pos=wx.DefaultPosition, size=wx.DefaultSize, id=wx.ID_ANY,
+                                        style=wx.LC_REPORT | wx.SUNKEN_BORDER)
         self.table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
         self.m_olvSeries.DefineColumns(self.table_columns)
 
@@ -96,7 +97,7 @@ class TimeSeriesTab(wx.Panel):
             for k, v in self._databases.iteritems():
                 choices.append(self._databases[k]['name'])
 
-            for key, value in self.getPossibleConnections().iteritems():
+            for key, value in self.get_possible_wof_connections().iteritems():
                 choices.append(key)
 
             choices.sort()
@@ -116,23 +117,26 @@ class TimeSeriesTab(wx.Panel):
     def AddConnection(self, event):
         connection = AddConnectionCtrl(self)
 
+    def getParsedValues(self, siteObject, startDate, endDate):
+        values = self.api.parseValues(siteObject.site_code, self.selectedVariables, startDate, endDate)
+        return values
 
-    def getPossibleConnections(self):
+    def get_possible_wof_connections(self):
         wsdl = {}
         wsdl["Red Butte Creek"] = "http://data.iutahepscor.org/RedButteCreekWOF/cuahsi_1_1.asmx?WSDL"
         wsdl["Provo River"] = "http://data.iutahepscor.org/ProvoRiverWOF/cuahsi_1_1.asmx?WSDL"
         wsdl["Logan River"] = "http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL"
-
         return wsdl
 
-    def prepareODM1_Model(self, siteObject):
-        self.selectedVariables = None
-        siteview = WofSitesViewerCtrl(self, siteObject, self.api)
-        return
+    def open_odm2_viewer(self, object):
+        variable_list_entries = {}
+        variable_list_entries[object.resultid] = [object.featurecode, object.variable, object.unit, object.type, object.organization, object.date_created]
+        TimeSeriesObjectCtrl(parentClass=self, timeseries_variables=variable_list_entries)
 
-    def getParsedValues(self, siteObject, startDate, endDate):
-        values = self.api.parseValues(siteObject.site_code, self.selectedVariables, startDate, endDate)
-        return values
+    def open_wof_viewer(self, siteObject):
+        self.selectedVariables = None
+        siteview = WofSitesCtrl(self, siteObject, self.api)
+        return
 
     def setup_wof_table(self, api):
         self.wofsites = api.getSites()
@@ -167,7 +171,7 @@ class TimeSeriesTab(wx.Panel):
         # get the name of the selected database
         selected_db = self.connection_combobox.GetStringSelection()
 
-        for key, value in self.getPossibleConnections().iteritems():
+        for key, value in self.get_possible_wof_connections().iteritems():
             if selected_db == key:
                 return value
 
@@ -424,8 +428,8 @@ class DataSeries(wx.Panel):
         self.connection_refresh_button = wx.Button(self, wx.ID_ANY, u"Refresh", wx.DefaultPosition, wx.DefaultSize, 0)
         self.addConnectionButton = wx.Button(self, wx.ID_ANY, u"Add Connection", wx.DefaultPosition, wx.DefaultSize, 0)
 
-        self.table = LogicDatabase(self, pos=wx.DefaultPosition, size=wx.DefaultSize, id=wx.ID_ANY,
-                                   style=wx.LC_REPORT | wx.SUNKEN_BORDER)
+        self.table = DatabaseCtrl(self, pos=wx.DefaultPosition, size=wx.DefaultSize, id=wx.ID_ANY,
+                                  style=wx.LC_REPORT | wx.SUNKEN_BORDER)
 
 
 
@@ -478,57 +482,7 @@ class DataSeries(wx.Panel):
         return self._connection_added
 
     def AddConnection(self, event):
-
-        params = []
-        p = self
-        newConnection = AddConnectionCtrl(p)
-        """
-        while 1:
-            dlg = AddConnectionDialog(self, -1, "Sample Dialog2", size=(350, 200),
-                             style=wx.DEFAULT_DIALOG_STYLE,
-                             )
-            dlg.CenterOnScreen()
-
-            if params:
-                dlg.set_values(title=params[0],
-                                  desc=params[1],
-                                  engine=params[2],
-                                  address=params[3],
-                                  name=params[4],
-                                  user=params[5],
-                                  pwd=params[6])
-
-            # this does not return until the dialog is closed.
-            val = dlg.ShowModal()
-
-
-            if val == 5101:
-                # cancel is selected
-                return
-            elif val == 5100:
-                params = dlg.getConnectionParams()
-                print len(params)
-                print params[6]
-                dlg.Destroy()
-                pwd = params[6]
-
-                # create the database connection
-                Publisher.sendMessage('DatabaseConnection',
-                                      title=params[0],
-                                      desc = params[1],
-                                      engine = params[2],
-                                      address = params[3],
-                                      name = params[4],
-                                      user = params[5],
-                                      pwd = pwd)
-
-                if self.connection_added_status():
-                    Publisher.sendMessage('getDatabases')
-                    return
-                else:
-
-                    wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
-            """
+        AddConnectionCtrl(self)
 
     def load_data(self):
         elog.error('Abstract method. Must be overridden!')

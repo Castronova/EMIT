@@ -67,6 +67,10 @@ class DatabaseCtrl(ViewDatabase):
         id = event.GetIndex()
         obj = event.GetEventObject()
 
+        if "Simulations" == self.Parent.Parent.GetPageText(self.Parent.Parent.GetSelection()):
+            self.Parent.open_simulation_viewer(obj.GetObjectAt(id))
+            return
+
         if self.Parent.connection_combobox.GetStringSelection() in self.Parent.get_possible_wof_connections():
             self.Parent.open_wof_viewer(obj.GetObjectAt(id))
             return

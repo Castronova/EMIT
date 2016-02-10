@@ -20,6 +20,7 @@ from gui.controller.ConsoleOutputCtrl import consoleCtrl
 import db.dbapi_v2 as db2
 from odm2api.ODMconnection import dbconnection
 from gui.controller.TimeSeriesObjectCtrl import TimeSeriesObjectCtrl
+from gui.controller.SimulationPlotCtrl import SimulationPlotCtrl
 
 class viewLowerPanel:
     def __init__(self, notebook):
@@ -496,6 +497,7 @@ class DataSeries(wx.Panel):
             thr = threading.Thread(target=self.load_data, args=(), kwargs={}, name='DataSeriesRefresh')
             thr.start()
 
+
 class SimulationDataTab(DataSeries):
     def __init__(self, parent):
         #  wx.Panel.__init__(self, parent)
@@ -510,9 +512,36 @@ class SimulationDataTab(DataSeries):
         self.__selected_choice_idx = 0
 
         # build custom context menu
-        menu = SimulationContextMenu(self.table)
-        self.table.setContextMenu(menu)
+        self.menu = SimulationContextMenu(self.table)
+        self.table.setContextMenu(self.menu)
         self.conn = None
+
+    def open_simulation_viewer(self, objects):
+        results = self.menu.getData(objects.simulation_id)
+        if results:
+            keys = results.keys()[0]
+
+            plot_data = {}
+            variable_list_entries = {}
+
+            sub_variables = results[keys]
+            for sub in sub_variables:
+                variable_list_entries[sub[2].ResultID] = [sub[2].VariableObj.VariableCode,
+                                                          sub[2].UnitObj.UnitsAbbreviation,
+                                                          sub[2].FeatureActionObj.ActionObj.BeginDateTime,
+                                                          sub[2].FeatureActionObj.ActionObj.EndDateTime,
+                                                          sub[2].VariableObj.VariableNameCV,
+                                                          sub[2].FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName]
+
+                # Get the data belonging to the model
+                plot_data[sub[2].ResultID] = [sub[0], sub[1]]
+
+            sim_plot_ctrl = SimulationPlotCtrl(parentClass=self, timeseries_variables=variable_list_entries)
+            sim_plot_ctrl.SetTitle("Results for Simulation: " + str(objects.model_name))
+            sim_plot_ctrl.plot_data = plot_data
+        else:
+            elog.debug("Received no data. SimulationDataTab.open_simulation_viewer()")
+
 
     def load_data(self):
 

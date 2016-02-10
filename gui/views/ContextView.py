@@ -528,7 +528,7 @@ class SimulationContextMenu(ContextMenu):
                 sub_variables = results[keys]
                 for sub in sub_variables:
                     variable_list_entries[sub[2].ResultID] = [sub[2].VariableObj.VariableCode,
-                                                              sub[2].UnitsObj.UnitsAbbreviation,
+                                                              sub[2].UnitObj.UnitsAbbreviation,
                                                               sub[2].FeatureActionObj.ActionObj.BeginDateTime,
                                                               sub[2].FeatureActionObj.ActionObj.EndDateTime,
                                                               sub[2].VariableObj.VariableNameCV,

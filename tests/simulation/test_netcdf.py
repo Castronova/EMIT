@@ -6,7 +6,6 @@ import unittest
 import datetime
 import wrappers
 from coordinator.engine import Coordinator
-import environment
 from sprint import *
 
 class testNetcdfSimulation(unittest.TestCase):

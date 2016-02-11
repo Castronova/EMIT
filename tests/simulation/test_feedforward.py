@@ -36,9 +36,11 @@ class testFeedForwardSimulation(unittest.TestCase):
         multiplier_mdl = os.path.join(self.basepath, '../../app_data/models/multiplier/multiplier.mdl')
 
 
-        self.engine.add_model(id=1234,  attrib={'mdl':randomizer_path})
-        self.engine.add_model(id=1235,  attrib={'mdl':multiplier_mdl})
+        m1 = self.engine.add_model(id=1234,  attrib={'mdl':randomizer_path})
+        self.assertTrue(m1)
 
+        m2 = self.engine.add_model(id=1235,  attrib={'mdl':multiplier_mdl})
+        self.assertTrue(m2)
 
         # assert that the models have been added correctly
         models = self.engine.get_all_models()

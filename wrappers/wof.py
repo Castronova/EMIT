@@ -74,7 +74,7 @@ class Wrapper(base.BaseWrapper):
         # build output exchange items
         oei = stdlib.ExchangeItem(name = variableName,
                                   desc = siteDescription,
-                                  geometry= geom,
+                                  geometry= [geom],
                                   unit= unit,
                                   variable= var,
                                   type= stdlib.ExchangeItemType.OUTPUT,

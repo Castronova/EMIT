@@ -1,16 +1,29 @@
 
 
-import os
+import os, sys
 import time
 import unittest
 import datetime
 from coordinator.engine import Coordinator
 import wrappers
+import environment
+from sprint import *
+
 class testWofSimulation(unittest.TestCase):
 
 
     def setUp(self):
         self.engine = Coordinator()
+
+        if sys.gettrace():
+            print 'Detected Debug Mode'
+            # initialize debug listener (reroute messages to console)
+            self.d = DebugListener()
+
+        self.engine = Coordinator()
+        PrintTarget.CONSOLE = 1134
+
+        self.basepath = os.path.dirname(__file__)
 
     def tearDown(self):
         pass
@@ -29,13 +42,15 @@ class testWofSimulation(unittest.TestCase):
 
 
         # add the WaterOneFlow component to the engine
-        self.engine.add_model(id=1234, attrib=args)
+        m1 = self.engine.add_model(id=1234, attrib=args)
+        self.assertTrue(m1)
+
 
         # load a test component
-        multiplier_mdl = os.path.abspath('./data/multiplier/multiplier.mdl')
-        self.assertTrue(os.path.exists(multiplier_mdl), 'Path does not exist: %s'%multiplier_mdl)
+        multiplier_mdl = os.path.join(self.basepath, '../../app_data/models/multiplier/multiplier.mdl')
         args = dict(mdl=multiplier_mdl)
-        self.engine.add_model(id=1235, attrib=args)
+        m2 = self.engine.add_model(id=1235, attrib=args)
+        self.assertTrue(m1)
 
         # assert that the models have been added correctly
         models = self.engine.get_all_models()
@@ -56,7 +71,7 @@ class testWofSimulation(unittest.TestCase):
 
         # run the simulation
         self.engine.run_simulation()
-        time.sleep(5)  # give the simulation a chance to run
+        time.sleep(10)  # give the simulation a chance to run
 
         # check that output data was generated
         m = self.engine.get_model_by_id(id = 1235)

@@ -224,11 +224,6 @@ class testFeedForwardWrapper(unittest.TestCase):
 
     def test_ff_initialization(self):
 
-        # path to the mdl file
-        mdl = './data/multiplier.py'
-
-
-
         args = dict(network = 'iutah',
                     site = 'LR_WaterLab_AA',
                     variable = 'RH_enc',

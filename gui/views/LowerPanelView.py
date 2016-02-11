@@ -516,8 +516,8 @@ class SimulationDataTab(DataSeries):
         self.table.setContextMenu(self.menu)
         self.conn = None
 
-    def open_simulation_viewer(self, objects):
-        results = self.menu.getData(objects.simulation_id)
+    def open_simulation_viewer(self, object):
+        results = self.menu.getData(object.simulation_id)
         if results:
             keys = results.keys()[0]
 
@@ -537,7 +537,7 @@ class SimulationDataTab(DataSeries):
                 plot_data[sub[2].ResultID] = [sub[0], sub[1]]
 
             sim_plot_ctrl = SimulationPlotCtrl(parentClass=self, timeseries_variables=variable_list_entries)
-            sim_plot_ctrl.SetTitle("Results for Simulation: " + str(objects.model_name))
+            sim_plot_ctrl.SetTitle("Results for Simulation: " + str(object.model_name))
             sim_plot_ctrl.plot_data = plot_data
         else:
             elog.debug("Received no data. SimulationDataTab.open_simulation_viewer()")

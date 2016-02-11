@@ -506,43 +506,8 @@ class SimulationContextMenu(ContextMenu):
                 return res
 
     def on_view(self, event):
-        obj, id = self.Selected()
-
-        #  dictionary for storing table records
-        variable_list_entries = {}
-
-        id = self.parent.GetFirstSelected()
-
-        if id != -1:
-
-            simulation_id = obj.GetItem(id, 0).GetText()
-            name = obj.GetItem(id, 1).GetText()
-
-            #  get the data for this row
-            results = self.getData(simulation_id)
-            if results is not None:
-                keys = results.keys()[0]
-
-                #  Get the variables/models that belong to a simulation
-                plot_data = {}
-                sub_variables = results[keys]
-                for sub in sub_variables:
-                    variable_list_entries[sub[2].ResultID] = [sub[2].VariableObj.VariableCode,
-                                                              sub[2].UnitObj.UnitsAbbreviation,
-                                                              sub[2].FeatureActionObj.ActionObj.BeginDateTime,
-                                                              sub[2].FeatureActionObj.ActionObj.EndDateTime,
-                                                              sub[2].VariableObj.VariableNameCV,
-                                                              sub[2].FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName]
-
-                    # Get the data belonging to the model
-                    plot_data[sub[2].ResultID] = [sub[0], sub[1]]
-
-                sim_plot_ctrl = SimulationPlotCtrl(parentClass=self, timeseries_variables=variable_list_entries)
-                sim_plot_ctrl.SetTitle("Results for Simulation: " + str(name))
-                sim_plot_ctrl.plot_data = plot_data
-        else:
-            elog.debug("Failed, perhaps no model has been selected")
-            elog.info("Detected that no simulation was selected")
+        object = self.parent.GetSelectedObject()
+        self.parent.Parent.open_simulation_viewer(object)
 
     def onExport(self, event):
         #  User will choose where to save the csv file

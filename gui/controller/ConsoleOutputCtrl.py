@@ -56,6 +56,6 @@ class consoleCtrl(ConsoleView):
             type, text = data.split('|')
 
             # print the message in the console if the environment variable is set to True
-            key = 'LOGGING_SHOW'+type.upper()
-            if int(os.environ[key]):
+            key = 'LOGGING_SHOW' + type.upper()
+            if os.environ.has_key(key):
                 self.Print(text, type)

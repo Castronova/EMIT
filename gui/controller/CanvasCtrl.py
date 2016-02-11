@@ -661,7 +661,7 @@ class LogicCanvas(ViewCanvas):
             sPrint('An error occurred when attempting to save the project', MessageType.ERROR)
 
         elog.info('Configuration saved: ', path)
-        sPrint('Configuration was saved successfully: ', path)
+        sPrint('Configuration was saved successfully: ' + str(path))
 
     def appendChild(self, child):
         taglist = []

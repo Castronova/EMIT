@@ -3,10 +3,10 @@
 import os, sys
 import time
 import unittest
-import datetime
 import wrappers
 from coordinator.engine import Coordinator
 from sprint import *
+import environment
 
 class testNetcdfSimulation(unittest.TestCase):
 

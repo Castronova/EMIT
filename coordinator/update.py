@@ -147,7 +147,7 @@ def update_links_feed_forward(obj, links, output_exchange_items, spatial_maps):
 
 
         # get all the datasets of the output exchange item.  These will be used to temporally map the data
-        datasets = output_exchange_items[source_item_name].get_all_datasets()
+        # datasets = output_exchange_items[source_item_name].get_all_datasets()
 
 
         # # Temporal data mapping

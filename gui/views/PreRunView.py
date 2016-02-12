@@ -13,7 +13,7 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin, CheckListCtrlMixin):
 
 class PreRunView(wx.Frame):
     def __init__(self, parent=None):                             # this style makes the window non-resizable
-        wx.Frame.__init__(self, parent=parent, title="Pre Run", size=(405, 350),
+        wx.Frame.__init__(self, parent=parent, title="Pre Run", size=(405, 450),
                           style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         # define top and bottom panels

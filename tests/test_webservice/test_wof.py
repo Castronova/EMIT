@@ -43,7 +43,15 @@ class test_wof(unittest.TestCase):
         self.assertIsNone(api, "Its None")
 
     def test_connect_to_network(self):
-        pass
+        link = "http://data.iutahepscor.org/RedButteCreekWOF/cuahsi_1_1.asmx?WSDL"
+        connection = Client(link)
+        self.assertIsNotNone(connection)
+        link = "http://data.iutahepscor.org/ProvoRiverWOF/cuahsi_1_1.asmx?WSDL"
+        connection = Client(link)
+        self.assertIsNotNone(connection)
+        link = "http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL"
+        connection = Client(link)
+        self.assertIsNotNone(connection)
 
     #################################################
     ##################   SITES   ####################

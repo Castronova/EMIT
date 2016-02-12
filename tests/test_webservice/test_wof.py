@@ -7,6 +7,13 @@ from utilities.timeout import timeout
 
 
 class test_wof(unittest.TestCase):
+
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
     def test_wof_success(self):
         class wof(object):
 

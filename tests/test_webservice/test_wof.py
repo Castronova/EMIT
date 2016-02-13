@@ -4,6 +4,7 @@ import unittest
 from time import sleep
 from suds.client import Client
 from utilities.timeout import timeout
+from webservice import wateroneflow
 
 
 class test_wof(unittest.TestCase):
@@ -64,16 +65,29 @@ class test_wof(unittest.TestCase):
     ##################   SITES   ####################
     #################################################
     def test_get_sites(self):
-        pass
+        link = "http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL"
+        connection = Client(link)
+        sites = connection.service.GetSitesObject("")
+        self.assertIsNotNone(sites)
+        self.assertIsInstance(sites, object)
 
     def test_get_site_info(self):
         pass
 
     def test_get_site_info_object(self):
+        sitecode = "LR_WaterLab_AA"
+        link = "http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL"
+        connection = Client(link)
+        site_object = connection.service.GetSiteInfoObject("iutah:" + sitecode)
+        self.assertIsNotNone(site_object)
+        self.assertIsInstance(site_object, object)
         pass
 
     def test_get_site_info_multiple_object(self):
-        pass
+        link = "http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL"
+        connection = Client(link)
+        data = connection.service.GetSiteInfoMultpleObject("")
+        self.assertIsInstance(data, object)
 
     def test_get_sites_by_box_object(self):
         pass
@@ -83,7 +97,10 @@ class test_wof(unittest.TestCase):
     ################   VARIABLES   ##################
     #################################################
     def test_get_variables(self):
-        pass
+        link = "http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL"
+        connection = Client(link)
+        data = connection.service.GetVariableInfoObject()
+        self.assertIsInstance(data, object)
 
     def test_build_all_variable_dictionary(self):
         pass
@@ -98,7 +115,21 @@ class test_wof(unittest.TestCase):
     ##################   VALUES   ###################
     #################################################
     def test_get_values(self):
-        pass
+        import wx
+        site_url = "http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL"
+        api = wateroneflow.WaterOneFlow(site_url)
+
+        site_code = "LR_WaterLab_AA"
+        variable = "BattVolt"
+        start_date = wx.DateTime_Now() - 7 * wx.DateSpan_Day()
+        end_date = wx.DateTime_Now()
+
+        # Dates must be in YEAR-MONTH-DAY format
+        start_date = start_date.FormatISODate()
+        end_date = end_date.FormatISODate()
+
+        data = api.getValues(site_code=site_code, variable_code=variable, beginDate=start_date, endDate=end_date)
+        self.assertIsInstance(data, object)
 
     def test_parse_values(self):
         pass

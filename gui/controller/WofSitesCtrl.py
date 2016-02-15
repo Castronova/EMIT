@@ -330,7 +330,8 @@ class WofSitesCtrl(TimeSeriesPlotView):
                 self.updateStatusBar(status_list[i])
             time.sleep(0.5)
         self.enableBtns(None)
-        self.updateStatusBar("Ready")
+        # self.updateStatusBar("Ready")
+        wx.CallAfter(self.updateStatusBar, "Ready")
 
     def updateStatusBar(self, text):
         self.status_bar.SetStatusText(str(text))

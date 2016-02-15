@@ -141,11 +141,15 @@ class test_wof(unittest.TestCase):
     #################################################
     #################   WRITING   ###################
     #################################################
-    def test_create_xml_file(self):
-        pass
+    def test_create_file(self):
+        import os
+        currentdir = os.path.dirname(os.path.abspath(__file__))
+        f = open(currentdir + "/test.xml", 'w')
+        self.assertTrue(os.path.exists(currentdir + "/test.xml"))
+        f.close()
 
-    def test_create_json_file(self):
-        pass
+        os.remove(currentdir + "/test.xml")
+        self.assertFalse(os.path.exists(currentdir + "/test.xml"))
 
     def test_parse_xml_to_dict(self):
         pass

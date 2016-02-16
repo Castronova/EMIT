@@ -36,5 +36,5 @@ class ViewSpatialPlot(wx.Panel):
 
         sizer.Add(self.canvas, 100, wx.ALIGN_CENTER|wx.ALL)
 
-        self.intext = plt.figtext(0.12, 0.94, " ", fontsize='large', color='b', ha ='left')
-        self.outtext = plt.figtext(0.9, 0.94, " ",fontsize='large', color='r', ha ='right')
+        self.intext = plt.figtext(0.12, 0.94, " ", fontsize='large', color='#019477', ha ='left')
+        self.outtext = plt.figtext(0.9, 0.94, " ",fontsize='large', color='#326ada', ha ='right')

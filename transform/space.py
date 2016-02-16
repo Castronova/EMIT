@@ -5,7 +5,7 @@ import space_base
 from shapely.geometry import LineString, MultiPoint, Point, Polygon
 from coordinator.emitLogging import elog
 import numpy
-
+from sprint import *
 
 class spatial_nearest_neighbor_radial(space_base.Space):
 
@@ -242,12 +242,17 @@ class spatial_index(space_base.Space):
 
     def transform(self, ingeoms, outgeoms):
 
+        if len(ingeoms) != len(outgeoms):
+            sPrint('input and output geometries have different lengths. This may lead to inconsistencies during %s spatial mapping.' % self.name(), MessageType.WARNING)
+            elog.warning('input and output geometries have different lengths. This may lead to inconsistencies during %s spatial mapping.' % self.name())
+
+        # determine the minimum length array
+        max_idx = min(len(ingeoms), len(outgeoms))
+
+        # loop from 0 to min length and map geometry indices
         mapped = []
-        for i in range(0, len(ingeoms)):
-            try:
-                mapped.append([ingeoms[i],outgeoms[i]])
-            except IndexError:
-                elog.warning('An index error occurred during spatial-index mapping.  This is mostly likely due to inconsistent input and output geometry lengths.')
+        for i in range(0, max_idx):
+            mapped.append([ingeoms[i],outgeoms[i]])
         return mapped
 
 class SpatialInterpolation():

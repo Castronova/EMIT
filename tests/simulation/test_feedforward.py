@@ -1,6 +1,6 @@
 
 
-import sys
+import os, sys
 import time
 import sprint
 import unittest
@@ -22,6 +22,9 @@ class testFeedForwardSimulation(unittest.TestCase):
         self.engine = Coordinator()
         sprint.PrintTarget.CONSOLE = 1134
 
+
+        self.basepath = os.path.dirname(__file__)
+
     def tearDown(self):
         pass
 
@@ -29,13 +32,15 @@ class testFeedForwardSimulation(unittest.TestCase):
 
         sprint.sPrint('test', sprint.MessageType.DEBUG)
 
-        randomizer_path = '../../app_data/models/randomizer/randomizer.mdl'
-        multiplier_mdl = '../../app_data/models/multiplier/multiplier.mdl'
+        randomizer_path = os.path.join(self.basepath, '../../app_data/models/randomizer/randomizer.mdl')
+        multiplier_mdl = os.path.join(self.basepath, '../../app_data/models/multiplier/multiplier.mdl')
 
 
-        self.engine.add_model(id=1234,  attrib={'mdl':randomizer_path})
-        self.engine.add_model(id=1235,  attrib={'mdl':multiplier_mdl})
+        m1 = self.engine.add_model(id=1234,  attrib={'mdl':randomizer_path})
+        self.assertTrue(m1)
 
+        m2 = self.engine.add_model(id=1235,  attrib={'mdl':multiplier_mdl})
+        self.assertTrue(m2)
 
         # assert that the models have been added correctly
         models = self.engine.get_all_models()

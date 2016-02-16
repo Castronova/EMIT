@@ -21,7 +21,6 @@ class LogicModel(ViewModel):
             self.inputSelections.Bind(wx.EVT_COMBOBOX, self.update_plot_input)
             self.outputSelections.Bind(wx.EVT_COMBOBOX, self.update_plot_output)
 
-
     def update_plot_output(self, event):
         received_data = event.EventObject.StringSelection
         self.TopLevelParent.plotPanel.set_selection_output(received_data)
@@ -31,7 +30,6 @@ class LogicModel(ViewModel):
         received_data = event.EventObject.StringSelection
         self.TopLevelParent.plotPanel.set_selection_input(received_data)
         self.TopLevelParent.plotPanel.updatePlot()
-
 
     def PopulateEdit(self, fileExtension):
 
@@ -48,8 +46,6 @@ class LogicModel(ViewModel):
         self.xmlTextCtrl.SetValue(filehandle.read())
         filehandle.close()
         self.SetTitle("File Configurations (Read-Only)")
-
-
 
     def PopulateSpatial(self, coordlist, type):
         if type == 'input':

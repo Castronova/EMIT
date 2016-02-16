@@ -11,7 +11,8 @@ from gui.views.TimeSeriesPlotView import TimeSeriesPlotView
 import threading
 from sprint import *
 
-class WofSitesViewerCtrl(TimeSeriesPlotView):
+
+class WofSitesCtrl(TimeSeriesPlotView):
     def __init__(self, parent, siteObject, api):
         self.wof = api
 
@@ -329,7 +330,8 @@ class WofSitesViewerCtrl(TimeSeriesPlotView):
                 self.updateStatusBar(status_list[i])
             time.sleep(0.5)
         self.enableBtns(None)
-        self.updateStatusBar("Ready")
+        # self.updateStatusBar("Ready")
+        wx.CallAfter(self.updateStatusBar, "Ready")
 
     def updateStatusBar(self, text):
         self.status_bar.SetStatusText(str(text))

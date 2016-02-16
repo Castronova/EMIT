@@ -37,7 +37,7 @@ class temporal_nearest_neighbor(time_base.Time):
         :return: numpy array representing index mapping from source dates to target dates
         """
 
-        return numpy.array([bisect.bisect(source_dates, target_date) - 1 for target_date in target_dates])
+        return numpy.array([bisect.bisect(source_dates, target_date) for target_date in target_dates])
 
 
 # class temporal_nearest_neighbor(time_base.Time):

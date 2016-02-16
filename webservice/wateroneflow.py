@@ -1,12 +1,36 @@
 __author__ = 'tonycastronova'
 
 import collections
-import xml.etree.ElementTree as et
-
 from suds.client import Client
-
 from coordinator.emitLogging import elog
 from utilities.timeout import timeout
+
+
+def parseXML2Dict(site, start=None, end=None):
+    import xml.etree.ElementTree as et
+    if start == None:
+        start = 0
+
+    if end == None:
+        end = start + 10
+
+    tree = et.fromstring(site)
+    siteInfo_Dictionary = collections.OrderedDict()  # It will remember the order contents are added
+
+    for site in tree:
+        for siteInfo in site[start:end]:  # Using slicing to grab only 10 elements, otherwise it would grab 100+
+            # for info in siteInfo:
+            if len(siteInfo) > 0:
+                siteInfo_Dictionary[siteInfo.getchildren()[0].text] = siteInfo.getchildren()
+
+    return siteInfo_Dictionary  # The key is the site name
+
+
+def createXMLFileForReading(xml_string):
+    # Open this file in a browser to view it parsed
+    file = open("test.xml", "w")
+    file.write(xml_string)
+    file.close()
 
 
 class WaterOneFlow(object):
@@ -34,8 +58,8 @@ class WaterOneFlow(object):
             end = start + 10
 
         xml = self.getVariables()
-        self.createXMLFileForReading(xml)
-        vars = self.parseXML2Dict(xml, start, end)
+        createXMLFileForReading(xml)
+        vars = parseXML2Dict(xml, start, end)
         vars = iter(vars)
         next(vars)
         self.AllVariables = vars
@@ -64,25 +88,6 @@ class WaterOneFlow(object):
                                                                ]
         return variableDict
 
-    def buildSiteVariables(self, siteCode):
-
-        self.siteVarables = collections.OrderedDict()
-
-    def getSiteInfo(self, start=None, end=None):
-
-        if start is None:
-            start = 0
-        if end is None:
-            end = start + 9
-
-        siteInfo = []
-        for site in self.objects[1][start:end]:
-            if len(site) > 0:
-                # The structure of siteInfo list is [[Site Name, County, State, site type, site code]]
-                siteInfo.append([site[0][0], site[0][5][0].value, site[0][5][1].value, self._getSiteType(site), site[0][1][0].value])
-
-        return siteInfo
-
     def parseValues(self, sitecode, variable, start=None, end=None):
         data = self.getValues(sitecode, variable, start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d"))
         valuesList = []
@@ -99,12 +104,6 @@ class WaterOneFlow(object):
     def connectToNetwork(self, link):
         connection = Client(link)
         return connection
-
-    def createXMLFileForReading(self, xml_string):
-        # Open this file in a browser to view it parsed
-        file = open("test.xml", "w")
-        file.write(xml_string)
-        file.close()
 
     def createJSONFileForReading(self, json):
         # Open this file in a browser to view in parsed
@@ -172,23 +171,3 @@ class WaterOneFlow(object):
         network = "iutah:"
         x = self.conn.service.GetValuesForASiteObject(network + str(siteid))
         return x
-
-
-    def parseXML2Dict(self, site, start=None, end=None):
-        if start == None:
-            start = 0
-
-        if end == None:
-            end = start + 10
-
-        tree = et.fromstring(site)
-        siteInfo_Dictionary = collections.OrderedDict()  # It will remember the order contents are added
-
-        for site in tree:
-            for siteInfo in site[start:end]:  # Using slicing to grab only 10 elements, otherwise it would grab 100+
-                # for info in siteInfo:
-                if len(siteInfo) > 0:
-                    siteInfo_Dictionary[siteInfo.getchildren()[0].text] = siteInfo.getchildren()
-
-        return siteInfo_Dictionary  # The key is the site name
-

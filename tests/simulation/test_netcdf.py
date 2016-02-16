@@ -1,38 +1,50 @@
 
 
-import os
+import os, sys
 import time
 import unittest
-import datetime
-from coordinator.engine import Coordinator
 import wrappers
-class testWofSimulation(unittest.TestCase):
+from coordinator.engine import Coordinator
+from sprint import *
+import environment
+
+class testNetcdfSimulation(unittest.TestCase):
 
 
     def setUp(self):
         self.engine = Coordinator()
 
+        if sys.gettrace():
+            print 'Detected Debug Mode'
+            # initialize debug listener (reroute messages to console)
+            self.d = DebugListener()
+
+        self.engine = Coordinator()
+        PrintTarget.CONSOLE = 1134
+
+        self.basepath = os.path.dirname(__file__)
+
     def tearDown(self):
         pass
 
 
-    def test_wof_feedforward(self):
+    def test_netcdf_feedforward(self):
 
-        args = dict(network = 'iutah',
-                    site = 'LR_WaterLab_AA',
-                    variable = 'RH_enc',
-                    start = datetime.datetime(2015, 10, 26, 0, 0, 0),
-                    end = datetime.datetime(2015, 10, 30, 0, 0, 0),
-                    wsdl = 'http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL',
-                    type = wrappers.Types.WOF
-                    )
-
+        nc_path = os.path.join(self.basepath, 'data/prcp.nc')
+        self.assertTrue(os.path.exists(nc_path))
+        args = dict(ncpath = nc_path,
+                    tdim = 'time',
+                    xdim = 'x',
+                    ydim = 'y',
+                    tunit = 'hours',
+                    starttime = '10-26-2015 00:00:00',
+                    type = wrappers.Types.NETCDF)
 
         # add the WaterOneFlow component to the engine
         self.engine.add_model(id=1234, attrib=args)
 
         # load a test component
-        multiplier_mdl = os.path.abspath('./data/multiplier/multiplier.mdl')
+        multiplier_mdl = os.path.join(self.basepath, '../../app_data/models/multiplier/multiplier.mdl')
         self.assertTrue(os.path.exists(multiplier_mdl), 'Path does not exist: %s'%multiplier_mdl)
         args = dict(mdl=multiplier_mdl)
         self.engine.add_model(id=1235, attrib=args)

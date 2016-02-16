@@ -3,8 +3,6 @@ __author__ = 'tonycastronova'
 import os
 import unittest
 import netCDF4 as nc
-import urllib2
-import json
 
 class testOpenDAP(unittest.TestCase):
 

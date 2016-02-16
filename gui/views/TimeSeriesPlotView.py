@@ -3,6 +3,7 @@ __author__ = 'tonycastronova'
 import wx
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 from gui.controller.PlotForSiteViewerCtrl import logicPlotForSiteViewer
+from coordinator.emitLogging import elog
 
 
 class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
@@ -92,4 +93,27 @@ class TimeSeriesPlotView(wx.Frame):
         for i in range(self.variableList.GetItemCount()):
             if i % 2 == 0:
                 self.variableList.SetItemBackgroundColour(i, color)
+
+    def createColumns(self, column_name_list):
+        if column_name_list is not None:
+            for i in range(len(column_name_list)):
+                self.variableList.InsertColumn(i, column_name_list[i])
+            self.autoSizeColumns()
+        else:
+            elog.debug("Column list received is empty")
+
+    def getSelectedId(self):
+        num = self.variableList.GetItemCount()
+        for i in range(num):
+            if self.variableList.IsSelected(i):
+                id = self.variableList.GetItemText(i)
+                return int(id)
+
+    def plotGraph(self, data, var_name, y_units=None, no_data=None):
+        self.plot.clearPlot()
+        if data is not None:
+            self.plot.plotData(data, str(var_name), no_data, y_units)
+        else:
+            elog.info("Received no data to plot")
+            elog.info("data is None")
 

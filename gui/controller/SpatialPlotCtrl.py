@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import numpy
 from matplotlib.collections import PolyCollection, LineCollection
 
@@ -61,19 +60,6 @@ class SpatialPlotCtrl(ViewSpatialPlot):
             return self.__output_data[var_name]
         return None
 
-    def buildGradientColor(self, num, cmap='Blues'):
-        # get the color map
-        c = getattr(plt.cm, cmap)
-
-        # add two so that the median color is chosen if only one geometry
-        num += 2
-
-        # generate the color definitions
-        colors = [c(1.*i/num) for i in range(0,num)]
-
-        # omit the ends of the spectrum so that the correct number of colors is provided
-        return colors[1:-1]
-
     def updatePlot(self, event=None):
 
         # clear the canvas
@@ -84,19 +70,16 @@ class SpatialPlotCtrl(ViewSpatialPlot):
         oei = self.__oei
         datain = self.get_input_geom(iei)
         if datain is not None:
-            colors = self.buildGradientColor(len(datain),'Reds')
-            self.SetPlotData(datain,colors=colors)
+            self.SetPlotData(datain, colors="#019477")  # Input color is light green
 
         dataout = self.get_output_geom(oei)
         if dataout is not None:
-            colors = self.buildGradientColor(len(dataout),'Blues')
-            self.SetPlotData(dataout,colors=colors)
+            self.SetPlotData(dataout, colors="#326ada")  # Output color is light blue
 
         # set the plot titles
         iei_title = iei if iei is not None else ''
         oei_title = oei if oei is not None else ''
-        self.set_titles(iei_title,oei_title)
-
+        self.set_titles(iei_title, oei_title)
 
         # draw the canvas
         self.canvas.draw()
@@ -106,23 +89,8 @@ class SpatialPlotCtrl(ViewSpatialPlot):
         self.intext.set_text(input)
 
     def SetPlotData(self, geom_list, colors):
-
-        try:
-            self.ax.scatter.cla()
-        except:
-            pass
-
-        try:
-            self.ax.plot.cla()
-        except:
-            pass
-
-
-        i = 0
-
         # build geometry object
         # todo: this should only be done once, not every time data is selected
-
 
         # POINT
         if geom_list[0].GetGeometryName() == stdlib.GeomType.POINT:
@@ -131,55 +99,34 @@ class SpatialPlotCtrl(ViewSpatialPlot):
             x, y = zip(*[(g.GetX(), g.GetY()) for g in geom_list])
             self.ax.scatter(x, y, color=colors)
 
-
         # POLYGON
         elif geom_list[0].GetGeometryName() == stdlib.GeomType.POLYGON:
 
             poly_list = []
-            for geom in geom_list:
+            # get geometry reference
+            ref = geom_list[0].GetGeometryRef(0)
 
-                # get then number of polygons
-                polycount = geom.GetGeometryCount()
-
-                # loop through each polygon (most of the time this will only be 1)
-                for i in range(polycount):
-
-                    # get geometry reference
-                    ring = geom.GetGeometryRef(i)
-
-                    # build a list of points
-                    pts = numpy.array(ring.GetPoints())
-
-                    # p = pts[:,0:2]
-                    a = tuple(map(tuple, pts[:, 0:2]))
-                    poly_list.append(a)
-
-            # generate a border color based off the first value
-            mc = min(colors[0])
-            bc = [max(0, colors[0][0] - mc),
-                  max(0, colors[0][1] - mc),
-                  max(0, colors[0][2] - mc)]
+            # build a list of points
+            pts = numpy.array(ref.GetPoints())
+            a = tuple(map(tuple, pts[:, 0:2]))
+            poly_list.append(a)
 
             # build a polygon collection
-            pcoll = PolyCollection(poly_list, closed=True, facecolor=colors, alpha=0.5, edgecolor=bc, linewidths=(2,))
+            pcoll = PolyCollection(poly_list, closed=True, facecolor=colors, alpha=0.5, edgecolor=None, linewidths=(2,))
 
             # add the polygon collection to the plot
             self.ax.add_collection(pcoll, autolim=True)
-
 
         # LINESTRING
         elif geom_list[0].GetGeometryName() == stdlib.GeomType.LINESTRING:
 
             line_list = []
-            for geom in geom_list:
-                # if geom.GetGeometryName() == stdlib.GeomType.LINESTRING:
-
                 # build a list of points
-                pts = numpy.array(geom.GetPoints())
+            pts = numpy.array(geom_list[0].GetPoints())
 
-                # p = pts[:,0:2]
-                a = tuple(map(tuple, pts[:, 0:2]))
-                line_list.append(a)
+            # p = pts[:,0:2]
+            a = tuple(map(tuple, pts[:, 0:2]))
+            line_list.append(a)
 
             # build a line collection
             lcoll = LineCollection(line_list, colors=colors)
@@ -188,7 +135,7 @@ class SpatialPlotCtrl(ViewSpatialPlot):
             self.ax.add_collection(lcoll, autolim=True)
 
         else:
-            elog.critical('Unsupported line geometry found in logicSpatialPlot.SetPlotData')
+            elog.critical('Unsupported line geometry found in SpatialPlotCtrl.SetPlotData')
 
         self.ax.grid()
         self.ax.axis('auto')

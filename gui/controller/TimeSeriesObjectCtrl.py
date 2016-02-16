@@ -24,7 +24,7 @@ class TimeSeriesObjectCtrl(TimeSeriesPlotView):
         self.Bind(wx.EVT_DATE_CHANGED, self.setEndDate, self.endDatePicker)
         self.Bind(wx.EVT_BUTTON, self.onExport, self.exportBtn)
         self.Bind(wx.EVT_BUTTON, self.addToCanvas, self.addToCanvasBtn)
-        self.Bind(wx.EVT_BUTTON, self.previewPlot, self.PlotBtn)
+        self.Bind(wx.EVT_BUTTON, self.preview_plot, self.PlotBtn)
         self.disableBtns(None)
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.enableBtns)
         self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.disableBtns)
@@ -33,14 +33,6 @@ class TimeSeriesObjectCtrl(TimeSeriesPlotView):
 
     def addToCanvas(self, event):
         elog.info("Add to canvas has not been implementd")  # Remove this print when it is implemented
-
-    def createColumns(self, column_name_list):
-        if column_name_list is not None:
-            for i in range(len(column_name_list)):
-                self.variableList.InsertColumn(i, column_name_list[i])
-            self.autoSizeColumns()
-        else:
-            elog.debug("Column list received is empty")
 
     def disableBtns(self, event):
         self.exportBtn.Disable()
@@ -56,14 +48,6 @@ class TimeSeriesObjectCtrl(TimeSeriesPlotView):
         row = self._data[id]
         row.insert(0, id)  # Attaching the id to return value
         return row
-
-
-    def getSelectedId(self):
-        num = self.variableList.GetItemCount()
-        for i in range(num):
-            if self.variableList.IsSelected(i):
-                id = self.variableList.GetItemText(i)
-                return int(id)
 
     def onExport(self, event):
         save = wx.FileDialog(parent=self, message="Choose Path",
@@ -100,10 +84,10 @@ class TimeSeriesObjectCtrl(TimeSeriesPlotView):
 
             file.close()
 
-    def previewPlot(self, event):
+    def preview_plot(self, event):
 
         id = self.getSelectedId()
-        date_time_objects, value, resobj = self.parentClass.getData(resultID=id)
+        date_time_objects, value, resobj = self.parentClass.menu.getData(id)
 
         data = []
         for i in range(len(date_time_objects)):
@@ -112,19 +96,11 @@ class TimeSeriesObjectCtrl(TimeSeriesPlotView):
         try:
             variable_name = str(resobj.VariableObj.VariableNameCV)
             unit_name = '%s [%s]' % (resobj.UnitObj.UnitsName, resobj.UnitObj.UnitsAbbreviation)
-            self.plotGraph(data=data, var_name=variable_name, yunits=unit_name)
+            self.plotGraph(data=data, var_name=variable_name, y_units=unit_name)
 
         except Exception as e:
             elog.debug("DetachedInstanceError. See resobj.VariableObj" + str(e))
             elog.error("Failed to load the graph.  Try restarting.")
-
-    def plotGraph(self, data, var_name, yunits=None, no_data=None):
-        self.plot.clearPlot()
-        if data is not None:
-            self.plot.plotData(data, str(var_name), no_data, yunits)
-        else:
-            elog.info("Received no data to plot")
-            elog.info("data is None")
 
     def populateVariableList(self, data):
         if isinstance(data, dict):
@@ -157,5 +133,3 @@ class TimeSeriesObjectCtrl(TimeSeriesPlotView):
 
     def setPlotTitle(self, title):
         self.plot.setTitle(title)
-
-

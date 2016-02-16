@@ -4,6 +4,7 @@ import sys
 
 import coordinator.engineAccessors as engine
 from gui.views.EMITView import ViewEMIT
+from utilities.gui import loadAccounts
 from sprint import *
 
 # todo: the connections file should be a binary object (pickle)
@@ -44,9 +45,6 @@ class EMITCtrl(ViewEMIT):
         engine.connectToDb(title='ODM2 SQLite (local)',desc='Local SQLite database',engine='sqlite',address=filepath, name=None, user=None, pwd=None)
 
         self.checkUsers()
-
-    def refreshUserAccount(self):
-        self.accounts = self.loadAccounts()
 
 def removedb(file):
     try:

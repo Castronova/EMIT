@@ -6,13 +6,14 @@ import wrappers
 import stdlib
 import datetime
 from utilities import geometry
+import environment
 
 class testBaseWrapper(unittest.TestCase):
 
     def setUp(self):
         pass
         args = {}
-        self.base = wrappers.BaseWrapper(args)
+        self.base = wrappers.BaseWrapper()
 
     def tearDown(self):
         pass
@@ -222,11 +223,6 @@ class testNetcdfWrapper(unittest.TestCase):
 class testFeedForwardWrapper(unittest.TestCase):
 
     def test_ff_initialization(self):
-
-        # path to the mdl file
-        mdl = './data/multiplier.py'
-
-
 
         args = dict(network = 'iutah',
                     site = 'LR_WaterLab_AA',

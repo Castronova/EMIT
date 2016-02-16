@@ -365,35 +365,47 @@ class Coordinator(object):
 
             ini_path = attrib['mdl']
 
+            # exit early if mdl doesn't exist
+            if not os.path.exists(ini_path):
+                sPrint('Could not locate *.mdl at location: %s' % ini_path)
+                return 0
+
             # parse the model configuration parameters
             params = parse_config(ini_path)
 
             if params is not None:
 
-                # load model
-                sPrint('Loading Model', MessageType.DEBUG)
-                name, model_inst = load_model(params)
-                sPrint('Finished Loading', MessageType.DEBUG)
-                # make sure this model doesnt already exist
-                if name in self.__models:
-                    elog.warning('Model named '+name+' already exists in configuration')
-                    sPrint('Model named '+name+' already exists in configuration', MessageType.WARNING)
-                    return None
+                try:
+                    # load model
+                    sPrint('Loading Model', MessageType.DEBUG)
+                    name, model_inst = load_model(params)
+                    sPrint('Finished Loading', MessageType.DEBUG)
+                    # make sure this model doesnt already exist
+                    if name in self.__models:
+                        elog.warning('Model named '+name+' already exists in configuration')
+                        sPrint('Model named '+name+' already exists in configuration', MessageType.WARNING)
+                        return None
 
-                iei = model_inst.inputs().values()
-                oei = model_inst.outputs().values()
+                    iei = model_inst.inputs().values()
+                    oei = model_inst.outputs().values()
 
-                # create a model instance
-                thisModel = Model(id= id,
-                                  name=model_inst.name(),
-                                  instance=model_inst,
-                                  desc=model_inst.description(),
-                                  input_exchange_items= iei,
-                                  output_exchange_items= oei,
-                                  params=params)
+                    # create a model instance
+                    thisModel = Model(id= id,
+                                      name=model_inst.name(),
+                                      instance=model_inst,
+                                      desc=model_inst.description(),
+                                      input_exchange_items= iei,
+                                      output_exchange_items= oei,
+                                      params=params)
 
-                thisModel.params_path(ini_path)
-                thisModel.attrib(attrib)
+                    thisModel.params_path(ini_path)
+                    thisModel.attrib(attrib)
+
+                except Exception, e:
+                    sPrint('Encountered an error while loading model: %s' % e, MessageType.ERROR)
+                    elog.error('Encountered an error while loading model: %s' % e)
+                    thisModel = None
+
 
         elif 'databaseid' in attrib and 'resultid' in attrib:
 
@@ -437,7 +449,7 @@ class Coordinator(object):
         else:
             elog.error('Failed to load model.')
             sPrint('Failed to load model.', MessageType.ERROR)
-            return None
+            return 0
 
     def remove_model(self, linkablecomponent):
         """
@@ -509,7 +521,7 @@ class Coordinator(object):
             if self.get_model_by_id(to_id) is None: raise Exception('> ' + to_id+' does not exist in configuration')
         except Exception, e:
             elog.error(e)
-            return None
+            return 0
 
         # check that input and output exchange items exist
         ii = To.get_input_exchange_item_by_name(to_item_id)
@@ -538,7 +550,7 @@ class Coordinator(object):
             return link.get_id()
         else:
             elog.warning('Could Not Create Link :(')
-            return None
+            return 0
 
     def add_link_by_name(self,from_id, from_item_name, to_id, to_item_name):
         """

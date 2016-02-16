@@ -9,7 +9,7 @@ import db.dbapi_v2 as db2
 from odm2api.ODMconnection import dbconnection
 from sprint import *
 
-class LogicDatabase(ViewDatabase):
+class DatabaseCtrl(ViewDatabase):
     def __init__(self, *args, **kwargs):
 
         ViewDatabase.__init__(self, *args, **kwargs)
@@ -64,38 +64,19 @@ class LogicDatabase(ViewDatabase):
         self.__list_id = event.GetIndex()
 
     def onDoubleClick(self, event):
-        """
-        Opens the data previewer view
-        Args:
-            event: double click
-
-        Returns: None
-
-        """
-
         id = event.GetIndex()
         obj = event.GetEventObject()
-        # filename = obj.GetItem(id).GetText()
-        # uniqueId = obj.GetItem(id).GetText()
 
-        # todo: this should check the type of data instead i.e. ODM2, WOF, etc...
-        try:
-            sitecode = obj.GetObjectAt(id).site_code
-            self.Parent.prepareODM1_Model(obj.GetObjectAt(id))
-        except:
-            sPrint('Could not open the data previewer', MessageType.ERROR)
-            # sitecode = None
+        if "Simulations" == self.Parent.Parent.GetPageText(self.Parent.Parent.GetSelection()):
+            self.Parent.open_simulation_viewer(obj.GetObjectAt(id))
+            return
 
-        # if sitecode is None:
-        #     try:
-        #         title = obj.GetObjectAt(id).model_name
-        #     except:
-        #         title = obj.GetObjectAt(id).variable
-        #     Publisher.sendMessage('AddModel', filepath=filename, x=0, y=0, uniqueId=uniqueId, title=title)  # sends message to LogicCanvas.addModel
-        #
-        # else:
-        #
-            # self.Parent.prepareODM1_Model(id)
+        if self.Parent.connection_combobox.GetStringSelection() in self.Parent.get_possible_wof_connections():
+            self.Parent.open_wof_viewer(obj.GetObjectAt(id))
+            return
+        if "ODM2" in self.Parent.connection_combobox.GetStringSelection():
+            self.Parent.open_odm2_viewer(obj.GetObjectAt(id))
+
 
     def getDbSession(self):
         selected_db = self.Parent.connection_combobox.GetStringSelection()

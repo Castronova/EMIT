@@ -7,13 +7,14 @@ sys.path.append('../')
 import unittest
 from stdlib import *
 import datetime
-from utilities import spatial, mdl
+from utilities import spatial, mdl, geometry
 from shapely.geometry import Point
 from advanced_geometry import *
 from datetime import timedelta
 from datetime import datetime as dt
-
+import environment
 import random
+
 
 class testNewDataOrg(unittest.TestCase):
 
@@ -29,10 +30,8 @@ class testNewDataOrg(unittest.TestCase):
         self.item = ExchangeItem(name='Test', desc='Test Exchange Item', unit=unit, variable=variable)
 
         coords = [(1,2),(2,3),(3,4),(4,5),(5,6),(6,7),(7,8),(8,9),(9,10)]
-        geoms = []
-        for x,y in coords:
-            pt = Point(x,y)
-            geoms.append(Geometry(pt))
+        x,y = zip(*coords)
+        geoms = geometry.build_point_geometries(x, y)
 
         self.item.addGeometries2(geoms)
 
@@ -45,49 +44,66 @@ class testNewDataOrg(unittest.TestCase):
 
         # get one geom
         g = self.item.getGeometries2(4)
-        self.assertTrue(isinstance(g, Geometry))
-        self.assertTrue(g.geom().x == 5)
-        self.assertTrue(g.geom().y == 6)
+        self.assertTrue(isinstance(g, Geometry2))
+        x,y,z = g.GetPoint()
+        self.assertTrue(x == 5)
+        self.assertTrue(y == 6)
+        self.assertTrue(z == 0)
 
     def test_add_geoms2(self):
 
         # add a single geom
-        pt = Point(10,11)
-        ret = self.item.addGeometries2(Geometry(pt))
+        pt = geometry.build_point_geometry(10, 11)
+        x,y,z = pt.GetPoint()
+        self.assertTrue(isinstance(pt, Geometry2))
+
+        ret = self.item.addGeometry(pt)
         self.assertTrue(ret)
+
         g = self.item.getGeometries2(-1)
-        self.assertTrue(isinstance(g, Geometry))
-        self.assertTrue(g.geom().x == 10)
-        self.assertTrue(g.geom().y == 11)
+        self.assertTrue(isinstance(g, Geometry2))
+        x,y,z = g.GetPoint()
+        self.assertTrue(x == 10)
+        self.assertTrue(y == 11)
+        self.assertTrue(z == 0)
 
         # add an invalid geometry
-        ret = self.item.addGeometries2(pt)
+        ret = self.item.addGeometry((0,1,1))
         self.assertFalse(ret)
 
         # add many of geometries
+        xs = range(100,110)
+        ys = range(110,120)
+        pts = geometry.build_point_geometries(xs, ys)
         geoms = []
-        for i in range(100,110):
-            geoms.append(Geometry(Point(i,i+1)))
+        for pt in pts:
+            geoms.append(pt)
         ret = self.item.addGeometries2(geoms)
         self.assertTrue(ret)
         g = self.item.getGeometries2(-1)
-        self.assertTrue(isinstance(g, Geometry))
-        self.assertTrue(g.geom().x == 109)
-        self.assertTrue(g.geom().y == 110)
+        self.assertTrue(isinstance(g, Geometry2))
+        x,y,z = g.GetPoint()
+        self.assertTrue(x == 109)
+        self.assertTrue(y == 119)
+        self.assertTrue(z == 0)
 
         # add a mix of valid and invalid geometries
         geoms = []
         for i in range(100,110):
             if i % 2 == 0:
-                geoms.append(Geometry(Point(i,i+1)))
+                pt = geometry.build_point_geometry(i, i + 1)
+                geoms.append(pt)
             else:
-                geoms.append(Point(i,i+1))
-                ret = self.item.addGeometries2(geoms)
+                geoms.append((i,i+1))
+
+        ret = self.item.addGeometries2(geoms)
         self.assertFalse(ret)
         g = self.item.getGeometries2(-1)
-        self.assertTrue(isinstance(g, Geometry))
-        self.assertTrue(g.geom().x == 109)
-        self.assertTrue(g.geom().y == 110)
+        self.assertTrue(isinstance(g, Geometry2))
+        x,y,z = g.GetPoint()
+        self.assertTrue(x == 108)
+        self.assertTrue(y == 109)
+        self.assertTrue(z == 0)
 
     def test_values(self):
 
@@ -147,6 +163,6 @@ class testNewDataOrg(unittest.TestCase):
         self.assertTrue(invalid == (0, None))
 
         # test getting datavalue geometry subsets
-        values = self.item.getValues2(idx_start=3, idx_end=5, start_time=st, end_time=et)
+        values = self.item.getValues2(geom_idx_start=3, geom_idx_end=5, start_time=st, end_time=et)
         self.assertTrue(len(values) == 5)
         self.assertTrue(len(values[0]) == 3)

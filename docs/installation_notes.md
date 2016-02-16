@@ -49,7 +49,7 @@ Install conda-env
 
 **load spatialite**
 
-Make sure mod_spatialite* exists on your system.  This should have been installed with `libspatialite`:
+Make sure *mod_spatialite* exists on your system.  This should have been installed with `libspatialite`:
 
     $ find /usr/local/Cellar -type f -name 'mod_spatialite'*
     /usr/local/Cellar/libspatialite/4.3.0a_1/lib/mod_spatialite.7.dylib

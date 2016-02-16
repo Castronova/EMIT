@@ -40,11 +40,11 @@ Install conda-env
 
 #### Testing the installation
 
-**make sure extension support is enabled**
-    >>> import apsw
-    >>> conn = apsw.Connection(':memory:')
-    >>> getattr(conn, 'enableloadextension')
-    <built-in method enableloadextension of apsw.Connection object at 0x1020c3f48>
+**make sure extension support is enabled**  
+    >>> import apsw  
+    >>> conn = apsw.Connection(':memory:')  
+    >>> getattr(conn, 'enableloadextension')  
+    <built-in method enableloadextension of apsw.Connection object at 0x1020c3f48>  
 
 **load spatialite**
 

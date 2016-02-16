@@ -40,7 +40,8 @@ Install conda-env
 
 #### Testing the installation
 
-**make sure extension support is enabled**  
+**make sure extension support is enabled**   
+
     >>> import apsw  
     >>> conn = apsw.Connection(':memory:')  
     >>> getattr(conn, 'enableloadextension')  

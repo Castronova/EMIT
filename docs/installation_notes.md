@@ -32,8 +32,9 @@ Install conda-env
 #### Installing the apsw package
 
 1. `git clone https://github.com/rogerbinns/apsw.git`
+2. `cd apsw`
 
-2. `echo "define=EXPERIMENTAL" >> ./apsw.setup.cfg`
+2. `echo "define=EXPERIMENTAL" >> ./setup.cfg`
 
 3. `python setup.py fetch --all build --enable-all-extensions install`
 

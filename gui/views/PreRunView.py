@@ -14,11 +14,11 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin, CheckListCtrlMixin):
 
 class PreRunView(wx.Frame):
     def __init__(self, parent=None):                             # this style makes the window non-resizable
-        wx.Frame.__init__(self, parent=parent, title="Pre Run", size=(405, 450),
+        wx.Frame.__init__(self, parent=parent, id=-1, pos=wx.DefaultPosition, title="Pre Run", size=(405, 450),
                           style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
-        if sys.platform == 'darwin': # Darwin is Mac
-            self.SetSize((405, 350))
+        #if sys.platform == 'darwin': # Darwin is Mac
+        #    self.SetSize((405, 350))
 
         # define top and bottom panels
         panel = wx.Panel(self)

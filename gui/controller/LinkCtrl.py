@@ -56,7 +56,7 @@ class LinkCtrl(LinkView):
         self.ButtonSwap.Bind(wx.EVT_BUTTON, self.OnSwap)
         self.ButtonCancel.Bind(wx.EVT_BUTTON, self.OnCancel)
         self.ButtonSave.Bind(wx.EVT_BUTTON, self.OnSave)
-        self.ButtonPlot.Bind(wx.EVT_BUTTON, self.onPlotGeometries)
+        self.ButtonPlot.Bind(wx.EVT_BUTTON, self.on_plot_geometries)
         self.Bind(EVT_LINKUPDATED, self.linkSelected)
         self.Bind(wx.EVT_CLOSE, self.OnCancel)
         self.outputGrid.Bind(gridlib.EVT_GRID_CELL_LEFT_CLICK, self.OutputGridHover)
@@ -260,7 +260,17 @@ class LinkCtrl(LinkView):
         self.outputLabel.SetLabel("Output of " + self.GetModelFrom())
         self.inputLabel.SetLabel("Input of " + self.GetModelTo())
 
-    def onPlotGeometries(self, event):
+    def on_plot_geometries(self, event):
+        # from gui.controller.SpatialCtrl import SpatialCtrl
+        # controller = SpatialCtrl(None)
+        # controller.SetTitle("Geometry Viewer")
+        # oei = controller.get_output_exchange_item_by_id(self.__selected_link.source_id)
+        # geom = controller.get_geometries(oei)
+        # controller.set_data(source=geom)
+        # controller.set_selection_data(source_name=self.__selected_link.oei)
+        # controller.update_plot(self.__selected_link.oei)
+
+
         title = self.getOutputModelText() + " --> " + self.getInputModelText()
         plot_window = wx.Frame(self.parent, id=wx.ID_ANY, title=title, size=(625, 625),
                                style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)

@@ -64,8 +64,13 @@ class SpatialCtrl(SpatialView):
         # Data_in/out is the variable name
 
         data = self.get_geoms_by_name(data_in)
+
+        # We can use either a set color or use the getNextColor() from PlotForSiteViewerCtrl.py
+        # color = self.plot.getNextColor()
+        color = "#019477"
+
         switch = {
-            "POLYGON": self.plot_polygon(data, "#019477"),
+            "POLYGON": self.plot_polygon(data, color=color),
             "POINT": self.plot_point(data),
             "LINESTRING": self.plot_linestring(data)
         }
@@ -73,9 +78,11 @@ class SpatialCtrl(SpatialView):
 
         # set the title here
 
-        # self.plot.reDraw()  # self.canvas.draw()
-        # self.plot.draw()
-        # self.plot.plot.draw()
+        self.plot.axes.grid(True)
+        # self.plot.axes.axis("auto")
+
+        # If margin is 0 the graph will fill the plot.
+        self.plot.axes.margins(0.1)
         self.plot.reDraw()
 
     def plot_polygon(self, data, color):
@@ -86,8 +93,8 @@ class SpatialCtrl(SpatialView):
         a = tuple(map(tuple, points[:, 0:2]))
         poly_list.append(a)
 
-        pcoll = PolyCollection(poly_list, closed=True, facecolor=color, alpha=0.5, edgecolor=None, linewidths=(2,))
-        self.plot.axes.add_collection(pcoll, autolim=True)
+        p_coll = PolyCollection(poly_list, closed=True, facecolor=color, alpha=0.5, edgecolor=None, linewidths=(2,))
+        self.plot.axes.add_collection(p_coll, autolim=True)
 
     def plot_point(self, data):
         print "Its a point"

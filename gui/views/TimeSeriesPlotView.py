@@ -30,7 +30,7 @@ class TimeSeriesPlotView(wx.Frame):
 
         hboxTopPanel = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.plot = PlotForSiteViewerCtrl(panel)
+        self.plot = PlotForSiteViewerCtrl(self.toppanel)
         hboxTopPanel.Add(self.plot.plot, 1, wx.EXPAND | wx.ALL, 2)
 
         self.toppanel.SetSizer(hboxTopPanel)

@@ -6,7 +6,6 @@ import numpy
 from matplotlib.collections import PolyCollection, LineCollection
 
 
-
 class SpatialCtrl(SpatialView):
 
     def __init__(self, parent):

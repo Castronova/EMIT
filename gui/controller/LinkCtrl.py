@@ -270,7 +270,6 @@ class LinkCtrl(LinkView):
         # controller.set_selection_data(source_name=self.__selected_link.oei)
         # controller.update_plot(self.__selected_link.oei)
 
-
         title = self.getOutputModelText() + " --> " + self.getInputModelText()
         plot_window = wx.Frame(self.parent, id=wx.ID_ANY, title=title, size=(625, 625),
                                style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)

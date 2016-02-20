@@ -91,7 +91,7 @@ class LinkView(wx.Frame):
         # if sys.platform == 'linux2':
         #     self.outputProperties.SetFont(self.font)
 
-        self.outputGrid = wx.grid.Grid( self.ExchangeItemPanel, wx.ID_ANY, wx.DefaultPosition, wx.Size(325,-1), 0 )
+        self.outputGrid = wx.grid.Grid(self.ExchangeItemPanel, wx.ID_ANY, wx.DefaultPosition, wx.Size(325,-1), 0 )
 
         # Grid
         self.outputGrid.CreateGrid(7, 2)

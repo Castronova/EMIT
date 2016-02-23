@@ -204,20 +204,20 @@ class sqlite():
                     samplingFeature = self.insert_sampling_feature(type='site',geometryType=geom_type, WKTgeometry=geom_wkt)
                 samplingfeaturesids.append(samplingFeature.SamplingFeatureID)
             bench_insert_sf = (time.time() - st)
-            print 'Inserting Sampling Features (not bulk) %3.5f sec' % bench_insert_sf
+            sPrint('Inserting Sampling Features (not bulk) %3.5f sec' % bench_insert_sf, MessageType.INFO)
 
             st = time.time()
             featureactions = []
             action_ids = [action.ActionID] * len(samplingfeaturesids)
             featureactionids = self.insert_feature_actions_bulk(samplingfeaturesids, action_ids)
             bench_insert_fa += (time.time() - st)
-            print 'Inserting Feature Actions (bulk) %3.5f sec' % bench_insert_fa
+            sPrint('Inserting Feature Actions (bulk) %3.5f sec' % bench_insert_fa, MessageType.INFO)
 
             st = time.time()
             resultids = self.insert_results_bulk(FeatureActionIDs=featureactionids, ResultTypeCV='time series', VariableID=variable.VariableID,
                                      UnitsID=unit.UnitsID, ValueCount=len(dates), ProcessingLevelID=processinglevel.ProcessingLevelID,
                                                  SampledMediumCV='unknown')
-            print 'Inserting Results (bulk) %3.5f sec' % (time.time() - st)
+            sPrint('Inserting Results (bulk) %3.5f sec' % (time.time() - st), MessageType.INFO)
 
             for resultid in resultids:
 
@@ -229,7 +229,7 @@ class sqlite():
                 st = time.time()
                 tsr = self.write.createTimeSeriesResult(resultObj, aggregationstatistic='Unknown')
                 # self.insert_timeseries_results_bulk(resultIDs=resultid, timespacing=timestep_value, timespacing_unitid=timestepunit.UnitsID)
-                print 'Inserting Timeseries Results %3.5f sec' % (time.time() - st)
+                sPrint('Inserting Timeseries Results %3.5f sec' % (time.time() - st), MessageType.INFO)
 
                 values = datavalues.flatten(order='C') # flatten row-wise, [t1g1, t1g2, ..., t1gn, t2g1, t2g2, ..., t2gn, ...]
                 valuedates = dates[:,1]  # get all rows of the datetime column of the dates array [t1, t2, t3, ..., tn]
@@ -244,13 +244,13 @@ class sqlite():
                 #     flattened_ids.extend(resultids)     # [id1, id2, ..., idn, id1, id2, ..., idn, ...]
 
                 st = time.time()
-                print 'Bulk Inserting Timeseries Results Values (%d records)' % (len(flattened_ids))
+                sPrint('Bulk Inserting Timeseries Results Values (%d records)' % len(flattened_ids), MessageType.INFO)
                 self.insert_timeseries_result_values_bulk(  ResultIDs = resultid, TimeAggregationInterval= timestep_value,
                                                                       TimeAggregationIntervalUnitsID=timestepunit.UnitsID,
                                                                       DataValues = values, ValueDateTimes = flattened_dates,
                                                                       ValueDateTimeUTCOffset=-6, CensorCodeCV='nc', QualityCodeCV='unknown')
                 bulk = time.time() - st
-                print 'Elapsed time: %3.5f sec' % bulk
+                sPrint('Elapsed time: %3.5f sec' % bulk, MessageType.INFO)
 
 
         # create the model instance
@@ -449,7 +449,7 @@ class sqlite():
         vals = zip(valueIDs, result_ids, DataValues, value_date_times, time_offsets, censor_codes, quality_codes, time_intervals, time_unit_ids)
 
         # insert values in chunks of 10,000
-        print 'Begin inserting %d value' % len(vals)
+        sPrint('Begin inserting %d value' % len(vals), MessageType.INFO)
 
         self.cursor.execute("BEGIN TRANSACTION;")
         chunk_size = 10000
@@ -458,7 +458,7 @@ class sqlite():
             sidx = i
             eidx = i + chunk_size if (i + chunk_size) < len(vals) else len(vals)
             percent_complete = float(i) / float(len(vals)) * 100
-            print '.. inserting records %3.1f %% complete' % (percent_complete)
+            sPrint('.. inserting records %3.1f %% complete' % (percent_complete), MessageType.INFO)
             self.cursor.executemany('INSERT INTO TimeSeriesResultValues VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', vals[sidx:eidx])
         self.cursor.execute("COMMIT;")
 
@@ -662,7 +662,7 @@ class sqlite():
             return featureObj
 
         except Exception, e:
-            print e
+            sPrint('Encountered and error in getSamplingFeatureId_Geometry_Equals: %s' % e, MessageType.ERROR)
             return None
 
 
@@ -683,7 +683,7 @@ class sqlite():
                 all()
             return res
         except Exception, e:
-            print e
+            sPrint('Encountered and error in getAllSeries: %s' %e, MessageType.ERROR)
 
     def getAllSimulations(self):
         """
@@ -699,7 +699,7 @@ class sqlite():
                 join(models.People).all()
             return res
         except Exception, e:
-            print e
+            sPrint('Encountered an error in get AllSimulations: %s' % e, MessageType.ERROR)
 
     def getCurrentSession(self):
         return self.connection.getSession()

@@ -7,7 +7,7 @@ class SpatialView(wx.Frame):
 
     def __init__(self, parent=None):
 
-        wx.Frame.__init__(self, parent=parent, size=(650, 700))
+        wx.Frame.__init__(self, parent=parent, size=(650, 610))
 
         # Creating all the necessary panels
         panel = wx.Panel(self)
@@ -52,17 +52,17 @@ class SpatialView(wx.Frame):
 
 
 def set_up_grid(grid):
-    '''
+    """
     This function only works with type wx.grid.Grid
-    The it will createa grid that is like the one found in LinkCtrl/View.
+    The it will create a grid that is like the one found in LinkCtrl/View.
     :param grid:
     :return:
-    '''
+    """
     import wx.grid
     from coordinator.emitLogging import elog
 
     if isinstance(grid, wx.grid.Grid):
-        grid.CreateGrid(7, 2)
+        grid.CreateGrid(6, 2)
         grid.EnableEditing(False)
         grid.EnableGridLines(True)
         grid.SetGridLineColour(wx.Colour(0, 0, 0))
@@ -81,22 +81,22 @@ def set_up_grid(grid):
         grid.SetRowLabelAlignment(wx.ALIGN_CENTER, wx.ALIGN_CENTER)
 
         # Defaults
-        grid.SetDefaultCellBackgroundColour(wx.Colour(255, 255, 255))
+        grid.SetDefaultCellBackgroundColour(wx.Colour(255, 255, 255))  # white
         grid.SetDefaultCellAlignment(wx.ALIGN_LEFT, wx.ALIGN_TOP)
 
         # Set Cell Values
         grid.SetCellValue(0, 0, " Variable")
         grid.SetCellValue(1, 0, " Name")
-        grid.SetCellValue(2, 0, " Description")
-        grid.SetCellValue(3, 0, " Unit")
-        grid.SetCellValue(4, 0, " Name")
-        grid.SetCellValue(5, 0, " Type")
-        grid.SetCellValue(6, 0, " Abbreviation")
+        # grid.SetCellValue(2, 0, " Description")
+        grid.SetCellValue(2, 0, " Geometry Type")
+        grid.SetCellValue(3, 0, " Coordinate System")
+        grid.SetCellValue(4, 0, " Extent")
+        grid.SetCellValue(5, 0, " Number of elements")
 
-        grid.SetCellBackgroundColour(0, 0, wx.Colour(195, 195, 195))
+        grid.SetCellBackgroundColour(0, 0, wx.Colour(195, 195, 195))  # Grey
         grid.SetCellBackgroundColour(0, 1, wx.Colour(195, 195, 195))
-        grid.SetCellBackgroundColour(3, 0, wx.Colour(195, 195, 195))
-        grid.SetCellBackgroundColour(3, 1, wx.Colour(195, 195, 195))
+        # grid.SetCellBackgroundColour(3, 0, wx.Colour(195, 195, 195))
+        # grid.SetCellBackgroundColour(3, 1, wx.Colour(195, 195, 195))
         grid.SetGridLineColour(wx.Colour(195, 195, 195))
 
         grid.AutoSizeColumn(0)

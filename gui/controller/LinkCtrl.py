@@ -261,16 +261,40 @@ class LinkCtrl(LinkView):
         self.inputLabel.SetLabel("Input of " + self.GetModelTo())
 
     def on_plot_geometries(self, event):
-        # from gui.controller.SpatialCtrl import SpatialCtrl
-        # controller = SpatialCtrl(None)
-        # controller.SetTitle("Geometry Viewer")
-        # oei = controller.get_output_exchange_item_by_id(self.__selected_link.source_id)
-        # geom = controller.get_geometries(oei)
-        # controller.set_data(source=geom)
-        # controller.set_selection_data(source_name=self.__selected_link.oei)
-        # controller.update_plot(self.__selected_link.oei)
+        from gui.controller.SpatialCtrl import SpatialCtrl
+        controller = SpatialCtrl(None)
+        controller.SetTitle("Geometry Viewer")
 
+        # input exchange item -> iei
+        iei = controller.get_input_exchange_item_by_id(self.__selected_link.target_id)
+        igeom = controller.get_geometries(iei)
+
+        # output exchange item -> oei
+        oei = controller.get_output_exchange_item_by_id(self.__selected_link.source_id)
+        ogeom = controller.get_geometries(oei)
+
+        controller.set_data(target=igeom, source=ogeom)
+        controller.set_selection_data(target_name=self.__selected_link.iei, source_name=self.__selected_link.oei)
+        controller.update_plot(self.__selected_link.oei)
         title = self.getOutputModelText() + " --> " + self.getInputModelText()
+        controller.SetTitle(title)
+
+        controller.edit_grid("output", 1, 1, controller.source_name)
+        controller.edit_grid("output", 2, 1, controller.output_exchange_item[0].GetGeometryName())
+        controller.edit_grid("output", 3, 1, controller.output_exchange_item[0].GetCoordinateDimension())
+        controller.edit_grid("output", 5, 1, controller.output_exchange_item[0].GetPointCount())
+
+        controller.edit_grid("input", 1, 1, controller.source_name)
+        controller.edit_grid("input", 2, 1, controller.output_exchange_item[0].GetGeometryName())
+        controller.edit_grid("input", 3, 1, controller.output_exchange_item[0].GetCoordinateDimension())
+        controller.edit_grid("input", 5, 1, controller.output_exchange_item[0].GetPointCount())
+
+
+
+
+
+
+        # title = self.getOutputModelText() + " --> " + self.getInputModelText()
         plot_window = wx.Frame(self.parent, id=wx.ID_ANY, title=title, size=(625, 625),
                                style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 

@@ -13,11 +13,22 @@ class SpatialCtrl(SpatialView):
 
         self.__input_data = None
         self.__output_data = None
-        self.__iei = None
-        self.__oei = None
+        self.input_exchange_item = None
+        self.output_exchange_item = None
+        self.target_name = ""
+        self.source_name = ""
 
     def clear_plot(self):
         self.plot.clearPlot()
+
+    def edit_grid(self, grid, x_loc, y_loc, value):
+        if grid == "input":
+            grid = self.input_grid
+
+        if grid == "output":
+            grid = self.output_grid
+
+        grid.SetCellValue(x_loc, y_loc, str(value))
 
     def get_input_exchange_item_by_id(self, id):
         return engineAccessors.getInputExchangeItems(id)
@@ -37,18 +48,6 @@ class SpatialCtrl(SpatialView):
             elog.debug("Exchange item must be a list of dictionaries")
         return
 
-    def set_data(self, target={}, source={}):  # target is input, source is output
-        self.__input_data = target
-        self.__output_data = source
-
-    def set_selection_data(self, target_name=None, source_name=None):
-        #  example of source name is some_value or random POLYGON 10-100
-        if target_name in self.__input_data:
-            self.__iei = target_name
-
-        if source_name in self.__output_data:
-            self.__oei = source_name
-
     def get_geoms_by_name(self, name):
         if name in self.__input_data:
             return self.__input_data[name]
@@ -58,6 +57,20 @@ class SpatialCtrl(SpatialView):
 
         return None
 
+    def set_data(self, target={}, source={}):  # target is input, source is output
+        self.__input_data = target
+        self.__output_data = source
+
+    def set_selection_data(self, target_name=None, source_name=None):
+        #  example of source name is some_value or random POLYGON 10-100
+        if target_name in self.__input_data:
+            self.input_exchange_item = self.__input_data[target_name]
+            self.target_name = target_name
+
+        if source_name in self.__output_data:
+            self.output_exchange_item = self.__output_data[source_name]
+            self.source_name = source_name
+
     def update_plot(self, data_in, data_out=None, plot_title=None):
         self.clear_plot()
         # Data_in/out is the variable name
@@ -65,8 +78,8 @@ class SpatialCtrl(SpatialView):
         data = self.get_geoms_by_name(data_in)
 
         # We can use either a set color or use the getNextColor() from PlotForSiteViewerCtrl.py
-        # color = self.plot.getNextColor()
-        color = "#019477"
+        color = self.plot.getNextColor()
+        # color = "#019477"
 
         switch = {
             "POLYGON": self.plot_polygon(data, color=color),

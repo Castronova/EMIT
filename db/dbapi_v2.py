@@ -1,5 +1,3 @@
-__author__ = 'mike'
-
 import datetime
 import uuid
 import numpy
@@ -10,7 +8,7 @@ from odm2api.ODM2.services.updateService import UpdateODM2
 from odm2api.ODM2.services.deleteService import DeleteODM2
 from odm2api.ODM2 import models
 import apsw as sqlite3
-
+from sprint import *
 import sqlalchemy
 from sqlalchemy.orm import class_mapper
 
@@ -65,7 +63,11 @@ class sqlite():
 
         # load mod_spatialite extension
         self.conn.enableloadextension(True)
-        self.cursor.execute('SELECT load_extension("mod_spatialite")')
+        try:
+            self.cursor.execute('SELECT load_extension("mod_spatialite")')
+        except Exception, e:
+            elog.error('Encountered and error when attempting to load mod_spatialite: %s' % e)
+            sPrint('Could not load mod_spatialite.  Your database will not be geo-enabled', MessageType.WARNING)
 
 
     def get_next_insert_id(self, cls):

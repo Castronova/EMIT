@@ -1,5 +1,3 @@
-__author__ = 'mike'
-
 import unittest
 import os
 from odm2api.ODMconnection import dbconnection

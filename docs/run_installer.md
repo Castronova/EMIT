@@ -6,6 +6,11 @@
     
     `$ git clone https://github.com/Castronova/EMIT.git`
 
+1. Checkout master branch
+    
+    `$ git checkout master`  
+    `$ git pull`
+
 1. Move into the emit directory
 
     `$cd path/to/emit`

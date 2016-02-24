@@ -36,11 +36,11 @@ def createXMLFileForReading(xml_string):
 class WaterOneFlow(object):
 
     @timeout(10)
-    def __init__(self, wsdl):
+    def __init__(self, wsdl, network):
         self.wsdl = wsdl
         # sleep(3)
         self.conn = Client(wsdl)
-        self.network_code = ""
+        self.network_code = network + ":"
 
     def _getSiteType(self, site):
         try:
@@ -121,7 +121,8 @@ class WaterOneFlow(object):
         #  Returns a JSON
         #  Returns all the information for a given site.
         #  This includes all the variables associated with that location  description.
-        data = self.conn.service.GetSiteInfoObject("iutah:" + str(sitecode))
+        print self.network_code
+        data = self.conn.service.GetSiteInfoObject(self.network_code + ":"+ str(sitecode))
         return data
 
     def getSitesByBoxObject(self, sitecode):
@@ -131,6 +132,7 @@ class WaterOneFlow(object):
 
     def getSites(self, value=None):
         #  Returns JSON
+        print value
         if value is None:
             site_objects = self.conn.service.GetSitesObject("")
         else:
@@ -155,7 +157,7 @@ class WaterOneFlow(object):
             return data.timeSeries
         except:
             # error getting data
-            print 'There was an getting data for %s:%s, %s:%s, %s %s' % (network_code, site_code, network_code, variable_code, str(beginDate), str(endDate))
+            print 'There was an error getting data for %s:%s, %s:%s, %s %s' % (network_code, site_code, network_code, variable_code, str(beginDate), str(endDate))
             return None
 
     def getVariables(self, network_code=None, variable_code=None):
@@ -169,5 +171,5 @@ class WaterOneFlow(object):
 
     def getValuesForASiteObject(self, siteid=None):
         network = "iutah:"
-        x = self.conn.service.GetValuesForASiteObject(network + str(siteid))
+        x = self.conn.service.GetValuesForASiteObject(self.network_code + ":" + str(siteid))
         return x

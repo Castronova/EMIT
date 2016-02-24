@@ -1,0 +1,18 @@
+[wofconnection]
+name = Red Butte Creek
+desc = Red Butte WOF
+wsdl = http://data.iutahepscor.org/RedButteCreekWOF/cuahsi_1_1.asmx?WSDL
+network = iutah
+
+[wofconnection]
+name = Provo River
+desc = Provo River WOF
+wsdl = http://data.iutahepscor.org/ProvoRiverWOF/cuahsi_1_1.asmx?WSDL
+network = iutah
+
+[wofconnection]
+name = Logan River
+desc = Logan River WOF
+wsdl = http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL
+network = iutah
+

@@ -7,6 +7,8 @@ from wx.lib.pubsub import pub as Publisher
 from gui.controller.DatabaseCtrl import DatabaseCtrl
 import coordinator.events as engineEvent
 from wx import richtext
+import os
+import ConfigParser
 from ContextView import TimeSeriesContextMenu, SimulationContextMenu #, ConsoleContextMenu
 import coordinator.engineAccessors as engine
 from utilities import db as dbUtilities
@@ -21,6 +23,9 @@ import db.dbapi_v2 as db2
 from odm2api.ODMconnection import dbconnection
 from gui.controller.TimeSeriesObjectCtrl import TimeSeriesObjectCtrl
 from gui.controller.SimulationPlotCtrl import SimulationPlotCtrl
+import uuid
+import ConfigParser
+from api_old.ODMconnection import  dbconnection, SessionFactory
 
 class viewLowerPanel:
     def __init__(self, notebook):
@@ -28,10 +33,39 @@ class viewLowerPanel:
         console = consoleCtrl(notebook)
         timeseries = TimeSeriesTab(notebook)
         simulations = SimulationDataTab(notebook)
-
         notebook.AddPage(console, "Console")
         notebook.AddPage(timeseries, "Time Series")
         notebook.AddPage(simulations, "Simulations")
+
+
+class multidict(dict):
+    """
+    Dictionary class that has been extended for Ordering and Duplicate Keys
+    """
+
+    def __init__(self, *args, **kw):
+        self.itemlist = super(multidict, self).keys()
+        self._unique = 0
+
+    def __setitem__(self, key, val):
+        if isinstance(val, dict):
+            self._unique += 1
+            key += '^' + str(self._unique)
+        self.itemlist.append(key)
+        dict.__setitem__(self, key, val)
+
+    def __iter__(self):
+        return iter(self.itemlist)
+
+    def keys(self):
+        return self.itemlist
+
+    def values(self):
+        return [self[key] for key in self]
+
+    def itervalues(self):
+        return (self[key] for key in self)
+
 
 
 class TimeSeriesTab(wx.Panel):
@@ -97,8 +131,11 @@ class TimeSeriesTab(wx.Panel):
             for k, v in self._databases.iteritems():
                 choices.append(self._databases[k]['name'])
 
-            for key, value in self.get_possible_wof_connections().iteritems():
-                choices.append(key)
+            wofconnections = self.get_possible_wof_connections()
+            for con in wofconnections:
+                for key, value in con.iteritems():
+                    if key == 'name':
+                        choices.append(value)
 
             choices.sort()
 
@@ -122,10 +159,26 @@ class TimeSeriesTab(wx.Panel):
         return values
 
     def get_possible_wof_connections(self):
-        wsdl = {}
-        wsdl["Red Butte Creek"] = "http://data.iutahepscor.org/RedButteCreekWOF/cuahsi_1_1.asmx?WSDL"
-        wsdl["Provo River"] = "http://data.iutahepscor.org/ProvoRiverWOF/cuahsi_1_1.asmx?WSDL"
-        wsdl["Logan River"] = "http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL"
+
+        currentdir = os.path.dirname(os.path.abspath(__file__))
+        wof_txt = os.path.abspath(os.path.join(currentdir, '../../data/wofsites'))
+        params = {}
+        cparser = ConfigParser.ConfigParser(None, multidict)
+        cparser.read(wof_txt)
+        sections = cparser.sections()
+        wsdl = []
+        for s in sections:
+            d={}
+            options = cparser.options(s)
+            for option in options:
+                d[option] = cparser.get(s, option)
+
+            wsdl.append(d)
+
+
+        #wsdl["Red Butte Creek"] = "http://data.iutahepscor.org/RedButteCreekWOF/cuahsi_1_1.asmx?WSDL"
+        #wsdl["Provo River"] = "http://data.iutahepscor.org/ProvoRiverWOF/cuahsi_1_1.asmx?WSDL"
+        #wsdl["Logan River"] = "http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL"
         return wsdl
 
     def open_odm2_viewer(self, object):
@@ -171,9 +224,10 @@ class TimeSeriesTab(wx.Panel):
         # get the name of the selected database
         selected_db = self.connection_combobox.GetStringSelection()
 
-        for key, value in self.get_possible_wof_connections().iteritems():
-            if selected_db == key:
-                return value
+        for con in self.get_possible_wof_connections():
+            for key, value in con.iteritems():
+                if selected_db == value:
+                    return con
 
         self.table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
         self.m_olvSeries.DefineColumns(self.table_columns)
@@ -248,7 +302,7 @@ class TimeSeriesTab(wx.Panel):
         value = self.refresh_database()
         if value is not None:
             try:
-                self.api = wateroneflow.WaterOneFlow(value)
+                self.api = wateroneflow.WaterOneFlow(value['wsdl'], value['network'])
                 self.setup_wof_table(self.api)
             except Exception:
                 elog.debug("Wof web service took to long or failed.")

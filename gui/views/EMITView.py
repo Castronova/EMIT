@@ -16,7 +16,7 @@ from gui import events
 from gui.controller.CanvasCtrl import LogicCanvas
 from gui.controller.DirectoryCtrl import LogicDirectory
 from gui.controller.NetcdfCtrl import NetcdfCtrl
-from gui.controller.PreRunCtrl import AddNewUserDialog
+from gui.controller.UserCtrl import UserCtrl
 from gui.controller.ToolboxCtrl import LogicToolbox
 from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
 from utilities.gui import loadAccounts
@@ -217,14 +217,14 @@ class ViewEMIT(wx.Frame):
         print userPath
         if os.path.isfile(userPath) == False:
             file = open(userPath, 'w+')
-            dlg = AddNewUserDialog(self, title="Create User")
+            dlg = UserCtrl(self)
             dlg.CenterOnScreen()
             dlg.ShowModal()
         else:
             # users = self.loadAccounts()
             users = loadAccounts()
             if len(users) < 1:
-                dlg = AddNewUserDialog(self, title="Create User")
+                dlg = UserCtrl(self)
                 dlg.CenterOnScreen()
                 dlg.ShowModal()
 
@@ -246,7 +246,7 @@ class ViewEMIT(wx.Frame):
                     #os.system("kill -9 " + pid)
                     no = True
                 else:
-                    dlg = AddNewUserDialog(self, title="Create User")
+                    dlg = UserCtrl(self)
                     dlg.CenterOnScreen()
                     dlg.ShowModal()
             else:
@@ -264,7 +264,7 @@ class ViewEMIT(wx.Frame):
             path = file_dialog.GetPath()
 
     def onAddUser(self, event):
-        dlg = AddNewUserDialog(self, title="Create User")
+        dlg = UserCtrl(self)
         dlg.CenterOnScreen()
         dlg.ShowModal()
 

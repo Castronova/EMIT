@@ -7,11 +7,12 @@ class SpatialView(wx.Frame):
 
     def __init__(self, parent=None):
 
-        wx.Frame.__init__(self, parent=parent, size=(650, 610))
+        wx.Frame.__init__(self, parent=parent, size=(670, 650))
 
         # Creating all the necessary panels
         panel = wx.Panel(self)
         top_panel = wx.Panel(panel)
+        middle_panel = wx.Panel(panel)
         lower_panel = wx.Panel(panel)
         input_grid_panel = wx.Panel(lower_panel)
         output_grid_panel = wx.Panel(lower_panel)
@@ -22,15 +23,28 @@ class SpatialView(wx.Frame):
         sizer_top_panel.Add(self.plot.plot, 1, wx.EXPAND | wx.ALL, 2)
         top_panel.SetSizer(sizer_top_panel)
 
-        # SETUP FOR LOWER PANEL
+        # SETUP OF MIDDLE PANEL
+        sizer_middle_panel = wx.BoxSizer(wx.HORIZONTAL)
+        self.input_checkbox = wx.CheckBox(parent=middle_panel, label="Input Exchange Item: ")
+        self.output_checkbox = wx.CheckBox(parent=middle_panel, label="Output Exchange Item: ")
+
+        sizer_middle_panel.AddSpacer(5)
+        sizer_middle_panel.Add(self.input_checkbox, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
+        sizer_middle_panel.Add(self.output_checkbox, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
+
+        middle_panel.SetSizer(sizer_middle_panel)
+
+        # SETUP OF LOWER PANEL
         sizer_lower_panel = wx.BoxSizer(wx.HORIZONTAL)
 
+        # SETUP INPUT GRID
         input_sizer = wx.BoxSizer(wx.VERTICAL)
         self.input_grid = wx.grid.Grid(input_grid_panel, size=(300, -1))
         set_up_grid(self.input_grid)
         input_sizer.Add(self.input_grid, 1, wx.EXPAND | wx.ALL, 5)
         input_grid_panel.SetSizer(input_sizer)
 
+        # SETUP OUTPUT GRID
         output_sizer = wx.BoxSizer(wx.VERTICAL)
         self.output_grid = wx.grid.Grid(output_grid_panel, size=(300, -1))
         set_up_grid(self.output_grid)
@@ -43,10 +57,11 @@ class SpatialView(wx.Frame):
         lower_panel.SetSizer(sizer_lower_panel)
 
         # ADD PANEL TO THE FRAME
-        vbox = wx.BoxSizer(wx.VERTICAL)
-        vbox.Add(top_panel, 1, wx.EXPAND | wx.ALL, 2)
-        vbox.Add(lower_panel, 1, wx.EXPAND | wx.ALL, 2)
-        panel.SetSizer(vbox)
+        sizer_spatial_view = wx.BoxSizer(wx.VERTICAL)
+        sizer_spatial_view.Add(top_panel, 1, wx.EXPAND | wx.ALL, 2)
+        sizer_spatial_view.Add(middle_panel, 0, wx.EXPAND | wx.ALL, 2)
+        sizer_spatial_view.Add(lower_panel, 1, wx.EXPAND | wx.ALL, 2)
+        panel.SetSizer(sizer_spatial_view)
 
         self.Show()
 

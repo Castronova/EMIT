@@ -18,9 +18,9 @@ class ViewPlotForSiteViewer:
         self.axes.set_title(str(title))
 
     def displayLegend(self, location='upper right'):
-        '''
+        """
         Taken from http://matplotlib.org/api/figure_api.html
-        'best' : 0,          (currently not supported for figure legends)
+        'best'         : 0,
         'upper right'  : 1,
         'upper left'   : 2,
         'lower left'   : 3,
@@ -31,7 +31,7 @@ class ViewPlotForSiteViewer:
         'lower center' : 8,
         'upper center' : 9,
         'center'       : 10,
-        '''
+        """
         self.axes.legend(loc=location)
 
     def setAxisLabel(self, x="", y=""):

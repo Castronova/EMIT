@@ -277,6 +277,9 @@ class LinkCtrl(LinkView):
         controller.set_selection_data(target_name=self.__selected_link.iei, source_name=self.__selected_link.oei)
         controller.update_plot(self.__selected_link.oei)
         controller.update_plot(self.__selected_link.iei)
+        controller.input_checkbox.SetValue(True)
+        controller.output_checkbox.SetValue(True)
+
         title = self.getOutputModelText() + " --> " + self.getInputModelText()
         controller.SetTitle(title)
 

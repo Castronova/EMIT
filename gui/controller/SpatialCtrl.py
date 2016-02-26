@@ -4,6 +4,7 @@ from utilities import geometry
 from coordinator.emitLogging import elog
 import numpy
 from matplotlib.collections import PolyCollection, LineCollection
+import wx
 
 
 class SpatialCtrl(SpatialView):
@@ -17,6 +18,25 @@ class SpatialCtrl(SpatialView):
         self.output_exchange_item = None
         self.target_name = ""
         self.source_name = ""
+        self.input_legend_label = ""
+        self.output_legend_label = ""
+        self.Bind(wx.EVT_CHECKBOX, self.on_checkbox, self.input_checkbox)
+        self.Bind(wx.EVT_CHECKBOX, self.on_checkbox, self.output_checkbox)
+        self.plot.setAxisLabel("my X axis", "My y axis")
+
+    def on_checkbox(self, event):
+        self.plot.clearPlot()
+        if self.input_checkbox.IsChecked():
+            self.input_legend_label = self.target_name
+            self.update_plot(self.target_name)
+        else:
+            self.input_legend_label = ""
+
+        if self.output_checkbox.IsChecked():
+            self.output_legend_label = self.source_name
+            self.update_plot(self.source_name)
+        else:
+            self.output_legend_label = ""
 
     def clear_plot(self):
         self.plot.clearPlot()
@@ -66,39 +86,42 @@ class SpatialCtrl(SpatialView):
         if target_name in self.__input_data:
             self.input_exchange_item = self.__input_data[target_name]
             self.target_name = target_name
+            self.input_legend_label = target_name
 
         if source_name in self.__output_data:
             self.output_exchange_item = self.__output_data[source_name]
             self.source_name = source_name
+            self.output_legend_label = source_name
 
-    def update_plot(self, data_in, data_out=None, plot_title=None):
-        self.clear_plot()
-        # Data_in/out is the variable name
-
+    def update_plot(self, data_in, plot_title=""):
+        # Data_in is the variable name
         data = self.get_geoms_by_name(data_in)
+        if data is None:
+            return
 
         # We can use either a set color or use the getNextColor() from PlotForSiteViewerCtrl.py
         color = self.plot.getNextColor()
         # color = "#019477"
 
-        switch = {
-            "POLYGON": self.plot_polygon(data, color=color),
-            "POINT": self.plot_point(data),
-            "LINESTRING": self.plot_linestring(data)
-        }
-        switch.get(data[0].GetGeometryName().upper, None)  # Default is None
+        if data[0].GetGeometryName().upper() == "POLYGON":
+            self.plot_polygon(data, color)
+        elif data[0].GetGeometryName().upper() == "POINT":
+            self.plot_point(data)
+        elif data[0].GetGeometryName().upper() == "LINESTRING":
+            self.plot_linestring(data)
+        else:
+            return
 
-        # set the title here
+        self.plot.setTitle(plot_title)
+        self.set_legend()
 
         self.plot.axes.grid(True)
-        # self.plot.axes.axis("auto")
 
         # If margin is 0 the graph will fill the plot.
         self.plot.axes.margins(0.1)
         self.plot.reDraw()
 
     def plot_polygon(self, data, color):
-        print "Its a polygon"
         poly_list = []
         reference = data[0].GetGeometryRef(0)
         points = numpy.array(reference.GetPoints())
@@ -110,8 +133,16 @@ class SpatialCtrl(SpatialView):
 
     def plot_point(self, data):
         print "Its a point"
-        pass
 
     def plot_linestring(self, data):
         print "its a line string"
-        pass
+
+    def set_legend(self, location=0):
+        # http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.legend
+        labels = []
+        if self.input_legend_label:
+            labels.append(self.input_legend_label)
+        if self.output_legend_label:
+            labels.append(self.output_legend_label)
+
+        self.plot.axes.legend(labels, loc=location)

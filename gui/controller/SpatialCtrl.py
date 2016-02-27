@@ -66,7 +66,8 @@ class SpatialCtrl(SpatialView):
             return igeoms
         else:
             elog.debug("Exchange item must be a list of dictionaries")
-        return
+            elog.debug("Exchagne item may be done")
+            return {}
 
     def get_geoms_by_name(self, name):
         if name in self.__input_data:
@@ -93,6 +94,12 @@ class SpatialCtrl(SpatialView):
             self.source_name = source_name
             self.output_legend_label = source_name
 
+    def get_color_by_plot_name(self, name):
+        if name in self.__input_data:
+            return "#019477"
+        if name in self.__output_data:
+            return "#0DACFF"
+
     def update_plot(self, data_in, plot_title=""):
         # Data_in is the variable name
         data = self.get_geoms_by_name(data_in)
@@ -100,8 +107,9 @@ class SpatialCtrl(SpatialView):
             return
 
         # We can use either a set color or use the getNextColor() from PlotForSiteViewerCtrl.py
-        color = self.plot.getNextColor()
+        # color = self.plot.getNextColor()
         # color = "#019477"
+        color = self.get_color_by_plot_name(data_in)
 
         if data[0].GetGeometryName().upper() == "POLYGON":
             self.plot_polygon(data, color)
@@ -138,7 +146,6 @@ class SpatialCtrl(SpatialView):
         print "its a line string"
 
     def set_legend(self, location=0):
-        # http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.legend
         labels = []
         if self.input_legend_label:
             labels.append(self.input_legend_label)

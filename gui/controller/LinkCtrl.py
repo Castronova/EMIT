@@ -283,15 +283,17 @@ class LinkCtrl(LinkView):
         title = self.getOutputModelText() + " --> " + self.getInputModelText()
         controller.SetTitle(title)
 
-        controller.edit_grid("output", 1, 1, controller.source_name)
-        controller.edit_grid("output", 2, 1, controller.output_exchange_item[0].GetGeometryName())
-        controller.edit_grid("output", 3, 1, controller.output_exchange_item[0].GetCoordinateDimension())
-        controller.edit_grid("output", 5, 1, controller.output_exchange_item[0].GetPointCount())
+        if controller.output_exchange_item:
+            controller.edit_grid("output", 1, 1, controller.source_name)
+            controller.edit_grid("output", 2, 1, controller.output_exchange_item[0].GetGeometryName())
+            controller.edit_grid("output", 3, 1, controller.output_exchange_item[0].GetCoordinateDimension())
+            controller.edit_grid("output", 5, 1, controller.output_exchange_item[0].GetPointCount())
 
-        controller.edit_grid("input", 1, 1, controller.source_name)
-        controller.edit_grid("input", 2, 1, controller.output_exchange_item[0].GetGeometryName())
-        controller.edit_grid("input", 3, 1, controller.output_exchange_item[0].GetCoordinateDimension())
-        controller.edit_grid("input", 5, 1, controller.output_exchange_item[0].GetPointCount())
+        if controller.input_exchange_item:
+            controller.edit_grid("input", 1, 1, controller.source_name)
+            controller.edit_grid("input", 2, 1, controller.output_exchange_item[0].GetGeometryName())
+            controller.edit_grid("input", 3, 1, controller.output_exchange_item[0].GetCoordinateDimension())
+            controller.edit_grid("input", 5, 1, controller.output_exchange_item[0].GetPointCount())
 
 
 

@@ -130,7 +130,7 @@ class WaterOneFlow(object):
         data = self.conn.service.GetSitesByBoxObject(sitecode)
         return data
 
-    def getSites(self, value=None):
+    def getSitesObject(self, value=None):
         #  Returns JSON
         print value
         if value is None:

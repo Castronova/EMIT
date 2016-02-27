@@ -192,7 +192,7 @@ class TimeSeriesTab(wx.Panel):
         return
 
     def setup_wof_table(self, api):
-        self.wofsites = api.getSites()
+        self.wofsites = api.getSitesObject()
         api.network_code = self.wofsites[0].siteInfo.siteCode[0]._network
         self.table_columns = ["Site Name", "Network", "County", "State", "Site Type", "Site Code"]
         self.m_olvSeries.DefineColumns(self.table_columns)

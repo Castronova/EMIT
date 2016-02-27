@@ -444,10 +444,10 @@ class LogicCanvas(ViewCanvas):
         # get output items from r1
         to_model = engine.getModelById(r2.ID)
 
-        if len(self.links) > 1:
-            bidirectional = self.CheckIfBidirectionalLink(r1.ID, r2.ID)
+        # if len(self.links) > 1:
+        #     bidirectional = self.CheckIfBidirectionalLink(r1.ID, r2.ID)
 
-        linkstart = LinkCtrl(self.FloatCanvas, from_model, to_model, bidirectional)
+        linkstart = LinkCtrl(self.FloatCanvas, from_model, to_model, True)
         linkstart.Show()
 
     def CheckIfBidirectionalLink(self, id1, id2):

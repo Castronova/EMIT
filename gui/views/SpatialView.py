@@ -7,15 +7,14 @@ class SpatialView(wx.Frame):
 
     def __init__(self, parent=None):
 
-        wx.Frame.__init__(self, parent=parent, size=(670, 650))
+        wx.Frame.__init__(self, parent=parent, size=(630, 630),
+                          style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE)# ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         # Creating all the necessary panels
         panel = wx.Panel(self)
         top_panel = wx.Panel(panel)
         middle_panel = wx.Panel(panel)
         lower_panel = wx.Panel(panel)
-        input_grid_panel = wx.Panel(lower_panel)
-        output_grid_panel = wx.Panel(lower_panel)
 
         # SETUP OF TOP PANEL
         sizer_top_panel = wx.BoxSizer(wx.HORIZONTAL)
@@ -27,33 +26,19 @@ class SpatialView(wx.Frame):
         sizer_middle_panel = wx.BoxSizer(wx.HORIZONTAL)
         self.input_checkbox = wx.CheckBox(parent=middle_panel, label="Input Exchange Item: ")
         self.output_checkbox = wx.CheckBox(parent=middle_panel, label="Output Exchange Item: ")
-
         sizer_middle_panel.AddSpacer(5)
         sizer_middle_panel.Add(self.input_checkbox, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
         sizer_middle_panel.Add(self.output_checkbox, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
-
         middle_panel.SetSizer(sizer_middle_panel)
 
         # SETUP OF LOWER PANEL
         sizer_lower_panel = wx.BoxSizer(wx.HORIZONTAL)
-
-        # SETUP INPUT GRID
-        input_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.input_grid = wx.grid.Grid(input_grid_panel, size=(300, -1))
+        self.input_grid = wx.grid.Grid(lower_panel, size=(300, -1))
+        self.output_grid = wx.grid.Grid(lower_panel, size=(300, -1))
         set_up_grid(self.input_grid)
-        input_sizer.Add(self.input_grid, 1, wx.EXPAND | wx.ALL, 5)
-        input_grid_panel.SetSizer(input_sizer)
-
-        # SETUP OUTPUT GRID
-        output_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.output_grid = wx.grid.Grid(output_grid_panel, size=(300, -1))
         set_up_grid(self.output_grid)
-        output_sizer.Add(self.output_grid, 1, wx.EXPAND | wx.ALL, 5)
-        output_grid_panel.SetSizer(output_sizer)
-
-        #  ADD THE GRIDS TO THE LOWER PANEL
-        sizer_lower_panel.Add(input_grid_panel, 1, wx.EXPAND | wx.ALL, 2)
-        sizer_lower_panel.Add(output_grid_panel, 1, wx.EXPAND | wx.ALL, 2)
+        sizer_lower_panel.Add(self.input_grid, 1, flag=wx.EXPAND | wx.ALL)
+        sizer_lower_panel.Add(self.output_grid, 1, flag=wx.EXPAND | wx.ALL)
         lower_panel.SetSizer(sizer_lower_panel)
 
         # ADD PANEL TO THE FRAME
@@ -114,9 +99,6 @@ def set_up_grid(grid):
         # grid.SetCellBackgroundColour(3, 1, wx.Colour(195, 195, 195))
         grid.SetGridLineColour(wx.Colour(195, 195, 195))
 
-        grid.AutoSizeColumn(0)
-        col_size = grid.GetColSize(0)
-        C, R = grid.GetSize()
-        grid.SetColSize(1, C - col_size)
+        grid.AutoSize()
     else:
         elog.debug("grid must be type wx.grid.Grid")

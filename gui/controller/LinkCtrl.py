@@ -296,8 +296,6 @@ class LinkCtrl(LinkView):
             controller.edit_grid("input", 5, 1, controller.output_exchange_item[0].GetPointCount())
 
 
-
-
         #
         #
         # # title = self.getOutputModelText() + " --> " + self.getInputModelText()

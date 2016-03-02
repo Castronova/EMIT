@@ -49,7 +49,9 @@ class SpatialCtrl(SpatialView):
             grid = self.output_grid
 
         grid.SetCellValue(x_loc, y_loc, str(value))
-        grid.AutoSize()
+        grid.AutoSizeColumns()
+        self.stretch_grid(grid=grid)
+
 
     def get_input_exchange_item_by_id(self, id):
         return engineAccessors.getInputExchangeItems(id)

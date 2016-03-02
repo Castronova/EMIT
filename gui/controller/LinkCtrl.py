@@ -290,14 +290,12 @@ class LinkCtrl(LinkView):
             controller.edit_grid("output", 5, 1, controller.output_exchange_item[0].GetPointCount())
 
         if controller.input_exchange_item:
-            controller.edit_grid("input", 1, 1, controller.source_name)
-            controller.edit_grid("input", 2, 1, controller.output_exchange_item[0].GetGeometryName())
-            controller.edit_grid("input", 3, 1, controller.output_exchange_item[0].GetCoordinateDimension())
-            controller.edit_grid("input", 5, 1, controller.output_exchange_item[0].GetPointCount())
+            controller.edit_grid("input", 1, 1, controller.target_name)
+            controller.edit_grid("input", 2, 1, controller.input_exchange_item[0].GetGeometryName())
+            controller.edit_grid("input", 3, 1, controller.input_exchange_item[0].GetCoordinateDimension())
+            controller.edit_grid("input", 5, 1, controller.input_exchange_item[0].GetPointCount())
 
 
-        #
-        #
         # # title = self.getOutputModelText() + " --> " + self.getInputModelText()
         # plot_window = wx.Frame(self.parent, id=wx.ID_ANY, title=title, size=(625, 625),
         #                        style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)

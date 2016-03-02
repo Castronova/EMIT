@@ -10,6 +10,7 @@ class SpatialView(wx.Frame):
         wx.Frame.__init__(self, parent=parent, size=(630, 630),
                           style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE)# ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
+        self.biggest_col = 0
         # Creating all the necessary panels
         panel = wx.Panel(self)
         top_panel = wx.Panel(panel)
@@ -49,6 +50,12 @@ class SpatialView(wx.Frame):
         panel.SetSizer(sizer_spatial_view)
 
         self.Show()
+
+    def stretch_grid(self, grid):
+        if grid.GetColSize(1) < self.biggest_col:
+            grid.SetColSize(1, self.biggest_col)
+        else:
+            self.biggest_col = grid.GetColSize(1)
 
 
 def set_up_grid(grid):

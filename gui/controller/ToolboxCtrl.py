@@ -9,7 +9,7 @@ from wx.lib.pubsub import pub as Publisher
 
 from coordinator.emitLogging import elog
 from gui import events
-from gui.controller.ModelCtrl import LogicModel
+from gui.controller.ModelCtrl import ModelCtrl
 from gui.views.ContextView import ToolboxContextMenu
 from gui.views.ToolboxView import ViewToolbox
 
@@ -254,7 +254,7 @@ class LogicToolbox(ViewToolbox):
         filename, ext = os.path.splitext(filepath)
         if ext == '.mdl':
             kwargs = {'spatial': False}
-            model_details = LogicModel(self, **kwargs)
+            model_details = ModelCtrl(self, **kwargs)
             try:
                 model_details.PopulateDetails(filepath)
                 model_details.PopulateEdit(filepath)
@@ -267,7 +267,7 @@ class LogicToolbox(ViewToolbox):
         if ext == '.sim':
 
             kwargs = {'configuration': True, 'edit': False, 'properties': False, 'spatial': False}
-            model_details = LogicModel(self, **kwargs)
+            model_details = ModelCtrl(self, **kwargs)
             try:
                 model_details.ConfigurationDisplay(filepath)
                 model_details.Show()

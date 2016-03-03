@@ -4,7 +4,7 @@ import wx
 from wx.lib.pubsub import pub as Publisher
 
 from coordinator.emitLogging import elog
-from gui.controller.ModelCtrl import LogicModel
+from gui.controller.ModelCtrl import ModelCtrl
 from gui.views.ContextView import DirectoryContextMenu
 from gui.views.DirectoryView import ViewDirectory, HomeID, PreviousID, UpID, RefreshID
 from sprint import *
@@ -57,9 +57,9 @@ class LogicDirectory(ViewDirectory):
             if fileExtension == ".mdl" or fileExtension == ".sim":
 
                 # hack:  Should I be calling Logic instead of View???
-                model_details = LogicModel(self)
+                model_details = ModelCtrl(self)
                 model_details.Show()
-                # ShowModel = ViewModel(self)
+                # ShowModel = ModelView(self)
                 # ShowModel.Show()
 
                 Publisher.sendMessage('textsavepath', fileExtension=dirpath)

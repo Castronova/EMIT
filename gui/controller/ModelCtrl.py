@@ -2,15 +2,15 @@ import wx
 import wx.propgrid as wxpg
 from wx.lib.pubsub import pub as Publisher
 
-from gui.views.ModelView import ViewModel
+from gui.views.ModelView import ModelView
 from utilities import gui
 
 
-class LogicModel(ViewModel):
+class ModelCtrl(ModelView):
 
     def __init__(self, parent, **kwargs):
 
-        ViewModel.__init__(self, parent, **kwargs)
+        ModelView.__init__(self, parent, **kwargs)
 
         #Bindings
         if self.edit:

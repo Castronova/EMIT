@@ -5,7 +5,7 @@ from coordinator.emitLogging import elog
 import numpy
 from matplotlib.collections import PolyCollection, LineCollection
 import wx
-
+from osgeo import ogr
 
 class SpatialCtrl(SpatialView):
 
@@ -64,12 +64,13 @@ class SpatialCtrl(SpatialView):
             igeoms = {}
             for item in exchange_item:
                 name = item['name']
-                geoms = [geometry.fromWKB(g['wkb']) for g in item['geom']]
+                # geoms = [geometry.fromWKB(g['wkb']) for g in item['geom']]
+                geoms = [ogr.CreateGeometryFromWkb(g['wkb']) for g in item['geom']]
                 igeoms[name] = geoms
             return igeoms
         else:
             elog.debug("Exchange item must be a list of dictionaries")
-            elog.debug("Exchagne item may be done")
+            elog.debug("Exchange item may be done")
             return {}
 
     def get_geoms_by_name(self, name):
@@ -117,7 +118,7 @@ class SpatialCtrl(SpatialView):
         if data[0].GetGeometryName().upper() == "POLYGON":
             self.plot_polygon(data, color)
         elif data[0].GetGeometryName().upper() == "POINT":
-            self.plot_point(data)
+            self.plot_point(data, color)
         elif data[0].GetGeometryName().upper() == "LINESTRING":
             self.plot_linestring(data)
         else:
@@ -142,8 +143,13 @@ class SpatialCtrl(SpatialView):
         p_coll = PolyCollection(poly_list, closed=True, facecolor=color, alpha=0.5, edgecolor=None, linewidths=(2,))
         self.plot.axes.add_collection(p_coll, autolim=True)
 
-    def plot_point(self, data):
+    def plot_point(self, data, color):
         print "Its a point"
+        # get x,y points
+        x, y = zip(*[(g.GetX(), g.GetY()) for g in data])
+        self.plot.axes.scatter(x, y, color=color)
+
+
 
     def plot_linestring(self, data):
         print "its a line string"

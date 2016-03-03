@@ -6,7 +6,7 @@ from api_old.ODM2.Results.services import readResults
 from utilities import spatial
 from api_old.ODM2.Simulation.services import readSimulation
 from wx.lib.pubsub import pub as Publisher, __all__
-from gui.controller.ModelCtrl import LogicModel
+from gui.controller.ModelCtrl import ModelCtrl
 from gui.controller.SimulationPlotCtrl import SimulationPlotCtrl
 from gui.controller.PlotCtrl import LogicPlot
 from gui.controller.PreRunCtrl import PreRunViewCtrl
@@ -77,19 +77,24 @@ class ModelContextMenu(wx.Menu):
 
     def ShowModelDetails(self, e):
 
-        # get model id
-        id = self.model_obj.ID
+        from gui.controller.SpatialCtrl import SpatialCtrl
+        controller = SpatialCtrl(None)
+        oei = controller.get_output_exchange_item_by_id(self.model_obj.ID)
+        ogeoms = controller.get_geometries(oei)
+        iei = controller.get_input_exchange_item_by_id(self.model_obj.ID)
+        igeoms = controller.get_geometries(iei)
+        controller.set_data(target=igeoms, source=ogeoms)
+
+
+
+
+
 
         # create a frame to bind the details page to
         f = wx.Frame(self.GetParent())
 
-        kwargs = {'edit':False,'spatial':True}
-        model_details = LogicModel(f, **kwargs)
-
-        # get the output geometries
-        oei = engine.getOutputExchangeItems(id)
-        ogeoms = {}
-        # disable dropdown box if empty
+        kwargs = {'edit': False, 'spatial': True}
+        model_details = ModelCtrl(f, **kwargs)
         if not oei:
             model_details.outputSelections.Enable(False)
         else:
@@ -98,15 +103,10 @@ class ModelContextMenu(wx.Menu):
                 name = o['name']
                 model_details.outputSelections.Append(name)
 
-                # geoms = [i['shape'] for i in o['geom']]
+            controller.set_selection_data(source_name=oei[0]['name'])
+            controller.output_checkbox.SetValue(True)
+            controller.update_plot(oei[0]['name'])
 
-                geoms = [ogr.CreateGeometryFromWkb(g['wkb']) for g in o['geom']]
-                ogeoms[name] = geoms
-
-        # get the input geometries
-        igeoms = {}
-        iei = engine.getInputExchangeItems(id)
-        # disable dropdown box if empty
         if not iei:
             model_details.inputSelections.Enable(False)
         else:
@@ -114,10 +114,9 @@ class ModelContextMenu(wx.Menu):
             for i in iei:
                 name = i['name']
                 model_details.inputSelections.Append(name)
-                elog.info("input name: " + name)
 
-                geoms = [ogr.CreateGeometryFromWkb(g['wkb']) for g in i['geom']]
-                igeoms[name] = geoms
+            controller.input_checkbox.SetValue(True)
+            controller.set_selection_data(source_name=iei[0]['name'])
 
 
         # load geometry data

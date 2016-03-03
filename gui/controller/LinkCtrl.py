@@ -274,7 +274,11 @@ class LinkCtrl(LinkView):
         ogeom = controller.get_geometries(oei)
 
         controller.set_data(target=igeom, source=ogeom)
-        controller.set_selection_data(target_name=self.__selected_link.iei, source_name=self.__selected_link.oei)
+        # controller.set_selection_data(target_name=self.__selected_link.iei, source_name=self.__selected_link.oei)
+        if iei:
+            controller.set_selection_data(target_name=iei[0]['name'])
+        if oei:
+            controller.set_selection_data(source_name=oei[0]['name'])
         controller.update_plot(self.__selected_link.oei)
         controller.update_plot(self.__selected_link.iei)
         controller.input_checkbox.SetValue(True)
@@ -300,6 +304,7 @@ class LinkCtrl(LinkView):
         # plot_window = wx.Frame(self.parent, id=wx.ID_ANY, title=title, size=(625, 625),
         #                        style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
         #
+        # from osgeo import ogr
         # # create a spatial plot instance
         # plot_panel = SpatialPlotCtrl(plot_window)
         #
@@ -313,6 +318,7 @@ class LinkCtrl(LinkView):
         # for o in oei:
         #     name = o['name']
         #     geoms = [geometry.fromWKB(g['wkb']) for g in o['geom']]
+        #     # geoms = [ogr.CreateGeometryFromWkb(g['wkb']) for g in o['geom']]
         #     ogeoms[name] = geoms
         #
         # # get the input geometries
@@ -321,6 +327,7 @@ class LinkCtrl(LinkView):
         # for i in iei:
         #     name = i['name']
         #     geoms = [geometry.fromWKB(g['wkb']) for g in i['geom']]
+        #     # geoms = [ogr.CreateGeometryFromWkb(g['wkb']) for g in i['geom']]
         #     igeoms[name] = geoms
         #
         # # set input and output geometries

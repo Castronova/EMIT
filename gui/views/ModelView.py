@@ -9,7 +9,7 @@ from gui.views import PlotView
 from gui.controller.SpatialPlotCtrl import SpatialPlotCtrl
 # from gui.views.viewPanel import SpatialPanel
 
-class ViewModel(wx.Frame):
+class ModelView(wx.Frame):
     def __init__(self, parent, edit=True, spatial=False, temporal=False, properties=True, configuration=False):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title='Model Properties', pos=wx.DefaultPosition,
                           size=wx.Size(650, 700),

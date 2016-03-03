@@ -3,7 +3,7 @@ import wx
 import wx.xrc
 from shapely import wkt
 from utilities import gui, spatial
-from gui.views.ModelView import ViewModel
+from gui.views.ModelView import ModelView
 # todo: refactor
 # from ..DirectoryLstCtrl import DirectoryListCtrl
 from gui.controller.DirectoryListControlCtrl import LogicDirectoryListControl
@@ -74,7 +74,7 @@ class ViewDirectory(wx.Panel):
     def ShowDetails(self):
 
         # create the details view
-        view = ViewModel(self, spatial=False)
+        view = ModelView(self, spatial=False)
 
 
         # load the file contents

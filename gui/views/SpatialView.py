@@ -3,16 +3,11 @@ import wx.grid
 from gui.controller.PlotForSiteViewerCtrl import PlotForSiteViewerCtrl
 
 
-class SpatialView(wx.Frame):
+class SpatialView:
 
-    def __init__(self, parent=None):
-
-        wx.Frame.__init__(self, parent=parent, size=(630, 630),
-                          style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE)# ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
-
+    def __init__(self, panel):
         self.biggest_col = 0
         # Creating all the necessary panels
-        panel = wx.Panel(self)
         top_panel = wx.Panel(panel)
         middle_panel = wx.Panel(panel)
         lower_panel = wx.Panel(panel)
@@ -49,7 +44,6 @@ class SpatialView(wx.Frame):
         sizer_spatial_view.Add(lower_panel, 1, wx.EXPAND | wx.ALL, 2)
         panel.SetSizer(sizer_spatial_view)
 
-        self.Show()
 
     def stretch_grid(self, grid):
         if grid.GetColSize(1) < self.biggest_col:

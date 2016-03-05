@@ -262,8 +262,9 @@ class LinkCtrl(LinkView):
 
     def on_plot_geometries(self, event):
         from gui.controller.SpatialCtrl import SpatialCtrl
-        controller = SpatialCtrl(None)
-        controller.SetTitle("Geometry Viewer")
+
+        frame = wx.Frame(self.parent, size=(625, 625), style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE)
+        controller = SpatialCtrl(frame)
 
         # input exchange item -> iei
         iei = controller.get_input_exchange_item_by_id(self.__selected_link.target_id)
@@ -285,7 +286,7 @@ class LinkCtrl(LinkView):
         controller.output_checkbox.SetValue(True)
 
         title = self.getOutputModelText() + " --> " + self.getInputModelText()
-        controller.SetTitle(title)
+        frame.SetTitle(title)
 
         if controller.output_exchange_item:
             controller.edit_grid("output", 1, 1, controller.source_name)
@@ -298,6 +299,8 @@ class LinkCtrl(LinkView):
             controller.edit_grid("input", 2, 1, controller.input_exchange_item[0].GetGeometryName())
             controller.edit_grid("input", 3, 1, controller.input_exchange_item[0].GetCoordinateDimension())
             controller.edit_grid("input", 5, 1, controller.input_exchange_item[0].GetPointCount())
+
+        frame.Show()
 
 
         # # title = self.getOutputModelText() + " --> " + self.getInputModelText()

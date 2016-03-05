@@ -78,16 +78,16 @@ class ModelContextMenu(wx.Menu):
     def ShowModelDetails(self, e):
 
         from gui.controller.SpatialCtrl import SpatialCtrl
-        controller = SpatialCtrl(None)
+
+        frame = wx.Frame(self.parent, title="Some title", size=(625, 625))
+        controller = SpatialCtrl(frame)
+
         oei = controller.get_output_exchange_item_by_id(self.model_obj.ID)
         ogeoms = controller.get_geometries(oei)
         iei = controller.get_input_exchange_item_by_id(self.model_obj.ID)
         igeoms = controller.get_geometries(iei)
         controller.set_data(target=igeoms, source=ogeoms)
-
-
-
-
+        frame.Show()
 
 
         # create a frame to bind the details page to

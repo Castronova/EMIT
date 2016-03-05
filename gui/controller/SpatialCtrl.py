@@ -7,6 +7,7 @@ from matplotlib.collections import PolyCollection, LineCollection
 import wx
 from osgeo import ogr
 
+
 class SpatialCtrl(SpatialView):
 
     def __init__(self, parent):
@@ -20,8 +21,8 @@ class SpatialCtrl(SpatialView):
         self.source_name = ""
         self.input_legend_label = ""
         self.output_legend_label = ""
-        self.Bind(wx.EVT_CHECKBOX, self.on_checkbox, self.input_checkbox)
-        self.Bind(wx.EVT_CHECKBOX, self.on_checkbox, self.output_checkbox)
+        self.input_checkbox.Bind(wx.EVT_CHECKBOX, self.on_checkbox)
+        self.output_checkbox.Bind(wx.EVT_CHECKBOX, self.on_checkbox)
         self.plot.setAxisLabel("my X axis", "My y axis")
 
     def on_checkbox(self, event):

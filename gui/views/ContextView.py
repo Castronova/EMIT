@@ -59,6 +59,7 @@ class ConsoleContextMenu(wx.Menu):
         """
         self.log.Clear()
 
+
 class ModelContextMenu(wx.Menu):
 
     def __init__(self, parent, e):
@@ -77,56 +78,19 @@ class ModelContextMenu(wx.Menu):
 
     def ShowModelDetails(self, e):
 
-        from gui.controller.SpatialCtrl import SpatialCtrl
-
-        frame = wx.Frame(self.parent, title="Some title", size=(625, 625))
-        controller = SpatialCtrl(frame)
-
-        oei = controller.get_output_exchange_item_by_id(self.model_obj.ID)
-        ogeoms = controller.get_geometries(oei)
-        iei = controller.get_input_exchange_item_by_id(self.model_obj.ID)
-        igeoms = controller.get_geometries(iei)
-        controller.set_data(target=igeoms, source=ogeoms)
-        frame.Show()
-
-
         # create a frame to bind the details page to
         f = wx.Frame(self.GetParent())
 
         kwargs = {'edit': False, 'spatial': True}
-        model_details = ModelCtrl(f, **kwargs)
-        if not oei:
-            model_details.outputSelections.Enable(False)
-        else:
-            model_details.outputSelections.Append('---')
-            for o in oei:
-                name = o['name']
-                model_details.outputSelections.Append(name)
-
-            controller.set_selection_data(source_name=oei[0]['name'])
-            controller.output_checkbox.SetValue(True)
-            controller.update_plot(oei[0]['name'])
-
-        if not iei:
-            model_details.inputSelections.Enable(False)
-        else:
-            model_details.inputSelections.Append('---')
-            for i in iei:
-                name = i['name']
-                model_details.inputSelections.Append(name)
-
-            controller.input_checkbox.SetValue(True)
-            controller.set_selection_data(source_name=iei[0]['name'])
-
-
-        # load geometry data
-        model_details.PopulateSpatialGeoms(ogeoms, type='output')
-        model_details.PopulateSpatialGeoms(igeoms, type='input')
+        model_details = ModelCtrl(f, model_id=self.model_obj.ID, **kwargs)
 
         atts = engine.getModelById(self.model_obj.ID)['attrib']
         if 'mdl' in atts.keys():
             model_details.PopulateSummary(atts['mdl'])
+
         else:  # This means the model is coming from a database.
+            oei = model_details.spatial_page.controller.get_output_exchange_item_by_id(self.model_obj.ID)
+            iei = model_details.spatial_page.controller.get_input_exchange_item_by_id(self.model_obj.ID)
             model_details.PopulateProperties(engine.getModelById(self.model_obj.ID), iei=iei, oei=oei)
 
         model_details.Show()

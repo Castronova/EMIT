@@ -8,7 +8,7 @@ from utilities import gui
 
 class ModelCtrl(ModelView):
 
-    def __init__(self, parent, **kwargs):
+    def __init__(self, parent, model_id=None, **kwargs):
 
         ModelView.__init__(self, parent, **kwargs)
 
@@ -16,10 +16,39 @@ class ModelCtrl(ModelView):
         if self.edit:
             self.SaveButton.Bind(wx.EVT_BUTTON, self.OnSave)
 
-        # Add another conditional so these bindings don't get added when they don't need to perhaps?
         if self.spatial:
-            self.inputSelections.Bind(wx.EVT_COMBOBOX, self.update_plot_input)
-            self.outputSelections.Bind(wx.EVT_COMBOBOX, self.update_plot_output)
+            self.setup_spatial(model_id)
+
+    def setup_spatial(self, model_id):
+        iei = self.spatial_page.controller.get_input_exchange_item_by_id(model_id)
+        igeoms = self.spatial_page.controller.get_geometries(iei)
+        oei = self.spatial_page.controller.get_output_exchange_item_by_id(model_id)
+        ogeoms = self.spatial_page.controller.get_geometries(oei)
+        self.spatial_page.controller.set_data(target=igeoms, source=ogeoms)
+        if iei:
+            self.spatial_page.controller.set_selection_data(target_name=iei[0]['name'])
+            self.spatial_page.controller.input_checkbox.SetValue(True)
+            self.spatial_page.controller.update_plot(iei[0]['name'])
+        else:
+            self.spatial_page.controller.input_checkbox.Disable()
+        if oei:
+            self.spatial_page.controller.set_selection_data(source_name=oei[0]['name'])
+            self.spatial_page.controller.output_checkbox.SetValue(True)
+            self.spatial_page.controller.update_plot(oei[0]['name'])
+        else:
+            self.spatial_page.controller.output_checkbox.Disable()
+
+        if self.spatial_page.controller.output_exchange_item:
+            self.spatial_page.controller.edit_grid("output", 1, 1, self.spatial_page.controller.source_name)
+            self.spatial_page.controller.edit_grid("output", 2, 1, self.spatial_page.controller.output_exchange_item[0].GetGeometryName())
+            self.spatial_page.controller.edit_grid("output", 3, 1, self.spatial_page.controller.output_exchange_item[0].GetCoordinateDimension())
+            self.spatial_page.controller.edit_grid("output", 5, 1, self.spatial_page.controller.output_exchange_item[0].GetPointCount())
+
+        if self.spatial_page.controller.input_exchange_item:
+            self.spatial_page.controller.edit_grid("input", 1, 1, self.spatial_page.controller.target_name)
+            self.spatial_page.controller.edit_grid("input", 2, 1, self.spatial_page.controller.input_exchange_item[0].GetGeometryName())
+            self.spatial_page.controller.edit_grid("input", 3, 1, self.spatial_page.controller.input_exchange_item[0].GetCoordinateDimension())
+            self.spatial_page.controller.edit_grid("input", 5, 1, self.spatial_page.controller.input_exchange_item[0].GetPointCount())
 
     def update_plot_output(self, event):
         received_data = event.EventObject.StringSelection
@@ -188,6 +217,3 @@ class ModelCtrl(ModelView):
             filehandle.close()
 
             self.Close()
-
-        else:
-            pass

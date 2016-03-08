@@ -27,6 +27,7 @@ class SpatialView:
         sizer_middle_panel.Add(self.output_checkbox, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
         middle_panel.SetSizer(sizer_middle_panel)
 
+
         # SETUP OF LOWER PANEL
         sizer_lower_panel = wx.BoxSizer(wx.HORIZONTAL)
         self.input_grid = wx.grid.Grid(lower_panel, size=(300, -1))
@@ -100,5 +101,6 @@ def set_up_grid(grid):
         grid.SetGridLineColour(wx.Colour(195, 195, 195))
 
         grid.AutoSize()
+        stretch_grid(grid)
     else:
         elog.debug("grid must be type wx.grid.Grid")

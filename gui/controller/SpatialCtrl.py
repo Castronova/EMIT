@@ -53,7 +53,6 @@ class SpatialCtrl(SpatialView):
         grid.AutoSizeColumns()
         stretch_grid(grid=grid)
 
-
     def get_input_exchange_item_by_id(self, id):
         return engineAccessors.getInputExchangeItems(id)
 

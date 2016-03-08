@@ -1,13 +1,6 @@
-from coordinator import engine
-
-__author__ = 'Mario'
-
 import wx
 import wx.xrc
 import wx.propgrid as wxpg
-from gui.views import PlotView
-from gui.controller.SpatialPlotCtrl import SpatialPlotCtrl
-# from gui.views.viewPanel import SpatialPanel
 
 class ModelView(wx.Frame):
     def __init__(self, parent, edit=True, spatial=False, temporal=False, properties=True, configuration=False):
@@ -52,51 +45,11 @@ class ModelView(wx.Frame):
                                                size=wx.Size(423, 319))
             self.notebook.AddPage(self.PropertyGrid, u"General", True)
 
-
         # make the spatial view
         if spatial:
 
             self.spatial_page = SpatialPage(self.notebook)
-            self.notebook.AddPage(self.spatial_page, "Spatial Page here")
-            # self.plotPanel = SpatialPlotCtrl(self.txtNotebook)
-            # inputSelection = wx.CheckBox(self.plotPanel, 998,label='Input Exchange Item: ')
-            # self.txtNotebook.AddPage(self.plotPanel, u"Spatial Definition", False)
-
-            # panel = wx.Panel(self.notebook, size=wx.Size(500, 300))
-            #
-            # self.plotPanel = SpatialPlotCtrl(panel)
-            # # self.inputSelection = wx.CheckBox(panel, 998,label='Input Exchange Item: ')
-            #
-            # # self.inputSelections = wx.Choice( panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0, choices=None )
-            # # self.inputSelections.SetSelection( 0 )
-            #
-            # self.inputLabel = wx.StaticText(panel, wx.ID_ANY, u"Input", wx.DefaultPosition, wx.DefaultSize, 0)
-            # self.inputSelections = wx.ComboBox(panel, wx.ID_ANY, "-", wx.DefaultPosition, wx.DefaultSize, [],
-            #                                    wx.CB_DROPDOWN | wx.CB_READONLY)
-            # self.outputLabel = wx.StaticText(panel, wx.ID_ANY, u"Output", wx.DefaultPosition, wx.DefaultSize, 0)
-            # self.outputSelections = wx.ComboBox(panel, wx.ID_ANY, "-", wx.DefaultPosition, wx.DefaultSize, [],
-            #                                     wx.CB_DROPDOWN | wx.CB_READONLY | wx.ALIGN_RIGHT)
-            #
-            # mainSizer = wx.BoxSizer(wx.VERTICAL)
-            # plotSizer = wx.BoxSizer(wx.VERTICAL)
-            # inOutSelectionSizer = wx.BoxSizer(wx.HORIZONTAL)
-            #
-            # plotSizer.Add(self.plotPanel, 1, wx.ALL, 5)
-            #
-            # inOutSelectionSizer.AddSpacer((0, 0), 1, wx.EXPAND, 5 )
-            # inOutSelectionSizer.Add(self.inputLabel, 0, wx.ALL, 5)
-            # inOutSelectionSizer.Add(self.inputSelections, 0, wx.ALL, 5)
-            # inOutSelectionSizer.AddSpacer((0, 0), 1, wx.EXPAND, 5)
-            # inOutSelectionSizer.Add(self.outputLabel, 0, wx.ALL, 5)
-            # inOutSelectionSizer.Add(self.outputSelections, 0, wx.ALL, 5)
-            # inOutSelectionSizer.AddSpacer((0, 0), 1, wx.EXPAND, 5)
-            #
-            # mainSizer.Add(plotSizer, 1, wx.EXPAND, 5)
-            # mainSizer.Add(inOutSelectionSizer, 1, wx.EXPAND, 5)
-            #
-            # panel.SetSizer(mainSizer)
-            # panel.Layout()
-            # self.notebook.AddPage(panel, u"Spatial", False)
+            self.notebook.AddPage(self.spatial_page, "Spatial")
 
         # make edit view
         if edit:
@@ -124,7 +77,6 @@ class ModelView(wx.Frame):
                                            style=wx.TE_MULTILINE | wx.TE_PROCESS_ENTER | wx.TE_READONLY)
             txtSizer.Add(self.xmlTextCtrl, 0, wx.ALL, 5)
             xmlPanel.SetSizer(txtSizer)
-
 
         sizer_notebook.Add(self.notebook, 1, wx.EXPAND | wx.ALL, 5)
 

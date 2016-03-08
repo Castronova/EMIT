@@ -1,4 +1,4 @@
-from gui.views.SpatialView import SpatialView
+from gui.views.SpatialView import SpatialView, stretch_grid
 from coordinator import engineAccessors
 from utilities import geometry
 from coordinator.emitLogging import elog
@@ -51,7 +51,7 @@ class SpatialCtrl(SpatialView):
 
         grid.SetCellValue(x_loc, y_loc, str(value))
         grid.AutoSizeColumns()
-        self.stretch_grid(grid=grid)
+        stretch_grid(grid=grid)
 
 
     def get_input_exchange_item_by_id(self, id):
@@ -145,7 +145,6 @@ class SpatialCtrl(SpatialView):
         self.plot.axes.add_collection(p_coll, autolim=True)
 
     def plot_point(self, data, color):
-        print "Its a point"
         # get x,y points
         x, y = zip(*[(g.GetX(), g.GetY()) for g in data])
         self.plot.axes.scatter(x, y, color=color)

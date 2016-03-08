@@ -45,11 +45,10 @@ class SpatialView:
         panel.SetSizer(sizer_spatial_view)
 
 
-    def stretch_grid(self, grid):
-        if grid.GetColSize(1) < self.biggest_col:
-            grid.SetColSize(1, self.biggest_col)
-        else:
-            self.biggest_col = grid.GetColSize(1)
+def stretch_grid(grid):
+    # 170 is a good size to stretch the grid
+    if grid.GetColSize(1) < 170:
+        grid.SetColSize(1, 170)
 
 
 def set_up_grid(grid):

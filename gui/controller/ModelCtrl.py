@@ -76,30 +76,6 @@ class ModelCtrl(ModelView):
         filehandle.close()
         self.SetTitle("File Configurations (Read-Only)")
 
-    def PopulateSpatial(self, coordlist, type):
-        if type == 'input':
-            self.matplotView.input_data(coordlist)
-        elif type == 'output':
-            self.matplotView.output_data(coordlist)
-
-    def PopulateSpatialGeoms(self, geometrycoords, type):
-
-        if geometrycoords is None: return
-
-        if type == 'input':
-            self.plotPanel.set_input_data(geometrycoords)
-        elif type == 'output':
-            self.plotPanel.set_output_data(geometrycoords)
-
-        # # todo: extend support for multiple inputs/outputs
-        # for variable, geom in geometrycoords.iteritems():
-        #
-        #     if type == 'input':
-        #         self.matplotView.input_data(geom)
-        #     elif type == 'output':
-        #         self.matplotView.output_data(geom)
-        #     return
-
     def PopulateSummary(self, fileExtension):
 
         d = gui.parse_config(fileExtension)
@@ -153,17 +129,13 @@ class ModelCtrl(ModelView):
             if type(value) is dict:
                 self.PopulatePropertyGrid(value)
             elif type(value) is list:
-                value = self.ExtractDictionary(value)
+                value = value[0] # Extract dictionary
                 self.PopulatePropertyGrid(value)
             else:
                 try:
                     self.PropertyGrid.Append(wxpg.StringProperty(str(key).capitalize(), value=str(value)))
                 except:
                     pass
-
-    def ExtractDictionary(self, array):
-        dictionary = array[0]
-        return dictionary
 
     def PopulateDetails(self, fileExtension):
 

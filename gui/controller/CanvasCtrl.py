@@ -217,7 +217,7 @@ class LogicCanvas(ViewCanvas):
             self.model_coords[id] = dict(x=x, y=y)
             return x, y
 
-    def createLine(self, R1, R2):
+    def createLine(self, R1, R2, replace=False):
 
         if R1 == R2:
             elog.error('Cannot link a model to itself')
@@ -228,7 +228,11 @@ class LogicCanvas(ViewCanvas):
             x1,y1 = R1.XY
             x2,y2 = R2.XY
             points = [(x1,y1),(x2,y2)]
-            line = SmoothLineWithArrow(points)
+
+            if replace:
+                line = SmoothLineWithArrow(points, image_name="question.png")
+            else:
+                line = SmoothLineWithArrow(points)
 
             self.links[line] = [R1, R2]
             self.arrows[line.Arrow] = [R1, R2]
@@ -294,6 +298,11 @@ class LogicCanvas(ViewCanvas):
 
         return uid
 
+    def remove_link_image(self, link_obj):
+        # image_png must be in the app_data/images directory otherwise it fails
+        link_obj.Remove(self.FloatCanvas)
+        self.FloatCanvas.Draw()
+
     def RemoveLink(self, link_obj):
 
         dlg = wx.MessageDialog(None,
@@ -324,6 +333,7 @@ class LogicCanvas(ViewCanvas):
 
             # Using SmoothLineWithArrow's builtin remove helper function
             link_obj.Remove(self.FloatCanvas)
+            # self.createLine(self.linkRects[0], self.linkRects[1], replace=True)
             self.FloatCanvas.Draw()
 
     def RemovePairedLinkList(self, link):
@@ -419,7 +429,9 @@ class LogicCanvas(ViewCanvas):
 
         if self.link_clicks == 2:
             if len(self.linkRects) == 2:
+                # This method creates the line and places the arrow
                 self.createLine(self.linkRects[0], self.linkRects[1])
+                self.old_links = [self.linkRects[0], self.linkRects[1]]
 
             # reset
             self.link_clicks = 0
@@ -447,7 +459,7 @@ class LogicCanvas(ViewCanvas):
         # if len(self.links) > 1:
         #     bidirectional = self.CheckIfBidirectionalLink(r1.ID, r2.ID)
 
-        linkstart = LinkCtrl(self.FloatCanvas, from_model, to_model, True)
+        linkstart = LinkCtrl(parent=self.FloatCanvas, outputs=from_model, inputs=to_model, link_obj=event, swap=True)
         linkstart.Show()
 
     def CheckIfBidirectionalLink(self, id1, id2):

@@ -19,8 +19,10 @@ class LinkCtrl(LinkView):
     odesc = ""
     idesc = ""
 
-    def __init__(self, parent, outputs, inputs, swap=False):
+    def __init__(self, parent, outputs, inputs, link_obj=None, swap=False):
         LinkView.__init__(self, parent, outputs, inputs)
+
+        self.link_obj = link_obj
 
         # self.l = None
         self.swap = swap
@@ -441,7 +443,6 @@ class LinkCtrl(LinkView):
         self.InputComboBox.SetSelection(0)
         self.OutputComboBox.SetSelection(0)
 
-
         self.onNewButton(1)
 
     def OnSave(self, event):
@@ -496,6 +497,18 @@ class LinkCtrl(LinkView):
                 self.Destroy()
             else:
                 return
+
+        if self.link_obj: # link_obj must be a CanvasObjectsCtrl.SmoothLineWithArrow object
+            # link_obj = self.parent.Parent.links.keys()[0]
+            self.parent.Parent.remove_link_image(link_obj=self.link_obj.line)
+
+
+            # models = self.parent.Parent.arrows[self.parent.Parent.arrows.keys()[0]]
+            models = self.parent.Parent.arrows[self.link_obj]
+            # or self.parent.Parent.old_links as long as old_links data is used
+            r1 = models[0]
+            r2 = models[1]
+            self.parent.Parent.createLine(r1, r2, True)
 
         self.Destroy()
 

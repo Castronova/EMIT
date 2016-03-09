@@ -22,6 +22,7 @@ class LinkCtrl(LinkView):
     def __init__(self, parent, outputs, inputs, link_obj=None, swap=False):
         LinkView.__init__(self, parent, outputs, inputs)
 
+        # link_obj must be a CanvasObjectsCtrl.SmoothLineWithArrow object
         self.link_obj = link_obj
 
         # self.l = None
@@ -498,19 +499,16 @@ class LinkCtrl(LinkView):
             else:
                 return
 
-        if self.link_obj: # link_obj must be a CanvasObjectsCtrl.SmoothLineWithArrow object
-            # link_obj = self.parent.Parent.links.keys()[0]
-            self.parent.Parent.remove_link_image(link_obj=self.link_obj.line)
-
-
-            # models = self.parent.Parent.arrows[self.parent.Parent.arrows.keys()[0]]
-            models = self.parent.Parent.arrows[self.link_obj]
-            # or self.parent.Parent.old_links as long as old_links data is used
-            r1 = models[0]
-            r2 = models[1]
-            self.parent.Parent.createLine(r1, r2, True)
+        if self.link_obj:
+            self.replace_canvas_image()
 
         self.Destroy()
+
+    def replace_canvas_image(self):
+        self.parent.Parent.remove_link_image(link_object=self.link_obj.line)
+
+        models = self.parent.Parent.arrows[self.link_obj]
+        self.parent.Parent.createLine(models[0], models[1], True)
 
     def OutGridToolTip(self, e):
         if e.GetRow() == 2 and e.GetCol() == 1:
@@ -544,7 +542,6 @@ class LinkCtrl(LinkView):
             self.outputGrid.SetCellValue(4, 1, "")
             self.outputGrid.SetCellValue(5, 1, "")
             self.outputGrid.SetCellValue(6, 1, "")
-
 
     def populate_input_metadata(self, l):
 

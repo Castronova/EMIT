@@ -21,7 +21,7 @@ from coordinator.emitLogging import elog
 from gui import events
 from gui.controller.CanvasObjectsCtrl import SmoothLineWithArrow, ModelBox
 from gui.controller.LinkCtrl import LinkCtrl
-from gui.views.CanvasView import ViewCanvas
+from gui.views.CanvasView import CanvasView
 from gui.views.ContextView import LinkContextMenu, ModelContextMenu, CanvasContextMenu
 from sprint import *
 from transform.space import SpatialInterpolation
@@ -29,11 +29,11 @@ from transform.time import TemporalInterpolation
 from utilities.threading import EVT_UPDATE_CONSOLE
 
 
-class LogicCanvas(ViewCanvas):
+class CanvasCtrl(CanvasView):
     def __init__(self, parent):
 
         # intialize the parent class
-        ViewCanvas.__init__(self, parent)
+        CanvasView.__init__(self, parent)
 
         self.parent = parent
 
@@ -298,12 +298,7 @@ class LogicCanvas(ViewCanvas):
 
         return uid
 
-    def remove_link_image(self, link_obj):
-        # image_png must be in the app_data/images directory otherwise it fails
-        link_obj.Remove(self.FloatCanvas)
-        self.FloatCanvas.Draw()
-
-    def RemoveLink(self, link_obj):
+    def remove_link(self, link_obj):
 
         dlg = wx.MessageDialog(None,
                                'You are about to remove all data mappings that are associated with this link.  Are you sure you want to perform this action?',
@@ -331,10 +326,12 @@ class LogicCanvas(ViewCanvas):
                     elog.error('ERROR|Could not remove link: %s' % link['id'])
                     sPrint('ERROR|Could not remove link: %s' % link['id'], MessageType.ERROR)
 
-            # Using SmoothLineWithArrow's builtin remove helper function
-            link_obj.Remove(self.FloatCanvas)
-            # self.createLine(self.linkRects[0], self.linkRects[1], replace=True)
-            self.FloatCanvas.Draw()
+            self.remove_link_image(link_object=link_obj)
+
+    def remove_link_image(self, link_object):
+        # Using SmoothLineWithArrow's builtin remove helper function
+        link_object.Remove(self.FloatCanvas)
+        self.FloatCanvas.Draw()
 
     def RemovePairedLinkList(self, link):
         self.pairedModels.remove([link[0], link[1]])
@@ -399,8 +396,7 @@ class LogicCanvas(ViewCanvas):
 
             BB = object.box.BoundingBox
             OutlinePoints = N.array(
-                ( (BB[0, 0], BB[0, 1]), (BB[0, 0], BB[1, 1]), (BB[1, 0], BB[1, 1]), (BB[1, 0], BB[0, 1]),
-                  ))
+                ((BB[0, 0], BB[0, 1]), (BB[0, 0], BB[1, 1]), (BB[1, 0], BB[1, 1]), (BB[1, 0], BB[0, 1]),))
             self.StartObject = self.FloatCanvas.WorldToPixel(OutlinePoints)
             self.MoveObject = None
             self.MovingObject = object
@@ -431,7 +427,6 @@ class LogicCanvas(ViewCanvas):
             if len(self.linkRects) == 2:
                 # This method creates the line and places the arrow
                 self.createLine(self.linkRects[0], self.linkRects[1])
-                self.old_links = [self.linkRects[0], self.linkRects[1]]
 
             # reset
             self.link_clicks = 0

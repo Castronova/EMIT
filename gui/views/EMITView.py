@@ -13,7 +13,7 @@ from LowerPanelView import viewLowerPanel
 from coordinator.emitLogging import elog
 from coordinator.engineManager import Engine
 from gui import events
-from gui.controller.CanvasCtrl import LogicCanvas
+from gui.controller.CanvasCtrl import CanvasCtrl
 from gui.controller.DirectoryCtrl import LogicDirectory
 from gui.controller.NetcdfCtrl import NetcdfCtrl
 from gui.controller.UserCtrl import UserCtrl
@@ -45,7 +45,7 @@ class ViewEMIT(wx.Frame):
         # creating components
         self.Directory = LogicDirectory(self.pnlDocking)
         self.Toolbox = LogicToolbox(self.pnlDocking)
-        self.Canvas = LogicCanvas(self.pnlDocking)
+        self.Canvas = CanvasCtrl(self.pnlDocking)
 
         self.Toolbox.Hide()
         self.initAUIManager()

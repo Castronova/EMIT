@@ -36,7 +36,7 @@ class LinkContextMenu(wx.Menu):
         self.Bind(wx.EVT_MENU, self.RemoveLink, mmi)
 
     def RemoveLink(self, e):
-        self.parent.RemoveLink(self.arrow_obj)
+        self.parent.remove_link(self.arrow_obj)
 
 
 class ConsoleContextMenu(wx.Menu):

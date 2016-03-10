@@ -27,6 +27,7 @@ class LinkCtrl(LinkView):
 
         # self.l = None
         self.swap = swap
+        self.swap_was_clicked = False
 
         # save parent (used in onplot)
         self.parent = parent
@@ -280,9 +281,9 @@ class LinkCtrl(LinkView):
         controller.set_data(target=igeom, source=ogeom)
         # controller.set_selection_data(target_name=self.__selected_link.iei, source_name=self.__selected_link.oei)
         if iei:
-            controller.set_selection_data(target_name=iei[0]['name'])
+            controller.set_input_selection_data(target_name=iei[0]['name'])
         if oei:
-            controller.set_selection_data(source_name=oei[0]['name'])
+            controller.set_output_selection_data(source_name=oei[0]['name'])
         controller.update_plot(self.__selected_link.oei)
         controller.update_plot(self.__selected_link.iei)
         controller.input_checkbox.SetValue(True)
@@ -412,14 +413,6 @@ class LinkCtrl(LinkView):
         self.InputComboBox.SetSelection(0)
         self.OutputComboBox.SetSelection(0)
 
-        # # set the selection to the first link
-        # selected = self.LinkNameListBox.GetStringSelection()
-        # selected_id = selected.split('|')[0].strip()
-        # if selected != '':
-        #     l = self.__links[selected_id]
-        #     self.OutputComboBox.SetSelection(self.OutputComboBoxChoices().index(l.oei) + 1)
-        #     self.InputComboBox.SetSelection(self.InputComboBoxChoices().index(l.iei) + 1)
-
     def OnSwap(self, event):
         try:
             selected = self.getSelectedLinkId()
@@ -430,6 +423,8 @@ class LinkCtrl(LinkView):
             elog.debug(e)
             elog.warning("Please select which link to swap")
             return
+
+        self.swap_was_clicked = True
 
         #  Swapping components of models
         temp = self.output_component
@@ -499,7 +494,7 @@ class LinkCtrl(LinkView):
             else:
                 return
 
-        if self.link_obj:
+        if self.link_obj and self.swap_was_clicked:
             self.replace_canvas_image()
 
         self.Destroy()

@@ -26,13 +26,13 @@ class ModelCtrl(ModelView):
         ogeoms = self.spatial_page.controller.get_geometries(oei)
         self.spatial_page.controller.set_data(target=igeoms, source=ogeoms)
         if iei:
-            self.spatial_page.controller.set_selection_data(target_name=iei[0]['name'])
+            self.spatial_page.controller.set_input_selection_data(target_name=iei[0]['name'])
             self.spatial_page.controller.input_checkbox.SetValue(True)
             self.spatial_page.controller.update_plot(iei[0]['name'])
         else:
             self.spatial_page.controller.input_checkbox.Disable()
         if oei:
-            self.spatial_page.controller.set_selection_data(source_name=oei[0]['name'])
+            self.spatial_page.controller.set_output_selection_data(source_name=oei[0]['name'])
             self.spatial_page.controller.output_checkbox.SetValue(True)
             self.spatial_page.controller.update_plot(oei[0]['name'])
         else:

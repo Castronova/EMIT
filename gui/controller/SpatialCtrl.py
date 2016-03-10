@@ -86,13 +86,14 @@ class SpatialCtrl(SpatialView):
         self.__input_data = target
         self.__output_data = source
 
-    def set_selection_data(self, target_name=None, source_name=None):
-        #  example of source name is some_value or random POLYGON 10-100
+    def set_input_selection_data(self, target_name=None):
         if target_name in self.__input_data:
             self.input_exchange_item = self.__input_data[target_name]
             self.target_name = target_name
             self.input_legend_label = target_name
 
+    def set_output_selection_data(self, source_name=None):
+        #  example of source name is some_value or random POLYGON 10-100
         if source_name in self.__output_data:
             self.output_exchange_item = self.__output_data[source_name]
             self.source_name = source_name

@@ -494,16 +494,16 @@ class LinkCtrl(LinkView):
             else:
                 return
 
-        if self.link_obj and self.swap_was_clicked:
-            self.replace_canvas_image()
+        # if self.link_obj and self.swap_was_clicked:
+        #     self.replace_canvas_image()
 
         self.Destroy()
 
-    def replace_canvas_image(self):
-        self.parent.Parent.remove_link_image(link_object=self.link_obj.line)
-
-        models = self.parent.Parent.arrows[self.link_obj]
-        self.parent.Parent.createLine(models[0], models[1], True)
+    # def replace_canvas_image(self):
+    #     self.parent.Parent.remove_link_image(link_object=self.link_obj.line)
+    #
+    #     models = self.parent.Parent.arrows[self.link_obj]
+    #     self.parent.Parent.createLine(models[0], models[1], True)
 
     def OutGridToolTip(self, e):
         if e.GetRow() == 2 and e.GetCol() == 1:

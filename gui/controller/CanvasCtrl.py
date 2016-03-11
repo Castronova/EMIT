@@ -179,8 +179,6 @@ class CanvasCtrl(CanvasView):
             elog.info(name + ' has been added to the canvas.')
             sPrint(name + ' has been added to the canvas.')
 
-            # elog.debug(name + ' has been added to the canvas.')
-
     def draw_box(self, evt):
 
         x, y = self.get_model_coords(id=evt.id)
@@ -229,17 +227,10 @@ class CanvasCtrl(CanvasView):
             x2,y2 = R2.XY
             points = [(x1,y1),(x2,y2)]
 
-            if replace:
-                replaceThis = None
-                for link in self.links:
-                    data =self.links[link]
-                    if (data[0] == R1 and data[1] == R2) or (data[0] == R2 and data[1] == R1):
-                        replaceThis = link
-                #determine what to replace wtih
-                self.remove_link(link_obj=replaceThis, skip=True)
-                line = SmoothLineWithArrow(points)
-            else:
-                line = SmoothLineWithArrow(points, image_name="question.png")
+            # if replace:
+            line = SmoothLineWithArrow(points, image_name="multiArrow.png")
+            # else:
+            #     line = SmoothLineWithArrow(points)
 
             self.links[line] = [R1, R2]
             self.arrows[line.Arrow] = [R1, R2]
@@ -305,14 +296,14 @@ class CanvasCtrl(CanvasView):
 
         return uid
 
-    def remove_link(self, link_obj, skip=False):
+    def remove_link(self, link_obj):
 
         dlg = wx.MessageDialog(None,
                                'You are about to remove all data mappings that are associated with this link.  Are you sure you want to perform this action?',
                                'Question',
                                wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
 
-        if skip or dlg.ShowModal() != wx.ID_NO:
+        if dlg.ShowModal() != wx.ID_NO:
 
             # remove the link entry in self.links
             link = self.links.pop(link_obj)
@@ -463,8 +454,6 @@ class CanvasCtrl(CanvasView):
 
         linkstart = LinkCtrl(parent=self.FloatCanvas, outputs=from_model, inputs=to_model, link_obj=event, swap=True)
         linkstart.Show()
-        self.createLine(r1, r2, replace=True)
-
 
     def CheckIfBidirectionalLink(self, id1, id2):
         count = 0

@@ -54,7 +54,6 @@ class CanvasCtrl(CanvasView):
         self.links = {}
         self.arrows = {}
         self.models = {}
-        self.pairedModels = []
         self.siteVariablesSelected = []
 
         self.link_clicks = 0
@@ -215,7 +214,8 @@ class CanvasCtrl(CanvasView):
             self.model_coords[id] = dict(x=x, y=y)
             return x, y
 
-    def createLine(self, R1, R2, replace=False):
+
+    def createLine(self, R1, R2):
 
         if R1 == R2:
             elog.error('Cannot link a model to itself')
@@ -223,18 +223,20 @@ class CanvasCtrl(CanvasView):
             return
         else:
             # Get the center of the objects on the canvas
-            x1,y1 = R1.XY
-            x2,y2 = R2.XY
+            x1, y1 = R1.XY
+            x2, y2 = R2.XY
             points = [(x1,y1),(x2,y2)]
 
-            # if replace:
-            line = SmoothLineWithArrow(points, image_name="multiArrow.png")
-            # else:
-            #     line = SmoothLineWithArrow(points)
+            if self.IsLinkBidirectional(R1.ID, R2.ID):
+                # Remove the old link and replace with new image
+                self.remove_link_object_by_id(R1.ID, R2.ID)
+                line = SmoothLineWithArrow(points, image_name="multiArrow.png")
+            else:
+                # No link between the two models add the first
+                line = SmoothLineWithArrow(points)
 
             self.links[line] = [R1, R2]
             self.arrows[line.Arrow] = [R1, R2]
-            self.pairedModels.append([R1, R2])
             line.type = LogicCanvasObjects.ShapeType.Link
 
             line.Arrow.type = LogicCanvasObjects.ShapeType.ArrowHead
@@ -251,6 +253,12 @@ class CanvasCtrl(CanvasView):
 
     def getUniqueId(self):
         return self.uniqueId
+
+    def IsLinkBidirectional(self, id1, id2):
+        for key, value in self.links.iteritems():
+            if (value[0].ID == id1 and value[1].ID == id2) or (value[1].ID == id1 and value[0].ID == id2):
+                return True
+        return False
 
     def addModel(self, filepath, x, y, uid=None, uniqueId=None, title=None):
         """
@@ -312,8 +320,6 @@ class CanvasCtrl(CanvasView):
             from_id = link[0].ID
             to_id = link[1].ID
 
-            self.RemovePairedLinkList(link)
-
             # get the link id
             links = engine.getLinksBtwnModels(from_id, to_id)
 
@@ -326,13 +332,18 @@ class CanvasCtrl(CanvasView):
 
             self.remove_link_image(link_object=link_obj)
 
+    def remove_link_object_by_id(self, id1, id2):
+        for key, value in self.links.iteritems():
+            if (value[0].ID == id1 and value[1].ID == id2) or (value[1].ID == id1 and value[0].ID == id2):
+                self.remove_link_image(key)
+                del self.links[key]
+                del self.arrows[key.Arrow]
+                return
+
     def remove_link_image(self, link_object):
         # Using SmoothLineWithArrow's builtin remove helper function
         link_object.Remove(self.FloatCanvas)
         self.FloatCanvas.Draw()
-
-    def RemovePairedLinkList(self, link):
-        self.pairedModels.remove([link[0], link[1]])
 
     def RemoveModel(self, model_obj):
         """
@@ -346,7 +357,6 @@ class CanvasCtrl(CanvasView):
         for link, models in self.links.iteritems():
             if model_obj in models:
                 links_to_remove.append(link)
-                self.RemovePairedLinkList(models)
             elif model_obj not in models:
                 updated_links[link] = models
 
@@ -376,7 +386,6 @@ class CanvasCtrl(CanvasView):
             # clear links and model in gui
             self.links.clear()
             self.models.clear()
-            self.pairedModels = []
             self.FloatCanvas.ClearAll()
             self.FloatCanvas.Draw()
 
@@ -454,21 +463,6 @@ class CanvasCtrl(CanvasView):
 
         linkstart = LinkCtrl(parent=self.FloatCanvas, outputs=from_model, inputs=to_model, link_obj=event, swap=True)
         linkstart.Show()
-
-    def CheckIfBidirectionalLink(self, id1, id2):
-        count = 0
-        for pair in self.pairedModels:
-
-            # get the ids of the models in this link pair
-            pair_ids = [pair[0].ID, pair[1].ID]
-
-            if id1 in pair_ids and id2 in pair_ids:
-                count += 1
-
-        if count >= 2:
-            return True
-        else:
-            return False
 
     def OnLeftUp(self, event, path=None):
         if self.Moving:

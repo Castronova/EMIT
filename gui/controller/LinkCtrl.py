@@ -585,12 +585,12 @@ class LinkCtrl(LinkView):
     def refreshLinkNameBox(self):
 
         self.LinkNameListBox.Clear()
-        # for l in self.__links.values():
-        #     self.LinkNameListBox.Append(l.name())
+        for l in self.__links.values():
+            self.LinkNameListBox.Append(l.name())
 
-        for key, value in self.__links.iteritems():
-            if key in self.links_to_delete is False:
-                self.LinkNameListBox.Append(value.name())
+        # for key, value in self.__links.iteritems():
+        #     if key in self.links_to_delete is False:
+        #         self.LinkNameListBox.Append(value.name())
 
 
 class LinkInfo:

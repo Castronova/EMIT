@@ -14,17 +14,16 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin, CheckListCtrlMixin):
 
 class PreRunView(wx.Frame):
     def __init__(self, parent=None):                             # this style makes the window non-resizable
-        wx.Frame.__init__(self, parent=parent, id=-1, pos=wx.DefaultPosition, title="Pre Run", size=(405, 450),
+        wx.Frame.__init__(self, parent=parent, title="Pre Run", size=(405, 450),
                           style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
-        if sys.platform == 'darwin': # Darwin is Mac
+        if sys.platform == 'darwin':  # Darwin is Mac
             self.SetSize((405, 350))
 
         # define top and bottom panels
         panel = wx.Panel(self)
         top_panel = wx.Panel(panel)
         lower_panel = wx.Panel(panel)
-        ################## OLD GBS ################################################################################
         grid_bag_sizer = wx.GridBagSizer(vgap=5, hgap=5)
 
         # build top panel
@@ -47,41 +46,6 @@ class PreRunView(wx.Frame):
         grid_bag_sizer.Add(self.add_account_button, pos=(3, 3), flag=wx.TOP|wx.RIGHT, border=5)
 
         top_panel.SetSizer(grid_bag_sizer)
-        #Above is GBS Below is sizers
-
-        # topPanelBase = wx.BoxSizer(wx.VERTICAL)
-        #
-        # simulationNameField = wx.BoxSizer(wx.VERTICAL)
-        # simulationSplitter = wx.BoxSizer(wx.HORIZONTAL)
-        # simulationNameField.Add(simulationSplitter)
-        # topPanelBase.Add(simulationNameField)
-        #
-        # simulationSplitter.Add(self.simulation_name_static_text, 0, wx.EXPAND | wx.LEFT, 5)
-        # simulationSplitter.Add(self.simulation_name_textbox, 0, wx.EXPAND | wx.RIGHT, 10)
-        #
-        # databaseInfo = wx.BoxSizer(wx.VERTICAL)
-        # databaseSplitter = wx.BoxSizer(wx.HORIZONTAL)
-        #
-        # databaseInfo.Add(databaseSplitter)
-        # topPanelBase.Add(databaseInfo)
-        #
-        # databaseSplitter.Add(self.database_name, 0, wx.EXPAND |wx.LEFT, 5)
-        # databaseSplitter.Add(self.database_combo, 0, wx.EXPAND |wx.RIGHT, 5)
-        #
-        # accountInfo = wx.BoxSizer(wx.VERTICAL)
-        # accountSplitter = wx.BoxSizer(wx.HORIZONTAL)
-        #
-        # accountInfo.Add(accountSplitter)
-        # topPanelBase.Add(accountInfo)
-        #
-        # accountSplitter.Add(self.account_name, 0, wx.EXPAND | wx.LEFT, 5)
-        # accountSplitter.Add(self.account_combo, 0, wx.EXPAND, 5)
-        # accountSplitter.Add(self.add_account_button, 0, wx.EXPAND, 5)
-        #
-        #
-        #
-        # top_panel.SetSizer(topPanelBase)
-        #
 
         # build lower panel
         self.variableList = CheckListCtrl(lower_panel)

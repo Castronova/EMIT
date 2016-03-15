@@ -15,7 +15,6 @@ LinkUpdatedEvent, EVT_LINKUPDATED = ne.NewEvent()
 
 
 class LinkCtrl(LinkView):
-
     odesc = ""
     idesc = ""
 
@@ -48,7 +47,6 @@ class LinkCtrl(LinkView):
 
         #  holds the links that will be deleted when deleting->save and close
         self.links_to_delete = []
-
 
     def InitBindings(self):
         self.LinkNameListBox.Bind(wx.EVT_LISTBOX, self.OnChange)
@@ -110,13 +108,13 @@ class LinkCtrl(LinkView):
                 return l
         return None
 
-    def GetModelFrom(self):
+    def get_model_from(self):
         if 'name' in self.output_component:
             return self.output_component['name']
         else:
             return None
 
-    def GetModelTo(self):
+    def get_model_to(self):
         if 'name' in self.input_component:
             return self.input_component['name']
         else:
@@ -261,8 +259,8 @@ class LinkCtrl(LinkView):
 
         self.OnChange(None)
 
-        self.outputLabel.SetLabel("Output of " + self.GetModelFrom())
-        self.inputLabel.SetLabel("Input of " + self.GetModelTo())
+        self.outputLabel.SetLabel("Output of " + self.get_model_from())
+        self.inputLabel.SetLabel("Input of " + self.get_model_to())
 
     def on_plot_geometries(self, event):
         from gui.controller.SpatialCtrl import SpatialCtrl
@@ -315,20 +313,22 @@ class LinkCtrl(LinkView):
         output_name = self.OutputComboBox.GetValue()
 
         # get the current link
-        l = self.__selected_link
+        selected_link = self.__selected_link
+        selected_link.source_model = self.get_model_from()
+        selected_link.target_model = self.get_model_to()
 
         # change the link name to reflect output -> input
-        l.oei = output_name
-        l.refresh('output')
+        selected_link.oei = output_name
+        selected_link.refresh('output')
 
         # update the name in the links list
-        self.__links[l.uid] = l
+        self.__links[selected_link.uid] = selected_link
 
         # refresh the link name box
         self.refreshLinkNameBox()
 
         # populate metadata
-        self.populate_output_metadata(l)
+        self.populate_output_metadata(selected_link)
 
     def on_select_input(self, event):
         """
@@ -340,6 +340,8 @@ class LinkCtrl(LinkView):
 
         # get the current link
         l = self.__selected_link
+        l.source_model = self.get_model_from()
+        l.target_model = self.get_model_to()
 
         # change the link name to reflect output -> input
         l.iei = input_name
@@ -496,14 +498,33 @@ class LinkCtrl(LinkView):
 
         # if self.link_obj and self.swap_was_clicked:
         #     self.replace_canvas_image()
+        if self.find_link_direction():
+            self.replace_canvas_image(image="rightArrowBlue60.png")
+        elif self.find_link_direction() is False:
+            self.replace_canvas_image(image="multiArrow.png")
+        else:
+            self.replace_canvas_image(image="questionMark.png")
 
         self.Destroy()
 
-    # def replace_canvas_image(self):
-    #     self.parent.Parent.remove_link_image(link_object=self.link_obj.line)
-    #
-    #     models = self.parent.Parent.arrows[self.link_obj]
-    #     self.parent.Parent.createLine(models[0], models[1], True)
+    def replace_canvas_image(self, image):
+        self.parent.Parent.remove_link_image(link_object=self.link_obj.line)
+
+        models = self.parent.Parent.arrows[self.link_obj]
+        self.parent.Parent.createLine(R1=models[0], R2=models[1], image_name=image)
+
+    def find_link_direction(self):
+        # returns None if no link. Show question mark
+        # return true if link goes one. Show one-way arrow
+        # return false if links goes two ways. Show two-way arrow
+        if len(self.__links) == 0:
+            return None
+
+        items = []
+        for key, value in self.__links.iteritems():
+            items.append(value.source_model)
+
+        return all_same(items)
 
     def OutGridToolTip(self, e):
         if e.GetRow() == 2 and e.GetCol() == 1:
@@ -564,13 +585,16 @@ class LinkCtrl(LinkView):
     def refreshLinkNameBox(self):
 
         self.LinkNameListBox.Clear()
-        for l in self.__links.values():
-            self.LinkNameListBox.Append(l.name())
+        # for l in self.__links.values():
+        #     self.LinkNameListBox.Append(l.name())
+
+        for key, value in self.__links.iteritems():
+            if key in self.links_to_delete is False:
+                self.LinkNameListBox.Append(value.name())
 
 
 class LinkInfo:
-    def __init__(self, oei, iei, source_id, target_id, uid=None, spatial_interpolation=None,
-                 temporal_interpolation=None):
+    def __init__(self, oei, iei, source_id, target_id, uid=None, spatial_interpolation=None, temporal_interpolation=None):
 
 
         self.uid = 'L' + uuid.uuid4().hex if uid is None else uid
@@ -586,13 +610,13 @@ class LinkInfo:
 
         self.output_metadata = {}
         self.input_metadata = {}
+        self.source_model = "hola"
+        self.target_model = "hola"
 
         self.get_input_and_output_metadata()
 
     def refresh(self, type):
-
         self.get_input_and_output_metadata(type)
-
 
     def name(self):
         iei_name = self.iei if self.iei != '---' else '?'
@@ -617,3 +641,7 @@ class LinkInfo:
             if inputs is not None:
                 for input in inputs:
                     self.input_metadata[input['name']] = input
+
+
+def all_same(items):
+        return all(x == items[0] for x in items)

@@ -90,7 +90,7 @@ class SmoothLineWithArrow(SmoothLine):
     the two and adds the rotation feature that we need. This might be able
     to be better implemented as FloatCanvas Group
     '''
-    def __init__(self, Points, image_name="questionMark84.png", LineColor="#3F51B5", LineStyle="Solid", LineWidth = 4):
+    def __init__(self, Points, image_name="questionMark.png", LineColor="#3F51B5", LineStyle="Solid", LineWidth = 4):
         super(SmoothLineWithArrow, self).__init__(Points, LineColor, LineStyle, LineWidth)
         imgs_base_path = os.environ['APP_IMAGES_PATH']
         arrow_image = path.join(imgs_base_path, image_name)

@@ -214,6 +214,11 @@ class CanvasCtrl(CanvasView):
             self.model_coords[id] = dict(x=x, y=y)
             return x, y
 
+    def checkIfExists(self, R1, R2):
+        for key, value in self.links.iteritems():
+                    if (value[0].ID == R1.ID and value[1].ID == R2.ID) or (value[1].ID == R2.ID and value[0].ID == R1.ID):
+                         return True
+
 
     def createLine(self, R1, R2, image_name="questionMark.png"):
 
@@ -225,15 +230,17 @@ class CanvasCtrl(CanvasView):
             # Get the center of the objects on the canvas
             x1, y1 = R1.XY
             x2, y2 = R2.XY
-            points = [(x1, y1), (x2, y2)]
-            #
-            # if self.IsLinkBidirectional(R1.ID, R2.ID):
-            #     # Remove the old link and replace with new image
-            #     self.remove_link_object_by_id(R1.ID, R2.ID)
-            #     line = SmoothLineWithArrow(points, image_name="multiArrow.png")
-            # else:
-            # No link between the two models add the first
-            line = SmoothLineWithArrow(points, image_name=image_name)
+            points = [(x1,y1),(x2,y2)]
+
+            if self.IsLinkBidirectional(R1.ID, R2.ID):
+                # Remove the old link and replace with new image
+                self.remove_link_object_by_id(R1.ID, R2.ID)
+                line = SmoothLineWithArrow(points, image_name="multiArrowBlue84.png")
+            elif self.checkIfExists(R1, R2):
+                line = SmoothLineWithArrow(points, 'rightArrowBlue84.png')
+            else:
+                # No link between the two models add the first
+                line = SmoothLineWithArrow(points)
 
             self.links[line] = [R1, R2]
             self.arrows[line.Arrow] = [R1, R2]

@@ -33,6 +33,7 @@ class LinkCtrl(LinkView):
 
         # class link variables used to save link
         self.__selected_link = None
+        self.links_to_delete = []
 
         self.__link_source_id = self.output_component['id']
         self.__link_target_id = self.input_component['id']
@@ -46,7 +47,7 @@ class LinkCtrl(LinkView):
         self.__checkbox_states = [None, None]
 
         #  holds the links that will be deleted when deleting->save and close
-        self.links_to_delete = []
+
 
     def InitBindings(self):
         self.LinkNameListBox.Bind(wx.EVT_LISTBOX, self.OnChange)
@@ -95,6 +96,19 @@ class LinkCtrl(LinkView):
             self.OutputComboBox.Disable()
             self.ButtonPlot.Disable()
             self.ButtonSwap.Disable()
+
+    def find_link_direction(self):
+        # returns None if no link. Show question mark
+        # return true if link goes one. Show one-way arrow
+        # return false if links goes two ways. Show two-way arrow
+        if len(self.__links) == 0:
+            return None
+
+        items = []
+        for key, value in self.__links.iteritems():
+            items.append(engine.getModelById(value.source_id)["name"])
+
+        return all_same(items)
 
     def getInputModelText(self):
         if self.input_component['id'] == self.__selected_link.target_id:
@@ -314,8 +328,6 @@ class LinkCtrl(LinkView):
 
         # get the current link
         selected_link = self.__selected_link
-        selected_link.source_model = self.get_model_from()
-        selected_link.target_model = self.get_model_to()
 
         # change the link name to reflect output -> input
         selected_link.oei = output_name
@@ -340,8 +352,6 @@ class LinkCtrl(LinkView):
 
         # get the current link
         l = self.__selected_link
-        l.source_model = self.get_model_from()
-        l.target_model = self.get_model_to()
 
         # change the link name to reflect output -> input
         l.iei = input_name
@@ -399,6 +409,7 @@ class LinkCtrl(LinkView):
                                 l['id'],
                                 l['spatial_interpolation'],
                                 l['temporal_interpolation'])
+
 
                 self.__links[l['id']] = link
 
@@ -496,8 +507,6 @@ class LinkCtrl(LinkView):
             else:
                 return
 
-        # if self.link_obj and self.swap_was_clicked:
-        #     self.replace_canvas_image()
         if self.find_link_direction():
             self.replace_canvas_image(image="rightArrowBlue60.png")
         elif self.find_link_direction() is False:
@@ -506,25 +515,6 @@ class LinkCtrl(LinkView):
             self.replace_canvas_image(image="questionMark.png")
 
         self.Destroy()
-
-    def replace_canvas_image(self, image):
-        self.parent.Parent.remove_link_image(link_object=self.link_obj.line)
-
-        models = self.parent.Parent.arrows[self.link_obj]
-        self.parent.Parent.createLine(R1=models[0], R2=models[1], image_name=image)
-
-    def find_link_direction(self):
-        # returns None if no link. Show question mark
-        # return true if link goes one. Show one-way arrow
-        # return false if links goes two ways. Show two-way arrow
-        if len(self.__links) == 0:
-            return None
-
-        items = []
-        for key, value in self.__links.iteritems():
-            items.append(value.source_model)
-
-        return all_same(items)
 
     def OutGridToolTip(self, e):
         if e.GetRow() == 2 and e.GetCol() == 1:
@@ -585,12 +575,17 @@ class LinkCtrl(LinkView):
     def refreshLinkNameBox(self):
 
         self.LinkNameListBox.Clear()
-        for l in self.__links.values():
-            self.LinkNameListBox.Append(l.name())
+        for key, value in self.__links.iteritems():
+            if key in self.links_to_delete:
+                pass
+            else:
+                self.LinkNameListBox.Append(value.name())
 
-        # for key, value in self.__links.iteritems():
-        #     if key in self.links_to_delete is False:
-        #         self.LinkNameListBox.Append(value.name())
+    def replace_canvas_image(self, image):
+        self.parent.Parent.remove_link_image(link_object=self.link_obj.line)
+
+        models = self.parent.Parent.arrows[self.link_obj]
+        self.parent.Parent.createLine(R1=models[0], R2=models[1], image_name=image)
 
 
 class LinkInfo:
@@ -610,8 +605,6 @@ class LinkInfo:
 
         self.output_metadata = {}
         self.input_metadata = {}
-        self.source_model = "hola"
-        self.target_model = "hola"
 
         self.get_input_and_output_metadata()
 

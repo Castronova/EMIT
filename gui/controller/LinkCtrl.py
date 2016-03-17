@@ -508,7 +508,7 @@ class LinkCtrl(LinkView):
                 return
 
         if self.find_link_direction():
-            self.replace_canvas_image(image="rightArrowBlue60.png")
+            self.replace_canvas_image(image="rightArrowBlue60.png", one_way=True)
         elif self.find_link_direction() is False:
             self.replace_canvas_image(image="multiArrow.png")
         else:
@@ -581,12 +581,23 @@ class LinkCtrl(LinkView):
             else:
                 self.LinkNameListBox.Append(value.name())
 
-    def replace_canvas_image(self, image):
+    def replace_canvas_image(self, image, one_way=False):
         self.parent.Parent.remove_link_image(link_object=self.link_obj.line)
 
         models = self.parent.Parent.arrows[self.link_obj]
-        self.parent.Parent.createLine(R1=models[0], R2=models[1], image_name=image)
+        if one_way:
+            #  Determine the direction of the arrow
+            self.create_one_way_arrow(image, models)
+        else:
+            self.parent.Parent.createLine(R1=models[0], R2=models[1], image_name=image)
 
+    def create_one_way_arrow(self, image, models):
+        #  Only call this method if all the links go the same direction
+        #  Draws the arrow based off the direction of the links
+        if engine.getModelById(models[0].ID)["name"] == engine.getModelById(self.__links.values()[0].source_id)["name"]:
+            self.parent.Parent.createLine(R1=models[0], R2=models[1], image_name=image)
+        else:
+            self.parent.Parent.createLine(R1=models[1], R2=models[0], image_name=image)
 
 class LinkInfo:
     def __init__(self, oei, iei, source_id, target_id, uid=None, spatial_interpolation=None, temporal_interpolation=None):

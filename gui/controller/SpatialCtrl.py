@@ -152,7 +152,7 @@ class SpatialCtrl(SpatialView):
 
 
     def plot_linestring(self, data):
-        print "its a line string"
+        elog.debug("plot_linestring has not been implemented")
 
     def set_legend(self, location=0):
         labels = []

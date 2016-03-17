@@ -97,6 +97,14 @@ class LinkCtrl(LinkView):
             self.ButtonPlot.Disable()
             self.ButtonSwap.Disable()
 
+    def create_one_way_arrow(self, image, models):
+        #  Only call this method if all the links go the same direction
+        #  Draws the arrow based off the direction of the links
+        if engine.getModelById(models[0].ID)["name"] == engine.getModelById(self.__links.values()[0].source_id)["name"]:
+            self.parent.Parent.createLine(R1=models[0], R2=models[1], image_name=image)
+        else:
+            self.parent.Parent.createLine(R1=models[1], R2=models[0], image_name=image)
+
     def find_link_direction(self):
         # returns None if no link. Show question mark
         # return true if link goes one. Show one-way arrow
@@ -591,8 +599,7 @@ class LinkCtrl(LinkView):
         else:
             self.parent.Parent.createLine(R1=models[0], R2=models[1], image_name=image)
 
-    def create_one_way_arrow(self, image, models):
-        #  Only call this method if all the links go the same direction
+            #  Only call this method if all the links go the same direction
         #  Draws the arrow based off the direction of the links
         if engine.getModelById(models[0].ID)["name"] == engine.getModelById(self.__links.values()[0].source_id)["name"]:
             self.parent.Parent.createLine(R1=models[0], R2=models[1], image_name=image)

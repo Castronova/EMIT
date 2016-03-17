@@ -216,8 +216,6 @@ class CanvasCtrl(CanvasView):
 
 
     def createLine(self, R1, R2, image_name="questionMark.png"):
-
-
         if R1 == R2:
             elog.error('Cannot link a model to itself')
             sPrint('Cannot link a model to itself', MessageType.ERROR)

@@ -599,12 +599,6 @@ class LinkCtrl(LinkView):
         else:
             self.parent.Parent.createLine(R1=models[0], R2=models[1], image_name=image)
 
-            #  Only call this method if all the links go the same direction
-        #  Draws the arrow based off the direction of the links
-        if engine.getModelById(models[0].ID)["name"] == engine.getModelById(self.__links.values()[0].source_id)["name"]:
-            self.parent.Parent.createLine(R1=models[0], R2=models[1], image_name=image)
-        else:
-            self.parent.Parent.createLine(R1=models[1], R2=models[0], image_name=image)
 
 class LinkInfo:
     def __init__(self, oei, iei, source_id, target_id, uid=None, spatial_interpolation=None, temporal_interpolation=None):

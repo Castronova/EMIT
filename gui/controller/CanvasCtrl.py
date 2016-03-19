@@ -202,7 +202,6 @@ class CanvasCtrl(CanvasView):
         self.createLine(R1, R2)
 
     def set_model_coords(self, id, x, y):
-
         self.model_coords[id] = {'x': x, 'y': y}
 
     def get_model_coords(self, id):
@@ -225,12 +224,7 @@ class CanvasCtrl(CanvasView):
             x1, y1 = R1.XY
             x2, y2 = R2.XY
             points = [(x1, y1), (x2, y2)]
-            #
-            # if self.IsLinkBidirectional(R1.ID, R2.ID):
-            #     # Remove the old link and replace with new image
-            #     self.remove_link_object_by_id(R1.ID, R2.ID)
-            #     line = SmoothLineWithArrow(points, image_name="multiArrow.png")
-            # else:
+
             # No link between the two models add the first
             line = SmoothLineWithArrow(points, image_name=image_name)
 
@@ -253,10 +247,13 @@ class CanvasCtrl(CanvasView):
     def getUniqueId(self):
         return self.uniqueId
 
-    def IsLinkBidirectional(self, id1, id2):
-        for key, value in self.links.iteritems():
-            if (value[0].ID == id1 and value[1].ID == id2) or (value[1].ID == id1 and value[0].ID == id2):
+    def is_link_bidirectional(self, id1, id2):
+        for pair in self.links.values():
+            # get the ids of the models in this link pair
+            pair_ids = [pair[0].ID, pair[1].ID]
+            if id1 in pair_ids and id2 in pair_ids:
                 return True
+
         return False
 
     def addModel(self, filepath, x, y, uid=None, uniqueId=None, title=None):
@@ -329,15 +326,16 @@ class CanvasCtrl(CanvasView):
                     elog.error('ERROR|Could not remove link: %s' % link['id'])
                     sPrint('ERROR|Could not remove link: %s' % link['id'], MessageType.ERROR)
 
+
             self.remove_link_image(link_object=link_obj)
+            self.remove_link_object_by_id(from_id, to_id)
 
     def remove_link_object_by_id(self, id1, id2):
-        for key, value in self.links.iteritems():
+        for key, value in self.links.items():
             if (value[0].ID == id1 and value[1].ID == id2) or (value[1].ID == id1 and value[0].ID == id2):
-                self.remove_link_image(key)
+                # self.remove_link_image(key)
                 del self.links[key]
                 del self.arrows[key.Arrow]
-                return
 
     def remove_link_image(self, link_object):
         # Using SmoothLineWithArrow's builtin remove helper function
@@ -430,9 +428,11 @@ class CanvasCtrl(CanvasView):
         self.link_clicks += 1
 
         if self.link_clicks == 2:
-            if len(self.linkRects) == 2:
+            if len(self.linkRects) == 2 and not self.is_link_bidirectional(self.linkRects[0].ID, self.linkRects[1].ID):
                 # This method creates the line and places the arrow
                 self.createLine(self.linkRects[0], self.linkRects[1])
+            else:
+                print "Did not add the link"
 
             # reset
             self.link_clicks = 0

@@ -636,13 +636,13 @@ class LinkInfo:
 
         if type == 'output' or type is None:
             # get output information
-            outputs = engine.getOutputExchangeItems(self.source_id, returnGeoms=False)
+            outputs = engine.getExchangeItems(self.source_id, 'OUTPUT', returnGeoms=False)
             if outputs is not None:
                 for output in outputs:
                     self.output_metadata[output['name']] = output
         if type == 'input' or type is None:
             # get input information
-            inputs = engine.getInputExchangeItems(self.target_id, returnGeoms=False)
+            inputs = engine.getExchangeItems(self.target_id, 'INPUT', returnGeoms=False)
             if inputs is not None:
                 for input in inputs:
                     self.input_metadata[input['name']] = input

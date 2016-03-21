@@ -720,64 +720,62 @@ class Coordinator(object):
             )
         return models
 
-    def get_output_exchange_items_summary(self, id, returnGeoms=True):
-        """
-        gets a serializable version of the output exchange items
-        :param id: model id
-        :return: dictionary of serializable objects
-        """
-        for m in self.__models:
-            if self.__models[m].id() == id:
-                eitems = self.__models[m].get_output_exchange_items()
-                items_list = []
+    def summarize_exhange_item(self, item, returnGeoms=True):
 
-                for ei in eitems:
-                    if returnGeoms:
-                        if ei.getGeometries2():
+        # get data that is common for all geometries
+        geom_srs = item.srs().ExportToPrettyWkt()
+        geom_count = len(item.getGeometries2())
+        geom_type = item.getGeometries2()[0].GetGeometryType()
+        geom_extent = 'Not Implemented Yet'
 
-                            geoms = [ dict(wkb=g.ExportToWkb(), id=g.hash) for g in ei.getGeometries2()]
-                            # geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.getGeometries2()]
-                        else:
-                            elog.warning('deprecated: this component is implementing old geometry and datavalues storage mechanisms which are obsolete and inefficient.')
-                            geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.geometries()]
+        # initialize the geometry dictionary
+        geom_dict = dict(srs = geom_srs,
+                         type = geom_type,
+                         count = geom_count,
+                         extent = geom_extent,
+                         wkb = [],
+                         hash = [])
 
-                        items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.id(), unit=ei.unit(),
-                                               variable=ei.variable(), type=ei.type(), geom=geoms))
-                    else:
-                        items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.id(), unit=ei.unit(),
-                                               variable=ei.variable(), type=ei.type()))
-                return items_list
-        return None
+        if returnGeoms:
 
-    def get_input_exchange_items_summary(self, id, returnGeoms=True):
-        """
-        gets a serializable version of the input exchange items
-        :param id: model id
-        :param returnGeoms: indicates if geometries should be returned.  This will take longer.
-        :return: dictionary of serializable objects
-        """
-        for m in self.__models:
-            if self.__models[m].id() == id:
-                eitems = self.__models[m].get_input_exchange_items()
-                items_list = []
+           # get the geometries and hashes
+            geometries = item.getGeometries2()
+            geoms = [g.ExportToWkb() for g in geometries]
+            hashs = [g.hash for g in geometries]
 
-                for ei in eitems:
-                    if returnGeoms:
-                        if ei.getGeometries2():
-                            geoms = [ dict(wkb=g.ExportToWkb(), id=g.hash) for g in ei.getGeometries2()]
-                            # geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.getGeometries2()]
-                        else:
-                            elog.warning('deprecated: this component is implementing old geometry and datavalues storage mechanisms which are obsolete and inefficient.')
-                            geoms = [ dict(shape=g.geom(),srs_proj4=g.srs().ExportToProj4(),z=g.elev(),id=g.id()) for g in ei.geometries()]
+            geom_dict['wkb'] = geoms
+            geom_dict['hash'] = hashs
+
+        return dict(name=item.name(),
+                    description=item.description(),
+                    id=item.id(),
+                    unit=item.unit(),
+                    variable=item.variable(),
+                    type=item.type(),
+                    geometry=geom_dict)
 
 
-                        items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.id(), unit=ei.unit(),
-                                               variable=ei.variable(), type=ei.type(), geom=geoms))
-                    else:
-                        items_list.append(dict(name=ei.name(), description=ei.description(), id=ei.id(), unit=ei.unit(),
-                                               variable=ei.variable(), type=ei.type()))
-                return items_list
-        return None
+
+    def get_exchange_item_info(self, modelid, exchange_item_type=stdlib.ExchangeItemType.INPUT, returnGeoms=True):
+
+        ei_values = []
+
+        # get model by id
+        model = self.get_model_by_id(modelid)
+
+        # get input or output exchange items
+        if exchange_item_type == stdlib.ExchangeItemType.INPUT:
+            items = model.get_input_exchange_items()
+        elif exchange_item_type == stdlib.ExchangeItemType.OUTPUT:
+            items = model.get_output_exchange_items()
+        else:
+            sPrint('Invalid exchange item type provided')
+            return None
+
+        for i in items:
+            ei_values.append(self.summarize_exhange_item(i, returnGeoms))
+
+        return ei_values
 
     def remove_link_by_id(self,id):
         """

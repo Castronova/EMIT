@@ -120,18 +120,10 @@ def getModelById(modelid):
     result = e.processTasks()
     return result
 
-def getOutputExchangeItems(modelid, returnGeoms=True):
+def getExchangeItems(modelid, exchange_item_type='INPUT', returnGeoms=True):
     e = Engine()
-    kwargs = dict(id=modelid, returnGeoms=returnGeoms)
-    task = [('get_output_exchange_items_summary', kwargs)]
-    e.setTasks(task)
-    result = e.processTasks()
-    return result
-
-def getInputExchangeItems(modelid, returnGeoms=True):
-    e = Engine()
-    kwargs = dict(id=modelid, returnGeoms=returnGeoms)
-    task = [('get_input_exchange_items_summary', kwargs)]
+    kwargs = dict(id=modelid, exchange_item_type=exchange_item_type, returnGeoms=returnGeoms)
+    task = [('get_exchange_item_info', kwargs)]
     e.setTasks(task)
     result = e.processTasks()
     return result

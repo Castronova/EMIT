@@ -54,10 +54,10 @@ class SpatialCtrl(SpatialView):
         stretch_grid(grid=grid)
 
     def get_input_exchange_item_by_id(self, id):
-        return engineAccessors.getInputExchangeItems(id)
+        return engineAccessors.getExchangeItems(id, 'INPUT')
 
     def get_output_exchange_item_by_id(self, id):
-        return engineAccessors.getOutputExchangeItems(id)
+        return engineAccessors.getExchangeItems(id, 'OUTPUT')
 
     def get_geometries(self, exchange_item):  # This method should work for both input and output
         if isinstance(exchange_item, list):

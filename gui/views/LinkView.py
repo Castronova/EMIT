@@ -300,14 +300,14 @@ class LinkView(wx.Frame):
         self.Centre(wx.BOTH)
 
     def OutputComboBoxChoices(self):
-        self.output_items = engine.getOutputExchangeItems(self.output_component['id'], returnGeoms=False)
+        self.output_items = engine.getExchangeItems(self.output_component['id'], stdlib.ExchangeItemType.OUTPUT, returnGeoms=False)
         if self.output_items is not None:
             return [item['name'] for item in self.output_items]
         else:
             return [" "]
 
     def InputComboBoxChoices(self):
-        self.input_items = engine.getInputExchangeItems(self.input_component['id'], returnGeoms=False)
+        self.input_items = engine.getExchangeItems(self.input_component['id'], stdlib.ExchangeItemType.INPUT, returnGeoms=False)
         if self.input_items is not None:
             return [item['name'] for item in self.input_items]
         else:

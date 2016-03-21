@@ -1,7 +1,6 @@
 import wx
+from wx import richtext
 from ContextView import ConsoleContextMenu
-
-
 
 
 class ConsoleView(wx.Panel):

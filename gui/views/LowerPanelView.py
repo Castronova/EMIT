@@ -1,31 +1,28 @@
-__author__ = 'Francisco'
-
-import threading
-import sys
-import wx
-from wx.lib.pubsub import pub as Publisher
-from gui.controller.DatabaseCtrl import DatabaseCtrl
-import coordinator.events as engineEvent
-from wx import richtext
-import os
 import ConfigParser
-from ContextView import TimeSeriesContextMenu, SimulationContextMenu #, ConsoleContextMenu
+import os
+import sys
+import threading
+
+import wx
+from odm2api.ODMconnection import dbconnection
+from wx.lib.pubsub import pub as Publisher
+
 import coordinator.engineAccessors as engine
-from utilities import db as dbUtilities
+import coordinator.events as engineEvent
+import db.dbapi_v2 as db2
+from ContextView import TimeSeriesContextMenu, SimulationContextMenu #, ConsoleContextMenu
+from coordinator.emitLogging import elog
 from db import dbapi as dbapi
 from gui import events
-from coordinator.emitLogging import elog
-from gui.controller.WofSitesCtrl import WofSitesCtrl
 from gui.controller.AddConnectionCtrl import AddConnectionCtrl
-from webservice import wateroneflow
 from gui.controller.ConsoleOutputCtrl import consoleCtrl
-import db.dbapi_v2 as db2
-from odm2api.ODMconnection import dbconnection
-from gui.controller.TimeSeriesObjectCtrl import TimeSeriesObjectCtrl
+from gui.controller.DatabaseCtrl import DatabaseCtrl
 from gui.controller.SimulationPlotCtrl import SimulationPlotCtrl
-import uuid
-import ConfigParser
-from api_old.ODMconnection import  dbconnection, SessionFactory
+from gui.controller.TimeSeriesObjectCtrl import TimeSeriesObjectCtrl
+from gui.controller.WofSitesCtrl import WofSitesCtrl
+from utilities import db as dbUtilities
+from webservice import wateroneflow
+
 
 class viewLowerPanel:
     def __init__(self, notebook):
@@ -448,10 +445,7 @@ class SimulationDataTab(DataSeries):
         #set the selected choice
         self.__selected_choice_idx = self.connection_combobox.GetSelection()
 
-        for key, db in self._databases.iteritems():        # # deactivate the console if we are in debug mode
-            # if not sys.gettrace():
-            #     redir = RedirectText(self.log)
-            #     sys.stdout = redir
+        for key, db in self._databases.iteritems():
 
             # get the database session associated with the selected name
             isSqlite = False

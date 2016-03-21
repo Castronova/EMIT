@@ -122,7 +122,7 @@ def getModelById(modelid):
 
 def getExchangeItems(modelid, exchange_item_type='INPUT', returnGeoms=True):
     e = Engine()
-    kwargs = dict(id=modelid, exchange_item_type=exchange_item_type, returnGeoms=returnGeoms)
+    kwargs = dict(modelid=modelid, exchange_item_type=exchange_item_type, returnGeoms=returnGeoms)
     task = [('get_exchange_item_info', kwargs)]
     e.setTasks(task)
     result = e.processTasks()

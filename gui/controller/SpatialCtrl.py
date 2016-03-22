@@ -65,7 +65,7 @@ class SpatialCtrl(SpatialView):
             for item in exchange_item:
                 name = item['name']
                 # geoms = [geometry.fromWKB(g['wkb']) for g in item['geom']]
-                geoms = [ogr.CreateGeometryFromWkb(g['wkb']) for g in item['geom']]
+                geoms = [ogr.CreateGeometryFromWkb(g) for g in item['geometry']['wkb']]
                 igeoms[name] = geoms
             return igeoms
         else:

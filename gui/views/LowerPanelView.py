@@ -22,6 +22,11 @@ from gui.controller.TimeSeriesObjectCtrl import TimeSeriesObjectCtrl
 from gui.controller.WofSitesCtrl import WofSitesCtrl
 from utilities import db as dbUtilities
 from webservice import wateroneflow
+import uuid
+import ConfigParser
+from api_old.ODMconnection import  dbconnection, SessionFactory
+import xml.etree.ElementTree
+
 
 
 class viewLowerPanel:
@@ -188,8 +193,15 @@ class TimeSeriesTab(wx.Panel):
         siteview = WofSitesCtrl(self, siteObject, self.api)
         return
 
+    def generate_wof_data_from_XML(self):
+        root = xml.etree.ElementTree.parse('wof.xml').getroot()
+        print root
+        print "testing"
+
     def setup_wof_table(self, api):
         self.wofsites = api.getSitesObject()
+        #api.getSites()
+        #self.generate_wof_data_from_XML()
         api.network_code = self.wofsites[0].siteInfo.siteCode[0]._network
         self.table_columns = ["Site Name", "Network", "County", "State", "Site Type", "Site Code"]
         self.m_olvSeries.DefineColumns(self.table_columns)

@@ -3,6 +3,8 @@ import wx
 from coordinator import engineAccessors
 from coordinator.emitLogging import elog
 from gui.views.PreRunView import PreRunView
+
+from gui.controller.UserCtrl import UserCtrl
 from utilities.gui import loadAccounts
 
 
@@ -154,7 +156,7 @@ class PreRunViewCtrl(PreRunView):
         return available_connections
 
     def OnAddNew(self, e):
-        dlg = AddNewUserDialog(self, title="Add New User")
+        dlg = UserCtrl(self)
         dlg.CenterOnScreen()
         dlg.ShowModal()
 

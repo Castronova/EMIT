@@ -28,7 +28,7 @@ def parseXML2Dict(site, start=None, end=None):
 
 def createXMLFileForReading(xml_string):
     # Open this file in a browser to view it parsed
-    file = open("test.xml", "w")
+    file = open("wof.xml", "w")
     file.write(xml_string)
     file.close()
 
@@ -129,6 +129,16 @@ class WaterOneFlow(object):
         # fixme: there is an error with the input string not in the correct format.
         data = self.conn.service.GetSitesByBoxObject(sitecode)
         return data
+
+    def getSites(self, value=None):
+        print value
+        if value is None:
+            site_objects = self.conn.service.GetSites("")
+        else:
+            site_objects = self.conn.service.GetSites(value)
+        print site_objects
+        createXMLFileForReading(site_objects)
+        #return site_objects
 
     def getSitesObject(self, value=None):
         #  Returns JSON

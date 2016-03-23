@@ -195,30 +195,47 @@ class TimeSeriesTab(wx.Panel):
 
     def generate_wof_data_from_XML(self):
         root = xml.etree.ElementTree.parse('wof.xml').getroot()
-        print root
-        print "testing"
+        output = []
+        for child in root:
+            if "site" in child.tag:
+                d = []
+                for step_child in child:
+                    for onemore in step_child:
+                        if "siteName" in onemore.tag:
+                            d.append(['site_name', onemore.text])
+                        if "siteCode" in onemore.tag:
+                            d.append(['network', onemore.items()[1][1]])
+                            d.append(['site_code', onemore.text])
+                        if "siteProperty" in onemore.tag:
+                            if onemore.attrib.items()[0][1] == "County":
+                                d.append(['county', onemore.text])
+                            if onemore.attrib.items()[0][1] == "State":
+                                d.append(['state', onemore.text])
+                            if onemore.attrib.items()[0][1] == "Site Type":
+                                d.append(['site_type', onemore.text])
+                output.append(d)
+        return output
 
     def setup_wof_table(self, api):
-        self.wofsites = api.getSitesObject()
-        #api.getSites()
-        #self.generate_wof_data_from_XML()
-        api.network_code = self.wofsites[0].siteInfo.siteCode[0]._network
+        #self.wofsites = api.getSitesObject()
+        api.getSites()
+        self.wofsites = self.generate_wof_data_from_XML()
+        api.network_code = self.wofsites[1][1][1]
         self.table_columns = ["Site Name", "Network", "County", "State", "Site Type", "Site Code"]
         self.m_olvSeries.DefineColumns(self.table_columns)
 
         output = []
         for site in self.wofsites:
-            properties = {prop._name.lower(): prop.value for prop in site.siteInfo.siteProperty if 'value' in prop }
-            d = {
-                "site_name": site.siteInfo.siteName,  # The key MUST match one in the table_columns IN LOWERCASE. FYI
-                "network": site.siteInfo.siteCode[0]._network,
-                "county": properties['county'],
-                "state": properties['state'],
-                "site_type": properties['site type'],
-                "site_code": site.siteInfo.siteCode[0].value,
-            }
+            data = {
+                    "site_name": site[0][1],
+                    "network": site[1][1],
+                    "county": site[3][1],
+                    "state": site[4][1],
+                    "site_type": site[5][1],
+                    "site_code": site[2][1]
+                }
 
-            record_object = type('WOFRecord', (object,), d)
+            record_object = type('WOFRecord', (object,), data)
             output.extend([record_object])
         self.m_olvSeries.AutoSizeColumns()
         self.m_olvSeries.SetObjects(output)

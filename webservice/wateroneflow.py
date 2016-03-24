@@ -121,7 +121,6 @@ class WaterOneFlow(object):
         #  Returns a JSON
         #  Returns all the information for a given site.
         #  This includes all the variables associated with that location  description.
-        print self.network_code
         data = self.conn.service.GetSiteInfoObject(self.network_code + ":"+ str(sitecode))
         return data
 
@@ -131,18 +130,15 @@ class WaterOneFlow(object):
         return data
 
     def getSites(self, value=None):
-        print value
         if value is None:
             site_objects = self.conn.service.GetSites("")
         else:
             site_objects = self.conn.service.GetSites(value)
-        print site_objects
         createXMLFileForReading(site_objects)
         #return site_objects
 
     def getSitesObject(self, value=None):
         #  Returns JSON
-        print value
         if value is None:
             site_objects = self.conn.service.GetSitesObject("")
         else:

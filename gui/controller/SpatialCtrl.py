@@ -13,34 +13,36 @@ class SpatialCtrl(SpatialView):
     def __init__(self, parent):
         SpatialView.__init__(self, parent)
 
+        self.raw_input_data = None
+        self.raw_output_data = None
+
         self.__input_data = None
         self.__output_data = None
-        self.input_exchange_item = None
-        self.output_exchange_item = None
-        self.target_name = ""
-        self.source_name = ""
+        # self.input_exchange_item = None
+        # self.output_exchange_item = None
+        # self.target_name = ""
+        # self.source_name = ""
         self.input_legend_label = ""
         self.output_legend_label = ""
-        self.input_checkbox.Bind(wx.EVT_CHECKBOX, self.on_checkbox)
-        self.output_checkbox.Bind(wx.EVT_CHECKBOX, self.on_checkbox)
+
+        # Set the combo box to ---
+        self.input_combobox.SetSelection(0)
+        self.output_combobox.SetSelection(0)
+        self.input_combobox.Bind(wx.EVT_COMBOBOX, self.on_combo)
+        self.output_combobox.Bind(wx.EVT_COMBOBOX, self.on_combo)
         self.plot.setAxisLabel("my X axis", "My y axis")
 
-    def on_checkbox(self, event):
-        self.plot.clearPlot()
-        if self.input_checkbox.IsChecked():
-            self.input_legend_label = self.target_name
-            self.update_plot(self.target_name)
-        else:
-            self.input_legend_label = ""
+    def add_input_combo_choices(self, items):
+        self.input_combobox.AppendItems(items)
 
-        if self.output_checkbox.IsChecked():
-            self.output_legend_label = self.source_name
-            self.update_plot(self.source_name)
-        else:
-            self.output_legend_label = ""
+    def add_output_combo_choices(self, items):
+        self.output_combobox.AppendItems(items)
 
     def clear_plot(self):
         self.plot.clearPlot()
+
+    def clear_table(self):
+        pass
 
     def edit_grid(self, grid, x_loc, y_loc, value):
         if grid == "input":
@@ -53,6 +55,31 @@ class SpatialCtrl(SpatialView):
         grid.AutoSizeColumns()
         stretch_grid(grid=grid)
 
+    def get_color_by_plot_name(self, name):
+        if name in self.__input_data:
+            return "#019477"
+        if name in self.__output_data:
+            return "#0DACFF"
+
+    def get_exchange_items_names(self, model_id, model_type="INPUT"):
+        # model_type must match INPUT or OUTPUT
+        items = engineAccessors.getExchangeItems(modelid=model_id, exchange_item_type=model_type.upper(), returnGeoms=False)
+        if items is not None:
+            return [item['name'] for item in items]
+        return [""]
+
+    def get_input_combo_choices(self):
+        items = []
+        for i in range(self.input_combobox.GetCount()):
+            items.append(self.input_combobox.GetString(i))
+        return items
+
+    def get_output_combo_choies(self):
+        items = []
+        for i in range(self.output_combobox.GetCount()):
+            items.append(self.output_combobox.GetString(i))
+        return items
+
     def get_input_exchange_item_by_id(self, id):
         return engineAccessors.getExchangeItems(id, 'INPUT')
 
@@ -64,13 +91,12 @@ class SpatialCtrl(SpatialView):
             igeoms = {}
             for item in exchange_item:
                 name = item['name']
-                # geoms = [geometry.fromWKB(g['wkb']) for g in item['geom']]
                 geoms = [ogr.CreateGeometryFromWkb(g) for g in item['geometry']['wkb']]
                 igeoms[name] = geoms
             return igeoms
         else:
             elog.debug("Exchange item must be a list of dictionaries")
-            elog.debug("Exchange item may be done")
+            elog.debug("Exchange item may be None")
             return {}
 
     def get_geoms_by_name(self, name):
@@ -79,31 +105,88 @@ class SpatialCtrl(SpatialView):
 
         if name in self.__output_data:
             return self.__output_data[name]
-
         return None
+
+    def get_item_in_raw_data(self, raw_data, item):
+        if raw_data:
+            for data in raw_data:
+                if data.has_key("name"):
+                    if data["name"] == item:
+                        return data
+        return None  # None if item not found in raw_data
+
+    def get_selected_input_exchange_item(self):
+        if self.input_combobox.GetValue() == "---":
+            return {}
+
+        return {self.input_combobox.GetValue(): self.__input_data[self.input_combobox.GetValue()][0]}
+
+
+    def get_selected_output_exchange_item(self):
+        if self.output_combobox.GetValue() == "---":
+            return {}
+
+        return {self.output_combobox.GetValue(): self.__output_data[self.output_combobox.GetValue()][0]}
+
+    def on_combo(self, event):
+        self.clear_plot()
+        if self.input_combobox.GetValue() == "---":
+            self.input_legend_label = ""
+        else:
+            self.input_legend_label = self.input_combobox.GetValue()
+            self.update_plot(self.input_combobox.GetValue())
+            self.update_input_table()
+
+        if self.output_combobox.GetValue() == "---":
+            self.output_legend_label = ""
+        else:
+            self.output_legend_label = self.output_combobox.GetValue()
+            self.update_plot(self.output_combobox.GetValue())
+            self.update_output_table()
+
+    def plot_polygon(self, data, color):
+        poly_list = []
+        reference = data[0].GetGeometryRef(0)
+        points = numpy.array(reference.GetPoints())
+        a = tuple(map(tuple, points[:, 0:2]))
+        poly_list.append(a)
+
+        p_coll = PolyCollection(poly_list, closed=True, facecolor=color, alpha=0.5, edgecolor=None, linewidths=(2,))
+        self.plot.axes.add_collection(p_coll, autolim=True)
+
+    def plot_point(self, data, color):
+        # get x,y points
+        x, y = zip(*[(g.GetX(), g.GetY()) for g in data])
+        self.plot.axes.scatter(x, y, color=color)
+
+    def plot_linestring(self, data):
+        elog.debug("plot_linestring has not been implemented")
 
     def set_data(self, target={}, source={}):  # target is input, source is output
         self.__input_data = target
         self.__output_data = source
 
-    def set_input_selection_data(self, target_name=None):
-        if target_name in self.__input_data:
-            self.input_exchange_item = self.__input_data[target_name]
-            self.target_name = target_name
-            self.input_legend_label = target_name
+    # def set_input_selection_data(self, target_name=None):
+    #     if target_name in self.__input_data:
+    #         self.input_exchange_item = self.__input_data[target_name]
+    #         self.target_name = target_name
+    #         self.input_legend_label = target_name
 
-    def set_output_selection_data(self, source_name=None):
-        #  example of source name is some_value or random POLYGON 10-100
-        if source_name in self.__output_data:
-            self.output_exchange_item = self.__output_data[source_name]
-            self.source_name = source_name
-            self.output_legend_label = source_name
+    # def set_output_selection_data(self, source_name=None):
+    #     #  example of source name is some_value or random POLYGON 10-100
+    #     if source_name in self.__output_data:
+    #         self.output_exchange_item = self.__output_data[source_name]
+    #         self.source_name = source_name
+    #         self.ouself.output_combobox.GetValue()tput_legend_label = source_name
 
-    def get_color_by_plot_name(self, name):
-        if name in self.__input_data:
-            return "#019477"
-        if name in self.__output_data:
-            return "#0DACFF"
+    def set_legend(self, location=0):
+        labels = []
+        if self.input_legend_label:
+            labels.append(self.input_legend_label)
+        if self.output_legend_label:
+            labels.append(self.output_legend_label)
+
+        self.plot.axes.legend(labels, loc=location)
 
     def update_plot(self, data_in, plot_title=""):
         # Data_in is the variable name
@@ -134,31 +217,26 @@ class SpatialCtrl(SpatialView):
         self.plot.axes.margins(0.1)
         self.plot.reDraw()
 
-    def plot_polygon(self, data, color):
-        poly_list = []
-        reference = data[0].GetGeometryRef(0)
-        points = numpy.array(reference.GetPoints())
-        a = tuple(map(tuple, points[:, 0:2]))
-        poly_list.append(a)
+    def update_input_table(self):
+        item = self.get_selected_input_exchange_item()
+        raw_data = self.get_item_in_raw_data(self.raw_input_data, item.keys()[0])
+        if raw_data:
+            self.edit_grid("input", 1, 1, item.keys())
+            self.edit_grid("input", 2, 1, item.values()[0].GetGeometryName())
+            self.edit_grid("input", 3, 1, item.values()[0].GetCoordinateDimension())
+            self.edit_grid("input", 4, 1, raw_data["geometry"]["extent"])
+            self.edit_grid("input", 5, 1, raw_data["geometry"]["count"])
+        else:
+            elog.debug("Raw data is None, failed to update table")
 
-        p_coll = PolyCollection(poly_list, closed=True, facecolor=color, alpha=0.5, edgecolor=None, linewidths=(2,))
-        self.plot.axes.add_collection(p_coll, autolim=True)
-
-    def plot_point(self, data, color):
-        # get x,y points
-        x, y = zip(*[(g.GetX(), g.GetY()) for g in data])
-        self.plot.axes.scatter(x, y, color=color)
-
-
-
-    def plot_linestring(self, data):
-        elog.debug("plot_linestring has not been implemented")
-
-    def set_legend(self, location=0):
-        labels = []
-        if self.input_legend_label:
-            labels.append(self.input_legend_label)
-        if self.output_legend_label:
-            labels.append(self.output_legend_label)
-
-        self.plot.axes.legend(labels, loc=location)
+    def update_output_table(self):
+        item = self.get_selected_output_exchange_item()
+        raw_data = self.get_item_in_raw_data(self.raw_output_data, item.keys()[0])
+        if raw_data:
+            self.edit_grid("output", 1, 1, item.keys())
+            self.edit_grid("output", 2, 1, item.values()[0].GetGeometryName())
+            self.edit_grid("output", 3, 1, item.values()[0].GetCoordinateDimension())
+            self.edit_grid("output", 4, 1, raw_data["geometry"]["extent"])
+            self.edit_grid("output", 5, 1, raw_data["geometry"]["count"])
+        else:
+            elog.debug("Raw data is None, failed to update table")

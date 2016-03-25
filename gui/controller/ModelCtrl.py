@@ -20,35 +20,34 @@ class ModelCtrl(ModelView):
             self.setup_spatial(model_id)
 
     def setup_spatial(self, model_id):
+        self.spatial_page.controller.add_input_combo_choices(self.spatial_page.controller.get_exchange_items_names(model_id, "INPUT"))
         iei = self.spatial_page.controller.get_input_exchange_item_by_id(model_id)
         igeoms = self.spatial_page.controller.get_geometries(iei)
+
+        self.spatial_page.controller.add_output_combo_choices(self.spatial_page.controller.get_exchange_items_names(model_id, "OUTPUT"))
         oei = self.spatial_page.controller.get_output_exchange_item_by_id(model_id)
         ogeoms = self.spatial_page.controller.get_geometries(oei)
         self.spatial_page.controller.set_data(target=igeoms, source=ogeoms)
-        if iei:
-            self.spatial_page.controller.set_input_selection_data(target_name=iei[0]['name'])
-            self.spatial_page.controller.input_checkbox.SetValue(True)
-            self.spatial_page.controller.update_plot(iei[0]['name'])
-        else:
-            self.spatial_page.controller.input_checkbox.Disable()
-        if oei:
-            self.spatial_page.controller.set_output_selection_data(source_name=oei[0]['name'])
-            self.spatial_page.controller.output_checkbox.SetValue(True)
-            self.spatial_page.controller.update_plot(oei[0]['name'])
-        else:
-            self.spatial_page.controller.output_checkbox.Disable()
+        # if iei:
+        #     self.spatial_page.controller.set_input_selection_data(target_name=iei[0]['name'])
+        # else:
+        #     self.spatial_page.controller.input_combobox.Disable()
+        # if oei:
+        #     self.spatial_page.controller.set_output_selection_data(source_name=oei[0]['name'])
+        # else:
+        #     self.spatial_page.controller.output_combobox.Disable()
 
-        if self.spatial_page.controller.output_exchange_item:
-            self.spatial_page.controller.edit_grid("output", 1, 1, self.spatial_page.controller.source_name)
-            self.spatial_page.controller.edit_grid("output", 2, 1, self.spatial_page.controller.output_exchange_item[0].GetGeometryName())
-            self.spatial_page.controller.edit_grid("output", 3, 1, self.spatial_page.controller.output_exchange_item[0].GetCoordinateDimension())
-            self.spatial_page.controller.edit_grid("output", 5, 1, self.spatial_page.controller.output_exchange_item[0].GetPointCount())
-
-        if self.spatial_page.controller.input_exchange_item:
-            self.spatial_page.controller.edit_grid("input", 1, 1, self.spatial_page.controller.target_name)
-            self.spatial_page.controller.edit_grid("input", 2, 1, self.spatial_page.controller.input_exchange_item[0].GetGeometryName())
-            self.spatial_page.controller.edit_grid("input", 3, 1, self.spatial_page.controller.input_exchange_item[0].GetCoordinateDimension())
-            self.spatial_page.controller.edit_grid("input", 5, 1, self.spatial_page.controller.input_exchange_item[0].GetPointCount())
+        # if self.spatial_page.controller.output_exchange_item:
+        #     self.spatial_page.controller.edit_grid("output", 1, 1, self.spatial_page.controller.source_name)
+        #     self.spatial_page.controller.edit_grid("output", 2, 1, self.spatial_page.controller.output_exchange_item[0].GetGeometryName())
+        #     self.spatial_page.controller.edit_grid("output", 3, 1, self.spatial_page.controller.output_exchange_item[0].GetCoordinateDimension())
+        #     self.spatial_page.controller.edit_grid("output", 5, 1, self.spatial_page.controller.output_exchange_item[0].GetPointCount())
+        #
+        # if self.spatial_page.controller.input_exchange_item:
+        #     self.spatial_page.controller.edit_grid("input", 1, 1, self.spatial_page.controller.target_name)
+        #     self.spatial_page.controller.edit_grid("input", 2, 1, self.spatial_page.controller.input_exchange_item[0].GetGeometryName())
+        #     self.spatial_page.controller.edit_grid("input", 3, 1, self.spatial_page.controller.input_exchange_item[0].GetCoordinateDimension())
+        #     self.spatial_page.controller.edit_grid("input", 5, 1, self.spatial_page.controller.input_exchange_item[0].GetPointCount())
 
     def update_plot_output(self, event):
         received_data = event.EventObject.StringSelection

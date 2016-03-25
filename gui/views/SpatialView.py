@@ -20,11 +20,11 @@ class SpatialView:
 
         # SETUP OF MIDDLE PANEL
         sizer_middle_panel = wx.BoxSizer(wx.HORIZONTAL)
-        self.input_checkbox = wx.CheckBox(parent=middle_panel, label="Input Exchange Item: ")
-        self.output_checkbox = wx.CheckBox(parent=middle_panel, label="Output Exchange Item: ")
+        self.input_combobox = wx.ComboBox(parent=middle_panel, choices=["---"])
+        self.output_combobox = wx.ComboBox(parent=middle_panel, choices=["---"])
         sizer_middle_panel.AddSpacer(5)
-        sizer_middle_panel.Add(self.input_checkbox, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
-        sizer_middle_panel.Add(self.output_checkbox, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
+        sizer_middle_panel.Add(self.input_combobox, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
+        sizer_middle_panel.Add(self.output_combobox, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
         middle_panel.SetSizer(sizer_middle_panel)
 
 

@@ -299,33 +299,14 @@ class LinkCtrl(LinkView):
         ogeom = controller.get_geometries(oei)
 
         controller.set_data(target=igeom, source=ogeom)
-        # controller.set_selection_data(target_name=self.__selected_link.iei, source_name=self.__selected_link.oei)
-        if iei:
-            controller.set_input_selection_data(target_name=iei[0]['name'])
-        if oei:
-            controller.set_output_selection_data(source_name=oei[0]['name'])
-        controller.update_plot(self.__selected_link.oei)
-        controller.update_plot(self.__selected_link.iei)
-        controller.input_checkbox.SetValue(True)
-        controller.output_checkbox.SetValue(True)
+        controller.raw_input_data = iei
+        controller.raw_output_data = oei
+
+        controller.add_input_combo_choices(igeom.keys())
+        controller.add_output_combo_choices(ogeom.keys())
 
         title = self.getOutputModelText() + " --> " + self.getInputModelText()
         frame.SetTitle(title)
-
-        if controller.output_exchange_item:
-            controller.edit_grid("output", 1, 1, controller.source_name)
-            controller.edit_grid("output", 2, 1, controller.output_exchange_item[0].GetGeometryName())
-            controller.edit_grid("output", 3, 1, controller.output_exchange_item[0].GetCoordinateDimension())
-            controller.edit_grid("output", 4, 1, oei[0]['geometry']['extent'])
-            # oei[0]['geometry']['count'] is the same as len(controller.output_exchange_item)
-            controller.edit_grid("output", 5, 1, oei[0]['geometry']['count'])
-
-        if controller.input_exchange_item:
-            controller.edit_grid("input", 1, 1, controller.target_name)
-            controller.edit_grid("input", 2, 1, controller.input_exchange_item[0].GetGeometryName())
-            controller.edit_grid("input", 3, 1, controller.input_exchange_item[0].GetCoordinateDimension())
-            controller.edit_grid("input", 4, 1, iei[0]['geometry']['extent'])
-            controller.edit_grid("input", 5, 1, iei[0]['geometry']['count'])
 
         frame.Show()
 

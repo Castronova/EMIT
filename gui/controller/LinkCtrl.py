@@ -287,7 +287,7 @@ class LinkCtrl(LinkView):
     def on_plot_geometries(self, event):
         from gui.controller.SpatialCtrl import SpatialCtrl
 
-        frame = wx.Frame(self.parent, size=(625, 625), style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE)
+        frame = wx.Frame(self.parent, size=(630, 630), style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE)
         controller = SpatialCtrl(frame)
 
         # input exchange item -> iei

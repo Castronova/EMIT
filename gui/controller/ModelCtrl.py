@@ -19,45 +19,29 @@ class ModelCtrl(ModelView):
         if self.spatial:
             self.setup_spatial(model_id)
 
-    def setup_spatial(self, model_id):
-        self.spatial_page.controller.add_input_combo_choices(self.spatial_page.controller.get_exchange_items_names(model_id, "INPUT"))
-        iei = self.spatial_page.controller.get_input_exchange_item_by_id(model_id)
-        igeoms = self.spatial_page.controller.get_geometries(iei)
+    def ConfigurationDisplay(self, fileExtension):
+        self.current_file = fileExtension
+        filehandle=open(fileExtension)
+        self.xmlTextCtrl.SetValue(filehandle.read())
+        filehandle.close()
+        self.SetTitle("File Configurations (Read-Only)")
 
-        self.spatial_page.controller.add_output_combo_choices(self.spatial_page.controller.get_exchange_items_names(model_id, "OUTPUT"))
-        oei = self.spatial_page.controller.get_output_exchange_item_by_id(model_id)
-        ogeoms = self.spatial_page.controller.get_geometries(oei)
-        self.spatial_page.controller.set_data(target=igeoms, source=ogeoms)
-        # if iei:
-        #     self.spatial_page.controller.set_input_selection_data(target_name=iei[0]['name'])
-        # else:
-        #     self.spatial_page.controller.input_combobox.Disable()
-        # if oei:
-        #     self.spatial_page.controller.set_output_selection_data(source_name=oei[0]['name'])
-        # else:
-        #     self.spatial_page.controller.output_combobox.Disable()
+    def OnSave(self, event):
 
-        # if self.spatial_page.controller.output_exchange_item:
-        #     self.spatial_page.controller.edit_grid("output", 1, 1, self.spatial_page.controller.source_name)
-        #     self.spatial_page.controller.edit_grid("output", 2, 1, self.spatial_page.controller.output_exchange_item[0].GetGeometryName())
-        #     self.spatial_page.controller.edit_grid("output", 3, 1, self.spatial_page.controller.output_exchange_item[0].GetCoordinateDimension())
-        #     self.spatial_page.controller.edit_grid("output", 5, 1, self.spatial_page.controller.output_exchange_item[0].GetPointCount())
-        #
-        # if self.spatial_page.controller.input_exchange_item:
-        #     self.spatial_page.controller.edit_grid("input", 1, 1, self.spatial_page.controller.target_name)
-        #     self.spatial_page.controller.edit_grid("input", 2, 1, self.spatial_page.controller.input_exchange_item[0].GetGeometryName())
-        #     self.spatial_page.controller.edit_grid("input", 3, 1, self.spatial_page.controller.input_exchange_item[0].GetCoordinateDimension())
-        #     self.spatial_page.controller.edit_grid("input", 5, 1, self.spatial_page.controller.input_exchange_item[0].GetPointCount())
+        dlg = wx.MessageDialog(None, 'Are you sure you would like to overwrite?', 'Question', wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
 
-    def update_plot_output(self, event):
-        received_data = event.EventObject.StringSelection
-        self.TopLevelParent.plotPanel.set_selection_output(received_data)
-        self.TopLevelParent.plotPanel.updatePlot()
+        if dlg.ShowModal() !=wx.ID_NO:
+            Publisher.subscribe(self.OnSave, 'textsavepath')
 
-    def update_plot_input(self, event):
-        received_data = event.EventObject.StringSelection
-        self.TopLevelParent.plotPanel.set_selection_input(received_data)
-        self.TopLevelParent.plotPanel.updatePlot()
+            # Grab the content to be saved
+            itcontains = self.TextDisplay.GetValue().encode('utf-8').strip()
+
+            # Open the file for write, write, close
+            filehandle=open((self.current_file),'w')
+            filehandle.write(itcontains)
+            filehandle.close()
+
+            self.Close()
 
     def PopulateEdit(self, fileExtension):
 
@@ -67,13 +51,6 @@ class ModelCtrl(ModelView):
         self.TextDisplay.SetValue(filehandle.read())
         filehandle.close()
         self.SetTitle("Editor")
-
-    def ConfigurationDisplay(self, fileExtension):
-        self.current_file = fileExtension
-        filehandle=open(fileExtension)
-        self.xmlTextCtrl.SetValue(filehandle.read())
-        filehandle.close()
-        self.SetTitle("File Configurations (Read-Only)")
 
     def PopulateSummary(self, fileExtension):
 
@@ -172,19 +149,16 @@ class ModelCtrl(ModelView):
             else:
                 self.DetailTree.AppendItem(g,d[section])
 
-    def OnSave(self, event):
+    def setup_spatial(self, model_id):
+        iei = self.spatial_page.controller.get_input_exchange_item_by_id(model_id)
+        igeoms = self.spatial_page.controller.get_geometries(iei)
 
-        dlg = wx.MessageDialog(None, 'Are you sure you would like to overwrite?', 'Question', wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
+        oei = self.spatial_page.controller.get_output_exchange_item_by_id(model_id)
+        ogeoms = self.spatial_page.controller.get_geometries(oei)
 
-        if dlg.ShowModal() !=wx.ID_NO:
-            Publisher.subscribe(self.OnSave, 'textsavepath')
+        self.spatial_page.controller.set_data(target=igeoms, source=ogeoms)
+        self.spatial_page.controller.raw_input_data = iei
+        self.spatial_page.controller.raw_output_data = oei
 
-            # Grab the content to be saved
-            itcontains = self.TextDisplay.GetValue().encode('utf-8').strip()
-
-            # Open the file for write, write, close
-            filehandle=open((self.current_file),'w')
-            filehandle.write(itcontains)
-            filehandle.close()
-
-            self.Close()
+        self.spatial_page.controller.add_input_combo_choices(igeoms.keys())
+        self.spatial_page.controller.add_output_combo_choices(ogeoms.keys())

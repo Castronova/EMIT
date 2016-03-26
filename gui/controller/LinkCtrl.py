@@ -33,6 +33,8 @@ class LinkCtrl(LinkView):
 
         # class link variables used to save link
         self.__selected_link = None
+
+        #  holds the links that will be deleted when deleting->save and close
         self.links_to_delete = []
 
         self.__link_source_id = self.output_component['id']
@@ -45,9 +47,6 @@ class LinkCtrl(LinkView):
         self.InitBindings()
 
         self.__checkbox_states = [None, None]
-
-        #  holds the links that will be deleted when deleting->save and close
-
 
     def InitBindings(self):
         self.LinkNameListBox.Bind(wx.EVT_LISTBOX, self.OnChange)

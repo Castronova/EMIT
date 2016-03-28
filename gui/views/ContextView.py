@@ -424,7 +424,8 @@ class SimulationContextMenu(ContextMenu):
                     sPrint('Found %d result records: ' % len(results), MessageType.DEBUG)
 
                 if len(results) == 0:
-                    sPrint('No results found for simulation id %s. There must be something wrong with the database :(' % simulationID, MessageType.ERROR)
+                    sPrint('No results found for simulation id %s.' % simulationID, MessageType.ERROR)
+                    return {}
 
                 res = {}
                 for r in results:

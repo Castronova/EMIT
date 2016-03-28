@@ -57,6 +57,7 @@ def update_links(obj, links, output_exchange_items, spatial_maps):
 
 
 def update_links_feed_forward(obj, links, output_exchange_items, spatial_maps):
+    # todo: this help text is out of date
     """
     Updates the data from source component exchange items to target component exchange items
     :param obj: a coordinator object
@@ -66,9 +67,7 @@ def update_links_feed_forward(obj, links, output_exchange_items, spatial_maps):
     """
 
     links_list = links.items()
-    link_count = len(links_list)
-    if link_count > 0:
-        sPrint('Found %d links for this model that need updating ' % link_count)
+    sPrint('.. found %d link(s) for this model that need updating ' % len(links_list))
 
     for linkid, link in links_list:
 
@@ -78,7 +77,7 @@ def update_links_feed_forward(obj, links, output_exchange_items, spatial_maps):
         source_model = link.source_component()
         source_item_name = link.source_exchange_item().name()
 
-        sPrint('updating link %s:[%s] --> %s:[%s] ' % (target_model.name(),target_item_name, source_model.name(),
+        sPrint('.. updating link %s:[%s] --> %s:[%s] ' % (target_model.name(),target_item_name, source_model.name(),
                                                        source_item_name), MessageType.INFO)
 
         # get the auto generated key for this link

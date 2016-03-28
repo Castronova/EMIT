@@ -120,9 +120,12 @@ def run_feed_forward(obj, ds=None):
         model_inst.prepare()
 
         if model_inst.status() != stdlib.Status.READY:
-            elog.critical('Cannot continue with simulation because model "%s" has a status of "%s" after the preparation'
-                          ' phase.  Status must be "%s" in order to proceed with simulation '
-                          % (model_inst.name(), model_inst.status(), stdlib.Status.READY))
+            msg = 'Cannot continue with simulation because model "%s" has a status of "%s" after the preparation' \
+                          ' phase.  Status must be "%s" in order to proceed with simulation ' \
+                          % (model_inst.name(), model_inst.status(), stdlib.Status.READY)
+
+            elog.critical(msg)
+            sPrint(msg, MessageType.ERROR)
             return False
 
     # loop through models and execute run
@@ -133,34 +136,23 @@ def run_feed_forward(obj, ds=None):
         # get the current model instance
         model_obj = obj.get_model_by_id(modelid)
         model_inst = model_obj.instance()
-        elog.info('\n' + \
-                  '------------------' + len(model_inst.name()) * '-' + '\n' + \
-                  'Executing module: %s \n' % model_inst.name() + \
-                  '------------------' + len(model_inst.name()) * '-')
+        sPrint('Executing module: %s \n' % model_inst.name(), MessageType.INFO)
 
         #  retrieve inputs from database
-        sPrint("[1 of 4] Retrieving input data... ")
-
+        sPrint("[1 of 3] Retrieving input data... ")
         input_data = model_inst.inputs()
 
-        sPrint("[2 of 4] Performing calculation... ")
-
-
         # pass these inputs ts to the models' run function
+        sPrint("[2 of 3] Performing calculation... ")
         model_inst.run(input_data)
 
-        # save these results
-        # sPrint("[3 of 4] Saving calculations to database... ")
-
-
         # update links
-        sPrint("[4 of 4] Updating links... ")
-
+        sPrint("[3 of 3] Updating links... ")
         oei = model_inst.outputs()
         update.update_links_feed_forward(obj, links[modelid], oei, spatial_maps)
 
         model_inst.finish()
-        elog.info('module simulation completed in %3.2f seconds' % (time.time() - st))
+        elog.info('..module simulation completed in %3.2f seconds' % (time.time() - st))
 
     sPrint('------------------------------------------\n' +
               '         Simulation Summary \n' +
@@ -181,7 +173,7 @@ def run_feed_forward(obj, ds=None):
         except Exception, e:
             elog.error('An error was encountered when connecting to the database to save the simulation results: %s' % e)
             sPrint('An error was encountered when connecting to the database to save the simulation results.', MessageType.ERROR)
-            return
+            return 0
 
         # insert data!
         for modelid in exec_order:
@@ -196,6 +188,8 @@ def run_feed_forward(obj, ds=None):
             items = []
             for oei in oeis:
                 items.append(model_inst.outputs()[oei])
+
+            sPrint('..found %d items to save for model %d' % (len(items), model_name), MessageType.INFO)
 
             if len(items) > 0:
                 # get config parameters
@@ -214,19 +208,7 @@ def run_feed_forward(obj, ds=None):
                                      name = model_inst.name()
                                      )
 
-        # description = config_params['general'][0]['description']
-        # simstart = datetime.datetime.strptime(config_params['general'][0]['simulation_start'], '%m/%d/%Y %H:%M:%S' )
-        # simend = datetime.datetime.strptime(config_params['general'][0]['simulation_end'], '%m/%d/%Y %H:%M:%S' )
-        # modelcode = config_params['model'][0]['code']
-        # modelname = config_params['model'][0]['name']
-        # modeldesc = config_params['model'][0]['description']
-        # timestepvalue = config_params['time_step'][0]['value']
-        #
-        # # default to a timestep of seconds
-        # timestepname = config_params['time_step'][0].get('name') or 'seconds'
-        # timestepabbv = config_params['time_step'][0].get('abbreviation') or ' '
-        #
-        elog.info('Saving Complete, elapsed time = %3.5f' % (time.time() - st))
+        sPrint('Saving Complete, elapsed time = %3.5f' % (time.time() - st), MessageType.INFO)
 
 def run_time_step(obj, ds=None):
     # store db sessions

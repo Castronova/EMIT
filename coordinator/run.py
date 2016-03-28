@@ -45,6 +45,7 @@ def run_feed_forward(obj, ds=None):
 
     # determine execution order
     elog.info('Determining execution order... ')
+    sPrint('Determining execution order... ', MessageType.INFO)
 
     exec_order = obj.determine_execution_order()
     for i in range(0, len(exec_order)):
@@ -75,6 +76,7 @@ def run_feed_forward(obj, ds=None):
 
     # todo:  move this into function
     elog.info('Generating spatial maps... ')
+    sPrint('Generating spatial maps... ')
 
     for modelid in exec_order:
 
@@ -90,28 +92,25 @@ def run_feed_forward(obj, ds=None):
 
             # set default spatial interpolation to ExactMatch
             if link.spatial_interpolation() is None:
+                sPrint('Spatial interpolation not provided, using the default mapping approach:  \'Spatial Index\'', MessageType.WARNING)
                 link.spatial_interpolation(spatial_index())
 
             spatial_interp = link.spatial_interpolation()
             source_geoms = source.getGeometries2()
             target_geoms = target.getGeometries2()
 
+
+            if len(source_geoms) == 0:
+                sPrint('Cannot continue simulation, %s -- %s contains 0 geometries' % link.source_component().name(), source.name() )
+            if len(target_geoms) == 0:
+                sPrint('Cannot continue simulation, %s -- %s contains 0 geometries' % link.target_component().name(), target.name())
+
             # todo: remove these two lines b/c they use deprecated function calls!
-            if len(source_geoms) == 0: source_geoms = source.get_all_datasets().keys()
-            if len(target_geoms) == 0: target_geoms = target.get_all_datasets().keys()
+            #if len(source_geoms) == 0: source_geoms = source.get_all_datasets().keys()
+            #if len(target_geoms) == 0: target_geoms = target.get_all_datasets().keys()
 
             # save the spatial mapping based on link key
             spatial_maps[key] = spatial_interp.transform(source_geoms, target_geoms)
-
-            # # store model db sessions
-            # session = obj.get_model_by_id(modelid).get_instance().session()
-            # if session is None:
-            #     try:  # this is necessary if no db connection exists
-            #         session = obj.get_default_db()['session']
-            #     except:
-            #         pass
-            # db_sessions[modelid] = postgresdb(session)
-
 
     # todo:  move this into function
     # prepare all models
@@ -151,7 +150,7 @@ def run_feed_forward(obj, ds=None):
         model_inst.run(input_data)
 
         # save these results
-        sPrint("[3 of 4] Saving calculations to database... ")
+        # sPrint("[3 of 4] Saving calculations to database... ")
 
 
         # update links

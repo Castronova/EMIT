@@ -4,7 +4,6 @@ import sys
 import threading
 
 import wx
-from odm2api.ODMconnection import dbconnection
 from wx.lib.pubsub import pub as Publisher
 
 import coordinator.engineAccessors as engine
@@ -25,8 +24,9 @@ from webservice import wateroneflow
 import uuid
 import ConfigParser
 from api_old.ODMconnection import  dbconnection, SessionFactory
+from odm2api.ODMconnection import dbconnection as dbconnection2
 import xml.etree.ElementTree
-
+from sprint import *
 
 
 class viewLowerPanel:
@@ -482,18 +482,26 @@ class SimulationDataTab(DataSeries):
             if db['name'] == selected_db:
                 simulations = None
 
-                if db['args']['engine'] == 'sqlite':
-                    session = dbconnection.createConnection(engine=db['args']['engine'], address=db['args']['address'])
-                    self.conn = db2.connect(session)
-                    simulations = self.conn.getAllSimulations()
-                    isSqlite = True
-                    self.conn.getCurrentSession()
-                else:
-                    session = dbUtilities.build_session_from_connection_string(db['connection_string'])
-                    # build the database session
+                # connect to database
+                try:
+                    dargs = db['args']
+                    if dargs['engine'] == 'sqlite':
+                        session = dbconnection2.createConnection(engine=dargs['engine'], address=dargs['address'],
+                                                            db=dargs['db'], user=dargs['user'], password=dargs['pwd'])
+                        self.conn = db2.connect(session)
+                        simulations = self.conn.getAllSimulations()
+                        isSqlite = True
+                        self.conn.getCurrentSession()
+                    else:
+                        session = dbUtilities.build_session_from_connection_string(db['connection_string'])
+                        # build the database session
 
-                    u = dbapi.utils(session)
-                    simulations = u.getAllSimulations()
+                        u = dbapi.utils(session)
+                        simulations = u.getAllSimulations()
+                except Exception, e:
+                    msg = 'Encountered an error when connecting to database %s: %s' % (db['name'], e)
+                    elog.error(msg)
+                    sPrint(msg, MessageType.ERROR)
 
 
                 #     # gui_utils.connect_to_db()

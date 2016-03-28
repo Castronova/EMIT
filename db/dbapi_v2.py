@@ -17,12 +17,12 @@ from sqlalchemy.orm import class_mapper
 
 from coordinator.emitLogging import elog
 
-def connect(session):
+def connect(sessionFactory):
 
-    driver = session.engine.url.drivername
+    driver = sessionFactory.engine.url.drivername
 
     if 'sqlite' in driver:
-        return sqlite(session)
+        return sqlite(sessionFactory)
 
     # todo: implement MsSQL in dbapi_v2
     elif 'mssql' in driver:
@@ -244,13 +244,22 @@ class sqlite():
                 #     flattened_ids.extend(resultids)     # [id1, id2, ..., idn, id1, id2, ..., idn, ...]
 
                 st = time.time()
-                sPrint('Bulk Inserting Timeseries Results Values (%d records)' % len(flattened_ids), MessageType.INFO)
-                self.insert_timeseries_result_values_bulk(  ResultIDs = resultid, TimeAggregationInterval= timestep_value,
+                try:
+                    self.insert_timeseries_result_values_bulk(  ResultIDs = resultid, TimeAggregationInterval= timestep_value,
                                                                       TimeAggregationIntervalUnitsID=timestepunit.UnitsID,
                                                                       DataValues = values, ValueDateTimes = flattened_dates,
-                                                                      ValueDateTimeUTCOffset=-6, CensorCodeCV='nc', QualityCodeCV='unknown')
-                bulk = time.time() - st
-                sPrint('Elapsed time: %3.5f sec' % bulk, MessageType.INFO)
+                                                                      ValueDateTimeUTCOffset=-6, CensorCodeCV='nc',
+                                                                QualityCodeCV='unknown')
+                    bulk = time.time() - st
+                    sPrint('Bulk Inserting Timeseries Results Values (%d records)... %3.5 seconds' % (len(flattened_ids), bulk), MessageType.INFO)
+
+                except Exception, e:
+                    msg = 'Encountered an error while inserting timeseries result values: %s' %e
+                    elog.error(msg)
+                    sPrint(msg, MessageType.ERROR)
+                    return None
+
+
 
 
         # create the model instance

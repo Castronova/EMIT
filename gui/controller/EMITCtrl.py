@@ -42,7 +42,7 @@ class EMITCtrl(ViewEMIT):
         engine.connectToDbFromFile(dbtextfile=connections_txt)
 
         # load the local database into the engine
-        engine.connectToDb(title='ODM2 SQLite (local)',desc='Local SQLite database',engine='sqlite',address=filepath, name=None, user=None, pwd=None)
+        engine.connectToDb(title='ODM2 SQLite (local)',desc='Local SQLite database',engine='sqlite',address=filepath, name=None, user=None, pwd=None, default=True)
 
         self.checkUsers()
 

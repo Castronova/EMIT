@@ -14,6 +14,7 @@ from utilities.status import Status
 import update
 from coordinator.emitLogging import elog
 from odm2api.ODMconnection import dbconnection
+import database
 
 import db.dbapi_v2 as dbv2
 
@@ -50,26 +51,6 @@ def run_feed_forward(obj, ds=None):
     exec_order = obj.determine_execution_order()
     for i in range(0, len(exec_order)):
         elog.info('%d.) %s' % (i + 1, obj.get_model_by_id(exec_order[i]).name()))
-
-
-
-    # # store model db sessions
-    # for modelid in exec_order:
-    #     session = obj.get_model_by_id(modelid).get_instance().session()
-    #
-    #     if session is None:
-    #         try:  # this is necessary if no db connection exists
-    #             session = obj.get_default_db()['session']
-    #
-    #             # todo: need to consider other databases too!
-    #             db_sessions[modelid] = postgresdb(session)
-    #         except:
-    #             db_sessions[modelid] = None
-    #
-    #             # todo: this should be stored in the model instance
-    #             # model_obj = obj.get_model_by_id(modelid)
-    #             # model_inst = model_obj.get_instance()
-    #             # model_inst.session
 
     links = {}
     spatial_maps = {}
@@ -161,54 +142,59 @@ def run_feed_forward(obj, ds=None):
               'Simulation duration: %3.2f seconds\n' % (time.time() - sim_st) +
               '------------------------------------------')
 
-    # save results if ds is provided
-    # todo: move this outside run.py
-    if ds is not None:
-        elog.info('Saving Simulation Results...')
-        st = time.time()
 
-        try:
-            # build an instance of dbv22
-            db = dbv2.connect(ds.session)
-        except Exception, e:
-            elog.error('An error was encountered when connecting to the database to save the simulation results: %s' % e)
-            sPrint('An error was encountered when connecting to the database to save the simulation results.', MessageType.ERROR)
-            return 0
+    # save simulation results
+    model_ids = exec_order
+    database.save(obj, ds, model_ids)
 
-        # insert data!
-        for modelid in exec_order:
-
-            # get the current model instance
-            model_obj = obj.get_model_by_id(modelid)
-            model_inst = model_obj.instance()
-            model_name = model_inst.name()
-
-            # get the output exchange items to save for this model
-            oeis =  ds.datasets[model_name]
-            items = []
-            for oei in oeis:
-                items.append(model_inst.outputs()[oei])
-
-            sPrint('..found %d items to save for model %d' % (len(items), model_name), MessageType.INFO)
-
-            if len(items) > 0:
-                # get config parameters
-                config_params=model_obj.get_config_params()
-
-
-                db.create_simulation(coupledSimulationName=ds.simulationName,
-                                     user_obj=ds.user,
-                                     config_params=config_params,
-                                     ei=items,
-                                     simulation_start = model_inst.simulation_start(),
-                                     simulation_end = model_inst.simulation_end(),
-                                     timestep_value = model_inst.time_step(),
-                                     timestep_unit = 'seconds',
-                                     description = model_inst.description(),
-                                     name = model_inst.name()
-                                     )
-
-        sPrint('Saving Complete, elapsed time = %3.5f' % (time.time() - st), MessageType.INFO)
+    # # save results if ds is provided
+    # # todo: move this outside run.py
+    # if ds is not None:
+    #     elog.info('Saving Simulation Results...')
+    #     st = time.time()
+    #
+    #     try:
+    #         # build an instance of dbv22
+    #         db = dbv2.connect(ds.session)
+    #     except Exception, e:
+    #         elog.error('An error was encountered when connecting to the database to save the simulation results: %s' % e)
+    #         sPrint('An error was encountered when connecting to the database to save the simulation results.', MessageType.ERROR)
+    #         return 0
+    #
+    #     # insert data!
+    #     for modelid in exec_order:
+    #
+    #         # get the current model instance
+    #         model_obj = obj.get_model_by_id(modelid)
+    #         model_inst = model_obj.instance()
+    #         model_name = model_inst.name()
+    #
+    #         # get the output exchange items to save for this model
+    #         oeis =  ds.datasets[model_name]
+    #         items = []
+    #         for oei in oeis:
+    #             items.append(model_inst.outputs()[oei])
+    #
+    #         sPrint('..found %d items to save for model %d' % (len(items), model_name), MessageType.INFO)
+    #
+    #         if len(items) > 0:
+    #             # get config parameters
+    #             config_params=model_obj.get_config_params()
+    #
+    #
+    #             db.create_simulation(coupledSimulationName=ds.simulationName,
+    #                                  user_obj=ds.user,
+    #                                  config_params=config_params,
+    #                                  ei=items,
+    #                                  simulation_start = model_inst.simulation_start(),
+    #                                  simulation_end = model_inst.simulation_end(),
+    #                                  timestep_value = model_inst.time_step(),
+    #                                  timestep_unit = 'seconds',
+    #                                  description = model_inst.description(),
+    #                                  name = model_inst.name()
+    #                                  )
+    #
+    #     sPrint('Saving Complete, elapsed time = %3.5f' % (time.time() - st), MessageType.INFO)
 
 def run_time_step(obj, ds=None):
     # store db sessions

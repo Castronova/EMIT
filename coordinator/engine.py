@@ -291,20 +291,14 @@ class Coordinator(object):
 
     def set_default_database(self,db_id=None):
 
-        # set it to the first postgres db
-        if db_id is None:
-            db_id = 'Any PostGreSQL Database'
-            for id,d in self._db.iteritems():
-                if d['args']['engine'] == 'postgresql':
-                    db_id = id
-                    break
-
         try:
             self.__default_db = self._db[db_id]
             self.__default_db['id'] = db_id
-            elog.info('Default database : %s'%self._db[db_id]['connection_string'])
-        except:
-            elog.error('Could not find database: %s'%db_id)
+            sPrint('Default database : %s'%self._db[db_id]['connection_string'], MessageType.INFO)
+        except Exception, e :
+            msg = 'Encountered and error when setting default database: %s' % e
+            elog.error(msg)
+            sPrint(msg, MessageType.ERROR)
 
     def get_new_id(self):
         self.__incr += 1
@@ -314,11 +308,13 @@ class Coordinator(object):
         if self.__default_db is None:
             return None
         else:
-            db = {'name': self.__default_db['name'],
-                  'description': self.__default_db['description'],
-                  'connection_string': self.__default_db['connection_string'],
-                  'id': self.__default_db['id']}
-            return db
+            return self.__default_db
+
+            # db = {'name': self.__default_db['name'],
+            #       'description': self.__default_db['description'],
+            #       'connection_string': self.__default_db['connection_string'],
+            #       'id': self.__default_db['id']}
+            # return db
 
     def add_model(self, id=None, attrib=None):
         """
@@ -1090,35 +1086,25 @@ class Coordinator(object):
                     elog.info('  |'+self.format_text(l,w,'left')+'|')
                 elog.info('  |'+(w)*'-'+'|')
 
-    def discover_timeseries(self,db_connection_name):
 
-        # if db_connection_name not in self._db:
-        #     print '> [error] could not find database named %s'%db_connection_name
-        #     return 0
-        # else:
-        #     # get the database session
-        #     session = self._db[db_connection_name]['sesssion']
-        #
-        #     # get all timeseries using db api
-        #     from odm2.api.ODM2.Results.services import read
-        #     result_query = read.read(self._db[db_connection_name]['args']['connection_string'])
-        #     ts = result_query.getAllTimeSeriesResults()
-
-            elog.info('test')
-
-    def connect_to_db(self, title, desc, engine, address, name, user, pwd):
+    def connect_to_db(self, title, desc, engine, address, name, user, pwd, default=False):
 
         connection = connect_to_db(title, desc, engine, address, name, user, pwd)
 
         if connection:
-            self.add_db_connection(connection)
-            return {'success':True}
-        else:
-            return {'success':False}
+            dbs = self.add_db_connection(connection)
 
+            if default:
+                self.set_default_database(connection.keys()[0])
+
+            return {'success':True, 'ids':connection.keys()}
+        else:
+            return {'success':False, 'ids':None}
+
+    # todo: remove this function.  we only need connect_to_db, this parsing can be done in gui utils
     def connect_to_db_from_file(self,filepath=None):
 
-        if filepath is None: return {'success':False}
+        if filepath is None: return {'success':False, 'ids':None}
 
         if os.path.isfile(filepath):
             try:
@@ -1134,16 +1120,16 @@ class Coordinator(object):
                 if not self.get_default_db():
                     self.set_default_database()
 
-                return {'success':True}
+                return {'success':True, 'ids':connections.keys()}
             except Exception, e:
                 elog.error(e)
                 elog.error('Could not create connections from file ' + filepath)
                 sPrint('Could not create connection: %s'%e, MessageType.ERROR, PrintTarget.CONSOLE)
 
-                return {'success':False}
+                return {'success':False, 'ids':None}
 
         else:
-            return {'success':False}
+            return {'success':False, 'ids':None}
 
     def create_sqlite_in_memory_database(self):
 

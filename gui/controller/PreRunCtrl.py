@@ -28,13 +28,23 @@ class PreRunViewCtrl(PreRunView):
         self.add_account_button.Bind(wx.EVT_BUTTON, self.OnAddNew)
 
         # populate the database_combo control with known databases
-        dbs = self.getDatabases()
-        db_names = [db['name'] for db in dbs.itervalues()]
-        self.database_combo.AppendItems(db_names)
-        self.database_combo.SetSelection(0)
+        self.setDatabaseComboDefault()
 
         # populate the account droplist with known users
         self.refreshUserAccount()
+
+    def setDatabaseComboDefault(self):
+        dbs = self.getDatabases()
+        db_names = [db['name'] for db in dbs.itervalues()]
+        self.database_combo.AppendItems(db_names)
+        for i in range(0, self.database_combo.GetCount()):
+            if "local" in self.database_combo.GetString(i):
+                self.database_combo.SetSelection(i)
+                return
+
+        # If local is not found set it to the first value
+        self.database_combo.SetSelection(0)
+
 
     def refreshUserAccount(self):
         self.account_combo.Clear()
@@ -159,63 +169,3 @@ class PreRunViewCtrl(PreRunView):
         dlg = UserCtrl(self)
         dlg.CenterOnScreen()
         dlg.ShowModal()
-
-    # def OnOkButton(self, event):
-    #
-    #     usersjson = env_vars.USERS_JSON
-    #     with open(usersjson, 'a') as f:
-    #         self.accountinfo = self.dlg.GetTextBoxValues()
-    #         accounttxt = "[person]\n" \
-    #                      "firstname = " + self.accountinfo[0] + "\n" \
-    #                      + "lastname = " + self.accountinfo[1] + "\n" \
-    #                      + "organizationcode = " + self.accountinfo[2] + "\n" \
-    #                      + "phone = " + self.accountinfo[3] + "\n" \
-    #                      + "email = " + self.accountinfo[4] + "\n" \
-    #                      + "address = " + self.accountinfo[5] + "\n" \
-    #                      + "start_date = " + self.accountinfo[6] + "\n" \
-    #                      + "\n"
-    #     self.RefreshCombo()
-    #
-    #     file.write(accounttxt)
-    #     file.close()
-    #     self.dlg.Close(True)
-
-    # def RefreshCombo(self):
-    #     # Simply appends the item to the combobox
-    #     self.summary_page.accountCombo.AppendItems([self.accountinfo[1]])
-
-    # def LogSimulation(self):
-    #     currentdir = os.path.dirname(os.path.abspath(__file__))
-    #     connections_txt = os.path.abspath(os.path.join(currentdir, '../../log/' + self.logfilename))
-    #     file = open(connections_txt, 'a')
-    #     loginfo = self.summary_page.GetLogValues()
-    #     logtxt = "[Simulation]\n" + \
-    #              "Simulation Name = " + loginfo[0] + "\n" + \
-    #              "Database = " + loginfo[1] + "\n" + \
-    #              "User = " + loginfo[2] + "\n" +\
-    #              "Date = " + time.strftime("%m/%d/%Y") + "\n" + \
-    #              "\n\n"
-    #     file.write(logtxt)
-    #     file.close()
-    #
-    # def CheckSimulationName(self, simname):
-    #     filepath = self.CreatePreRunLogFile()
-    #     file = open(filepath, 'r')
-    #     if simname in file.read():
-    #         file.close()
-    #         return True
-    #     else:
-    #         file.close()
-    #         return False
-    #
-    # def CreatePreRunLogFile(self):
-    #     currentdir = os.path.dirname(os.path.abspath(__file__))
-    #     filepath = os.path.abspath(os.path.join(currentdir, '../../log/' + self.logfilename))
-    #     if os.path.exists(filepath):
-    #         return filepath
-    #     else:
-    #         file = open(filepath, 'w')
-    #         file.close()
-    #         return filepath
-
-

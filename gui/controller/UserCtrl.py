@@ -10,6 +10,9 @@ class UserCtrl(UserView):
         UserView.__init__(self, parent, id=wx.ID_ANY, title="Create New User", size=wx.DefaultSize,
                           pos=wx.DefaultPosition, style=wx.DEFAULT_DIALOG_STYLE | wx.STAY_ON_TOP)
 
+        self.organizations = []
+
+
         # initialize bindings
         self.firstnameTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
         self.lastnameTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
@@ -19,6 +22,25 @@ class UserCtrl(UserView):
         self.addressTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
         self.startDatePicker.Bind(wx.EVT_TEXT, self.OnTextEnter)
         self.okbutton.Bind(wx.EVT_BUTTON, self.onOkBtn)
+        self.addOrganization.Bind(wx.EVT_BUTTON, self.add_organization_clicked)
+        self.removeOrganization.Bind(wx.EVT_BUTTON, self.remove_organization_clicked)
+
+    def add_organization_clicked(self, event):
+        print "You clicked the + button"
+        item = self.organizationTextBox.GetValue()
+        # if item:
+        #     return  # Empty string
+
+        self.organizationListBox.Append(item)  # Refreshes automatically
+
+    def remove_organization_clicked(self, event):
+        print "You clicked the X button"
+        num = self.organizationListBox.GetSelection()
+        if num == -1:
+            return
+
+        item = self.organizationListBox.GetString(num)
+        print item
 
     def setvalues(self, first, last, org, phone, email, address, date):
         self.firstnameTextBox = first

@@ -58,6 +58,7 @@ class ConsoleContextMenu(wx.Menu):
         User clears the gui console
         """
         self.log.Clear()
+        self.parent.resetLineNumbers()
 
 
 class ModelContextMenu(wx.Menu):

@@ -1,0 +1,40 @@
+Input Control file  (0: dat, 1: netcdf, 2: parameter)
+Prec: Precipitation  
+1
+prcp ogrid time 1 
+Ta: Air temperature  
+1
+temp otgrid time 1
+Tmin: Min Air temperature 
+2
+-2		//tmin tmin time 1
+Tmax: Max Air temperature  
+2
+30		//tmax tmax time 1
+v: Wind speed   
+0
+windS.dat 	//windS windSpeed Time 1
+RH: Relative Humidity   
+-1              // -1 compute internally 
+0		RH RH Time 1
+Vp: Air vapor pressure   
+0
+VP.dat		//vp vp time 1
+AP: Air pressure   
+2
+80700.0		//press Pressure Time 3
+Qsi: Incoming shortwave(kJ/m2/hr)   
+2
+0		//srad srad time 1
+Qli: Long wave radiation(kJ/m2/hr)
+2
+0		//lwrad LongwaveRad Time 3
+Qnet: Net radiation(kJ/m2/hr)   
+2  
+0
+Qg: Ground heat flux   (kJ/m2/hr)        
+2               
+0 		    
+Snowalb: Snow albedo (0-1).  (used if ireadalb=1) The albedo of the snow surface to be used when the internal albedo calculations are to be overridden
+2
+0.6

@@ -10,9 +10,6 @@ class UserCtrl(UserView):
         UserView.__init__(self, parent, id=wx.ID_ANY, title="Create New User", size=wx.DefaultSize,
                           pos=wx.DefaultPosition, style=wx.DEFAULT_DIALOG_STYLE | wx.STAY_ON_TOP)
 
-        self.organizations = []
-
-
         # initialize bindings
         self.firstnameTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
         self.lastnameTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
@@ -26,30 +23,18 @@ class UserCtrl(UserView):
         self.removeOrganization.Bind(wx.EVT_BUTTON, self.remove_organization_clicked)
 
     def add_organization_clicked(self, event):
-        print "You clicked the + button"
-        item = self.organizationTextBox.GetValue()
-        # if item:
-        #     return  # Empty string
+        entry = self.organizationTextBox.GetValue()
+        if entry == "" or entry.isspace():
+            return  # Empty string
 
-        self.organizationListBox.Append(item)  # Refreshes automatically
+        self.organizationListBox.Append(entry.strip())  # Strip/remove white space
 
-    def remove_organization_clicked(self, event):
-        print "You clicked the X button"
-        num = self.organizationListBox.GetSelection()
-        if num == -1:
-            return
-
-        item = self.organizationListBox.GetString(num)
-        print item
-
-    def setvalues(self, first, last, org, phone, email, address, date):
-        self.firstnameTextBox = first
-        self.lastnameTextBox = last
-        self.organizationTextBox = org
-        self.phoneTextBox = phone
-        self.emailTextBox = email
-        self.addressTextBox = address
-        self.startDatePicker = date
+    def GetTextBoxValues(self):
+        accountinfo = [self.firstnameTextBox.GetValue(), self.lastnameTextBox.GetValue(),
+                       self.organizationTextBox.GetValue(), self.phoneTextBox.GetValue(),
+                       self.emailTextBox.GetValue(), self.addressTextBox.GetValue(),
+                       self.startDatePicker.GetValue()]
+        return accountinfo
 
     def onOkBtn(self, event):
         # This works by reading the user file and getting all the users.
@@ -114,9 +99,18 @@ class UserCtrl(UserView):
         else:
             self.okbutton.Enable()
 
-    def GetTextBoxValues(self):
-        accountinfo = [self.firstnameTextBox.GetValue(), self.lastnameTextBox.GetValue(),
-                       self.organizationTextBox.GetValue(), self.phoneTextBox.GetValue(),
-                       self.emailTextBox.GetValue(), self.addressTextBox.GetValue(),
-                       self.startDatePicker.GetValue()]
-        return accountinfo
+    def remove_organization_clicked(self, event):
+        index = self.organizationListBox.GetSelection()
+        if index == -1:
+            return
+
+        self.organizationListBox.Delete(index)
+
+    def setvalues(self, first, last, org, phone, email, address, date):
+        self.firstnameTextBox = first
+        self.lastnameTextBox = last
+        self.organizationTextBox = org
+        self.phoneTextBox = phone
+        self.emailTextBox = email
+        self.addressTextBox = address
+        self.startDatePicker = date

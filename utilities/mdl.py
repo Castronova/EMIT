@@ -103,8 +103,7 @@ def build_exchange_items_from_config(params):
                         raise Exception('Could not find file at path %s, generated from relative path %s'%(gen_path, value))
 
                     # parse the geometry from the shapefile
-                    geom, srs = utilities.spatial.read_shapefile(gen_path)
-                    geoms.append(geom)
+                    geoms, srs = utilities.spatial.read_shapefile(gen_path)
 
                 # otherwise it must be a wkt
                 else:

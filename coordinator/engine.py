@@ -1,13 +1,6 @@
-__author__ = 'tonycastronova'
-
-
-#sys.path.append(os.path.abspath(os.path.join(os.path.abspath(__file__),'../../../odm2/src')))
-
-
 import threading
 import sqlalchemy
 import networkx as net
-import os
 from coordinator import help as h
 from utilities.gui import *
 from utilities.mdl import *
@@ -16,18 +9,12 @@ from transform import time_base
 from wrappers import odm2_data
 from wrappers import feed_forward
 from wrappers import time_step
-import datatypes
 import run
-import inspect
-# import coordinator.engineProcessor as engineProcessor
 from api_old.ODM2.Core.services import *
-from copy import deepcopy
 from coordinator.emitLogging import elog
-# import ODM2PythonAPI.src.api as odm2api
 from datetime import datetime
 import users as Users
 import wrappers
-from wrappers import Types
 from sprint import *
 
 """

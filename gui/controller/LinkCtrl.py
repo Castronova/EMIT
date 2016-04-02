@@ -494,18 +494,20 @@ class LinkCtrl(LinkView):
                                        'Question', wx.YES_NO | wx.NO_DEFAULT | wx.ICON_WARNING)
 
             if warning.ShowModal() == wx.ID_YES:
+                self.remove_warning_links(warnings=warnings)
                 self.Destroy()
             else:
                 return
-
-        if self.find_link_direction():
+        result = self.find_link_direction()
+        if result:
             self.replace_canvas_image(image="rightArrowBlue60.png", one_way=True)
-        elif self.find_link_direction() is False:
+        elif result is False:
             self.replace_canvas_image(image="multiArrow.png")
         else:
             self.replace_canvas_image(image="questionMark.png")
 
         self.Destroy()
+
 
     def OutGridToolTip(self, e):
         if e.GetRow() == 2 and e.GetCol() == 1:
@@ -581,6 +583,18 @@ class LinkCtrl(LinkView):
             self.create_one_way_arrow(image, models)
         else:
             self.parent.Parent.createLine(R1=models[0], R2=models[1], image_name=image)
+
+    def remove_warning_links(self, warnings):
+        # If warnings is in __links
+        if set(warnings).issubset(set(self.__links.values())):
+            new_list = collections.OrderedDict()
+            for key, value in self.__links.items():
+                if value not in warnings:
+                    new_list[key] = value
+
+            self.__links = new_list
+            self.refreshLinkNameBox()
+        return
 
 
 class LinkInfo:

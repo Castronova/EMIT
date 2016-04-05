@@ -38,6 +38,9 @@ def run_feed_forward(obj, ds=None):
     # store db sessions
     db_sessions = {}
 
+    # set engine status
+    obj.status.set(stdlib.Status.NOTREADY)
+
     # todo: determine unresolved exchange items (utilities)
 
     sim_st = time.time()
@@ -109,8 +112,14 @@ def run_feed_forward(obj, ds=None):
             sPrint(msg, MessageType.ERROR)
             return False
 
+    # update engine status
+    obj.status.set(stdlib.Status.READY)
+
     # loop through models and execute run
     for modelid in exec_order:
+
+        # update engine status
+        obj.status.set(stdlib.Status.RUNNING)
 
         st = time.time()
 
@@ -143,9 +152,17 @@ def run_feed_forward(obj, ds=None):
               '------------------------------------------')
 
 
+    # update engine status
+    obj.status.set(stdlib.Status.FINISHED)
+
     # save simulation results
     model_ids = exec_order
-    database.save(obj, ds, model_ids)
+    if ds is None:
+        msg = 'Simulation results will not be stored in database because database connection was not provided prior to simulation.'
+        elog.info(msg)
+        sPrint(msg, messageType=MessageType.INFO)
+    else:
+        database.save(obj, ds, model_ids)
 
     # # save results if ds is provided
     # # todo: move this outside run.py

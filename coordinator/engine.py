@@ -21,6 +21,21 @@ from sprint import *
 Purpose: This file contains the logic used to run coupled model simulations
 """
 
+
+class EngineStatus(object):
+
+    def __init__(self):
+        self.__engineStatus = stdlib.Status.UNDEFINED
+    def set(self, status=stdlib.Status.UNDEFINED):
+        if status in dir(stdlib.Status):
+            self.__engineStatus = status
+        else:
+            sPrint('Failed to set engine status.  Status must by instance of stdlib.Status')
+    def get(self):
+        return self.__engineStatus
+    def __str__(self):
+        return 'The Engine status is currently set to: %s' % self.__engineStatus
+
 class Link(object):
     """
     stores info about the linkage between two components
@@ -212,6 +227,7 @@ class Coordinator(object):
         self._db = {}
         self.__default_db = None
         self._dbresults = {}
+        self.status = EngineStatus()
 
 
         # TODO: Get this from gui dialog
@@ -220,6 +236,12 @@ class Coordinator(object):
 
         # initialize multiprocessing classes
         # self.processes = engineProcessor.TaskServer()
+
+    def get_status(self):
+        """
+        Returns: the current status of the Engine.
+        """
+        return self.status.get()
 
     def clear_all(self):
         self.__links = {}

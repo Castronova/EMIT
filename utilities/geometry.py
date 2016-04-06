@@ -53,10 +53,16 @@ def fromWKT(wkt):
         geom = fromGdalLinestring(ogrgeom)
     elif geomtype == stdlib.GeomType.POLYGON:
         geom = fromGdalPolygon(ogrgeom)
+    elif geomtype == stdlib.GeomType.MULTILINESTRING:
+        geom = fromGdalMultiLinestring(ogrgeom)
+    elif geomtype == stdlib.GeomType.MULTIPOINT:
+        geom = fromGdalMultiPoint(ogrgeom)
+    elif geomtype == stdlib.GeomType.MULTIPOLYGON:
+        geom = fromGdalMultiPolygon(ogrgeom)
     else:
         elog.critical("Unsupported geometry type %s, in utilities.geometry.fromWKT" % geomtype)
 
-    return geom[0]
+    return geom
 
 
 def fromGdalPolygon(gdalpolygon):
@@ -117,6 +123,95 @@ def fromGdalLinestring(gdallinestring):
 
     # return the geometry
     return numpy.array([g])
+
+def fromGdalMultiLinestring(gdallinestring):
+    """
+    Builds a stdlib.Geometry object from a GDAL linstring
+    :param gdalpolygon: osgeo.gdal.LineString
+    :return: stdlib.Geometry
+    """
+
+
+    geom_count = gdallinestring.GetGeometryCount()
+    geometry_array = []
+    for i in range(0, geom_count):
+
+        geom = gdallinestring.GetGeometryRef(i)
+
+        # get the points of the linestring
+        pts = geom.GetPoints()
+
+        # create the stdlib geometry
+        g = stdlib.Geometry2(ogr.wkbLineString)
+
+        # add points to the linestring
+        for pt in pts:
+            g.AddPoint(*pt)
+
+        geometry_array.append(g)
+
+    # return the geometry
+    return numpy.array(geometry_array)
+
+def fromGdalMultiPoint(gdalmultipoint):
+    """
+    Builds a stdlib.Geometry object from a GDAL multipoint
+    :param gdalmultipoint: osgeo.gdal.MultiPoint
+    :return: numpy.array(stdlib.Geometry)
+    """
+
+
+    geom_count = gdalmultipoint.GetGeometryCount()
+    geometry_array = []
+    for i in range(0, geom_count):
+
+        geom = gdalmultipoint.GetGeometryRef(i)
+
+        # get the points of the linestring
+        pt = geom.GetPoint()
+
+        # create the stdlib geometry
+        g = stdlib.Geometry2(ogr.wkbPoint)
+
+        # add point to geometry
+        g.AddPoint(*pt)
+
+        geometry_array.append(g)
+
+    # return the geometry
+    return numpy.array(geometry_array)
+
+def fromGdalMultiPolygon(gdalmultipolygon):
+    """
+    Builds a stdlib.Geometry object from a GDAL multipolygon
+    :param gdalmultipolygon: osgeo.gdal.MultiPolygon
+    :return: numpy.array(stdlib.Geometry)
+    """
+
+
+    geom_count = gdalmultipolygon.GetGeometryCount()
+    geometry_array = []
+    for i in range(0, geom_count):
+
+        polygon = gdalmultipolygon.GetGeometryRef(i)
+
+        # create the stdlib geometry
+        g = stdlib.Geometry2(ogr.wkbPolygon)
+
+        ring_count = polygon.GetGeometryCount()
+        for j in range(0, ring_count):
+
+            # get the ring for this geometry
+            ring = polygon.GetGeometryRef(j)
+
+            # add ring to geometry
+            g.AddGeometry(ring)
+
+        # save the polygon geometry in numpy array
+        geometry_array.append(g)
+
+    # return the geometry
+    return numpy.array(geometry_array)
 
 
 def build_point_geometry(x, y, z=0):

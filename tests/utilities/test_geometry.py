@@ -16,7 +16,6 @@ class test_geometry(unittest.TestCase):
     def test_gdal_requirements(self):
         pass
 
-
     # ---------------------------------------
     # TESTS FOR POINT GENERATION
     # ---------------------------------------
@@ -273,7 +272,6 @@ class test_geometry(unittest.TestCase):
             self.assertTrue(isinstance(geoms[i], stdlib.Geometry2))
             self.assertTrue("EMPTY" not in geoms[i].ExportToWkt())
 
-
     def test_polygon_from_wkt(self):
         wkt = 'POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))'
 
@@ -295,3 +293,38 @@ class test_geometry(unittest.TestCase):
             self.assertTrue(isinstance(geoms[i], ogr._object))
             self.assertTrue(isinstance(geoms[i], stdlib.Geometry2))
             self.assertTrue("EMPTY" not in geoms[i].ExportToWkt())
+
+    def test_multipolyline_from_wkt(self):
+        wkt = "MULTILINESTRING ((10 10, 20 20, 10 40), (40 40, 30 30, 40 20, 30 10))"
+
+        geoms = fromWKT(wkt)
+
+        self.assertTrue(len(geoms) > 0)
+        for i in range(len(geoms)):
+            self.assertTrue(isinstance(geoms[i], ogr._object))
+            self.assertTrue(isinstance(geoms[i], stdlib.Geometry2))
+            self.assertTrue("EMPTY" not in geoms[i].ExportToWkt())
+
+    def test_multipoint_from_wkt(self):
+        wkt = "MULTIPOINT ((10 40), (40 30), (20 20), (30 10))"
+
+        geoms = fromWKT(wkt)
+
+        self.assertTrue(len(geoms) > 0)
+        for i in range(len(geoms)):
+            self.assertTrue(isinstance(geoms[i], ogr._object))
+            self.assertTrue(isinstance(geoms[i], stdlib.Geometry2))
+            self.assertTrue("EMPTY" not in geoms[i].ExportToWkt())
+
+    def test_multipolygon_from_wkt(self):
+        wkt = "MULTIPOLYGON (((30 20, 45 40, 10 40, 30 20)),((15 5, 40 10, 10 20, 5 10, 15 5)))"
+
+        geoms = fromWKT(wkt)
+
+        self.assertTrue(len(geoms) > 0)
+        for i in range(len(geoms)):
+            self.assertTrue(isinstance(geoms[i], ogr._object))
+            self.assertTrue(isinstance(geoms[i], stdlib.Geometry2))
+            self.assertTrue("EMPTY" not in geoms[i].ExportToWkt())
+
+

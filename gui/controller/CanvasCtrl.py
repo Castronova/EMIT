@@ -148,11 +148,6 @@ class CanvasCtrl(CanvasView):
                 # Grab both boxes on the ends of the line/link
                 # Update their endpoints and set the arrow to the center of the line
                 r1, r2 = self.links[link]
-                if self.detect_collision(link):
-                    link.Arrow.Hide()
-                else:
-                    link.Arrow.Show()
-
                 if r1 == self.MovingObject:
                     link.Points[0] = self.MovingObject.XY
                     link.Arrow.XY = link.MidPoint
@@ -162,14 +157,6 @@ class CanvasCtrl(CanvasView):
 
             self.lastPos = cursorPos
             self.FloatCanvas.Draw(True)
-
-    def detect_collision(self, link):
-        # Detects collision by the length of the arrow link
-        a = link.Points[0] - link.Points[1]
-        a = abs(a)
-        if a[0] < 180 and a[1] < 120:  # Dimension of box
-            return True
-        return False
 
     def createBox(self, xCoord, yCoord, id=None, name=None, type=datatypes.ModelTypes.TimeStep):
 
@@ -254,6 +241,7 @@ class CanvasCtrl(CanvasView):
 
             # For some reason we have to add line.Arrow in order to bind to it
             self.FloatCanvas.AddObject(line.Arrow)
+            line.Arrow.PutInBackground()
 
             line.Arrow.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
             line.Arrow.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)

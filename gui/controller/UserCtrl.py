@@ -1,19 +1,31 @@
 import wx
-from gui.views.UserView import UserView
+from gui.views.UserView import UserView, OrganizationView
 import datetime
 import os
 import coordinator.users as users
 
+class OrganizationCtrl(OrganizationView):
+    def __init__(self, parent=None):
+        OrganizationView.__init__(self, parent=parent)
+        self.SetTitle("Organization")
+
+        # https://github.com/ODM2/ODM2/blob/master/doc/ODM2Docs/core_organizations.md for a list of types
+        self.choices = ["Federal Agency", "State Agency", "Academic Research Group", "Academic Department", "University", "Non-Profit", "Other"]
+        self.type_combo.SetItems(self.choices)
+        self.cancel_button.Bind(wx.EVT_BUTTON, self.on_cancel)
+
+    def on_cancel(self, event):
+        self.Close()
+
 class UserCtrl(UserView):
     def __init__(self, parent):
 
-        UserView.__init__(self, parent, id=wx.ID_ANY, title="Create New User", size=wx.DefaultSize,
-                          pos=wx.DefaultPosition, style=wx.DEFAULT_DIALOG_STYLE | wx.STAY_ON_TOP)
+        UserView.__init__(self, parent)
 
         # initialize bindings
         self.firstnameTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
         self.lastnameTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
-        self.organizationTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
+        # self.organizationTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
         self.phoneTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
         self.emailTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
         self.addressTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
@@ -23,15 +35,18 @@ class UserCtrl(UserView):
         self.removeOrganization.Bind(wx.EVT_BUTTON, self.remove_organization_clicked)
 
     def add_organization_clicked(self, event):
-        entry = self.organizationTextBox.GetValue()
-        if entry == "" or entry.isspace():
-            return  # Empty string
+        # entry = self.organizationTextBox.GetValue()
+        # if entry == "" or entry.isspace():
+        #     return  # Empty string
+        #
+        # self.organizationListBox.Append(entry.strip())  # Strip/remove white space
+        organization = OrganizationCtrl()
 
-        self.organizationListBox.Append(entry.strip())  # Strip/remove white space
+        pass
 
     def GetTextBoxValues(self):
         accountinfo = [self.firstnameTextBox.GetValue(), self.lastnameTextBox.GetValue(),
-                       self.organizationTextBox.GetValue(), self.phoneTextBox.GetValue(),
+                       self.phoneTextBox.GetValue(),
                        self.emailTextBox.GetValue(), self.addressTextBox.GetValue(),
                        self.startDatePicker.GetValue()]
         return accountinfo
@@ -109,7 +124,7 @@ class UserCtrl(UserView):
     def setvalues(self, first, last, org, phone, email, address, date):
         self.firstnameTextBox = first
         self.lastnameTextBox = last
-        self.organizationTextBox = org
+        # self.organizationTextBox = org
         self.phoneTextBox = phone
         self.emailTextBox = email
         self.addressTextBox = address

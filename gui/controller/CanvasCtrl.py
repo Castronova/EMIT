@@ -223,6 +223,9 @@ class CanvasCtrl(CanvasView):
             sPrint('Cannot link a model to itself', MessageType.ERROR)
             return
         else:
+
+            # image_name = ''
+
             # Get the center of the objects on the canvas
             x1, y1 = R1.XY
             x2, y2 = R2.XY
@@ -750,7 +753,7 @@ class CanvasCtrl(CanvasView):
 
         total = len(models) + len(datamodels) + len(self.models) + self.failed_models
 
-        waitingThread = threading.Thread(target=self.waiting, args=(total, links), name="LoadLinks")
+        waitingThread = threading.Thread(target=self.waitForModelLoading, args=(total, links), name="LoadLinks")
         self.logicCanvasThreads[waitingThread.name] = waitingThread
         waitingThread.start()
 
@@ -776,7 +779,7 @@ class CanvasCtrl(CanvasView):
             # draw the model
             wx.CallAfter(self.FloatCanvas.Draw)
 
-    def waiting(self, total, links):
+    def waitForModelLoading(self, total, links):
         #  This method waits for all the models in the file to be loaded before linking
         while len(self.models) < total:
             time.sleep(0.5)
@@ -860,7 +863,8 @@ class CanvasCtrl(CanvasView):
                                    )
 
                 # this draws the line
-                wx.CallAfter(self.createLine, from_model, to_model)
+                # todo: these images need to be coming from config instead of hardcoded
+                wx.CallAfter(self.createLine, from_model, to_model, image_name='rightArrowBlue60.png')
 
 
 

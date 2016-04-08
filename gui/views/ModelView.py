@@ -29,28 +29,23 @@ class ModelView(wx.Frame):
         self.notebook = wx.Notebook(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0)
 
         if properties:
-            # make the detail view
-            self.treectrlView = wx.Panel(self.notebook, wx.ID_ANY, wx.DefaultPosition,
-                                         wx.DefaultSize, wx.TAB_TRAVERSAL)
-
-            self.treectrlView.SetSizer(treectrlSizer)
             self.PropertyGrid = MyPropertyGrid(self.notebook, id=wx.ID_ANY,
                                                pos=wx.Point(0, 0),
                                                # size=wx.Size(700,500))
                                                size=wx.Size(423, 319))
-            self.notebook.AddPage(self.PropertyGrid, u"General", True)
+            self.notebook.AddPage(self.PropertyGrid, u"Model Properties", True)
 
         # make the spatial view
         if spatial:
 
             self.spatial_page = SpatialPage(self.notebook)
-            self.notebook.AddPage(self.spatial_page, "Spatial")
+            self.notebook.AddPage(self.spatial_page, u"Spatial Definition")
 
         # make edit view
         if edit:
             self.txtctrlView = wx.Panel(self.notebook, wx.ID_ANY, wx.DefaultPosition,
                                         wx.DefaultSize, wx.TAB_TRAVERSAL)
-            self.notebook.AddPage(self.txtctrlView, u"Edit", False)
+            self.notebook.AddPage(self.txtctrlView, u"Edit Properties", False)
             self.SaveButton = wx.Button(self.txtctrlView, wx.ID_ANY, u"Save Changes",
                                         wx.DefaultPosition, wx.DefaultSize, 0)
             self.txtctrlView.SetSizer(txtctrlSizer)
@@ -64,7 +59,7 @@ class ModelView(wx.Frame):
         if configuration:
             xmlPanel = wx.Panel(self.notebook, wx.ID_ANY, wx.DefaultPosition,
                                 wx.DefaultSize, wx.TAB_TRAVERSAL)
-            self.notebook.AddPage(xmlPanel, u"File Configurations (Read-Only)", False)
+            self.notebook.AddPage(xmlPanel, u"Simulation Properties", False)
             txtSizer = wx.BoxSizer(wx.VERTICAL)
             self.xmlTextCtrl = wx.TextCtrl(xmlPanel, -1,
                                            wx.EmptyString,
@@ -74,10 +69,6 @@ class ModelView(wx.Frame):
             xmlPanel.SetSizer(txtSizer)
 
         sizer_notebook.Add(self.notebook, 1, wx.EXPAND | wx.ALL, 5)
-
-        if properties:
-            self.treectrlView.Layout()
-            treectrlSizer.Fit(self.treectrlView)
 
         self.SetSizer(sizer_notebook)
         self.Layout()

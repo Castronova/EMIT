@@ -24,7 +24,7 @@ class ModelCtrl(ModelView):
         filehandle=open(fileExtension)
         self.xmlTextCtrl.SetValue(filehandle.read())
         filehandle.close()
-        self.SetTitle("File Configurations (Read-Only)")
+        self.SetTitle("Details")
 
     def OnSave(self, event):
 
@@ -50,7 +50,7 @@ class ModelCtrl(ModelView):
         filehandle=open(fileExtension)
         self.TextDisplay.SetValue(filehandle.read())
         filehandle.close()
-        self.SetTitle("Editor")
+        self.SetTitle("Details")
 
     def PopulateSummary(self, fileExtension):
 

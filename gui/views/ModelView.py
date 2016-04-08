@@ -21,8 +21,6 @@ class ModelView(wx.Frame):
         # create the sizers
         sizer_notebook = wx.BoxSizer(wx.VERTICAL)
         txtctrlSizer = wx.BoxSizer(wx.VERTICAL)
-        treectrlSizer = wx.BoxSizer(wx.VERTICAL)
-
 
         # intialize the notebook
 
@@ -109,4 +107,17 @@ class SpatialPage(wx.Panel):
 class MyPropertyGrid(wx.propgrid.PropertyGrid):
     def __init__(self, *args, **kwargs):
         wxpg.PropertyGrid.__init__(self, *args, **kwargs)
+
+        self.Bind(wx.EVT_LEFT_DOWN, self.onClick)
+        self.Bind(wx.EVT_LEFT_DCLICK, self.onClick)
+
+    def onClick(self, event):
+        """
+        event handler for property grid click.  This function makes the property grid fields uneditable
+        Returns: None
+
+        """
+        pass
+
+
 

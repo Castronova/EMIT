@@ -300,14 +300,18 @@ class Coordinator(object):
 
     def set_default_database(self,db_id=None):
 
-        try:
-            self.__default_db = self._db[db_id]
-            self.__default_db['id'] = db_id
-            sPrint('Default database : %s'%self._db[db_id]['connection_string'], MessageType.INFO)
-        except Exception, e :
-            msg = 'Encountered and error when setting default database: %s' % e
-            elog.error(msg)
-            sPrint(msg, MessageType.ERROR)
+        if db_id is not None:
+            try:
+                self.__default_db = self._db[db_id]
+                self.__default_db['id'] = db_id
+                sPrint('Default database : %s'%self._db[db_id]['connection_string'], MessageType.INFO)
+            except Exception, e :
+                msg = 'Encountered and error when setting default database: %s' % e
+                elog.error(msg)
+                sPrint(msg, MessageType.ERROR)
+        else:
+            sPrint('Could not set the default database', MessageType.ERROR)
+
 
     def get_new_id(self):
         self.__incr += 1

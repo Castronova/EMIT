@@ -194,47 +194,6 @@ def parse_config(ini):
     else:
         return None
 
-# def parse_config(ini):
-#     """
-#     parses metadata stored in *.ini file
-#     """
-#     basedir = os.path.realpath(os.path.dirname(ini))
-#
-#     isvalid = validate_config_ini(ini)
-#     if isvalid:
-#         #raise Exception('Configuration file is not valid!')
-#
-#         config_params = {}
-#         cparser = ConfigParser.ConfigParser(None, multidict)
-#         cparser.read(ini)
-#         sections = cparser.sections()
-#
-#         for s in sections:
-#             # get the section key (minus the random number)
-#             section = s.split('^')[0]
-#
-#             # get the section options
-#             options = cparser.options(s)
-#
-#             # save ini options as dictionary
-#             d = {}
-#             for option in options:
-#                 d[option] = cparser.get(s,option)
-#             d['type'] = section
-#
-#
-#             if section not in config_params:
-#                 config_params[section] = [d]
-#             else:
-#                 config_params[section].append(d)
-#
-#         # save the base path of the model
-#         config_params['basedir'] = basedir
-#
-#         return config_params
-#     else:
-#         return None
-
 def connect_to_ODM2_db(title, desc, engine, address, db, user, pwd):
 
     # create a db session
@@ -394,7 +353,6 @@ def create_database_connections_from_file(ini):
     db_connections = {}
 
     # parse the dataabase connections file
-    params = {}
     cparser = ConfigParser.ConfigParser(None, multidict)
     cparser.read(ini)
     sections = cparser.sections()
@@ -409,7 +367,6 @@ def create_database_connections_from_file(ini):
             d[option] = cparser.get(s,option)
 
         # build database connection
-        #dbconn = odm2.api.dbconnection()
         session = dbconnection.createConnection(d['engine'],d['address'],d['db'],d['user'],d['pwd'])
 
         if session:
@@ -435,11 +392,9 @@ def create_database_connections_from_file(ini):
             sPrint('Connected to : %s [%s]'%(connection_string,db_id))
 
         else:
-            elog.error('Could not establish a connection with the database')
-            sPrint('Could not establish a connection with the database', MessageType.ERROR)
-            #return None
-
-
+            msg = 'Could not establish a connection with the following database: %s, %s' % (d['address'],d['db'])
+            elog.error(msg)
+            sPrint(msg, MessageType.ERROR)
 
     return db_connections
 

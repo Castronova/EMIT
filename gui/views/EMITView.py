@@ -264,9 +264,9 @@ class ViewEMIT(wx.Frame):
             path = file_dialog.GetPath()
 
     def onAddUser(self, event):
-        dlg = UserCtrl(self)
-        dlg.CenterOnScreen()
-        dlg.ShowModal()
+        controller = UserCtrl(self)
+        controller.CenterOnScreen()
+        controller.Show()
 
     def onAddNetcdfFile(self, event):
         file_dialog = wx.FileDialog(self.Parent,

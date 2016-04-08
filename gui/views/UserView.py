@@ -3,8 +3,8 @@ import wx
 
 class OrganizationView(wx.Frame):
 
-    def __init__(self, parent):
-        wx.Frame.__init__(self, parent=parent, id=-1, pos=wx.DefaultPosition, size=wx.DefaultSize,
+    def __init__(self):
+        wx.Frame.__init__(self, parent=None, id=-1, pos=wx.DefaultPosition, size=wx.DefaultSize,
                           style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
         panel = wx.Panel(self)
         today = wx.DateTime_Now()
@@ -26,7 +26,7 @@ class OrganizationView(wx.Frame):
         self.start_date_picker = wx.DatePickerCtrl(panel, id=wx.ID_ANY, dt=today)
         self.phone_textbox = wx.TextCtrl(panel)
         self.email_textbox = wx.TextCtrl(panel)
-        self.add_button = wx.Button(panel, label="OK")
+        self.accept_button = wx.Button(panel, label="Accept")
         self.cancel_button = wx.Button(panel, label="Cancel")
 
         # Sizer
@@ -48,7 +48,7 @@ class OrganizationView(wx.Frame):
         sizer.Add(self.phone_textbox, pos=(6, 1), span=(1, 1), flag=wx.EXPAND | wx.RIGHT, border=10)
         sizer.Add(self.email_textbox, pos=(7, 1), span=(1, 1), flag=wx.EXPAND | wx.RIGHT, border=10)
         sizer.Add(button_sizer, pos=(8, 1), span=(1, 1), flag=wx.ALL | wx.EXPAND | wx.RIGHT, border=10)
-        button_sizer.Add(self.add_button, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
+        button_sizer.Add(self.accept_button, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
         button_sizer.Add(self.cancel_button, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
 
         panel.SetSizer(sizer)

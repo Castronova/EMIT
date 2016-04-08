@@ -113,42 +113,6 @@ class ModelCtrl(ModelView):
                 except:
                     pass
 
-    def PopulateDetails(self, fileExtension):
-
-        # get a dictionary of config parameters
-        d = gui.parse_config(fileExtension)
-
-        root = self.DetailTree.AddRoot('Data')
-        self.DetailTree.ExpandAll()
-
-        # get sorted sections
-        sections = sorted(d.keys())
-
-        for section in sections:
-            # add this item as a group
-
-            g = self.DetailTree.AppendItem(root, section)
-
-            if type(d[section]) == list:
-                items = d[section]
-                for item in items:
-                    p = g
-                    while len(item.keys()) > 0:
-
-                        #for item in d[section]:
-                        if 'variable_name_cv' in item:
-                            var = item.pop('variable_name_cv')
-                            p =  self.DetailTree.AppendItem(g,var)
-
-                        # get the next item in the dictionary
-                        i = item.popitem()
-
-                        if i[0] != 'type':
-                            k = self.DetailTree.AppendItem(p,i[0])
-                            self.DetailTree.AppendItem(k, i[1])
-            else:
-                self.DetailTree.AppendItem(g,d[section])
-
     def setup_spatial(self, model_id):
         iei = self.spatial_page.controller.get_input_exchange_item_by_id(model_id)
         igeoms = self.spatial_page.controller.get_geometries(iei)

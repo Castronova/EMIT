@@ -32,11 +32,6 @@ class ModelView(wx.Frame):
             # make the detail view
             self.treectrlView = wx.Panel(self.notebook, wx.ID_ANY, wx.DefaultPosition,
                                          wx.DefaultSize, wx.TAB_TRAVERSAL)
-            self.DetailTree = MyTree(self.treectrlView, id=wx.ID_ANY,
-                                     pos=wx.Point(0, 0),
-                                     # size=wx.Size(700,500),
-                                     size=wx.Size(423, 319),
-                                     style=wx.TR_HAS_BUTTONS | wx.TR_HIDE_ROOT)
 
             self.treectrlView.SetSizer(treectrlSizer)
             self.PropertyGrid = MyPropertyGrid(self.notebook, id=wx.ID_ANY,
@@ -119,21 +114,6 @@ class SpatialPage(wx.Panel):
         from gui.controller.SpatialCtrl import SpatialCtrl
 
         self.controller = SpatialCtrl(self)
-
-
-class MyTree(wx.TreeCtrl):
-    def __init__(self, *args, **kwargs):
-        wx.TreeCtrl.__init__(self, *args, **kwargs)
-
-        self.ExpandAll()
-
-        self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
-
-    def OnLeftUp(self, event):
-        item, location = self.HitTest(event.GetPositionTuple())
-
-        data = self.GetPyData(item)
-
 
 class MyPropertyGrid(wx.propgrid.PropertyGrid):
     def __init__(self, *args, **kwargs):

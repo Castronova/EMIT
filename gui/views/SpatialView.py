@@ -85,13 +85,12 @@ def set_up_grid(grid):
         grid.SetDefaultCellAlignment(wx.ALIGN_LEFT, wx.ALIGN_TOP)
 
         # Set Cell Values
-        grid.SetCellValue(0, 0, " Variable")
-        grid.SetCellValue(1, 0, " Name")
-        # grid.SetCellValue(2, 0, " Description")
+        grid.SetCellValue(0, 0, " Exchange Item Metadata")
+        grid.SetCellValue(1, 0, " Variable Name")
         grid.SetCellValue(2, 0, " Geometry Type")
-        grid.SetCellValue(3, 0, " Coordinate System")
-        grid.SetCellValue(4, 0, " Extent")
-        grid.SetCellValue(5, 0, " Number of elements")
+        grid.SetCellValue(3, 0, " Geometry Count")
+        grid.SetCellValue(4, 0, " Coordinate System")
+        grid.SetCellValue(5, 0, " Spatial Extent")
 
         grid.SetCellBackgroundColour(0, 0, wx.Colour(195, 195, 195))  # Grey
         grid.SetCellBackgroundColour(0, 1, wx.Colour(195, 195, 195))

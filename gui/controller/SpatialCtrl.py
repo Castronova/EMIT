@@ -204,11 +204,11 @@ class SpatialCtrl(SpatialView):
         item = self.get_selected_input_exchange_item()
         raw_data = self.get_item_in_raw_data(self.raw_input_data, item.keys()[0])
         if raw_data:
-            self.edit_grid("input", 1, 1, item.keys())
+            self.edit_grid("input", 1, 1, item.keys()[0])
             self.edit_grid("input", 2, 1, item.values()[0].GetGeometryName())
-            self.edit_grid("input", 3, 1, item.values()[0].GetCoordinateDimension())
-            self.edit_grid("input", 4, 1, raw_data["geometry"]["extent"])
-            self.edit_grid("input", 5, 1, raw_data["geometry"]["count"])
+            self.edit_grid("input", 3, 1, raw_data["geometry"]["count"])
+            self.edit_grid("input", 4, 1, item.values()[0].GetCoordinateDimension())
+            self.edit_grid("input", 5, 1, raw_data["geometry"]["extent"])
         else:
             elog.debug("Raw data is None, failed to update table")
 

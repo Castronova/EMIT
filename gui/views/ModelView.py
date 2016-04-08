@@ -73,28 +73,6 @@ class ModelView(wx.Frame):
 
         self.Centre(wx.BOTH)
 
-
-    def InitMenu(self):
-
-        menubar = wx.MenuBar()
-        viewMenu = wx.Menu()
-
-        self.shst = viewMenu.Append(wx.ID_ANY, 'Show Edit',
-                                    'Show Edit', kind=wx.ITEM_CHECK)
-
-        viewMenu.Check(self.shst.GetId(), False)
-
-        self.Bind(wx.EVT_MENU, self.ToggleStatusBar, self.shst)
-
-        menubar.Append(viewMenu, '&Edit')
-        self.SetMenuBar(menubar)
-
-        self.SetSize((500, 500))
-        self.SetTitle('Check menu item')
-        self.Centre()
-        self.Show(True)
-
-
 class SpatialPage(wx.Panel):
 
     def __init__(self, parent):

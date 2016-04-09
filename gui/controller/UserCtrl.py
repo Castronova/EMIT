@@ -3,6 +3,9 @@ from gui.views.UserView import UserView, OrganizationView
 import datetime
 import os
 import coordinator.users as users
+import json
+
+
 
 class OrganizationCtrl(OrganizationView):
     def __init__(self, parent, data=None):
@@ -58,14 +61,14 @@ class UserCtrl(UserView):
         self.organization_data = {}
 
         # initialize bindings
-        self.firstnameTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
-        self.lastnameTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
-        # self.organizationTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
-        self.phoneTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
-        self.emailTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
-        self.addressTextBox.Bind(wx.EVT_TEXT, self.OnTextEnter)
-        self.startDatePicker.Bind(wx.EVT_TEXT, self.OnTextEnter)
-        self.okbutton.Bind(wx.EVT_BUTTON, self.onOkBtn)
+        self.firstnameTextBox.Bind(wx.EVT_TEXT, self.on_text_enter)
+        self.lastnameTextBox.Bind(wx.EVT_TEXT, self.on_text_enter)
+        # self.organizationTextBox.Bind(wx.EVT_TEXT, self.on_text_enter)
+        self.phoneTextBox.Bind(wx.EVT_TEXT, self.on_text_enter)
+        self.emailTextBox.Bind(wx.EVT_TEXT, self.on_text_enter)
+        self.addressTextBox.Bind(wx.EVT_TEXT, self.on_text_enter)
+        self.startDatePicker.Bind(wx.EVT_TEXT, self.on_text_enter)
+        self.okbutton.Bind(wx.EVT_BUTTON, self.on_ok)
         self.addOrganization.Bind(wx.EVT_BUTTON, self.add_organization_clicked)
         self.removeOrganization.Bind(wx.EVT_BUTTON, self.remove_organization_clicked)
         self.cancelButton.Bind(wx.EVT_BUTTON, self.on_cancel)
@@ -75,11 +78,19 @@ class UserCtrl(UserView):
         OrganizationCtrl(self)
 
     def GetTextBoxValues(self):
-        accountinfo = [self.firstnameTextBox.GetValue(), self.lastnameTextBox.GetValue(),
-                       self.phoneTextBox.GetValue(),
-                       self.emailTextBox.GetValue(), self.addressTextBox.GetValue(),
-                       self.startDatePicker.GetValue()]
-        return accountinfo
+        data = {"person": {
+            "firstname": self.firstnameTextBox.GetValue(),
+            "lastname": self.lastnameTextBox.GetValue(),
+            "phone": self.phoneTextBox.GetValue(),
+            "email": self.emailTextBox.GetValue(),
+            "address": self.addressTextBox.GetValue(),
+            "start_date": self.startDatePicker.GetValue()
+        }}
+
+        for key, value in self.organization_data.iteritems():
+            data[key] = value
+
+        return data
 
     def on_cancel(self, event):
         self.Close()
@@ -92,22 +103,27 @@ class UserCtrl(UserView):
         data = self.organization_data[selected]
         OrganizationCtrl(self, data=data)
 
-    def onOkBtn(self, event):
-        # This works by reading the user file and getting all the users.
-        # Then it writes to the user file with the old users + the new one added.
+    def json_serial(self, obj):
+        """JSON serializer for objects not serializable by default json code"""
 
-        new_user = self.GetTextBoxValues()
-        firstname = new_user[0]
-        lastname = new_user[1]
-        organization = new_user[2]
-        phone = new_user[3]
-        email = new_user[4]
-        address = new_user[5]
-        start_date = new_user[6]
+        if isinstance(obj, datetime.datetime):
+            serial = obj.isoformat()
+            return serial
+        raise TypeError ("Type not serializable")
+
+
+    def on_ok(self, event):
+        data = self.GetTextBoxValues()
+        firstname = data["person"]["firstname"]
+        lastname = data["person"]["lastname"]
+        organization = data[self.organization_data.keys()[0]]["name"]
+        phone = data["person"]["phone"]
+        email = data["person"]["email"]
+        address = data["person"]["address"]
+        start_date = data["person"]["start_date"]
         #  The date needs to be converted to a datetime.datetime object
         start_date = datetime.datetime.strptime(start_date.FormatISOCombined(), "%Y-%m-%dT%H:%M:%S")
 
-        # These are only samples for testing
         user_json_filepath = os.environ['APP_USER_PATH']  # get the file path of the user.json
         person = users.Person(firstname=firstname, lastname=lastname)
 
@@ -117,43 +133,43 @@ class UserCtrl(UserView):
                                          organization=organ, person=person,
                                          phone=phone, address=address)]
 
-        import json
         with open(user_json_filepath, 'r') as f:
-            previous_user = f.read()
+            try:
+                previous_users = json.load(f)
+            except ValueError:
+                previous_users = {}
 
         with open(user_json_filepath, 'w') as f:
-            new_user = {}
+            data = {}
             for a in affilations:
                 affil = a._affilationToDict()
-                new_user.update(affil)
-            new_user = json.dumps(new_user, sort_keys=True, indent=4, separators=(',', ': '))
-
-
-            if not previous_user.isspace() and len(previous_user) > 0:
-                # Removes the last } of previous_user and first { of new_user
-                previous_user = previous_user.lstrip().rstrip().rstrip('}').rstrip()
-                new_user = new_user.lstrip().rstrip().lstrip('{').lstrip()
-                f.write(previous_user + ',' + new_user)
-            else:
-                # No previous users were found so only adding the new one.
-                f.write(new_user)
+                data.update(affil)
+            data.update(previous_users)
+            json.dump(data, f, sort_keys=True, indent=4, separators=(',', ':'))
             f.close()
-
         self.parent.refreshUserAccount()
-
         self.Close()
 
-    def OnTextEnter(self, event):
-        if not self.firstnameTextBox.GetValue or \
-                not self.lastnameTextBox.GetValue or \
-                        self.organizationTextBox.GetValue() == '' or \
-                        self.phoneTextBox.GetValue() == '' or \
-                        self.emailTextBox.GetValue() == '' or \
-                        self.addressTextBox.GetValue() == '' or \
-                        self.startDatePicker.GetValue == '':
-            self.okbutton.Disable()
-        else:
+    def on_text_enter(self, event):
+        if self.firstnameTextBox.GetValue() \
+                and self.lastnameTextBox.GetValue() \
+                and self.phoneTextBox.GetValue()\
+                and self.emailTextBox.GetValue()\
+                and self.addressTextBox.GetValue()\
+                and self.startDatePicker.GetValue():
             self.okbutton.Enable()
+        else:
+            self.okbutton.Disable()
+
+    def parse_date(self, date):
+        date = datetime.datetime.strptime(date.FormatISOCombined(), "%Y-%m-%dT%H:%M:%S")
+        date = self.json_serial(date)
+        return date
+
+    def parse_organization_date(self, data):
+        for key, value in self.organization_data.iteritems():
+            data[key]["start_date"] = self.parse_date(data[key]["start_date"])
+        return data
 
     def refresh_organization_box(self):
         choices = []

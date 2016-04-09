@@ -61,7 +61,9 @@ class UserView(wx.Frame):
 
     def __init__(self, parent):
 
-        wx.Frame.__init__(self, parent=parent, style=wx.DEFAULT_FRAME_STYLE | wx.STAY_ON_TOP)
+        wx.Frame.__init__(self, parent=parent, style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^
+                           wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
+
         self.parent = parent
 
         self.sizer = wx.GridBagSizer(5, 5)

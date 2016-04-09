@@ -166,6 +166,6 @@ class PreRunViewCtrl(PreRunView):
         return available_connections
 
     def OnAddNew(self, e):
-        dlg = UserCtrl(self)
-        dlg.CenterOnScreen()
-        dlg.ShowModal()
+        controller = UserCtrl(self)
+        controller.CenterOnScreen()
+        controller.Show()

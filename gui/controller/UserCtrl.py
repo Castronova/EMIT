@@ -16,6 +16,12 @@ class OrganizationCtrl(OrganizationView):
         # https://github.com/ODM2/ODM2/blob/master/doc/ODM2Docs/core_organizations.md for a list of types
         self.choices = ["Federal Agency", "State Agency", "Academic Research Group", "Academic Department", "University", "Non-Profit", "Other"]
 
+        self.name_textbox.SetValue("Utah State University")
+        self.description_textbox.SetValue("School")
+        self.url_textbox.SetValue("usu.edu")
+        self.phone_textbox.SetValue("call htem")
+        self.email_textbox.SetValue("email2")
+
         self.type_combo.SetItems(self.choices)
         self.load_data(data=data)
         self.accept_button.Bind(wx.EVT_BUTTON, self.on_accept)
@@ -59,6 +65,12 @@ class UserCtrl(UserView):
         UserView.__init__(self, parent)
 
         self.organization_data = {}
+
+        self.firstnameTextBox.SetValue("Francisco")
+        self.lastnameTextBox.SetValue("Arrieta")
+        self.emailTextBox.SetValue("No spam")
+        self.phoneTextBox.SetValue("Call me")
+        self.addressTextBox.SetValue("Earth")
 
         # initialize bindings
         self.firstnameTextBox.Bind(wx.EVT_TEXT, self.on_text_enter)
@@ -113,14 +125,14 @@ class UserCtrl(UserView):
 
 
     def on_ok(self, event):
-        data = self.GetTextBoxValues()
-        firstname = data["person"]["firstname"]
-        lastname = data["person"]["lastname"]
-        organization = data[self.organization_data.keys()[0]]["name"]
-        phone = data["person"]["phone"]
-        email = data["person"]["email"]
-        address = data["person"]["address"]
-        start_date = data["person"]["start_date"]
+        new_user = self.GetTextBoxValues()
+        firstname = new_user["person"]["firstname"]
+        lastname = new_user["person"]["lastname"]
+        organization = new_user[self.organization_data.keys()[0]]["name"]
+        phone = new_user["person"]["phone"]
+        email = new_user["person"]["email"]
+        address = new_user["person"]["address"]
+        start_date = new_user["person"]["start_date"]
         #  The date needs to be converted to a datetime.datetime object
         start_date = datetime.datetime.strptime(start_date.FormatISOCombined(), "%Y-%m-%dT%H:%M:%S")
 
@@ -133,6 +145,9 @@ class UserCtrl(UserView):
                                          organization=organ, person=person,
                                          phone=phone, address=address)]
 
+        new_user["person"]["start_date"] = self.parse_date(new_user["person"]["start_date"])
+        new_user = self.parse_organization_date(new_user)
+
         with open(user_json_filepath, 'r') as f:
             try:
                 previous_users = json.load(f)
@@ -141,9 +156,7 @@ class UserCtrl(UserView):
 
         with open(user_json_filepath, 'w') as f:
             data = {}
-            for a in affilations:
-                affil = a._affilationToDict()
-                data.update(affil)
+            data[affilations[0]._affilationToDict().keys()[0]] = new_user
             data.update(previous_users)
             json.dump(data, f, sort_keys=True, indent=4, separators=(',', ':'))
             f.close()

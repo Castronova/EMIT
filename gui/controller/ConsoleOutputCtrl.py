@@ -87,4 +87,5 @@ class consoleCtrl(ConsoleView):
             # print the message in the console if the environment variable is set to True
             key = 'LOGGING_SHOW' + type.upper()
             if os.environ.has_key(key):
-                self.Print(text, type)
+                if int(os.environ[key]):
+                    self.Print(text, type)

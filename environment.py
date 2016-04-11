@@ -1,9 +1,9 @@
 import ConfigParser
-import os
 import sys
+import os
 
 from api_old.ODMconnection import  dbconnection
-
+from sprint import *
 
 # This is an interface for
 class ConnectionVars(object):
@@ -172,10 +172,13 @@ def getEnvironmentVars(settings=None):
         settings = getDefaultSettingsPath()
 
     # write the default file path if it doesn't exist
+    msg = None
     if not os.path.exists(settings):
         writeDefaultEnvironment(settings)
+        msg = 'writing default environment variables to settings. This is because no settings file could be found.'
     # re-write this file if in debug mode to ensure that the settings are always up-to-date
     elif sys.gettrace():
+        msg = 'writing default environment variables to settings. This is because you are running in debug mode.'
         writeDefaultEnvironment(settings)
 
     # read the default settings
@@ -183,5 +186,7 @@ def getEnvironmentVars(settings=None):
 
     # load the default environment
     loadEnvironment(config)
+
+    sPrint(msg, MessageType.INFO)
 
 getEnvironmentVars()

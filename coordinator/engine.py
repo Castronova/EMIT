@@ -114,9 +114,6 @@ class Model(object):
         self.__params_path = None
 
     def type(self,value=None):
-        # if value is not None:
-        #     self.__type = value
-        # return self.__type
         return self.instance().type()
 
     def attrib(self, value=None):
@@ -167,11 +164,6 @@ class Model(object):
         i = self.instance()
         if value in i.inputs():
             return i.inputs()[value]
-        # for k,v in self.__iei.iteritems():
-        #     if v.name() == value:
-        #         ii = self.__iei[k]
-        #
-        # if ii is None:
         else:
             elog.error('Could not find Input Exchange Item: '+value)
 
@@ -181,12 +173,6 @@ class Model(object):
         i = self.instance()
         if value in i.outputs():
             return i.outputs()[value]
-
-        # for k,v in i.iteritems():
-        #     if v.name() == value:
-        #         oi = self.__oei[k]
-
-        # if oi is None:
         else:
             elog.error('Could not find Output Exchange Item: '+value)
 
@@ -196,11 +182,6 @@ class Model(object):
 
     def name(self):
         return self.instance().name()
-        # if 'mdl' in self.attrib():
-        #     return self.__name
-        # elif 'databaseid' in self.attrib() and 'resultid' in self.attrib():
-        #     attribDict = self.attrib()
-        #     return self.__name + '-' + attribDict['resultid']
 
     def id(self):
         return self.__id
@@ -229,13 +210,8 @@ class Coordinator(object):
         self._dbresults = {}
         self.status = EngineStatus()
 
-
         # TODO: Get this from gui dialog
         self.preferences = os.path.abspath(os.path.join(os.path.dirname(__file__),'../data/preferences'))
-
-
-        # initialize multiprocessing classes
-        # self.processes = engineProcessor.TaskServer()
 
     def get_status(self):
         """
@@ -300,14 +276,18 @@ class Coordinator(object):
 
     def set_default_database(self,db_id=None):
 
-        try:
-            self.__default_db = self._db[db_id]
-            self.__default_db['id'] = db_id
-            sPrint('Default database : %s'%self._db[db_id]['connection_string'], MessageType.INFO)
-        except Exception, e :
-            msg = 'Encountered and error when setting default database: %s' % e
-            elog.error(msg)
-            sPrint(msg, MessageType.ERROR)
+        if db_id is not None:
+            try:
+                self.__default_db = self._db[db_id]
+                self.__default_db['id'] = db_id
+                sPrint('Default database : %s'%self._db[db_id]['connection_string'], MessageType.INFO)
+            except Exception, e :
+                msg = 'Encountered and error when setting default database: %s' % e
+                elog.error(msg)
+                sPrint(msg, MessageType.ERROR)
+        else:
+            sPrint('Could not set the default database', MessageType.ERROR)
+
 
     def get_new_id(self):
         self.__incr += 1
@@ -318,12 +298,6 @@ class Coordinator(object):
             return None
         else:
             return self.__default_db
-
-            # db = {'name': self.__default_db['name'],
-            #       'description': self.__default_db['description'],
-            #       'connection_string': self.__default_db['connection_string'],
-            #       'id': self.__default_db['id']}
-            # return db
 
     def add_model(self, id=None, attrib=None):
         """
@@ -791,12 +765,6 @@ class Coordinator(object):
             return 1
         return 0
 
-        # for l in self.__links:
-        #     if self.__links[l].get_id() == id:
-        #         self.__links.pop(l,None)
-        #         return 1
-        # return 0
-
     def remove_link_all(self):
         """
         removes the last link
@@ -870,22 +838,11 @@ class Coordinator(object):
 
         g = net.DiGraph()
 
-        # add models as graph nodes
-        #for name,model in self.__models.iteritems():
-        #    g.add_node(model.get_id())
-
         # create links between these nodes
         for id, link in self.__links.iteritems():
 
-            # replaced with the two lines below b/c get_link has been deprecated
-            #f, t = link.get_link()
-            #from_node = f[0].get_id()
-            #to_node = t[0].get_id()
-
             from_node = link.source_component().id()
             to_node = link.target_component().id()
-
-
             g.add_edge(from_node, to_node)
 
         # determine cycles
@@ -987,23 +944,7 @@ class Coordinator(object):
                 model_output.append('desc: ' + model.description())
                 model_output.append('id: ' + model.id())
 
-                # print exchange items
-                #print '  '+(27+len(name))*'-'
-                #print '  |' + ((33-len(name))/2)*' ' +'Model: '+name + ((33-len(name))/2)*' '+'|'
-                #print '  '+(27+len(name))*'-'
-
-                #print '   * desc: ' + model.get_description()
-                #print '   * id : '+ model.get_id()
-                #print '  '+(27+len(name))*'-'
-
                 for item in model.get_input_exchange_items() + model.get_output_exchange_items():
-                    # print '   '+item.get_type().upper()
-                    # print '   * id: '+str(item.get_id())
-                    # print '   * name: '+item.name()
-                    # print '   * description: '+item.description()
-                    # print '   * unit: '+item.unit().UnitName()
-                    # print '   * variable: '+item.variable().VariableNameCV()
-                    # print '  '+(27+len(name))*'-'
                     model_output.append(str(item.id()))
                     model_output.append( 'name: '+item.name())
                     model_output.append( 'description: '+item.description())
@@ -1043,9 +984,6 @@ class Coordinator(object):
 
                 # get the formatted width
                 w = self.get_format_width(link_output)
-
-                # pad the width and make sure that it is divisible by 2
-                #w += 4 if w % 2 == 0 else 5
 
                 # print the output
                 elog.info('  |'+(w)*'-'+'|')
@@ -1167,19 +1105,6 @@ class Coordinator(object):
         sessionFactory = odm2api.SessionFactory(connection_string='sqlite:///'+dbpath, echo=False)
         session = sessionFactory.getSession()
 
-        elog.info('here')
-
-        # session = dbconnection.createConnection('sqlite', "", name, user, pwd)1
-
-        # if session:
-        # # adjusting timeout
-        # session.engine.pool._timeout = 30
-        #
-        # connection_string = session.engine.url
-        #
-        # # save this session in the db_connections object
-        # db_id = uuid.uuid4().hex[:5]
-
     def get_format_width(self,output_array):
         width = 0
         for line in output_array:
@@ -1237,134 +1162,6 @@ class Coordinator(object):
 
         else:
             elog.error('Could not find path %s' % simulation_file)
-
-    def load_simulation2(self, file):
-        pass
-
-        # # TODO: This needs to be refactored to remove 'for' looping
-        # tree = et.parse(file)
-        #
-        # self.loadingpath = file
-        #
-        # tree = et.parse(file)
-        #
-        # # get the root
-        # root = tree.getroot()
-        #
-        # # make sure the required database connections are loaded
-        # connections = engine.getDbConnections()
-        # conn_ids = {}
-        #
-        # # get all known transformations
-        # space = SpatialInterpolation()
-        # time = TemporalInterpolation()
-        # spatial_transformations = {i.name(): i for i in space.methods()}
-        # temporal_transformations = {i.name(): i for i in time.methods()}
-        #
-        #
-        # for child in root._children:
-        #     if child.tag == 'DbConnection':
-        #         attrib = self.appendChild(child)
-        #
-        #         connection_string = attrib['connection_string']
-        #
-        #         database_exists = False
-        #         # db_elements = db_conn.getchildren()
-        #
-        #         for id, dic in connections.iteritems():
-        #
-        #             if str(dic['args']['connection_string']) == connection_string:
-        #                 # dic['args']['id'] = db_conn.attrib['id']
-        #                 database_exists = True
-        #
-        #                 # map the connection ids
-        #                 conn_ids[attrib['databaseid']] = dic['args']['id']
-        #                 break
-        #
-        #         # if database doesn't exist, then connect to it
-        #         if not database_exists:
-        #             connect = wx.MessageBox('This database connection does not currently exist.  Click OK to connect.',
-        #                                     'Info', wx.OK | wx.CANCEL)
-        #
-        #             if connect == wx.OK:
-        #
-        #                 # attempt to connect to the database
-        #                 title = dic['args']['name']
-        #                 desc = dic['args']['desc']
-        #                 db_engine = dic['args']['engine']
-        #                 address = dic['args']['address']
-        #                 name = dic['args']['db']
-        #                 user = dic['args']['user']
-        #                 pwd = dic['args']['pwd']
-        #
-        #                 if not self.AddDatabaseConnection(title, desc, db_engine, address, name, user, pwd):
-        #                     wx.MessageBox('I was unable to connect to the database with the information provided :(',
-        #                                   'Info', wx.OK | wx.ICON_ERROR)
-        #                     return
-        #
-        #                 # map the connection id
-        #                 conn_ids[attrib['databaseid']] = attrib['databaseid']
-        #
-        #             else:
-        #                 return
-        #
-        #     if child.tag == 'Model':
-        #         attrib = self.appendChild(child)
-        #
-        #         # load the model
-        #         self.addModel(filepath=attrib['path'], x=float(attrib['xcoordinate']), y=float(attrib['ycoordinate']),
-        #                       uid=attrib['id'])
-        #
-        #     if child.tag == 'DataModel':
-        #         attrib = self.appendChild(child)
-        #
-        #         databaseid = attrib['databaseid']
-        #         mappedid = conn_ids[databaseid]
-        #
-        #         attrib['databaseid'] = mappedid
-        #         modelid = self.addModel(filepath=attrib['path'], x=attrib['xcoordinate'], y=attrib['ycoordinate'],
-        #                                 uid=attrib['id'])
-        #
-        #     # todo: Link cannot be added until both models have finished loading!!!  This will throw exception on line 927
-        #     if child.tag == 'Link':
-        #         attrib = self.appendChild(child)
-        #
-        #         R1 = None
-        #         R2 = None
-        #         for R, id in self.models.iteritems():
-        #             if id == attrib['from_id']:
-        #                 R1 = R
-        #             elif id == attrib['to_id']:
-        #                 R2 = R
-        #
-        #         if R1 is None or R2 is None:
-        #             raise Exception('Could not find Model identifer in loaded models')
-        #
-        #         temporal = None
-        #         spatial = None
-        #         # set the temporal and spatial interpolations
-        #         transform = child.find("./transformation")
-        #         for transform_child in transform:
-        #             if transform_child.text.upper() != 'NONE':
-        #                 if transform_child.tag == 'temporal':
-        #                     temporal = temporal_transformations[transform_child.text]
-        #                 elif transform_child.tag == 'spatial':
-        #                     spatial = spatial_transformations[transform_child.text]
-        #
-        #         # create the link
-        #         l = engine.addLink(source_id=attrib['from_id'],
-        #                            source_item=attrib['from_item'],
-        #                            target_id=attrib['to_id'],
-        #                            target_item=attrib['to_item'],
-        #                            spatial_interpolation=spatial,
-        #                            temporal_interpolation=temporal
-        #                            )
-        #
-
-
-
-
-
 
 
     def show_db_results(self, args):

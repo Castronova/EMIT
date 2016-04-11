@@ -500,6 +500,7 @@ class LinkCtrl(LinkView):
                 return
         result = self.find_link_direction()
         if result:
+            # todo: these images need to be coming from config instead of hardcoded
             self.replace_canvas_image(image="rightArrowBlue60.png", one_way=True)
         elif result is False:
             self.replace_canvas_image(image="multiArrow.png")

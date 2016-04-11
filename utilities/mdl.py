@@ -110,7 +110,8 @@ def build_exchange_items_from_config(params):
 
                         # parse the wkt string into a stdlib.Geometry object
                         geom = utilities.geometry.fromWKT(value)
-                        geoms.append(geom)
+                        for g in geom:
+                            geoms.append(g)
 
                     except:
                         elog.warning('Could not load component geometry from *.mdl file')

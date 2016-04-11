@@ -21,41 +21,29 @@ class ModelView(wx.Frame):
         # create the sizers
         sizer_notebook = wx.BoxSizer(wx.VERTICAL)
         txtctrlSizer = wx.BoxSizer(wx.VERTICAL)
-        treectrlSizer = wx.BoxSizer(wx.VERTICAL)
-
 
         # intialize the notebook
 
         self.notebook = wx.Notebook(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0)
 
         if properties:
-            # make the detail view
-            self.treectrlView = wx.Panel(self.notebook, wx.ID_ANY, wx.DefaultPosition,
-                                         wx.DefaultSize, wx.TAB_TRAVERSAL)
-            self.DetailTree = MyTree(self.treectrlView, id=wx.ID_ANY,
-                                     pos=wx.Point(0, 0),
-                                     # size=wx.Size(700,500),
-                                     size=wx.Size(423, 319),
-                                     style=wx.TR_HAS_BUTTONS | wx.TR_HIDE_ROOT)
-
-            self.treectrlView.SetSizer(treectrlSizer)
             self.PropertyGrid = MyPropertyGrid(self.notebook, id=wx.ID_ANY,
                                                pos=wx.Point(0, 0),
                                                # size=wx.Size(700,500))
                                                size=wx.Size(423, 319))
-            self.notebook.AddPage(self.PropertyGrid, u"General", True)
+            self.notebook.AddPage(self.PropertyGrid, u"Model Properties", True)
 
         # make the spatial view
         if spatial:
 
             self.spatial_page = SpatialPage(self.notebook)
-            self.notebook.AddPage(self.spatial_page, "Spatial")
+            self.notebook.AddPage(self.spatial_page, u"Spatial Definition")
 
         # make edit view
         if edit:
             self.txtctrlView = wx.Panel(self.notebook, wx.ID_ANY, wx.DefaultPosition,
                                         wx.DefaultSize, wx.TAB_TRAVERSAL)
-            self.notebook.AddPage(self.txtctrlView, u"Edit", False)
+            self.notebook.AddPage(self.txtctrlView, u"Edit Properties", False)
             self.SaveButton = wx.Button(self.txtctrlView, wx.ID_ANY, u"Save Changes",
                                         wx.DefaultPosition, wx.DefaultSize, 0)
             self.txtctrlView.SetSizer(txtctrlSizer)
@@ -69,7 +57,7 @@ class ModelView(wx.Frame):
         if configuration:
             xmlPanel = wx.Panel(self.notebook, wx.ID_ANY, wx.DefaultPosition,
                                 wx.DefaultSize, wx.TAB_TRAVERSAL)
-            self.notebook.AddPage(xmlPanel, u"File Configurations (Read-Only)", False)
+            self.notebook.AddPage(xmlPanel, u"Simulation Properties", False)
             txtSizer = wx.BoxSizer(wx.VERTICAL)
             self.xmlTextCtrl = wx.TextCtrl(xmlPanel, -1,
                                            wx.EmptyString,
@@ -80,36 +68,10 @@ class ModelView(wx.Frame):
 
         sizer_notebook.Add(self.notebook, 1, wx.EXPAND | wx.ALL, 5)
 
-        if properties:
-            self.treectrlView.Layout()
-            treectrlSizer.Fit(self.treectrlView)
-
         self.SetSizer(sizer_notebook)
         self.Layout()
 
         self.Centre(wx.BOTH)
-
-
-    def InitMenu(self):
-
-        menubar = wx.MenuBar()
-        viewMenu = wx.Menu()
-
-        self.shst = viewMenu.Append(wx.ID_ANY, 'Show Edit',
-                                    'Show Edit', kind=wx.ITEM_CHECK)
-
-        viewMenu.Check(self.shst.GetId(), False)
-
-        self.Bind(wx.EVT_MENU, self.ToggleStatusBar, self.shst)
-
-        menubar.Append(viewMenu, '&Edit')
-        self.SetMenuBar(menubar)
-
-        self.SetSize((500, 500))
-        self.SetTitle('Check menu item')
-        self.Centre()
-        self.Show(True)
-
 
 class SpatialPage(wx.Panel):
 
@@ -120,22 +82,20 @@ class SpatialPage(wx.Panel):
 
         self.controller = SpatialCtrl(self)
 
-
-class MyTree(wx.TreeCtrl):
-    def __init__(self, *args, **kwargs):
-        wx.TreeCtrl.__init__(self, *args, **kwargs)
-
-        self.ExpandAll()
-
-        self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
-
-    def OnLeftUp(self, event):
-        item, location = self.HitTest(event.GetPositionTuple())
-
-        data = self.GetPyData(item)
-
-
 class MyPropertyGrid(wx.propgrid.PropertyGrid):
     def __init__(self, *args, **kwargs):
         wxpg.PropertyGrid.__init__(self, *args, **kwargs)
+
+        self.Bind(wx.EVT_LEFT_DOWN, self.onClick)
+        self.Bind(wx.EVT_LEFT_DCLICK, self.onClick)
+
+    def onClick(self, event):
+        """
+        event handler for property grid click.  This function makes the property grid fields uneditable
+        Returns: None
+
+        """
+        pass
+
+
 

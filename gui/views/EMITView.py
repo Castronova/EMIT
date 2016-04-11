@@ -62,7 +62,7 @@ class ViewEMIT(wx.Frame):
 
 
     def refreshUserAccount(self):
-        # This method is here because AddNewUserDialog.onOkBtn looks for this method at the end of the function
+        # This method is here because AddNewUserDialog.on_ok looks for this method at the end of the function
         # The refresh was implemented so the pre-run dialog user account box would refresh after adding new user
         return
 
@@ -211,47 +211,56 @@ class ViewEMIT(wx.Frame):
         self.Bind(wx.EVT_MENU, self.onOpenDapViewer, open_dap_viewer)
 
 
-
     def checkUsers(self):
-        userPath = os.environ['APP_USER_PATH']
-        print userPath
-        if os.path.isfile(userPath) == False:
-            file = open(userPath, 'w+')
-            dlg = UserCtrl(self)
-            dlg.CenterOnScreen()
-            dlg.ShowModal()
-        else:
-            # users = self.loadAccounts()
-            users = loadAccounts()
-            if len(users) < 1:
-                dlg = UserCtrl(self)
-                dlg.CenterOnScreen()
-                dlg.ShowModal()
+        return
+        # user_path = os.environ['APP_USER_PATH']
+        # print user_path
+        # if os.path.isfile(user_path):
+        #     print loadAccounts()
+        # else:
+        #     # File does not exist so create
+        #     open(user_path, "w")
+        #     controller = UserCtrl(self)
+        #     controller.Show()
 
-        # users = self.loadAccounts()
-        users = loadAccounts()
-        userAdded = False
-        no = False
-        if len(users) > 0:
-            userAdded = True
-        while userAdded == False:# and no == False:
 
-            # users = self.loadAccounts()
-            users = loadAccounts()
-            if len(users) == 0 and no == False:
-                dial = wx.MessageDialog(None, 'You must add a user to continue', 'Question',
-                    wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
-                if dial.ShowModal() == wx.ID_NO:
-                    pid = os.getpid()
-                    #os.system("kill -9 " + pid)
-                    no = True
-                else:
-                    dlg = UserCtrl(self)
-                    dlg.CenterOnScreen()
-                    dlg.ShowModal()
-            else:
-                userAdded = True
-                self.onClose(None)
+        # if os.path.isfile(userPath) == False:
+        #     file = open(userPath, 'w+')
+        #     controller = UserCtrl(self)
+        #     controller.CenterOnScreen()
+        #     controller.Show()
+        # else:
+        #     # users = self.loadAccounts()
+        #     users = loadAccounts()
+        #     if len(users) < 1:
+        #         controller = UserCtrl(self)
+        #         controller.CenterOnScreen()
+        #         controller.Show()
+        #
+        # # users = self.loadAccounts()
+        # users = loadAccounts()
+        # userAdded = False
+        # no = False
+        # if len(users) > 0:
+        #     userAdded = True
+        # while userAdded == False:# and no == False:
+        #
+        #     # users = self.loadAccounts()
+        #     users = loadAccounts()
+        #     if len(users) == 0 and no == False:
+        #         dial = wx.MessageDialog(None, 'You must add a user to continue', 'Question',
+        #             wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
+        #         if dial.ShowModal() == wx.ID_NO:
+        #             pid = os.getpid()
+        #             #os.system("kill -9 " + pid)
+        #             no = True
+        #         else:
+        #             controller = UserCtrl(self)
+        #             controller.CenterOnScreen()
+        #             controller.Show()
+        #     else:
+        #         userAdded = True
+        #         self.onClose(None)
 
     def onAddCsvFile(self, event):
         file_dialog = wx.FileDialog(self.Parent,
@@ -264,9 +273,9 @@ class ViewEMIT(wx.Frame):
             path = file_dialog.GetPath()
 
     def onAddUser(self, event):
-        dlg = UserCtrl(self)
-        dlg.CenterOnScreen()
-        dlg.ShowModal()
+        controller = UserCtrl(self)
+        controller.CenterOnScreen()
+        controller.Show()
 
     def onAddNetcdfFile(self, event):
         file_dialog = wx.FileDialog(self.Parent,

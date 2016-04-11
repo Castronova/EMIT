@@ -148,11 +148,6 @@ class CanvasCtrl(CanvasView):
                 # Grab both boxes on the ends of the line/link
                 # Update their endpoints and set the arrow to the center of the line
                 r1, r2 = self.links[link]
-                if self.detect_collision(link):
-                    link.Arrow.Hide()
-                else:
-                    link.Arrow.Show()
-
                 if r1 == self.MovingObject:
                     link.Points[0] = self.MovingObject.XY
                     link.Arrow.XY = link.MidPoint
@@ -162,14 +157,6 @@ class CanvasCtrl(CanvasView):
 
             self.lastPos = cursorPos
             self.FloatCanvas.Draw(True)
-
-    def detect_collision(self, link):
-        # Detects collision by the length of the arrow link
-        a = link.Points[0] - link.Points[1]
-        a = abs(a)
-        if a[0] < 180 and a[1] < 120:  # Dimension of box
-            return True
-        return False
 
     def createBox(self, xCoord, yCoord, id=None, name=None, type=datatypes.ModelTypes.TimeStep):
 
@@ -236,6 +223,9 @@ class CanvasCtrl(CanvasView):
             sPrint('Cannot link a model to itself', MessageType.ERROR)
             return
         else:
+
+            # image_name = ''
+
             # Get the center of the objects on the canvas
             x1, y1 = R1.XY
             x2, y2 = R2.XY
@@ -254,6 +244,7 @@ class CanvasCtrl(CanvasView):
 
             # For some reason we have to add line.Arrow in order to bind to it
             self.FloatCanvas.AddObject(line.Arrow)
+            line.Arrow.PutInBackground()
 
             line.Arrow.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
             line.Arrow.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
@@ -762,7 +753,7 @@ class CanvasCtrl(CanvasView):
 
         total = len(models) + len(datamodels) + len(self.models) + self.failed_models
 
-        waitingThread = threading.Thread(target=self.waiting, args=(total, links), name="LoadLinks")
+        waitingThread = threading.Thread(target=self.waitForModelLoading, args=(total, links), name="LoadLinks")
         self.logicCanvasThreads[waitingThread.name] = waitingThread
         waitingThread.start()
 
@@ -788,7 +779,7 @@ class CanvasCtrl(CanvasView):
             # draw the model
             wx.CallAfter(self.FloatCanvas.Draw)
 
-    def waiting(self, total, links):
+    def waitForModelLoading(self, total, links):
         #  This method waits for all the models in the file to be loaded before linking
         while len(self.models) < total:
             time.sleep(0.5)
@@ -872,7 +863,8 @@ class CanvasCtrl(CanvasView):
                                    )
 
                 # this draws the line
-                wx.CallAfter(self.createLine, from_model, to_model)
+                # todo: these images need to be coming from config instead of hardcoded
+                wx.CallAfter(self.createLine, from_model, to_model, image_name='rightArrowBlue60.png')
 
 
 

@@ -18,6 +18,7 @@ from gui.controller.DirectoryCtrl import LogicDirectory
 from gui.controller.NetcdfCtrl import NetcdfCtrl
 from gui.controller.UserCtrl import UserCtrl
 from gui.controller.ToolboxCtrl import LogicToolbox
+from gui.controller.settingsCtrl import settingsCtrl
 from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
 from utilities.gui import loadAccounts
 
@@ -378,8 +379,12 @@ class ViewEMIT(wx.Frame):
             self.defaultLoadDirectory = os.path.dirname(filepath)
 
     def Settings(self, event):
-        settings = viewMenuBar()
-        settings.Show()
+
+        settings = settingsCtrl()
+        # settings.show()
+
+        # settings = viewMenuBar()
+        # settings.Show()
 
     def SaveConfiguration(self,event):
         if self.loadingpath == None:

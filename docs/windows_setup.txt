@@ -1,0 +1,30 @@
+Development Setup Environment Setup
+
+
+Prequisites
+
+* Install Visual C++ 2008 Express Edition (required for compiling via pip)
+    Find vsvarsall.bat (e.g. C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC).  Doubleclick on vcvarsall.bat to load environment variables, then reopen cmd prompt.
+    `http://stackoverflow.com/questions/4676728/value-error-trying-to-install-python-for-windows-extensions`
+
+Location for Wheel files:
+
+http://www.lfd.uci.edu/~gohlke/pythonlibs/
+
+
+
+1. Install GitBash
+
+2. Change line endings: `git config --global core.autocrlf true`
+
+3. clone repo: `git clone https://github.com/Castronova/EMIT.git`
+
+4. Install MiniConda (64-bit)
+
+5. Install GDAL binaries (64-bit) `https://trac.osgeo.org/osgeo4w/`
+
+6. Install shapely 	
+	pip install Libaries/GDAL-1.11.2-cp27-none-win_amd64.whl
+
+
+

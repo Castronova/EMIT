@@ -465,7 +465,7 @@ class viewMenuBar(wx.Frame):
         sizer = wx.BoxSizer(wx.VERTICAL)
 
         console_title = wx.StaticText(self.panel, id=wx.ID_ANY, label="Configure Console Verbosity",pos=(20, 100))
-        font = wx.Font(16, wx.NORMAL, wx.NORMAL, wx.BOLD)
+        font = wx.Font(16, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
         console_title.SetFont(font)
 
         self.c1 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Info Messages")

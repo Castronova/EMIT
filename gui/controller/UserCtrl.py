@@ -16,12 +16,6 @@ class OrganizationCtrl(OrganizationView):
         # https://github.com/ODM2/ODM2/blob/master/doc/ODM2Docs/core_organizations.md for a list of types
         self.choices = ["Federal Agency", "State Agency", "Academic Research Group", "Academic Department", "University", "Non-Profit", "Other"]
 
-        self.name_textbox.SetValue("Utah State University")
-        self.description_textbox.SetValue("School")
-        self.url_textbox.SetValue("usu.edu")
-        self.phone_textbox.SetValue("call htem")
-        self.email_textbox.SetValue("email2")
-
         self.type_combo.SetItems(self.choices)
         self.load_data(data=data)
         self.accept_button.Bind(wx.EVT_BUTTON, self.on_accept)
@@ -65,12 +59,6 @@ class UserCtrl(UserView):
         UserView.__init__(self, parent)
 
         self.organization_data = {}
-
-        self.firstnameTextBox.SetValue("Francisco")
-        self.lastnameTextBox.SetValue("Arrieta")
-        self.emailTextBox.SetValue("No spam")
-        self.phoneTextBox.SetValue("Call me")
-        self.addressTextBox.SetValue("Earth")
 
         # initialize bindings
         self.firstnameTextBox.Bind(wx.EVT_TEXT, self.on_text_enter)

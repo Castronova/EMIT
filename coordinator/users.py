@@ -33,7 +33,7 @@ class Organization(object):
         self.parent = parent
 
 class Affiliation(object):
-    def __init__(self, email=None, startDate=None, organization=None, person=None, phone=None, address=None, isPrimaryOrganizationContact=False, affiliationEnd=None, personLink=None):
+    def __init__(self, email, startDate, organization, person, phone, address=None, isPrimaryOrganizationContact=False, affiliationEnd=None, personLink=None):
 
         if None in [email, startDate, organization, person]:
             raise Exception('Required parameter not given')
@@ -67,9 +67,11 @@ class Affiliation(object):
         aff_dict['startDate'] = aff_dict['startDate'].strftime("%Y-%m-%dT%H:%M:%S")
         if aff_dict['affiliationEnd'] is not None:
             aff_dict['affiliationEnd'] = aff_dict['affiliationEnd'].strftime("%Y-%m-%dT%H:%M:%S")
-        return {str(uuid.uuid4()):dict(person=self.person.__dict__,
-                    organization=self.organization.__dict__,
-                    affiliation=aff_dict)}
+        # return {str(uuid.uuid4()):dict(person=self.person.__dict__,
+        #             organization=self.organization.__dict__,
+        #             affiliation=aff_dict)}
+        aff_dict.update(self.organization.__dict__)
+        return aff_dict
 
     def toJSON(self):
         return json.dumps(self._affilationToDict(), sort_keys=True, indent=4, separators=(',', ': '))

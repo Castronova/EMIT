@@ -39,8 +39,6 @@ class ViewEMIT(wx.Frame):
         self.bnb = wx.Notebook(self.pnlDocking)
         lowerpanel = viewLowerPanel(self.bnb)
 
-        self.parent = parent
-
         self.initMenu()
 
         # creating components
@@ -214,54 +212,6 @@ class ViewEMIT(wx.Frame):
 
     def checkUsers(self):
         return
-        # user_path = os.environ['APP_USER_PATH']
-        # print user_path
-        # if os.path.isfile(user_path):
-        #     print loadAccounts()
-        # else:
-        #     # File does not exist so create
-        #     open(user_path, "w")
-        #     controller = UserCtrl(self)
-        #     controller.Show()
-
-
-        # if os.path.isfile(userPath) == False:
-        #     file = open(userPath, 'w+')
-        #     controller = UserCtrl(self)
-        #     controller.CenterOnScreen()
-        #     controller.Show()
-        # else:
-        #     # users = self.loadAccounts()
-        #     users = loadAccounts()
-        #     if len(users) < 1:
-        #         controller = UserCtrl(self)
-        #         controller.CenterOnScreen()
-        #         controller.Show()
-        #
-        # # users = self.loadAccounts()
-        # users = loadAccounts()
-        # userAdded = False
-        # no = False
-        # if len(users) > 0:
-        #     userAdded = True
-        # while userAdded == False:# and no == False:
-        #
-        #     # users = self.loadAccounts()
-        #     users = loadAccounts()
-        #     if len(users) == 0 and no == False:
-        #         dial = wx.MessageDialog(None, 'You must add a user to continue', 'Question',
-        #             wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
-        #         if dial.ShowModal() == wx.ID_NO:
-        #             pid = os.getpid()
-        #             #os.system("kill -9 " + pid)
-        #             no = True
-        #         else:
-        #             controller = UserCtrl(self)
-        #             controller.CenterOnScreen()
-        #             controller.Show()
-        #     else:
-        #         userAdded = True
-        #         self.onClose(None)
 
     def onAddCsvFile(self, event):
         file_dialog = wx.FileDialog(self.Parent,
@@ -342,7 +292,7 @@ class ViewEMIT(wx.Frame):
             wx.WakeUpMainThread
 
     def onOpenDapViewer(self, event):
-        netcdf = NetcdfCtrl(self)
+        NetcdfCtrl(self.Canvas.GetTopLevelParent())
 
     def defaultview(self, event):
         """
@@ -379,12 +329,7 @@ class ViewEMIT(wx.Frame):
             self.defaultLoadDirectory = os.path.dirname(filepath)
 
     def Settings(self, event):
-
-        settings = settingsCtrl()
-        # settings.show()
-
-        # settings = viewMenuBar()
-        # settings.Show()
+        settingsCtrl(self.Canvas.GetTopLevelParent())
 
     def SaveConfiguration(self,event):
         if self.loadingpath == None:

@@ -8,10 +8,10 @@ import wx.propgrid as wxpg
 
 class settingsCtrl(settingsView):
 
-    def __init__(self):
+    def __init__(self, parent):
 
         # initialize the view objects
-        settingsView.__init__(self)
+        settingsView.__init__(self, parent)
 
         # populate console settings property grid
         self.settings.Append(wxpg.PropertyCategory('Console'))

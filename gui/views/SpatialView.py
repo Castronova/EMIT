@@ -33,8 +33,8 @@ class SpatialView:
         self.output_grid = wx.grid.Grid(lower_panel, size=(300, -1))
         set_up_grid(self.input_grid)
         set_up_grid(self.output_grid)
-        sizer_lower_panel.Add(self.input_grid, 1, flag=wx.EXPAND | wx.ALL)
-        sizer_lower_panel.Add(self.output_grid, 1, flag=wx.EXPAND | wx.ALL)
+        sizer_lower_panel.Add(self.input_grid, 1, flag=wx.EXPAND | wx.ALL, border=10)
+        sizer_lower_panel.Add(self.output_grid, 1, flag=wx.EXPAND | wx.ALL, border=10)
         lower_panel.SetSizer(sizer_lower_panel)
 
         # ADD PANEL TO THE FRAME

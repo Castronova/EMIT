@@ -6,10 +6,10 @@ import wx.propgrid as wxpg
 
 class settingsView(wx.Frame):
 
-    def __init__(self):
+    def __init__(self, parent):
         self.window_width = 350
         self.window_height=400
-        wx.Frame.__init__(self, parent=None, id=-1, title="Settings", pos=wx.DefaultPosition, size=wx.Size(self.window_width, self.window_height), style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
+        wx.Frame.__init__(self, parent=parent, id=-1, title="Settings", pos=wx.DefaultPosition, size=wx.Size(self.window_width, self.window_height), style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         self.panel = wx.Panel(self)
 

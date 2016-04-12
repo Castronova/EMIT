@@ -6,7 +6,8 @@ import numpy
 from matplotlib.collections import PolyCollection, LineCollection
 import wx
 from osgeo import ogr
-
+import stdlib
+from sprint import *
 
 class SpatialCtrl(SpatialView):
 
@@ -131,14 +132,14 @@ class SpatialCtrl(SpatialView):
         else:
             self.input_legend_label = self.input_combobox.GetValue()
             self.update_plot(self.input_combobox.GetValue())
-            self.update_input_table()
+            self.update_ei_table(stdlib.ExchangeItemType.INPUT)
 
         if self.output_combobox.GetValue() == "---":
             self.output_legend_label = ""
         else:
             self.output_legend_label = self.output_combobox.GetValue()
             self.update_plot(self.output_combobox.GetValue())
-            self.update_output_table()
+            self.update_ei_table(stdlib.ExchangeItemType.OUTPUT)
 
     def plot_polygon(self, data, color):
         poly_list = []
@@ -200,26 +201,28 @@ class SpatialCtrl(SpatialView):
         self.plot.axes.margins(0.1)
         self.plot.reDraw()
 
-    def update_input_table(self):
-        item = self.get_selected_input_exchange_item()
-        raw_data = self.get_item_in_raw_data(self.raw_input_data, item.keys()[0])
-        if raw_data:
-            self.edit_grid("input", 1, 1, item.keys()[0])
-            self.edit_grid("input", 2, 1, item.values()[0].GetGeometryName())
-            self.edit_grid("input", 3, 1, raw_data["geometry"]["count"])
-            self.edit_grid("input", 4, 1, item.values()[0].GetCoordinateDimension())
-            self.edit_grid("input", 5, 1, raw_data["geometry"]["extent"])
-        else:
-            elog.debug("Raw data is None, failed to update table")
 
-    def update_output_table(self):
-        item = self.get_selected_output_exchange_item()
-        raw_data = self.get_item_in_raw_data(self.raw_output_data, item.keys()[0])
-        if raw_data:
-            self.edit_grid("output", 1, 1, item.keys())
-            self.edit_grid("output", 2, 1, item.values()[0].GetGeometryName())
-            self.edit_grid("output", 3, 1, item.values()[0].GetCoordinateDimension())
-            self.edit_grid("output", 4, 1, raw_data["geometry"]["extent"])
-            self.edit_grid("output", 5, 1, raw_data["geometry"]["count"])
+    def update_ei_table(self, type=stdlib.ExchangeItemType.INPUT):
+
+        # get the selected item (either input or output)
+        if type == stdlib.ExchangeItemType.INPUT:
+            item = self.get_selected_input_exchange_item()
+            data = self.raw_input_data
         else:
-            elog.debug("Raw data is None, failed to update table")
+            item = self.get_selected_output_exchange_item()
+            data = self.raw_output_data
+
+        # get the metadata for this exchange item
+        raw_data = self.get_item_in_raw_data(data, item.keys()[0])
+
+        # populate the exchange item table
+        if raw_data:
+            self.edit_grid(type.lower(), 1, 1, item.keys()[0])
+            self.edit_grid(type.lower(), 2, 1, item.values()[0].GetGeometryName())
+            self.edit_grid(type.lower(), 3, 1, raw_data["geometry"]["count"])
+            self.edit_grid(type.lower(), 4, 1, item.values()[0].GetCoordinateDimension())
+            self.edit_grid(type.lower(), 5, 1, raw_data["geometry"]["extent"])
+        else:
+            msg = 'Failed to populate exchange item metadata'
+            elog.error(msg)
+            sPrint(msg, MessageType.ERROR)

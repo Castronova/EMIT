@@ -55,10 +55,10 @@ class OrganizationCtrl(OrganizationView):
         self.Close()
 
 class UserCtrl(UserView):
-    def __init__(self, parent):
+    def __init__(self, parent, OnStartUp = False):
 
         UserView.__init__(self, parent)
-
+        self.OnStartUp = OnStartUp
         self.organization_data = {}
 
         # initialize bindings
@@ -95,8 +95,9 @@ class UserCtrl(UserView):
         data["organizations"] = organizations
 
         return data
-
     def on_cancel(self, event):
+        if self.OnStartUp:
+            self.parent.verifyUsers()
         self.Close()
 
     def on_edit(self, event):
@@ -145,6 +146,7 @@ class UserCtrl(UserView):
             json.dump(data, f, sort_keys=True, indent=4, separators=(',', ':'))
             f.close()
         self.parent.refreshUserAccount()
+        self.is_alive = False
         self.Close()
 
     def on_text_enter(self, event):

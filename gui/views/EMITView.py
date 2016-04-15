@@ -14,6 +14,7 @@ from coordinator.emitLogging import elog
 from coordinator.engineManager import Engine
 from gui import events
 from gui.controller.CanvasCtrl import CanvasCtrl
+from gui.controller.UserCtrl import UserCtrl
 from gui.controller.DirectoryCtrl import LogicDirectory
 from gui.controller.NetcdfCtrl import NetcdfCtrl
 from gui.controller.UserCtrl import UserCtrl
@@ -211,7 +212,42 @@ class ViewEMIT(wx.Frame):
 
 
     def checkUsers(self):
-        return
+        userPath = os.environ['APP_USER_PATH']
+        print userPath
+        if os.path.isfile(userPath) == False:
+            file = open(userPath, 'w+')
+
+            controller = UserCtrl(self, OnStartUp=True)
+            controller.CenterOnScreen()
+            controller.Show()
+            while controller.is_alive:
+                pass
+        else:
+            users = loadAccounts()
+            if len(users) < 1:
+                controller = UserCtrl(self,OnStartUp = True)
+                controller.CenterOnScreen()
+                controller.Show()
+
+    def verifyUsers(self):
+        users = loadAccounts()
+        userAdded = False
+        no = False
+        if len(users) > 0:
+            userAdded = True
+        while userAdded == False:
+            users = loadAccounts()
+            if len(users) == 0 and no == False:
+                dial = wx.MessageDialog(None, "You must add a user to continue", 'Question', wx.YES_NO | wx.NO_DEFAULT
+                                        | wx.ICON_QUESTION)
+                if dial.ShowModal() == wx.ID_NO:
+                    pid = os.getpid()
+                    no = True
+                else:
+                    self.checkUsers()
+            else:
+                userAdded = True
+                self.onClose(None)
 
     def onAddCsvFile(self, event):
         file_dialog = wx.FileDialog(self.Parent,

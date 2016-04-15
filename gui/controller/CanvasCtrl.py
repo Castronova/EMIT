@@ -815,67 +815,79 @@ class CanvasCtrl(CanvasView):
         temporal_transformations = {i.name(): i for i in time.methods()}
 
         for link in links:
-
             # get 'from' and 'to' model attributes
-            from_model = None
             from_model_id = link.find('./from_id').text
             from_model_item = link.find('./from_item').text
             from_model_name = link.find('./from_name').text
-            to_model = None
             to_model_id = link.find('./to_id').text
             to_model_item = link.find('./to_item').text
             to_model_name = link.find('./to_name').text
 
-            # Find the model objects that correspond to from_model_id and to_model_id
-            for canvas_model_object, canvas_model_id in self.models.iteritems():
-                if canvas_model_id == from_model_id:
-                    from_model = canvas_model_object
-                elif canvas_model_id == to_model_id:
-                    to_model = canvas_model_object
+            from_model = self.getModelObjectFromId(from_model_id)
+            to_model = self.getModelObjectFromId(to_model_id)
 
-            # display error message if both models don't exist on the canvas
             if from_model is None or to_model is None:
-                # raise Exception('Could not find Model identifier in loaded models')
                 elog.critical("Failed to create link between %s and %s." % (from_model_name, to_model_name))
                 sPrint("Failed to create link between %s and %s." % (from_model_name, to_model_name), MessageType.CRITICAL)
+                return
 
-            # if both models exist on the canvas, create and draw the link
-            else:
+            sPrint('Adding link between: %s and %s... ' % (from_model_name, to_model_name))
 
-                sPrint('Adding link between: %s and %s... ' % (from_model_name, to_model_name))
+            # get the spatial and temporal transformations
+            transformation = link.find("./transformation")
+            temporal_transformation_name = transformation.find('./temporal').text
+            spatial_transformation_name = transformation.find('./spatial').text
+            # set the transformation values
+            temporal = temporal_transformations[temporal_transformation_name] if temporal_transformation_name.lower() != 'none' else None
+            spatial = spatial_transformations[spatial_transformation_name] if spatial_transformation_name.lower() != 'none' else None
 
-                # get the spatial and temporal transformations
-                transformation = link.find("./transformation")
-                temporal_transformation_name = transformation.find('./temporal').text
-                spatial_transformation_name = transformation.find('./spatial').text
+            # create the link
+            l = engine.addLink(source_id=from_model_id,
+                               source_item=from_model_item,
+                               target_id=to_model_id,
+                               target_item=to_model_item,
+                               spatial_interpolation=spatial,
+                               temporal_interpolation=temporal
+                               )
 
-                # set the transformation values
-                temporal = temporal_transformations[temporal_transformation_name] if temporal_transformation_name.lower() != 'none' else None
-                spatial = spatial_transformations[spatial_transformation_name] if spatial_transformation_name.lower() != 'none' else None
+            wx.CallAfter(self.createLoadedLinks, from_model, to_model)
 
-                # create the link
-                l = engine.addLink(source_id=from_model_id,
-                                   source_item=from_model_item,
-                                   target_id=to_model_id,
-                                   target_item=to_model_item,
-                                   spatial_interpolation=spatial,
-                                   temporal_interpolation=temporal
-                                   )
+    def createLoadedLinks(self, from_model, to_model):
+        if self.doPairModelsHaveLink(from_model, to_model):
+            #  Replace the one way arrow with a bidirectional
+            line = self.getLineFromPairModel(from_model, to_model)
+            self.remove_link_image(line)
+            self.createLine(from_model, to_model, "multiArrow.png")
+        else:
+            self.createLine(from_model, to_model, "rightArrowBlue60.png")
 
-                # this draws the line
-                # todo: these images need to be coming from config instead of hardcoded
-                wx.CallAfter(self.createLine, from_model, to_model, image_name='rightArrowBlue60.png')
+    def doPairModelsHaveLink(self, R1, R2):
+        for key, value in self.links.iteritems():
+            if R1 in value and R2 in value:
+                return True
+        return False
 
+    def getLineFromPairModel(self, R1, R2):
+        for key, value in self.links.iteritems():
+            if R1 in value and R2 in value:
+                return key
+        return None
 
+    def getModelObjectFromId(self, id):
+        for key, value in self.models.iteritems():
+            if id == value:
+                return key
+        return None
 
-    def SetLoadingPath(self, path):
-        self.loadingpath = path
 
     def GetLoadingPath(self):
         return self.loadingpath
 
     def getCursor(self):
         return self._Cursor
+
+    def SetLoadingPath(self, path):
+        self.loadingpath = path
 
     def setCursor(self, value=None):
         self._Cursor = value

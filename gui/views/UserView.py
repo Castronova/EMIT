@@ -3,8 +3,8 @@ import wx
 
 class OrganizationView(wx.Frame):
 
-    def __init__(self):
-        wx.Frame.__init__(self, parent=None, id=-1, pos=wx.DefaultPosition, size=wx.DefaultSize,
+    def __init__(self, parent):
+        wx.Frame.__init__(self, parent=parent, id=-1, pos=wx.DefaultPosition, size=wx.DefaultSize,
                           style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
         panel = wx.Panel(self)
         today = wx.DateTime_Now()

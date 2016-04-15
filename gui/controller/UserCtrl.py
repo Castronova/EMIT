@@ -10,7 +10,7 @@ import uuid
 
 class OrganizationCtrl(OrganizationView):
     def __init__(self, parent, data=None):
-        OrganizationView.__init__(self)
+        OrganizationView.__init__(self,parent)
         self.parent = parent
         self.SetTitle("Organization")
 

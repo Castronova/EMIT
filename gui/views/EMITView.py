@@ -3,7 +3,6 @@ import threading
 
 import wx
 import wx.html2
-import time
 import wx.lib.agw.aui as aui
 from wx.lib.newevent import NewEvent
 from wx.lib.pubsub import pub as Publisher
@@ -20,9 +19,7 @@ from gui.controller.UserCtrl import UserCtrl
 from gui.controller.ToolboxCtrl import LogicToolbox
 from gui.controller.settingsCtrl import settingsCtrl
 from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
-from utilities.gui import loadAccounts
 
-import coordinator.users as users
 # create custom events
 wxCreateBox, EVT_CREATE_BOX = NewEvent()
 wxStdOut, EVT_STDDOUT= NewEvent()
@@ -208,10 +205,6 @@ class ViewEMIT(wx.Frame):
         self.Bind(wx.EVT_MENU, self.onAddCsvFile, add_file)
         self.Bind(wx.EVT_MENU, self.onAddNetcdfFile, add_netcdf)
         self.Bind(wx.EVT_MENU, self.onOpenDapViewer, open_dap_viewer)
-
-
-    def checkUsers(self):
-        return
 
     def onAddCsvFile(self, event):
         file_dialog = wx.FileDialog(self.Parent,

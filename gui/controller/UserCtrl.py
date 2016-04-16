@@ -22,17 +22,6 @@ class OrganizationCtrl(OrganizationView):
         self.accept_button.Bind(wx.EVT_BUTTON, self.on_accept)
         self.cancel_button.Bind(wx.EVT_BUTTON, self.on_cancel)
 
-    def load_data(self, data):
-        if data:
-            self.name_textbox.SetValue(data["name"])
-            self.description_textbox.SetValue(data["description"])
-            self.type_combo.SetValue(data["type"])
-            self.url_textbox.SetValue(data["url"])
-            self.start_date_picker.SetValue(data["start_date"])
-            self.phone_textbox.SetValue(data["phone"])
-            self.email_textbox.SetValue(data["email"])
-        return
-
     def get_values(self):
         data = {
             "name": self.name_textbox.GetValue(),
@@ -44,6 +33,17 @@ class OrganizationCtrl(OrganizationView):
             "email": self.email_textbox.GetValue(),
         }
         return data
+
+    def load_data(self, data):
+        if data:
+            self.name_textbox.SetValue(data["name"])
+            self.description_textbox.SetValue(data["description"])
+            self.type_combo.SetValue(data["type"])
+            self.url_textbox.SetValue(data["url"])
+            self.start_date_picker.SetValue(data["start_date"])
+            self.phone_textbox.SetValue(data["phone"])
+            self.email_textbox.SetValue(data["email"])
+        return
 
     def on_accept(self, event):
         data = self.get_values()
@@ -105,7 +105,27 @@ class UserCtrl(UserView):
 
         return data
 
+    def json_serial(self, obj):
+        """JSON serializer for objects not serializable by default json code"""
+
+        if isinstance(obj, datetime.datetime):
+            serial = obj.isoformat()
+            return serial
+        raise TypeError("Type not serializable")
+
+    @staticmethod
+    def is_user_json_empty():
+        path = environment.getDefaultUsersJsonPath()
+        if os.stat(path).st_size == 0:
+            return True
+        return False
+
     def on_cancel(self, event):
+        try:
+            self.parent.check_users_json()
+        except KeyError:
+            # Parent does not have check_users_json()
+            pass
         self.Close()
 
     def on_edit(self, event):
@@ -115,14 +135,6 @@ class UserCtrl(UserView):
         selected = self.organizationListBox.GetString(index)
         data = self.organization_data[selected]
         OrganizationCtrl(self, data=data)
-
-    def json_serial(self, obj):
-        """JSON serializer for objects not serializable by default json code"""
-
-        if isinstance(obj, datetime.datetime):
-            serial = obj.isoformat()
-            return serial
-        raise TypeError ("Type not serializable")
 
     def on_ok(self, event):
         new_data = self.get_text_box_values()
@@ -152,6 +164,7 @@ class UserCtrl(UserView):
             data.update(previous_users)
             json.dump(data, f, sort_keys=True, indent=4, separators=(',', ':'))
             f.close()
+
         self.parent.refreshUserAccount()
         self.Close()
 

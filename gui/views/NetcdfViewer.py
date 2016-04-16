@@ -47,14 +47,14 @@ class NetcdfViewer(wx.Frame):
         self.url_textbox = wx.TextCtrl(parent=self.bottom_panel, value="http://129.123.51.203/opendap", size=(-1, 25))
         self.get_btn = wx.Button(parent=self.bottom_panel, label="Get Files", size=(-1, 27))
         self.download_btn = wx.Button(parent=self.bottom_panel, id=wx.ID_ANY, label="Download")
-        self.add_to_canvas_btn = wx.Button(parent=self.bottom_panel, id=wx.ID_ANY, label="View")
+        self.view_btn = wx.Button(parent=self.bottom_panel, id=wx.ID_ANY, label="View")
 
         hbox_url.Add(self.url_textbox, 1, 0)
         hbox_url.Add(self.get_btn, 0, wx.ALL)
         vbox_bottom_panel.Add(hbox_url, 1, wx.EXPAND | wx.ALL, 2)
 
         hbox_bottom_panel.Add(self.download_btn, 1, wx.EXPAND | wx.ALL, 2)
-        hbox_bottom_panel.Add(self.add_to_canvas_btn, 1, wx.EXPAND | wx.ALL, 2)
+        hbox_bottom_panel.Add(self.view_btn, 1, wx.EXPAND | wx.ALL, 2)
 
         vbox_bottom_panel.Add(hbox_bottom_panel, 1, wx.EXPAND | wx.ALL, 1)
 

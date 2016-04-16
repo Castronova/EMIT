@@ -20,18 +20,29 @@ class NetcdfCtrl(NetcdfViewer):
         self.xlink = "http://www.w3.org/1999/xlink"
         NetcdfViewer.__init__(self, parent=parent)
         self.Bind(wx.EVT_BUTTON, self.downloadFile, self.download_btn)
-        self.Bind(wx.EVT_BUTTON, self.addToCanvas, self.add_to_canvas_btn)
+        self.Bind(wx.EVT_BUTTON, self.onView, self.view_btn)
         self.Bind(wx.EVT_BUTTON, self.RunCrawler, self.get_btn)
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.enableBtns)
         self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.disableBtns)
         self.disableBtns(None)
 
+    def getSelectedURL(self):
+        #  Returns -1 if none is selected
+        index = self.getSelectedIndexRow()
+        if index >= 0:
+            return self.TableValues[index][3]
+        return -1
 
-    def addToCanvas(self, event):
-        item = self.getSelectedInformation()
-        # this will get the url we want
-        url = self.TableValues[item][3]
-        filename = self.TableValues[item][0]
+    def getSelectedFileName(self):
+        #  Returns -1 if none is selected
+        index = self.getSelectedIndexRow()
+        if index >= 0:
+            return self.TableValues[index][0]
+        return -1
+
+    def onView(self, event):
+        filename = self.getSelectedFileName()
+        url = self.getSelectedURL()
         NetcdfDetailsCtrl(self, url, filename)
 
     def autoSizeColumns(self):
@@ -66,13 +77,13 @@ class NetcdfCtrl(NetcdfViewer):
         return results
 
     def disableBtns(self, event):
-        self.add_to_canvas_btn.Disable()
+        self.view_btn.Disable()
         self.download_btn.Disable()
 
     def downloadFile(self, event):
 
         # get the file url by rowid and colid
-        rowid = self.getSelectedInformation()
+        rowid = self.getSelectedIndexRow()
         colid = self.getListCtrlColumnByName('url')
         url = self.TableValues[rowid][colid]
 
@@ -111,15 +122,11 @@ class NetcdfCtrl(NetcdfViewer):
 
 
     def enableBtns(self, event):
-        self.add_to_canvas_btn.Enable()
+        self.view_btn.Enable()
         self.download_btn.Enable()
 
-    def getSelectedInformation(self):
-        num = self.variable_list.GetItemCount()
-        for i in range(num):
-            if self.variable_list.IsSelected(i):
-                v_name = self.variable_list.GetItemText(1)
-                return i
+    def getSelectedIndexRow(self):
+        return self.variable_list.GetFirstSelected()
     
     def update_statusbar(self, status_bar, text):
         status_bar.SetStatusText(text)

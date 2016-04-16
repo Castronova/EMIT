@@ -5,7 +5,7 @@ import os
 import coordinator.users as users
 import json
 import uuid
-
+import environment
 
 
 class OrganizationCtrl(OrganizationView):
@@ -58,6 +58,7 @@ class UserCtrl(UserView):
     def __init__(self, parent):
 
         UserView.__init__(self, parent)
+        self.create_user_json()
 
         self.organization_data = {}
 
@@ -77,6 +78,14 @@ class UserCtrl(UserView):
 
     def add_organization_clicked(self, event):
         OrganizationCtrl(self)
+
+    @staticmethod
+    def create_user_json():
+        # If path path exist do nothing else create it
+        path = environment.getDefaultUsersJsonPath()
+        if os.path.isfile(path):
+            return
+        open(path, "w")
 
     def datetimeToString(self, date):
         date = datetime.datetime.strptime(date.FormatISOCombined(), "%Y-%m-%dT%H:%M:%S")
@@ -126,7 +135,6 @@ class UserCtrl(UserView):
             affil = users.Affiliation(email=i["email"], startDate=start_date, organization=organ, person=person, phone=i["phone"])
             organizations.append(organ)
             affilations.append(affil)
-
 
         user_json_filepath = os.environ['APP_USER_PATH']  # get the file path of the user.json
 

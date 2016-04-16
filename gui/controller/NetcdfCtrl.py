@@ -26,28 +26,22 @@ class NetcdfCtrl(NetcdfViewer):
         self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.disableBtns)
         self.disableBtns(None)
 
-    def getSelectedURL(self):
-        #  Returns -1 if none is selected
-        index = self.getSelectedIndexRow()
-        if index >= 0:
-            return self.TableValues[index][3]
-        return -1
-
-    def getSelectedFileName(self):
-        #  Returns -1 if none is selected
-        index = self.getSelectedIndexRow()
-        if index >= 0:
-            return self.TableValues[index][0]
-        return -1
-
-    def onView(self, event):
-        filename = self.getSelectedFileName()
-        url = self.getSelectedURL()
-        NetcdfDetailsCtrl(self, url, filename)
-
     def autoSizeColumns(self):
         for i in range(self.variable_list.GetColumnCount()):
             self.variable_list.SetColumnWidth(i, wx.LIST_AUTOSIZE)
+
+    def CalculateBytes(self, fileSize):
+        if fileSize > 1000 and fileSize < 1000000:
+            fileSize = fileSize / 1000.0
+            return "%0.2f Kilobytes" % fileSize
+        elif fileSize > 1000000 and fileSize < 1000000000:
+            fileSize = fileSize / 1000000.0
+            return "%0.2f Megabytes" %fileSize
+        elif fileSize > 1000000000 and fileSize < 1000000000000:
+            fileSize = float(fileSize) / 1000000000.0
+            return "%0.2f Gigabytes" % fileSize
+        else:
+            return str(fileSize) + " bytes"
 
     def check_url(self, url):
         """
@@ -120,7 +114,6 @@ class NetcdfCtrl(NetcdfViewer):
         dsin.close()
         dsout.close()
 
-
     def enableBtns(self, event):
         self.view_btn.Enable()
         self.download_btn.Enable()
@@ -128,9 +121,41 @@ class NetcdfCtrl(NetcdfViewer):
     def getSelectedIndexRow(self):
         return self.variable_list.GetFirstSelected()
     
-    def update_statusbar(self, status_bar, text):
-        status_bar.SetStatusText(text)
-        wx.Yield()
+    def getListCtrlColumnByName(self, name):
+        """
+        Gets the list control column index by search for column name
+        :param name: name of the column to search for
+        :return: index of the column, -1 of none is found
+        """
+
+        # get the list control columns
+        cols = [col_name.upper() for col_name in self.list_ctrl_columns]
+        search_name = name.upper()
+        i = 0
+        for col in cols:
+            if col == search_name:
+                return i
+            i += 1
+        return -1
+
+    def getSelectedURL(self):
+        #  Returns -1 if none is selected
+        index = self.getSelectedIndexRow()
+        if index >= 0:
+            return self.TableValues[index][3]
+        return -1
+
+    def getSelectedFileName(self):
+        #  Returns -1 if none is selected
+        index = self.getSelectedIndexRow()
+        if index >= 0:
+            return self.TableValues[index][0]
+        return -1
+
+    def onView(self, event):
+        filename = self.getSelectedFileName()
+        url = self.getSelectedURL()
+        NetcdfDetailsCtrl(self, url, filename)
 
     def get_server_status_code(self, url):
         """
@@ -145,21 +170,6 @@ class NetcdfCtrl(NetcdfViewer):
             return conn.getresponse().status
         except StandardError:
             return None
-
-
-    def CalculateBytes(self, fileSize):
-        if fileSize > 1000 and fileSize < 1000000:
-            fileSize = fileSize / 1000.0
-            return "%0.2f Kilobytes" % fileSize
-        elif fileSize > 1000000 and fileSize < 1000000000:
-            fileSize = fileSize / 1000000.0
-            return "%0.2f Megabytes" %fileSize
-        elif fileSize > 1000000000 and fileSize < 1000000000000:
-            fileSize = float(fileSize) / 1000000000.0
-            return "%0.2f Gigabytes" % fileSize
-        else:
-            return str(fileSize) + " bytes"
-
 
     def RunCrawler(self, event):
         #self.status_bar.SetStatusText("Loading")
@@ -217,19 +227,6 @@ class NetcdfCtrl(NetcdfViewer):
             colNumber = 0
             rowNumber += 1
 
-    def getListCtrlColumnByName(self, name):
-        """
-        Gets the list control column index by search for column name
-        :param name: name of the column to search for
-        :return: index of the column, -1 of none is found
-        """
-
-        # get the list control columns
-        cols = [col_name.upper() for col_name in self.list_ctrl_columns]
-        search_name = name.upper()
-        i = 0
-        for col in cols:
-            if col == search_name:
-                return i
-            i += 1
-        return -1
+    def update_statusbar(self, status_bar, text):
+        status_bar.SetStatusText(text)
+        wx.Yield()

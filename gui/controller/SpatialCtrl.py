@@ -1,4 +1,4 @@
-from gui.views.SpatialView import SpatialView, stretch_grid
+from gui.views.SpatialView import SpatialView
 from coordinator import engineAccessors
 from utilities import geometry
 from coordinator.emitLogging import elog
@@ -38,8 +38,22 @@ class SpatialCtrl(SpatialView):
     def clear_plot(self):
         self.plot.clearPlot()
 
-    def clear_table(self):
-        pass
+    def clear_grid(self, type):
+        """
+        clears the metadata from the input/output exchange item grids
+        :param type: type if echange item 'input' or 'output'
+        :return: None
+        """
+
+        if type == 'input':
+            for row in range(1, self.input_grid.GetNumberRows()):
+                self.clear_cell(self.input_grid, row, 1)
+        elif type == 'output':
+            for row in range(1, self.output_grid.GetNumberRows()):
+                self.clear_cell(self.output_grid, row, 1)
+
+    def clear_cell(self, grid, row, col):
+        grid.SetCellValue(row, col, '')
 
     def edit_grid(self, grid, x_loc, y_loc, value):
         if grid == "input":
@@ -49,8 +63,6 @@ class SpatialCtrl(SpatialView):
             grid = self.output_grid
 
         grid.SetCellValue(x_loc, y_loc, str(value))
-        grid.AutoSizeColumns()
-        stretch_grid(grid=grid)
 
     def get_color_by_plot_name(self, name):
         if name in self.__input_data:
@@ -129,6 +141,7 @@ class SpatialCtrl(SpatialView):
         self.clear_plot()
         if self.input_combobox.GetValue() == "---":
             self.input_legend_label = ""
+            self.clear_grid('input')
         else:
             self.input_legend_label = self.input_combobox.GetValue()
             self.update_plot(self.input_combobox.GetValue())
@@ -136,6 +149,7 @@ class SpatialCtrl(SpatialView):
 
         if self.output_combobox.GetValue() == "---":
             self.output_legend_label = ""
+            self.clear_grid('output')
         else:
             self.output_legend_label = self.output_combobox.GetValue()
             self.update_plot(self.output_combobox.GetValue())

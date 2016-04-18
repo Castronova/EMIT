@@ -165,6 +165,18 @@ def getDefaultSettingsPath():
 
     return settings
 
+
+def getDefaultUsersJsonPath():
+    currentdir = os.path.dirname(os.path.abspath(__file__))
+    users_path = os.path.abspath(os.path.join(currentdir, './app_data/config/users.json'))
+
+    # get the default location relative to the packeage
+    if getattr(sys, 'frozen', False):
+        users_path = os.path.join(sys._MEIPASS, 'app_data/config/users.json')
+
+    return users_path
+
+
 def getEnvironmentVars(settings=None):
 
     # get the default location for the filepath if it is not provided

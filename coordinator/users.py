@@ -16,9 +16,9 @@ from coordinator.emitLogging import elog
 
 class Person(object):
 
-    def __init__(self, firstname, lastname, middlename=None):
-        self.firstname = firstname
-        self.lastname  = lastname
+    def __init__(self, first_name, last_name, middlename=None):
+        self.firstname = first_name
+        self.lastname  = last_name
         self.middlename = middlename
 
 
@@ -95,7 +95,7 @@ def BuildAffiliationfromJSON(j):
     for key, value in json_dict.iteritems():
 
         p = Person(**value['person'])
-        o = Organization(**value['organization'])
+        o = Organization(**value['organizations'])
         value['affiliation'].update(dict(person=p, organization=o))
         a = Affiliation(**value['affiliation'])
         affiliations.append(a)

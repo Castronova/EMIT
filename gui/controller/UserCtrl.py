@@ -125,7 +125,7 @@ class UserCtrl(UserView):
             self.parent.check_users_json()
         except KeyError:
             # Parent does not have check_users_json()
-        self.Close()
+            self.Close()
 
     def on_edit(self, event):
         index = self.organizationListBox.GetSelection()
@@ -137,7 +137,7 @@ class UserCtrl(UserView):
 
     def on_ok(self, event):
         new_data = self.get_text_box_values()
-        person = users.Person(firstname=new_data["person"]["first_name"], lastname=new_data["person"]["last_name"])
+        person = users.Person(first_name=new_data["person"]["first_name"], last_name=new_data["person"]["last_name"])
         organizations = []
         affilations = []
         for i in new_data["organizations"]:

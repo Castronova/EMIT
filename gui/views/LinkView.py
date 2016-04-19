@@ -13,11 +13,12 @@ class LinkView(wx.Frame):
     def __init__(self, parent, output, input):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=wx.EmptyString, pos=wx.DefaultPosition,
                           size=wx.Size(700, 625),
-                          style=wx.DEFAULT_FRAME_STYLE | wx.FRAME_FLOAT_ON_PARENT
-                                                         ^ (wx.RESIZE_BORDER | wx.MINIMIZE_BOX | wx.MAXIMIZE_BOX))
-
+                          style=wx.DEFAULT_FRAME_STYLE | wx.FRAME_FLOAT_ON_PARENT)#^ (wx.RESIZE_BORDER | wx.MINIMIZE_BOX | wx.MAXIMIZE_BOX))
+        print sys.platform
         if sys.platform == 'darwin':
             self.SetSize((700, 520))
+        if sys.platform == 'win32':
+            self.SetSize((700,530))
         self.font = wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL)
         self.input_component = input
         self.output_component = output

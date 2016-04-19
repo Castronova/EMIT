@@ -5,7 +5,7 @@ import os
 import coordinator.users as users
 import json
 import uuid
-
+import environment
 
 
 class OrganizationCtrl(OrganizationView):
@@ -22,17 +22,6 @@ class OrganizationCtrl(OrganizationView):
         self.accept_button.Bind(wx.EVT_BUTTON, self.on_accept)
         self.cancel_button.Bind(wx.EVT_BUTTON, self.on_cancel)
 
-    def load_data(self, data):
-        if data:
-            self.name_textbox.SetValue(data["name"])
-            self.description_textbox.SetValue(data["description"])
-            self.type_combo.SetValue(data["type"])
-            self.url_textbox.SetValue(data["url"])
-            self.start_date_picker.SetValue(data["start_date"])
-            self.phone_textbox.SetValue(data["phone"])
-            self.email_textbox.SetValue(data["email"])
-        return
-
     def get_values(self):
         data = {
             "name": self.name_textbox.GetValue(),
@@ -44,6 +33,17 @@ class OrganizationCtrl(OrganizationView):
             "email": self.email_textbox.GetValue(),
         }
         return data
+
+    def load_data(self, data):
+        if data:
+            self.name_textbox.SetValue(data["name"])
+            self.description_textbox.SetValue(data["description"])
+            self.type_combo.SetValue(data["type"])
+            self.url_textbox.SetValue(data["url"])
+            self.start_date_picker.SetValue(data["start_date"])
+            self.phone_textbox.SetValue(data["phone"])
+            self.email_textbox.SetValue(data["email"])
+        return
 
     def on_accept(self, event):
         data = self.get_values()
@@ -59,6 +59,7 @@ class UserCtrl(UserView):
 
         UserView.__init__(self, parent)
         self.OnStartUp = OnStartUp
+
         self.organization_data = {}
 
         # initialize bindings
@@ -78,6 +79,14 @@ class UserCtrl(UserView):
     def add_organization_clicked(self, event):
         OrganizationCtrl(self)
 
+    @staticmethod
+    def create_user_json():
+        # If path path exist do nothing else create it
+        path = environment.getDefaultUsersJsonPath()
+        if os.path.isfile(path):
+            return
+        open(path, "w")
+
     def datetimeToString(self, date):
         date = datetime.datetime.strptime(date.FormatISOCombined(), "%Y-%m-%dT%H:%M:%S")
         date = self.json_serial(date)
@@ -95,9 +104,27 @@ class UserCtrl(UserView):
         data["organizations"] = organizations
 
         return data
+        
+    def json_serial(self, obj):
+        """JSON serializer for objects not serializable by default json code"""
+
+        if isinstance(obj, datetime.datetime):
+            serial = obj.isoformat()
+            return serial
+        raise TypeError("Type not serializable")
+
+    @staticmethod
+    def is_user_json_empty():
+        path = environment.getDefaultUsersJsonPath()
+        if os.stat(path).st_size == 0:
+            return True
+        return False
+
     def on_cancel(self, event):
-        if self.OnStartUp:
-            self.parent.verifyUsers()
+        try:
+            self.parent.check_users_json()
+        except KeyError:
+            # Parent does not have check_users_json()
         self.Close()
 
     def on_edit(self, event):
@@ -107,14 +134,6 @@ class UserCtrl(UserView):
         selected = self.organizationListBox.GetString(index)
         data = self.organization_data[selected]
         OrganizationCtrl(self, data=data)
-
-    def json_serial(self, obj):
-        """JSON serializer for objects not serializable by default json code"""
-
-        if isinstance(obj, datetime.datetime):
-            serial = obj.isoformat()
-            return serial
-        raise TypeError ("Type not serializable")
 
     def on_ok(self, event):
         new_data = self.get_text_box_values()
@@ -127,7 +146,6 @@ class UserCtrl(UserView):
             affil = users.Affiliation(email=i["email"], startDate=start_date, organization=organ, person=person, phone=i["phone"])
             organizations.append(organ)
             affilations.append(affil)
-
 
         user_json_filepath = os.environ['APP_USER_PATH']  # get the file path of the user.json
 
@@ -145,6 +163,7 @@ class UserCtrl(UserView):
             data.update(previous_users)
             json.dump(data, f, sort_keys=True, indent=4, separators=(',', ':'))
             f.close()
+
         self.parent.refreshUserAccount()
         self.is_alive = False
         self.Close()

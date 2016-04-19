@@ -125,7 +125,8 @@ class UserCtrl(UserView):
             self.parent.check_users_json()
         except KeyError:
             # Parent does not have check_users_json()
-            self.Close()
+            pass
+        self.Close()
 
     def on_edit(self, event):
         index = self.organizationListBox.GetSelection()

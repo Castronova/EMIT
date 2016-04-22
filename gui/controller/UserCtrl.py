@@ -65,7 +65,6 @@ class UserCtrl(UserView):
         # initialize bindings
         self.firstnameTextBox.Bind(wx.EVT_TEXT, self.on_text_enter)
         self.lastnameTextBox.Bind(wx.EVT_TEXT, self.on_text_enter)
-        # self.organizationTextBox.Bind(wx.EVT_TEXT, self.on_text_enter)
         self.phoneTextBox.Bind(wx.EVT_TEXT, self.on_text_enter)
         self.emailTextBox.Bind(wx.EVT_TEXT, self.on_text_enter)
         self.addressTextBox.Bind(wx.EVT_TEXT, self.on_text_enter)
@@ -200,12 +199,3 @@ class UserCtrl(UserView):
         selected = self.organizationListBox.GetString(index)
         del self.organization_data[selected]
         self.organizationListBox.Delete(index)
-
-    def setvalues(self, first, last, org, phone, email, address, date):
-        self.firstnameTextBox = first
-        self.lastnameTextBox = last
-        # self.organizationTextBox = org
-        self.phoneTextBox = phone
-        self.emailTextBox = email
-        self.addressTextBox = address
-        self.startDatePicker = date

@@ -4,7 +4,7 @@ import wx
 class OrganizationView(wx.Frame):
 
     def __init__(self, parent):
-        wx.Frame.__init__(self, parent=parent, title="Add User", id=-1, pos=wx.DefaultPosition, size=wx.DefaultSize,
+        wx.Frame.__init__(self, parent=parent, id=-1, pos=wx.DefaultPosition, size=wx.DefaultSize,
                           style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
         panel = wx.Panel(self)
         today = wx.DateTime_Now()
@@ -82,7 +82,6 @@ class UserView(wx.Frame):
         #  Text Boxes
         self.firstnameTextBox = wx.TextCtrl(self)
         self.lastnameTextBox = wx.TextCtrl(self)
-        # self.organizationTextBox = wx.TextCtrl(self, size=(150, -1))
         self.addOrganization = wx.Button(self, label="Add", style=wx.BU_EXACTFIT)
         self.editOrganization = wx.Button(self, label="Edit", style=wx.BU_EXACTFIT)
         self.removeOrganization = wx.Button(self, label="Remove", style=wx.BU_EXACTFIT)
@@ -105,7 +104,6 @@ class UserView(wx.Frame):
         #  Textbox
         self.sizer.Add(self.firstnameTextBox, pos=(1, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND)
         self.sizer.Add(self.lastnameTextBox, pos=(2, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND)
-        # self.sizer.Add(self.organizationTextBox, pos=(3, 1), span=(1, 1), flag=wx.TOP)
         self.sizer.Add(self.addOrganization, pos=(3, 1), span=(1, 1), flag=wx.TOP)
         self.sizer.Add(self.editOrganization, pos=(3, 2), span=(1, 1), flag=wx.TOP)
         self.sizer.Add(self.removeOrganization, pos=(3, 3), span=(1, 1), flag=wx.TOP)

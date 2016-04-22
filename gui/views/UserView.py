@@ -66,62 +66,66 @@ class UserView(wx.Frame):
 
         self.parent = parent
 
-        self.sizer = wx.GridBagSizer(5, 5)
+        psizer = wx.GridBagSizer(5, 5)
+        fsizer = wx.BoxSizer(wx.VERTICAL)
+
         today = wx.DateTime_Now()
 
+        panel = wx.Panel(self, -1, style=wx.TAB_TRAVERSAL)
+
         #  Static Text
-        self.firstname_label = wx.StaticText(self, label="First Name: ")
-        self.lastname_label = wx.StaticText(self, label="Last Name: ")
-        self.organization_label = wx.StaticText(self, label="Organization: ")
-        self.phone_label = wx.StaticText(self, label=" Phone: ")
-        self.email_label = wx.StaticText(self, label=" Email: ")
-        self.address_label = wx.StaticText(self, label=" Address: ")
-        self.startdate_label = wx.StaticText(self, label=" Start Date: ")
-        self.whitespace_label = wx.StaticText(self, label="")
+        self.firstname_label = wx.StaticText(panel, label="First Name: ")
+        self.lastname_label = wx.StaticText(panel, label="Last Name: ")
+        self.organization_label = wx.StaticText(panel, label="Organization: ")
+        self.phone_label = wx.StaticText(panel, label=" Phone: ")
+        self.email_label = wx.StaticText(panel, label=" Email: ")
+        self.address_label = wx.StaticText(panel, label=" Address: ")
+        self.startdate_label = wx.StaticText(panel, label=" Start Date: ")
+        self.whitespace_label = wx.StaticText(panel, label="")
 
         #  Text Boxes
-        self.firstnameTextBox = wx.TextCtrl(self)
-        self.lastnameTextBox = wx.TextCtrl(self)
-        self.addOrganization = wx.Button(self, label="Add", style=wx.BU_EXACTFIT)
-        self.editOrganization = wx.Button(self, label="Edit", style=wx.BU_EXACTFIT)
-        self.removeOrganization = wx.Button(self, label="Remove", style=wx.BU_EXACTFIT)
-        self.organizationListBox = wx.ListBox(self)
-        self.phoneTextBox = wx.TextCtrl(self)
-        self.emailTextBox = wx.TextCtrl(self)
-        self.addressTextBox = wx.TextCtrl(self)
-        self.startDatePicker = wx.DatePickerCtrl(self, id=wx.ID_ANY, dt=today)
+        self.firstnameTextBox = wx.TextCtrl(panel)
+        self.lastnameTextBox = wx.TextCtrl(panel)
+        self.addOrganization = wx.Button(panel, label="Add", style=wx.BU_EXACTFIT)
+        self.editOrganization = wx.Button(panel, label="Edit", style=wx.BU_EXACTFIT)
+        self.removeOrganization = wx.Button(panel, label="Remove", style=wx.BU_EXACTFIT)
+        self.organizationListBox = wx.ListBox(panel)
+        self.phoneTextBox = wx.TextCtrl(panel)
+        self.emailTextBox = wx.TextCtrl(panel)
+        self.addressTextBox = wx.TextCtrl(panel)
+        self.startDatePicker = wx.DatePickerCtrl(panel, id=wx.ID_ANY, dt=today)
+
 
         #  Static Text
-        self.sizer.Add(self.firstname_label, pos=(1, 0), flag=wx.LEFT, border=15)
-        self.sizer.Add(self.lastname_label, pos=(2, 0), flag=wx.LEFT, border=15)
-        self.sizer.Add(self.organization_label, pos=(3, 0), flag=wx.LEFT, border=15)
-        self.sizer.Add(self.phone_label, pos=(5, 0), flag=wx.LEFT, border=10)
-        self.sizer.Add(self.email_label, pos=(6, 0), flag=wx.LEFT, border=10)
-        self.sizer.Add(self.address_label, pos=(7, 0), flag=wx.LEFT, border=10)
-        self.sizer.Add(self.startdate_label, pos=(8, 0), flag=wx.LEFT, border=10)
-        self.sizer.Add(self.whitespace_label, pos=(0, 4), flag=wx.LEFT, border=5)
+        psizer.Add(self.firstname_label, pos=(1, 0), flag=wx.LEFT, border=15)
+        psizer.Add(self.lastname_label, pos=(2, 0), flag=wx.LEFT, border=15)
+        psizer.Add(self.organization_label, pos=(3, 0), flag=wx.LEFT, border=15)
+        psizer.Add(self.phone_label, pos=(5, 0), flag=wx.LEFT, border=10)
+        psizer.Add(self.email_label, pos=(6, 0), flag=wx.LEFT, border=10)
+        psizer.Add(self.address_label, pos=(7, 0), flag=wx.LEFT, border=10)
+        psizer.Add(self.startdate_label, pos=(8, 0), flag=wx.LEFT, border=10)
+        psizer.Add(self.whitespace_label, pos=(0, 4), flag=wx.LEFT, border=5)
 
         #  Textbox
-        self.sizer.Add(self.firstnameTextBox, pos=(1, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND)
-        self.sizer.Add(self.lastnameTextBox, pos=(2, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND)
-        self.sizer.Add(self.addOrganization, pos=(3, 1), span=(1, 1), flag=wx.TOP)
-        self.sizer.Add(self.editOrganization, pos=(3, 2), span=(1, 1), flag=wx.TOP)
-        self.sizer.Add(self.removeOrganization, pos=(3, 3), span=(1, 1), flag=wx.TOP)
-        self.sizer.Add(self.organizationListBox, pos=(4, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND)
-
-        self.sizer.Add(self.phoneTextBox, pos=(5, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND)
-        self.sizer.Add(self.emailTextBox, pos=(6, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND)
-        self.sizer.Add(self.addressTextBox, pos=(7, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND)
-        self.sizer.Add(self.startDatePicker, pos=(8, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND)
+        psizer.Add(self.firstnameTextBox, pos=(1, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND)
+        psizer.Add(self.lastnameTextBox, pos=(2, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND)
+        psizer.Add(self.addOrganization, pos=(3, 1), span=(1, 1), flag=wx.TOP)
+        psizer.Add(self.editOrganization, pos=(3, 2), span=(1, 1), flag=wx.TOP)
+        psizer.Add(self.removeOrganization, pos=(3, 3), span=(1, 1), flag=wx.TOP)
+        psizer.Add(self.organizationListBox, pos=(4, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND)
+        psizer.Add(self.phoneTextBox, pos=(5, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND)
+        psizer.Add(self.emailTextBox, pos=(6, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND)
+        psizer.Add(self.addressTextBox, pos=(7, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND)
+        psizer.Add(self.startDatePicker, pos=(8, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND)
 
         #  Line Break After all the textboxes
         self.lineBreak = wx.StaticLine(self)
-        self.sizer.Add(self.lineBreak, pos=(9, 0), span=(1, 5), flag=wx.EXPAND | wx.TOP, border=10)
+        psizer.Add(self.lineBreak, pos=(9, 0), span=(1, 5), flag=wx.EXPAND | wx.TOP, border=10)
 
         #  Buttons
         buttonsizer = wx.StdDialogButtonSizer()
-        self.okbutton = wx.Button(self, wx.ID_OK)
-        self.cancelButton = wx.Button(self, wx.ID_CANCEL)
+        self.okbutton = wx.Button(panel, wx.ID_OK)
+        self.cancelButton = wx.Button(panel, wx.ID_CANCEL)
 
         self.okbutton.SetDefault()
         self.okbutton.Disable()
@@ -130,8 +134,15 @@ class UserView(wx.Frame):
         buttonsizer.AddButton(self.cancelButton)
         buttonsizer.Realize()
 
-        self.sizer.Add(buttonsizer, pos=(10, 1), span=(0, 3), flag=wx.ALIGN_RIGHT | wx.LEFT, border=10)
+        psizer.Add(buttonsizer, pos=(10, 1), span=(0, 3), flag=wx.ALIGN_RIGHT | wx.LEFT, border=10)
 
-        self.sizer.AddGrowableCol(2)
-        self.SetSizer(self.sizer)
-        self.sizer.Fit(self)
+        # set the sizer for the panel
+        panel.SetSizer(psizer)
+
+        # add the panel to the fsizer
+        fsizer.Add(panel)
+
+        # set the sizer for the frame
+        self.SetSizer(fsizer)
+        self.Fit()
+

@@ -50,10 +50,6 @@ class EMITCtrl(ViewEMIT):
     def check_users_json(self):
         UserCtrl.create_user_json()
         if UserCtrl.is_user_json_empty():
-            message = wx.MessageDialog(None, "No users have been registered. Would you like to register a user?", "Question", wx.YES_NO | wx.YES_DEFAULT | wx.ICON_QUESTION)
-            if message.ShowModal() == wx.ID_NO:
-                self.onClose(None)
-                return
             controller = UserCtrl(self)
             controller.CenterOnScreen()
             controller.Show()

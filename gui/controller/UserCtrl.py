@@ -121,7 +121,12 @@ class UserCtrl(UserView):
         return False
 
     def on_cancel(self, event):
+        # If no users exist it wil prompt them to add one. Clicking No will close the application
         try:
+            if self.is_user_json_empty():
+                message = wx.MessageDialog(None, "No users have been registered. Would you like to register a user?", "Question", wx.YES_NO | wx.YES_DEFAULT | wx.ICON_QUESTION)
+                if message.ShowModal() == wx.ID_NO:
+                    self.parent.onClose(None)
             self.parent.check_users_json()
         except KeyError:
             # Parent does not have check_users_json()

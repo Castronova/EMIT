@@ -61,7 +61,7 @@ class UserView(wx.Frame):
 
     def __init__(self, parent):
 
-        wx.Frame.__init__(self, parent=parent, style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^
+        wx.Frame.__init__(self, parent=parent, title="Add User", style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^
                            wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         self.parent = parent
@@ -132,7 +132,7 @@ class UserView(wx.Frame):
         buttonsizer.AddButton(self.cancelButton)
         buttonsizer.Realize()
 
-        self.sizer.Add(buttonsizer, pos=(10, 1), span=(0, 3), flag=wx.ALIGN_RIGHT | wx.ALL, border=5)
+        self.sizer.Add(buttonsizer, pos=(10, 1), span=(0, 3), flag=wx.ALIGN_RIGHT | wx.LEFT, border=10)
 
         self.sizer.AddGrowableCol(2)
         self.SetSizer(self.sizer)

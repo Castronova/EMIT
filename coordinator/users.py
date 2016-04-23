@@ -16,21 +16,66 @@ from coordinator.emitLogging import elog
 
 class Person(object):
 
-    def __init__(self, first_name, last_name, middlename=None):
-        self.firstname = first_name
-        self.lastname  = last_name
-        self.middlename = middlename
+    def __init__(self, first, last):
+        self.first_name = first
+        self.last_name = last
 
+    def get_random_id(self):
+        return str(uuid.uuid4())
+
+    def object_to_dictionary(self):
+        return self.__dict__
 
 class Organization(object):
-
-    def __init__(self, typeCV, name, code, description=None, link=None, parent=None):
-        self.typeCV = typeCV
+    def __init__(self, name):
+        self.address = None
+        self.affiliation_end = None
+        self.code = None
+        self.description = None
+        self.email = None
+        self.is_primary_organization_contact = False
+        self.link = None
         self.name = name
-        self.code = code
-        self.description = description
-        self.link = link
-        self.parent = parent
+        self.parent = None
+        self.person_link = None
+        self.phone = None
+        self.start_date = None
+        self.type_cv = None
+
+    def object_to_dictionary(self):
+        return self.__dict__
+
+    def store_date_as_object(self, date_string):
+        self.start_date = datetime.datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%S')
+
+    def set_data(self, json):
+        # This implementations allows this method to be reusable without breaking
+        if "code" in json:
+            self.code = json["code"]
+        if "is_primary_organization_contact" in json:
+            self.is_primary_organization_contact = json["is_primary_organization_contact"]
+        if "parent" in json:
+            self.parent = json["parent"]
+        if "affiliation_end" in json:
+            self.affiliation_end = json["affiliation_end"]
+        if "name" in json:
+            self.name = json["name"]
+        if "phone" in json:
+            self.phone = json["phone"]
+        if "type_cv" in json:
+            self.type_cv = json["type_cv"]
+        if "link" in json:
+            self.link = json["link"]
+        if "start_date" in json:
+            self.start_date = json["start_date"]
+        if "address" in json:
+            self.address = json["address"]
+        if "person_link" in json:
+            self.person_link = json["person_link"]
+        if "email" in json:
+            self.email = json["email"]
+        if "description" in json:
+            self.description = json["description"]
 
 class Affiliation(object):
     def __init__(self, email, startDate, organization, person, phone, address=None, isPrimaryOrganizationContact=False, affiliationEnd=None, personLink=None):
@@ -87,6 +132,7 @@ def date_hook(json_dict):
             elog.debug("Failed to convert date into datetime object")
             pass
     return json_dict
+
 
 def BuildAffiliationfromJSON(j):
     affiliations = []

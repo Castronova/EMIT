@@ -1,5 +1,3 @@
-__author__ = 'mario'
-
 import wx
 import wx.xrc
 import wx.dataview
@@ -9,15 +7,20 @@ from transform.space import *
 import coordinator.engineAccessors as engine
 import sys
 
+
 class LinkView(wx.Frame):
     def __init__(self, parent, output, input):
-        wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=wx.EmptyString, pos=wx.DefaultPosition,
-                          size=wx.Size(700, 625),
-                          style=wx.DEFAULT_FRAME_STYLE | wx.FRAME_FLOAT_ON_PARENT
-                                                         ^ (wx.RESIZE_BORDER | wx.MINIMIZE_BOX | wx.MAXIMIZE_BOX))
-
         if sys.platform == 'darwin':
-            self.SetSize((700, 520))
+            width, height = (700, 520)
+        elif sys.platform == 'win32':
+            width, height = (700, 530)
+        else:
+            width, height = (700, 625)
+
+        wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=wx.EmptyString, pos=wx.DefaultPosition,
+                          size=wx.Size(width, height),
+                          style=wx.DEFAULT_FRAME_STYLE | wx.FRAME_FLOAT_ON_PARENT)#^ (wx.RESIZE_BORDER | wx.MINIMIZE_BOX | wx.MAXIMIZE_BOX))
+
         self.font = wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL)
         self.input_component = input
         self.output_component = output
@@ -91,7 +94,7 @@ class LinkView(wx.Frame):
         # if sys.platform == 'linux2':
         #     self.outputProperties.SetFont(self.font)
 
-        self.outputGrid = wx.grid.Grid( self.ExchangeItemPanel, wx.ID_ANY, wx.DefaultPosition, wx.Size(325,-1), 0 )
+        self.outputGrid = wx.grid.Grid(self.ExchangeItemPanel, wx.ID_ANY, wx.DefaultPosition, wx.Size(325,-1), 0 )
 
         # Grid
         self.outputGrid.CreateGrid(7, 2)
@@ -300,14 +303,14 @@ class LinkView(wx.Frame):
         self.Centre(wx.BOTH)
 
     def OutputComboBoxChoices(self):
-        self.output_items = engine.getOutputExchangeItems(self.output_component['id'], returnGeoms=False)
+        self.output_items = engine.getExchangeItems(self.output_component['id'], stdlib.ExchangeItemType.OUTPUT, returnGeoms=False)
         if self.output_items is not None:
             return [item['name'] for item in self.output_items]
         else:
             return [" "]
 
     def InputComboBoxChoices(self):
-        self.input_items = engine.getInputExchangeItems(self.input_component['id'], returnGeoms=False)
+        self.input_items = engine.getExchangeItems(self.input_component['id'], stdlib.ExchangeItemType.INPUT, returnGeoms=False)
         if self.input_items is not None:
             return [item['name'] for item in self.input_items]
         else:

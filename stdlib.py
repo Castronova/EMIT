@@ -21,8 +21,9 @@ class Status:
     READY = 'READY'
     NOTREADY = 'NOTREADY'
     RUNNING = 'RUNNING'
-    FINISHED = 'FINSHED'
+    FINISHED = 'FINISHED'
     ERROR = 'ERROR'
+    UNDEFINED = 'UNDEFINED'
 
 
 # derived from GDAL types

@@ -28,7 +28,7 @@ def parseXML2Dict(site, start=None, end=None):
 
 def createXMLFileForReading(xml_string):
     # Open this file in a browser to view it parsed
-    file = open("test.xml", "w")
+    file = open("wof.xml", "w")
     file.write(xml_string)
     file.close()
 
@@ -36,11 +36,11 @@ def createXMLFileForReading(xml_string):
 class WaterOneFlow(object):
 
     @timeout(10)
-    def __init__(self, wsdl):
+    def __init__(self, wsdl, network):
         self.wsdl = wsdl
         # sleep(3)
         self.conn = Client(wsdl)
-        self.network_code = ""
+        self.network_code = network + ":"
 
     def _getSiteType(self, site):
         try:
@@ -121,7 +121,7 @@ class WaterOneFlow(object):
         #  Returns a JSON
         #  Returns all the information for a given site.
         #  This includes all the variables associated with that location  description.
-        data = self.conn.service.GetSiteInfoObject("iutah:" + str(sitecode))
+        data = self.conn.service.GetSiteInfoObject(self.network_code + ":"+ str(sitecode))
         return data
 
     def getSitesByBoxObject(self, sitecode):
@@ -130,6 +130,14 @@ class WaterOneFlow(object):
         return data
 
     def getSites(self, value=None):
+        if value is None:
+            site_objects = self.conn.service.GetSites("")
+        else:
+            site_objects = self.conn.service.GetSites(value)
+        createXMLFileForReading(site_objects)
+        #return site_objects
+
+    def getSitesObject(self, value=None):
         #  Returns JSON
         if value is None:
             site_objects = self.conn.service.GetSitesObject("")
@@ -155,7 +163,7 @@ class WaterOneFlow(object):
             return data.timeSeries
         except:
             # error getting data
-            print 'There was an getting data for %s:%s, %s:%s, %s %s' % (network_code, site_code, network_code, variable_code, str(beginDate), str(endDate))
+            print 'There was an error getting data for %s:%s, %s:%s, %s %s' % (network_code, site_code, network_code, variable_code, str(beginDate), str(endDate))
             return None
 
     def getVariables(self, network_code=None, variable_code=None):
@@ -169,5 +177,5 @@ class WaterOneFlow(object):
 
     def getValuesForASiteObject(self, siteid=None):
         network = "iutah:"
-        x = self.conn.service.GetValuesForASiteObject(network + str(siteid))
+        x = self.conn.service.GetValuesForASiteObject(self.network_code + ":" + str(siteid))
         return x

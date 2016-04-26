@@ -6,6 +6,7 @@ import sprint
 import unittest
 import environment
 from coordinator.engine import Coordinator
+import stdlib
 
 class testFeedForwardSimulation(unittest.TestCase):
 
@@ -48,8 +49,8 @@ class testFeedForwardSimulation(unittest.TestCase):
 
 
         # add a link from randomizer to multiplier
-        rand_oei = self.engine.get_output_exchange_items_summary(id=1234)
-        mult_iei = self.engine.get_input_exchange_items_summary(id=1235)
+        rand_oei =  self.engine.get_exchange_item_info(modelid=1234, exchange_item_type=stdlib.ExchangeItemType.OUTPUT)
+        mult_iei = self.engine.get_exchange_item_info(modelid=1235, exchange_item_type=stdlib.ExchangeItemType.INPUT)
         self.engine.add_link(from_id=1234, from_item_id=rand_oei[0]['name'],
                              to_id=1235, to_item_id=mult_iei[0]['name'],
                              spatial_interp=None,
@@ -65,7 +66,10 @@ class testFeedForwardSimulation(unittest.TestCase):
         # run the simulation, without saving results
         self.engine.run_simulation()
 
-        time.sleep(5)  # give the simulation a chance to run
+        status = stdlib.Status.UNDEFINED
+        while status != stdlib.Status.FINISHED and status != stdlib.Status.ERROR:
+            status = self.engine.get_status()
+            time.sleep(1)
 
         # check that output data was generated
         m = self.engine.get_model_by_id(id = 1235)

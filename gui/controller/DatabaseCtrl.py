@@ -71,9 +71,10 @@ class DatabaseCtrl(ViewDatabase):
             self.Parent.open_simulation_viewer(obj.GetObjectAt(id))
             return
 
-        if self.Parent.connection_combobox.GetStringSelection() in self.Parent.get_possible_wof_connections():
-            self.Parent.open_wof_viewer(obj.GetObjectAt(id))
-            return
+        for con in self.Parent.get_possible_wof_connections():
+            if self.Parent.connection_combobox.GetStringSelection() == con['name']:
+                self.Parent.open_wof_viewer(obj.GetObjectAt(id))
+                return
         if "ODM2" in self.Parent.connection_combobox.GetStringSelection():
             self.Parent.open_odm2_viewer(obj.GetObjectAt(id))
 

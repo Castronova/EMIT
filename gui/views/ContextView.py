@@ -6,7 +6,7 @@ from api_old.ODM2.Results.services import readResults
 from utilities import spatial
 from api_old.ODM2.Simulation.services import readSimulation
 from wx.lib.pubsub import pub as Publisher, __all__
-from gui.controller.ModelCtrl import LogicModel
+from gui.controller.ModelCtrl import ModelCtrl
 from gui.controller.SimulationPlotCtrl import SimulationPlotCtrl
 from gui.controller.PlotCtrl import LogicPlot
 from gui.controller.PreRunCtrl import PreRunViewCtrl
@@ -36,7 +36,7 @@ class LinkContextMenu(wx.Menu):
         self.Bind(wx.EVT_MENU, self.RemoveLink, mmi)
 
     def RemoveLink(self, e):
-        self.parent.RemoveLink(self.arrow_obj)
+        self.parent.remove_link(self.arrow_obj)
 
 
 class ConsoleContextMenu(wx.Menu):
@@ -58,6 +58,8 @@ class ConsoleContextMenu(wx.Menu):
         User clears the gui console
         """
         self.log.Clear()
+        self.parent.resetLineNumbers()
+
 
 class ModelContextMenu(wx.Menu):
 
@@ -77,57 +79,19 @@ class ModelContextMenu(wx.Menu):
 
     def ShowModelDetails(self, e):
 
-        # get model id
-        id = self.model_obj.ID
-
         # create a frame to bind the details page to
         f = wx.Frame(self.GetParent())
 
-        kwargs = {'edit':False,'spatial':True}
-        model_details = LogicModel(f, **kwargs)
-
-        # get the output geometries
-        oei = engine.getOutputExchangeItems(id)
-        ogeoms = {}
-        # disable dropdown box if empty
-        if not oei:
-            model_details.outputSelections.Enable(False)
-        else:
-            model_details.outputSelections.Append('---')
-            for o in oei:
-                name = o['name']
-                model_details.outputSelections.Append(name)
-
-                # geoms = [i['shape'] for i in o['geom']]
-
-                geoms = [ogr.CreateGeometryFromWkb(g['wkb']) for g in o['geom']]
-                ogeoms[name] = geoms
-
-        # get the input geometries
-        igeoms = {}
-        iei = engine.getInputExchangeItems(id)
-        # disable dropdown box if empty
-        if not iei:
-            model_details.inputSelections.Enable(False)
-        else:
-            model_details.inputSelections.Append('---')
-            for i in iei:
-                name = i['name']
-                model_details.inputSelections.Append(name)
-                elog.info("input name: " + name)
-
-                geoms = [ogr.CreateGeometryFromWkb(g['wkb']) for g in i['geom']]
-                igeoms[name] = geoms
-
-
-        # load geometry data
-        model_details.PopulateSpatialGeoms(ogeoms, type='output')
-        model_details.PopulateSpatialGeoms(igeoms, type='input')
+        kwargs = {'edit': False, 'spatial': True}
+        model_details = ModelCtrl(f, model_id=self.model_obj.ID, **kwargs)
 
         atts = engine.getModelById(self.model_obj.ID)['attrib']
         if 'mdl' in atts.keys():
             model_details.PopulateSummary(atts['mdl'])
+
         else:  # This means the model is coming from a database.
+            oei = model_details.spatial_page.controller.get_output_exchange_item_by_id(self.model_obj.ID)
+            iei = model_details.spatial_page.controller.get_input_exchange_item_by_id(self.model_obj.ID)
             model_details.PopulateProperties(engine.getModelById(self.model_obj.ID), iei=iei, oei=oei)
 
         model_details.Show()
@@ -461,7 +425,8 @@ class SimulationContextMenu(ContextMenu):
                     sPrint('Found %d result records: ' % len(results), MessageType.DEBUG)
 
                 if len(results) == 0:
-                    sPrint('No results found for simulation id %s. There must be something wrong with the database :(' % simulationID, MessageType.ERROR)
+                    sPrint('No results found for simulation id %s.' % simulationID, MessageType.ERROR)
+                    return {}
 
                 res = {}
                 for r in results:

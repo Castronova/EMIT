@@ -1,9 +1,9 @@
 __author__ = 'tonycastronova'
 
+import os
 from os.path import *
 import inspect
 from socket import AF_INET, SOCK_DGRAM, socket
-
 
 def get_open_port():
     """
@@ -75,6 +75,9 @@ def sPrint(text,  messageType=MessageType.INFO, printTarget=PrintTarget.CONSOLE)
     :return: None
     '''
 
+    # reload(os)
+    logs = [v for k,v in os.environ.iteritems() if 'LOGGING' in k]
+
     host = 'localhost'
     port = printTarget
     addr = (host, port)
@@ -95,8 +98,11 @@ def sPrint(text,  messageType=MessageType.INFO, printTarget=PrintTarget.CONSOLE)
         caller = getStackTrace()
         debug_text = ' (%s, line %s)' % (caller[0], caller[1])
 
+    # format text
     text = str(text) if type(text) != str else text
     text = '%s%s%s' % (indent, text, debug_text )
+
+    # broadcast message
     udpsocket.sendto('|'.join([messageType,text]), addr)
 
 # print initial message to each target port

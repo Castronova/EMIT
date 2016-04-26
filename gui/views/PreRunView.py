@@ -13,27 +13,32 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin, CheckListCtrlMixin):
 
 
 class PreRunView(wx.Frame):
-    def __init__(self, parent=None):                             # this style makes the window non-resizable
-        wx.Frame.__init__(self, parent=parent, title="Pre Run", size=(405, 450),
-                          style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
-        if sys.platform == 'darwin': # Darwin is Mac
-            self.SetSize((405, 350))
+    def __init__(self, parent=None):
+        if sys.platform == 'darwin':
+            width, height = (405, 350)
+        elif sys.platform == 'win32':
+            width, height = (405, 370)
+        else:
+            width, height = (405, 450)
+
+        # this style makes the window non-resizable
+        wx.Frame.__init__(self, parent=parent, title="Pre Run", size=(width, height),
+                          style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         # define top and bottom panels
         panel = wx.Panel(self)
         top_panel = wx.Panel(panel)
         lower_panel = wx.Panel(panel)
-
         grid_bag_sizer = wx.GridBagSizer(vgap=5, hgap=5)
 
         # build top panel
         #  Creating components for the top panel
         self.simulation_name_static_text = wx.StaticText(top_panel, label="Simulation Name:")
-        self.simulation_name_textbox = wx.TextCtrl(top_panel)
+        self.simulation_name_textbox = wx.TextCtrl(top_panel)#, size=(500,30))
         self.database_name = wx.StaticText(top_panel, label="Database:")
         self.account_name = wx.StaticText(top_panel, label="User Account:")
-        self.database_combo = wx.ComboBox(top_panel, choices=[], style=wx.CB_READONLY)
+        self.database_combo = wx.ComboBox(top_panel, choices=[], style=wx.CB_READONLY)#, size=(500,30))
         self.account_combo = wx.ComboBox(top_panel, choices=[], style=wx.CB_READONLY)
         self.add_account_button = wx.Button(top_panel, label="Add New")
 

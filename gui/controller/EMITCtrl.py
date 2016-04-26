@@ -1,6 +1,8 @@
 import os
 import sqlite3 as lite
 import sys
+from gui.controller.UserCtrl import UserCtrl
+import wx
 
 import coordinator.engineAccessors as engine
 from gui.views.EMITView import ViewEMIT
@@ -42,9 +44,15 @@ class EMITCtrl(ViewEMIT):
         engine.connectToDbFromFile(dbtextfile=connections_txt)
 
         # load the local database into the engine
-        engine.connectToDb(title='ODM2 SQLite (local)',desc='Local SQLite database',engine='sqlite',address=filepath, name=None, user=None, pwd=None)
+        engine.connectToDb(title='ODM2 SQLite (local)',desc='Local SQLite database',engine='sqlite',address=filepath, name=None, user=None, pwd=None, default=True)
+        self.check_users_json()
 
-        self.checkUsers()
+    def check_users_json(self):
+        UserCtrl.create_user_json()
+        if UserCtrl.is_user_json_empty():
+            controller = UserCtrl(self)
+            controller.CenterOnScreen()
+            controller.Show()
 
 def removedb(file):
     try:

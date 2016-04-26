@@ -23,7 +23,7 @@ class color_cycle(object):
         return self.__colors[self.current]
 
 
-class logicPlotForSiteViewer(ViewPlotForSiteViewer):
+class PlotForSiteViewerCtrl(ViewPlotForSiteViewer):
     def __init__(self, panel):
         ViewPlotForSiteViewer.__init__(self, panel)
 

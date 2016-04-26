@@ -15,21 +15,27 @@ LinkUpdatedEvent, EVT_LINKUPDATED = ne.NewEvent()
 
 
 class LinkCtrl(LinkView):
-
     odesc = ""
     idesc = ""
 
-    def __init__(self, parent, outputs, inputs, swap=False):
+    def __init__(self, parent, outputs, inputs, link_obj=None, swap=False):
         LinkView.__init__(self, parent, outputs, inputs)
+
+        # link_obj must be a CanvasObjectsCtrl.SmoothLineWithArrow object
+        self.link_obj = link_obj
 
         # self.l = None
         self.swap = swap
+        self.swap_was_clicked = False
 
         # save parent (used in onplot)
         self.parent = parent
 
         # class link variables used to save link
         self.__selected_link = None
+
+        #  holds the links that will be deleted when deleting->save and close
+        self.links_to_delete = []
 
         self.__link_source_id = self.output_component['id']
         self.__link_target_id = self.input_component['id']
@@ -42,10 +48,6 @@ class LinkCtrl(LinkView):
 
         self.__checkbox_states = [None, None]
 
-        #  holds the links that will be deleted when deleting->save and close
-        self.links_to_delete = []
-
-
     def InitBindings(self):
         self.LinkNameListBox.Bind(wx.EVT_LISTBOX, self.OnChange)
         self.LinkNameListBox.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
@@ -56,7 +58,7 @@ class LinkCtrl(LinkView):
         self.ButtonSwap.Bind(wx.EVT_BUTTON, self.OnSwap)
         self.ButtonCancel.Bind(wx.EVT_BUTTON, self.OnCancel)
         self.ButtonSave.Bind(wx.EVT_BUTTON, self.OnSave)
-        self.ButtonPlot.Bind(wx.EVT_BUTTON, self.onPlotGeometries)
+        self.ButtonPlot.Bind(wx.EVT_BUTTON, self.on_plot_geometries)
         self.Bind(EVT_LINKUPDATED, self.linkSelected)
         self.Bind(wx.EVT_CLOSE, self.OnCancel)
         self.outputGrid.Bind(gridlib.EVT_GRID_CELL_LEFT_CLICK, self.OutputGridHover)
@@ -94,6 +96,27 @@ class LinkCtrl(LinkView):
             self.ButtonPlot.Disable()
             self.ButtonSwap.Disable()
 
+    def create_one_way_arrow(self, image, models):
+        #  Only call this method if all the links go the same direction
+        #  Draws the arrow based off the direction of the links
+        if engine.getModelById(models[0].ID)["name"] == engine.getModelById(self.__links.values()[0].source_id)["name"]:
+            self.parent.Parent.createLine(R1=models[0], R2=models[1], image_name=image)
+        else:
+            self.parent.Parent.createLine(R1=models[1], R2=models[0], image_name=image)
+
+    def find_link_direction(self):
+        # returns None if no link. Show question mark
+        # return true if link goes one. Show one-way arrow
+        # return false if links goes two ways. Show two-way arrow
+        if len(self.__links) == 0:
+            return None
+
+        items = []
+        for key, value in self.__links.iteritems():
+            items.append(engine.getModelById(value.source_id)["name"])
+
+        return all_same(items)
+
     def getInputModelText(self):
         if self.input_component['id'] == self.__selected_link.target_id:
             return self.input_component['name']
@@ -106,13 +129,13 @@ class LinkCtrl(LinkView):
                 return l
         return None
 
-    def GetModelFrom(self):
+    def get_model_from(self):
         if 'name' in self.output_component:
             return self.output_component['name']
         else:
             return None
 
-    def GetModelTo(self):
+    def get_model_to(self):
         if 'name' in self.input_component:
             return self.input_component['name']
         else:
@@ -257,98 +280,34 @@ class LinkCtrl(LinkView):
 
         self.OnChange(None)
 
-        self.outputLabel.SetLabel("Output of " + self.GetModelFrom())
-        self.inputLabel.SetLabel("Input of " + self.GetModelTo())
+        self.outputLabel.SetLabel("Output of " + self.get_model_from())
+        self.inputLabel.SetLabel("Input of " + self.get_model_to())
 
-    def onPlotGeometries(self, event):
+    def on_plot_geometries(self, event):
+        from gui.controller.SpatialCtrl import SpatialCtrl
+
+        frame = wx.Frame(self.parent, size=(630, 630), style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE)
+        controller = SpatialCtrl(frame)
+
+        # input exchange item -> iei
+        iei = controller.get_input_exchange_item_by_id(self.__selected_link.target_id)
+        igeom = controller.get_geometries(iei)
+
+        # output exchange item -> oei
+        oei = controller.get_output_exchange_item_by_id(self.__selected_link.source_id)
+        ogeom = controller.get_geometries(oei)
+
+        controller.set_data(target=igeom, source=ogeom)
+        controller.raw_input_data = iei
+        controller.raw_output_data = oei
+
+        controller.add_input_combo_choices(igeom.keys())
+        controller.add_output_combo_choices(ogeom.keys())
+
         title = self.getOutputModelText() + " --> " + self.getInputModelText()
-        plot_window = wx.Frame(self.parent, id=wx.ID_ANY, title=title, size=(625, 625),
-                               style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
+        frame.SetTitle(title)
 
-        # create a spatial plot instance
-        plot_panel = SpatialPlotCtrl(plot_window)
-
-        # get the source and target ids from the link object
-        source_model_id = self.__selected_link.source_id
-        target_model_id = self.__selected_link.target_id
-
-        # get the output geometries
-        oei = engine.getOutputExchangeItems(source_model_id)
-        ogeoms = {}
-        for o in oei:
-            name = o['name']
-            geoms = [geometry.fromWKB(g['wkb']) for g in o['geom']]
-            ogeoms[name] = geoms
-
-        # get the input geometries
-        igeoms = {}
-        iei = engine.getInputExchangeItems(target_model_id)
-        for i in iei:
-            name = i['name']
-            geoms = [geometry.fromWKB(g['wkb']) for g in i['geom']]
-            igeoms[name] = geoms
-
-        # set input and output geometries
-        plot_panel.set_input_data(value=igeoms)
-        plot_panel.set_output_data(value=ogeoms)
-
-        # add some selection
-        textLabel = wx.StaticText(plot_window, wx.ID_ANY, label='Toggle the Input and Output exchange element sets: ')
-        textLabel.SetFont( wx.Font( 14, 70, 90, 92, False, wx.EmptyString ) )
-        inputSelection = wx.CheckBox(plot_window, 998,label='Input Exchange Item: '+self.__selected_link.iei)
-        outputSelection = wx.CheckBox(plot_window, 999,label='Output Exchange Item: '+self.__selected_link.oei)
-        self.__checkbox_states = [self.__selected_link.iei, self.__selected_link.oei]  # initialize checkbox state
-
-        def checked(event):
-            chk = event.Checked()
-
-            # make changes if selection is false
-            if event.Id == 998:
-                if chk: self.__checkbox_states[0] = self.__selected_link.iei
-                else:   self.__checkbox_states[0] = None
-            if event.Id == 999:
-                if chk: self.__checkbox_states[1] = self.__selected_link.oei
-                else:   self.__checkbox_states[1] = None
-
-            # set the selected datasets in the controller
-            plot_panel.set_selection_input(self.__checkbox_states[0])
-            plot_panel.set_selection_output(self.__checkbox_states[1])
-
-            # update the plot
-            plot_panel.updatePlot()
-
-        # add some handlers
-        inputSelection.Bind(wx.EVT_CHECKBOX, checked)
-        outputSelection.Bind(wx.EVT_CHECKBOX, checked)
-
-        # set the initial state of the input and output selectors
-        inputSelection.SetValue(True)
-        outputSelection.SetValue(True)
-
-        plot_panel.set_selection_input(self.__selected_link.iei)
-        plot_panel.set_selection_output(self.__selected_link.oei)
-        plot_panel.updatePlot()  # update the plot to reflect the input/output selection
-
-        # add controls to frame
-        mainSizer = wx.BoxSizer(wx.VERTICAL)
-        plotSizer = wx.BoxSizer(wx.VERTICAL)
-        SelectionSizer= wx.BoxSizer(wx.VERTICAL)
-
-        # nest sizers to pad both the top and left borders
-        b = wx.BoxSizer(wx.VERTICAL)
-        b.Add(textLabel, flag=wx.LEFT, border=20 )
-        SelectionSizer.AddSizer(b, flag=wx.BOTTOM, border=10)
-        SelectionSizer.Add(inputSelection, flag=wx.LEFT, border=20)
-        SelectionSizer.Add(outputSelection, flag=wx.LEFT, border=20)
-        plotSizer.Add(plot_panel)
-
-        # add elements back to mainSizer
-        mainSizer.Add(plotSizer)
-        mainSizer.Add(SelectionSizer)
-        plot_window.SetSizer(mainSizer)
-
-        plot_window.Layout()
-        plot_window.Show()
+        frame.Show()
 
     def on_select_output(self, event):
         """
@@ -359,20 +318,20 @@ class LinkCtrl(LinkView):
         output_name = self.OutputComboBox.GetValue()
 
         # get the current link
-        l = self.__selected_link
+        selected_link = self.__selected_link
 
         # change the link name to reflect output -> input
-        l.oei = output_name
-        l.refresh('output')
+        selected_link.oei = output_name
+        selected_link.refresh('output')
 
         # update the name in the links list
-        self.__links[l.uid] = l
+        self.__links[selected_link.uid] = selected_link
 
         # refresh the link name box
         self.refreshLinkNameBox()
 
         # populate metadata
-        self.populate_output_metadata(l)
+        self.populate_output_metadata(selected_link)
 
     def on_select_input(self, event):
         """
@@ -442,6 +401,7 @@ class LinkCtrl(LinkView):
                                 l['spatial_interpolation'],
                                 l['temporal_interpolation'])
 
+
                 self.__links[l['id']] = link
 
             # select the first value
@@ -457,14 +417,6 @@ class LinkCtrl(LinkView):
         self.InputComboBox.SetSelection(0)
         self.OutputComboBox.SetSelection(0)
 
-        # # set the selection to the first link
-        # selected = self.LinkNameListBox.GetStringSelection()
-        # selected_id = selected.split('|')[0].strip()
-        # if selected != '':
-        #     l = self.__links[selected_id]
-        #     self.OutputComboBox.SetSelection(self.OutputComboBoxChoices().index(l.oei) + 1)
-        #     self.InputComboBox.SetSelection(self.InputComboBoxChoices().index(l.iei) + 1)
-
     def OnSwap(self, event):
         try:
             selected = self.getSelectedLinkId()
@@ -475,6 +427,8 @@ class LinkCtrl(LinkView):
             elog.debug(e)
             elog.warning("Please select which link to swap")
             return
+
+        self.swap_was_clicked = True
 
         #  Swapping components of models
         temp = self.output_component
@@ -488,7 +442,6 @@ class LinkCtrl(LinkView):
         self.OutputComboBox.SetItems(['---'] + self.OutputComboBoxChoices())
         self.InputComboBox.SetSelection(0)
         self.OutputComboBox.SetSelection(0)
-
 
         self.onNewButton(1)
 
@@ -541,11 +494,21 @@ class LinkCtrl(LinkView):
                                        'Question', wx.YES_NO | wx.NO_DEFAULT | wx.ICON_WARNING)
 
             if warning.ShowModal() == wx.ID_YES:
+                self.remove_warning_links(warnings=warnings)
                 self.Destroy()
             else:
                 return
+        result = self.find_link_direction()
+        if result:
+            # todo: these images need to be coming from config instead of hardcoded
+            self.replace_canvas_image(image="rightArrowBlue60.png", one_way=True)
+        elif result is False:
+            self.replace_canvas_image(image="multiArrow.png")
+        else:
+            self.replace_canvas_image(image="questionMark.png")
 
         self.Destroy()
+
 
     def OutGridToolTip(self, e):
         if e.GetRow() == 2 and e.GetCol() == 1:
@@ -580,7 +543,6 @@ class LinkCtrl(LinkView):
             self.outputGrid.SetCellValue(5, 1, "")
             self.outputGrid.SetCellValue(6, 1, "")
 
-
     def populate_input_metadata(self, l):
 
         # get the link object
@@ -607,13 +569,37 @@ class LinkCtrl(LinkView):
     def refreshLinkNameBox(self):
 
         self.LinkNameListBox.Clear()
-        for l in self.__links.values():
-            self.LinkNameListBox.Append(l.name())
+        for key, value in self.__links.iteritems():
+            if key in self.links_to_delete:
+                pass
+            else:
+                self.LinkNameListBox.Append(value.name())
+
+    def replace_canvas_image(self, image, one_way=False):
+        self.parent.Parent.remove_link_image(link_object=self.link_obj.line)
+
+        models = self.parent.Parent.arrows[self.link_obj]
+        if one_way:
+            #  Determine the direction of the arrow
+            self.create_one_way_arrow(image, models)
+        else:
+            self.parent.Parent.createLine(R1=models[0], R2=models[1], image_name=image)
+
+    def remove_warning_links(self, warnings):
+        # If warnings is in __links
+        if set(warnings).issubset(set(self.__links.values())):
+            new_list = collections.OrderedDict()
+            for key, value in self.__links.items():
+                if value not in warnings:
+                    new_list[key] = value
+
+            self.__links = new_list
+            self.refreshLinkNameBox()
+        return
 
 
 class LinkInfo:
-    def __init__(self, oei, iei, source_id, target_id, uid=None, spatial_interpolation=None,
-                 temporal_interpolation=None):
+    def __init__(self, oei, iei, source_id, target_id, uid=None, spatial_interpolation=None, temporal_interpolation=None):
 
 
         self.uid = 'L' + uuid.uuid4().hex if uid is None else uid
@@ -633,9 +619,7 @@ class LinkInfo:
         self.get_input_and_output_metadata()
 
     def refresh(self, type):
-
         self.get_input_and_output_metadata(type)
-
 
     def name(self):
         iei_name = self.iei if self.iei != '---' else '?'
@@ -650,13 +634,17 @@ class LinkInfo:
 
         if type == 'output' or type is None:
             # get output information
-            outputs = engine.getOutputExchangeItems(self.source_id, returnGeoms=False)
+            outputs = engine.getExchangeItems(self.source_id, 'OUTPUT', returnGeoms=False)
             if outputs is not None:
                 for output in outputs:
                     self.output_metadata[output['name']] = output
         if type == 'input' or type is None:
             # get input information
-            inputs = engine.getInputExchangeItems(self.target_id, returnGeoms=False)
+            inputs = engine.getExchangeItems(self.target_id, 'INPUT', returnGeoms=False)
             if inputs is not None:
                 for input in inputs:
                     self.input_metadata[input['name']] = input
+
+
+def all_same(items):
+        return all(x == items[0] for x in items)

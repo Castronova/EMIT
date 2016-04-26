@@ -17,15 +17,15 @@ class _Log:
 
             app_data = io.getAppDataDir()
             LOG_FILENAME = abspath(join(app_data, 'log/engine.log'))
-            CONSOLE_FILENAME = abspath(join(app_data, 'log/temp.log'))
+            # CONSOLE_FILENAME = abspath(join(app_data, 'log/temp.log'))
 
             # make sure this path exists
             if not exists(dirname(LOG_FILENAME)):
                 os.mkdir(dirname(LOG_FILENAME))
 
             # remove the temp console log
-            if os.path.exists(CONSOLE_FILENAME):
-                os.remove(CONSOLE_FILENAME)
+            # if os.path.exists(CONSOLE_FILENAME):
+            #     os.remove(CONSOLE_FILENAME)
 
             self.__root = logging.getLogger('EMIT ENGINE')
             self.__root.setLevel(logging.DEBUG)
@@ -47,9 +47,9 @@ class _Log:
 
 
             # console log
-            console_log = PickleHandler(CONSOLE_FILENAME)
-            console_log.setFormatter(formatter)
-            self.__root.addHandler(console_log)
+            # console_log = PickleHandler(CONSOLE_FILENAME)
+            # console_log.setFormatter(formatter)
+            # self.__root.addHandler(console_log)
 
         else:
             self.__dict__ = _Log.__monostate

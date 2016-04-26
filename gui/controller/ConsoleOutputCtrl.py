@@ -21,15 +21,35 @@ class consoleCtrl(ConsoleView):
         self.port = PrintTarget.CONSOLE  # random port number
         self.host = ''
         self.addr = (self.host, self.port)
+        self.linenum = 1
 
         # start the message server
         self.thread = threading.Thread(target=self.messageServer, name='MessageServer')
         self.thread.daemon = True
         self.thread.start()
 
+        self.log.Bind(wx.EVT_TEXT, self.onMessagePrint)
+
+    def onMessagePrint(self, event):
+        """
+        scrolls to the bottom of the text control everytime a message is printed
+        Args:
+            event: EVT_TEXT
+
+        Returns:None
+
+        """
+        # scroll to the end of the textctrl
+        lastpos = self.log.GetLastPosition()-2
+        wx.CallAfter(self.log.ShowPosition, lastpos)
+
+
+    def resetLineNumbers(self):
+        self.linenum = 1
+
     def Print(self, text, type):
 
-        wx.CallAfter(self.log.SetInsertionPoint, 0)
+        #wx.CallAfter(self.log.SetInsertionPoint, 0)
         if type == 'INFO':
                 wx.CallAfter(self.log.BeginTextColour, (42, 78, 110))
         elif type == 'WARNING':
@@ -40,9 +60,18 @@ class consoleCtrl(ConsoleView):
             wx.CallAfter(self.log.BeginTextColour, (0, 0, 0))
         elif type == 'CRITICAL':
             wx.CallAfter(self.log.BeginTextColour, (170, 57, 57))
-        wx.CallAfter(self.log.WriteText, text + '\n')
+
+        # format the message text
+        msg = '%d:  %s\n' % (self.linenum, text)
+
+        # print the message to the console
+        wx.CallAfter(self.log.WriteText, msg)
         wx.CallAfter(self.log.EndTextColour, )
         wx.CallAfter(self.log.Refresh, )
+
+        # increment line numbers after each print
+        self.linenum += 1
+
 
     def messageServer(self):
 
@@ -58,4 +87,5 @@ class consoleCtrl(ConsoleView):
             # print the message in the console if the environment variable is set to True
             key = 'LOGGING_SHOW' + type.upper()
             if os.environ.has_key(key):
-                self.Print(text, type)
+                if int(os.environ[key]):
+                    self.Print(text, type)

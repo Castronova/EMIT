@@ -21,7 +21,7 @@ from coordinator.emitLogging import elog
 from gui import events
 from gui.controller.CanvasObjectsCtrl import SmoothLineWithArrow, ModelBox
 from gui.controller.LinkCtrl import LinkCtrl
-from gui.views.CanvasView import ViewCanvas
+from gui.views.CanvasView import CanvasView
 from gui.views.ContextView import LinkContextMenu, ModelContextMenu, CanvasContextMenu
 from sprint import *
 from transform.space import SpatialInterpolation
@@ -29,11 +29,11 @@ from transform.time import TemporalInterpolation
 from utilities.threading import EVT_UPDATE_CONSOLE
 
 
-class LogicCanvas(ViewCanvas):
+class CanvasCtrl(CanvasView):
     def __init__(self, parent):
 
         # intialize the parent class
-        ViewCanvas.__init__(self, parent)
+        CanvasView.__init__(self, parent)
 
         self.parent = parent
 
@@ -54,7 +54,6 @@ class LogicCanvas(ViewCanvas):
         self.links = {}
         self.arrows = {}
         self.models = {}
-        self.pairedModels = []
         self.siteVariablesSelected = []
 
         self.link_clicks = 0
@@ -112,6 +111,8 @@ class LogicCanvas(ViewCanvas):
         self._currentDbSession = event.dbsession
         self._dbid = event.dbid
 
+
+
     def OnMove(self, event):
         if self.Moving:
             cursorPos = event.GetPosition()
@@ -125,6 +126,7 @@ class LogicCanvas(ViewCanvas):
             # Top
             if cursorPos.y < self.boxBoundaries[2]:
                 cursorPos.y = self.boxBoundaries[2]
+
             # Bottom
             elif cursorPos.y > self.Size.y - self.boxBoundaries[3]:
                 cursorPos.y = self.Size.y - self.boxBoundaries[3]
@@ -179,8 +181,6 @@ class LogicCanvas(ViewCanvas):
             elog.info(name + ' has been added to the canvas.')
             sPrint(name + ' has been added to the canvas.')
 
-            # elog.debug(name + ' has been added to the canvas.')
-
     def draw_box(self, evt):
 
         x, y = self.get_model_coords(id=evt.id)
@@ -205,7 +205,6 @@ class LogicCanvas(ViewCanvas):
         self.createLine(R1, R2)
 
     def set_model_coords(self, id, x, y):
-
         self.model_coords[id] = {'x': x, 'y': y}
 
     def get_model_coords(self, id):
@@ -217,22 +216,26 @@ class LogicCanvas(ViewCanvas):
             self.model_coords[id] = dict(x=x, y=y)
             return x, y
 
-    def createLine(self, R1, R2):
 
+    def createLine(self, R1, R2, image_name="questionMark.png"):
         if R1 == R2:
             elog.error('Cannot link a model to itself')
             sPrint('Cannot link a model to itself', MessageType.ERROR)
             return
         else:
+
+            # image_name = ''
+
             # Get the center of the objects on the canvas
-            x1,y1 = R1.XY
-            x2,y2 = R2.XY
-            points = [(x1,y1),(x2,y2)]
-            line = SmoothLineWithArrow(points)
+            x1, y1 = R1.XY
+            x2, y2 = R2.XY
+            points = [(x1, y1), (x2, y2)]
+
+            # No link between the two models add the first
+            line = SmoothLineWithArrow(points, image_name=image_name)
 
             self.links[line] = [R1, R2]
             self.arrows[line.Arrow] = [R1, R2]
-            self.pairedModels.append([R1, R2])
             line.type = LogicCanvasObjects.ShapeType.Link
 
             line.Arrow.type = LogicCanvasObjects.ShapeType.ArrowHead
@@ -241,6 +244,7 @@ class LogicCanvas(ViewCanvas):
 
             # For some reason we have to add line.Arrow in order to bind to it
             self.FloatCanvas.AddObject(line.Arrow)
+            line.Arrow.PutInBackground()
 
             line.Arrow.Bind(FC.EVT_FC_LEFT_DOWN, self.ArrowClicked)
             line.Arrow.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
@@ -249,6 +253,15 @@ class LogicCanvas(ViewCanvas):
 
     def getUniqueId(self):
         return self.uniqueId
+
+    def is_link_bidirectional(self, id1, id2):
+        for pair in self.links.values():
+            # get the ids of the models in this link pair
+            pair_ids = [pair[0].ID, pair[1].ID]
+            if id1 in pair_ids and id2 in pair_ids:
+                return True
+
+        return False
 
     def addModel(self, filepath, x, y, uid=None, uniqueId=None, title=None):
         """
@@ -294,7 +307,7 @@ class LogicCanvas(ViewCanvas):
 
         return uid
 
-    def RemoveLink(self, link_obj):
+    def remove_link(self, link_obj):
 
         dlg = wx.MessageDialog(None,
                                'You are about to remove all data mappings that are associated with this link.  Are you sure you want to perform this action?',
@@ -310,8 +323,6 @@ class LogicCanvas(ViewCanvas):
             from_id = link[0].ID
             to_id = link[1].ID
 
-            self.RemovePairedLinkList(link)
-
             # get the link id
             links = engine.getLinksBtwnModels(from_id, to_id)
 
@@ -322,12 +333,21 @@ class LogicCanvas(ViewCanvas):
                     elog.error('ERROR|Could not remove link: %s' % link['id'])
                     sPrint('ERROR|Could not remove link: %s' % link['id'], MessageType.ERROR)
 
-            # Using SmoothLineWithArrow's builtin remove helper function
-            link_obj.Remove(self.FloatCanvas)
-            self.FloatCanvas.Draw()
 
-    def RemovePairedLinkList(self, link):
-        self.pairedModels.remove([link[0], link[1]])
+            self.remove_link_image(link_object=link_obj)
+            self.remove_link_object_by_id(from_id, to_id)
+
+    def remove_link_object_by_id(self, id1, id2):
+        for key, value in self.links.items():
+            if (value[0].ID == id1 and value[1].ID == id2) or (value[1].ID == id1 and value[0].ID == id2):
+                # self.remove_link_image(key)
+                del self.links[key]
+                del self.arrows[key.Arrow]
+
+    def remove_link_image(self, link_object):
+        # Using SmoothLineWithArrow's builtin remove helper function
+        link_object.Remove(self.FloatCanvas)
+        self.FloatCanvas.Draw()
 
     def RemoveModel(self, model_obj):
         """
@@ -341,7 +361,6 @@ class LogicCanvas(ViewCanvas):
         for link, models in self.links.iteritems():
             if model_obj in models:
                 links_to_remove.append(link)
-                self.RemovePairedLinkList(models)
             elif model_obj not in models:
                 updated_links[link] = models
 
@@ -351,14 +370,27 @@ class LogicCanvas(ViewCanvas):
         # engine.removeModelById is using deprecated functions and returns None, however the link is being removed.
         # to prevent issues with the drawing the if statement makes sure the link no longer exists in the engine
         if not engine.getModelById(model_obj.ID):
-            # Update models list
-            self.models.pop(model_obj)
 
-            # Remove selected model and text box from FloatCanvas
-            self.FloatCanvas.RemoveObjects([model_obj])
-            # Remove the model's SmoothLineWithArrow obj with builtin remove function
-            for link in links_to_remove:
-                link.Remove(self.FloatCanvas)
+            try:
+                # Update models list
+                self.models.pop(model_obj)
+
+                # Remove selected model and text box from FloatCanvas
+                self.FloatCanvas.RemoveObjects([model_obj])
+            except Exception, e:
+                msg = 'Encountered and error when removing model from canvas: %s' % e
+                sPrint(msg, MessageType.ERROR)
+
+            try:
+
+                # Remove the model's SmoothLineWithArrow obj with builtin remove function
+                for link in links_to_remove:
+                    # remove the link object from the DrawList if it exists.  It may not exist in the DrawList for bidirectional links.
+                    if link in self.FloatCanvas._DrawList:
+                        link.Remove(self.FloatCanvas)
+            except Exception, e:
+                msg = 'Encountered and error when removing link from canvas: %s' % e
+                sPrint(msg, MessageType.ERROR)
 
             self.FloatCanvas.Draw()
 
@@ -371,7 +403,6 @@ class LogicCanvas(ViewCanvas):
             # clear links and model in gui
             self.links.clear()
             self.models.clear()
-            self.pairedModels = []
             self.FloatCanvas.ClearAll()
             self.FloatCanvas.Draw()
 
@@ -389,8 +420,7 @@ class LogicCanvas(ViewCanvas):
 
             BB = object.box.BoundingBox
             OutlinePoints = N.array(
-                ( (BB[0, 0], BB[0, 1]), (BB[0, 0], BB[1, 1]), (BB[1, 0], BB[1, 1]), (BB[1, 0], BB[0, 1]),
-                  ))
+                ((BB[0, 0], BB[0, 1]), (BB[0, 0], BB[1, 1]), (BB[1, 0], BB[1, 1]), (BB[1, 0], BB[0, 1]),))
             self.StartObject = self.FloatCanvas.WorldToPixel(OutlinePoints)
             self.MoveObject = None
             self.MovingObject = object
@@ -418,8 +448,11 @@ class LogicCanvas(ViewCanvas):
         self.link_clicks += 1
 
         if self.link_clicks == 2:
-            if len(self.linkRects) == 2:
+            if len(self.linkRects) == 2 and not self.is_link_bidirectional(self.linkRects[0].ID, self.linkRects[1].ID):
+                # This method creates the line and places the arrow
                 self.createLine(self.linkRects[0], self.linkRects[1])
+            else:
+                print "Did not add the link"
 
             # reset
             self.link_clicks = 0
@@ -444,26 +477,11 @@ class LogicCanvas(ViewCanvas):
         # get output items from r1
         to_model = engine.getModelById(r2.ID)
 
-        if len(self.links) > 1:
-            bidirectional = self.CheckIfBidirectionalLink(r1.ID, r2.ID)
+        # if len(self.links) > 1:
+        #     bidirectional = self.CheckIfBidirectionalLink(r1.ID, r2.ID)
 
-        linkstart = LinkCtrl(self.FloatCanvas, from_model, to_model, bidirectional)
+        linkstart = LinkCtrl(parent=self.FloatCanvas, outputs=from_model, inputs=to_model, link_obj=event, swap=True)
         linkstart.Show()
-
-    def CheckIfBidirectionalLink(self, id1, id2):
-        count = 0
-        for pair in self.pairedModels:
-
-            # get the ids of the models in this link pair
-            pair_ids = [pair[0].ID, pair[1].ID]
-
-            if id1 in pair_ids and id2 in pair_ids:
-                count += 1
-
-        if count >= 2:
-            return True
-        else:
-            return False
 
     def OnLeftUp(self, event, path=None):
         if self.Moving:
@@ -748,7 +766,7 @@ class LogicCanvas(ViewCanvas):
 
         total = len(models) + len(datamodels) + len(self.models) + self.failed_models
 
-        waitingThread = threading.Thread(target=self.waiting, args=(total, links), name="LoadLinks")
+        waitingThread = threading.Thread(target=self.waitForModelLoading, args=(total, links), name="LoadLinks")
         self.logicCanvasThreads[waitingThread.name] = waitingThread
         waitingThread.start()
 
@@ -774,7 +792,7 @@ class LogicCanvas(ViewCanvas):
             # draw the model
             wx.CallAfter(self.FloatCanvas.Draw)
 
-    def waiting(self, total, links):
+    def waitForModelLoading(self, total, links):
         #  This method waits for all the models in the file to be loaded before linking
         while len(self.models) < total:
             time.sleep(0.5)
@@ -810,66 +828,79 @@ class LogicCanvas(ViewCanvas):
         temporal_transformations = {i.name(): i for i in time.methods()}
 
         for link in links:
-
             # get 'from' and 'to' model attributes
-            from_model = None
             from_model_id = link.find('./from_id').text
             from_model_item = link.find('./from_item').text
             from_model_name = link.find('./from_name').text
-            to_model = None
             to_model_id = link.find('./to_id').text
             to_model_item = link.find('./to_item').text
             to_model_name = link.find('./to_name').text
 
-            # Find the model objects that correspond to from_model_id and to_model_id
-            for canvas_model_object, canvas_model_id in self.models.iteritems():
-                if canvas_model_id == from_model_id:
-                    from_model = canvas_model_object
-                elif canvas_model_id == to_model_id:
-                    to_model = canvas_model_object
+            from_model = self.getModelObjectFromId(from_model_id)
+            to_model = self.getModelObjectFromId(to_model_id)
 
-            # display error message if both models don't exist on the canvas
             if from_model is None or to_model is None:
-                # raise Exception('Could not find Model identifier in loaded models')
                 elog.critical("Failed to create link between %s and %s." % (from_model_name, to_model_name))
                 sPrint("Failed to create link between %s and %s." % (from_model_name, to_model_name), MessageType.CRITICAL)
+                return
 
-            # if both models exist on the canvas, create and draw the link
-            else:
+            sPrint('Adding link between: %s and %s... ' % (from_model_name, to_model_name))
 
-                sPrint('Adding link between: %s and %s... ' % (from_model_name, to_model_name))
+            # get the spatial and temporal transformations
+            transformation = link.find("./transformation")
+            temporal_transformation_name = transformation.find('./temporal').text
+            spatial_transformation_name = transformation.find('./spatial').text
+            # set the transformation values
+            temporal = temporal_transformations[temporal_transformation_name] if temporal_transformation_name.lower() != 'none' else None
+            spatial = spatial_transformations[spatial_transformation_name] if spatial_transformation_name.lower() != 'none' else None
 
-                # get the spatial and temporal transformations
-                transformation = link.find("./transformation")
-                temporal_transformation_name = transformation.find('./temporal').text
-                spatial_transformation_name = transformation.find('./spatial').text
+            # create the link
+            l = engine.addLink(source_id=from_model_id,
+                               source_item=from_model_item,
+                               target_id=to_model_id,
+                               target_item=to_model_item,
+                               spatial_interpolation=spatial,
+                               temporal_interpolation=temporal
+                               )
 
-                # set the transformation values
-                temporal = temporal_transformations[temporal_transformation_name] if temporal_transformation_name.lower() != 'none' else None
-                spatial = spatial_transformations[spatial_transformation_name] if spatial_transformation_name.lower() != 'none' else None
+            wx.CallAfter(self.createLoadedLinks, from_model, to_model)
 
-                # create the link
-                l = engine.addLink(source_id=from_model_id,
-                                   source_item=from_model_item,
-                                   target_id=to_model_id,
-                                   target_item=to_model_item,
-                                   spatial_interpolation=spatial,
-                                   temporal_interpolation=temporal
-                                   )
+    def createLoadedLinks(self, from_model, to_model):
+        if self.doPairModelsHaveLink(from_model, to_model):
+            #  Replace the one way arrow with a bidirectional
+            line = self.getLineFromPairModel(from_model, to_model)
+            self.remove_link_image(line)
+            self.createLine(from_model, to_model, "multiArrow.png")
+        else:
+            self.createLine(from_model, to_model, "rightArrowBlue60.png")
 
-                # this draws the line
-                wx.CallAfter(self.createLine, from_model, to_model)
+    def doPairModelsHaveLink(self, R1, R2):
+        for key, value in self.links.iteritems():
+            if R1 in value and R2 in value:
+                return True
+        return False
 
+    def getLineFromPairModel(self, R1, R2):
+        for key, value in self.links.iteritems():
+            if R1 in value and R2 in value:
+                return key
+        return None
 
+    def getModelObjectFromId(self, id):
+        for key, value in self.models.iteritems():
+            if id == value:
+                return key
+        return None
 
-    def SetLoadingPath(self, path):
-        self.loadingpath = path
 
     def GetLoadingPath(self):
         return self.loadingpath
 
     def getCursor(self):
         return self._Cursor
+
+    def SetLoadingPath(self, path):
+        self.loadingpath = path
 
     def setCursor(self, value=None):
         self._Cursor = value

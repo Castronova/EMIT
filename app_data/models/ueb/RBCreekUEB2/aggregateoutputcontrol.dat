@@ -1,0 +1,5 @@
+List of Aggregated Output Variables
+3              //number of aggregated output variables
+SWE m AVE           //name/symbol unit Aggregation operation (look up the dictionary "UEB_Variables_Symbols.dat" for the symbol, Operation SUM or AVE)
+SWIT m SUM
+SWISM m SUM

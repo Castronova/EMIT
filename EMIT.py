@@ -1,5 +1,3 @@
-__author__ = 'Mario'
-
 import wx
 import wx.aui
 import wx.xrc
@@ -32,6 +30,4 @@ if __name__ == '__main__':
         os.environ['APP_USER_PATH'] = userPath
     app = EMITApp()
     app.MainLoop()
-    # pid = os.getpid()
-    # os.system("kill -9 " + str(pid))
 

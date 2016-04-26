@@ -1,0 +1,12 @@
+OUTPUT VARIABLES
+2                 // number of point details; put 0 if no point output needed 
+11 11 Point11.txt    // y, x coordinates, output file name                       
+25 25 Point25.txt	
+3                //number of netcdf outputs; put 0 if no netcdf output needed
+SWE SWE.nc m      //symbol, file name, variable unit (look up the dictionary "UEB_Variables_Symbols.dat" for the symbol)
+SWIT SWIT.nc m
+SWISM SWISM.nc m
+3                   //number of aggregated output variables
+SWE m AVE           //name/symbol unit Aggregation operation (look up the dictionary "UEB_Variables_Symbols.dat" for the symbol, Operation SUM or AVE)
+SWIT m SUM
+SWISM m SUM

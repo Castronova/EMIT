@@ -62,10 +62,6 @@ def create_unit(unit_name):
 
 def build_exchange_items_from_config(params):
 
-    exchange_items = []
-    oei = []
-    iei = []
-
     # get all inputs and outputs
     iitems = params['input'] if 'input' in params else []
     oitems = params['output'] if 'output' in params else []
@@ -77,7 +73,7 @@ def build_exchange_items_from_config(params):
     for io in eitems:
         variable = None
         unit = None
-        geom = None
+        srs = None
         geoms = []
 
         # get all input and output exchange items as a list
@@ -103,8 +99,8 @@ def build_exchange_items_from_config(params):
                         raise Exception('Could not find file at path %s, generated from relative path %s'%(gen_path, value))
 
                     # parse the geometry from the shapefile
-                    geom, srs = utilities.spatial.read_shapefile(gen_path)
-                    geoms.append(geom)
+                    geoms, srs = utilities.spatial.read_shapefile(gen_path)
+                    srs = srs.AutoIdentifyEPSG()
 
                 # otherwise it must be a wkt
                 else:
@@ -114,14 +110,14 @@ def build_exchange_items_from_config(params):
 
                         # parse the wkt string into a stdlib.Geometry object
                         geom = utilities.geometry.fromWKT(value)
-                        geoms.append(geom)
+                        for g in geom:
+                            geoms.append(g)
 
                     except:
                         elog.warning('Could not load component geometry from *.mdl file')
                         # this is OK.  Just set the geoms to [] and assume that they will be populated during initialize.
                         geom = []
 
-                    srs = None
                     if 'espg_code' in io:
                         srs = utilities.spatial.get_srs_from_epsg(io['epsg_code'])
 
@@ -134,6 +130,7 @@ def build_exchange_items_from_config(params):
                                 desc=variable.VariableDefinition(),
                                 unit= unit,
                                 variable=variable,
+                                # srs_epsg=srs,  #todo: this is causing problems
                                 type=iotype)
 
         # add geometry to exchange item (NEW)

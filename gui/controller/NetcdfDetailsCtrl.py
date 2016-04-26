@@ -59,21 +59,19 @@ class NetcdfDetailsCtrl(NetcdfDetailsView):
         time_unit = self.time_step_combo.GetStringSelection()
         st = dt.datetime.strptime('%s'%(self.startDatePicker.GetValue().FormatISODate()), "%Y-%m-%d")
 
-        args = dict(ncpath = self.fileurl,
-                    tdim = t,
-                    xdim = x,
-                    ydim = y,
-                    tunit = time_unit,
-                    starttime = st,
-                    type = wrappers.Types.NETCDF
+        args = dict(ncpath=self.fileurl,
+                    tdim=t,
+                    xdim=x,
+                    ydim=y,
+                    tunit=time_unit,
+                    starttime=st,
+                    type=wrappers.Types.NETCDF
                     )
 
         engine.addModel(attrib=args)
 
         # close the window
         self.Close()
-
-
 
     def populateList(self):
         alreadyUsed = {}

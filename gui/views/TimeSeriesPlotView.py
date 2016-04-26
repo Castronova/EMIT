@@ -2,7 +2,7 @@ __author__ = 'tonycastronova'
 
 import wx
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
-from gui.controller.PlotForSiteViewerCtrl import logicPlotForSiteViewer
+from gui.controller.PlotForSiteViewerCtrl import PlotForSiteViewerCtrl
 from coordinator.emitLogging import elog
 
 
@@ -30,7 +30,7 @@ class TimeSeriesPlotView(wx.Frame):
 
         hboxTopPanel = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.plot = logicPlotForSiteViewer(panel)
+        self.plot = PlotForSiteViewerCtrl(self.toppanel)
         hboxTopPanel.Add(self.plot.plot, 1, wx.EXPAND | wx.ALL, 2)
 
         self.toppanel.SetSizer(hboxTopPanel)

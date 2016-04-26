@@ -2,34 +2,46 @@ import wx
 import wx.propgrid as wxpg
 from wx.lib.pubsub import pub as Publisher
 
-from gui.views.ModelView import ViewModel
+from gui.views.ModelView import ModelView
 from utilities import gui
 
 
-class LogicModel(ViewModel):
+class ModelCtrl(ModelView):
 
-    def __init__(self, parent, **kwargs):
+    def __init__(self, parent, model_id=None, **kwargs):
 
-        ViewModel.__init__(self, parent, **kwargs)
+        ModelView.__init__(self, parent, **kwargs)
 
         #Bindings
         if self.edit:
             self.SaveButton.Bind(wx.EVT_BUTTON, self.OnSave)
 
-        # Add another conditional so these bindings don't get added when they don't need to perhaps?
         if self.spatial:
-            self.inputSelections.Bind(wx.EVT_COMBOBOX, self.update_plot_input)
-            self.outputSelections.Bind(wx.EVT_COMBOBOX, self.update_plot_output)
+            self.setup_spatial(model_id)
 
-    def update_plot_output(self, event):
-        received_data = event.EventObject.StringSelection
-        self.TopLevelParent.plotPanel.set_selection_output(received_data)
-        self.TopLevelParent.plotPanel.updatePlot()
+    def ConfigurationDisplay(self, fileExtension):
+        self.current_file = fileExtension
+        filehandle=open(fileExtension)
+        self.xmlTextCtrl.SetValue(filehandle.read())
+        filehandle.close()
+        self.SetTitle("Details")
 
-    def update_plot_input(self, event):
-        received_data = event.EventObject.StringSelection
-        self.TopLevelParent.plotPanel.set_selection_input(received_data)
-        self.TopLevelParent.plotPanel.updatePlot()
+    def OnSave(self, event):
+
+        dlg = wx.MessageDialog(None, 'Are you sure you would like to overwrite?', 'Question', wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
+
+        if dlg.ShowModal() !=wx.ID_NO:
+            Publisher.subscribe(self.OnSave, 'textsavepath')
+
+            # Grab the content to be saved
+            itcontains = self.TextDisplay.GetValue().encode('utf-8').strip()
+
+            # Open the file for write, write, close
+            filehandle=open((self.current_file),'w')
+            filehandle.write(itcontains)
+            filehandle.close()
+
+            self.Close()
 
     def PopulateEdit(self, fileExtension):
 
@@ -38,38 +50,7 @@ class LogicModel(ViewModel):
         filehandle=open(fileExtension)
         self.TextDisplay.SetValue(filehandle.read())
         filehandle.close()
-        self.SetTitle("Editor")
-
-    def ConfigurationDisplay(self, fileExtension):
-        self.current_file = fileExtension
-        filehandle=open(fileExtension)
-        self.xmlTextCtrl.SetValue(filehandle.read())
-        filehandle.close()
-        self.SetTitle("File Configurations (Read-Only)")
-
-    def PopulateSpatial(self, coordlist, type):
-        if type == 'input':
-            self.matplotView.input_data(coordlist)
-        elif type == 'output':
-            self.matplotView.output_data(coordlist)
-
-    def PopulateSpatialGeoms(self, geometrycoords, type):
-
-        if geometrycoords is None: return
-
-        if type == 'input':
-            self.plotPanel.set_input_data(geometrycoords)
-        elif type == 'output':
-            self.plotPanel.set_output_data(geometrycoords)
-
-        # # todo: extend support for multiple inputs/outputs
-        # for variable, geom in geometrycoords.iteritems():
-        #
-        #     if type == 'input':
-        #         self.matplotView.input_data(geom)
-        #     elif type == 'output':
-        #         self.matplotView.output_data(geom)
-        #     return
+        self.SetTitle("Details")
 
     def PopulateSummary(self, fileExtension):
 
@@ -124,7 +105,7 @@ class LogicModel(ViewModel):
             if type(value) is dict:
                 self.PopulatePropertyGrid(value)
             elif type(value) is list:
-                value = self.ExtractDictionary(value)
+                value = value[0] # Extract dictionary
                 self.PopulatePropertyGrid(value)
             else:
                 try:
@@ -132,62 +113,16 @@ class LogicModel(ViewModel):
                 except:
                     pass
 
-    def ExtractDictionary(self, array):
-        dictionary = array[0]
-        return dictionary
+    def setup_spatial(self, model_id):
+        iei = self.spatial_page.controller.get_input_exchange_item_by_id(model_id)
+        igeoms = self.spatial_page.controller.get_geometries(iei)
 
-    def PopulateDetails(self, fileExtension):
+        oei = self.spatial_page.controller.get_output_exchange_item_by_id(model_id)
+        ogeoms = self.spatial_page.controller.get_geometries(oei)
 
-        # get a dictionary of config parameters
-        d = gui.parse_config(fileExtension)
+        self.spatial_page.controller.set_data(target=igeoms, source=ogeoms)
+        self.spatial_page.controller.raw_input_data = iei
+        self.spatial_page.controller.raw_output_data = oei
 
-        root = self.DetailTree.AddRoot('Data')
-        self.DetailTree.ExpandAll()
-
-        # get sorted sections
-        sections = sorted(d.keys())
-
-        for section in sections:
-            # add this item as a group
-
-            g = self.DetailTree.AppendItem(root, section)
-
-            if type(d[section]) == list:
-                items = d[section]
-                for item in items:
-                    p = g
-                    while len(item.keys()) > 0:
-
-                        #for item in d[section]:
-                        if 'variable_name_cv' in item:
-                            var = item.pop('variable_name_cv')
-                            p =  self.DetailTree.AppendItem(g,var)
-
-                        # get the next item in the dictionary
-                        i = item.popitem()
-
-                        if i[0] != 'type':
-                            k = self.DetailTree.AppendItem(p,i[0])
-                            self.DetailTree.AppendItem(k, i[1])
-            else:
-                self.DetailTree.AppendItem(g,d[section])
-
-    def OnSave(self, event):
-
-        dlg = wx.MessageDialog(None, 'Are you sure you would like to overwrite?', 'Question', wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
-
-        if dlg.ShowModal() !=wx.ID_NO:
-            Publisher.subscribe(self.OnSave, 'textsavepath')
-
-            # Grab the content to be saved
-            itcontains = self.TextDisplay.GetValue().encode('utf-8').strip()
-
-            # Open the file for write, write, close
-            filehandle=open((self.current_file),'w')
-            filehandle.write(itcontains)
-            filehandle.close()
-
-            self.Close()
-
-        else:
-            pass
+        self.spatial_page.controller.add_input_combo_choices(igeoms.keys())
+        self.spatial_page.controller.add_output_combo_choices(ogeoms.keys())

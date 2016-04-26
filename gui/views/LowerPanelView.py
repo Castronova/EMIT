@@ -1,26 +1,33 @@
-__author__ = 'Francisco'
-
-import threading
+import ConfigParser
+import os
 import sys
+import threading
+
 import wx
 from wx.lib.pubsub import pub as Publisher
-from gui.controller.DatabaseCtrl import DatabaseCtrl
-import coordinator.events as engineEvent
-from wx import richtext
-from ContextView import TimeSeriesContextMenu, SimulationContextMenu #, ConsoleContextMenu
+
 import coordinator.engineAccessors as engine
-from utilities import db as dbUtilities
+import coordinator.events as engineEvent
+import db.dbapi_v2 as db2
+from ContextView import TimeSeriesContextMenu, SimulationContextMenu #, ConsoleContextMenu
+from coordinator.emitLogging import elog
 from db import dbapi as dbapi
 from gui import events
-from coordinator.emitLogging import elog
-from gui.controller.WofSitesCtrl import WofSitesCtrl
 from gui.controller.AddConnectionCtrl import AddConnectionCtrl
-from webservice import wateroneflow
 from gui.controller.ConsoleOutputCtrl import consoleCtrl
-import db.dbapi_v2 as db2
-from odm2api.ODMconnection import dbconnection
-from gui.controller.TimeSeriesObjectCtrl import TimeSeriesObjectCtrl
+from gui.controller.DatabaseCtrl import DatabaseCtrl
 from gui.controller.SimulationPlotCtrl import SimulationPlotCtrl
+from gui.controller.TimeSeriesObjectCtrl import TimeSeriesObjectCtrl
+from gui.controller.WofSitesCtrl import WofSitesCtrl
+from utilities import db as dbUtilities
+from webservice import wateroneflow
+import uuid
+import ConfigParser
+from api_old.ODMconnection import  dbconnection, SessionFactory
+from odm2api.ODMconnection import dbconnection as dbconnection2
+import xml.etree.ElementTree
+from sprint import *
+
 
 class viewLowerPanel:
     def __init__(self, notebook):
@@ -28,10 +35,39 @@ class viewLowerPanel:
         console = consoleCtrl(notebook)
         timeseries = TimeSeriesTab(notebook)
         simulations = SimulationDataTab(notebook)
-
         notebook.AddPage(console, "Console")
         notebook.AddPage(timeseries, "Time Series")
         notebook.AddPage(simulations, "Simulations")
+
+
+class multidict(dict):
+    """
+    Dictionary class that has been extended for Ordering and Duplicate Keys
+    """
+
+    def __init__(self, *args, **kw):
+        self.itemlist = super(multidict, self).keys()
+        self._unique = 0
+
+    def __setitem__(self, key, val):
+        if isinstance(val, dict):
+            self._unique += 1
+            key += '^' + str(self._unique)
+        self.itemlist.append(key)
+        dict.__setitem__(self, key, val)
+
+    def __iter__(self):
+        return iter(self.itemlist)
+
+    def keys(self):
+        return self.itemlist
+
+    def values(self):
+        return [self[key] for key in self]
+
+    def itervalues(self):
+        return (self[key] for key in self)
+
 
 
 class TimeSeriesTab(wx.Panel):
@@ -97,8 +133,11 @@ class TimeSeriesTab(wx.Panel):
             for k, v in self._databases.iteritems():
                 choices.append(self._databases[k]['name'])
 
-            for key, value in self.get_possible_wof_connections().iteritems():
-                choices.append(key)
+            wofconnections = self.get_possible_wof_connections()
+            for con in wofconnections:
+                for key, value in con.iteritems():
+                    if key == 'name':
+                        choices.append(value)
 
             choices.sort()
 
@@ -122,10 +161,26 @@ class TimeSeriesTab(wx.Panel):
         return values
 
     def get_possible_wof_connections(self):
-        wsdl = {}
-        wsdl["Red Butte Creek"] = "http://data.iutahepscor.org/RedButteCreekWOF/cuahsi_1_1.asmx?WSDL"
-        wsdl["Provo River"] = "http://data.iutahepscor.org/ProvoRiverWOF/cuahsi_1_1.asmx?WSDL"
-        wsdl["Logan River"] = "http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL"
+
+        currentdir = os.path.dirname(os.path.abspath(__file__))
+        wof_txt = os.path.abspath(os.path.join(currentdir, '../../data/wofsites'))
+        params = {}
+        cparser = ConfigParser.ConfigParser(None, multidict)
+        cparser.read(wof_txt)
+        sections = cparser.sections()
+        wsdl = []
+        for s in sections:
+            d={}
+            options = cparser.options(s)
+            for option in options:
+                d[option] = cparser.get(s, option)
+
+            wsdl.append(d)
+
+
+        #wsdl["Red Butte Creek"] = "http://data.iutahepscor.org/RedButteCreekWOF/cuahsi_1_1.asmx?WSDL"
+        #wsdl["Provo River"] = "http://data.iutahepscor.org/ProvoRiverWOF/cuahsi_1_1.asmx?WSDL"
+        #wsdl["Logan River"] = "http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL"
         return wsdl
 
     def open_odm2_viewer(self, object):
@@ -138,25 +193,49 @@ class TimeSeriesTab(wx.Panel):
         siteview = WofSitesCtrl(self, siteObject, self.api)
         return
 
+    def generate_wof_data_from_XML(self):
+        root = xml.etree.ElementTree.parse('wof.xml').getroot()
+        output = []
+        for child in root:
+            if "site" in child.tag:
+                d = []
+                for step_child in child:
+                    for onemore in step_child:
+                        if "siteName" in onemore.tag:
+                            d.append(['site_name', onemore.text])
+                        if "siteCode" in onemore.tag:
+                            d.append(['network', onemore.items()[1][1]])
+                            d.append(['site_code', onemore.text])
+                        if "siteProperty" in onemore.tag:
+                            if onemore.attrib.items()[0][1] == "County":
+                                d.append(['county', onemore.text])
+                            if onemore.attrib.items()[0][1] == "State":
+                                d.append(['state', onemore.text])
+                            if onemore.attrib.items()[0][1] == "Site Type":
+                                d.append(['site_type', onemore.text])
+                output.append(d)
+        return output
+
     def setup_wof_table(self, api):
-        self.wofsites = api.getSites()
-        api.network_code = self.wofsites[0].siteInfo.siteCode[0]._network
+        #self.wofsites = api.getSitesObject()
+        api.getSites()
+        self.wofsites = self.generate_wof_data_from_XML()
+        api.network_code = self.wofsites[1][1][1]
         self.table_columns = ["Site Name", "Network", "County", "State", "Site Type", "Site Code"]
         self.m_olvSeries.DefineColumns(self.table_columns)
 
         output = []
         for site in self.wofsites:
-            properties = {prop._name.lower(): prop.value for prop in site.siteInfo.siteProperty if 'value' in prop }
-            d = {
-                "site_name": site.siteInfo.siteName,  # The key MUST match one in the table_columns IN LOWERCASE. FYI
-                "network": site.siteInfo.siteCode[0]._network,
-                "county": properties['county'],
-                "state": properties['state'],
-                "site_type": properties['site type'],
-                "site_code": site.siteInfo.siteCode[0].value,
-            }
+            data = {
+                    "site_name": site[0][1],
+                    "network": site[1][1],
+                    "county": site[3][1],
+                    "state": site[4][1],
+                    "site_type": site[5][1],
+                    "site_code": site[2][1]
+                }
 
-            record_object = type('WOFRecord', (object,), d)
+            record_object = type('WOFRecord', (object,), data)
             output.extend([record_object])
         self.m_olvSeries.AutoSizeColumns()
         self.m_olvSeries.SetObjects(output)
@@ -171,9 +250,10 @@ class TimeSeriesTab(wx.Panel):
         # get the name of the selected database
         selected_db = self.connection_combobox.GetStringSelection()
 
-        for key, value in self.get_possible_wof_connections().iteritems():
-            if selected_db == key:
-                return value
+        for con in self.get_possible_wof_connections():
+            for key, value in con.iteritems():
+                if selected_db == value:
+                    return con
 
         self.table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
         self.m_olvSeries.DefineColumns(self.table_columns)
@@ -248,168 +328,11 @@ class TimeSeriesTab(wx.Panel):
         value = self.refresh_database()
         if value is not None:
             try:
-                self.api = wateroneflow.WaterOneFlow(value)
+                self.api = wateroneflow.WaterOneFlow(value['wsdl'], value['network'])
                 self.setup_wof_table(self.api)
             except Exception:
                 elog.debug("Wof web service took to long or failed.")
                 elog.info("Web service took to long. Wof may be down.")
-
-class AddConnectionDialog(wx.Dialog):
-    def __init__(
-            self, parent, ID, title, size=wx.DefaultSize, pos=wx.DefaultPosition,
-            style=wx.DEFAULT_DIALOG_STYLE,
-            ):
-
-        pre = wx.PreDialog()
-        pre.SetExtraStyle(wx.DIALOG_EX_CONTEXTHELP)
-        pre.Create(parent, ID, title, pos, size, style)
-
-        self.PostCreate(pre)
-
-        gridsizer = wx.FlexGridSizer(rows=7,cols=2,hgap=5,vgap=5)
-
-        titleSizer = wx.BoxSizer(wx.HORIZONTAL)
-        label = wx.StaticText(self, -1, "Database Connection")
-        titleSizer.Add(label, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
-
-        ######################################################
-
-        label = wx.StaticText(self, -1, "*Title :")
-        label.SetFont(label.GetFont().MakeBold())
-        label.SetHelpText("Title of the database connection")
-        self.title = wx.TextCtrl(self, wx.ID_ANY, '', size=(200,-1))
-        box = wx.BoxSizer(wx.HORIZONTAL)
-        box.Add(label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
-        gridsizer.Add(box,0,wx.ALIGN_LEFT)
-        gridsizer.Add(self.title, 0, wx.EXPAND)
-
-
-        label = wx.StaticText(self, -1, "Description :")
-        label.SetHelpText("Description of the database connection")
-        self.description = wx.TextCtrl(self, -1, "", size=(80,-1))
-        box = wx.BoxSizer(wx.HORIZONTAL)
-        box.Add(label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
-        gridsizer.Add(box,0,wx.ALIGN_LEFT)
-        gridsizer.Add(self.description, 0, wx.EXPAND)
-
-        ######################################################
-
-
-        label = wx.StaticText(self, -1, "*Engine :")
-        label.SetFont(label.GetFont().MakeBold())
-        label.SetHelpText("Database Parsing Engine (e.g. mysql, psycopg2, etc)")
-        #self.engine = wx.TextCtrl(self, -1, "", size=(80,-1))
-        engine_choices = ['PostgreSQL', 'MySQL']
-        self.engine = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, engine_choices, 0 )
-        self.engine.SetSelection( 0 )
-        box = wx.BoxSizer(wx.HORIZONTAL)
-        box.Add(label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
-        gridsizer.Add(box,0,wx.ALIGN_LEFT)
-        gridsizer.Add(self.engine, 0, wx.EXPAND)
-
-
-        label = wx.StaticText(self, -1, "*Address :")
-        label.SetFont(label.GetFont().MakeBold())
-        label.SetHelpText("Database Address")
-        self.address = wx.TextCtrl(self, -1, "", size=(80,-1))
-        box = wx.BoxSizer(wx.HORIZONTAL)
-        box.Add(label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
-        gridsizer.Add(box,0,wx.ALIGN_LEFT)
-        gridsizer.Add(self.address, 0, wx.EXPAND)
-
-        label = wx.StaticText(self, -1, "*Database :")
-        label.SetFont(label.GetFont().MakeBold())
-        label.SetHelpText("Database Name")
-        self.name = wx.TextCtrl(self, -1, "", size=(80,-1))
-        box = wx.BoxSizer(wx.HORIZONTAL)
-        box.Add(label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
-        gridsizer.Add(box,0,wx.ALIGN_LEFT)
-        gridsizer.Add(self.name, 0, wx.EXPAND)
-
-        label = wx.StaticText(self, -1, "*User :")
-        label.SetFont(label.GetFont().MakeBold())
-        label.SetHelpText("Database Username")
-        self.user = wx.TextCtrl(self, -1, "", size=(80,-1))
-        box = wx.BoxSizer(wx.HORIZONTAL)
-        box.Add(label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
-        gridsizer.Add(box,0,wx.ALIGN_LEFT)
-        gridsizer.Add(self.user, 0, wx.EXPAND)
-
-        label = wx.StaticText(self, -1, "Password :")
-        label.SetHelpText("Database Password")
-        self.password = wx.TextCtrl(self, -1, "", size=(80,-1))
-        box = wx.BoxSizer(wx.HORIZONTAL)
-        box.Add(label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
-        gridsizer.Add(box,0,wx.ALIGN_LEFT)
-        gridsizer.Add(self.password, 0, wx.EXPAND)
-
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(titleSizer, 0, wx.CENTER)
-        sizer.Add(wx.StaticLine(self), 0, wx.ALL|wx.EXPAND, 5)
-        sizer.Add(gridsizer, 0, wx.ALL|wx.EXPAND, 5)
-        sizer.Add(wx.StaticLine(self), 0, wx.ALL|wx.EXPAND, 5)
-        self.SetSizeHints(250, 300, 500, 400)
-
-
-        btnsizer = wx.StdDialogButtonSizer()
-
-        if wx.Platform != "__WXMSW__":
-            btn = wx.ContextHelpButton(self)
-            btnsizer.AddButton(btn)
-
-        self.btnok = wx.Button(self, wx.ID_OK)
-        self.btnok.SetDefault()
-        btnsizer.AddButton(self.btnok)
-        self.btnok.Disable()
-
-        btn = wx.Button(self, wx.ID_CANCEL)
-        btnsizer.AddButton(btn)
-        btnsizer.Realize()
-
-        sizer.Add(btnsizer, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
-
-        self.SetSizer(sizer)
-        sizer.Fit(self)
-
-
-        #self.engine.Bind(wx.EVT_TEXT, self.OnTextEnter)
-        self.address.Bind(wx.EVT_TEXT, self.OnTextEnter)
-        self.name.Bind(wx.EVT_TEXT, self.OnTextEnter)
-        self.user.Bind(wx.EVT_TEXT, self.OnTextEnter)
-        self.title.Bind(wx.EVT_TEXT, self.OnTextEnter)
-
-
-    def set_values(self,title,desc,engine, address, name, user,pwd):
-        self.title.Value = title
-        self.description.Value = desc
-        self.engine.Value = engine
-        self.address.Value = address
-        self.name.Value = name
-        self.user.Value = user
-        self.password.Value = pwd
-
-    def getConnectionParams(self):
-
-        engine = self.engine.GetStringSelection().lower()
-
-        #engine = self.engine.GetValue()
-        address = self.address.GetValue()
-        name = self.name.GetValue()
-        user = self.user.GetValue()
-        pwd = self.password.GetValue()
-        title = self.title.GetValue()
-        desc = self.description.GetValue()
-
-        return title,desc, engine,address,name,user,pwd,title,desc
-
-    def OnTextEnter(self, event):
-        if self.address.GetValue() == '' or  \
-                self.name.GetValue() == '' or  \
-                self.user.GetValue() == '' or \
-                self.title.GetValue() == '':
-            self.btnok.Disable()
-        else:
-            self.btnok.Enable()
 
 class DataSeries(wx.Panel):
     def __init__(self, parent):
@@ -551,10 +474,7 @@ class SimulationDataTab(DataSeries):
         #set the selected choice
         self.__selected_choice_idx = self.connection_combobox.GetSelection()
 
-        for key, db in self._databases.iteritems():        # # deactivate the console if we are in debug mode
-            # if not sys.gettrace():
-            #     redir = RedirectText(self.log)
-            #     sys.stdout = redir
+        for key, db in self._databases.iteritems():
 
             # get the database session associated with the selected name
             isSqlite = False
@@ -562,18 +482,26 @@ class SimulationDataTab(DataSeries):
             if db['name'] == selected_db:
                 simulations = None
 
-                if db['args']['engine'] == 'sqlite':
-                    session = dbconnection.createConnection(engine=db['args']['engine'], address=db['args']['address'])
-                    self.conn = db2.connect(session)
-                    simulations = self.conn.getAllSimulations()
-                    isSqlite = True
-                    self.conn.getCurrentSession()
-                else:
-                    session = dbUtilities.build_session_from_connection_string(db['connection_string'])
-                    # build the database session
+                # connect to database
+                try:
+                    dargs = db['args']
+                    if dargs['engine'] == 'sqlite':
+                        session = dbconnection2.createConnection(engine=dargs['engine'], address=dargs['address'],
+                                                            db=dargs['db'], user=dargs['user'], password=dargs['pwd'])
+                        self.conn = db2.connect(session)
+                        simulations = self.conn.getAllSimulations()
+                        isSqlite = True
+                        self.conn.getCurrentSession()
+                    else:
+                        session = dbUtilities.build_session_from_connection_string(db['connection_string'])
+                        # build the database session
 
-                    u = dbapi.utils(session)
-                    simulations = u.getAllSimulations()
+                        u = dbapi.utils(session)
+                        simulations = u.getAllSimulations()
+                except Exception, e:
+                    msg = 'Encountered an error when connecting to database %s: %s' % (db['name'], e)
+                    elog.error(msg)
+                    sPrint(msg, MessageType.ERROR)
 
 
                 #     # gui_utils.connect_to_db()

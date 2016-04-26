@@ -1,9 +1,9 @@
 import ConfigParser
-import os
 import sys
+import os
 
 from api_old.ODMconnection import  dbconnection
-
+from sprint import *
 
 # This is an interface for
 class ConnectionVars(object):
@@ -165,6 +165,18 @@ def getDefaultSettingsPath():
 
     return settings
 
+
+def getDefaultUsersJsonPath():
+    currentdir = os.path.dirname(os.path.abspath(__file__))
+    users_path = os.path.abspath(os.path.join(currentdir, './app_data/config/users.json'))
+
+    # get the default location relative to the packeage
+    if getattr(sys, 'frozen', False):
+        users_path = os.path.join(sys._MEIPASS, 'app_data/config/users.json')
+
+    return users_path
+
+
 def getEnvironmentVars(settings=None):
 
     # get the default location for the filepath if it is not provided
@@ -172,10 +184,13 @@ def getEnvironmentVars(settings=None):
         settings = getDefaultSettingsPath()
 
     # write the default file path if it doesn't exist
+    msg = None
     if not os.path.exists(settings):
         writeDefaultEnvironment(settings)
+        msg = 'writing default environment variables to settings. This is because no settings file could be found.'
     # re-write this file if in debug mode to ensure that the settings are always up-to-date
     elif sys.gettrace():
+        msg = 'writing default environment variables to settings. This is because you are running in debug mode.'
         writeDefaultEnvironment(settings)
 
     # read the default settings
@@ -183,5 +198,7 @@ def getEnvironmentVars(settings=None):
 
     # load the default environment
     loadEnvironment(config)
+
+    sPrint(msg, MessageType.INFO)
 
 getEnvironmentVars()

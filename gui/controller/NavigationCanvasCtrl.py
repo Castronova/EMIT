@@ -420,7 +420,7 @@ class GUILink(GUIBase):
         if not self.Canvas.HitTest(event, EventType):
             self.Canvas._RaiseMouseEvent(event, EventType)
 
-# class GUIDelete(GUIBase, LogicCanvas):
+# class GUIDelete(GUIBase, CanvasCtrl):
 #     #CanvasController.onRightDown()
 #     pass
 

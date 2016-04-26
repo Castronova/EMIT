@@ -39,4 +39,4 @@ ignorecv = 1
 
 [model_inputs]
 control = ./RBCreekUEB2/control.dat
-lib = ./bin/debug/libUEBHydroCoupleComponent.dylib
+lib = ./libUEBHydroCoupleComponent.dylib

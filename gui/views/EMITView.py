@@ -3,7 +3,6 @@ import threading
 
 import wx
 import wx.html2
-import time
 import wx.lib.agw.aui as aui
 from wx.lib.newevent import NewEvent
 from wx.lib.pubsub import pub as Publisher
@@ -13,15 +12,14 @@ from LowerPanelView import viewLowerPanel
 from coordinator.emitLogging import elog
 from coordinator.engineManager import Engine
 from gui import events
-from gui.controller.CanvasCtrl import LogicCanvas
+from gui.controller.CanvasCtrl import CanvasCtrl
 from gui.controller.DirectoryCtrl import LogicDirectory
 from gui.controller.NetcdfCtrl import NetcdfCtrl
-from gui.controller.PreRunCtrl import AddNewUserDialog
+from gui.controller.UserCtrl import UserCtrl
 from gui.controller.ToolboxCtrl import LogicToolbox
+from gui.controller.settingsCtrl import settingsCtrl
 from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
-from utilities.gui import loadAccounts
 
-import coordinator.users as users
 # create custom events
 wxCreateBox, EVT_CREATE_BOX = NewEvent()
 wxStdOut, EVT_STDDOUT= NewEvent()
@@ -38,14 +36,12 @@ class ViewEMIT(wx.Frame):
         self.bnb = wx.Notebook(self.pnlDocking)
         lowerpanel = viewLowerPanel(self.bnb)
 
-        self.parent = parent
-
         self.initMenu()
 
         # creating components
         self.Directory = LogicDirectory(self.pnlDocking)
         self.Toolbox = LogicToolbox(self.pnlDocking)
-        self.Canvas = LogicCanvas(self.pnlDocking)
+        self.Canvas = CanvasCtrl(self.pnlDocking)
 
         self.Toolbox.Hide()
         self.initAUIManager()
@@ -62,7 +58,7 @@ class ViewEMIT(wx.Frame):
 
 
     def refreshUserAccount(self):
-        # This method is here because AddNewUserDialog.onOkBtn looks for this method at the end of the function
+        # This method is here because AddNewUserDialog.on_ok looks for this method at the end of the function
         # The refresh was implemented so the pre-run dialog user account box would refresh after adding new user
         return
 
@@ -210,49 +206,6 @@ class ViewEMIT(wx.Frame):
         self.Bind(wx.EVT_MENU, self.onAddNetcdfFile, add_netcdf)
         self.Bind(wx.EVT_MENU, self.onOpenDapViewer, open_dap_viewer)
 
-
-
-    def checkUsers(self):
-        userPath = os.environ['APP_USER_PATH']
-        print userPath
-        if os.path.isfile(userPath) == False:
-            file = open(userPath, 'w+')
-            dlg = AddNewUserDialog(self, title="Create User")
-            dlg.CenterOnScreen()
-            dlg.ShowModal()
-        else:
-            # users = self.loadAccounts()
-            users = loadAccounts()
-            if len(users) < 1:
-                dlg = AddNewUserDialog(self, title="Create User")
-                dlg.CenterOnScreen()
-                dlg.ShowModal()
-
-        # users = self.loadAccounts()
-        users = loadAccounts()
-        userAdded = False
-        no = False
-        if len(users) > 0:
-            userAdded = True
-        while userAdded == False:# and no == False:
-
-            # users = self.loadAccounts()
-            users = loadAccounts()
-            if len(users) == 0 and no == False:
-                dial = wx.MessageDialog(None, 'You must add a user to continue', 'Question',
-                    wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
-                if dial.ShowModal() == wx.ID_NO:
-                    pid = os.getpid()
-                    #os.system("kill -9 " + pid)
-                    no = True
-                else:
-                    dlg = AddNewUserDialog(self, title="Create User")
-                    dlg.CenterOnScreen()
-                    dlg.ShowModal()
-            else:
-                userAdded = True
-                self.onClose(None)
-
     def onAddCsvFile(self, event):
         file_dialog = wx.FileDialog(self.Parent,
                                     message="Add *.csv file",
@@ -264,9 +217,9 @@ class ViewEMIT(wx.Frame):
             path = file_dialog.GetPath()
 
     def onAddUser(self, event):
-        dlg = AddNewUserDialog(self, title="Create User")
-        dlg.CenterOnScreen()
-        dlg.ShowModal()
+        controller = UserCtrl(self)
+        controller.CenterOnScreen()
+        controller.Show()
 
     def onAddNetcdfFile(self, event):
         file_dialog = wx.FileDialog(self.Parent,
@@ -332,7 +285,7 @@ class ViewEMIT(wx.Frame):
             wx.WakeUpMainThread
 
     def onOpenDapViewer(self, event):
-        netcdf = NetcdfCtrl(self)
+        NetcdfCtrl(self.Canvas.GetTopLevelParent())
 
     def defaultview(self, event):
         """
@@ -369,8 +322,7 @@ class ViewEMIT(wx.Frame):
             self.defaultLoadDirectory = os.path.dirname(filepath)
 
     def Settings(self, event):
-        settings = viewMenuBar()
-        settings.Show()
+        settingsCtrl(self.Canvas.GetTopLevelParent())
 
     def SaveConfiguration(self,event):
         if self.loadingpath == None:
@@ -456,7 +408,7 @@ class viewMenuBar(wx.Frame):
         sizer = wx.BoxSizer(wx.VERTICAL)
 
         console_title = wx.StaticText(self.panel, id=wx.ID_ANY, label="Configure Console Verbosity",pos=(20, 100))
-        font = wx.Font(16, wx.NORMAL, wx.NORMAL, wx.BOLD)
+        font = wx.Font(16, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
         console_title.SetFont(font)
 
         self.c1 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Info Messages")

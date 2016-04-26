@@ -57,6 +57,7 @@ def update_links(obj, links, output_exchange_items, spatial_maps):
 
 
 def update_links_feed_forward(obj, links, output_exchange_items, spatial_maps):
+    # todo: this help text is out of date
     """
     Updates the data from source component exchange items to target component exchange items
     :param obj: a coordinator object
@@ -65,13 +66,19 @@ def update_links_feed_forward(obj, links, output_exchange_items, spatial_maps):
     :param spatial_maps: map dictionary object
     """
 
+    links_list = links.items()
+    sPrint('.. found %d link(s) for this model that need updating ' % len(links_list))
 
-    for linkid, link in links.iteritems():
+    for linkid, link in links_list:
 
-        #target_model  = target[0]
+        # get link source and target info
         target_model = link.target_component()
-
+        target_item_name = link.target_exchange_item().name()
+        source_model = link.source_component()
         source_item_name = link.source_exchange_item().name()
+
+        sPrint('.. updating link %s:[%s] --> %s:[%s] ' % (target_model.name(),target_item_name, source_model.name(),
+                                                       source_item_name), MessageType.INFO)
 
         # get the auto generated key for this link
         link_key = generate_link_key(link)
@@ -84,12 +91,9 @@ def update_links_feed_forward(obj, links, output_exchange_items, spatial_maps):
         t = target_st
         target_times = []
         while t <= target_et:
-            target_times.append(t)
-
             # increment time by seconds
+            target_times.append(t)
             t += timedelta(seconds=target_ts)
-
-            # t += timedelta(**{target_ts[1]:target_ts[0]})
 
 
         # get oei data (source)
@@ -101,8 +105,6 @@ def update_links_feed_forward(obj, links, output_exchange_items, spatial_maps):
         # get iei data (target)
         iei = link.target_exchange_item()
         tgeoms = iei.getGeometries2()
-        tdates = iei.getDates2()
-        tvals = iei.getValues2()
 
         # build temporal mapping array
         temporal = temporal_nearest_neighbor()
@@ -123,55 +125,16 @@ def update_links_feed_forward(obj, links, output_exchange_items, spatial_maps):
             # source values for the given index
             svals = svalues[:, sidx]
 
-            # calculate mapped dates and mapped values
-            # sdate_idx, sdate_list = zip(*sdates)
-            # temporal = temporal_nearest_neighbor()  # todo: this is hardcoded for now.  Need to change!
-            # mdates, mvals = temporal.transform(sdate_list, svals, target_times)
-
+            # map values
             mvals = transform(tmap, svals)
 
             # set the source values in the target
             nvals[:, tidx] = mvals
 
-            # set mapped dates in temp array
-            # nvals[:, gidx] = mapped_values
-
         # todo: remove loop to improve efficiency
         # set these data in the iei
         for i in range(0, len(nvals)):
             iei.setValues2(values=nvals[i], timevalue=target_times[i])
-        # obj.update_link
 
-
+        # return success
         return 1
-
-
-        # get all the datasets of the output exchange item.  These will be used to temporally map the data
-        # datasets = output_exchange_items[source_item_name].get_all_datasets()
-
-
-        # # Temporal data mapping
-        # mapped = {}
-        #
-        #
-        # for geom, datavalues in datasets.iteritems():
-        #
-        #     # get the dates and values from the geometry
-        #     dates,values = datavalues.get_dates_values()
-        #
-        #     # temporal mapping
-        #     temporal = temporal_nearest_neighbor()
-        #     if temporal and values:
-        #         mapped_dates,mapped_values = temporal.transform(dates,values,target_times)
-        #
-        #         if mapped_dates is not None:
-        #             # save the temporally mapped data by output geometry
-        #             mapped[geom] = (zip(mapped_dates,mapped_values))
-        #
-        # # update links
-        # if len(mapped.keys()) > 0:
-        #     # get spatially mapped data for the current link
-        #     spatial_mapping = spatial_maps[link_key] if link_key in spatial_maps else None
-        #     if spatial_mapping is None:
-        #         raise Exception('Spatial Mapping was not set!')
-        #     obj.update_link(linkid, mapped, spatial_mapping)

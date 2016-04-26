@@ -41,8 +41,8 @@ def connectToDbFromFile(dbtextfile=None):
     e.thread.join()
 
 
-def connectToDb(title, desc, engine, address, name, user, pwd):
-    kwargs = dict(title=title, desc=desc, engine=engine, address=address, name=name, user=user, pwd=pwd)
+def connectToDb(title, desc, engine, address, name, user, pwd, default=False):
+    kwargs = dict(title=title, desc=desc, engine=engine, address=address, name=name, user=user, pwd=pwd, default=default)
     e = Engine()
     kwargs['event'] ='onDatabaseConnected'
     task = [('connect_to_db',kwargs)]
@@ -120,18 +120,10 @@ def getModelById(modelid):
     result = e.processTasks()
     return result
 
-def getOutputExchangeItems(modelid, returnGeoms=True):
+def getExchangeItems(modelid, exchange_item_type='INPUT', returnGeoms=True):
     e = Engine()
-    kwargs = dict(id=modelid, returnGeoms=returnGeoms)
-    task = [('get_output_exchange_items_summary', kwargs)]
-    e.setTasks(task)
-    result = e.processTasks()
-    return result
-
-def getInputExchangeItems(modelid, returnGeoms=True):
-    e = Engine()
-    kwargs = dict(id=modelid, returnGeoms=returnGeoms)
-    task = [('get_input_exchange_items_summary', kwargs)]
+    kwargs = dict(modelid=modelid, exchange_item_type=exchange_item_type, returnGeoms=returnGeoms)
+    task = [('get_exchange_item_info', kwargs)]
     e.setTasks(task)
     result = e.processTasks()
     return result
@@ -176,9 +168,9 @@ def getAllModels():
     result = e.processTasks()
     return result
 
-def runSimulation(simulationName=None, dbName=None, user_json=None, datasets=None):
+def runSimulation(simulationName=None, dbName=None, user_info=None, datasets=None):
     e = Engine()
-    kwargs = dict(simulationName=simulationName, dbName=dbName, user_json=user_json, datasets=datasets, event='onSimulationFinished')
+    kwargs = dict(simulationName=simulationName, dbName=dbName, user_info=user_info, datasets=datasets, event='onSimulationFinished')
     task = [('run_simulation', kwargs)]
     e.setTasks(task)
 

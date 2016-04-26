@@ -77,10 +77,10 @@ class UserView(wx.Frame):
         self.firstname_label = wx.StaticText(panel, label="First Name: ")
         self.lastname_label = wx.StaticText(panel, label="Last Name: ")
         self.organization_label = wx.StaticText(panel, label="Organization: ")
-        self.phone_label = wx.StaticText(panel, label=" Phone: ")
-        self.email_label = wx.StaticText(panel, label=" Email: ")
-        self.address_label = wx.StaticText(panel, label=" Address: ")
-        self.startdate_label = wx.StaticText(panel, label=" Start Date: ")
+        # self.phone_label = wx.StaticText(panel, label=" Phone: ")
+        # self.email_label = wx.StaticText(panel, label=" Email: ")
+        # self.address_label = wx.StaticText(panel, label=" Address: ")
+        # self.startdate_label = wx.StaticText(panel, label=" Start Date: ")
         self.whitespace_label = wx.StaticText(panel, label="")
 
         #  Text Boxes
@@ -90,20 +90,20 @@ class UserView(wx.Frame):
         self.editOrganization = wx.Button(panel, label="Edit", style=wx.BU_EXACTFIT)
         self.removeOrganization = wx.Button(panel, label="Remove", style=wx.BU_EXACTFIT)
         self.organizationListBox = wx.ListBox(panel)
-        self.phoneTextBox = wx.TextCtrl(panel)
-        self.emailTextBox = wx.TextCtrl(panel)
-        self.addressTextBox = wx.TextCtrl(panel)
-        self.startDatePicker = wx.DatePickerCtrl(panel, id=wx.ID_ANY, dt=today)
+        # self.phoneTextBox = wx.TextCtrl(panel)
+        # self.emailTextBox = wx.TextCtrl(panel)
+        # self.addressTextBox = wx.TextCtrl(panel)
+        # self.startDatePicker = wx.DatePickerCtrl(panel, id=wx.ID_ANY, dt=today)
 
 
         #  Static Text
         psizer.Add(self.firstname_label, pos=(1, 0), flag=wx.LEFT, border=15)
         psizer.Add(self.lastname_label, pos=(2, 0), flag=wx.LEFT, border=15)
         psizer.Add(self.organization_label, pos=(3, 0), flag=wx.LEFT, border=15)
-        psizer.Add(self.phone_label, pos=(5, 0), flag=wx.LEFT, border=10)
-        psizer.Add(self.email_label, pos=(6, 0), flag=wx.LEFT, border=10)
-        psizer.Add(self.address_label, pos=(7, 0), flag=wx.LEFT, border=10)
-        psizer.Add(self.startdate_label, pos=(8, 0), flag=wx.LEFT, border=10)
+        # psizer.Add(self.phone_label, pos=(5, 0), flag=wx.LEFT, border=10)
+        # psizer.Add(self.email_label, pos=(6, 0), flag=wx.LEFT, border=10)
+        # psizer.Add(self.address_label, pos=(7, 0), flag=wx.LEFT, border=10)
+        # psizer.Add(self.startdate_label, pos=(8, 0), flag=wx.LEFT, border=10)
         psizer.Add(self.whitespace_label, pos=(0, 4), flag=wx.LEFT, border=5)
 
         #  Textbox
@@ -113,10 +113,10 @@ class UserView(wx.Frame):
         psizer.Add(self.editOrganization, pos=(3, 2), span=(1, 1), flag=wx.TOP)
         psizer.Add(self.removeOrganization, pos=(3, 3), span=(1, 1), flag=wx.TOP)
         psizer.Add(self.organizationListBox, pos=(4, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND)
-        psizer.Add(self.phoneTextBox, pos=(5, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND)
-        psizer.Add(self.emailTextBox, pos=(6, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND)
-        psizer.Add(self.addressTextBox, pos=(7, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND)
-        psizer.Add(self.startDatePicker, pos=(8, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND)
+        # psizer.Add(self.phoneTextBox, pos=(5, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND)
+        # psizer.Add(self.emailTextBox, pos=(6, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND)
+        # psizer.Add(self.addressTextBox, pos=(7, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND)
+        # psizer.Add(self.startDatePicker, pos=(8, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND)
 
         #  Line Break After all the textboxes
         self.lineBreak = wx.StaticLine(self)

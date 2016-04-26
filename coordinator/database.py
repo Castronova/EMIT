@@ -1,10 +1,19 @@
 from coordinator.emitLogging import elog
 from sprint import *
 import time
-from odm2api.ODMconnection import dbconnection
 import db.dbapi_v2 as dbv2
 
 def save(obj, datasave, modelids):
+    """
+    Saves simulation calculations to an ODM2 database
+    Args:
+        obj: Engine object
+        datasave: datasave object that contains database and user info
+        modelids: list of model ids to save data for
+
+    Returns:
+
+    """
 
     if datasave.session is not None:
         session = datasave.session

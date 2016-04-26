@@ -57,9 +57,6 @@ class Link(object):
     def get_link(self):
         elog.error('[Deprecated] This function has been deprecated...do not use! ')
         elog.error('[Deprecated] main.py -> get_link()')
-        for caller in inspect.stack():
-            if 'EMIT' in caller[1]:
-                elog.error('[Deprecated Call Stack] ',caller[1],caller[3],caller[2])
 
         return [self.__from_lc,self.__from_item], [self.__to_lc,self.__to_item]
 

@@ -370,14 +370,27 @@ class CanvasCtrl(CanvasView):
         # engine.removeModelById is using deprecated functions and returns None, however the link is being removed.
         # to prevent issues with the drawing the if statement makes sure the link no longer exists in the engine
         if not engine.getModelById(model_obj.ID):
-            # Update models list
-            self.models.pop(model_obj)
 
-            # Remove selected model and text box from FloatCanvas
-            self.FloatCanvas.RemoveObjects([model_obj])
-            # Remove the model's SmoothLineWithArrow obj with builtin remove function
-            for link in links_to_remove:
-                link.Remove(self.FloatCanvas)
+            try:
+                # Update models list
+                self.models.pop(model_obj)
+
+                # Remove selected model and text box from FloatCanvas
+                self.FloatCanvas.RemoveObjects([model_obj])
+            except Exception, e:
+                msg = 'Encountered and error when removing model from canvas: %s' % e
+                sPrint(msg, MessageType.ERROR)
+
+            try:
+
+                # Remove the model's SmoothLineWithArrow obj with builtin remove function
+                for link in links_to_remove:
+                    # remove the link object from the DrawList if it exists.  It may not exist in the DrawList for bidirectional links.
+                    if link in self.FloatCanvas._DrawList:
+                        link.Remove(self.FloatCanvas)
+            except Exception, e:
+                msg = 'Encountered and error when removing link from canvas: %s' % e
+                sPrint(msg, MessageType.ERROR)
 
             self.FloatCanvas.Draw()
 

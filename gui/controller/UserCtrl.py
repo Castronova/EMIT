@@ -6,6 +6,7 @@ import coordinator.users as users
 import json
 import uuid
 import environment
+from wx.lib.pubsub import pub
 
 class OrganizationCtrl(OrganizationView):
     def __init__(self, parent, data=None):
@@ -50,12 +51,17 @@ class OrganizationCtrl(OrganizationView):
     def on_accept(self, event):
         data = self.get_values()
         self.parent.organization(data)
-        # self.parent.organization_data[data["name"]] = data
         self.parent.refresh_organization_box()
-        self.on_cancel(None)
+        self.send_and_close()
+        self.Close()
 
     def on_cancel(self, event):
+        self.send_and_close()
         self.Close()
+
+    def send_and_close(self):
+        pub.sendMessage('OrganizationClose')
+
 
 class UserCtrl(UserView):
     def __init__(self, parent):
@@ -64,8 +70,8 @@ class UserCtrl(UserView):
         self.organization_data = {}
 
         # initialize bindings
-        self.firstnameTextBox.Bind(wx.EVT_TEXT, self.on_text_enter)
-        self.lastnameTextBox.Bind(wx.EVT_TEXT, self.on_text_enter)
+        self.firstnameTextBox.Bind(wx.EVT_TEXT, self.check_save)
+        self.lastnameTextBox.Bind(wx.EVT_TEXT, self.check_save)
         # self.phoneTextBox.Bind(wx.EVT_TEXT, self.on_text_enter)
         # self.emailTextBox.Bind(wx.EVT_TEXT, self.on_text_enter)
         # self.addressTextBox.Bind(wx.EVT_TEXT, self.on_text_enter)
@@ -76,8 +82,15 @@ class UserCtrl(UserView):
         self.cancelButton.Bind(wx.EVT_BUTTON, self.on_cancel)
         self.editOrganization.Bind(wx.EVT_BUTTON, self.on_edit)
 
+        # listen to OrganizationClose messages from the OrganizationCtrl class
+        pub.subscribe(self.on_organization_close, 'OrganizationClose')
+
+    def on_organization_close(self):
+        self.check_save(None)
+
     def add_organization_clicked(self, event):
         OrganizationCtrl(self)
+        # self.check_save(None)
 
     def organization(self, value=None):
        if value is not None:
@@ -198,9 +211,10 @@ class UserCtrl(UserView):
         self.parent.refreshUserAccount()
         self.Close()
 
-    def on_text_enter(self, event):
+    def check_save(self, event):
         if self.firstnameTextBox.GetValue() \
-                and self.lastnameTextBox.GetValue():
+                and self.lastnameTextBox.GetValue() \
+                and self.organizationListBox.GetCount() > 0:
             self.okbutton.Enable()
         else:
             self.okbutton.Disable()

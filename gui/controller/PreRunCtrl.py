@@ -45,15 +45,17 @@ class PreRunViewCtrl(PreRunView):
         # If local is not found set it to the first value
         self.database_combo.SetSelection(0)
 
-
     def refreshUserAccount(self):
         self.account_combo.Clear()
-        self.accounts = loadAccounts()
-        account_names = [' '.join([affil.person.lastname, '[' + affil.organization.code + ']']) for affil in
-                         self.accounts]
-        if len(account_names) > 0:
-            self.account_combo.AppendItems(account_names)
-            self.account_combo.SetSelection(0)
+        accounts = UserCtrl.users_json_file_to_object()
+        account_names = []
+        for person, organizations in accounts.iteritems():
+            for organ in organizations:
+                user = person.last_name + " [" + organ.name + "]"
+                account_names.append(user)
+
+        self.account_combo.AppendItems(account_names)
+        self.account_combo.SetSelection(0)
 
     def populateVariableList(self):
         if len(engineAccessors.getAllLinks()) < 1:

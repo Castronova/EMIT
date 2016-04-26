@@ -1,5 +1,3 @@
-__author__ = 'mario'
-
 import wx
 import wx.xrc
 import wx.dataview
@@ -9,16 +7,20 @@ from transform.space import *
 import coordinator.engineAccessors as engine
 import sys
 
+
 class LinkView(wx.Frame):
     def __init__(self, parent, output, input):
-        wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=wx.EmptyString, pos=wx.DefaultPosition,
-                          size=wx.Size(700, 625),
-                          style=wx.DEFAULT_FRAME_STYLE | wx.FRAME_FLOAT_ON_PARENT)#^ (wx.RESIZE_BORDER | wx.MINIMIZE_BOX | wx.MAXIMIZE_BOX))
-        print sys.platform
         if sys.platform == 'darwin':
-            self.SetSize((700, 520))
-        if sys.platform == 'win32':
-            self.SetSize((700,530))
+            width, height = (700, 520)
+        elif sys.platform == 'win32':
+            width, height = (700, 530)
+        else:
+            width, height = (700, 625)
+
+        wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=wx.EmptyString, pos=wx.DefaultPosition,
+                          size=wx.Size(width, height),
+                          style=wx.DEFAULT_FRAME_STYLE | wx.FRAME_FLOAT_ON_PARENT)#^ (wx.RESIZE_BORDER | wx.MINIMIZE_BOX | wx.MAXIMIZE_BOX))
+
         self.font = wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL)
         self.input_component = input
         self.output_component = output

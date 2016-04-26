@@ -28,7 +28,7 @@ class OrganizationCtrl(OrganizationView):
             "description": self.description_textbox.GetValue(),
             "type": self.type_combo.GetValue(),
             "url": self.url_textbox.GetValue(),
-            "start_date": self.start_date_picker.GetValue(),
+            "start_date": UserCtrl.datetime_to_string(self.start_date_picker.GetValue()),
             "phone": self.phone_textbox.GetValue(),
             "email": self.email_textbox.GetValue(),
         }
@@ -55,10 +55,8 @@ class OrganizationCtrl(OrganizationView):
         self.Close()
 
 class UserCtrl(UserView):
-    def __init__(self, parent, OnStartUp = False):
-
+    def __init__(self, parent):
         UserView.__init__(self, parent)
-        self.OnStartUp = OnStartUp
 
         self.organization_data = {}
 
@@ -86,9 +84,10 @@ class UserCtrl(UserView):
             return
         open(path, "w")
 
-    def datetimeToString(self, date):
+    @staticmethod
+    def datetime_to_string(date):
         date = datetime.datetime.strptime(date.FormatISOCombined(), "%Y-%m-%dT%H:%M:%S")
-        date = self.json_serial(date)
+        date = UserCtrl.json_serial(date)
         return date
 
     def get_text_box_values(self):
@@ -103,8 +102,9 @@ class UserCtrl(UserView):
         data["organizations"] = organizations
 
         return data
-        
-    def json_serial(self, obj):
+
+    @staticmethod
+    def json_serial(obj):
         """JSON serializer for objects not serializable by default json code"""
 
         if isinstance(obj, datetime.datetime):
@@ -140,37 +140,44 @@ class UserCtrl(UserView):
         data = self.organization_data[selected]
         OrganizationCtrl(self, data=data)
 
+
+    @staticmethod
+    def get_json_from_users_json_file():
+        # Returns the content inside users.json
+        # Returns empty {} of the file is empty or fails to load
+        path = environment.getDefaultUsersJsonPath()
+        with open(path, "r") as f:
+            try:
+                data = json.load(f)
+            except ValueError:
+                data = {}
+        return data
+
     def on_ok(self, event):
         new_data = self.get_text_box_values()
-        person = users.Person(first_name=new_data["person"]["first_name"], last_name=new_data["person"]["last_name"])
+        person = users.Person(first=new_data["person"]["first_name"], last=new_data["person"]["last_name"])
         organizations = []
-        affilations = []
         for i in new_data["organizations"]:
-            organ = users.Organization(typeCV=i["name"], name=i["name"], code=i["name"])
-            start_date = datetime.datetime.strptime(i["start_date"].FormatISOCombined(), "%Y-%m-%dT%H:%M:%S")
-            affil = users.Affiliation(email=i["email"], startDate=start_date, organization=organ, person=person, phone=i["phone"])
-            organizations.append(organ)
-            affilations.append(affil)
+            organ = users.Organization(i["name"])
+            organ.set_data(i)
+            organizations.append(organ.object_to_dictionary())
 
-        user_json_filepath = os.environ['APP_USER_PATH']  # get the file path of the user.json
+        path = environment.getDefaultUsersJsonPath()
+        previous_users = UserCtrl.get_json_from_users_json_file()
 
-        with open(user_json_filepath, 'r') as f:
-            try:
-                previous_users = json.load(f)
-            except ValueError:
-                previous_users = {}
+        with open(path, 'w') as f:
+            data = {
+                person.get_random_id(): {
+                    "organizations": organizations,
+                    "person": person.object_to_dictionary()
+                }
+            }
 
-        with open(user_json_filepath, 'w') as f:
-            for i in range(len(affilations)):
-                new_data["organizations"][i] = affilations[i]._affilationToDict()
-
-            data = {str(uuid.uuid4()): new_data}
             data.update(previous_users)
-            json.dump(data, f, sort_keys=True, indent=4, separators=(',', ':'))
+            json.dump(data, f, sort_keys=True, indent=4, separators=(',', ': '))
             f.close()
 
         self.parent.refreshUserAccount()
-        self.is_alive = False
         self.Close()
 
     def on_text_enter(self, event):
@@ -182,7 +189,7 @@ class UserCtrl(UserView):
 
     def parse_organization_date(self, data):
         for i in range(len(data)):
-            data["organizations"][i]["start_date"] = self.datetimeToString(data["organizations"][i]["start_date"])
+            data["organizations"][i]["start_date"] = self.datetime_to_string(data["organizations"][i]["start_date"])
         return data
 
     def refresh_organization_box(self):
@@ -199,3 +206,25 @@ class UserCtrl(UserView):
         selected = self.organizationListBox.GetString(index)
         del self.organization_data[selected]
         self.organizationListBox.Delete(index)
+
+    @staticmethod
+    def users_json_file_to_object():
+        # Converts the data in users.json to objects
+        data = UserCtrl.get_json_from_users_json_file()
+        users_dict = {}
+
+        for key, value in data.iteritems():
+            organizations_object = []
+            organizations = value["organizations"]
+            for organ in organizations:
+                o = users.Organization(organ["name"])
+                o.set_data(organ)
+                o.store_date_as_object(o.start_date)
+                organizations_object.append(o)
+
+            person = value["person"]
+            p = users.Person(person["first_name"], person["last_name"])
+            users_dict[p] = organizations_object
+
+        return users_dict
+

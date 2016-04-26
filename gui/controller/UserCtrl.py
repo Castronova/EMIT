@@ -26,8 +26,8 @@ class OrganizationCtrl(OrganizationView):
         data = {
             "name": self.name_textbox.GetValue(),
             "description": self.description_textbox.GetValue(),
-            "type": self.type_combo.GetValue(),
-            "url": self.url_textbox.GetValue(),
+            "type_cv": self.type_combo.GetValue(),
+            "link": self.url_textbox.GetValue(),
             "start_date": UserCtrl.datetime_to_string(self.start_date_picker.GetValue()),
             "phone": self.phone_textbox.GetValue(),
             "email": self.email_textbox.GetValue(),
@@ -38,8 +38,8 @@ class OrganizationCtrl(OrganizationView):
         if data:
             self.name_textbox.SetValue(data["name"])
             self.description_textbox.SetValue(data["description"])
-            self.type_combo.SetValue(data["type"])
-            self.url_textbox.SetValue(data["url"])
+            self.type_combo.SetValue(data["type_cv"])
+            self.url_textbox.SetValue(data["link"])
 
             wxdt = UserCtrl.string_to_wxdate(data['start_date'])
             self.start_date_picker.SetValue(wxdt)
@@ -200,25 +200,66 @@ class UserCtrl(UserView):
                 data = {}
         return data
 
+    def combine_organizaton_affiliation(self, organization, affiliation):
+        """
+        Joins Organization Objects dictionaries into a single object
+        Args:
+            organization: Organization Object
+            affiliation: Affiliation Object
+
+        Returns: dictionary of all organization and affiliation members
+
+        """
+
+        # get class members for organization and affiliation
+        orgmembers = organization.__dict__
+        affmembers = affiliation.toSerializableDict()
+
+        temp = orgmembers.copy()
+        temp.update(affmembers)
+        return temp
+
     def on_ok(self, event):
         new_data = self.get_text_box_values()
         person = users.Person(first=new_data["person"]["first_name"], last=new_data["person"]["last_name"])
+
+        # build a list of organizations and affiliations
         organizations = []
-        for i in new_data["organizations"]:
-            organ = users.Organization(i["name"])
-            organ.set_data(i)
-            organizations.append(organ.object_to_dictionary())
+        for d in new_data["organizations"]:
+            organization = users.Organization(typeCV=d['type_cv'],
+                                              name=d['name'],
+                                              code=d['name'],
+                                              description=d['description'],
+                                              link=d['link'],
+                                              parent=None)
+
+            affiliation = users.Affiliation(email=d['email'],
+                                            startDate=datetime.datetime.strptime(d['start_date'],'%Y-%m-%dT%H:%M:%S'),
+                                            organization=organization,
+                                            person=person,
+                                            phone=d['phone'],
+                                            address=None,
+                                            isPrimaryOrganizationContact=False,
+                                            affiliationEnd=None,
+                                            personLink=None)
+
+            organizations.append([organization, affiliation])
+
 
         path = environment.getDefaultUsersJsonPath()
         previous_users = UserCtrl.get_json_from_users_json_file()
 
+        # save the userinfo in a simplified way
         with open(path, 'w') as f:
-            data = {
-                person.get_random_id(): {
-                    "organizations": organizations,
-                    "person": person.object_to_dictionary()
+            data  = {}
+            combined = {}
+            for org in organizations:
+                combined[org[0].name] = self.combine_organizaton_affiliation(org[0], org[1])
+
+            data[person.get_random_id()] = {
+                    "person": person.__dict__,
+                    "organizations": combined,
                 }
-            }
 
             data.update(previous_users)
             json.dump(data, f, sort_keys=True, indent=4, separators=(',', ': '))
@@ -257,6 +298,9 @@ class UserCtrl(UserView):
 
     @staticmethod
     def users_json_file_to_object():
+
+
+
         # Converts the data in users.json to objects
         data = UserCtrl.get_json_from_users_json_file()
         users_dict = {}

@@ -306,7 +306,7 @@ class sqlite():
     def createAffiliation(self, organizationid, personid, user_obj):
 
 
-        affiliation = self.read.getAffiliationByPersonAndOrg(user_obj.person.firstname, user_obj.person.lastname,
+        affiliation = self.read.getAffiliationByPersonAndOrg(user_obj.person.first_name, user_obj.person.last_name,
                                                              user_obj.organization.code)
         if not affiliation:
             affiliation = self.write.createAffiliation(personid, organizationid, user_obj.email,
@@ -326,9 +326,9 @@ class sqlite():
 
     def createPerson(self, user_obj):
 
-        person = self.read.getPersonByName(user_obj.person.firstname, user_obj.person.lastname)
+        person = self.read.getPersonByName(user_obj.person.first_name, user_obj.person.last_name)
         if not person:
-            person = self.write.createPerson(user_obj.person.firstname, user_obj.person.lastname, user_obj.person.middlename)
+            person = self.write.createPerson(user_obj.person.first_name, user_obj.person.last_name, user_obj.person.middle_name)
         return person
 
     ############ Custom SQL QUERIES ############

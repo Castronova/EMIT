@@ -1,12 +1,13 @@
 import time
 import wx
-from coordinator import engineAccessors
+from coordinator import engineAccessors, users
 from coordinator.emitLogging import elog
 from gui.views.PreRunView import PreRunView
 
 from gui.controller.UserCtrl import UserCtrl
 from utilities.gui import loadAccounts
 
+import environment
 
 class PreRunViewCtrl(PreRunView):
     def __init__(self, parent=None):
@@ -21,6 +22,12 @@ class PreRunViewCtrl(PreRunView):
 
         # populate outputs table
         self.populateVariableList()
+
+        # get all known user accounts
+        path = environment.getDefaultUsersJsonPath()
+        self.user_data = users.jsonToDict(path)
+
+        # self.accounts = UserCtrl.users_json_file_to_object()
 
         # initialize bindings for Run, Add, and Cancel
         self.cancel_button.Bind(wx.EVT_BUTTON, self.OnCancel)
@@ -45,14 +52,23 @@ class PreRunViewCtrl(PreRunView):
         # If local is not found set it to the first value
         self.database_combo.SetSelection(0)
 
+    def getAccountID(self, person, organization):
+        return '%s [%s]' % (person.last_name, organization.name)
+
     def refreshUserAccount(self):
         self.account_combo.Clear()
-        accounts = UserCtrl.users_json_file_to_object()
+        # self.accounts = UserCtrl.users_json_file_to_object()
         account_names = []
-        for person, organizations in accounts.iteritems():
-            for organ in organizations:
-                user = person.last_name + " [" + organ.name + "]"
-                account_names.append(user)
+        for affiliation in self.user_data.itervalues():
+            account_names.append(affiliation.ID())
+            # person = affiliation.person
+            # organization = affiliation.organization
+
+        # for person, organizations in self.accounts.iteritems():
+        #     for organ in organizations:
+        #         user = self.getAccountID(person, organ)
+                # user = person.last_name + " [" + organ.name + "]"
+                # account_names.append(user)
 
         self.account_combo.AppendItems(account_names)
         self.account_combo.SetSelection(0)
@@ -104,23 +120,33 @@ class PreRunViewCtrl(PreRunView):
     def OnCancel(self, e):
         self.Close(True)
 
+    def get_user_info(self):
+        account = self.account_combo.GetValue()
+
+        # get the user account from selected user_name
+        for affiliation_id in self.user_data.iterkeys():
+           if  affiliation_id == account:
+               return self.user_data[affiliation_id]
+
+
     def OnRun(self, e):
 
         # get data to send to the engine
         name = self.simulation_name_textbox.GetValue()
         db = self.database_combo.GetValue()
-        user_name = self.account_combo.GetValue()
+        # user_name = self.account_combo.GetValue()
         datasets = self.getSelectedItems()
 
-        # get the user account from selected user_name
-        user_info_json = None
-        for affil in self.accounts:
-            if affil.ID() == user_name:
-                user_info_json = affil.toJSON()
+        user_info = self.get_user_info()
+
+        # for affil in self.accounts:
+        #     userID = self.getAccountID()
+        #     if affil.ID() == user_name:
+        #         user_info_json = affil.toJSON()
 
         # todo: check all constraints before executing a simulation
         # raise exceptions before executing the simulation
-        if user_info_json is None:
+        if user_info is None:
             elog.critical('Cannot execute simulation if no user account is provided')
             return
 
@@ -129,7 +155,7 @@ class PreRunViewCtrl(PreRunView):
             name = "Simulation_run_" + time.strftime('%m-%d-%Y')
 
         # build kwargs to pass to engineAccessors
-        kwargs = dict(simulationName=name, dbName=db, user_json=user_info_json, datasets=datasets)
+        kwargs = dict(simulationName=name, dbName=db, user_info=user_info, datasets=datasets)
 
         # initiate simulation
         engineAccessors.runSimulation(**kwargs)

@@ -7,7 +7,6 @@ import json
 import uuid
 import environment
 
-
 class OrganizationCtrl(OrganizationView):
     def __init__(self, parent, data=None):
         OrganizationView.__init__(self,parent)
@@ -40,14 +39,18 @@ class OrganizationCtrl(OrganizationView):
             self.description_textbox.SetValue(data["description"])
             self.type_combo.SetValue(data["type"])
             self.url_textbox.SetValue(data["url"])
-            self.start_date_picker.SetValue(data["start_date"])
+
+            wxdt = UserCtrl.string_to_wxdate(data['start_date'])
+            self.start_date_picker.SetValue(wxdt)
+
             self.phone_textbox.SetValue(data["phone"])
             self.email_textbox.SetValue(data["email"])
         return
 
     def on_accept(self, event):
         data = self.get_values()
-        self.parent.organization_data[data["name"]] = data
+        self.parent.organization(data)
+        # self.parent.organization_data[data["name"]] = data
         self.parent.refresh_organization_box()
         self.on_cancel(None)
 
@@ -76,6 +79,13 @@ class UserCtrl(UserView):
     def add_organization_clicked(self, event):
         OrganizationCtrl(self)
 
+    def organization(self, value=None):
+       if value is not None:
+           organization_name = value['name']
+           self.organization_data[organization_name] = value
+       return self.organization_data
+
+
     @staticmethod
     def create_user_json():
         # If path path exist do nothing else create it
@@ -89,6 +99,14 @@ class UserCtrl(UserView):
         date = datetime.datetime.strptime(date.FormatISOCombined(), "%Y-%m-%dT%H:%M:%S")
         date = UserCtrl.json_serial(date)
         return date
+
+    @staticmethod
+    def string_to_wxdate(datestr):
+        dt = datetime.datetime.strptime(datestr, '%Y-%m-%dT%H:%M:%S')
+        tt = dt.timetuple()
+        dmy = (tt[2], tt[1]-1, tt[0])
+        wxDate = wx.DateTimeFromDMY(*dmy)
+        return wxDate
 
     def get_text_box_values(self):
         data = {"person": {

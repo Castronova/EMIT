@@ -124,8 +124,8 @@ class UserView(wx.Frame):
 
         #  Buttons
         buttonsizer = wx.StdDialogButtonSizer()
-        self.okbutton = wx.Button(panel, wx.ID_OK)
         self.cancelButton = wx.Button(panel, wx.ID_CANCEL)
+        self.okbutton = wx.Button(panel, wx.ID_OK)
 
         self.okbutton.SetDefault()
         self.okbutton.Disable()

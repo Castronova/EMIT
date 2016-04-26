@@ -139,7 +139,7 @@ def run_feed_forward(obj, ds=None):
         # update links
         sPrint("[3 of 3] Updating links... ")
         oei = model_inst.outputs()
-        update.update_links_feed_forward(obj, links[modelid], oei, spatial_maps)
+        update.update_links_feed_forward(links[modelid], oei, spatial_maps)
 
         model_inst.finish()
         elog.info('..module simulation completed in %3.2f seconds' % (time.time() - st))

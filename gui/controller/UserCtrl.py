@@ -69,6 +69,10 @@ class UserCtrl(UserView):
 
         self.organization_data = {}
 
+        # enable and disable buttons
+        self.editOrganization.Disable()
+        self.removeOrganization.Disable()
+
         # initialize bindings
         self.firstnameTextBox.Bind(wx.EVT_TEXT, self.check_save)
         self.lastnameTextBox.Bind(wx.EVT_TEXT, self.check_save)
@@ -81,9 +85,21 @@ class UserCtrl(UserView):
         self.removeOrganization.Bind(wx.EVT_BUTTON, self.remove_organization_clicked)
         self.cancelButton.Bind(wx.EVT_BUTTON, self.on_cancel)
         self.editOrganization.Bind(wx.EVT_BUTTON, self.on_edit)
-
+        self.organizationListBox.Bind(wx.EVT_LISTBOX, self.on_organization_selected)
         # listen to OrganizationClose messages from the OrganizationCtrl class
         pub.subscribe(self.on_organization_close, 'OrganizationClose')
+
+    def on_organization_selected(self, event):
+        # get the selection
+        selection = self.organizationListBox.GetSelection()
+
+        # enable/disable the edit and remove buttons
+        if selection > -1:
+            self.removeOrganization.Enable()
+            self.editOrganization.Enable()
+        else:
+            self.removeOrganization.Disable()
+            self.editOrganization.Disable()
 
     def on_organization_close(self):
         self.check_save(None)

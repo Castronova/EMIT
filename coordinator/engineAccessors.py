@@ -1,5 +1,3 @@
-__author__ = 'tonycastronova'
-
 from engineManager import Engine
 from threading import Thread
 
@@ -14,21 +12,12 @@ def addModel(id=None, attrib=None):
     kwargs = dict(attrib=attrib, id=id, event='onModelAdded')
     task = [('add_model', kwargs)]
     e.setTasks(task)
+
     # DO NOT MODIFY THIS CODE!
     ############################
     e.thread = Thread(target=e.check_for_process_results, name='AddModel')
     e.thread.start()
     ############################
-
-def createSQLiteInMemory(dbtextfile=None):
-    e = Engine()
-    kwargs = dict(filepath=dbtextfile, event='onDatabaseConnected')
-    task = [('create_sqlite_in_memory_database',kwargs)]
-    e.setTasks(task)
-
-    e.thread = Thread(target = e.check_for_process_results)
-    e.thread.start()
-    e.thread.join()
 
 def connectToDbFromFile(dbtextfile=None):
     e = Engine()
@@ -40,7 +29,6 @@ def connectToDbFromFile(dbtextfile=None):
     e.thread.start()
     e.thread.join()
 
-
 def connectToDb(title, desc, engine, address, name, user, pwd, default=False):
     kwargs = dict(title=title, desc=desc, engine=engine, address=address, name=name, user=user, pwd=pwd, default=default)
     e = Engine()
@@ -50,9 +38,6 @@ def connectToDb(title, desc, engine, address, name, user, pwd, default=False):
 
     e.thread = Thread(target = e.check_for_process_results, name='connectToDb')
     e.thread.start()
-
-    # result = e.processTasks()
-    # return result
 
 def addLink(source_id=None, source_item=None, target_id=None, target_item=None, spatial_interpolation=None,
             temporal_interpolation=None,uid=None):
@@ -65,29 +50,10 @@ def addLink(source_id=None, source_item=None, target_id=None, target_item=None, 
     result = e.processTasks()
     return result
 
-    # e.thread = Thread(target = e.check_for_process_results)
-    # e.thread.start()
-
 def getDbConnections():
     e = Engine()
     kwargs = dict()
     task = [('get_db_connections',kwargs)]
-    e.setTasks(task)
-    result = e.processTasks()
-    return result
-
-def getDefaultDb():
-    e = Engine()
-    kwargs = dict()
-    task = [('get_default_db',kwargs)]
-    e.setTasks(task)
-    result = e.processTasks()
-    return result
-
-def setDefaultDb(database_id=None):
-    e = Engine()
-    kwargs = dict(db_id=database_id)
-    task = [('set_default_database',kwargs)]
     e.setTasks(task)
     result = e.processTasks()
     return result

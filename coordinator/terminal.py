@@ -47,10 +47,9 @@ def get_configuration_details(coordinator, arg):
 
     # print link info
     if arg.strip() == 'links' or arg.strip() == 'summary':
+
         # string to store link output
         link_output = []
-        # longest line in link_output
-        maxlen = 0
 
         for linkid,link in coordinator.__links.iteritems():
             # get the link info
@@ -78,8 +77,6 @@ def get_configuration_details(coordinator, arg):
 
             # string to store db output
             db_output = []
-            # longest line in db_output
-            maxlen = 0
 
             # get the session args
             name = db_dict['name']

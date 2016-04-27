@@ -92,13 +92,11 @@ class Model(object):
     defines a model that has been loaded into a configuration
     """
     def __init__(self, id, name, instance, desc=None, input_exchange_items=[], output_exchange_items=[], params=None):
-        self.__name = name
         self.__description = desc
         self.__iei = {}
         self.__oei = {}
         self.__id = id
         self.__params = params
-        self.__type = None
         self.__attrib  = {}
 
         for iei in input_exchange_items:
@@ -131,31 +129,6 @@ class Model(object):
             return [j for i,j in self.__oei.items()]
         else: return []
 
-    def get_input_exchange_item(self,value):
-        ii = None
-
-        for k,v in self.__iei.iteritems():
-            if v.id() == value:
-                ii = self.__iei[k]
-
-        if ii is None:
-            elog.error('Could not find Input Exchange Item: '+value)
-
-        return ii
-
-    def get_output_exchange_item(self,value):
-        oi = None
-
-        for k,v in self.__oei.iteritems():
-            if v.id() == value:
-                oi = self.__oei[k]
-
-        if oi is None:
-            elog.error('Could not find Output Exchange Item: '+value)
-
-        return oi
-
-
     def get_input_exchange_item_by_name(self,value):
 
         i = self.instance()
@@ -163,7 +136,6 @@ class Model(object):
             return i.inputs()[value]
         else:
             elog.error('Could not find Input Exchange Item: '+value)
-
 
     def get_output_exchange_item_by_name(self,value):
 
@@ -216,28 +188,10 @@ class Coordinator(object):
         """
         return self.status.get()
 
-    def clear_all(self):
-        self.__links = {}
-        self.__models = {}
-        return True
-
-    def DbResults(self,key=None, value = None):
-        if key is not None:
-            if key not in self._dbresults.keys():
-                self._dbresults[key] = value
-        return self._dbresults
-
     def Models(self, model=None):
         if model is not None:
             self.__models[model.name()] = model
         return self.__models
-
-    def Links(self, link=None):
-        return self.__links
-
-    def set_db_connections(self,value={}):
-        self._db = value
-        return self._db
 
     def add_db_connection(self,value):
 
@@ -284,11 +238,6 @@ class Coordinator(object):
                 sPrint(msg, MessageType.ERROR)
         else:
             sPrint('Could not set the default database', MessageType.ERROR)
-
-
-    def get_new_id(self):
-        self.__incr += 1
-        return self.__incr
 
     def get_default_db(self):
         if self.__default_db is None:
@@ -427,17 +376,6 @@ class Coordinator(object):
             sPrint('Failed to load model.', MessageType.ERROR)
             return 0
 
-    def remove_model(self, linkablecomponent):
-        """
-        removes model component objects from the registry
-        """
-
-        if linkablecomponent in self.__models:
-            # remove the model
-            self.__models.pop(linkablecomponent,None)
-
-            #todo: remove all associated links
-
     def remove_model_by_id(self,id):
         for m in self.__models:
             if self.__models[m].id() == id:
@@ -457,24 +395,6 @@ class Coordinator(object):
                     self.__links.pop(link,None)
 
                 return id
-        return None
-
-    def get_model_by_id_summary(self,id):
-        """
-        finds the model that corresponds with the given id and return a summary of its metadata
-        :param id: model id
-        :return: serializable summary of the model's metadata
-        """
-
-        for m in self.__models:
-            if self.__models[m].id() == id:
-                return {'params': self.__models[m].get_config_params(),
-                        'name': self.__models[m].name(),
-                        'id': self.__models[m].id(),
-                        'description': self.__models[m].description(),
-                        'type': self.__models[m].type(),
-                        'attrib': self.__models[m].attrib(),
-                        }
         return None
 
     def get_model_by_id(self,id):
@@ -577,85 +497,6 @@ class Coordinator(object):
 
         return links
 
-    def get_links_by_model(self,model_id):
-        """
-        returns all the links corresponding with a linkable component
-        """
-        links = {}
-        for linkid, link in self.__links.iteritems():
-            links[linkid] = link
-
-
-        if len(links) == 0:
-            elog.error('Could not find any links associated with model id: '+str(model_id))
-
-        # todo: this should return a dict of link objects, NOT some random list
-
-        return links
-
-    def get_links_btwn_models(self, from_model_id, to_model_id):
-
-        links = []
-        link_dict = {}
-        for linkid, link in self.__links.iteritems():
-            source_id = link.source_component().id()
-            target_id = link.target_component().id()
-            if source_id == from_model_id and target_id == to_model_id:
-                # links.append(link)
-                spatial = link.spatial_interpolation().name() \
-                    if link.spatial_interpolation() is not None \
-                    else 'None'
-                temporal = link.temporal_interpolation().name() \
-                    if link.temporal_interpolation() is not None \
-                    else 'None'
-                link_dict = dict(id=link.get_id(),
-                                 source_id=source_id,
-                                 target_id=target_id,
-                                 source_name=link.source_component().name(),
-                                 target_name=link.target_component().name(),
-                                 source_item=link.source_exchange_item().name(),
-                                 target_item=link.target_exchange_item().name(),
-                                 spatial_interpolation=spatial,
-                                 temporal_interpolation=temporal)
-                links.append(link_dict)
-                # return link_dict
-
-        return links
-
-    def get_link_by_id(self,id):
-        """
-        returns all the links corresponding with a linkable component
-        """
-        for l in self.__links:
-            if l == id:
-                return self.__links[l]
-        return None
-
-    def get_link_by_id_summary(self,id):
-        """
-        returns all the links corresponding with a linkable component
-        """
-        for l in self.__links.iterkeys():
-            if l == id:
-                spatial = self.__links[l].spatial_interpolation().name() \
-                    if self.__links[l].spatial_interpolation() is not None \
-                    else 'None'
-                temporal = self.__links[l].temporal_interpolation().name() \
-                    if self.__links[l].temporal_interpolation() is not None \
-                    else 'None'
-                return dict(
-                        output_name=self.__links[l].source_exchange_item().name(),
-                        output_id=self.__links[l].source_exchange_item().id(),
-                        input_name=self.__links[l].target_exchange_item().name(),
-                        input_id=self.__links[l].target_exchange_item().id(),
-                        spatial_interpolation=spatial,
-                        temporal_interpolation=temporal,
-                        source_component_name=self.__links[l].source_component().name(),
-                        target_component_name=self.__links[l].target_component().name(),
-                        source_component_id=self.__links[l].source_component().id(),
-                        target_component_id=self.__links[l].target_component().id(),)
-        return None
-
     def get_all_links(self):
         links = []
         for l in self.__links.iterkeys():
@@ -730,8 +571,6 @@ class Coordinator(object):
                     type=item.type(),
                     geometry=geom_dict)
 
-
-
     def get_exchange_item_info(self, modelid, exchange_item_type=stdlib.ExchangeItemType.INPUT, returnGeoms=True):
 
         ei_values = []
@@ -752,21 +591,6 @@ class Coordinator(object):
             ei_values.append(self.summarize_exhange_item(i, returnGeoms))
 
         return ei_values
-
-    def remove_link_by_id(self,id):
-        """
-        removes a link using the link id
-        """
-        if id in self.__links:
-            self.__links.pop(id,None)
-            return 1
-        return 0
-
-    def remove_link_all(self):
-        """
-        removes the last link
-        """
-        removelinks = self.__links = {}
 
     def update_link(self, link_id, from_geom_dict, from_to_spatial_map):
         """
@@ -869,18 +693,6 @@ class Coordinator(object):
         # return execution order
         return order
 
-    def transfer_data(self, link):
-        """
-        retrieves data exchange item from one component and passes it to the next
-        """
-        pass
-
-    def get_global_start_end_times(self,linkablecomponents=[]):
-        """
-        determines the simulation start and end times from the linkablecomponent attributes
-        """
-        pass
-
     def run_simulation(self, simulationName=None, dbName=None, user_info=None, datasets=None):
         """
         coordinates the simulation effort
@@ -925,112 +737,6 @@ class Coordinator(object):
             return dict(success=False, message=e)
             # raise Exception(e.args[0])
 
-    def get_configuration_details(self,arg):
-
-        if len(self.__models.keys()) == 0:
-            elog.warning('No models found in configuration.')
-
-        if arg.strip() == 'summary':
-            elog.info('Here is everything I know about the current simulation...\n')
-
-        # print model info
-        if arg.strip() == 'models' or arg.strip() == 'summary':
-
-            # loop through all known models
-            for name,model in self.__models.iteritems():
-                model_output = []
-                model_output.append('Model: '+name)
-                model_output.append('desc: ' + model.description())
-                model_output.append('id: ' + model.id())
-
-                for item in model.get_input_exchange_items() + model.get_output_exchange_items():
-                    model_output.append(str(item.id()))
-                    model_output.append( 'name: '+item.name())
-                    model_output.append( 'description: '+item.description())
-                    model_output.append( 'unit: '+item.unit().UnitName())
-                    model_output.append( 'variable: '+item.variable().VariableNameCV())
-                    model_output.append( ' ')
-
-                # get formatted width
-                w = self.get_format_width(model_output)
-
-                # print model info
-                elog.info('  |'+(w)*'-'+'|')
-                elog.info('  *'+self.format_text(model_output[0], w,'center')+'*')
-                elog.info('  |'+(w)*'='+'|')
-                elog.info('  |'+self.format_text(model_output[1], w,'left')+'|')
-                elog.info('  |'+self.format_text(model_output[2], w,'left')+'|')
-                elog.info('  |'+(w)*'-'+'|')
-                for l in model_output[3:]:
-                    elog.info('  |'+self.format_text(l,w,'left')+'|')
-                elog.info('  |'+(w)*'-'+'|')
-                elog.info(' ')
-
-        # print link info
-        if arg.strip() == 'links' or arg.strip() == 'summary':
-            # string to store link output
-            link_output = []
-            # longest line in link_output
-            maxlen = 0
-
-            for linkid,link in self.__links.iteritems():
-                # get the link info
-                From, To = link.get_link()
-
-                link_output.append('LINK ID : ' + linkid)
-                link_output.append('from: ' + From[0].name() + ' -- output --> ' + From[1].name())
-                link_output.append('to: ' + To[0].name() + ' -- input --> ' + To[1].name())
-
-                # get the formatted width
-                w = self.get_format_width(link_output)
-
-                # print the output
-                elog.info('  |'+(w)*'-'+'|')
-                elog.info('  *'+self.format_text(link_output[0], w,'center')+'*')
-                elog.info('  |'+(w)*'='+'|')
-                for l in link_output[1:]:
-                    elog.info('  |'+self.format_text(l,w,'left')+'|')
-                elog.info('  |' + w * '-' + '|')
-
-        # print database info
-        if arg.strip() == 'db' or arg.strip() == 'summary':
-
-            for id, db_dict in self._db.iteritems():
-
-                # string to store db output
-                db_output = []
-                # longest line in db_output
-                maxlen = 0
-
-                # get the session args
-                name = db_dict['name']
-                desc = db_dict['description']
-                engine = db_dict['args']['engine']
-                address = db_dict['args']['address']
-                user = db_dict['args']['user']
-                pwd = db_dict['args']['pwd']
-                db = db_dict['args']['db']
-
-
-                db_output.append('DATABASE : ' + id)
-                db_output.append('name: '+name)
-                db_output.append('description: '+desc)
-                db_output.append('engine: '+engine)
-                db_output.append('address: '+address)
-                db_output.append('database: '+db)
-                db_output.append('user: '+user)
-                db_output.append('connection string: '+db_dict['args']['connection_string'])
-
-                # get the formatted width
-                w = self.get_format_width(db_output)
-
-                # print the output
-                elog.info('  |'+(w)*'-'+'|')
-                elog.info('  *'+self.format_text(db_output[0], w,'center')+'*')
-                elog.info('  |'+(w)*'='+'|')
-                for l in db_output[1:]:
-                    elog.info('  |'+self.format_text(l,w,'left')+'|')
-                elog.info('  |'+(w)*'-'+'|')
 
 
     def connect_to_db(self, title, desc, engine, address, name, user, pwd, default=False):
@@ -1077,63 +783,6 @@ class Coordinator(object):
         else:
             return {'success':False, 'ids':None}
 
-    def create_sqlite_in_memory_database(self):
-
-        import pyspatialite.dbapi2 as sqlite
-
-
-        # create a memory database
-        dbpath = os.path.abspath("../../data/databases/"+datetime.now().strftime('%Y-%m-%d|%H:%M:%S')+'.sqlite')
-        conn = sqlite.connect(dbpath)
-
-        # load the blank odm2 database
-        old_db = sqlite.connect('../../data/odm2_empty.sqlite')
-
-        query = "".join(line for line in old_db.iterdump())
-
-        # Dump old database in the new one.
-        conn.executescript(query)
-
-        del conn
-
-
-
-
-        # todo:  Need to establish a SQLAlchemy connection with the in-memory database
-        # connect to database
-        sessionFactory = odm2api.SessionFactory(connection_string='sqlite:///'+dbpath, echo=False)
-        session = sessionFactory.getSession()
-
-    def get_format_width(self,output_array):
-        width = 0
-        for line in output_array:
-            if len(line) > width: width = len(line)
-        return width + 4
-
-    def format_text(self,text,width,option='right'):
-
-        if option == 'center':
-            # determine the useable padding
-            padding = width - len(text)
-            lpadding = padding/2
-            rpadding = padding - lpadding
-
-            # center the text
-            return lpadding*' '+text+rpadding*' '
-
-        elif option == 'left':
-            # determine the useable padding
-            padding = width - len(text)
-
-            # center the text
-            return text+padding*' '
-
-        elif option == 'right':
-            # determine the useable padding
-            padding = width - len(text)
-
-            # center the text
-            return padding*' ' + text
 
     def load_simulation(self, simulation_file):
 
@@ -1186,98 +835,3 @@ class Coordinator(object):
         else:
             elog.info('No results found')
 
-    def parse_args(self, arg):
-
-        if ''.join(arg).strip() != '':
-            if arg[0] == 'help':
-                if len(arg) == 1:
-                    elog.info(h.help())
-                else:
-                    elog.info(h.help_function(arg[1]))
-
-            elif arg[0] == 'add' :
-                if len(arg) == 1:
-                    elog.info(h.help_function('add'))
-                else:
-                    self.add_model(arg[1])
-
-            elif arg[0] == 'remove':
-                if len(arg) == 1:
-                    elog.info(h.help_function('remove'))
-                else:
-                    self.remove_model_by_id(arg[1])
-
-            elif arg[0] == 'link':
-                if len(arg) != 5:
-                    elog.info(h.help_function('link'))
-                else:
-                    self.add_link(arg[1],arg[2],arg[3],arg[4])
-
-            elif arg[0] == 'showme':
-                if len(arg) == 1:
-                    elog.info(h.help_function('showme'))
-                else:
-                    self.get_configuration_details(arg[1])
-
-            elif arg[0] == 'connect_db':
-                if len(arg) == 1:
-                    elog.info(h.help_function('connect_db'))
-                else:
-                    self.connect_to_db(arg[1:])
-
-            elif arg[0] == 'default_db':
-                if len(arg) == 1:
-                    elog.info(h.help_function('default_db'))
-                else:
-                    self.set_default_db(arg[1:])
-
-            elif arg[0] == 'run':
-                elog.info('Running Simulation in Feed Forward Mode')
-                self.run_simulation()
-
-            elif arg[0] == 'load':
-                if len(arg) == 1:
-                    elog.info(h.help_function('load'))
-                else:
-                    self.load_simulation(arg[1:])
-
-            elif arg[0] == 'db':
-                if len(arg) == 1:
-                    elog.info(h.help_function('db'))
-                else:
-                    self.show_db_results(arg[1:])
-
-
-
-            #todo: show database time series that are available
-
-            elif arg[0] == 'info': print h.info()
-
-            else:
-                print 'Command not recognized.  Type "help" for a complete list of commands.'
-
-def main(argv):
-    print '|-------------------------------------------------|'
-    print '|      Welcome to the Utah State University       |'
-    print '| Environmental Model InTegration (EMIT) Project! |'
-    print '|-------------------------------------------------|'
-    print '\nPlease enter a command or type "help" for a list of commands'
-
-    arg = None
-
-    # create instance of coordinator
-    coordinator = Coordinator()
-
-
-    # TODO: This should be handled by gui
-    # connect to databases
-    coordinator.connect_to_db(['../data/connections'])
-    coordinator.set_default_database()
-
-    while arg != 'exit':
-        # get the users command
-        arg = raw_input("> ").split(' ')
-        coordinator.parse_args(arg)
-
-if __name__ == '__main__':
-    main(sys.argv[1:])

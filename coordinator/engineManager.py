@@ -116,7 +116,6 @@ class Engine:
         Sets the tasks for the TaskServerMP to handle.
         """
         self.tasks.extend(taskList)
-        self.numtasks = len(taskList)
 
     def worker(cls, dispatcher, engine):
         """

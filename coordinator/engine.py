@@ -600,7 +600,6 @@ class Coordinator(object):
 
         link = self.__links[link_id]
         t_item = link.target_exchange_item()
-        f_item = link.source_exchange_item()
 
         # loop through each of the from geoms
         for t_geom in t_item.geometries():

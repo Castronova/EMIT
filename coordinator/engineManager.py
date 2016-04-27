@@ -1,14 +1,8 @@
-__author__ = 'tonycastronova'
-
 from coordinator.engine import Coordinator
-import types
-from multiprocessing import Process
 import sys
-import time
 from multiprocessing import Queue
 import events
 import wx
-# from coordinator.emitLogging import elog
 
 class EngineBorg:
     """

@@ -173,10 +173,8 @@ class Coordinator(object):
         """
         self.__models = {}
         self.__links = {}
-        self.__incr = 0
         self._db = {}
         self.__default_db = None
-        self._dbresults = {}
         self.status = EngineStatus()
 
         # TODO: Get this from gui dialog
@@ -605,7 +603,6 @@ class Coordinator(object):
         f_item = link.source_exchange_item()
 
         # loop through each of the from geoms
-        f_geoms = f_item.geometries()
         for t_geom in t_item.geometries():
 
             # get this list index of the to-geom

@@ -1,23 +1,18 @@
 __author__ = 'tonycastronova'
-import wx
-
-from api_old.ODM2.Core.services import readCore
-from api_old.ODM2.Results.services import readResults
-from utilities import spatial
-from api_old.ODM2.Simulation.services import readSimulation
-from wx.lib.pubsub import pub as Publisher, __all__
-from gui.controller.ModelCtrl import ModelCtrl
-from gui.controller.SimulationPlotCtrl import SimulationPlotCtrl
-from gui.controller.PlotCtrl import LogicPlot
-from gui.controller.PreRunCtrl import PreRunViewCtrl
-import coordinator.engineAccessors as engine
-from gui import events
-from coordinator.emitLogging import elog
 import csv
 import time
-import os
-from osgeo import ogr
-from gui.controller.TimeSeriesObjectCtrl import TimeSeriesObjectCtrl
+
+import wx
+from wx.lib.pubsub import pub as Publisher
+
+import coordinator.engineAccessors as engine
+from api_old.ODM2.Core.services import readCore
+from api_old.ODM2.Results.services import readResults
+from api_old.ODM2.Simulation.services import readSimulation
+from emitLogging import elog
+from gui import events
+from gui.controller.ModelCtrl import ModelCtrl
+from gui.controller.PreRunCtrl import PreRunViewCtrl
 from sprint import *
 
 

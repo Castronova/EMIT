@@ -1,13 +1,13 @@
 import time
-import wx
-from coordinator import engineAccessors, users
-from coordinator.emitLogging import elog
-from gui.views.PreRunView import PreRunView
 
-from gui.controller.UserCtrl import UserCtrl
-from utilities.gui import loadAccounts
+import wx
 
 import environment
+from coordinator import engineAccessors, users
+from emitLogging import elog
+from gui.controller.UserCtrl import UserCtrl
+from gui.views.PreRunView import PreRunView
+
 
 class PreRunViewCtrl(PreRunView):
     def __init__(self, parent=None):

@@ -1,7 +1,9 @@
-from coordinator.emitLogging import elog
-from sprint import *
 import time
+
 import db.dbapi_v2 as dbv2
+from emitLogging import elog
+from sprint import *
+
 
 def save(obj, datasave, modelids):
     """

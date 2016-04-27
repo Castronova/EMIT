@@ -7,15 +7,17 @@ Standard classes
 """
 
 # On OSX you also need to install geos. e.g, sudo port install geos
-from shapely.wkt import loads
 import datetime
-import uuid
 import hashlib
-from coordinator.emitLogging import elog
+import uuid
 from bisect import bisect_left, bisect_right
-from osgeo import osr, ogr
+
 import numpy
+from osgeo import osr, ogr
+
+from emitLogging import elog
 from sprint import *
+
 
 class Status:
     READY = 'READY'

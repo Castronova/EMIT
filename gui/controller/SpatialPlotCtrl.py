@@ -2,7 +2,7 @@ import numpy
 from matplotlib.collections import PolyCollection, LineCollection
 
 import stdlib
-from coordinator.emitLogging import elog
+from emitLogging import elog
 from gui.views.SpatialPlotView import ViewSpatialPlot
 
 

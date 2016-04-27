@@ -5,7 +5,7 @@ import time
 
 import wx
 
-from coordinator.emitLogging import elog
+from emitLogging import elog
 from gui.views.TimeSeriesPlotView import TimeSeriesPlotView
 
 

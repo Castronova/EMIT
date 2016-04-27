@@ -1,7 +1,9 @@
 __author__ = 'tonycastronova'
 
 import sys
-from coordinator.emitLogging import elog
+
+from emitLogging import elog
+
 
 class EventResponse:
     def __init__(self, **kwargs):

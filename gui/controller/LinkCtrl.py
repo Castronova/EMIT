@@ -6,10 +6,8 @@ import wx.grid as gridlib
 import wx.lib.newevent as ne
 
 import coordinator.engineAccessors as engine
-from coordinator.emitLogging import elog
-from gui.controller.SpatialPlotCtrl import SpatialPlotCtrl
+from emitLogging import elog
 from gui.views.LinkView import LinkView
-from utilities import geometry
 
 LinkUpdatedEvent, EVT_LINKUPDATED = ne.NewEvent()
 

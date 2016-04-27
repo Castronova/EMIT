@@ -1,17 +1,19 @@
 import ConfigParser
-import os
 import sys
 import threading
+import xml.etree.ElementTree
 
 import wx
+from odm2api.ODMconnection import dbconnection as dbconnection2
 from wx.lib.pubsub import pub as Publisher
 
 import coordinator.engineAccessors as engine
 import coordinator.events as engineEvent
 import db.dbapi_v2 as db2
 from ContextView import TimeSeriesContextMenu, SimulationContextMenu #, ConsoleContextMenu
-from coordinator.emitLogging import elog
+from api_old.ODMconnection import  dbconnection
 from db import dbapi as dbapi
+from emitLogging import elog
 from gui import events
 from gui.controller.AddConnectionCtrl import AddConnectionCtrl
 from gui.controller.ConsoleOutputCtrl import consoleCtrl
@@ -19,14 +21,9 @@ from gui.controller.DatabaseCtrl import DatabaseCtrl
 from gui.controller.SimulationPlotCtrl import SimulationPlotCtrl
 from gui.controller.TimeSeriesObjectCtrl import TimeSeriesObjectCtrl
 from gui.controller.WofSitesCtrl import WofSitesCtrl
+from sprint import *
 from utilities import db as dbUtilities
 from webservice import wateroneflow
-import uuid
-import ConfigParser
-from api_old.ODMconnection import  dbconnection, SessionFactory
-from odm2api.ODMconnection import dbconnection as dbconnection2
-import xml.etree.ElementTree
-from sprint import *
 
 
 class viewLowerPanel:

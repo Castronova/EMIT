@@ -2,8 +2,9 @@ __author__ = 'tonycastronova'
 
 import wx
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
+
+from emitLogging import elog
 from gui.controller.PlotForSiteViewerCtrl import PlotForSiteViewerCtrl
-from coordinator.emitLogging import elog
 
 
 class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):

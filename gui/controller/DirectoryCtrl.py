@@ -1,13 +1,12 @@
-import os
-
 import wx
 from wx.lib.pubsub import pub as Publisher
 
-from coordinator.emitLogging import elog
+from emitLogging import elog
 from gui.controller.ModelCtrl import ModelCtrl
 from gui.views.ContextView import DirectoryContextMenu
 from gui.views.DirectoryView import ViewDirectory, HomeID, PreviousID, UpID, RefreshID
 from sprint import *
+
 
 class LogicDirectory(ViewDirectory):
     def __init__(self, parent):

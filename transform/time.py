@@ -1,10 +1,13 @@
 __author__ = 'tonycastronova'
 
-import time_base
 import bisect
+
 import numpy
+
+import time_base
+from emitLogging import elog
 from sprint import *
-from coordinator.emitLogging import elog
+
 
 def transform(temporal_map, source_values):
     """

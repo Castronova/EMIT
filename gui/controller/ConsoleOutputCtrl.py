@@ -1,14 +1,10 @@
-import os
-import json
 import threading
-import time
-from socket import AF_INET, SOCK_DGRAM, socket
-from sprint import *
+
 import wx
 import wx.lib.newevent
 
-import coordinator.emitLogging as l
 from gui.views.ConsoleView import ConsoleView
+from sprint import *
 
 
 class consoleCtrl(ConsoleView):

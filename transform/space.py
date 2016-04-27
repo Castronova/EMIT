@@ -1,11 +1,13 @@
 __author__ = 'tonycastronova'
 
-import stdlib
-import space_base
-from shapely.geometry import LineString, MultiPoint, Point, Polygon
-from coordinator.emitLogging import elog
 import numpy
+from shapely.geometry import MultiPoint, Point
+
+import space_base
+import stdlib
+from emitLogging import elog
 from sprint import *
+
 
 class spatial_nearest_neighbor_radial(space_base.Space):
 

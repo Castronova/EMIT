@@ -1,12 +1,14 @@
+import ConfigParser
+import os
+
 import wx
 from wx.lib.pubsub import pub as Publisher
 
+from emitLogging import elog
 from environment import ConnectionVars
 from gui.views.AddConnectionView import AddConnectionView
-import os
-from coordinator.emitLogging import elog
 from webservice import wateroneflow
-import ConfigParser
+
 
 class AddConnectionCtrl(AddConnectionView):
     def __init__(self, parent):

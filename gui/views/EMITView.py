@@ -9,14 +9,14 @@ from wx.lib.pubsub import pub as Publisher
 
 import environment
 from LowerPanelView import viewLowerPanel
-from coordinator.emitLogging import elog
 from coordinator.engineManager import Engine
+from emitLogging import elog
 from gui import events
 from gui.controller.CanvasCtrl import CanvasCtrl
 from gui.controller.DirectoryCtrl import LogicDirectory
 from gui.controller.NetcdfCtrl import NetcdfCtrl
-from gui.controller.UserCtrl import UserCtrl
 from gui.controller.ToolboxCtrl import LogicToolbox
+from gui.controller.UserCtrl import UserCtrl
 from gui.controller.settingsCtrl import settingsCtrl
 from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
 

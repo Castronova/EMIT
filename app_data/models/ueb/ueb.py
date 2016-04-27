@@ -1,21 +1,19 @@
 __author__ = 'tonycastronova'
 
-import os
-import sys
-import stdlib
-from os.path import *
-from ctypes import *
-from wrappers import feed_forward
-from structures import *
 import datetime
-import jdutil
 import math
-import numpy
-from coordinator.emitLogging import elog
-from sprint import *
-from utilities import mdl, geometry
+
 import netCDF4 as nc
-from dateutil import parser
+import numpy
+
+import jdutil
+import stdlib
+from emitLogging import elog
+from sprint import *
+from structures import *
+from utilities import mdl, geometry
+from wrappers import feed_forward
+
 
 class ueb(feed_forward.Wrapper):
 

@@ -1,14 +1,17 @@
 import os
+
 import wx
 import wx.xrc
 from shapely import wkt
-from utilities import gui, spatial
+
 from gui.views.ModelView import ModelView
+from utilities import gui, spatial
+
 # todo: refactor
 # from ..DirectoryLstCtrl import DirectoryListCtrl
 from gui.controller.DirectoryListControlCtrl import LogicDirectoryListControl
 from gui.Resources import icons
-from coordinator.emitLogging import elog
+from emitLogging import elog
 
 [PreviousID, UpID, HomeID, SaveID, RefreshID, TerminalID, HelpID] = [wx.NewId() for _init_ctrls in range(7)]
 

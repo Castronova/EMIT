@@ -1,12 +1,10 @@
 __author__ = 'tonycastronova'
 
-
-from wrappers import feed_forward
 import stdlib
-from utilities import mdl
-from coordinator.emitLogging import elog
-
 from sprint import *
+from utilities import mdl
+from wrappers import feed_forward
+
 
 class multiply(feed_forward.Wrapper):
 

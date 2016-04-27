@@ -1,6 +1,4 @@
 import time
-
-
 import database
 import update
 from db.dbapi import postgresdb
@@ -8,8 +6,9 @@ from transform.space import *
 from utilities.gui import *
 from utilities.status import Status
 from utilities.threading.threadManager import ThreadManager
-from coordinator.emitLogging import elog
 from odm2api.ODMconnection import dbconnection
+from emitLogging import elog
+
 
 class dataSaveInfo():
     """

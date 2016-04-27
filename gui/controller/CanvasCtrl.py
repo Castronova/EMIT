@@ -1,4 +1,3 @@
-import os
 import random
 import threading
 import time
@@ -17,7 +16,7 @@ import coordinator.events as engineEvent
 import datatypes
 import gui.controller.CanvasObjectsCtrl as LogicCanvasObjects
 import utilities.db as dbUtilities
-from coordinator.emitLogging import elog
+from emitLogging import elog
 from gui import events
 from gui.controller.CanvasObjectsCtrl import SmoothLineWithArrow, ModelBox
 from gui.controller.LinkCtrl import LinkCtrl
@@ -26,7 +25,6 @@ from gui.views.ContextView import LinkContextMenu, ModelContextMenu, CanvasConte
 from sprint import *
 from transform.space import SpatialInterpolation
 from transform.time import TemporalInterpolation
-from utilities.threading import EVT_UPDATE_CONSOLE
 
 
 class CanvasCtrl(CanvasView):

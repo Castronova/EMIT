@@ -1,10 +1,11 @@
-
 import wx
-from coordinator.emitLogging import elog
-from sprint import *
-import environment
-from gui.views.settingsView import settingsView
 import wx.propgrid as wxpg
+
+import environment
+from emitLogging import elog
+from gui.views.settingsView import settingsView
+from sprint import *
+
 
 class settingsCtrl(settingsView):
 

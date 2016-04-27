@@ -1,14 +1,13 @@
 import csv
 import datetime as dt
-import os
+import threading
 import time
 
 import wx
 
 import coordinator.engineAccessors as engine
-from coordinator.emitLogging import elog
+from emitLogging import elog
 from gui.views.TimeSeriesPlotView import TimeSeriesPlotView
-import threading
 from sprint import *
 
 

@@ -1,17 +1,15 @@
 __author__ = 'tonycastronova'
 
-import uuid
-import os
-from shapely import wkt
 import cPickle as pickle
-from osgeo import ogr, osr
-import utilities.spatial
-from utilities import geometry
+import uuid
+
 import stdlib
-from coordinator.emitLogging import elog
-import numpy
+import utilities.spatial
+from emitLogging import elog
 from sprint import *
 from utilities import io
+
+
 def create_variable(variable_name_cv):
     """
     creates a variable object using the lookup table

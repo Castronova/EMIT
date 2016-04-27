@@ -1,7 +1,6 @@
 import wx
-import wx.propgrid as wxpg
 import wx.grid
-from coordinator.emitLogging import elog
+
 from gui.controller.PlotForSiteViewerCtrl import PlotForSiteViewerCtrl
 
 

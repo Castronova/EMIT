@@ -1,9 +1,10 @@
 __author__ = 'tonycastronova'
 
 import collections
+
 from suds.client import Client
-from coordinator.emitLogging import elog
-from utilities.timeout import timeout
+
+from emitLogging import elog
 
 
 def parseXML2Dict(site, start=None, end=None):

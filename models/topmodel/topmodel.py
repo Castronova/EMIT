@@ -1,14 +1,15 @@
 __author__ = 'tonycastronova'
 
-import os
-from wrappers import feed_forward
-import stdlib
-from utilities import mdl, spatial, geometry
 import math
-from shapely.geometry import Point
-from coordinator.emitLogging import elog
-import numpy as np
 from distutils.version import LooseVersion
+
+import numpy as np
+
+import stdlib
+from emitLogging import elog
+from utilities import mdl, geometry
+from wrappers import feed_forward
+
 
 class topmodel(feed_forward.Wrapper):
 

@@ -1,13 +1,14 @@
-from gui.views.SpatialView import SpatialView
-from coordinator import engineAccessors
-from utilities import geometry
-from coordinator.emitLogging import elog
 import numpy
-from matplotlib.collections import PolyCollection, LineCollection
 import wx
+from matplotlib.collections import PolyCollection
 from osgeo import ogr
+
 import stdlib
+from coordinator import engineAccessors
+from emitLogging import elog
+from gui.views.SpatialView import SpatialView
 from sprint import *
+
 
 class SpatialCtrl(SpatialView):
 

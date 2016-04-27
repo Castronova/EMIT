@@ -1,18 +1,17 @@
 import ConfigParser
 import fnmatch
-import os
 import random
-from os.path import join, dirname, abspath
 
 import wx
 from wx.lib.pubsub import pub as Publisher
 
-from coordinator.emitLogging import elog
+from emitLogging import elog
 from gui import events
 from gui.controller.ModelCtrl import ModelCtrl
 from gui.views.ContextView import ToolboxContextMenu
 from gui.views.ToolboxView import ViewToolbox
 from sprint import *
+
 
 # todo: refactor
 

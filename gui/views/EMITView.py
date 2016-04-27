@@ -81,7 +81,7 @@ class ViewEMIT(wx.Frame):
                            MaximizeButton(False).
                            MinimizeButton(False).
                            Floatable(False).
-                           BestSize(wx.Size(1000, 400))
+                           BestSize(wx.Size(1000, 400)).CaptionVisible(False)
         )
 
         self.m_mgr.AddPane(self.Directory,
@@ -95,7 +95,7 @@ class ViewEMIT(wx.Frame):
                            BestSize(wx.Size(275, 400)).
                            Floatable(False).
                            Movable(False).
-                           Show(show=False).Hide()
+                           Show(show=False).Hide().CaptionVisible(False)
                            )
 
         self.m_mgr.AddPane(self.Toolbox,
@@ -110,7 +110,7 @@ class ViewEMIT(wx.Frame):
                            BestSize(wx.Size(275, 400)).
                            Floatable(False).
                            Movable(False).
-                           Show(show=True)
+                           Show(show=True).CaptionVisible(False)
                            )
 
         self.m_mgr.AddPane(self.bnb,

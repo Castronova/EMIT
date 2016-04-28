@@ -190,6 +190,11 @@ class Coordinator(object):
             self.__models[model.name()] = model
         return self.__models
 
+    # def Links(self, link=None):
+    #     if link is not None:
+    #         self.__links[link.id()] = link
+    #     return self.__links
+
     def add_db_connection(self,value):
 
         self._db.update(value)

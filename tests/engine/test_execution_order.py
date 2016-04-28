@@ -1,17 +1,27 @@
-__author__ = 'tonycastronova'
-
-
+import sys
+import sprint
 import unittest
 import networkx as n
-import time
 from coordinator.engine import  Coordinator
+import environment
+import stdlib
 
 class test_link_order(unittest.TestCase):
 
     def setUp(self):
 
-        self.g = n.DiGraph()
+        # initialize environment variables
+        environment.getEnvironmentVars()
+
+        if sys.gettrace():
+            print 'Detected Debug Mode'
+            # initialize debug listener (reroute messages to console)
+            self.d = sprint.DebugListener()
+
         self.engine = Coordinator()
+        sprint.PrintTarget.CONSOLE = 1134
+
+        self.g = n.DiGraph()
 
     def tearDown(self):
         del self.g
@@ -19,34 +29,44 @@ class test_link_order(unittest.TestCase):
     def test_determine_execution_order(self):
 
         # add models
-        mdl1 = '../models/test_models/randomizer/randomizer.mdl'
-        mdl2 = '../models/test_models/multiplier/multiplier.mdl'
+        mdl1 = '../data/randomizer.mdl'
+        mdl2 = '../data/multiplier.mdl'
 
         # add both models.  ids can be anything
-        id1 = 'id:randomizer'
-        id2 = 'id:multiplier'
-        self.engine.add_model(id=id1, attrib={'mdl': mdl1})
-        self.engine.add_model(id=id2, attrib={'mdl': mdl2})
-        time.sleep(1)
+        id1 = 'm1'
+        id2 = 'm2'
+        m1 = self.engine.add_model(id=id1, attrib={'mdl': mdl1})
+        m2 = self.engine.add_model(id=id2, attrib={'mdl': mdl2})
+        self.assertTrue(m1)
+        self.assertTrue(m2)
+        self.assertTrue(len(self.engine.Models()) == 2)
 
         # create link
-        linkid = self.engine.add_link(id1,'random 1-10',id2,'some_value')
-        time.sleep(1)
+        rand_oei =  self.engine.get_exchange_item_info(modelid=id1, exchange_item_type=stdlib.ExchangeItemType.OUTPUT)
+        mult_iei = self.engine.get_exchange_item_info(modelid=id2, exchange_item_type=stdlib.ExchangeItemType.INPUT)
+        self.engine.add_link(from_id=id1, from_item_id=rand_oei[0]['name'],
+                             to_id=id2, to_item_id=mult_iei[0]['name'],
+                             spatial_interp=None,
+                             temporal_interp=None,
+                             uid=None)
+
+        self.assertTrue(len(self.engine.get_all_links()) == 1)
+
 
         # get execution order
         order = self.engine.determine_execution_order()
 
-        self.assertTrue(order.index(id1) > order.index(id2))
+        self.assertTrue(''.join(order) == 'm1m2')
 
     def test_basic(self):
         """
 
-        m1 -> model -> m3 -> m4 -> m5 -> m6
+        m1 -> m2 -> m3 -> m4 -> m5 -> m6
         """
 
         # add some edges to simulate links
-        self.g.add_edge('m1','model')
-        self.g.add_edge('model','m3')
+        self.g.add_edge('m1','m2')
+        self.g.add_edge('m2','m3')
         self.g.add_edge('m3','m4')
         self.g.add_edge('m4','m5')
         self.g.add_edge('m5','m6')
@@ -55,16 +75,15 @@ class test_link_order(unittest.TestCase):
 
         self.assertTrue(''.join(order) == 'm1m2m3m4m5m6')
 
-        #self.sim.__linknetwork = g
 
     def test_simple_tree(self):
         """
-              m1 -> model
+              m1 -> m2
                         -> m3
         m6 -> m5 -> m4
         """
-        self.g.add_edge('m1','model')
-        self.g.add_edge('model','m3')
+        self.g.add_edge('m1','m2')
+        self.g.add_edge('m2','m3')
 
         self.g.add_edge('m6','m5')
         self.g.add_edge('m5','m4')
@@ -73,11 +92,7 @@ class test_link_order(unittest.TestCase):
 
         order = n.topological_sort(self.g)
 
-        self.assertTrue(order.index('m1') < order.index('model'))
-        self.assertTrue(order.index('m6') < order.index('m5'))
-        self.assertTrue(order.index('m5') < order.index('m4'))
-        self.assertTrue(order.index('m3') == 5)
-
+        self.assertTrue(''.join(order) == 'm1m2m6m5m4m3')
 
     def test_loop(self):
         """
@@ -85,35 +100,32 @@ class test_link_order(unittest.TestCase):
         m6 -> m5 -> m4 \
         ^               \
         |                -> m3
-         <- |m1| -> model /
+         <- |m1| -> m2 /
 
         """
 
-        self.g.add_edge('m1','model')
+        self.g.add_edge('m1','m2')
         self.g.add_edge('m1','m6')
 
-        self.g.add_edge('model','m3')
+        self.g.add_edge('m2','m3')
         self.g.add_edge('m6','m5')
         self.g.add_edge('m5','m4')
         self.g.add_edge('m4','m3')
 
         order = n.topological_sort(self.g)
 
-        self.assertTrue(order.index('m1') == 0)
-        self.assertTrue(order.index('m6') < order.index('m5'))
-        self.assertTrue(order.index('m5') < order.index('m4'))
-        self.assertTrue(order.index('m3') == 5)
+        self.assertTrue(''.join(order) == 'm1m2m6m5m4m3')
 
     def test_bidirectional(self):
         """
-         m1 <-> model -> m3
+         m1 <-> m2 -> m3
 
         """
 
 
-        self.g.add_edge('m1','model')
-        self.g.add_edge('model','m3')
-        self.g.add_edge('m3','model')
+        self.g.add_edge('m1','m2')
+        self.g.add_edge('m2','m3')
+        self.g.add_edge('m3','m2')
         self.g.add_edge('m3','m4')
 
         # remove any models that done have links

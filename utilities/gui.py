@@ -306,7 +306,7 @@ def load_model(config_params):
 
         # Initialize the component
         instance = model_class(config_params)
-        sPrint('Mode Initialization Successful', MessageType.DEBUG)
+        sPrint('Model Initialization Successful', MessageType.DEBUG)
 
     except Exception as e:
         sPrint('An error has occurred while loading model: %s'% e, MessageType.CRITICAL)

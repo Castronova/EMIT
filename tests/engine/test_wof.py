@@ -1,15 +1,16 @@
 
 
-import os, sys
+import sys
 import time
 import unittest
-import wrappers
+import datetime
 from coordinator.engine import Coordinator
-from sprint import *
+import wrappers
 import environment
+from sprint import *
 import stdlib
 
-class testNetcdfSimulation(unittest.TestCase):
+class testWofSimulation(unittest.TestCase):
 
 
     def setUp(self):
@@ -29,26 +30,28 @@ class testNetcdfSimulation(unittest.TestCase):
         pass
 
 
-    def test_netcdf_feedforward(self):
+    def test_wof_feedforward(self):
 
-        nc_path = os.path.join(self.basepath, 'data/prcp.nc')
-        self.assertTrue(os.path.exists(nc_path))
-        args = dict(ncpath = nc_path,
-                    tdim = 'time',
-                    xdim = 'x',
-                    ydim = 'y',
-                    tunit = 'hours',
-                    starttime = '10-26-2015 00:00:00',
-                    type = wrappers.Types.NETCDF)
+        args = dict(network = 'iutah',
+                    site = 'LR_WaterLab_AA',
+                    variable = 'RH_enc',
+                    start = datetime.datetime(2015, 10, 26, 0, 0, 0),
+                    end = datetime.datetime(2015, 10, 30, 0, 0, 0),
+                    wsdl = 'http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL',
+                    type = wrappers.Types.WOF
+                    )
+
 
         # add the WaterOneFlow component to the engine
-        self.engine.add_model(id=1234, attrib=args)
+        m1 = self.engine.add_model(id=1234, attrib=args)
+        self.assertTrue(m1)
+
 
         # load a test component
         multiplier_mdl = os.path.join(self.basepath, '../../app_data/models/multiplier/multiplier.mdl')
-        self.assertTrue(os.path.exists(multiplier_mdl), 'Path does not exist: %s'%multiplier_mdl)
         args = dict(mdl=multiplier_mdl)
-        self.engine.add_model(id=1235, attrib=args)
+        m2 = self.engine.add_model(id=1235, attrib=args)
+        self.assertTrue(m1)
 
         # assert that the models have been added correctly
         models = self.engine.get_all_models()

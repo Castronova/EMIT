@@ -73,7 +73,14 @@ class AddConnectionCtrl(AddConnectionView):
         user = self.user_txtctrl.GetValue()
         pwd = self.password_txtctrl.GetValue()
 
-        return title, desc, engine, address, db, user, pwd, title, desc
+        return dict(name = title,
+                description = desc,
+                engine=engine,
+                address=address,
+                database=db,
+                username = user,
+                password=pwd)
+
     def OnTextEnter(self, event):
         if self.odmRadio.GetValue():
             if self.engine_combo.GetValue() == "MySQL" or self.engine_combo.GetValue() == "PostgreSQL":
@@ -98,9 +105,11 @@ class AddConnectionCtrl(AddConnectionView):
                 self.ok_btn.Enable()
 
     def onOktBtn(self, event):
+
+        # Add ODM2 Connection
         if self.odmRadio.GetValue():
             params = self.getConnectionParams()
-            if self.con.Write_New_Connection(params):
+            if self.con.saveConnection(params):
                 print Publisher.sendMessage('DatabaseConnection',
                                               title=params[0],
                                               desc=params[1],
@@ -115,8 +124,10 @@ class AddConnectionCtrl(AddConnectionView):
                 self.Close()
                 return
             else:
-                wx.MessageBox('\aI was unable to connect to the database with the information provided\nPlease review the information and try again.', 'Info', wx.OK | wx.ICON_ERROR)
-        else: #WOF
+                wx.MessageBox('\aUnable to connect to the database. \nPlease review the information that was provided and try again.', 'Failed to Establish Connection', wx.OK | wx.ICON_ERROR)
+
+        # Add WOF Connection
+        else:
             params = self.getConnectionParams()
             currentdir = os.path.dirname(os.path.abspath(__file__))
             wof_txt = os.path.abspath(os.path.join(currentdir, '../../data/wofsites'))

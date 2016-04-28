@@ -50,7 +50,7 @@ def create_database_connections_from_args(title, desc, engine, address, db, user
                                  'description':d['desc'],
                                  'args': d}
 
-        print 'Connected to : %s [%s]'%(connection_string,db_id)
+        print 'Connected to : %s [%s]'%(connection_string.__repr__(),db_id)
     else:
         print 'ERROR | Could not establish a connection with the database'
         return None
@@ -102,7 +102,7 @@ def create_database_connections_from_file(ini):
                                      'description':d['desc'],
                                      'args': d}
 
-            print 'Connected to : %s [%s]'%(connection_string,db_id)
+            print 'Connected to : %s [%s]'%(connection_string.__repr__(),db_id)
 
 
 

@@ -2,7 +2,9 @@ import ConfigParser
 import sys
 import os
 
-from api_old.ODMconnection import  dbconnection
+#from api_old.ODMconnection import  dbconnection
+from odm2api import dbconnection
+
 from sprint import *
 
 # This is an interface for
@@ -16,30 +18,37 @@ class ConnectionVars(object):
         self.connections_path = os.path.abspath(os.path.join(currentdir, './data/connections'))
         self.Config = ConfigParser.ConfigParser(allow_no_value=True)
 
-    def load_connections(self, ConnPath = None):
-        ConnPath = self.connections_path if ConnPath is None else ConnPath
+    # def load_connections(self, ConnPath = None):
+    #     ConnPath = self.connections_path if ConnPath is None else ConnPath
+    #
+    #     self.config = ConfigParser.ConfigParser(allow_no_value=True)
 
-        self.config = ConfigParser.ConfigParser(allow_no_value=True)
+    def saveConnection(self, connection):
 
-    def Write_New_Connection(self, ValueDic):
-        currentdir = os.path.dirname(os.path.abspath(__file__))
-        self.connections_path = os.path.abspath(os.path.join(currentdir, './data/connections'))
-        f = open(self.connections_path, 'a')
-        db = dbconnection()
-        if db.createConnection(ValueDic[2],ValueDic[3], ValueDic[4], ValueDic[5], ValueDic[6]):
-            f.write("\n")
-            f.write("[connection]\n")
-            f.write("name = " + ValueDic[0] +"\n")
-            f.write("desc = " + ValueDic[1] +"\n")
-            f.write("engine = " + ValueDic[2] +"\n")
-            f.write("address = " + ValueDic[3] +"\n")
-            f.write("db = " + ValueDic[4] +"\n")
-            f.write("user = " + ValueDic[5] +"\n")
-            f.write("pwd = " + ValueDic[6] +"\n")
-            f.close()
-            return True
-        return False
+        # check that the connection is valid
+        session_factory = dbconnection.createConnection(connection['engine'], connection['address'], connection['database'], connection['username'], connection['password'])
+        if not session_factory:
+            sPrint('Failed to save database connection: invalid connection information', MessageType.ERROR)
+            return False
 
+        self.Config.read(self.connections_path)
+
+        # make sure this database name doesn't already exist
+        if connection['name'] in self.Config.sections():
+            sPrint('Failed to save database connection: database already exists', MessageType.ERROR)
+            return False
+
+        self.Config.add_section(connection['name'])
+        self.Config.set(connection['name'], 'description', connection['description'])
+        self.Config.set(connection['name'], 'engine', connection['engine'])
+        self.Config.set(connection['name'], 'address', connection['address'])
+        self.Config.set(connection['name'], 'database', connection['database'])
+        self.Config.set(connection['name'], 'username', connection['username'])
+        self.Config.set(connection['name'], 'password', connection['password'])
+        with open(self.connections_path, 'wb') as f:
+            self.Config.write(f)
+
+        return True
 
 
 def writeDefaultEnvironment(settings=None):
@@ -166,6 +175,23 @@ def getDefaultSettingsPath():
     return settings
 
 
+def initSecret():
+    currentdir = os.path.dirname(os.path.abspath(__file__))
+    secret = os.path.abspath(os.path.join(currentdir, 'secret.py'))
+
+    # get the default location relative to the packeage
+    if getattr(sys, 'frozen', False):
+        secret = os.path.join(sys._MEIPASS, 'secret.py')
+
+    # rebuild the secret file
+    if not os.path.exists(secret):
+        import uuid
+        with open(secret, 'w') as f:
+            f.write('#\n# This is a secret key for password encryption/decryption.  Do not share with anyone!\n#\n\n')
+            f.write('__key = "%s"' % uuid.uuid4().hex)
+
+
+
 def getDefaultUsersJsonPath():
     currentdir = os.path.dirname(os.path.abspath(__file__))
     users_path = os.path.abspath(os.path.join(currentdir, './app_data/config/users.json'))
@@ -182,6 +208,9 @@ def getEnvironmentVars(settings=None):
     # get the default location for the filepath if it is not provided
     if settings is None:
         settings = getDefaultSettingsPath()
+
+    # initialize the secret file (encryption/decryption)
+    initSecret()
 
     # write the default file path if it doesn't exist
     msg = None

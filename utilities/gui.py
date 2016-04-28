@@ -216,8 +216,8 @@ def connect_to_ODM2_db(title, desc, engine, address, db, user, pwd):
                                  'description':desc,
                                  'args': {'name':title,'desc':desc ,'engine':engine,'address':address,'db': db, 'user': user,'pwd': pwd}}
 
-        elog.info('Connected to : %s [%s]'%(connection_string,db_id))
-        sPrint('Connected to : %s [%s]'%(connection_string,db_id))
+        elog.info('Connected to : %s [%s]'%(connection_string.__repr__(),db_id))
+        sPrint('Connected to : %s [%s]'%(connection_string.__repr__(),db_id))
     else:
         elog.error('Could not establish a connection with the database')
         sPrint('Could not establish a connection with the database', MessageType.ERROR)
@@ -269,8 +269,8 @@ def create_database_connections_from_args(title, desc, engine, address, db, user
                                  'description':d['desc'],
                                  'args': d}
 
-        elog.info('Connected to : %s [%s]'%(connection_string,db_id))
-        sPrint('Connected to : %s [%s]'%(connection_string,db_id))
+        elog.info('Connected to : %s [%s]'%(connection_string.__repr__(),db_id))
+        sPrint('Connected to : %s [%s]'%(connection_string.__repr__(),db_id))
     else:
         elog.error('Could not establish a connection with the database')
         sPrint('Could not establish a connection with the database', MessageType.ERROR)
@@ -340,8 +340,8 @@ def connect_to_db(title, desc, engine, address, name, user, pwd):
                      'args': dict(address=connection_string, desc=desc, engine=engine,id=db_id,name=name,
                                   user=None, pwd=None,default=False,db=None)}
 
-        elog.info('Connected to : %s [%s]'%(connection_string,db_id))
-        sPrint('Connected to : %s [%s]'%(connection_string,db_id))
+        elog.info('Connected to : %s [%s]'%(connection_string.__repr__(),db_id))
+        sPrint('Connected to : %s [%s]'%(connection_string.__repr__(),db_id))
 
     else:
         elog.error('Could not establish a connection with the database')
@@ -390,8 +390,8 @@ def create_database_connections_from_file(ini):
                                      'connection_string':connection_string,
                                      'description':d['desc'],
                                      'args': d}
-            elog.info('Connected to : %s [%s]'%(connection_string,db_id))
-            sPrint('Connected to : %s [%s]'%(connection_string,db_id))
+            elog.info('Connected to : %s [%s]'%(connection_string.__repr__(),db_id))
+            sPrint('Connected to : %s [%s]'%(connection_string.__repr__(),db_id))
 
         else:
             msg = 'Could not establish a connection with the following database: %s, %s' % (d['address'],d['db'])

@@ -1,9 +1,16 @@
-[connection]
-name = water.uwrl
-desc = PostgreSQL database with hydrology simulations
+[my database]
+description = asdfg
 engine = postgresql
 address = castro-server.bluezone.usu.edu
-db = water.uwrl
-user = postgres
-pwd = water
+database = water.uwrl
+username = postgres
+password = water
+
+[test]
+description = aesrdtfy
+engine = postgresql
+address = castro-server.bluezone.usu.edu
+database = water.uwrl
+username = postgres
+password = water
 

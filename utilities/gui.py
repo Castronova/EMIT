@@ -369,7 +369,7 @@ def create_database_connections_from_file(ini):
             d[option] = cparser.get(s,option)
 
         # build database connection
-        session = dbconnection.createConnection(d['engine'],d['address'],d['db'],d['user'],d['pwd'])
+        session = dbconnection2.createConnection(d['engine'],d['address'],d['db'],d['user'],d['pwd'])
 
         if session:
             # adjusting timeout

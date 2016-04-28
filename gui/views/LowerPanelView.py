@@ -5,13 +5,15 @@ import xml.etree.ElementTree
 
 import wx
 from odm2api.ODMconnection import dbconnection as dbconnection2
+import odm2api
+
 from wx.lib.pubsub import pub as Publisher
 
 import coordinator.engineAccessors as engine
 import coordinator.events as engineEvent
 import db.dbapi_v2 as db2
 from ContextView import TimeSeriesContextMenu, SimulationContextMenu #, ConsoleContextMenu
-from api_old.ODMconnection import  dbconnection
+# from api_old.ODMconnection import  dbconnection
 from db import dbapi as dbapi
 from emitLogging import elog
 from gui import events
@@ -266,15 +268,15 @@ class TimeSeriesTab(wx.Panel):
                 series = None
                 # fixme: This breaks for SQLite since it is implemented in dbapi_v2
                 if db['args']['engine'] == 'sqlite':
-                    session = dbconnection.createConnection(engine=db['args']['engine'], address=db['args']['address'])
+                    session = dbconnection2.createConnection(engine=db['args']['engine'], address=db['args']['address'])
                     # gui_utils.connect_to_db()
                     s = db2.connect(session)
                     series = s.getAllSeries()
 
                 else:  # fixme: this is old api for postgresql and mysql (need to update to dbapi_v2)
-                    session = dbUtilities.build_session_from_connection_string(db['connection_string'])
-                    u = dbapi.utils(session)
-                    series = u.getAllSeries()
+                    session_factory = dbUtilities.build_session_from_connection_string(db['connection_string'])
+                    session = db2.connect(session_factory)
+                    series = session.getAllSeries()
 
                 if series is None:
                     d = {key: value for (key, value) in
@@ -286,14 +288,20 @@ class TimeSeriesTab(wx.Panel):
                     # loop through all of the returned data
                     data = []
                     for s in series:
+
+                        variable = s.VariableObj
+                        unit = s.UnitsObj
+                        action = s.FeatureActionObj.ActionObj
+                        samplingfeature = s.FeatureActionObj.SamplingFeatureObj
+                        organization = s.FeatureActionObj.ActionObj.MethodObj.OrganizationObj
                         d = {
-                            'resultid': s.ResultID,
-                            'variable': s.VariableObj.VariableCode,
-                            'unit': s.UnitObj.UnitsName,
-                            'date_created': s.FeatureActionObj.ActionObj.BeginDateTime,
-                            'type': s.FeatureActionObj.ActionObj.ActionTypeCV,
-                            'featurecode': s.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode,
-                            'organization': s.FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName
+                            'resultid': s.ResultID or 'N/A',
+                            'variable': getattr(variable, 'VariableCode', 'N/A'),
+                            'unit': getattr(unit, 'UnitsName', 'N/A'),
+                            'date_created': getattr(action, 'BeginDateTime', 'N/A'),
+                            'type': getattr(action, 'ActionTypeCV', 'N/A'),
+                            'featurecode': getattr(samplingfeature, 'SamplingFeatureCode', 'N/A'),
+                            'organization': getattr(organization, 'OrganizationName', 'N/A')
                         }
 
                         record_object = type('DataRecord', (object,), d)
@@ -315,13 +323,6 @@ class TimeSeriesTab(wx.Panel):
         return
 
     def OLVRefresh(self, event):
-        # if sys.gettrace():
-        #     #  In debug mode
-        #     self.refresh_database()
-        # else:
-        #     # Not in debug mode
-        #     thr = threading.Thread(target=self.refresh_database, name='DATABASE REFRESH THREAD', args=(), kwargs={})
-        #     thr.start()
         value = self.refresh_database()
         if value is not None:
             try:
@@ -426,7 +427,6 @@ class SimulationDataTab(DataSeries):
         self.parent = parent
 
         self.table_columns = ["Simulation ID", "Simulation Name", "Model Name", "Simulation Start", "Simulation End", "Date Created","Owner"]
-        #  table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
         self.table.DefineColumns(self.table_columns)
 
         self.__selected_choice_idx = 0
@@ -490,24 +490,13 @@ class SimulationDataTab(DataSeries):
                         isSqlite = True
                         self.conn.getCurrentSession()
                     else:
-                        session = dbUtilities.build_session_from_connection_string(db['connection_string'])
-                        # build the database session
-
-                        u = dbapi.utils(session)
-                        simulations = u.getAllSimulations()
+                        session_factory = dbUtilities.build_session_from_connection_string(db['connection_string'])
+                        session = db2.connect(session_factory)
+                        simulations  = session.getAllSimulations()
                 except Exception, e:
                     msg = 'Encountered an error when connecting to database %s: %s' % (db['name'], e)
                     elog.error(msg)
                     sPrint(msg, MessageType.ERROR)
-
-
-                #     # gui_utils.connect_to_db()
-                #
-                #
-                # else: # fixme: this is old api for postgresql and mysql (need to update to dbapi_v2)
-                #     session = dbUtilities.build_session_from_connection_string(db['connection_string'])
-                #     u = dbapi.utils(session)
-                #     series = u.getAllSeries()
 
 
                 sim_ids = []

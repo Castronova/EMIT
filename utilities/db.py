@@ -2,12 +2,13 @@ __author__ = 'tonycastronova'
 
 import uuid
 import ConfigParser
-from api_old.ODMconnection import  dbconnection, SessionFactory
+from odm2api.ODMconnection import dbconnection, SessionFactory
 
 
 def build_session_from_connection_string(connection_string):
-
-    s = SessionFactory(connection_string, False)
+    if type(connection_string) != str:
+        connection_string = str(connection_string)
+    s = SessionFactory(connection_string, echo=False, version=2.0)
 
     return s
 

@@ -763,14 +763,14 @@ class Coordinator(object):
                 connections = create_database_connections_from_file(filepath)
                 self._db = connections
 
-                # set the default connection
-                for id,conn in connections.iteritems():
-                    if 'default' in conn['args']:
-                        if conn['args']['default']:
-                            self.set_default_database(db_id=id)
-                            break
-                if not self.get_default_db():
-                    self.set_default_database()
+                # # set the default connection
+                # for id,conn in connections.iteritems():
+                #     if 'default' in conn['args']:
+                #         if conn['args']['default']:
+                #             self.set_default_database(db_id=id)
+                #             break
+                # if not self.get_default_db():
+                #     self.set_default_database()
 
                 return {'success':True, 'ids':connections.keys()}
             except Exception, e:

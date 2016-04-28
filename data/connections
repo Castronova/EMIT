@@ -1,20 +1,9 @@
 [connection]
-name = ODM2 Simulation database - Live
+name = water.uwrl
 desc = PostgreSQL database with hydrology simulations
 engine = postgresql
 address = castro-server.bluezone.usu.edu
-db = ODM2-Live
+db = water.uwrl
 user = postgres
 pwd = water
-
-[connection]
-name = ODM2 Simulation database
-desc = PostgreSQL database with hydrology simulations
-engine = postgresql
-address = castro-server.bluezone.usu.edu
-db = ODM2
-user = postgres
-pwd = water
-default=true
-
 

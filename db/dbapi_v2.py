@@ -32,8 +32,9 @@ def connect(sessionFactory):
 
     # todo: implement postgres in dbapi_v2
     elif 'postgresql' in driver:
-        elog.error('PostgreSQL not supported yet')
-        return None
+        return postgres(sessionFactory)
+        # elog.error('PostgreSQL not supported yet')
+        # return None
 
     # todo: implement mysql in dbapi_v2
     elif 'mysql' in driver:
@@ -726,3 +727,69 @@ class sqlite():
             self.delete.deleteModelByName(record.model_name)
 
 
+class postgres():
+
+    def __init__(self, session):
+
+
+        # build sqlalchemy connection
+        # self.connection = dbconnection.createConnection('sqlite', sqlitepath)
+        self.connection = session
+        # sqlitepath = session.engine.url.database
+
+        # create read, write, update, and delete ODM2PythonAPI instances
+        self.read = ReadODM2(self.connection)
+        self.write = CreateODM2(self.connection)
+        self.update = UpdateODM2(self.connection)
+        self.delete = DeleteODM2(self.connection)
+
+        # # create connection using spatialite for custom sql queries
+        # self.conn = sqlite3.Connection(sqlitepath)
+        # self.cursor = self.conn.cursor()
+        #
+        # # load mod_spatialite extension
+        # self.conn.enableloadextension(True)
+        # try:
+        #     self.cursor.execute('SELECT load_extension("mod_spatialite")')
+        # except Exception, e:
+        #     elog.error('Encountered and error when attempting to load mod_spatialite: %s' % e)
+        #     sPrint('Could not load mod_spatialite.  Your database will not be geo-enabled', MessageType.WARNING)
+
+
+    def getAllSeries(self):
+        """ General select statement for retrieving many results.  This is intended to be used when populating gui tables
+
+        :return :
+            :type list:
+        """
+        res = None
+        try:
+            res = self.connection.getSession().query(models.Results).\
+                join(models.Variables). \
+                join(models.Units). \
+                join(models.FeatureActions). \
+                join(models.Actions). \
+                join(models.TimeSeriesResultValues, models.TimeSeriesResultValues.ResultID == models.Results.ResultID).\
+                filter(models.Actions.ActionTypeCV != 'Simulation').\
+                all()
+        except Exception, e:
+            print e
+            res = None
+
+        return res
+
+    def getAllSimulations(self):
+        """
+        General select statement for retrieving many simulations.  This is intended to be used for populating gui tables
+        :return:
+        """
+        try:
+            res = self.connection.getSession().query(models.Simulations, models.Models, models.Actions, models.People). \
+                join(models.Models). \
+                join(models.Actions). \
+                join(models.ActionBy). \
+                join(models.Affiliations). \
+                join(models.People).all()
+            return res
+        except Exception, e:
+            sPrint('Encountered an error in get AllSimulations: %s' % e, MessageType.ERROR)

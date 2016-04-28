@@ -175,7 +175,7 @@ class CanvasContextMenu(wx.Menu):
     def SaveConfigurationAs(self, e):
         # Executes from Float Canvas -> right click -> Save As
         e = dict()
-        events.onSaveFromCanvas.fire(**e)  # calls SaveConfigurationsAs in ViewEMIT.py
+        events.onSaveFromCanvas.fire(**e)  # calls SaveConfigurationsAs in EMITView.py
 
     def LoadConfiguration(self, e):
         load = wx.FileDialog(self.parent.GetTopLevelParent(), message="Load File",

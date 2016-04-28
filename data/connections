@@ -14,3 +14,59 @@ database = water.uwrl
 username = postgres
 password = water
 
+[testing]
+description = asdfghjkl
+engine = postgresql
+address = castro-server.bluezone.usu.edu
+database = water.uwrl
+username = postgres
+password = water
+
+[t]
+description = 123435
+engine = postgresql
+address = castro-server.bluezone.usu.edu
+database = water.uwrl
+username = postgres
+password = water
+
+[asDFGHGJHKJL]
+description = 
+engine = postgresql
+address = castro-server.bluezone.usu.edu
+database = water.uwrl
+username = postgres
+password = water
+
+[qqq]
+description = 
+engine = postgresql
+address = castro-server.bluezone.usu.edu
+database = water.uwrl
+username = postgres
+password = water
+
+[qqqqqqqq]
+description = 
+engine = postgresql
+address = castro-server.bluezone.usu.edu
+database = water.uwrl
+username = postgres
+password = water
+
+[q1234]
+description = 
+engine = postgresql
+address = castro-server.bluezone.usu.edu
+database = water.uwrl
+username = postgres
+password = water
+
+[q12345678]
+description = 
+engine = postgresql
+address = castro-server.bluezone.usu.edu
+database = water.uwrl
+username = postgres
+password = water
+

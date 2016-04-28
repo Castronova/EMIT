@@ -314,41 +314,63 @@ def load_model(config_params):
 
     return (instance.name(), instance)
 
-def connect_to_db(title, desc, engine, address, name, user, pwd):
+def connect_to_db(title, desc, engine, address, db=None, user=None, pwd=None):
 
     d = {}
-
-    # fixme: all database connections should use the updated ODM library
-    if engine == 'sqlite':
-        session = dbconnection2.createConnection(engine, address)
-    else:
-        session = dbconnection.createConnection(engine, address, name, user, pwd)
-
-    if session:
-        # adjusting timeout
-        session.engine.pool._timeout = 30
-
-        connection_string = session.engine.url
-
-        # save this session in the db_connections object
-        db_id = uuid.uuid4().hex[:5]
-
-        d[db_id] = {'name':title,
-                     'session': session,
-                     'connection_string':connection_string,
-                     'description':desc,
-                     'args': dict(address=connection_string, desc=desc, engine=engine,id=db_id,name=name,
-                                  user=None, pwd=None,default=False,db=None)}
-
-        elog.info('Connected to : %s [%s]'%(connection_string.__repr__(),db_id))
-        sPrint('Connected to : %s [%s]'%(connection_string.__repr__(),db_id))
-
-    else:
+    session = dbconnection2.createConnection(engine, address, db, user, pwd)
+    if not session:
         elog.error('Could not establish a connection with the database')
         sPrint('Could not establish a connection with the database', MessageType.ERROR)
+        return
+
+
+    # adjusting timeout
+    session.engine.pool._timeout = 30
+
+    connection_string = session.engine.url
+
+    # save this session in the db_connections object
+    db_id = uuid.uuid4().hex[:5]
+
+    d[db_id] = {'name':title,
+                 'session': session,
+                 'connection_string':connection_string,
+                 'description':desc,
+                 'args': dict(address=connection_string, desc=desc, engine=engine,id=db_id,name=db,
+                              user=None, pwd=None,default=False,db=None)}
+
+    elog.info('Connected to : %s [%s]'%(connection_string.__repr__(),db_id))
+    sPrint('Connected to : %s [%s]'%(connection_string.__repr__(),db_id))
+
 
     return d
 
+
+def read_database_connection_from_file(ini):
+
+    # database connections dictionary
+    db_connections = []
+
+    # parse the dataabase connections file
+    cparser = ConfigParser.ConfigParser(None, multidict)
+    cparser.read(ini)
+    sections = cparser.sections()
+
+    # create a session for each database connection in the ini file
+    for s in sections:
+
+        # put ini args into a dictionary
+        d = {}
+        options = cparser.options(s)
+        d['name'] = s
+        for option in options:
+            d[option] = cparser.get(s,option)
+
+        db_connections.append(d)
+
+    return db_connections
+
+# todo: remove this function and use the one above!
 def create_database_connections_from_file(ini):
 
     # database connections dictionary

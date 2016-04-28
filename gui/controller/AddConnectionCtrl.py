@@ -110,14 +110,14 @@ class AddConnectionCtrl(AddConnectionView):
         if self.odmRadio.GetValue():
             params = self.getConnectionParams()
             if self.con.saveConnection(params):
-                print Publisher.sendMessage('DatabaseConnection',
-                                              title=params[0],
-                                              desc=params[1],
-                                              dbengine=params[2],
-                                              address=params[3],
-                                              name=params[4],
-                                              user=params[5],
-                                              pwd=params[6])
+                Publisher.sendMessage('DatabaseConnection',
+                                              title=params['name'],
+                                              desc=params['description'],
+                                              dbengine=params['engine'],
+                                              address=params['address'],
+                                              name=params['name'],
+                                              user=params['username'],
+                                              pwd=params['password'])
 
 
                 Publisher.sendMessage('getDatabases')

@@ -739,9 +739,9 @@ class Coordinator(object):
 
 
 
-    def connect_to_db(self, title, desc, engine, address, name, user, pwd, default=False):
+    def connect_to_db(self, title, desc, engine, address, dbname, user, pwd, default=False):
 
-        connection = connect_to_db(title, desc, engine, address, name, user, pwd)
+        connection = connect_to_db(title, desc, engine, address, dbname, user, pwd)
 
         if connection:
             dbs = self.add_db_connection(connection)
@@ -752,37 +752,6 @@ class Coordinator(object):
             return {'success':True, 'ids':connection.keys()}
         else:
             return {'success':False, 'ids':None}
-
-    # todo: remove this function.  we only need connect_to_db, this parsing can be done in gui utils
-    def connect_to_db_from_file(self,filepath=None):
-
-        if filepath is None: return {'success':False, 'ids':None}
-
-        if os.path.isfile(filepath):
-            try:
-                connections = create_database_connections_from_file(filepath)
-                self._db = connections
-
-                # # set the default connection
-                # for id,conn in connections.iteritems():
-                #     if 'default' in conn['args']:
-                #         if conn['args']['default']:
-                #             self.set_default_database(db_id=id)
-                #             break
-                # if not self.get_default_db():
-                #     self.set_default_database()
-
-                return {'success':True, 'ids':connections.keys()}
-            except Exception, e:
-                elog.error(e)
-                elog.error('Could not create connections from file ' + filepath)
-                sPrint('Could not create connection: %s'%e, MessageType.ERROR, PrintTarget.CONSOLE)
-
-                return {'success':False, 'ids':None}
-
-        else:
-            return {'success':False, 'ids':None}
-
 
     def load_simulation(self, simulation_file):
 

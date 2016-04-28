@@ -29,8 +29,8 @@ def connectToDbFromFile(dbtextfile=None):
     e.thread.start()
     e.thread.join()
 
-def connectToDb(title, desc, engine, address, name, user, pwd, default=False):
-    kwargs = dict(title=title, desc=desc, engine=engine, address=address, name=name, user=user, pwd=pwd, default=default)
+def connectToDb(title, desc, engine, address, dbname, user, pwd, default=False):
+    kwargs = dict(title=title, desc=desc, engine=engine, address=address, dbname=dbname, user=user, pwd=pwd, default=default)
     e = Engine()
     kwargs['event'] ='onDatabaseConnected'
     task = [('connect_to_db',kwargs)]

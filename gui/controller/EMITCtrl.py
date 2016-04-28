@@ -4,6 +4,7 @@ import environment
 import coordinator.engineAccessors as engine
 from gui.views.EMITView import ViewEMIT
 from sprint import *
+from utilities import gui
 
 
 class EMITCtrl(ViewEMIT):
@@ -27,10 +28,13 @@ class EMITCtrl(ViewEMIT):
             script.close()
 
         # connect to databases defined in the connections file
-        engine.connectToDbFromFile(dbtextfile=connections_txt)
+        dbs = gui.read_database_connection_from_file(connections_txt)
+        for db in dbs:
+            engine.connectToDb(db['name'],db['description'],db['engine'],db['address'],db['database'],db['username'],db['password'])
+        # engine.connectToDbFromFile(dbtextfile=connections_txt)
 
         # load the local database into the engine
-        engine.connectToDb(title='ODM2 SQLite (local)',desc='Local SQLite database',engine='sqlite',address=filepath, name=None, user=None, pwd=None, default=True)
+        engine.connectToDb(title='ODM2 SQLite (local)',desc='Local SQLite database',engine='sqlite',address=filepath, dbname=None, user=None, pwd=None, default=True)
         self.check_users_json()
 
     def check_users_json(self):

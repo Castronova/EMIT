@@ -28,7 +28,7 @@ from utilities import db as dbUtilities
 from webservice import wateroneflow
 
 
-class viewLowerPanel:
+class ViewLowerPanel:
     def __init__(self, notebook):
 
         console = consoleCtrl(notebook)

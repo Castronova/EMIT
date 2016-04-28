@@ -52,7 +52,6 @@ class CanvasCtrl(CanvasView):
         self.links = {}
         self.arrows = {}
         self.models = {}
-        self.siteVariablesSelected = []
 
         self.link_clicks = 0
         self._currentDbSession = None
@@ -460,7 +459,6 @@ class CanvasCtrl(CanvasView):
             self.FloatCanvas.SetMode(self.GuiMouse)
 
     def ArrowClicked(self, event):
-        bidirectional = False
 
         # get the models associated with the link
         models = self.arrows[event]
@@ -474,9 +472,6 @@ class CanvasCtrl(CanvasView):
 
         # get output items from r1
         to_model = engine.getModelById(r2.ID)
-
-        # if len(self.links) > 1:
-        #     bidirectional = self.CheckIfBidirectionalLink(r1.ID, r2.ID)
 
         linkstart = LinkCtrl(parent=self.FloatCanvas, outputs=from_model, inputs=to_model, link_obj=event, swap=True)
         linkstart.Show()
@@ -853,7 +848,7 @@ class CanvasCtrl(CanvasView):
             spatial = spatial_transformations[spatial_transformation_name] if spatial_transformation_name.lower() != 'none' else None
 
             # create the link
-            l = engine.addLink(source_id=from_model_id,
+            engine.addLink(source_id=from_model_id,
                                source_item=from_model_item,
                                target_id=to_model_id,
                                target_item=to_model_item,

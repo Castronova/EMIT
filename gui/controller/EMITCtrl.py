@@ -2,14 +2,14 @@ import sqlite3 as lite
 from gui.controller.UserCtrl import UserCtrl
 import environment
 import coordinator.engineAccessors as engine
-from gui.views.EMITView import ViewEMIT
+from gui.views.EMITView import EMITView
 from sprint import *
 
 
-class EMITCtrl(ViewEMIT):
+class EMITViewCtrl(EMITView):
     def __init__(self, parent):
 
-        ViewEMIT.__init__(self, parent)
+        EMITView.__init__(self, parent)
         self.FloatCanvas = self.Canvas.FloatCanvas
 
         connections_txt = environment.getDefaultConnectionsTextPath()

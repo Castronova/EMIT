@@ -8,7 +8,7 @@ from wx.lib.newevent import NewEvent
 from wx.lib.pubsub import pub as Publisher
 
 import environment
-from LowerPanelView import viewLowerPanel
+from LowerPanelView import ViewLowerPanel
 from coordinator.engineManager import Engine
 from emitLogging import elog
 from gui import events
@@ -25,7 +25,7 @@ wxStdOut, EVT_STDDOUT= NewEvent()
 wxDbChanged, EVT_DBCHANGED= NewEvent()
 
 
-class ViewEMIT(wx.Frame):
+class EMITView(wx.Frame):
     def __init__(self, parent):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title="Environmental Model Integration Project", pos=wx.DefaultPosition,
                           size=wx.Size(1200, 750), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
@@ -33,7 +33,7 @@ class ViewEMIT(wx.Frame):
         self.pnlDocking = wx.Panel(id=wx.ID_ANY, name='pnlDocking', parent=self, size=wx.Size(1200, 750),
                                    style=wx.TAB_TRAVERSAL)
         self.bnb = wx.Notebook(self.pnlDocking)
-        lowerpanel = viewLowerPanel(self.bnb)
+        ViewLowerPanel(self.bnb)
 
         self.initMenu()
 
@@ -147,8 +147,8 @@ class ViewEMIT(wx.Frame):
 
 
         self.view_menu = wx.Menu()
-        ShowAll = self.view_menu.Append(wx.NewId(), '&Toolbox\tCtrl+A', 'Show all associated files', wx.ITEM_RADIO)
-        separator = self.view_menu.Append(wx.NewId(), 'separate', 'separate', wx.ITEM_SEPARATOR)
+        self.view_menu.Append(wx.NewId(), '&Toolbox\tCtrl+A', 'Show all associated files', wx.ITEM_RADIO)
+        self.view_menu.Append(wx.NewId(), 'separate', 'separate', wx.ITEM_SEPARATOR)
         MinimizeConsole = self.view_menu.Append(wx.NewId(), '&Console Off', 'Minimizes the Console', wx.ITEM_CHECK)
 
         defaultview = self.view_menu.Append(wx.NewId(), '&Restore Default View', 'Returns the view to the default (initial) state', wx.ITEM_NORMAL)
@@ -279,9 +279,6 @@ class ViewEMIT(wx.Frame):
         # Starts stuff after program has initiated
         self.Canvas.ZoomToFit(event=None)
 
-    def __del__(self):
-        self.m_mgr.UnInit()
-
     def LoadConfiguration(self,event):
 
         openFileDialog = wx.FileDialog(self, message="Load New File", defaultDir=self.defaultLoadDirectory, defaultFile="",
@@ -348,92 +345,3 @@ class ViewEMIT(wx.Frame):
         if event.Selection == 1:
             ConsolePane.Hide()
         self.m_mgr.Update()
-        pass
-
-class ModelView(wx.Panel):
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent)
-        self.contents = wx.html2.WebView.New(self)
-        sizer = wx.BoxSizer()
-        sizer.Add(self.contents, 1, wx.ALL|wx.EXPAND, 5)
-        parent.SetSizer(sizer)
-        self.SetSizerAndFit(sizer)
-
-    def setText(self, value=None):
-        self.contents.SetPage(value, "")
-
-
-class viewMenuBar(wx.Frame):
-
-    def __init__(self):
-        wx.Frame.__init__(self, parent=None, id=-1, title="Settings...", pos=wx.DefaultPosition, size=wx.Size(350, 250))
-
-        self.panel = wx.Panel(self)
-
-        sizer = wx.BoxSizer(wx.VERTICAL)
-
-        console_title = wx.StaticText(self.panel, id=wx.ID_ANY, label="Configure Console Verbosity",pos=(20, 100))
-        font = wx.Font(16, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
-        console_title.SetFont(font)
-
-        self.c1 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Info Messages")
-        self.c2 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Warning Messages")
-        self.c3 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Critical Messages")
-        self.c4 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Error Messages")
-        self.c5 = wx.CheckBox(self.panel, id=wx.ID_ANY, label="Show Debug Messages")
-
-        self.c1.SetValue(int(os.environ['LOGGING_SHOWINFO']))
-        self.c2.SetValue(int(os.environ['LOGGING_SHOWWARNING']))
-        self.c3.SetValue(int(os.environ['LOGGING_SHOWCRITICAL']))
-        self.c4.SetValue(int(os.environ['LOGGING_SHOWERROR']))
-        self.c5.SetValue(int(os.environ['LOGGING_SHOWDEBUG']))
-
-        self.saveButton = wx.Button(self.panel, 1, 'Save')
-
-        sizer.Add(console_title, .1, flag=wx.ALL | wx.ALIGN_LEFT, border=20)
-        sizer.Add(self.c1, 0, flag=wx.LEFT | wx.ALIGN_LEFT, border=20)
-        sizer.Add(self.c2, 0, flag=wx.LEFT | wx.ALIGN_LEFT, border=20)
-        sizer.Add(self.c3, 0, flag=wx.LEFT | wx.ALIGN_LEFT, border=20)
-        sizer.Add(self.c4, 0, flag=wx.LEFT | wx.ALIGN_LEFT, border=20)
-        sizer.Add(self.c5, 0, flag=wx.LEFT | wx.ALIGN_LEFT, border=20)
-        sizer.Add(self.saveButton, 1, flag=wx.RIGHT | wx.ALIGN_RIGHT, border=20)
-
-        self.Bind(wx.EVT_BUTTON, self.OnSave, id=1)
-
-        self.panel.SetSizer(sizer)
-        self.Layout()
-        self.Refresh()
-        self.Show()
-
-    def OnSave(self, event):
-        chkvalues = self.getCheckboxValue()
-        infchk = int(chkvalues['info'])
-        wrnchk = int(chkvalues['warn'])
-        crtchk = int(chkvalues['critical'])
-        debchk = int(chkvalues['debug'])
-        errchk = int(chkvalues['error'])
-
-
-        environment.setEnvironmentVar('LOGGING', 'showinfo', infchk)
-        environment.setEnvironmentVar('LOGGING', 'showwarning', wrnchk)
-        environment.setEnvironmentVar('LOGGING', 'showcritical', crtchk)
-        environment.setEnvironmentVar('LOGGING', 'showdebug', debchk)
-        environment.setEnvironmentVar('LOGGING', 'showerror', errchk)
-
-        elog.info('Verbosity Settings Saved')
-
-        self.Close()
-
-    def getCheckboxValue(self):
-        '''
-        Get the checked status for each verbosity checkbox
-        :return: dictionary of Booleans, e.g {'info':True, }
-        '''
-
-        info = self.c1.GetValue()
-        warn = self.c2.GetValue()
-        critical = self.c3.GetValue()
-        error = self.c4.GetValue()
-        debug = self.c5.GetValue()
-        cb = {'info': info, 'warn': warn, 'critical': critical, 'error': error, 'debug': debug}
-        return cb

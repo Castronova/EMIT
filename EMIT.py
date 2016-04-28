@@ -4,7 +4,7 @@ import wx.xrc
 
 import environment
 from coordinator import engineManager
-from gui.controller.EMITCtrl import EMITCtrl
+from gui.controller.EMITCtrl import EMITViewCtrl
 import os
 
 class EMITApp(wx.App):
@@ -20,7 +20,7 @@ class EMITApp(wx.App):
         # tends to add clutter to our console.
         wx.Log.SetLogLevel(0)
 
-        self.logicEmit = EMITCtrl(None)
+        self.logicEmit = EMITViewCtrl(None)
         return True
 
 if __name__ == '__main__':

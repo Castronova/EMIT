@@ -57,18 +57,9 @@ class PreRunViewCtrl(PreRunView):
 
     def refreshUserAccount(self):
         self.account_combo.Clear()
-        # self.accounts = UserCtrl.users_json_file_to_object()
         account_names = []
         for affiliation in self.user_data.itervalues():
             account_names.append(affiliation.ID())
-            # person = affiliation.person
-            # organization = affiliation.organization
-
-        # for person, organizations in self.accounts.iteritems():
-        #     for organ in organizations:
-        #         user = self.getAccountID(person, organ)
-                # user = person.last_name + " [" + organ.name + "]"
-                # account_names.append(user)
 
         self.account_combo.AppendItems(account_names)
         self.account_combo.SetSelection(0)
@@ -98,13 +89,11 @@ class PreRunViewCtrl(PreRunView):
     def insert_data(self, data):
         if isinstance(data, dict):
             col_number = 0
-            row_number = 0
             for key, values in data.iteritems():
                 for value in values:
                     pos = self.variableList.InsertStringItem(col_number, str(value))
                     col_number += 1
                     self.variableList.SetStringItem(pos, col_number, str(key))
-                    row_number += 1
                     col_number = 0
         else:
             elog.debug("PreRunViewCtrl.insert_data must be a dictionary")

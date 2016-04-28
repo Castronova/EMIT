@@ -163,12 +163,32 @@ def parseConfigIntoDict(config):
 
     return d
 
-def getDefaultSettingsPath():
 
+# change file paths if app is running as installed package
+def getDefaultConnectionsTextPath():
+    current_directory = os.path.dirname(os.path.abspath(__file__))
+    connections_path = os.path.abspath(os.path.join(current_directory, './data/connections'))
+    # get the default location relative to the package
+    if getattr(sys, 'frozen', False):
+        connections_path = os.path.join(sys._MEIPASS, './data/connections')
+
+    return connections_path
+
+
+def getDefaultLocalDBPath():
+    current_directory = os.path.dirname(os.path.abspath(__file__))
+    local_db_path = os.path.abspath(os.path.join(current_directory, './app_data/db/local.db'))
+    # get the default location relative to the package
+    if getattr(sys, 'frozen', False):
+        local_db_path = os.path.join(sys._MEIPASS, './app_data/db/local.db')
+
+    return local_db_path
+
+
+def getDefaultSettingsPath():
     currentdir = os.path.dirname(os.path.abspath(__file__))
     settings = os.path.abspath(os.path.join(currentdir, './app_data/config/.settings.ini'))
-
-    # get the default location relative to the packeage
+    # get the default location relative to the package
     if getattr(sys, 'frozen', False):
         settings = os.path.join(sys._MEIPASS, 'app_data/config/.settings.ini')
 
@@ -190,6 +210,14 @@ def initSecret():
             f.write('#\n# This is a secret key for password encryption/decryption.  Do not share with anyone!\n#\n\n')
             f.write('__key = "%s"' % uuid.uuid4().hex)
 
+def getDefaultScriptPath():
+    current_directory = os.path.dirname(os.path.abspath(__file__))
+    script_path = os.path.abspath(os.path.join(current_directory, './app_data/db/.dbload'))
+    # get the default location relative to the package
+    if getattr(sys, 'frozen', False):
+        script_path = os.path.join(sys._MEIPASS, './app_data/db/.dbload')
+
+    return script_path
 
 
 def getDefaultUsersJsonPath():

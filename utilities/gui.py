@@ -363,13 +363,14 @@ def create_database_connections_from_file(ini):
     for s in sections:
 
         # put ini args into a dictionary
-        options = cparser.options(s)
         d = {}
+        options = cparser.options(s)
+        d['name'] = s
         for option in options:
             d[option] = cparser.get(s,option)
 
         # build database connection
-        session = dbconnection2.createConnection(d['engine'],d['address'],d['db'],d['user'],d['pwd'])
+        session = dbconnection2.createConnection(d['engine'],d['address'],d['database'],d['username'],d['password'])
 
         if session:
             # adjusting timeout
@@ -388,13 +389,13 @@ def create_database_connections_from_file(ini):
             db_connections[db_id] = {'name':d['name'],
                                      'session': session,
                                      'connection_string':connection_string,
-                                     'description':d['desc'],
+                                     'description':d['description'],
                                      'args': d}
             elog.info('Connected to : %s [%s]'%(connection_string.__repr__(),db_id))
             sPrint('Connected to : %s [%s]'%(connection_string.__repr__(),db_id))
 
         else:
-            msg = 'Could not establish a connection with the following database: %s, %s' % (d['address'],d['db'])
+            msg = 'Could not establish a connection with the following database: ***@%s/%s' % (d['address'],d['database'])
             elog.error(msg)
             sPrint(msg, MessageType.ERROR)
 

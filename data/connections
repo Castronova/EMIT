@@ -1,72 +1,8 @@
-[my database]
-description = asdfg
-engine = postgresql
-address = castro-server.bluezone.usu.edu
-database = water.uwrl
-username = postgres
-password = water
-
-[test]
-description = aesrdtfy
-engine = postgresql
-address = castro-server.bluezone.usu.edu
-database = water.uwrl
-username = postgres
-password = water
-
-[testing]
-description = asdfghjkl
-engine = postgresql
-address = castro-server.bluezone.usu.edu
-database = water.uwrl
-username = postgres
-password = water
-
-[t]
-description = 123435
-engine = postgresql
-address = castro-server.bluezone.usu.edu
-database = water.uwrl
-username = postgres
-password = water
-
-[asDFGHGJHKJL]
+[fsdfghj]
 description = 
 engine = postgresql
 address = castro-server.bluezone.usu.edu
 database = water.uwrl
-username = postgres
-password = water
-
-[qqq]
-description = 
-engine = postgresql
-address = castro-server.bluezone.usu.edu
-database = water.uwrl
-username = postgres
-password = water
-
-[qqqqqqqq]
-description = 
-engine = postgresql
-address = castro-server.bluezone.usu.edu
-database = water.uwrl
-username = postgres
-password = water
-
-[q1234]
-description = 
-engine = postgresql
-address = castro-server.bluezone.usu.edu
-database = water.uwrl
-username = postgres
-password = water
-
-[q12345678]
-description = 
-engine = postgresql
-address = castro-server.bluezone.usu.edu
-database = water.uwrl
-username = postgres
-password = water
+username = bNOmbBsLEY6SE/NIgJGHVNukESW5uvRryXdXAy+cEfA=
+password = ITkoamMfHw1sChvnVS8dHbz0BRkp8cGdePFkOSCBE8M=
 

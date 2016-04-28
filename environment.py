@@ -1,6 +1,7 @@
 import ConfigParser
 import sys
 import os
+import encrypt
 
 #from api_old.ODMconnection import  dbconnection
 from odm2api import dbconnection
@@ -38,13 +39,19 @@ class ConnectionVars(object):
             sPrint('Failed to save database connection: database already exists', MessageType.ERROR)
             return False
 
+        # encrypt password
+        import secret
+        cipher = encrypt.AESCipher(secret.key)
+        uhash = cipher.encrypt(connection['username'])
+        phash = cipher.encrypt(connection['password'])
+
         self.Config.add_section(connection['name'])
         self.Config.set(connection['name'], 'description', connection['description'])
         self.Config.set(connection['name'], 'engine', connection['engine'])
         self.Config.set(connection['name'], 'address', connection['address'])
         self.Config.set(connection['name'], 'database', connection['database'])
-        self.Config.set(connection['name'], 'username', connection['username'])
-        self.Config.set(connection['name'], 'password', connection['password'])
+        self.Config.set(connection['name'], 'username', uhash)
+        self.Config.set(connection['name'], 'password', phash)
         with open(self.connections_path, 'wb') as f:
             self.Config.write(f)
 
@@ -208,7 +215,7 @@ def initSecret():
         import uuid
         with open(secret, 'w') as f:
             f.write('#\n# This is a secret key for password encryption/decryption.  Do not share with anyone!\n#\n\n')
-            f.write('__key = "%s"' % uuid.uuid4().hex)
+            f.write('key = "%s"' % uuid.uuid4().hex)
 
 def getDefaultScriptPath():
     current_directory = os.path.dirname(os.path.abspath(__file__))

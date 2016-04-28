@@ -13,7 +13,6 @@ from coordinator.engineManager import Engine
 from emitLogging import elog
 from gui import events
 from gui.controller.CanvasCtrl import CanvasCtrl
-from gui.controller.DirectoryCtrl import LogicDirectory
 from gui.controller.NetcdfCtrl import NetcdfCtrl
 from gui.controller.ToolboxCtrl import LogicToolbox
 from gui.controller.UserCtrl import UserCtrl
@@ -39,7 +38,6 @@ class ViewEMIT(wx.Frame):
         self.initMenu()
 
         # creating components
-        self.Directory = LogicDirectory(self.pnlDocking)
         self.Toolbox = LogicToolbox(self.pnlDocking)
         self.Canvas = CanvasCtrl(self.pnlDocking)
 
@@ -83,20 +81,6 @@ class ViewEMIT(wx.Frame):
                            Floatable(False).
                            BestSize(wx.Size(1000, 400)).CaptionVisible(False)
         )
-
-        self.m_mgr.AddPane(self.Directory,
-                           aui.AuiPaneInfo().
-                           Left().
-                           Dock().
-                           CloseButton(False).
-                           MaximizeButton(False).
-                           MinimizeButton(False).
-                           PinButton(False).
-                           BestSize(wx.Size(275, 400)).
-                           Floatable(False).
-                           Movable(False).
-                           Show(show=False).Hide().CaptionVisible(False)
-                           )
 
         self.m_mgr.AddPane(self.Toolbox,
                            aui.AuiPaneInfo().
@@ -164,7 +148,6 @@ class ViewEMIT(wx.Frame):
 
         self.view_menu = wx.Menu()
         ShowAll = self.view_menu.Append(wx.NewId(), '&Toolbox\tCtrl+A', 'Show all associated files', wx.ITEM_RADIO)
-        ShowDir = self.view_menu.Append(wx.NewId(), '&Directory\tCtrl+D', 'Shows file directory', wx.ITEM_RADIO)
         separator = self.view_menu.Append(wx.NewId(), 'separate', 'separate', wx.ITEM_SEPARATOR)
         MinimizeConsole = self.view_menu.Append(wx.NewId(), '&Console Off', 'Minimizes the Console', wx.ITEM_CHECK)
 
@@ -196,8 +179,6 @@ class ViewEMIT(wx.Frame):
         events.onSaveFromCanvas += self.SaveConfigurationAs
 
         # View Option Bindings
-        self.Bind(wx.EVT_MENU, self.onDirectory, ShowDir)
-        self.Bind(wx.EVT_MENU, self.onAllFiles, ShowAll)
         self.Bind(wx.EVT_MENU, self.onConsole, MinimizeConsole)
         self.Bind(wx.EVT_MENU, self.defaultview, defaultview)
 
@@ -359,22 +340,6 @@ class ViewEMIT(wx.Frame):
             self.Toolbox.RefreshToolbox()
         else:
             save.Destroy()
-
-    def onDirectory(self, event):
-        ToolboxPane = self.m_mgr.GetPane(self.Toolbox)
-        ToolboxPane.Hide()
-        DirectoryPane = self.m_mgr.GetPane(self.Directory)
-        DirectoryPane.Show(show=True)
-        self.m_mgr.Update()
-        pass
-
-    def onAllFiles(self, event):
-        DirectoryPane = self.m_mgr.GetPane(self.Directory)
-        DirectoryPane.Hide()
-        ToolboxPane = self.m_mgr.GetPane(self.Toolbox)
-        ToolboxPane.Show(show=True)
-        self.m_mgr.Update()
-        pass
 
     def onConsole(self, event):
         ConsolePane = self.m_mgr.GetPane(self.bnb)

@@ -1,12 +1,11 @@
-import ConfigParser
-import sys
 import os
+import sys
+import ConfigParser
 import encrypt
-
-#from api_old.ODMconnection import  dbconnection
+import sqlite3 as sqlite
 from odm2api import dbconnection
-
 from sprint import *
+
 
 def saveConnection(connection):
 
@@ -17,7 +16,7 @@ def saveConnection(connection):
         return False
 
     config = ConfigParser.ConfigParser(allow_no_value=True)
-    connections_path = getDefaultConnectionsTextPath()
+    connections_path = os.environ['APP_CONNECTIONS_PATH']
     config.read(connections_path)
 
     # make sure this database name doesn't already exist
@@ -74,6 +73,7 @@ def writeDefaultEnvironment(settings=None):
     config.set('APP', 'SETTINGS_PATH', os.path.abspath(os.path.join(app_path, 'config/.settings.ini')))
     config.set('APP', 'TOOLBOX_PATH',  os.path.abspath(os.path.join(app_path, 'config/toolbox.ini')))
     config.set('APP', 'USER_PATH',     os.path.abspath(os.path.join(app_path, 'config/users.json')))
+    config.set('APP', 'CONNECTIONS_PATH',     os.path.abspath(os.path.join(app_path, 'db/connections')))
 
     config.add_section('LEGEND')
     config.set('LEGEND', 'locationright', 1)
@@ -122,16 +122,11 @@ def setEnvironmentVar(section, var, value=None, settings=None):
 
 def readEnvironment(settings):
 
-
     # parse the settings file
     config = ConfigParser.ConfigParser(allow_no_value = True)
     config.read(settings)
 
     return config
-
-    # settings_dict = parse(config)
-
-    # return settings_dictx
 
 def loadEnvironment(config):
 
@@ -153,29 +148,8 @@ def parseConfigIntoDict(config):
         for option in config.options(section):
             value = config.get(section, option)
             d['_'.join([section, option])] = str(value)
-
     return d
 
-
-# change file paths if app is running as installed package
-def getDefaultConnectionsTextPath():
-    current_directory = os.path.dirname(os.path.abspath(__file__))
-    connections_path = os.path.abspath(os.path.join(current_directory, './app_data/db/connections'))
-    # get the default location relative to the package
-    if getattr(sys, 'frozen', False):
-        connections_path = os.path.join(sys._MEIPASS, './app_data/db/connections')
-
-    return connections_path
-
-
-def getDefaultLocalDBPath():
-    current_directory = os.path.dirname(os.path.abspath(__file__))
-    local_db_path = os.path.abspath(os.path.join(current_directory, './app_data/db/local.db'))
-    # get the default location relative to the package
-    if getattr(sys, 'frozen', False):
-        local_db_path = os.path.join(sys._MEIPASS, './app_data/db/local.db')
-
-    return local_db_path
 
 def getDefaultSettingsPath():
     currentdir = os.path.dirname(os.path.abspath(__file__))
@@ -202,35 +176,27 @@ def initSecret():
             f.write('#\n# This is a secret key for password encryption/decryption.  Do not share with anyone!\n#\n\n')
             f.write('key = "%s"' % uuid.uuid4().hex)
 
-def getDefaultScriptPath():
-    current_directory = os.path.dirname(os.path.abspath(__file__))
-    script_path = os.path.abspath(os.path.join(current_directory, './app_data/db/.dbload'))
-    # get the default location relative to the package
-    if getattr(sys, 'frozen', False):
-        script_path = os.path.join(sys._MEIPASS, './app_data/db/.dbload')
-
-    return script_path
-
-
-def getDefaultUsersJsonPath():
-    currentdir = os.path.dirname(os.path.abspath(__file__))
-    users_path = os.path.abspath(os.path.join(currentdir, './app_data/config/users.json'))
-
-    # get the default location relative to the packeage
-    if getattr(sys, 'frozen', False):
-        users_path = os.path.join(sys._MEIPASS, 'app_data/config/users.json')
-
-    return users_path
-
+def initLocalDb():
+    # connect to known databases
+    # if the database is not found in the dir (dev mode) or app (install mode), create it
+    local_db = os.environ['APP_LOCAL_DB_PATH']
+    script_path = os.path.join(
+        os.path.dirname(local_db),
+        '.dbload'
+    )
+    if not os.path.exists(local_db):
+        conn = sqlite.connect(local_db)
+        script = open(script_path)
+        with conn:
+            cur = conn.cursor()
+            cur.executescript(script.read())
+        script.close()
 
 def getEnvironmentVars(settings=None):
 
     # get the default location for the filepath if it is not provided
     if settings is None:
         settings = getDefaultSettingsPath()
-
-    # initialize the secret file (encryption/decryption)
-    initSecret()
 
     # write the default file path if it doesn't exist
     msg = None
@@ -247,6 +213,14 @@ def getEnvironmentVars(settings=None):
 
     # load the default environment
     loadEnvironment(config)
+
+
+    # initialize the secret file (encryption/decryption)
+    initSecret()
+
+    # initalize the local database
+    initLocalDb()
+
 
     sPrint(msg, MessageType.INFO)
 

@@ -1,3 +1,4 @@
+import os
 import time
 
 import wx
@@ -24,7 +25,7 @@ class PreRunViewCtrl(PreRunView):
         self.populateVariableList()
 
         # get all known user accounts
-        path = environment.getDefaultUsersJsonPath()
+        path = os.environ['APP_USER_PATH']
         self.user_data = users.jsonToDict(path)
 
         # self.accounts = UserCtrl.users_json_file_to_object()

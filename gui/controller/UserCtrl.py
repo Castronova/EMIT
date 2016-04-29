@@ -118,7 +118,8 @@ class UserCtrl(UserView):
     @staticmethod
     def create_user_json():
         # If path path exist do nothing else create it
-        path = environment.getDefaultUsersJsonPath()
+        path = os.environ['APP_USER_PATH']
+        # path = environment.getDefaultUsersJsonPath()
         if os.path.isfile(path):
             return
         open(path, "w")
@@ -161,7 +162,8 @@ class UserCtrl(UserView):
 
     @staticmethod
     def is_user_json_empty():
-        path = environment.getDefaultUsersJsonPath()
+        # path = environment.getDefaultUsersJsonPath()
+        path = os.environ['APP_USER_PATH']
         if os.stat(path).st_size == 0:
             return True
         return False
@@ -199,7 +201,7 @@ class UserCtrl(UserView):
     def get_json_from_users_json_file():
         # Returns the content inside users.json
         # Returns empty {} of the file is empty or fails to load
-        path = environment.getDefaultUsersJsonPath()
+        path = os.environ['APP_USER_PATH']
         with open(path, "r") as f:
             try:
                 data = json.load(f)
@@ -253,7 +255,7 @@ class UserCtrl(UserView):
             organizations.append([organization, affiliation])
 
 
-        path = environment.getDefaultUsersJsonPath()
+        path = os.environ['APP_USER_PATH']
         previous_users = UserCtrl.get_json_from_users_json_file()
 
         # save the userinfo in a simplified way

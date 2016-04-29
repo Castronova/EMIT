@@ -12,20 +12,8 @@ class EMITViewCtrl(EMITView):
 
         EMITView.__init__(self, parent)
         self.FloatCanvas = self.Canvas.FloatCanvas
-
-        connections_txt = environment.getDefaultConnectionsTextPath()
-        script_path = environment.getDefaultScriptPath()
-        filepath = environment.getDefaultLocalDBPath()
-
-        # connect to known databases
-        # if the database is not found in the dir (dev mode) or app (install mode), create it
-        if not os.path.exists(filepath):
-            conn = lite.connect(filepath)
-            script = open(script_path)
-            with conn:
-                cur = conn.cursor()
-                cur.executescript(script.read())
-            script.close()
+        connections_txt = os.environ['APP_CONNECTIONS_PATH']
+        local_db_path = os.environ['APP_LOCAL_DB_PATH']
 
         # connect to databases defined in the connections file
         dbs = gui.read_database_connection_from_file(connections_txt)
@@ -38,7 +26,7 @@ class EMITViewCtrl(EMITView):
                 sPrint(msg, MessageType.ERROR)
 
         # load the local database into the engine
-        engine.connectToDb(title='ODM2 SQLite (local)',desc='Local SQLite database',engine='sqlite',address=filepath, dbname=None, user=None, pwd=None, default=True)
+        engine.connectToDb(title='ODM2 SQLite (local)',desc='Local SQLite database',engine='sqlite',address=local_db_path, dbname=None, user=None, pwd=None, default=True)
         self.check_users_json()
 
     def check_users_json(self):

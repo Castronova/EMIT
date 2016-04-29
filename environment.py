@@ -8,54 +8,40 @@ from odm2api import dbconnection
 
 from sprint import *
 
-# This is an interface for
-class ConnectionVars(object):
-    '''
-    implemented as a singleton with 'from environment import con_vars'
-    everything is parsed from
-    '''
-    def __init__(self):
-        currentdir = os.path.dirname(os.path.abspath(__file__))
-        self.connections_path = os.path.abspath(os.path.join(currentdir, './data/connections'))
-        self.Config = ConfigParser.ConfigParser(allow_no_value=True)
+def saveConnection(connection):
 
-    # def load_connections(self, ConnPath = None):
-    #     ConnPath = self.connections_path if ConnPath is None else ConnPath
-    #
-    #     self.config = ConfigParser.ConfigParser(allow_no_value=True)
+    # check that the connection is valid
+    session_factory = dbconnection.createConnection(connection['engine'], connection['address'], connection['database'], connection['username'], connection['password'])
+    if not session_factory:
+        sPrint('Failed to save database connection: invalid connection information', MessageType.ERROR)
+        return False
 
-    def saveConnection(self, connection):
+    config = ConfigParser.ConfigParser(allow_no_value=True)
+    connections_path = getDefaultConnectionsTextPath()
+    config.read(connections_path)
 
-        # check that the connection is valid
-        session_factory = dbconnection.createConnection(connection['engine'], connection['address'], connection['database'], connection['username'], connection['password'])
-        if not session_factory:
-            sPrint('Failed to save database connection: invalid connection information', MessageType.ERROR)
-            return False
+    # make sure this database name doesn't already exist
+    if connection['name'] in config.sections():
+        sPrint('Failed to save database connection: database already exists', MessageType.ERROR)
+        return False
 
-        self.Config.read(self.connections_path)
+    # encrypt password
+    import secret
+    cipher = encrypt.AESCipher(secret.key)
+    uhash = cipher.encrypt(connection['username'])
+    phash = cipher.encrypt(connection['password'])
 
-        # make sure this database name doesn't already exist
-        if connection['name'] in self.Config.sections():
-            sPrint('Failed to save database connection: database already exists', MessageType.ERROR)
-            return False
+    config.add_section(connection['name'])
+    config.set(connection['name'], 'description', connection['description'])
+    config.set(connection['name'], 'engine', connection['engine'])
+    config.set(connection['name'], 'address', connection['address'])
+    config.set(connection['name'], 'database', connection['database'])
+    config.set(connection['name'], 'username', uhash)
+    config.set(connection['name'], 'password', phash)
+    with open(connections_path, 'wb') as f:
+        config.write(f)
 
-        # encrypt password
-        import secret
-        cipher = encrypt.AESCipher(secret.key)
-        uhash = cipher.encrypt(connection['username'])
-        phash = cipher.encrypt(connection['password'])
-
-        self.Config.add_section(connection['name'])
-        self.Config.set(connection['name'], 'description', connection['description'])
-        self.Config.set(connection['name'], 'engine', connection['engine'])
-        self.Config.set(connection['name'], 'address', connection['address'])
-        self.Config.set(connection['name'], 'database', connection['database'])
-        self.Config.set(connection['name'], 'username', uhash)
-        self.Config.set(connection['name'], 'password', phash)
-        with open(self.connections_path, 'wb') as f:
-            self.Config.write(f)
-
-        return True
+    return True
 
 
 def writeDefaultEnvironment(settings=None):
@@ -174,10 +160,10 @@ def parseConfigIntoDict(config):
 # change file paths if app is running as installed package
 def getDefaultConnectionsTextPath():
     current_directory = os.path.dirname(os.path.abspath(__file__))
-    connections_path = os.path.abspath(os.path.join(current_directory, './data/connections'))
+    connections_path = os.path.abspath(os.path.join(current_directory, './app_data/db/connections'))
     # get the default location relative to the package
     if getattr(sys, 'frozen', False):
-        connections_path = os.path.join(sys._MEIPASS, './data/connections')
+        connections_path = os.path.join(sys._MEIPASS, './app_data/db/connections')
 
     return connections_path
 
@@ -190,7 +176,6 @@ def getDefaultLocalDBPath():
         local_db_path = os.path.join(sys._MEIPASS, './app_data/db/local.db')
 
     return local_db_path
-
 
 def getDefaultSettingsPath():
     currentdir = os.path.dirname(os.path.abspath(__file__))

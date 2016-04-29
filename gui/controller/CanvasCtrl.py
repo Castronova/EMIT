@@ -519,7 +519,7 @@ class CanvasCtrl(CanvasView):
         return self._currentDbSession
 
     def AddDatabaseConnection(self, title, desc, dbengine, address, name, user, pwd):
-        kwargs = dict(title=title, desc=desc, engine=dbengine, address=address, name=name, user=user, pwd=pwd)
+        kwargs = dict(title=title, desc=desc, engine=dbengine, address=address, dbname=name, user=user, pwd=pwd)
         engine.connectToDb(**kwargs)
 
     def SaveSimulation(self, path):

@@ -4,8 +4,8 @@ import os
 import wx
 from wx.lib.pubsub import pub as Publisher
 
+import environment
 from emitLogging import elog
-from environment import ConnectionVars
 from gui.views.AddConnectionView import AddConnectionView
 from webservice import wateroneflow
 
@@ -13,7 +13,6 @@ from webservice import wateroneflow
 class AddConnectionCtrl(AddConnectionView):
     def __init__(self, parent):
         AddConnectionView.__init__(self, parent)
-        self.con = ConnectionVars()
 
         self.address_txtctrl.Bind(wx.EVT_TEXT, self.OnTextEnter)
         self.database_txtctrl.Bind(wx.EVT_TEXT, self.OnTextEnter)
@@ -109,7 +108,7 @@ class AddConnectionCtrl(AddConnectionView):
         # Add ODM2 Connection
         if self.odmRadio.GetValue():
             params = self.getConnectionParams()
-            if self.con.saveConnection(params):
+            if environment.saveConnection(params):
                 Publisher.sendMessage('DatabaseConnection',
                                               title=params['name'],
                                               desc=params['description'],

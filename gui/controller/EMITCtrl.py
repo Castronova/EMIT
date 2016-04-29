@@ -30,8 +30,8 @@ class EMITViewCtrl(EMITView):
         # connect to databases defined in the connections file
         dbs = gui.read_database_connection_from_file(connections_txt)
         for db in dbs:
-            usr, pwd = self.decrypt_db_username_password(db['name'], db['database'], db['username'], db['password'])
-            if usr is not None and pwd is not None:
+            usr, pwd = self.decrypt_db_username_password(db['address'], db['database'], db['username'], db['password'])
+            if usr is not None:
                 engine.connectToDb(db['name'],db['description'],db['engine'],db['address'],db['database'],usr,pwd)
 
         # load the local database into the engine
@@ -46,18 +46,16 @@ class EMITViewCtrl(EMITView):
             controller.Show()
 
 
-    def decrypt_db_username_password(self, connection_name, dbname,  uhash, phash):
+    def decrypt_db_username_password(self, address, dbname,  uhash, phash):
 
-        usr = None
-        pwd = None
-        try:
-            import secret
-            import encrypt
-            cipher = encrypt.AESCipher(secret.key)
-            usr = cipher.decrypt(uhash)
-            pwd = cipher.decrypt(phash)
-        except Exception, e:
-            msg = 'Could not resolve database username and password for %s/%s: %s' % (connection_name, dbname, e)
+        import secret
+        import encrypt
+        cipher = encrypt.AESCipher(secret.key)
+        usr = cipher.decrypt(uhash) or None
+        pwd = cipher.decrypt(phash)
+
+        if usr is None:
+            msg = 'Could not resolve database username for %s/%s.  Make sure secret.py is created correcly.' % (address, dbname)
             sPrint(msg, MessageType.ERROR)
-        finally:
-            return usr, pwd
+
+        return usr, pwd

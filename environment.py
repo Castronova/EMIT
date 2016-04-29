@@ -74,6 +74,8 @@ def writeDefaultEnvironment(settings=None):
     config.set('APP', 'TOOLBOX_PATH',  os.path.abspath(os.path.join(app_path, 'config/toolbox.ini')))
     config.set('APP', 'USER_PATH',     os.path.abspath(os.path.join(app_path, 'config/users.json')))
     config.set('APP', 'CONNECTIONS_PATH',     os.path.abspath(os.path.join(app_path, 'db/connections')))
+    config.set('APP', 'SECRET',     os.path.abspath(os.path.join(app_path, 'secret.py')))
+
 
     config.add_section('LEGEND')
     config.set('LEGEND', 'locationright', 1)
@@ -151,9 +153,16 @@ def parseConfigIntoDict(config):
     return d
 
 
-def getDefaultSettingsPath():
+def getSettingsPath():
+    """
+    Determines the location of the setting file based on dev or app modes
+    Returns: path to application settings file
+
+    """
+
     currentdir = os.path.dirname(os.path.abspath(__file__))
     settings = os.path.abspath(os.path.join(currentdir, './app_data/config/.settings.ini'))
+
     # get the default location relative to the package
     if getattr(sys, 'frozen', False):
         settings = os.path.join(sys._MEIPASS, 'app_data/config/.settings.ini')
@@ -162,8 +171,14 @@ def getDefaultSettingsPath():
 
 
 def initSecret():
-    currentdir = os.path.dirname(os.path.abspath(__file__))
-    secret = os.path.abspath(os.path.join(currentdir, 'secret.py'))
+    """
+    initializes the database secret file and creates a secret token used to encrypt database information
+    Returns: None
+
+    """
+
+    # get path to secret
+    secret = os.environ['APP_SECRET']
 
     # get the default location relative to the packeage
     if getattr(sys, 'frozen', False):
@@ -177,13 +192,20 @@ def initSecret():
             f.write('key = "%s"' % uuid.uuid4().hex)
 
 def initLocalDb():
-    # connect to known databases
-    # if the database is not found in the dir (dev mode) or app (install mode), create it
+    """
+    initializes the local sqlite database if it does not exist
+    Returns: None
+
+    """
+
+    # get the local database and database creation script paths
     local_db = os.environ['APP_LOCAL_DB_PATH']
     script_path = os.path.join(
         os.path.dirname(local_db),
         '.dbload'
     )
+
+    # if the database is not found in the dev directory or app directory then create it
     if not os.path.exists(local_db):
         conn = sqlite.connect(local_db)
         script = open(script_path)
@@ -192,11 +214,15 @@ def initLocalDb():
             cur.executescript(script.read())
         script.close()
 
-def getEnvironmentVars(settings=None):
+def getEnvironmentVars():
+    """
+    Loads the environment variables stored in a settings file
+    Returns: None
+
+    """
 
     # get the default location for the filepath if it is not provided
-    if settings is None:
-        settings = getDefaultSettingsPath()
+    settings = getSettingsPath()
 
     # write the default file path if it doesn't exist
     msg = None
@@ -214,13 +240,11 @@ def getEnvironmentVars(settings=None):
     # load the default environment
     loadEnvironment(config)
 
-
     # initialize the secret file (encryption/decryption)
     initSecret()
 
     # initalize the local database
     initLocalDb()
-
 
     sPrint(msg, MessageType.INFO)
 

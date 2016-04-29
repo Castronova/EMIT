@@ -33,6 +33,9 @@ class EMITViewCtrl(EMITView):
             usr, pwd = self.decrypt_db_username_password(db['address'], db['database'], db['username'], db['password'])
             if usr is not None:
                 engine.connectToDb(db['name'],db['description'],db['engine'],db['address'],db['database'],usr,pwd)
+            else:
+                msg = 'Could not resolve database username for %s/%s.  Make sure secret.py is created correcly.' % (db['address'], db['database'])
+                sPrint(msg, MessageType.ERROR)
 
         # load the local database into the engine
         engine.connectToDb(title='ODM2 SQLite (local)',desc='Local SQLite database',engine='sqlite',address=filepath, dbname=None, user=None, pwd=None, default=True)
@@ -46,16 +49,20 @@ class EMITViewCtrl(EMITView):
             controller.Show()
 
 
-    def decrypt_db_username_password(self, address, dbname,  uhash, phash):
+    def decrypt_db_username_password(self, uhash, phash):
+        """
+        decrypts database username and password that is stored in connections.txt using secret key (secret.py) and AES encryption
+        Args:
+            uhash: encrypted username hash
+            phash: encrypted password hash
+
+        Returns: decrypted username (or None), decrypted password
+
+        """
 
         import secret
         import encrypt
         cipher = encrypt.AESCipher(secret.key)
         usr = cipher.decrypt(uhash) or None
         pwd = cipher.decrypt(phash)
-
-        if usr is None:
-            msg = 'Could not resolve database username for %s/%s.  Make sure secret.py is created correcly.' % (address, dbname)
-            sPrint(msg, MessageType.ERROR)
-
         return usr, pwd

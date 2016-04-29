@@ -30,7 +30,7 @@ class EMITViewCtrl(EMITView):
         # connect to databases defined in the connections file
         dbs = gui.read_database_connection_from_file(connections_txt)
         for db in dbs:
-            usr, pwd = self.decrypt_db_username_password(db['address'], db['database'], db['username'], db['password'])
+            usr, pwd = self.decrypt_db_username_password(db['username'], db['password'])
             if usr is not None:
                 engine.connectToDb(db['name'],db['description'],db['engine'],db['address'],db['database'],usr,pwd)
             else:

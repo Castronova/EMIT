@@ -399,6 +399,24 @@ class Coordinator(object):
                 return id
         return None
 
+    def get_model_by_id_summary(self,id):
+        """
+        finds the model that corresponds with the given id and return a summary of its metadata
+        :param id: model id
+        :return: serializable summary of the model's metadata
+        """
+
+        for m in self.__models:
+            if self.__models[m].id() == id:
+                return {'params': self.__models[m].get_config_params(),
+                        'name': self.__models[m].name(),
+                        'id': self.__models[m].id(),
+                        'description': self.__models[m].description(),
+                        'type': self.__models[m].type(),
+                        'attrib': self.__models[m].attrib(),
+                        }
+        return None
+
     def get_model_by_id(self,id):
         for m in self.__models:
             if self.__models[m].id() == id:

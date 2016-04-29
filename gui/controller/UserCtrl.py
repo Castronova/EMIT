@@ -179,6 +179,13 @@ class UserCtrl(UserView):
             pass
         self.Close()
 
+    def check_users_json(self):
+        UserCtrl.create_user_json()
+        if UserCtrl.is_user_json_empty():
+            controller = UserCtrl(self)
+            controller.CenterOnScreen()
+            controller.Show()
+
     def on_edit(self, event):
         index = self.organizationListBox.GetSelection()
         if index == -1:

@@ -30,8 +30,9 @@ class EMITViewCtrl(EMITView):
         # connect to databases defined in the connections file
         dbs = gui.read_database_connection_from_file(connections_txt)
         for db in dbs:
-            engine.connectToDb(db['name'],db['description'],db['engine'],db['address'],db['database'],db['username'],db['password'])
-        # engine.connectToDbFromFile(dbtextfile=connections_txt)
+            usr, pwd = self.decrypt_db_username_password(db['name'], db['database'], db['username'], db['password'])
+            if usr is not None and pwd is not None:
+                engine.connectToDb(db['name'],db['description'],db['engine'],db['address'],db['database'],usr,pwd)
 
         # load the local database into the engine
         engine.connectToDb(title='ODM2 SQLite (local)',desc='Local SQLite database',engine='sqlite',address=filepath, dbname=None, user=None, pwd=None, default=True)
@@ -43,3 +44,20 @@ class EMITViewCtrl(EMITView):
             controller = UserCtrl(self)
             controller.CenterOnScreen()
             controller.Show()
+
+
+    def decrypt_db_username_password(self, connection_name, dbname,  uhash, phash):
+
+        usr = None
+        pwd = None
+        try:
+            import secret
+            import encrypt
+            cipher = encrypt.AESCipher(secret.key)
+            usr = cipher.decrypt(uhash)
+            pwd = cipher.decrypt(phash)
+        except Exception, e:
+            msg = 'Could not resolve database username and password for %s/%s: %s' % (connection_name, dbname, e)
+            sPrint(msg, MessageType.ERROR)
+        finally:
+            return usr, pwd

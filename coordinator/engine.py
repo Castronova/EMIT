@@ -22,6 +22,9 @@ Purpose: This file contains the logic used to run coupled model simulations
 
 
 class EngineStatus(object):
+    """
+    Defines the current status of the Engine.  Status is defined using the stdlib.Status class
+    """
 
     def __init__(self):
         self.__engineStatus = stdlib.Status.UNDEFINED
@@ -36,11 +39,21 @@ class EngineStatus(object):
         return 'The Engine status is currently set to: %s' % self.__engineStatus
 
 class Link(object):
-    """
-    stores info about the linkage between two components
-    """
     def __init__(self, id, from_linkable_component, to_linkable_component, from_item, to_item):
-        # TODO: this is not finished, just mocked up
+        """
+        defines the link object.  Links are used to pass data between models during simulation runtime. This class
+        captures the information that is necessary to define a unique linkage between model components.
+
+        Args:
+            id: unique id for the link object (type:string)
+            from_linkable_component: the component object that is providing output  (type:Engine.Model)
+            to_linkable_component: the component object that is accepting input (type:Engine.Model)
+            from_item: The exchange item that is passed as output (type: stdlib.ExchangeItem)
+            to_item: the exchange item that is accepted as input (type: stdlib.ExchangeItem)
+
+        Returns: Link
+
+        """
         self.__from_lc = from_linkable_component
         self.__from_item = from_item
 
@@ -52,45 +65,100 @@ class Link(object):
         self.__spatial_interpolation = None
         self.__temporal_interpolation = None
 
-    # todo: this should be replaced by accessors for each of the from_lc,to_lc,from_item,to_item
     def get_link(self):
-        elog.error('[Deprecated] This function has been deprecated...do not use! ')
-        elog.error('[Deprecated] main.py -> get_link()')
+        """
+        Gets the Engine.Model and Stdlib.ExchangeItem objects that comprise the like object
+        Returns: tuple( [from model, from exchange item], [to model, to exchange item] )
+
+        """
 
         return [self.__from_lc,self.__from_item], [self.__to_lc,self.__to_item]
 
     def source_exchange_item(self):
+        """
+        Gets the source exchange item on the link
+        Returns: stdlib.ExchangeItem
+
+        """
         return self.__from_item
 
     def target_exchange_item(self):
+        """
+        Gets the target exchange item on the link
+        Returns: stdlib.ExchangeItem
+
+        """
+
         return self.__to_item
 
     def source_component(self):
+        """
+        Gets the source model component item on the link
+        Returns: engine.Model
+
+        """
         return self.__from_lc
 
     def target_component(self):
+        """
+        Gets the target model on the link
+        Returns: engine.Model
+
+        """
         return self.__to_lc
 
     def get_id(self):
+        """
+        Gets the link id
+        Returns: str(id)
+
+        """
         return self.__id
 
     def spatial_interpolation(self, value=None):
+        """
+        Gets/Sets the spatial interpolation method used during data transfer
+        Args:
+            value: spatial transformation object (transform.Space)
+
+        Returns: spatial transformation object (transform.Space)
+
+        """
         if value is not None:
             if isinstance(value, space_base.Space):
                 self.__spatial_interpolation = value
         return self.__spatial_interpolation
 
     def temporal_interpolation(self, value=None):
+        """
+        Gets/Sets the temporal interpolation method used durin data transfer
+        Args:
+            value: temporal transformation object (transform.Time)
+
+        Returns: temporal transformation object (transform.Time)
+
+        """
         if value is not None:
             if isinstance(value, time_base.Time):
                 self.__temporal_interpolation = value
         return self.__temporal_interpolation
 
 class Model(object):
-    """
-    defines a model that has been loaded into a configuration
-    """
     def __init__(self, id, name, instance, desc=None, input_exchange_items=[], output_exchange_items=[], params=None):
+        """
+        Defines a linkable model that can be loaded into a configuration
+        Args:
+            id: unique id for the model (type: string)
+            name: name of the model (type: string)
+            instance: instantiated model object
+            desc: description of the model (type: string)
+            input_exchange_items: list of input exchange items (type: list[stdlib.ExchangeItem] )
+            output_exchange_items: list of output exchange items (type: list[stdlib.ExchangeItem] )
+            params: model loading parameters (e.g. *.mdl params) (type: list[ dict{  )
+
+        Returns: Model
+
+        """
         self.__description = desc
         self.__iei = {}
         self.__oei = {}
@@ -107,7 +175,12 @@ class Model(object):
         self.__inst = instance
         self.__params_path = None
 
-    def type(self,value=None):
+    def type(self):
+        """
+        Gets the type of model
+        Returns: wrappers.Types
+
+        """
         return self.instance().type()
 
     def attrib(self, value=None):
@@ -119,48 +192,109 @@ class Model(object):
         return self.__attrib
 
     def get_input_exchange_items(self):
+        """
+        Gets model input exchange items
+        Returns: list of exchange item objects (type: list[stdlib.ExchangeItem])
+
+        """
         if len(self.__iei.keys()) > 0:
             return [j for i,j in self.__iei.items()]
         else: return []
 
     def get_output_exchange_items(self):
+        """
+        Gets model output exchange items
+        Returns: list of exchange item objects (type: list[stdlib.ExchangeItem])
+
+        """
         if len(self.__oei.keys()) > 0:
             return [j for i,j in self.__oei.items()]
         else: return []
 
     def get_input_exchange_item_by_name(self,value):
+        """
+        Gets an input exchange item by name
+        Args:
+            value: name associated with exchange item
+
+        Returns: exchange item of None (type: stdlib.ExchangeItem or None)
+
+        """
 
         i = self.instance()
         if value in i.inputs():
             return i.inputs()[value]
         else:
             elog.error('Could not find Input Exchange Item: '+value)
+            return None
 
     def get_output_exchange_item_by_name(self,value):
+        """
+        Gets an output exchange item by name
+        Args:
+            value: name associated with exchange item
+
+        Returns: exchange item of None (type: stdlib.ExchangeItem or None)
+
+        """
 
         i = self.instance()
         if value in i.outputs():
             return i.outputs()[value]
         else:
             elog.error('Could not find Output Exchange Item: '+value)
+            return None
 
 
     def description(self):
+        """
+        Gets the description of the model
+        Returns: description (type: string)
+
+        """
         return self.__description
 
     def name(self):
+        """
+        Gets the name of the model
+        Returns: name (type:string)
+
+        """
         return self.instance().name()
 
     def id(self):
+        """
+        Gets the id of the model
+        Returns: id (type:string)
+
+        """
         return self.__id
 
     def instance(self):
+        """
+        Gets the instance of the model
+        Returns: instance
+
+        """
         return self.__inst
 
     def get_config_params(self):
+        """
+        Gets the configuration parameters of the model
+        Returns: parameters
+
+        """
         return self.__params
 
     def params_path(self, value=None):
+        """
+        Get/Set the path to the model parameter file
+        Args:
+            value: path to the parameter file
+
+        Returns: path to the parameter file (type:string)
+
+        """
         if value is not None:
             self.__params_path = value
         return self.__params_path
@@ -591,6 +725,14 @@ class Coordinator(object):
                     type=item.type(),
                     geometry=geom_dict)
 
+    def remove_link_by_id(self,id):
+        """
+        removes a link using the link id
+        """
+        if id in self.__links:
+            self.__links.pop(id,None)
+            return 1
+        return 0
 
     def get_links_btwn_models(self, from_model_id, to_model_id):
 

@@ -302,7 +302,10 @@ class Model(object):
 class Coordinator(object):
     def __init__(self):
         """
-        globals
+        The simulation coordinator.
+
+        Returns: Coordinator
+
         """
         self.__models = {}
         self.__links = {}
@@ -320,21 +323,39 @@ class Coordinator(object):
         return self.status.get()
 
     def Models(self, model=None):
+        """
+        Gets/Sets coordinator models
+
+        Args:
+            model: model object (type:engine.Model)
+
+        Returns: list of models (type:list[engine.Model])
+
+        """
         if model is not None:
             self.__models[model.name()] = model
         return self.__models
 
-    # def Links(self, link=None):
-    #     if link is not None:
-    #         self.__links[link.id()] = link
-    #     return self.__links
-
     def add_db_connection(self,value):
+        """
+        Adds a database connection to the Coordinator
 
+        Args:
+            value: database connection
+
+        Returns: dictionary of database connections
+
+        """
         self._db.update(value)
         return self._db
 
     def get_db_connections(self):
+        """
+        Gets all database connections that have been loaded in the Coordinator
+
+        Returns: dictionary of database connection information (type:dict)
+
+        """
         # return the database connection dictionary without sqlalchemy objects
         db = {}
         for db_id in self._db.iterkeys():
@@ -353,6 +374,15 @@ class Coordinator(object):
 
 
     def get_db_args_by_name(self, db_name):
+        """
+        Gets database arguments for a specific database name
+
+        Args:
+            db_name: name of the database to retrieve arguments for
+
+        Returns: dictionary of database arguments or None (type:dict or type:None)
+
+        """
         # return the database args dictionary for a given name
         db = {}
         for db_id in self._db.iterkeys():
@@ -362,6 +392,15 @@ class Coordinator(object):
         return None
 
     def set_default_database(self,db_id=None):
+        """
+        Sets the default database for results saving
+
+        Args:
+            db_id: id of the database to assign as the default
+
+        Returns: None
+
+        """
 
         if db_id is not None:
             try:
@@ -376,6 +415,12 @@ class Coordinator(object):
             sPrint('Could not set the default database', MessageType.ERROR)
 
     def get_default_db(self):
+        """
+        Gets the database that has been assigned as the default
+
+        Returns: the default database
+
+        """
         if self.__default_db is None:
             return None
         else:
@@ -383,7 +428,14 @@ class Coordinator(object):
 
     def add_model(self, id=None, attrib=None):
         """
-        stores model component objects when added to a configuration
+        Adds a model to the Coordinator
+
+        Args:
+            id: id that will be assigned to the model
+            attrib: model load parameters (see *.mdl)
+
+        Returns: dictionary of model id, name, and type or None (type:dict or type:None)
+
         """
 
         thisModel = None
@@ -513,6 +565,15 @@ class Coordinator(object):
             return 0
 
     def remove_model_by_id(self,id):
+        """
+        Removes a model from the Coordinator by id
+
+        Args:
+            id: id of the model to remove (type:string)
+
+        Returns: the id of the model that was removed or None (type:string or None)
+
+        """
         for m in self.__models:
             if self.__models[m].id() == id:
 
@@ -535,6 +596,15 @@ class Coordinator(object):
 
     def get_model_by_id_summary(self,id):
         """
+        Gets a summarized version of the model by id
+
+        Args:
+            id: id of the model to return (type:string)
+
+        Returns: dictionary of summarized metadata (type:dict)
+
+        """
+        """
         finds the model that corresponds with the given id and return a summary of its metadata
         :param id: model id
         :return: serializable summary of the model's metadata
@@ -552,6 +622,15 @@ class Coordinator(object):
         return None
 
     def get_model_by_id(self,id):
+        """
+        Gets a model within the Coordinator by id
+
+        Args:
+            id: id of the model to return (type:string)
+
+        Returns: model or None (type:engine.Model or None)
+
+        """
         for m in self.__models:
             if self.__models[m].id() == id:
                 return self.__models[m]
@@ -559,7 +638,19 @@ class Coordinator(object):
 
     def add_link(self,from_id, from_item_id, to_id, to_item_id, spatial_interp=None, temporal_interp=None, uid=None):
         """
-        adds a data link between two components
+        Creates a new link in the Coordinator 
+
+        Args:
+            from_id: id of the source model (type:string)
+            from_item_id: id of the source exchange item (type:string)
+            to_id: id of the target model (type:string)
+            to_item_id: id of the target exchange item (type:string)
+            spatial_interp: spatial_interpolation
+            temporal_interp: temporal_interpolation
+            uid: unique id for the link
+
+        Returns: id of the link that was created or 0 
+
         """
 
         # check that from and to models exist in composition
@@ -604,7 +695,16 @@ class Coordinator(object):
 
     def add_link_by_name(self,from_id, from_item_name, to_id, to_item_name):
         """
-        adds a data link between two components
+        Creates a new link in the Coordinator
+
+        Args:
+            from_id: id of the source model (type:string)
+            from_item_name: name of the source exchange item (type:string)
+            to_id: id of the target model (type:string)
+            to_item_name: name of the target exchange item (type:string)
+
+        Returns: the link object that is created or None (type:engine.Link or None)
+
         """
 
         # check that from and to models exist in composition
@@ -624,7 +724,6 @@ class Coordinator(object):
 
         if ii is not None and oi is not None:
             # generate a unique model id
-            #id = 'L'+str(self.get_new_id())
             id = 'L'+uuid.uuid4().hex[:5]
 
             # create link
@@ -634,13 +733,19 @@ class Coordinator(object):
             return link
         else:
             elog.warning('Could Not Create Link :(')
+            return None
 
     def get_from_links_by_model(self, model_id):
+        """
+        Gets links corresponding to a specific model id in which the model is the source component. This is useful for determining where data will pass (direction)
+
+        Args:
+            model_id: id of the model to retrieve links for (type:string)
+
+        Returns: dictionary of link objects (type: dict{engine.Link})
 
         """
-        returns only the links where the corresponding linkable component is the FROM item.
-        This is useful for determining where data will pass (direction)
-        """
+
 
         links = {}
         for linkid, link in self.__links.iteritems():
@@ -652,6 +757,12 @@ class Coordinator(object):
         return links
 
     def get_all_links(self):
+        """
+        Gets all links that have been created/loaded in the Coordinator
+
+        Returns: dictionary of summarized link information (type:dict)
+
+        """
         links = []
         for l in self.__links.iterkeys():
 
@@ -677,6 +788,12 @@ class Coordinator(object):
         return links
 
     def get_all_models(self):
+        """
+        Gets all the models that have been loaded into the Coordinator
+
+        Returns: dictionary of summarized models that have been loaded (type:dict)
+
+        """
         models = []
         for m in self.__models:
 
@@ -692,6 +809,16 @@ class Coordinator(object):
         return models
 
     def summarize_exhange_item(self, item, returnGeoms=True):
+        """
+        Summarizes exchange item information into a serializable object
+
+        Args:
+            item: the exchange item to summarize (type:stdlib.ExchangeItem)
+            returnGeoms: indicate if geometries should be returned (type:bool)
+
+        Returns: summarized exchange item (type:dict)
+
+        """
 
         # get data that is common for all geometries
         geom_srs = item.srs().ExportToPrettyWkt()
@@ -727,7 +854,12 @@ class Coordinator(object):
 
     def remove_link_by_id(self,id):
         """
-        removes a link using the link id
+        Removes a link using the link id
+        Args:
+            id: id of the link to remove
+
+        Returns: 1 if successful, otherwise 0
+
         """
         if id in self.__links:
             self.__links.pop(id,None)
@@ -735,6 +867,15 @@ class Coordinator(object):
         return 0
 
     def get_links_btwn_models(self, from_model_id, to_model_id):
+        """
+        Gets all information related to a link between the specified models
+        Args:
+            from_model_id: id of the source model (type:string)
+            to_model_id: id of the target model (type:string)
+
+        Returns: list of link dictionary objects (one for each exchange item on the link)
+
+        """
 
         links = []
         link_dict = {}
@@ -759,11 +900,20 @@ class Coordinator(object):
                                  spatial_interpolation=spatial,
                                  temporal_interpolation=temporal)
                 links.append(link_dict)
-                # return link_dict
 
         return links
 
     def get_exchange_item_info(self, modelid, exchange_item_type=stdlib.ExchangeItemType.INPUT, returnGeoms=True):
+        """
+        Gets all information related to input or output exchange items for a specific model
+        Args:
+            modelid: id of the model for which the exchange item will be retrieved (type:string)
+            exchange_item_type: the type of exchange item to retrieve (type: stdlib.ExchangeItemType)
+            returnGeoms: indicate if geometries should be returned (type: bool)
+
+        Returns: list of exchange items in a serializable format 
+
+        """
 
         ei_values = []
 
@@ -785,12 +935,6 @@ class Coordinator(object):
         return ei_values
 
     def update_link(self, link_id, from_geom_dict, from_to_spatial_map):
-        """
-        Updates a specific link.
-        values stored on the link object
-        :param model:
-        :return:
-        """
 
         link = self.__links[link_id]
         t_item = link.target_exchange_item()
@@ -817,10 +961,13 @@ class Coordinator(object):
 
     def update_links(self, model, exchangeitems):
         """
-        Updates the model associated with the link.  This is necessary after the run phase to update the data
-        values stored on the link object
-        :param model:
-        :return:
+        Updates the model associated with the link.  This is necessary after the run phase to update the data values stored on the link object
+        Args:
+            model: model object that will be updated (type:engine.Model)
+            exchangeitems: list of exchange item to be updated (type:stdlib.ExchangeItem)
+
+        Returns: None
+
         """
 
         name = model.name()
@@ -831,19 +978,17 @@ class Coordinator(object):
                 for item in exchangeitems:
                     if t[1].name() == item.name():
                         self.__links[id] = Link(id, f[0], t[0], f[1], item)
-                        #t[1] = item
 
             elif f[0].name() == name:
                 for item in exchangeitems:
                     if f[1].name() == item.name():
                         self.__links[id] = Link(id, f[0], t[0], item, t[1])
-                        #f[1] = item
 
     def determine_execution_order(self):
         """
-        determines the order in which models will be executed.
-         def get_link(self):
-        return [self.__from_lc,self.__from_item], [self.__to_lc,self.__to_item]
+        Determines the order in which models will be executed.
+        
+        Returns: a list of ordered model ids 
 
         """
 
@@ -885,7 +1030,16 @@ class Coordinator(object):
 
     def run_simulation(self, simulationName=None, dbName=None, user_info=None, datasets=None):
         """
-        coordinates the simulation effort
+        Executes a model simulation.
+
+        Args:
+            simulationName: Name of the simulation
+            dbName: name of the database to save results
+            user_info: user's information 
+            datasets: datasets to save
+
+        Returns: None
+
         """
 
         # create data info instance if all the necessary info is provided
@@ -930,6 +1084,22 @@ class Coordinator(object):
 
 
     def connect_to_db(self, title, desc, engine, address, dbname, user, pwd, default=False):
+        """
+        Establishes a connection with a database for saving simulation results
+
+        Args:
+            title: title to give database (local use only)
+            desc: database description
+            engine: the engine that should be used to connect to the data base (e.g. postgres)
+            address: address of the database
+            dbname: name of the database to connect with (server name)
+            user: user name, required to establish a connection
+            pwd:  password for connecting to the database
+            default: designates if this database should be used as the default for saving simulation results
+
+        Returns: returns database id 
+
+        """
 
         connection = connect_to_db(title, desc, engine, address, dbname, user, pwd)
 
@@ -943,7 +1113,18 @@ class Coordinator(object):
         else:
             return {'success':False, 'ids':None}
 
+        # TODO: this function only needs to resturn the connection key or None.  It is not necessary to also indicate success or failure as it will be apparent from the returned data.
+
+
     def load_simulation(self, simulation_file):
+        """
+        loads an existing simulation into the coordinator
+        Args:
+            simulation_file: file that defines the simulation (*.sim)
+
+        Returns: None
+
+        """
 
         if simulation_file is list:
             abspath = os.path.abspath(simulation_file[0])
@@ -972,6 +1153,15 @@ class Coordinator(object):
 
 
     def show_db_results(self, args):
+        """
+        displays the results that were saved to the database
+
+        Args:
+            args: database args
+
+        Returns: None
+
+        """
 
         # get database id
         db_id = args[0]

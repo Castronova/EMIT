@@ -4,23 +4,28 @@ import wx.grid
 from gui.controller.PlotForSiteViewerCtrl import PlotForSiteViewerCtrl
 
 
-class SpatialView:
+class SpatialView(wx.Frame):
 
     def __init__(self, panel):
+
         self.biggest_col = 0
+
         # Creating all the necessary panels
         top_panel = wx.Panel(panel)
         middle_panel = wx.Panel(panel)
         lower_panel = wx.Panel(panel)
 
-        # SETUP OF TOP PANEL
+        # create the sizers
         sizer_top_panel = wx.BoxSizer(wx.HORIZONTAL)
+        sizer_middle_panel = wx.BoxSizer(wx.HORIZONTAL)
+        sizer_lower_panel = wx.BoxSizer(wx.HORIZONTAL)
+
+        # add elements to the top panel
         self.plot = PlotForSiteViewerCtrl(top_panel)
         sizer_top_panel.Add(self.plot.plot, 1, wx.EXPAND | wx.ALL, 2)
         top_panel.SetSizer(sizer_top_panel)
 
-        # SETUP OF MIDDLE PANEL
-        sizer_middle_panel = wx.BoxSizer(wx.HORIZONTAL)
+        # add elements to the middle panel
         self.input_combobox = wx.ComboBox(parent=middle_panel, choices=["---"])
         self.output_combobox = wx.ComboBox(parent=middle_panel, choices=["---"])
         sizer_middle_panel.Add(self.input_combobox, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
@@ -29,37 +34,26 @@ class SpatialView:
         middle_panel.SetSizer(sizer_middle_panel)
 
 
-        # SETUP OF LOWER PANEL
-
-        sizer_lower_panel = wx.BoxSizer(wx.HORIZONTAL)
+        # add elements to the bottom panel
         self.input_grid = wx.grid.Grid(lower_panel)
-        sizer_middle_panel.AddSpacer(10)
         self.output_grid = wx.grid.Grid(lower_panel)
+        setup_grid(self.input_grid, 'Input Exchange Item Metadata')
+        setup_grid(self.output_grid, 'Output Exchange Item Metadata')
 
-        set_up_grid(self.input_grid, 'Input Exchange Item Metadata')
-        set_up_grid(self.output_grid, 'Output Exchange Item Metadata')
         sizer_lower_panel.Add(self.input_grid, 1, wx.EXPAND|wx.ALL, 10)
+        sizer_lower_panel.AddSpacer(10)
         sizer_lower_panel.Add(self.output_grid, 1, wx.EXPAND|wx.ALL, 10)
         lower_panel.SetSizer(sizer_lower_panel)
+        #sizer_middle_panel.AddSpacer(10)
 
-
-        # ADD PANEL TO THE FRAME
+        # add panels to frame
         sizer_spatial_view = wx.BoxSizer(wx.VERTICAL)
         sizer_spatial_view.Add(top_panel, 1, wx.EXPAND | wx.ALL, 2)
         sizer_spatial_view.Add(middle_panel, 0, wx.EXPAND | wx.ALL, 2)
         sizer_spatial_view.Add(lower_panel, 1, wx.EXPAND | wx.ALL, 2)
         panel.SetSizer(sizer_spatial_view)
 
-        self.input_grid.Bind(wx.EVT_SIZE, self.OnSize)
-        self.output_grid.Bind(wx.EVT_SIZE, self.OnSize)
-
-    def OnSize(self, event):
-        width, height = self.input_grid.GetClientSizeTuple()
-        prop_size = self.input_grid.GetColSize(0)
-        self.input_grid.SetColSize(1, width - prop_size - 10)
-        self.output_grid.SetColSize(1, width - prop_size - 10)
-
-def set_up_grid(grid, title):
+def setup_grid(grid, title):
     """
     This function only works with type wx.grid.Grid
     The it will create a grid that is like the one found in LinkCtrl/View.
@@ -103,6 +97,10 @@ def set_up_grid(grid, title):
     # change color and size of header
     grid.SetCellSize(0,0,1,2)  # span cols 0 and 1
     grid.SetCellBackgroundColour(0, 0, wx.Colour(195, 195, 195))  # Grey
+
+    # set the table column size
+    grid.SetColSize(0, 130)
+    grid.SetColSize(1, 140)
 
     # change color of properties
     for i in range(1, grid.GetNumberRows()):

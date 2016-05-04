@@ -8,6 +8,7 @@ import wx.lib.newevent as ne
 import coordinator.engineAccessors as engine
 from emitLogging import elog
 from gui.views.LinkView import LinkView
+from gui.controller.SpatialCtrl import SpatialCtrl
 
 LinkUpdatedEvent, EVT_LINKUPDATED = ne.NewEvent()
 
@@ -282,10 +283,18 @@ class LinkCtrl(LinkView):
         self.inputLabel.SetLabel("Input of " + self.get_model_to())
 
     def on_plot_geometries(self, event):
-        from gui.controller.SpatialCtrl import SpatialCtrl
+        """
+        Launches the spatial plot view that displays the geographic representations and metadata associated with
+        various input and output exchange items
+        Args:
+            event: wx.EVT_BUTTON
 
-        frame = wx.Frame(self.parent, size=(630, 630), style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE)
-        controller = SpatialCtrl(frame)
+        Returns: None
+
+        """
+
+        title = self.getOutputModelText() + " --> " + self.getInputModelText()
+        controller = SpatialCtrl(self.parent, title)
 
         # input exchange item -> iei
         iei = controller.get_input_exchange_item_by_id(self.__selected_link.target_id)
@@ -301,11 +310,6 @@ class LinkCtrl(LinkView):
 
         controller.add_input_combo_choices(igeom.keys())
         controller.add_output_combo_choices(ogeom.keys())
-
-        title = self.getOutputModelText() + " --> " + self.getInputModelText()
-        frame.SetTitle(title)
-
-        frame.Show()
 
     def on_select_output(self, event):
         """

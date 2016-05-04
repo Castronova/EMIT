@@ -6,14 +6,18 @@ from gui.controller.PlotForSiteViewerCtrl import PlotForSiteViewerCtrl
 
 class SpatialView(wx.Frame):
 
-    def __init__(self, panel):
+    def __init__(self, parent):
 
-        self.biggest_col = 0
+         # this style makes the window non-resizable
+
+        # frame = wx.Frame(self.parent, size=(630, 630), style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE)
+        wx.Frame.__init__(self, parent=parent, size=(630,640),
+                          style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         # Creating all the necessary panels
-        top_panel = wx.Panel(panel)
-        middle_panel = wx.Panel(panel)
-        lower_panel = wx.Panel(panel)
+        top_panel = wx.Panel(self)
+        middle_panel = wx.Panel(self)
+        lower_panel = wx.Panel(self)
 
         # create the sizers
         sizer_top_panel = wx.BoxSizer(wx.HORIZONTAL)
@@ -51,7 +55,9 @@ class SpatialView(wx.Frame):
         sizer_spatial_view.Add(top_panel, 1, wx.EXPAND | wx.ALL, 2)
         sizer_spatial_view.Add(middle_panel, 0, wx.EXPAND | wx.ALL, 2)
         sizer_spatial_view.Add(lower_panel, 1, wx.EXPAND | wx.ALL, 2)
-        panel.SetSizer(sizer_spatial_view)
+        self.SetSizer(sizer_spatial_view)
+
+        self.Show()
 
 def setup_grid(grid, title):
     """
@@ -99,8 +105,8 @@ def setup_grid(grid, title):
     grid.SetCellBackgroundColour(0, 0, wx.Colour(195, 195, 195))  # Grey
 
     # set the table column size
-    grid.SetColSize(0, 130)
-    grid.SetColSize(1, 140)
+    grid.SetColSize(0, 133)
+    grid.SetColSize(1, 155)
 
     # change color of properties
     for i in range(1, grid.GetNumberRows()):

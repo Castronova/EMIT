@@ -12,7 +12,7 @@ from sprint import *
 
 class SpatialCtrl(SpatialView):
 
-    def __init__(self, parent):
+    def __init__(self, parent, title):
         SpatialView.__init__(self, parent)
 
         self.raw_input_data = None
@@ -29,6 +29,8 @@ class SpatialCtrl(SpatialView):
         self.input_combobox.Bind(wx.EVT_COMBOBOX, self.on_combo)
         self.output_combobox.Bind(wx.EVT_COMBOBOX, self.on_combo)
         self.plot.setAxisLabel("my X axis", "My y axis")
+
+        self.SetTitle(title)
 
     def add_input_combo_choices(self, items):
         self.input_combobox.AppendItems(items)

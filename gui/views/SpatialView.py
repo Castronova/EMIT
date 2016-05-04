@@ -9,8 +9,6 @@ class SpatialView(wx.Frame):
     def __init__(self, parent):
 
          # this style makes the window non-resizable
-
-        # frame = wx.Frame(self.parent, size=(630, 630), style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE)
         wx.Frame.__init__(self, parent=parent, size=(630,640),
                           style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 

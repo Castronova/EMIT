@@ -84,8 +84,6 @@ class topmodel(feed_forward.Wrapper):
 
     def run(self,inputs):
 
-
-
         precipitation = inputs['precipitation']
         vals = precipitation.getValues2()
         datetimes = precipitation.getDates2()
@@ -96,14 +94,13 @@ class topmodel(feed_forward.Wrapper):
         et = 0.0   # todo: this should be an input
         sat_deficit = np.zeros(len(self.ti))
 
-        # elog.debug('Executing TOPMODEL... timestep [0 of %s]'%str(len(datetimes)))
 
         # loop through entire time horizon
         for i in range (0, len(datetimes)):
 
             # initialize arrays
-            overland_flow = np.zeros(len(self.ti))  #Infiltration excess
-            reduced_ET = np.zeros(len(self.ti)) #Reduced ET due to dryness
+            overland_flow = np.zeros(len(self.ti))      # Infiltration excess
+            reduced_ET = np.zeros(len(self.ti))         # Reduced ET due to dryness
             MM = np.zeros(len(self.ti))
             NN = np.zeros(len(self.ti))
 
@@ -112,15 +109,6 @@ class topmodel(feed_forward.Wrapper):
 
             # get precip at the current time
             in_precip = precipitation.getValues2(time_idx = i)
-
-            #todo: this is a hack because i'm running out of time before the demo
-            # todo: something is wrong with the data interpolation!
-            # p = precip[0][0]
-            # if isinstance(p, np.ndarray):
-            #     precip = p[0]
-            # else:
-            #     precip = p
-            # # precip = precip[0][0][0]
 
             precip = in_precip[0]
 
@@ -169,8 +157,6 @@ class topmodel(feed_forward.Wrapper):
 
             # save these data
             runoff.setValues2(q, date)
-            # elog.info('OVERWRITE:Executing TOPMODEL... timestep [%d of %d]'%(i, len(datetimes)), True)
-            # print precip, q
 
         return 1
 
@@ -198,10 +184,10 @@ class topmodel(feed_forward.Wrapper):
         # build X and Y coordinate arrays
         xi = np.linspace(lowerx, lowerx+ncols*cellsize, ncols)
         yi = np.linspace(lowery+nrows*cellsize, lowery, nrows)
-        x,y = np.meshgrid(xi,yi)    # generate 2d arrays from xi, yi
-        x = x.ravel()   # convert to 1-d
-        y = y.ravel()   # convert to 1-d
-        data = data.ravel()  # convert to 1-d
+        x,y = np.meshgrid(xi,yi)                                   # generate 2d arrays from xi, yi
+        x = x.ravel()                                              # convert to 1-d
+        y = y.ravel()                                              # convert to 1-d
+        data = data.ravel()                                        # convert to 1-d
 
         # remove all nodata points from x, y arrays
         nonzero = np.where(data != nodata)
@@ -229,15 +215,15 @@ class topmodel(feed_forward.Wrapper):
         # read ti data
         data = np.genfromtxt(self.topo_input, delimiter=' ', skip_header=6)
 
-        topoList = data.ravel() # convert into 1-d list
-        topoList = topoList[topoList != nodata] # remove nodata values
+        topoList = data.ravel()                           # convert into 1-d list
+        topoList = topoList[topoList != nodata]           # remove nodata values
         self._watershedArea = topoList.shape[0]*cellsize  # calculate watershed area
 
 
-        topoList = np.round(topoList, 4)         # round topoList items
+        topoList = np.round(topoList, 4)            # round topoList items
         total = topoList.shape[0]                   # total number of element in the topoList
         unique, counts = np.unique(topoList, return_counts=True)    # get bins for topoList elements
 
-        self.ti = unique                         # topographic index list
-        self.freq = unique/total                 # freq of topo indices
+        self.ti = unique                           # topographic index list
+        self.freq = unique/total                   # freq of topo indices
         self.freq = np.round(self.freq, 10)        # round the frequencies

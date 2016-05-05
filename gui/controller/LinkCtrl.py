@@ -57,16 +57,16 @@ class LinkCtrl(LinkView):
         self.swap_button.Bind(wx.EVT_BUTTON, self.OnSwap)
         self.cancel_button.Bind(wx.EVT_BUTTON, self.OnCancel)
         self.save_button.Bind(wx.EVT_BUTTON, self.OnSave)
-        self.ButtonPlot.Bind(wx.EVT_BUTTON, self.on_plot_geometries)
+        self.plot_button.Bind(wx.EVT_BUTTON, self.on_plot_geometries)
         self.Bind(EVT_LINKUPDATED, self.linkSelected)
         self.Bind(wx.EVT_CLOSE, self.OnCancel)
         self.output_grid.Bind(gridlib.EVT_GRID_CELL_LEFT_CLICK, self.OutputGridHover)
         self.input_grid.Bind(gridlib.EVT_GRID_CELL_LEFT_CLICK, self.InputGridHover)
 
-        self.OutputComboBox.Bind(wx.EVT_COMBOBOX, self.on_select_output)
+        self.output_combo.Bind(wx.EVT_COMBOBOX, self.on_select_output)
         self.input_combo.Bind(wx.EVT_COMBOBOX, self.on_select_input)
-        self.ComboBoxTemporal.Bind(wx.EVT_COMBOBOX, self.on_select_temporal)
-        self.ComboBoxSpatial.Bind(wx.EVT_COMBOBOX, self.on_select_spatial)
+        self.temporal_combo.Bind(wx.EVT_COMBOBOX, self.on_select_temporal)
+        self.spatial_combo.Bind(wx.EVT_COMBOBOX, self.on_select_spatial)
 
     def activateSwap(self):
         if self.swap == True:
@@ -80,19 +80,19 @@ class LinkCtrl(LinkView):
 
         if activate:
             self.save_button.Enable()
-            self.ComboBoxSpatial.Enable()
-            self.ComboBoxTemporal.Enable()
+            self.spatial_combo.Enable()
+            self.temporal_combo.Enable()
             self.input_combo.Enable()
-            self.OutputComboBox.Enable()
-            self.ButtonPlot.Enable()
+            self.output_combo.Enable()
+            self.plot_button.Enable()
             self.activateSwap()
         else:
             self.save_button.Disable()
-            self.ComboBoxSpatial.Disable()
-            self.ComboBoxTemporal.Disable()
+            self.spatial_combo.Disable()
+            self.temporal_combo.Disable()
             self.input_combo.Disable()
-            self.OutputComboBox.Disable()
-            self.ButtonPlot.Disable()
+            self.output_combo.Disable()
+            self.plot_button.Disable()
             self.swap_button.Disable()
 
     def create_one_way_arrow(self, image, models):
@@ -182,7 +182,7 @@ class LinkCtrl(LinkView):
 
             #  Setting the labels that indicate which metadata is input and output
             self.input_label.SetLabel("Input of: " + str(self.getInputModelText()))
-            self.outputLabel.SetLabel("Output of: " + str(self.getOutputModelText()))
+            self.output_label.SetLabel("Output of: " + str(self.getOutputModelText()))
 
         else:
             # deactivate controls if nothing is selected
@@ -208,20 +208,20 @@ class LinkCtrl(LinkView):
         self.__selected_link = l
 
         # update the combobox selections
-        self.OutputComboBox.SetStringSelection(l.oei)
+        self.output_combo.SetStringSelection(l.oei)
         self.input_combo.SetStringSelection(l.iei)
 
         if l.temporal_interpolation is not None:
-            self.ComboBoxTemporal.SetStringSelection(l.temporal_interpolation)
+            self.temporal_combo.SetStringSelection(l.temporal_interpolation)
         else:
             # set default value
-            self.ComboBoxTemporal.SetSelection(0)
+            self.temporal_combo.SetSelection(0)
 
         if l.spatial_interpolation is not None:
-            self.ComboBoxSpatial.SetStringSelection(l.spatial_interpolation)
+            self.spatial_combo.SetStringSelection(l.spatial_interpolation)
         else:
             # set default value
-            self.ComboBoxSpatial.SetSelection(0)
+            self.spatial_combo.SetSelection(0)
 
         # set the state of link_obj_hit
         self.link_obj_hit = True
@@ -258,10 +258,10 @@ class LinkCtrl(LinkView):
 
         # set the exchange item values to ---
         self.input_combo.SetSelection(0)
-        self.OutputComboBox.SetSelection(0)
+        self.output_combo.SetSelection(0)
 
         # generate a unique name for this link
-        oei = self.OutputComboBox.GetValue()
+        oei = self.output_combo.GetValue()
         iei = self.input_combo.GetValue()
 
         # create a link object and save it at the class level
@@ -279,7 +279,7 @@ class LinkCtrl(LinkView):
 
         self.OnChange(None)
 
-        self.outputLabel.SetLabel("Output of " + self.get_model_from())
+        self.output_label.SetLabel("Output of " + self.get_model_from())
         self.input_label.SetLabel("Input of " + self.get_model_to())
 
     def on_plot_geometries(self, event):
@@ -317,7 +317,7 @@ class LinkCtrl(LinkView):
         """
 
         # get selected value
-        output_name = self.OutputComboBox.GetValue()
+        output_name = self.output_combo.GetValue()
 
         # get the current link
         selected_link = self.__selected_link
@@ -363,7 +363,7 @@ class LinkCtrl(LinkView):
         # get the current link---
         l = self.__selected_link
 
-        spatial_value = self.ComboBoxSpatial.GetValue()
+        spatial_value = self.spatial_combo.GetValue()
         if spatial_value == 'None Specified':
             l.spatial_interpolation = None
         else:
@@ -373,7 +373,7 @@ class LinkCtrl(LinkView):
         # get the current link
         l = self.__selected_link
 
-        temporal_value = self.ComboBoxTemporal.GetValue()
+        temporal_value = self.temporal_combo.GetValue()
         if temporal_value == 'None Specified':
             l.temporal_interpolation = None
         else:
@@ -381,7 +381,7 @@ class LinkCtrl(LinkView):
 
     def OnStartUp(self, component1, component2):
         self.input_combo.SetItems(['---'] + self.input_combo_choices())
-        self.OutputComboBox.SetItems(['---'] + self.output_combo_choices())
+        self.output_combo.SetItems(['---'] + self.output_combo_choices())
 
         links = []
         x = engine.getLinksBtwnModels(component1['id'], component2['id'])
@@ -417,7 +417,7 @@ class LinkCtrl(LinkView):
 
         # initial selection for the comboboxes.  This will change (below) if links exist
         self.input_combo.SetSelection(0)
-        self.OutputComboBox.SetSelection(0)
+        self.output_combo.SetSelection(0)
 
     def OnSwap(self, event):
         try:
@@ -441,9 +441,9 @@ class LinkCtrl(LinkView):
         self.__link_target_id = self.input_component['id']
 
         self.input_combo.SetItems(['---'] + self.input_combo_choices())
-        self.OutputComboBox.SetItems(['---'] + self.output_combo_choices())
+        self.output_combo.SetItems(['---'] + self.output_combo_choices())
         self.input_combo.SetSelection(0)
-        self.OutputComboBox.SetSelection(0)
+        self.output_combo.SetSelection(0)
 
         self.onNewButton(1)
 

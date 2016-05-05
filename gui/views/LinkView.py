@@ -21,6 +21,7 @@ class LinkView(wx.Frame):
                           size=wx.Size(width, height),
                           style=wx.DEFAULT_FRAME_STYLE | wx.FRAME_FLOAT_ON_PARENT)#^ (wx.RESIZE_BORDER | wx.MINIMIZE_BOX | wx.MAXIMIZE_BOX))
 
+        self.panel = wx.Panel(self)
         self.font = wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL)
         self.input_component = input
         self.output_component = output
@@ -35,12 +36,12 @@ class LinkView(wx.Frame):
         FrameSizer = wx.BoxSizer(wx.VERTICAL)
         ButtonSizer = wx.BoxSizer(wx.VERTICAL)
 
-        self.LinkTitle_staticText = wx.StaticText(self, wx.ID_ANY, u"Select Add to Create a New Link", wx.Point(-1, -1),
+        self.LinkTitle_staticText = wx.StaticText(self.panel, wx.ID_ANY, u"Select Add to Create a New Link", wx.Point(-1, -1),
                                                   wx.DefaultSize, 0)
         self.LinkTitle_staticText.Wrap(-1)
         FrameSizer.Add(self.LinkTitle_staticText, 0, wx.ALL, 5)
 
-        self.LinkStartPanel = wx.Panel(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        self.LinkStartPanel = wx.Panel(self.panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         LinkStartSizer = wx.BoxSizer(wx.HORIZONTAL)
 
         LinkNameListBoxChoices = []
@@ -66,7 +67,7 @@ class LinkView(wx.Frame):
         LinkStartSizer.Fit(self.LinkStartPanel)
         FrameSizer.Add(self.LinkStartPanel, 1, wx.EXPAND | wx.ALL, 5)
 
-        self.ExchangeItemPanel = wx.Panel(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        self.ExchangeItemPanel = wx.Panel(self.panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         ExchangeItemSizer = wx.BoxSizer(wx.HORIZONTAL)
 
 
@@ -270,7 +271,7 @@ class LinkView(wx.Frame):
         ExchangeItemSizer.Fit(self.ExchangeItemPanel)
         FrameSizer.Add(self.ExchangeItemPanel, 1, wx.EXPAND | wx.ALL, 5)
 
-        self.BottomPanel = wx.Panel(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        self.BottomPanel = wx.Panel(self.panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         ButtonSizerBottom = wx.BoxSizer(wx.HORIZONTAL)
 
         PlottingButtonSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -297,7 +298,8 @@ class LinkView(wx.Frame):
         ButtonSizerBottom.Fit(self.BottomPanel)
         FrameSizer.Add(self.BottomPanel, 1, wx.EXPAND | wx.ALL, 5)
 
-        self.SetSizer(FrameSizer)
+        # self.SetSizer(FrameSizer)
+        self.panel.SetSizer(FrameSizer)
         self.Layout()
 
         self.Centre(wx.BOTH)

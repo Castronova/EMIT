@@ -316,6 +316,17 @@ class Coordinator(object):
         # TODO: Get this from gui dialog
         self.preferences = os.path.abspath(os.path.join(os.path.dirname(__file__),'../data/preferences'))
 
+    def clear_all(self):
+        """
+        Clears all the model and link objects from the controller
+
+        Returns: True
+        """
+    
+        self.__links = {}
+        self.__models = {}
+        return True
+
     def get_status(self):
         """
         Returns: the current status of the Engine.

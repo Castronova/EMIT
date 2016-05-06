@@ -1,13 +1,13 @@
-import ConfigParser
-import os
 
 import wx
 from wx.lib.pubsub import pub as Publisher
 
 import environment
-from emitLogging import elog
+#from emitLogging import elog
 from gui.views.AddConnectionView import AddConnectionView
+import os
 from webservice import wateroneflow
+import ConfigParser
 
 
 class AddConnectionCtrl(AddConnectionView):

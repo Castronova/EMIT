@@ -11,6 +11,7 @@ from api_old.ODM2.Results.services import readResults
 from api_old.ODM2.Simulation.services import readSimulation
 from emitLogging import elog
 from gui import events
+from gui.controller.PlotCtrl import LogicPlot
 from gui.controller.ModelCtrl import ModelCtrl
 from gui.controller.PreRunCtrl import PreRunViewCtrl
 from sprint import *

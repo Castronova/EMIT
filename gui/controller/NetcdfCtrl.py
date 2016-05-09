@@ -26,6 +26,11 @@ class NetcdfCtrl(NetcdfViewer):
         self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.disableBtns)
         self.disableBtns(None)
 
+    def alternateRowColor(self, color="#DCEBEE"):
+        for i in range(self.variable_list.GetItemCount()):
+            if i % 2 == 1:
+                self.variable_list.SetItemBackgroundColour(i, color)
+
     def autoSizeColumns(self):
         for i in range(self.variable_list.GetColumnCount()):
             self.variable_list.SetColumnWidth(i, wx.LIST_AUTOSIZE)

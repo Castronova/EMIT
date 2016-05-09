@@ -57,6 +57,7 @@ class NetcdfDetailsView(wx.Frame):
 
         self.Show()
 
+
 class MyPropertyGrid(wx.propgrid.PropertyGrid):
     def __init__(self, *args, **kwargs):
         wxpg.PropertyGrid.__init__(self, *args, **kwargs)

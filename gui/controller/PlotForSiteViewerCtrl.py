@@ -1,7 +1,7 @@
 import numpy
-
 from gui.views.PlotForSiteViewerView import ViewPlotForSiteViewer
 import matplotlib as mpl
+
 
 class color_cycle(object):
     def __init__(self):
@@ -50,7 +50,6 @@ class PlotForSiteViewerCtrl(ViewPlotForSiteViewer):
 
         # get the next line color
         color = self.getNextColor()
-
 
         if self.__plot_count == 0:
             # plot data on the primary axis

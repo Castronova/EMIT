@@ -29,7 +29,6 @@ class ModelView(wx.Frame):
         if properties:
             self.PropertyGrid = MyPropertyGrid(self.notebook, id=wx.ID_ANY,
                                                pos=wx.Point(0, 0),
-                                               # size=wx.Size(700,500))
                                                size=wx.Size(423, 319))
             self.notebook.AddPage(self.PropertyGrid, u"Model Properties", True)
 
@@ -73,6 +72,7 @@ class ModelView(wx.Frame):
 
         self.Centre(wx.BOTH)
 
+
 class SpatialPage(wx.Panel):
 
     def __init__(self, parent):
@@ -80,22 +80,20 @@ class SpatialPage(wx.Panel):
         wx.Panel.__init__(self, parent)
         from gui.controller.SpatialCtrl import SpatialCtrl
 
-        self.controller = SpatialCtrl(self)
+        self.controller = SpatialCtrl(self, "some title")
+
 
 class MyPropertyGrid(wx.propgrid.PropertyGrid):
     def __init__(self, *args, **kwargs):
         wxpg.PropertyGrid.__init__(self, *args, **kwargs)
 
-        self.Bind(wx.EVT_LEFT_DOWN, self.onClick)
-        self.Bind(wx.EVT_LEFT_DCLICK, self.onClick)
+        self.Bind(wx.EVT_LEFT_DOWN, self.on_click)
+        self.Bind(wx.EVT_LEFT_DCLICK, self.on_click)
 
-    def onClick(self, event):
+    def on_click(self, event):
         """
         event handler for property grid click.  This function makes the property grid fields uneditable
         Returns: None
-
         """
         pass
-
-
 

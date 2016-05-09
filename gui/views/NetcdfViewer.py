@@ -20,7 +20,6 @@ class NetcdfViewer(wx.Frame):
         panel = wx.Panel(self)
         self.top_panel = wx.Panel(panel)
         self.bottom_panel = wx.Panel(panel, size=(-1, 70))
-        # self.bottom_panel.SetBackgroundColour("#AABBCC")
 
         horizontal_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -38,11 +37,6 @@ class NetcdfViewer(wx.Frame):
         # insert columns to list control
         for i in range(len(self.list_ctrl_columns)):
             self.variable_list.InsertColumn(i, self.list_ctrl_columns[i])
-
-        # self.variable_list.InsertColumn(0, "File Name")
-        # self.variable_list.InsertColumn(1, "File Name")
-        # self.variable_list.InsertColumn(2, "Last Updated")
-        # self.variable_list.InsertColumn(3, "URL")
 
         self.url_textbox = wx.TextCtrl(parent=self.bottom_panel, value="http://129.123.51.203/opendap", size=(-1, 25))
         self.get_btn = wx.Button(parent=self.bottom_panel, label="Get Files", size=(-1, 27))
@@ -71,8 +65,3 @@ class NetcdfViewer(wx.Frame):
         self.status_bar.SetStatusText("ready")
         self.Layout()
         self.Show()
-
-    def alternateRowColor(self, color="#DCEBEE"):
-        for i in range(self.variable_list.GetItemCount()):
-            if i % 2 == 1:
-                self.variable_list.SetItemBackgroundColour(i, color)

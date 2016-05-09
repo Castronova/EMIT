@@ -1,26 +1,22 @@
-__author__ = 'tonycastronova'
 import csv
 import time
-
 import wx
 from wx.lib.pubsub import pub as Publisher
-
 import coordinator.engineAccessors as engine
 from api_old.ODM2.Core.services import readCore
 from api_old.ODM2.Results.services import readResults
 from api_old.ODM2.Simulation.services import readSimulation
 from emitLogging import elog
 from gui import events
-from gui.controller.PlotCtrl import LogicPlot
 from gui.controller.ModelCtrl import ModelCtrl
 from gui.controller.PreRunCtrl import PreRunViewCtrl
 from sprint import *
 
+__author__ = 'tonycastronova'
 
-#todo:  this needs to be split up into view and logic code
 
+# todo:  this needs to be split up into view and logic code
 class LinkContextMenu(wx.Menu):
-
     def __init__(self, parent, e):
         super(LinkContextMenu, self).__init__()
 
@@ -58,7 +54,6 @@ class ConsoleContextMenu(wx.Menu):
 
 
 class ModelContextMenu(wx.Menu):
-
     def __init__(self, parent, e):
         super(ModelContextMenu, self).__init__()
 
@@ -95,8 +90,8 @@ class ModelContextMenu(wx.Menu):
     def RemoveModel(self, e):
         self.parent.RemoveModel(self.model_obj)
 
-class CanvasContextMenu(wx.Menu):
 
+class CanvasContextMenu(wx.Menu):
     def __init__(self, parent):
         super(CanvasContextMenu, self).__init__()
         self.parent = parent
@@ -151,15 +146,15 @@ class CanvasContextMenu(wx.Menu):
         preRunDialog = PreRunViewCtrl(self.parent)
         preRunDialog.Show()
 
-
     def OnClickClear(self, e):
-        dlg = wx.MessageDialog(None, 'Are you sure you would like to clear configuration?', 'Question', wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
+        dlg = wx.MessageDialog(None, 'Are you sure you would like to clear configuration?', 'Question',
+                               wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
 
-        if dlg.ShowModal() !=wx.ID_NO:
+        if dlg.ShowModal() != wx.ID_NO:
             self.parent.clear()
             elog.info("Configurations have been cleared")
 
-    def SaveConfiguration(self,e):
+    def SaveConfiguration(self, e):
         if self.parent.GetLoadingPath() == None:
             save = wx.FileDialog(self.parent.GetTopLevelParent(), message="Save Configuration",
                                  defaultDir=self.parent.defaultLoadDirectory, defaultFile="",
@@ -199,8 +194,8 @@ class CanvasContextMenu(wx.Menu):
         dlg.ShowModal()
         dlg.Destroy()
 
-class DirectoryContextMenu(wx.Menu):
 
+class DirectoryContextMenu(wx.Menu):
     def __init__(self, parent, e):
         super(DirectoryContextMenu, self).__init__()
 
@@ -214,8 +209,8 @@ class DirectoryContextMenu(wx.Menu):
     def OnViewDetails(self, e):
         self.parent.ShowDetails()
 
-class ToolboxContextMenu(wx.Menu):
 
+class ToolboxContextMenu(wx.Menu):
     def __init__(self, parent, e, removable, folder):
         super(ToolboxContextMenu, self).__init__()
 
@@ -246,7 +241,6 @@ class ToolboxContextMenu(wx.Menu):
 
 
 class ContextMenu(wx.Menu):
-
     def __init__(self, parent):
         super(ContextMenu, self).__init__()
 
@@ -281,7 +275,7 @@ class ContextMenu(wx.Menu):
             if path[-4] != '.':
                 path += '.csv'
             file = open(path, 'w')
-#
+            #
             writer = csv.writer(file, delimiter=',')
 
             obj = self.__list_obj
@@ -289,14 +283,17 @@ class ContextMenu(wx.Menu):
             resultID = obj.GetItem(id, 0).GetText()
             dates, values, resobj = self.getData(resultID)
 
-            writer.writerow(["#-------------------------Disclaimer:  This is a data set that was exported by EMIT ... use at your own risk..."])
+            writer.writerow([
+                "#-------------------------Disclaimer:  This is a data set that was exported by EMIT ... use at your own risk..."])
             writer.writerow(["#"])
-            writer.writerow(["#Date Created: %s" % str(resobj.FeatureActionObj.ActionObj.BeginDateTime.strftime("%m/%d/%Y"))])
+            writer.writerow(
+                ["#Date Created: %s" % str(resobj.FeatureActionObj.ActionObj.BeginDateTime.strftime("%m/%d/%Y"))])
             writer.writerow(["#Date Exported: %s" % str(getTodayDate())])
             writer.writerow(["Result ID: %s" % str(resobj.ResultID)])
             writer.writerow(["#Variable: %s" % str(resobj.VariableObj.VariableCode)])
             writer.writerow(["#Unit: %s" % str(resobj.UnitObj.UnitsAbbreviation)])
-            writer.writerow(["#Organization: %s" % str(resobj.FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName)])
+            writer.writerow(["#Organization: %s" % str(
+                resobj.FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName)])
             writer.writerow(["#"])
             writer.writerow(["#-------------------------End Disclaimer"])
             writer.writerow(["#"])
@@ -325,7 +322,7 @@ class ContextMenu(wx.Menu):
 
         Publisher.sendMessage('AddModel', filepath=filename, x=0, y=0)  # sends message to CanvasController
 
-    def getData(self,resultID):
+    def getData(self, resultID):
         session = self.parent.getDbSession()
         if session is not None:
             readres = readResults(session)
@@ -354,8 +351,7 @@ class ContextMenu(wx.Menu):
             self.parent.Parent.open_odm2_viewer(self.parent.GetSelectedObject())
             return
 
-
-    def OnDelete(self,event):
+    def OnDelete(self, event):
         if 'local' in self.parent.Parent.connection_combobox.GetStringSelection():
             dlg = wx.MessageDialog(self.parent, 'Are you sure you want to delete this simulation?', 'Question',
                                    wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
@@ -363,7 +359,8 @@ class ContextMenu(wx.Menu):
                 try:
                     # From Time Series
                     self.parent.Parent.m_olvSeries.RemoveObject(self.parent.GetSelectedObject())  # Deleting
-                    self.parent.Parent.m_olvSeries.SortBy(self.parent.Parent.m_olvSeries.GetPrimaryColumnIndex())  # Sorting
+                    self.parent.Parent.m_olvSeries.SortBy(
+                        self.parent.Parent.m_olvSeries.GetPrimaryColumnIndex())  # Sorting
                 except:
                     # From Simulations
                     self.parent.Parent.conn.deleteRecord(self.parent.GetSelectedObject())
@@ -403,7 +400,7 @@ class SimulationContextMenu(ContextMenu):
         menuID = self.FindItem('Export')
         self.FindItemById(menuID).Enable(False)
 
-    def getData(self,simulationID):
+    def getData(self, simulationID):
 
         session = self.parent.getDbSession()
         if session is not None:
@@ -412,7 +409,7 @@ class SimulationContextMenu(ContextMenu):
 
                 results = []
                 try:
-                    sPrint('getting results for simulationId: %s' % simulationID , MessageType.DEBUG)
+                    sPrint('getting results for simulationId: %s' % simulationID, MessageType.DEBUG)
                     # results = conn.read.getResultsBySimulationID(simulationID)
                     results = conn.read.getResultsBySimulationID(simulationID)
                 except Exception, e:
@@ -504,18 +501,19 @@ class SimulationContextMenu(ContextMenu):
                         dates.append(val.ValueDateTime)
                         values.append(val.DataValue)
 
-                    #  Organzing data so its in two columns
+                    # Organzing data so its in two columns
                     data = []
                     j = 0  # j acts like i but its for the values variable
                     for i in dates:
                         data.append([i, values[j]])
                         j += 1
 
-                    #  Writing to CSV file
+                    # Writing to CSV file
                     convert.writerows([[variable_name]])
                     convert.writerows(data)
 
             file.close()
+
 
 def getTodayDate():
     return time.strftime("%m/%d/%Y")

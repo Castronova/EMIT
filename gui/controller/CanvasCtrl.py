@@ -330,6 +330,14 @@ class CanvasCtrl(CanvasView):
                     elog.error('ERROR|Could not remove link: %s' % link['id'])
                     sPrint('ERROR|Could not remove link: %s' % link['id'], MessageType.ERROR)
 
+            links = engine.getLinksBtwnModels(to_id, from_id)
+
+            # Doing this a second time to remove bidirectional links
+            for link in links:
+                success = engine.removeLinkById(link['id'])
+                if not success:
+                    elog.error('ERROR|Could not remove link: %s' % link['id'])
+                    sPrint('ERROR|Could not remove link: %s' % link['id'], MessageType.ERROR)
 
             self.remove_link_image(link_object=link_obj)
             self.remove_link_object_by_id(from_id, to_id)
@@ -337,9 +345,11 @@ class CanvasCtrl(CanvasView):
     def remove_link_object_by_id(self, id1, id2):
         for key, value in self.links.items():
             if (value[0].ID == id1 and value[1].ID == id2) or (value[1].ID == id1 and value[0].ID == id2):
-                # self.remove_link_image(key)
                 del self.links[key]
-                del self.arrows[key.Arrow]
+
+        for key, value in self.arrows.items():
+            if (value[0].ID == id1 and value[1].ID == id2) or (value[1].ID == id1 and value[0].ID == id2):
+                del self.arrows[key]
 
     def remove_link_image(self, link_object):
         # Using SmoothLineWithArrow's builtin remove helper function

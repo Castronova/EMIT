@@ -177,10 +177,14 @@ def parse_config(ini):
             for option in options:
                 value = cparser.get(s,option)
 
-                # convert anything that is recognized as a file path into an absolute paths
-                genpath = os.path.abspath(os.path.join(basedir, value))
-                if os.path.isfile(genpath): # and genpath[-3:] != '.py' :
-                    value = genpath
+                try:
+                    # convert anything that is recognized as a file path into an absolute paths
+                    genpath = os.path.abspath(os.path.join(basedir, value))
+                    if os.path.isfile(genpath):
+                        value = genpath
+                except TypeError:
+                    pass
+
                 d[option] = value
             d['type'] = section.upper()
 

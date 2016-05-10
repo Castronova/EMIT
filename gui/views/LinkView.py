@@ -140,12 +140,13 @@ class LinkView(wx.Frame):
 
         panel.SetSizer(frame_sizer)
 
-        self.Bind(wx.EVT_SIZING, self.frame_resizing)
+        self.Bind(wx.EVT_SIZE, self.frame_resizing)
         self.Centre(wx.BOTH)
 
     def frame_resizing(self, event):
         self.resize_grid_to_fill_white_space(self.input_grid)
         self.resize_grid_to_fill_white_space(self.output_grid)
+        event.Skip()  # In a sizer-based layout, event.Skip() will catch all size events
 
     def init_grid(self, grid):
         # Grid

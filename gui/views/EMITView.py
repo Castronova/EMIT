@@ -16,7 +16,7 @@ from gui.controller.CanvasCtrl import CanvasCtrl
 from gui.controller.NetcdfCtrl import NetcdfCtrl
 from gui.controller.ToolboxCtrl import ToolboxViewCtrl
 from gui.controller.UserCtrl import UserCtrl
-from gui.controller.settingsCtrl import settingsCtrl
+from gui.controller.SettingsCtrl import SettingsCtrl
 from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
 
 # create custom events
@@ -303,7 +303,7 @@ class EMITView(wx.Frame):
             self.defaultLoadDirectory = os.path.dirname(filepath)
 
     def Settings(self, event):
-        settingsCtrl(self.Canvas.GetTopLevelParent())
+        SettingsCtrl(self.Canvas.GetTopLevelParent())
 
     def SaveConfiguration(self, event):
         if not self.loading_path:

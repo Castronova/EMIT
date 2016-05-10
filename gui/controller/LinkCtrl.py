@@ -408,10 +408,6 @@ class LinkCtrl(LinkView):
             # if no links are found, need to deactivate controls
             self.activateControls(False)
 
-        # initial selection for the comboboxes.  This will change (below) if links exist
-        self.input_combo.SetSelection(0)
-        self.output_combo.SetSelection(0)
-
     def OnSwap(self, event):
         try:
             selected = self.getSelectedLinkId()

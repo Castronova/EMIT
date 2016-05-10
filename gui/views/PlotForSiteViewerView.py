@@ -1,11 +1,8 @@
-
 import matplotlib
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.figure import Figure
 import seaborn as sb
 sb.set_style("ticks")
-
-__author__ = 'francisco'
 
 
 class ViewPlotForSiteViewer:

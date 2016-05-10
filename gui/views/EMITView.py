@@ -14,7 +14,7 @@ from emitLogging import elog
 from gui import events
 from gui.controller.CanvasCtrl import CanvasCtrl
 from gui.controller.NetcdfCtrl import NetcdfCtrl
-from gui.controller.ToolboxCtrl import LogicToolbox
+from gui.controller.ToolboxCtrl import ToolboxViewCtrl
 from gui.controller.UserCtrl import UserCtrl
 from gui.controller.settingsCtrl import settingsCtrl
 from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
@@ -38,7 +38,7 @@ class EMITView(wx.Frame):
         self.initMenu()
 
         # creating components
-        self.Toolbox = LogicToolbox(self.pnlDocking)
+        self.Toolbox = ToolboxViewCtrl(self.pnlDocking)
         self.Canvas = CanvasCtrl(self.pnlDocking)
 
         self.Toolbox.Hide()
@@ -322,6 +322,8 @@ class EMITView(wx.Frame):
             path = self.loading_path
 
         Publisher.sendMessage('SetSavePath', path=path)  # send message to canvascontroller.SaveSimulation
+        self.Toolbox.RefreshToolbox()
+
 
     def SaveConfigurationAs(self,event):
         # Executes from File ->Save As

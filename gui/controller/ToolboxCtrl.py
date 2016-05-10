@@ -9,20 +9,20 @@ from emitLogging import elog
 from gui import events
 from gui.controller.ModelCtrl import ModelCtrl
 from gui.views.ContextView import ToolboxContextMenu
-from gui.views.ToolboxView import ViewToolbox
+from gui.views.ToolboxView import ToolboxView
 from sprint import *
 
 
 # todo: refactor
 
 
-class LogicToolbox(ViewToolbox):
+class ToolboxViewCtrl(ToolboxView):
     modelpaths = ""
 
     def __init__(self, parent):
 
         # Initialize the View
-        ViewToolbox.__init__(self, parent)
+        ToolboxView.__init__(self, parent)
 
         self.p = parent
         # config_params = {}
@@ -156,7 +156,6 @@ class LogicToolbox(ViewToolbox):
 
         return d
 
-
     def loadMDLFile(self, cat, txt, fullpath):
         mdl_parser = ConfigParser.ConfigParser(None, multidict)
         mdl_parser.read(fullpath)
@@ -217,7 +216,6 @@ class LogicToolbox(ViewToolbox):
         key = self.tree.GetItemText(item)
         filepath = self.filepath.get(key)
 
-        ext = ""
         folder = False
         removable = False
         if filepath is not None:
@@ -271,7 +269,6 @@ class LogicToolbox(ViewToolbox):
             except:
                 dlg = wx.MessageDialog(None, 'Error trying to view details', 'Error', wx.OK)
                 dlg.ShowModal()
-                pass
 
     def Remove(self, e):
         dlg = wx.MessageDialog(None, 'Are you sure you would like to delete?', 'Question',

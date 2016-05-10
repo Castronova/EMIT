@@ -15,7 +15,7 @@ class consoleCtrl(ConsoleView):
         # todo: get the port number from the environment variables so that the user can change as necessary
         self.buf = 1024
         self.port = PrintTarget.CONSOLE  # random port number
-        self.host = ''
+        self.host = 'localhost'
         self.addr = (self.host, self.port)
         self.linenum = 1
 

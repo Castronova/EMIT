@@ -155,18 +155,8 @@ class CanvasContextMenu(wx.Menu):
             elog.info("Configurations have been cleared")
 
     def SaveConfiguration(self, e):
-        if self.parent.GetLoadingPath() == None:
-            save = wx.FileDialog(self.parent.GetTopLevelParent(), message="Save Configuration",
-                                 defaultDir=self.parent.defaultLoadDirectory, defaultFile="",
-                                 wildcard="Simulation Files (*.sim)|*.sim", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
-
-            if save.ShowModal() == wx.ID_OK:
-                path = save.GetPath()
-                self.parent.SaveSimulation(path)
-                self.parent.SetLoadingPath(path)
-                self.parent.defaultLoadDirectory = os.path.dirname(path)
-        else:
-            self.parent.SaveSimulation(self.parent.GetLoadingPath())
+        # Calls EMITView.SaveConfiguration() method
+        self.parent.GetTopLevelParent().SaveConfiguration(e)
 
     def SaveConfigurationAs(self, e):
         # Executes from Float Canvas -> right click -> Save As
@@ -174,14 +164,8 @@ class CanvasContextMenu(wx.Menu):
         events.onSaveFromCanvas.fire(**e)  # calls SaveConfigurationsAs in EMITView.py
 
     def LoadConfiguration(self, e):
-        load = wx.FileDialog(self.parent.GetTopLevelParent(), message="Load File",
-                             defaultDir=self.parent.defaultLoadDirectory, defaultFile="",
-                             wildcard="Simulation Files (*.sim)|*.sim", style=wx.FD_OPEN)
-        if load.ShowModal() == wx.ID_OK:
-            path = load.GetPath()
-            self.parent.loadsimulation(path)
-            self.parent.SetLoadingPath(path)
-            self.parent.defaultLoadDirectory = os.path.dirname(path)
+        # Calls EMITView.load_configuration() method
+        self.parent.GetTopLevelParent().load_configuration(e)
 
     def OnMinimize(self, e):
         self.parent.Iconize()

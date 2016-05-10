@@ -194,20 +194,19 @@ class LogicToolbox(ViewToolbox):
     def onDoubleClick(self, event):
         id = event.GetItem()
         filename = id.GetText()
-        try:  # Its in a try because clicking on a folder returns an error.
-
+        try:
             filename = self.filepath[filename]
 
             # Generate random coordinates about the center of the canvas
-            originx, originy = self.p.GetParent().FloatCanvas.WorldToPixel(self.p.GetParent().Canvas.GetPosition())
             x = random.randint(-200, 200)
             y = random.randint(-200, 200)
 
             # Send the message to logicCanvas
             # todo: replace with custom event
-            Publisher.sendMessage('AddModel', filepath=filename, x=x, y=y, uniqueId = None, title = None)
+            Publisher.sendMessage('AddModel', filepath=filename, x=x, y=y, uniqueId=None, title=None)
 
         except Exception, e:
+            # Clicked on a folder
             elog.error(e)
             pass
 

@@ -189,14 +189,7 @@ class LinkCtrl(LinkView):
             self.activateControls(False)
 
     def OnCancel(self, event):
-
-        if self.link_name_list_box.Count > 0:
-            dial = wx.MessageDialog(self, 'Are you sure that you want to close without saving?', 'Question',
-                                    wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
-            if dial.ShowModal() == wx.ID_YES:
-                self.Destroy()
-        else:
-            self.Destroy()
+        self.Destroy()
 
     def OnChange(self, event):
         link_name = self.link_name_list_box.GetStringSelection()

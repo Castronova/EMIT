@@ -4,6 +4,7 @@ import os
 from os.path import *
 import inspect
 from socket import AF_INET, SOCK_DGRAM, socket
+import environment
 
 def get_open_port():
     """
@@ -11,10 +12,35 @@ def get_open_port():
     Returns: available port number
     """
 
-    s = socket(AF_INET, SOCK_DGRAM)
-    s.bind(("localhost",0))
-    port = s.getsockname()[1]
-    s.close()
+
+    environment.getEnvironmentVars()
+    try:
+        # get the port number from the settings file
+        port = int(os.environ['APP_CONSOLE_SOCKET'])
+    except KeyError:
+        # set the port to 0 if it is not found in the settings file.  This will make the socket library find an open port.
+        port = 0
+
+    try:
+        s = socket(AF_INET, SOCK_DGRAM)
+
+        # attempt to bind to the port
+        s.bind(("localhost", port))
+
+        # get the port number from the socket
+        port = s.getsockname()[1]
+
+        # always close the socket.  This allows the gui console to bind to it later (see caveat below)
+        s.close()
+
+        # save this port back to the environment vars
+        environment.setEnvironmentVar('APP','CONSOLE_SOCKET',port)
+    except:
+        # an error is raised if the gui has bound to this address before the engine tries to.
+        # ignore this error for now, however we should wait until sprint has resolved socket
+        # ports before allowing the gui to bind to it.
+        pass
+
     return port
 
 

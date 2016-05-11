@@ -56,7 +56,6 @@ class CanvasCtrl(CanvasView):
         self.link_clicks = 0
         self._currentDbSession = None
         self._dbid = None
-        self.loadingpath = None
         self.model_coords = {}
         self.uniqueId = None
         self.defaultLoadDirectory = os.getcwd() + "/models/MyConfigurations/"
@@ -699,7 +698,7 @@ class CanvasCtrl(CanvasView):
         file = os.path.abspath(file)
         sPrint('Begin loading simulation: %s\n'%file)
 
-        # self.loadingpath = file
+        self.GetTopLevelParent().loading_path = file
         tree = et.parse(file)
 
         # make sure the required database connections are loaded
@@ -895,15 +894,8 @@ class CanvasCtrl(CanvasView):
                 return key
         return None
 
-
-    def GetLoadingPath(self):
-        return self.loadingpath
-
     def getCursor(self):
         return self._Cursor
-
-    def SetLoadingPath(self, path):
-        self.loadingpath = path
 
     def setCursor(self, value=None):
         self._Cursor = value

@@ -174,7 +174,7 @@ class UserCtrl(UserView):
             if self.is_user_json_empty():
                 message = wx.MessageDialog(None, "No users have been registered. Would you like to register a user?", "Question", wx.YES_NO | wx.YES_DEFAULT | wx.ICON_QUESTION)
                 if message.ShowModal() == wx.ID_NO:
-                    self.parent.onClose(None)
+                    self.parent.on_close(None)
             self.parent.check_users_json()
         except KeyError:
             # Parent does not have check_users_json()

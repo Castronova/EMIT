@@ -9,20 +9,20 @@ from emitLogging import elog
 from gui import events
 from gui.controller.ModelCtrl import ModelCtrl
 from gui.views.ContextView import ToolboxContextMenu
-from gui.views.ToolboxView import ViewToolbox
+from gui.views.ToolboxView import ToolboxView
 from sprint import *
 
 
 # todo: refactor
 
 
-class LogicToolbox(ViewToolbox):
+class ToolboxViewCtrl(ToolboxView):
     modelpaths = ""
 
     def __init__(self, parent):
 
         # Initialize the View
-        ViewToolbox.__init__(self, parent)
+        ToolboxView.__init__(self, parent)
 
         self.p = parent
         # config_params = {}
@@ -156,7 +156,6 @@ class LogicToolbox(ViewToolbox):
 
         return d
 
-
     def loadMDLFile(self, cat, txt, fullpath):
         mdl_parser = ConfigParser.ConfigParser(None, multidict)
         mdl_parser.read(fullpath)
@@ -194,20 +193,19 @@ class LogicToolbox(ViewToolbox):
     def onDoubleClick(self, event):
         id = event.GetItem()
         filename = id.GetText()
-        try:  # Its in a try because clicking on a folder returns an error.
-
+        try:
             filename = self.filepath[filename]
 
             # Generate random coordinates about the center of the canvas
-            originx, originy = self.p.GetParent().FloatCanvas.WorldToPixel(self.p.GetParent().Canvas.GetPosition())
             x = random.randint(-200, 200)
             y = random.randint(-200, 200)
 
             # Send the message to logicCanvas
             # todo: replace with custom event
-            Publisher.sendMessage('AddModel', filepath=filename, x=x, y=y, uniqueId = None, title = None)
+            Publisher.sendMessage('AddModel', filepath=filename, x=x, y=y, uniqueId=None, title=None)
 
         except Exception, e:
+            # Clicked on a folder
             elog.error(e)
             pass
 
@@ -218,7 +216,6 @@ class LogicToolbox(ViewToolbox):
         key = self.tree.GetItemText(item)
         filepath = self.filepath.get(key)
 
-        ext = ""
         folder = False
         removable = False
         if filepath is not None:
@@ -272,7 +269,6 @@ class LogicToolbox(ViewToolbox):
             except:
                 dlg = wx.MessageDialog(None, 'Error trying to view details', 'Error', wx.OK)
                 dlg.ShowModal()
-                pass
 
     def Remove(self, e):
         dlg = wx.MessageDialog(None, 'Are you sure you would like to delete?', 'Question',

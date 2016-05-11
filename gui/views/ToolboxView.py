@@ -6,7 +6,7 @@ import wx.lib.customtreectrl as CT
 from gui.Resources import icons
 
 
-class ViewToolbox(wx.Panel):
+class ToolboxView(wx.Panel):
     def __init__(self, parent):
 
         # todo: this need to be fixed/removed

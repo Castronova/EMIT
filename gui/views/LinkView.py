@@ -86,9 +86,9 @@ class LinkView(wx.Frame):
         output_sizer.Add(self.output_label, proportion=0, flag=wx.ALL, border=5)
         output_sizer.Add(self.output_combo, proportion=0, flag=wx.EXPAND | wx.ALL, border=5)
         output_sizer.Add(self.output_grid, proportion=0, flag=wx.EXPAND | wx.ALL, border=5)
-        output_sizer.Add(self.temporal_text, 0, wx.ALIGN_RIGHT, 5)
+        output_sizer.Add(self.temporal_text, 0, wx.ALIGN_RIGHT | wx.RIGHT, 10)
         output_sizer.AddSpacer((0, 12), 0, wx.EXPAND, 5)
-        output_sizer.Add(self.spatial_text, 0, wx.ALIGN_RIGHT, 5)
+        output_sizer.Add(self.spatial_text, 0, wx.ALIGN_RIGHT | wx.RIGHT, 10)
 
         input_sizer.Add(self.input_label, 0, wx.ALL, 5)
         input_sizer.Add(self.input_combo, 0, flag=wx.EXPAND | wx.ALL, border=5)
@@ -109,26 +109,22 @@ class LinkView(wx.Frame):
         # Create necessary components
         self.plot_button = wx.Button(parent=self.bottom_panel, label="Plot Geometries")
         self.save_button = wx.Button(parent=self.bottom_panel, label="Save and Close")
-        self.cancel_button = wx.Button(parent=self.bottom_panel, label=u"Cancel")
+        self.cancel_button = wx.Button(parent=self.bottom_panel, label="Cancel")
 
         # Create bottom panel sizer
         bottom_panel_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        plot_button_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        RightAlignSizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        plot_button_sizer.Add(self.plot_button, 0, wx.ALL, 5)
-
-        RightAlignSizer.AddSpacer((0, 0), 1, wx.EXPAND, 5)
-        RightAlignSizer.Add(self.save_button, 0, wx.ALL, 5)
-        RightAlignSizer.Add(self.cancel_button, 0, wx.ALL, 5)
-
-        bottom_panel_sizer.Add(plot_button_sizer, 1, wx.EXPAND | wx.ALL, border=5)
-        bottom_panel_sizer.Add(RightAlignSizer, 1, wx.EXPAND | wx.ALL, border=5)
-
+        # Add components to sizer
+        bottom_panel_sizer.Add(self.plot_button, 0, wx.ALL | wx.ALIGN_LEFT, 5)
+        bottom_panel_sizer.AddSpacer((0, 0), 1, wx.EXPAND, 5)
+        bottom_panel_sizer.Add(self.save_button, 0, wx.ALL | wx.ALIGN_RIGHT, 5)
+        bottom_panel_sizer.Add(self.cancel_button, 0, wx.ALL | wx.ALIGN_RIGHT, 5)
         self.bottom_panel.SetSizer(bottom_panel_sizer)
 
-        self.bottom_panel.Layout()
-        bottom_panel_sizer.Fit(self.bottom_panel)
+
+        ###########################################
+        # ADD PANELS TO FRAME SIZER
+        ###########################################
 
         # Add everything to the frame
         frame_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -140,12 +136,13 @@ class LinkView(wx.Frame):
 
         panel.SetSizer(frame_sizer)
 
-        self.Bind(wx.EVT_SIZING, self.frame_resizing)
+        self.Bind(wx.EVT_SIZE, self.frame_resizing)
         self.Centre(wx.BOTH)
 
     def frame_resizing(self, event):
         self.resize_grid_to_fill_white_space(self.input_grid)
         self.resize_grid_to_fill_white_space(self.output_grid)
+        event.Skip()  # In a sizer-based layout, event.Skip() will catch all size events
 
     def init_grid(self, grid):
         # Grid

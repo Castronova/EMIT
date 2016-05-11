@@ -189,14 +189,7 @@ class LinkCtrl(LinkView):
             self.activateControls(False)
 
     def OnCancel(self, event):
-
-        if self.link_name_list_box.Count > 0:
-            dial = wx.MessageDialog(self, 'Are you sure that you want to close without saving?', 'Question',
-                                    wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
-            if dial.ShowModal() == wx.ID_YES:
-                self.Destroy()
-        else:
-            self.Destroy()
+        self.Destroy()
 
     def OnChange(self, event):
         link_name = self.link_name_list_box.GetStringSelection()
@@ -414,10 +407,6 @@ class LinkCtrl(LinkView):
         else:
             # if no links are found, need to deactivate controls
             self.activateControls(False)
-
-        # initial selection for the comboboxes.  This will change (below) if links exist
-        self.input_combo.SetSelection(0)
-        self.output_combo.SetSelection(0)
 
     def OnSwap(self, event):
         try:

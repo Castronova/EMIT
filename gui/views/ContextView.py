@@ -156,7 +156,7 @@ class CanvasContextMenu(wx.Menu):
 
     def SaveConfiguration(self, e):
         # Calls EMITView.SaveConfiguration() method
-        self.parent.GetTopLevelParent().SaveConfiguration(e)
+        self.parent.GetTopLevelParent().on_save_configuration(e)
 
     def SaveConfigurationAs(self, e):
         # Executes from Float Canvas -> right click -> Save As
@@ -165,7 +165,7 @@ class CanvasContextMenu(wx.Menu):
 
     def LoadConfiguration(self, e):
         # Calls EMITView.load_configuration() method
-        self.parent.GetTopLevelParent().load_configuration(e)
+        self.parent.GetTopLevelParent().on_load_configuration(e)
 
     def OnMinimize(self, e):
         self.parent.Iconize()

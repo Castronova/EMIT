@@ -26,42 +26,37 @@ class EMITView(wx.Frame):
         ##################################
         # MENU BAR
         ##################################
-
-        self._menubar = wx.MenuBar()
-
-        self.file_menu = wx.Menu()
-        self._load = self.file_menu.Append(wx.NewId(), '&Load\tCtrl+O', 'Load Configuration')
-        self._save_menu = self.file_menu.Append(wx.NewId(), '&Save Configuration\tCtrl+S', 'Save Configuration')
-        self._add_user_menu = self.file_menu.Append(wx.NewId(), 'Add User', 'Add New User')
-        self.save_as_menu = self.file_menu.Append(wx.NewId(), '&Save Configuration As', 'Save Configuration')
-        self._settings_menu = self.file_menu.Append(wx.NewId(), "Settings...")
-        self._exit = self.file_menu.Append(wx.NewId(), '&Quit\tCtrl+Q', 'Quit application')
-
-
-        self._menubar.Append(self.file_menu, "&File")
-
-        self.m_toolMenu = wx.Menu()
-
-
+        self._menu_bar = wx.MenuBar()
         self.view_menu = wx.Menu()
-        self.view_menu.Append(wx.NewId(), '&Toolbox\tCtrl+A', 'Show all associated files', wx.ITEM_RADIO)
-        self.view_menu.Append(wx.NewId(), 'separate', 'separate', wx.ITEM_SEPARATOR)
-        self._toggle_console_menu = self.view_menu.Append(wx.NewId(), '&Console Off', 'Minimizes the Console', wx.ITEM_CHECK)
+        self.data_menu = wx.Menu()
 
+        # File Menu Option
+        self._file_menu = wx.Menu()
+        self._load = self._file_menu.Append(wx.NewId(), '&Load\tCtrl+O', 'Load Configuration')
+        self._save_menu = self._file_menu.Append(wx.NewId(), '&Save Configuration\tCtrl+S', 'Save Configuration')
+        self._add_user_menu = self._file_menu.Append(wx.NewId(), 'Add User', 'Add New User')
+        self.save_as_menu = self._file_menu.Append(wx.NewId(), '&Save Configuration As', 'Save Configuration')
+        self._settings_menu = self._file_menu.Append(wx.NewId(), "Settings...")
+        self._exit = self._file_menu.Append(wx.NewId(), '&Quit\tCtrl+Q', 'Quit application')
+
+        # View Menu Option
+        self._toggle_console_menu = self.view_menu.Append(wx.NewId(), '&Toggle Console', 'Toggle the Console', wx.ITEM_CHECK)
         self._default_view_menu = self.view_menu.Append(wx.NewId(), '&Restore Default View', 'Returns the view to the default (initial) state', wx.ITEM_NORMAL)
 
-        self._menubar.Append(self.view_menu, "&View")
-
-        self.data_menu = wx.Menu()
-        self._menubar.Append(self.data_menu, "Data")
+        # Data Menu Option
         self._add_file = self.data_menu.Append(wx.NewId(), "&Add CSV File")
-        # todo: implement and enable the CSV menu option below
-        self._add_file.Enable(False)
         self._add_netcdf = self.data_menu.Append(wx.NewId(), '&Add NetCDF')
-
         self._open_dap_viewer_menu = self.data_menu.Append(wx.NewId(), "&OpenDap Explorer")
 
-        self.SetMenuBar(self._menubar)
+        # Add menu items
+        self._menu_bar.Append(self._file_menu, "&File")
+        self._menu_bar.Append(self.view_menu, "&View")
+        self._menu_bar.Append(self.data_menu, "Data")
+
+        # todo: implement and enable the CSV menu option below
+        self._add_file.Enable(False)
+
+        self.SetMenuBar(self._menu_bar)
 
         wx.CallAfter(self._postStart)
 
@@ -131,21 +126,10 @@ class EMITView(wx.Frame):
                            BestSize(wx.Size(1200, 225)).CaptionVisible(False)
                            )
 
-        self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnSelect)
 
         self.m_mgr.Update()
 
         self._default_perspective = self.m_mgr.SavePerspective()
-
-    def OnSelect(self, event):
-
-        try:
-            # update databases in a generic way
-            selected_page = self.bnb.GetPage(event.GetSelection())
-            if len(selected_page.connection_combobox.GetItems()) == 0:
-                 selected_page.refreshConnectionsListBox()
-
-        except: pass
 
     def _postStart(self):
         # Starts stuff after program has initiated

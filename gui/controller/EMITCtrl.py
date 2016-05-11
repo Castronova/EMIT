@@ -47,8 +47,6 @@ class EMITCtrl(EMITView):
         self.Bind(wx.EVT_MENU, self.on_settings, self._settings_menu)
         self.Bind(wx.EVT_MENU, self.on_close, self._exit)
 
-        events.onSaveFromCanvas += self.on_save_configuration_as
-
         # View Option Bindings
         self.Bind(wx.EVT_MENU, self.on_toggle_console, self._toggle_console_menu)
         self.Bind(wx.EVT_MENU, self.on_default_view, self._default_view_menu)
@@ -57,6 +55,10 @@ class EMITCtrl(EMITView):
         self.Bind(wx.EVT_MENU, self.on_add_csv_file, self._add_file)
         self.Bind(wx.EVT_MENU, self.on_add_net_cdf_file, self._add_netcdf)
         self.Bind(wx.EVT_MENU, self.on_open_dap_viewer, self._open_dap_viewer_menu)
+
+        # All other bindings
+        self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.on_switch_lower_panel_tab)
+        events.onSaveFromCanvas += self.on_save_configuration_as
 
     def check_users_json(self):
         UserCtrl.create_user_json()
@@ -250,6 +252,15 @@ class EMITCtrl(EMITView):
 
         Publisher.sendMessage('SetSavePath', path=path)  # send message to canvascontroller.SaveSimulation
         self.Toolbox.RefreshToolbox()
+
+    def on_switch_lower_panel_tab(self, event):
+        try:
+            # update databases in a generic way
+            selected_page = self.bnb.GetPage(event.GetSelection())
+            if len(selected_page.connection_combobox.GetItems()) == 0:
+                 selected_page.refreshConnectionsListBox()
+
+        except: pass
 
     def on_settings(self, event):
         SettingsCtrl(self.Canvas.GetTopLevelParent())

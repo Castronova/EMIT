@@ -68,6 +68,8 @@ class LinkCtrl(LinkView):
         self.temporal_combo.Bind(wx.EVT_COMBOBOX, self.on_select_temporal)
         self.spatial_combo.Bind(wx.EVT_COMBOBOX, self.on_select_spatial)
 
+        self.Bind(wx.EVT_SIZE, self.frame_resizing)
+
     def activateSwap(self):
         if self.swap == True:
             self.swap_button.Enable()
@@ -115,6 +117,11 @@ class LinkCtrl(LinkView):
             items.append(engine.getModelById(value.source_id)["name"])
 
         return all_same(items)
+
+    def frame_resizing(self, event):
+        self.resize_grid_to_fill_white_space(self.input_grid)
+        self.resize_grid_to_fill_white_space(self.output_grid)
+        event.Skip()  # In a sizer-based layout, event.Skip() will catch all size events
 
     def getInputModelText(self):
         if self.input_component['id'] == self.__selected_link.target_id:
@@ -285,9 +292,10 @@ class LinkCtrl(LinkView):
         Returns: None
 
         """
+        frame = wx.Frame(self.parent, size=(630, 630), style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE)
 
         title = self.getOutputModelText() + " --> " + self.getInputModelText()
-        controller = SpatialCtrl(self.parent, title)
+        controller = SpatialCtrl(frame)
 
         # input exchange item -> iei
         iei = controller.get_input_exchange_item_by_id(self.__selected_link.target_id)
@@ -303,6 +311,9 @@ class LinkCtrl(LinkView):
 
         controller.add_input_combo_choices(igeom.keys())
         controller.add_output_combo_choices(ogeom.keys())
+
+        frame.SetTitle(title)
+        frame.Show()
 
     def on_select_output(self, event):
         """

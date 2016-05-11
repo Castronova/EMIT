@@ -80,7 +80,7 @@ class SpatialPage(wx.Panel):
         wx.Panel.__init__(self, parent)
         from gui.controller.SpatialCtrl import SpatialCtrl
 
-        self.controller = SpatialCtrl(self, "some title")
+        self.controller = SpatialCtrl(self)
 
 
 class MyPropertyGrid(wx.propgrid.PropertyGrid):

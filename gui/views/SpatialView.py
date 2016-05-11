@@ -4,18 +4,13 @@ import wx.grid
 from gui.controller.PlotForSiteViewerCtrl import PlotForSiteViewerCtrl
 
 
-class SpatialView(wx.Frame):
-
-    def __init__(self, parent):
-
-         # this style makes the window non-resizable
-        wx.Frame.__init__(self, parent=parent, size=(630,640),
-                          style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
+class SpatialView:
+    def __init__(self, panel):
 
         # Creating all the necessary panels
-        top_panel = wx.Panel(self)
-        middle_panel = wx.Panel(self)
-        lower_panel = wx.Panel(self)
+        top_panel = wx.Panel(panel)
+        middle_panel = wx.Panel(panel)
+        lower_panel = wx.Panel(panel)
 
         # create the sizers
         sizer_top_panel = wx.BoxSizer(wx.HORIZONTAL)
@@ -35,7 +30,6 @@ class SpatialView(wx.Frame):
         sizer_middle_panel.Add(self.output_combobox, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
         middle_panel.SetSizer(sizer_middle_panel)
 
-
         # add elements to the bottom panel
         self.input_grid = wx.grid.Grid(lower_panel)
         self.output_grid = wx.grid.Grid(lower_panel)
@@ -53,9 +47,8 @@ class SpatialView(wx.Frame):
         sizer_spatial_view.Add(top_panel, 1, wx.EXPAND | wx.ALL, 2)
         sizer_spatial_view.Add(middle_panel, 0, wx.EXPAND | wx.ALL, 2)
         sizer_spatial_view.Add(lower_panel, 1, wx.EXPAND | wx.ALL, 2)
-        self.SetSizer(sizer_spatial_view)
+        panel.SetSizer(sizer_spatial_view)
 
-        self.Show()
 
 def setup_grid(grid, title):
     """

@@ -12,8 +12,8 @@ from sprint import *
 
 class SpatialCtrl(SpatialView):
 
-    def __init__(self, parent, title):
-        SpatialView.__init__(self, parent)
+    def __init__(self, panel):
+        SpatialView.__init__(self, panel)
 
         self.raw_input_data = None
         self.raw_output_data = None
@@ -29,8 +29,18 @@ class SpatialCtrl(SpatialView):
         self.input_combobox.Bind(wx.EVT_COMBOBOX, self.on_combo)
         self.output_combobox.Bind(wx.EVT_COMBOBOX, self.on_combo)
         self.plot.setAxisLabel("my X axis", "My y axis")
+        panel.Bind(wx.EVT_SIZE, self.frame_resizing)
 
-        self.SetTitle(title)
+    def frame_resizing(self, event):
+        self.resize_grid_to_fill_white__space(self.input_grid)
+        self.resize_grid_to_fill_white__space(self.output_grid)
+        event.Skip()
+
+    def resize_grid_to_fill_white__space(self, grid):
+        col_size = grid.GetColSize(0)
+        C, R = grid.GetSize()
+        if C - col_size > 0:
+            grid.SetColSize(1, C - col_size)
 
     def add_input_combo_choices(self, items):
         self.input_combobox.AppendItems(items)

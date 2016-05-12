@@ -1,12 +1,20 @@
+import sys
 import wx
 import wx.xrc
 import wx.propgrid as wxpg
 
 class ModelView(wx.Frame):
     def __init__(self, parent, edit=True, spatial=False, temporal=False, properties=True, configuration=False):
+        if sys.platform == "darwin":
+            width, height = (640, 690)
+        elif sys.platform == "win32":
+            width, height = ()
+        else:
+            width, height = (640, 725)
+
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title='Model Properties', pos=wx.DefaultPosition,
-                          size=wx.Size(650, 700),
-                          style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
+                          size=wx.Size(width, height),
+                          style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE)
 
         self.edit = edit
         self.spatial = spatial

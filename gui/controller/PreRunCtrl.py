@@ -1,9 +1,6 @@
 import os
 import time
-
 import wx
-
-import environment
 from coordinator import engineAccessors, users
 from emitLogging import elog
 from gui.controller.UserCtrl import UserCtrl
@@ -20,52 +17,78 @@ class PreRunViewCtrl(PreRunView):
             self.variableList.InsertColumn(i, str(table_columns[i]))
 
         self._data = None
+        self.user_data = None
 
         # populate outputs table
-        self.populateVariableList()
-
-        # get all known user accounts
-        path = os.environ['APP_USER_PATH']
-        self.user_data = users.jsonToDict(path)
-
-        # self.accounts = UserCtrl.users_json_file_to_object()
+        self.populate_variable_list()
 
         # initialize bindings for Run, Add, and Cancel
-        self.cancel_button.Bind(wx.EVT_BUTTON, self.OnCancel)
-        self.run_button.Bind(wx.EVT_BUTTON, self.OnRun)
-        self.add_account_button.Bind(wx.EVT_BUTTON, self.OnAddNew)
+        self.cancel_button.Bind(wx.EVT_BUTTON, self.on_cancel)
+        self.run_button.Bind(wx.EVT_BUTTON, self.on_run)
+        self.add_account_button.Bind(wx.EVT_BUTTON, self.on_add_new)
 
         # populate the database_combo control with known databases
-        self.setDatabaseComboDefault()
+        self.set_database_combo_default()
 
-        # populate the account droplist with known users
-        self.refreshUserAccount()
+        # populate the account drop list with known users
+        self.refresh_user_account()
 
-    def setDatabaseComboDefault(self):
-        dbs = self.getDatabases()
-        db_names = [db['name'] for db in dbs.itervalues()]
-        self.database_combo.AppendItems(db_names)
-        for i in range(0, self.database_combo.GetCount()):
-            if "local" in self.database_combo.GetString(i):
-                self.database_combo.SetSelection(i)
-                return
-
-        # If local is not found set it to the first value
-        self.database_combo.SetSelection(0)
-
-    def getAccountID(self, person, organization):
+    def get_account_id(self, person, organization):
         return '%s [%s]' % (person.last_name, organization.name)
 
-    def refreshUserAccount(self):
-        self.account_combo.Clear()
-        account_names = []
-        for affiliation in self.user_data.itervalues():
-            account_names.append(affiliation.ID())
+    def get_databases(self):
+        '''
+        Queries the engine for the known databases
+        :return: a list of databases that are loaded into the engine
+        '''
 
-        self.account_combo.AppendItems(account_names)
-        self.account_combo.SetSelection(0)
+        # query the engine to get all available database connections
+        available_connections = engineAccessors.getDbConnections()
+        return available_connections
 
-    def populateVariableList(self):
+    def get_selected_items(self):
+        '''
+        builds a dictionary containing lists of all output variables that have been selected for saving,
+         by component name
+        :return: dictionary of datasets to save
+        '''
+        datasets = {}
+        num = self.variableList.GetItemCount()
+        for i in range(num):
+            # get the component name and add it to the datasets dictionary
+            component_name = self.variableList.GetItemText(i, 1)
+            if component_name not in datasets:
+                datasets[component_name] = []
+
+            # add variable if selected
+            if self.variableList.IsChecked(i):
+                variable_name = self.variableList.GetItemText(i, 0)
+                datasets[component_name].append(variable_name)
+
+        return datasets
+
+    def get_user_info(self):
+        account = self.account_combo.GetValue()
+
+        # get the user account from selected user_name
+        for affiliation_id in self.user_data.iterkeys():
+            if affiliation_id == account:
+                return self.user_data[affiliation_id]
+
+    def insert_data(self, data):
+        if isinstance(data, dict):
+            col_number = 0
+            for key, values in data.iteritems():
+                for value in values:
+                    pos = self.variableList.InsertStringItem(col_number, str(value))
+                    col_number += 1
+                    self.variableList.SetStringItem(pos, col_number, str(key))
+                    col_number = 0
+        else:
+            elog.debug("PreRunViewCtrl.insert_data must be a dictionary")
+        return
+
+    def populate_variable_list(self):
         if len(engineAccessors.getAllLinks()) < 1:
             elog.info("No links have been added")
             return
@@ -87,18 +110,30 @@ class PreRunViewCtrl(PreRunView):
             self.autoSizeColumns()
             self.alternateRowColor()
 
-    def insert_data(self, data):
-        if isinstance(data, dict):
-            col_number = 0
-            for key, values in data.iteritems():
-                for value in values:
-                    pos = self.variableList.InsertStringItem(col_number, str(value))
-                    col_number += 1
-                    self.variableList.SetStringItem(pos, col_number, str(key))
-                    col_number = 0
-        else:
-            elog.debug("PreRunViewCtrl.insert_data must be a dictionary")
-        return
+    def refresh_user_account(self):
+        self.account_combo.Clear()
+
+        # Get users
+        path = os.environ['APP_USER_PATH']
+        self.user_data = users.jsonToDict(path)
+        account_names = []
+        for affiliation in self.user_data.itervalues():
+            account_names.append(affiliation.ID())
+
+        self.account_combo.AppendItems(account_names)
+        self.account_combo.SetSelection(0)
+
+    def set_database_combo_default(self):
+        dbs = self.get_databases()
+        db_names = [db['name'] for db in dbs.itervalues()]
+        self.database_combo.AppendItems(db_names)
+        for i in range(0, self.database_combo.GetCount()):
+            if "local" in self.database_combo.GetString(i):
+                self.database_combo.SetSelection(i)
+                return
+
+        # If local is not found set it to the first value
+        self.database_combo.SetSelection(0)
 
     def sort_output_model(self, models):
         output_name_list = {}
@@ -107,25 +142,25 @@ class PreRunViewCtrl(PreRunView):
             output_name_list[model_name] = [ei['name'] for ei in oei]
         return output_name_list
 
-    def OnCancel(self, e):
+    #################################
+    # EVENTS
+    #################################
+
+    def on_add_new(self, e):
+        controller = UserCtrl(self)
+        controller.CenterOnScreen()
+        controller.Show()
+
+    def on_cancel(self, e):
         self.Close(True)
 
-    def get_user_info(self):
-        account = self.account_combo.GetValue()
-
-        # get the user account from selected user_name
-        for affiliation_id in self.user_data.iterkeys():
-           if  affiliation_id == account:
-               return self.user_data[affiliation_id]
-
-
-    def OnRun(self, e):
+    def on_run(self, e):
 
         # get data to send to the engine
         name = self.simulation_name_textbox.GetValue()
         db = self.database_combo.GetValue()
         # user_name = self.account_combo.GetValue()
-        datasets = self.getSelectedItems()
+        datasets = self.get_selected_items()
 
         user_info = self.get_user_info()
 
@@ -151,39 +186,3 @@ class PreRunViewCtrl(PreRunView):
         engineAccessors.runSimulation(**kwargs)
 
         self.Close()
-
-    def getSelectedItems(self):
-        '''
-        builds a dictionary containing lists of all output variables that have been selected for saving,
-         by component name
-        :return: dictionary of datasets to save
-        '''
-        datasets = {}
-        num = self.variableList.GetItemCount()
-        for i in range(num):
-            # get the component name and add it to the datasets dictionary
-            component_name = self.variableList.GetItemText(i,1)
-            if component_name not in datasets:
-                datasets[component_name] = []
-
-            # add variable if selected
-            if self.variableList.IsChecked(i):
-                variable_name = self.variableList.GetItemText(i, 0)
-                datasets[component_name].append(variable_name)
-
-        return datasets
-
-    def getDatabases(self):
-        '''
-        Queries the engine for the known databases
-        :return: a list of databases that are loaded into the engine
-        '''
-
-        # query the engine to get all available database connections
-        available_connections = engineAccessors.getDbConnections()
-        return available_connections
-
-    def OnAddNew(self, e):
-        controller = UserCtrl(self)
-        controller.CenterOnScreen()
-        controller.Show()

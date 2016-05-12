@@ -70,36 +70,36 @@ class UserCtrl(UserView):
         self.organization_data = {}
 
         # enable and disable buttons
-        self.editOrganization.Disable()
-        self.removeOrganization.Disable()
+        self.edit_organization_btn.Disable()
+        self.remove_organization_btn.Disable()
 
         # initialize bindings
-        self.firstnameTextBox.Bind(wx.EVT_TEXT, self.check_save)
-        self.lastnameTextBox.Bind(wx.EVT_TEXT, self.check_save)
+        self.first_name_text_box.Bind(wx.EVT_TEXT, self.check_save)
+        self.last_name_text_box.Bind(wx.EVT_TEXT, self.check_save)
         # self.phoneTextBox.Bind(wx.EVT_TEXT, self.on_text_enter)
         # self.emailTextBox.Bind(wx.EVT_TEXT, self.on_text_enter)
         # self.addressTextBox.Bind(wx.EVT_TEXT, self.on_text_enter)
         # self.startDatePicker.Bind(wx.EVT_TEXT, self.on_text_enter)
-        self.okbutton.Bind(wx.EVT_BUTTON, self.on_ok)
-        self.addOrganization.Bind(wx.EVT_BUTTON, self.add_organization_clicked)
-        self.removeOrganization.Bind(wx.EVT_BUTTON, self.remove_organization_clicked)
-        self.cancelButton.Bind(wx.EVT_BUTTON, self.on_cancel)
-        self.editOrganization.Bind(wx.EVT_BUTTON, self.on_edit)
-        self.organizationListBox.Bind(wx.EVT_LISTBOX, self.on_organization_selected)
+        self.ok_button.Bind(wx.EVT_BUTTON, self.on_ok)
+        self.add_organization_btn.Bind(wx.EVT_BUTTON, self.add_organization_clicked)
+        self.remove_organization_btn.Bind(wx.EVT_BUTTON, self.remove_organization_clicked)
+        self.cancel_button.Bind(wx.EVT_BUTTON, self.on_cancel)
+        self.edit_organization_btn.Bind(wx.EVT_BUTTON, self.on_edit)
+        self.organization_list_box.Bind(wx.EVT_LISTBOX, self.on_organization_selected)
         # listen to OrganizationClose messages from the OrganizationCtrl class
         pub.subscribe(self.on_organization_close, 'OrganizationClose')
 
     def on_organization_selected(self, event):
         # get the selection
-        selection = self.organizationListBox.GetSelection()
+        selection = self.organization_list_box.GetSelection()
 
         # enable/disable the edit and remove buttons
         if selection > -1:
-            self.removeOrganization.Enable()
-            self.editOrganization.Enable()
+            self.remove_organization_btn.Enable()
+            self.edit_organization_btn.Enable()
         else:
-            self.removeOrganization.Disable()
-            self.editOrganization.Disable()
+            self.remove_organization_btn.Disable()
+            self.edit_organization_btn.Disable()
 
     def on_organization_close(self):
         self.check_save(None)
@@ -140,8 +140,8 @@ class UserCtrl(UserView):
 
     def get_text_box_values(self):
         data = {"person": {
-            "first_name": self.firstnameTextBox.GetValue(),
-            "last_name": self.lastnameTextBox.GetValue(),
+            "first_name": self.first_name_text_box.GetValue(),
+            "last_name": self.last_name_text_box.GetValue(),
         }}
 
         organizations = []
@@ -189,10 +189,10 @@ class UserCtrl(UserView):
             controller.Show()
 
     def on_edit(self, event):
-        index = self.organizationListBox.GetSelection()
+        index = self.organization_list_box.GetSelection()
         if index == -1:
             return
-        selected = self.organizationListBox.GetString(index)
+        selected = self.organization_list_box.GetString(index)
         data = self.organization_data[selected]
         OrganizationCtrl(self, data=data)
 
@@ -278,12 +278,12 @@ class UserCtrl(UserView):
         self.Close()
 
     def check_save(self, event):
-        if self.firstnameTextBox.GetValue() \
-                and self.lastnameTextBox.GetValue() \
-                and self.organizationListBox.GetCount() > 0:
-            self.okbutton.Enable()
+        if self.first_name_text_box.GetValue() \
+                and self.last_name_text_box.GetValue() \
+                and self.organization_list_box.GetCount() > 0:
+            self.ok_button.Enable()
         else:
-            self.okbutton.Disable()
+            self.ok_button.Disable()
 
     def parse_organization_date(self, data):
         for i in range(len(data)):
@@ -295,15 +295,15 @@ class UserCtrl(UserView):
         for key, value in self.organization_data.iteritems():
             choices.append(key)
 
-        self.organizationListBox.SetItems(choices)
+        self.organization_list_box.SetItems(choices)
 
     def remove_organization_clicked(self, event):
-        index = self.organizationListBox.GetSelection()
+        index = self.organization_list_box.GetSelection()
         if index == -1:
             return
-        selected = self.organizationListBox.GetString(index)
+        selected = self.organization_list_box.GetString(index)
         del self.organization_data[selected]
-        self.organizationListBox.Delete(index)
+        self.organization_list_box.Delete(index)
 
     @staticmethod
     def users_json_file_to_object():

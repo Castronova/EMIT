@@ -1,72 +1,77 @@
-__author__ = 'ryan'
-
 import wx
+
 
 class AddConnectionView(wx.Frame):
     def __init__(self, parent):
         wx.Frame.__init__(self, parent=parent, title="Add New Connection",
-                          style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
+                          style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE)
 
+        # Create panel(s)
         self.panel = wx.Panel(self)
-        self.OdmSelected = wx.BoxSizer(wx.VERTICAL)
-        self.WofSelected = wx.BoxSizer(wx.VERTICAL)
-        gbs = wx.GridBagSizer(vgap=5, hgap=5)
 
-        self.title = wx.StaticText(self.panel, label="*Connection Name:")
-        self.title_txtctrl = wx.TextCtrl(self.panel, size=(150, -1))
-
-        self.description  = wx.StaticText(self.panel, label="Description:")
-        self.description_txtctrl = wx.TextCtrl(self.panel, size=(150, -1))
-
-        self.connectionType = wx.StaticText(self.panel, label="*Connection Type:")
-        self.odmRadio = wx.RadioButton(self.panel, label="ODM2")
-        self.wofRadio = wx.RadioButton(self.panel, label="WOF")
-
-        self.engine = wx.StaticText(self.panel, label="*Engine:")
-        self.engine_combo = wx.ComboBox(self.panel, value="---", choices=['PostgreSQL', 'MySQL', 'SQLite'], size=(150, -1))
-
-        self.address = wx.StaticText(self.panel, label="*Database Address:")
-        self.address_txtctrl = wx.TextCtrl(self.panel, size=(150, -1))
-
-        self.database = wx.StaticText(self.panel, label="*Database Name:")
-        self.database_txtctrl = wx.TextCtrl(self.panel, size=(150, -1))
-
-        self.user = wx.StaticText(self.panel, -1, "*Username:")
-        self.user_txtctrl = wx.TextCtrl(self.panel, size=(150, -1))
-
-        self.password = wx.StaticText(self.panel, -1, "Password:")
-        self.password_txtctrl = wx.TextCtrl(self.panel, size=(150, -1))
-
+        # Create components
+        # Left column
+        self.connection_name_label = wx.StaticText(self.panel, label="*Connection Name:")
+        self.description_label = wx.StaticText(self.panel, label="Description:")
+        self.connection_type_label = wx.StaticText(self.panel, label="*Connection Type:")
+        self.engine_label = wx.StaticText(self.panel, label="*Engine:")
+        self.database_address_label = wx.StaticText(self.panel, label="*Database Address:")
+        self.database_name_label = wx.StaticText(self.panel, label="*Database Name:")
+        self.user_label = wx.StaticText(self.panel, -1, "*Username:")
+        self.password_label = wx.StaticText(self.panel, -1, "Password:")
         break_line = wx.StaticLine(self.panel)
-        self.ok_btn = wx.Button(self.panel, label="OK")
+
+        # Right column
+        self.connection_name_txt_ctrl = wx.TextCtrl(self.panel)
+        self.description_txt_ctrl = wx.TextCtrl(self.panel)
+        self.odm_radio = wx.RadioButton(self.panel, label="ODM2")
+        self.wof_radio = wx.RadioButton(self.panel, label="WOF")
+        self.engine_combo = wx.ComboBox(self.panel, value="---", choices=['PostgreSQL', 'MySQL', 'SQLite'])
+        self.database_address_txt_ctrl = wx.TextCtrl(self.panel)
+        self.database_name_txt_ctrl = wx.TextCtrl(self.panel)
+        self.username_txt_ctrl = wx.TextCtrl(self.panel)
+        self.password_txt_ctrl = wx.TextCtrl(self.panel)
+        self.ok_btn = wx.Button(self.panel, wx.ID_OK)
+
         self.ok_btn.SetDefault()
         self.ok_btn.Disable()
 
-        #  Required fields are set to bold
-        self.title.SetFont(self.title.GetFont().MakeBold())
-        self.connectionType.SetFont(self.title.GetFont().MakeBold())
-        self.engine.SetFont(self.engine.GetFont().MakeBold())
-        self.address.SetFont(self.address.GetFont().MakeBold())
-        self.database.SetFont(self.database.GetFont().MakeBold())
-        self.user.SetFont(self.user.GetFont().MakeBold())
-        gbs.Add(self.title, pos=(0, 0), border=2), gbs.Add(self.title_txtctrl, pos=(0, 1), border=2)
-        gbs.Add(self.description, pos=(1, 0), border=2), gbs.Add(self.description_txtctrl, pos=(1, 1), border=2)
-        gbs.Add(self.connectionType, pos=(2,0), border=2), gbs.Add(self.odmRadio, pos=(2,1), border=2), gbs.Add(self.wofRadio, pos=(2,2), border=2)
-        gbs.Add(self.engine, pos=(3, 0), border=2), gbs.Add(self.engine_combo, pos=(3, 1), border=2)
-        gbs.Add(self.address, pos=(4, 0), border=2), gbs.Add(self.address_txtctrl, pos=(4, 1), border=2)
-        gbs.Add(self.database, pos=(5, 0), border=2), gbs.Add(self.database_txtctrl, pos=(5, 1), border=2)
-        gbs.Add(self.user, pos=(6, 0), border=2), gbs.Add(self.user_txtctrl, pos=(6, 1), border=2)
-        gbs.Add(self.password, pos=(7, 0), border=2), gbs.Add(self.password_txtctrl, pos=(7, 1), border=2)
-        gbs.Add(break_line, pos=(8, 0), span=(1, 2), flag=wx.EXPAND | wx.TOP, border=10)
-        gbs.Add(self.ok_btn, pos=(9, 1), flag=wx.ALIGN_RIGHT, border=2)
+        #  Make required fields bold
+        self.connection_name_label.SetFont(self.connection_name_label.GetFont().MakeBold())
+        self.connection_type_label.SetFont(self.connection_name_label.GetFont().MakeBold())
+        self.engine_label.SetFont(self.engine_label.GetFont().MakeBold())
+        self.database_address_label.SetFont(self.database_address_label.GetFont().MakeBold())
+        self.database_name_label.SetFont(self.database_name_label.GetFont().MakeBold())
+        self.user_label.SetFont(self.user_label.GetFont().MakeBold())
 
-        self.OdmSelected.Add(gbs, 1, wx.EXPAND | wx.ALL, 10)
-        self.WofSelected.Add(gbs, 1, wx.EXPAND | wx.ALL, 10)
-        self.panel.SetSizer(self.OdmSelected)
+        # Create sizers
+        fgs = wx.FlexGridSizer(8, 2, 5, 5)
+        radio_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        button_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.OdmSelected.Fit(self)  # Makes the frame/panel a nice size so everything is compact
-        self.WofSelected.Fit(self)
+        radio_sizer.Add(self.odm_radio, 1, wx.EXPAND | wx.ALL, 0)
+        radio_sizer.Add(self.wof_radio, 1, wx.EXPAND | wx.ALL, 0)
+
+        button_sizer.Add(self.ok_btn, 0, wx.ALL | wx.ALIGN_RIGHT, 0)
+
+        # Add components to sizer
+        fgs.AddMany([self.connection_name_label, (self.connection_name_txt_ctrl, 1, wx.EXPAND),
+                     self.description_label, (self.description_txt_ctrl, 1, wx.EXPAND),
+                     self.connection_type_label, (radio_sizer, 1, wx.EXPAND),
+                     self.engine_label, (self.engine_combo, 1, wx.EXPAND),
+                     self.database_address_label, (self.database_address_txt_ctrl, 1, wx.EXPAND),
+                     self.database_name_label, (self.database_name_txt_ctrl, 1, wx.EXPAND),
+                     self.user_label, (self.username_txt_ctrl, 1, wx.EXPAND),
+                     self.password_label, (self.password_txt_ctrl, 1, wx.EXPAND)])
+
+        hbox = wx.BoxSizer(wx.VERTICAL)  # wrapping the flex grid sizer in order to put some space around the window
+        hbox.Add(fgs, proportion=1, flag=wx.ALL | wx.EXPAND, border=10)
+        hbox.Add(break_line, 0, wx.EXPAND | wx.ALL, border=5)
+        hbox.Add(button_sizer, 0, wx.ALL | wx.ALIGN_RIGHT, border=5)
+
+        fgs.AddGrowableCol(1, 1)
+
+        self.panel.SetSizer(hbox)
+        hbox.Fit(self)
+
         self.Show()
-
-    def ChangeTo(self, change):
-        print "here"

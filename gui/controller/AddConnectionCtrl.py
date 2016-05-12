@@ -1,9 +1,7 @@
-
 import wx
 from wx.lib.pubsub import pub as Publisher
-
 import environment
-#from emitLogging import elog
+from emitLogging import elog
 from gui.views.AddConnectionView import AddConnectionView
 import os
 from webservice import wateroneflow
@@ -14,63 +12,23 @@ class AddConnectionCtrl(AddConnectionView):
     def __init__(self, parent):
         AddConnectionView.__init__(self, parent)
 
-        self.address_txtctrl.Bind(wx.EVT_TEXT, self.OnTextEnter)
-        self.database_txtctrl.Bind(wx.EVT_TEXT, self.OnTextEnter)
-        self.user_txtctrl.Bind(wx.EVT_TEXT, self.OnTextEnter)
-        self.title_txtctrl.Bind(wx.EVT_TEXT, self.OnTextEnter)
-        self.ok_btn.Bind(wx.EVT_BUTTON, self.onOktBtn)
-        self.engine_combo.Bind(wx.EVT_COMBOBOX, self.DropBoxChange)
-        self.wofRadio.Bind(wx.EVT_RADIOBUTTON, self.ComboboxChange)
-        self.odmRadio.Bind(wx.EVT_RADIOBUTTON, self.ComboboxChange)
+        self.database_address_txt_ctrl.Bind(wx.EVT_TEXT, self.on_text_entered)
+        self.database_name_txt_ctrl.Bind(wx.EVT_TEXT, self.on_text_entered)
+        self.username_txt_ctrl.Bind(wx.EVT_TEXT, self.on_text_entered)
+        self.connection_name_txt_ctrl.Bind(wx.EVT_TEXT, self.on_text_entered)
+        self.ok_btn.Bind(wx.EVT_BUTTON, self.on_ok_btn)
+        self.engine_combo.Bind(wx.EVT_COMBOBOX, self.on_drop_box_change)
+        self.wof_radio.Bind(wx.EVT_RADIOBUTTON, self.on_combo_box_change)
+        self.odm_radio.Bind(wx.EVT_RADIOBUTTON, self.on_combo_box_change)
 
-    def ComboboxChange(self, event):
-        if self.odmRadio.GetValue():
-            print "ODM2 selected"
-            self.engine.Enable()
-            self.engine_combo.Enable()
-            self.password.Enable()
-            self.password_txtctrl.Enable()
-            self.user.Enable()
-            self.user_txtctrl.Enable()
-            self.address.LabelText = "*Database Address"
-            self.database.LabelText = "*Database Name"
-        else:
-            print "WOF selected"
-            self.engine.Disable()
-            self.engine_combo.Disable()
-            self.user.Disable()
-            self.user_txtctrl.Disable()
-            self.password.Disable()
-            self.password_txtctrl.Disable()
-            self.address.LabelText = "*WOF WSDL"
-            self.database.LabelText = "*Network Code"
-
-    def DropBoxChange(self, event):
-        if self.engine_combo.GetValue() == "MySQL" or self.engine_combo.GetValue() == "PostgreSQL":
-            self.address.Enable()
-            self.address_txtctrl.Enable()
-            self.database.Enable()
-            self.database_txtctrl.Enable()
-            self.database.LabelText = "*Database:"
-            self.user.Enable()
-            self.user.LabelText = "*User:"
-            self.password.Enable()
-        elif self.engine_combo.GetValue() == "SQLite":
-            self.user.Disable()
-            self.user_txtctrl.Disable()
-            self.password.Disable()
-            self.password_txtctrl.Disable()
-            self.database.Disable()
-            self.database_txtctrl.Disable()
-
-    def getConnectionParams(self):
-        title = self.title_txtctrl.GetValue()
-        desc = self.description_txtctrl.GetValue()
+    def get_connection_params(self):
+        title = self.connection_name_txt_ctrl.GetValue()
+        desc = self.description_txt_ctrl.GetValue()
         engine = self.engine_combo.GetValue().lower()
-        address = self.address_txtctrl.GetValue()
-        db = self.database_txtctrl.GetValue()
-        user = self.user_txtctrl.GetValue()
-        pwd = self.password_txtctrl.GetValue()
+        address = self.database_address_txt_ctrl.GetValue()
+        db = self.database_name_txt_ctrl.GetValue()
+        user = self.username_txt_ctrl.GetValue()
+        pwd = self.password_txt_ctrl.GetValue()
 
         return dict(name = title,
                 description = desc,
@@ -80,34 +38,55 @@ class AddConnectionCtrl(AddConnectionView):
                 username = user,
                 password=pwd)
 
-    def OnTextEnter(self, event):
-        if self.odmRadio.GetValue():
-            if self.engine_combo.GetValue() == "MySQL" or self.engine_combo.GetValue() == "PostgreSQL":
-                if self.address_txtctrl.GetValue() == '' or  \
-                        self.database_txtctrl.GetValue() == '' or  \
-                        self.user_txtctrl.GetValue() == '' or \
-                        self.title_txtctrl.GetValue() == '':
-                    self.ok_btn.Disable()
-                else:
-                    self.ok_btn.Enable()
-            if self.engine_combo.GetValue() == "SQLite":
-                if self.address_txtctrl.GetValue() == '' or self.title_txtctrl.GetValue() == '':
-                    self.ok_btn.Disable()
-                else:
-                    self.ok_btn.Enable()
-        else:
-            if self.address_txtctrl.GetValue() == '' or \
-                    self.database_txtctrl.GetValue() == '' or \
-                    self.title_txtctrl.GetValue() == '':
-                self.ok_btn.Disable()
-            else:
-                self.ok_btn.Enable()
+    ####################################
+    # EVENTS
+    ####################################
 
-    def onOktBtn(self, event):
+    def on_combo_box_change(self, event):
+        if self.odm_radio.GetValue():
+            print "ODM2 selected"
+            self.engine_label.Enable()
+            self.engine_combo.Enable()
+            self.password_label.Enable()
+            self.password_txt_ctrl.Enable()
+            self.user_label.Enable()
+            self.username_txt_ctrl.Enable()
+            self.database_address_label.LabelText = "*Database Address"
+            self.database_name_label.LabelText = "*Database Name"
+        else:
+            print "WOF selected"
+            self.engine_label.Disable()
+            self.engine_combo.Disable()
+            self.user_label.Disable()
+            self.username_txt_ctrl.Disable()
+            self.password_label.Disable()
+            self.password_txt_ctrl.Disable()
+            self.database_address_label.LabelText = "*WOF WSDL"
+            self.database_name_label.LabelText = "*Network Code"
+
+    def on_drop_box_change(self, event):
+        if self.engine_combo.GetValue() == "MySQL" or self.engine_combo.GetValue() == "PostgreSQL":
+            self.database_address_label.Enable()
+            self.database_address_txt_ctrl.Enable()
+            self.database_name_label.Enable()
+            self.database_name_txt_ctrl.Enable()
+            self.database_name_label.LabelText = "*Database:"
+            self.user_label.Enable()
+            self.user_label.LabelText = "*User:"
+            self.password_label.Enable()
+        elif self.engine_combo.GetValue() == "SQLite":
+            self.user_label.Disable()
+            self.username_txt_ctrl.Disable()
+            self.password_label.Disable()
+            self.password_txt_ctrl.Disable()
+            self.database_name_label.Disable()
+            self.database_name_txt_ctrl.Disable()
+
+    def on_ok_btn(self, event):
 
         # Add ODM2 Connection
-        if self.odmRadio.GetValue():
-            params = self.getConnectionParams()
+        if self.odm_radio.GetValue():
+            params = self.get_connection_params()
             if environment.saveConnection(params):
                 Publisher.sendMessage('DatabaseConnection',
                                               title=params['name'],
@@ -127,7 +106,7 @@ class AddConnectionCtrl(AddConnectionView):
 
         # Add WOF Connection
         else:
-            params = self.getConnectionParams()
+            params = self.get_connection_params()
             currentdir = os.path.dirname(os.path.abspath(__file__))
             wof_txt = os.path.abspath(os.path.join(currentdir, '../../data/wofsites'))
             valid = True
@@ -152,3 +131,26 @@ class AddConnectionCtrl(AddConnectionView):
                 self.Close()
             else:
                 wx.MessageBox('\aI was unable to verify the connection with the information provided\nPlease verify you have inputed the right information')
+
+    def on_text_entered(self, event):
+        if self.odm_radio.GetValue():
+            if self.engine_combo.GetValue() == "MySQL" or self.engine_combo.GetValue() == "PostgreSQL":
+                if self.database_address_txt_ctrl.GetValue() == '' or  \
+                        self.database_name_txt_ctrl.GetValue() == '' or  \
+                        self.username_txt_ctrl.GetValue() == '' or \
+                        self.connection_name_txt_ctrl.GetValue() == '':
+                    self.ok_btn.Disable()
+                else:
+                    self.ok_btn.Enable()
+            if self.engine_combo.GetValue() == "SQLite":
+                if self.database_address_txt_ctrl.GetValue() == '' or self.connection_name_txt_ctrl.GetValue() == '':
+                    self.ok_btn.Disable()
+                else:
+                    self.ok_btn.Enable()
+        else:
+            if self.database_address_txt_ctrl.GetValue() == '' or \
+                    self.database_name_txt_ctrl.GetValue() == '' or \
+                    self.connection_name_txt_ctrl.GetValue() == '':
+                self.ok_btn.Disable()
+            else:
+                self.ok_btn.Enable()

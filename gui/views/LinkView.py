@@ -5,20 +5,11 @@ import wx.grid
 from transform.time import *
 from transform.space import *
 import coordinator.engineAccessors as engine
-import sys
 
 
 class LinkView(wx.Frame):
     def __init__(self, parent, output, input):
-        if sys.platform == 'darwin':
-            width, height = (700, 520)
-        elif sys.platform == 'win32':
-            width, height = (700, 530)
-        else:
-            width, height = (700, 625)
-
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=wx.EmptyString, pos=wx.DefaultPosition,
-                          size=wx.Size(width, height),
                           style=wx.DEFAULT_FRAME_STYLE | wx.FRAME_FLOAT_ON_PARENT)
 
         # Create all necessary panels
@@ -31,8 +22,6 @@ class LinkView(wx.Frame):
         self.output_component = output
         self.input_items = None
         self.output_items = None
-
-        self.SetSizeHintsSz(wx.DefaultSize, wx.DefaultSize)
 
         self.link_instructions_text = wx.StaticText(parent=panel, label=u"Select add to create a new link")
 
@@ -56,8 +45,6 @@ class LinkView(wx.Frame):
         top_panel_sizer.Add(top_panel_button_sizer, 0)  # Set to 0 so buttons do not resize
 
         self.top_panel.SetSizer(top_panel_sizer)
-        self.top_panel.Layout()
-        top_panel_sizer.Fit(self.top_panel)
 
         ###########################################
         # BUILD MIDDLE PANEL
@@ -121,7 +108,6 @@ class LinkView(wx.Frame):
         bottom_panel_sizer.Add(self.cancel_button, 0, wx.ALL | wx.ALIGN_RIGHT, 5)
         self.bottom_panel.SetSizer(bottom_panel_sizer)
 
-
         ###########################################
         # ADD PANELS TO FRAME SIZER
         ###########################################
@@ -129,12 +115,13 @@ class LinkView(wx.Frame):
         # Add everything to the frame
         frame_sizer = wx.BoxSizer(wx.VERTICAL)
         frame_sizer.Add(self.link_instructions_text, 0, wx.ALL, 5)
-        frame_sizer.Add(self.top_panel, 1, wx.EXPAND | wx.ALL, 5)
+        frame_sizer.Add(self.top_panel, 0, wx.EXPAND | wx.ALL, 5)
         frame_sizer.Add(self.middle_panel, 1, wx.EXPAND | wx.ALL, 5)
-        # proportion = 0 so the bottom_panel stays at the bottom of the frame
+        # proportion=0 so the bottom_panel stays at the bottom of the frame
         frame_sizer.Add(self.bottom_panel, proportion=0, flag=wx.EXPAND | wx.ALL, border=5)
 
         panel.SetSizer(frame_sizer)
+        frame_sizer.Fit(self)  # Sizes the window automatically so the components fit inside the window
 
         self.Centre(wx.BOTH)
 

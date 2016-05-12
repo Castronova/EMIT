@@ -8,7 +8,7 @@ class ModelView(wx.Frame):
         if sys.platform == "darwin":
             width, height = (640, 690)
         elif sys.platform == "win32":
-            width, height = ()
+            width, height = (660, 690)
         else:
             width, height = (640, 725)
 

@@ -13,7 +13,7 @@ class LinkView(wx.Frame):
         if sys.platform == 'darwin':
             width, height = (700, 520)
         elif sys.platform == 'win32':
-            width, height = (660, 690)
+            width, height = (700, 530)
         else:
             width, height = (700, 625)
 

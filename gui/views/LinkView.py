@@ -69,7 +69,7 @@ class LinkView(wx.Frame):
         self.output_combo = wx.ComboBox(parent=self.middle_panel, value='', size=wx.Size(320, -1), choices=[''])
         self.input_combo = wx.ComboBox(parent=self.middle_panel, value='', size=wx.Size(320, -1), choices=[''])
         self.output_grid = wx.grid.Grid(parent=self.middle_panel, size=(325, -1))
-        self.input_grid = wx.grid.Grid(parent=self.middle_panel, size=wx.Size(325, -1))
+        self.input_grid = wx.grid.Grid(parent=self.middle_panel, size=(325, -1))
         self.init_grid(grid=self.output_grid)
         self.init_grid(self.input_grid)
         self.temporal_text = wx.StaticText(parent=self.middle_panel, label="Temporal Interpolation", style=wx.ALIGN_RIGHT)
@@ -93,7 +93,7 @@ class LinkView(wx.Frame):
         input_sizer.Add(self.input_label, 0, wx.ALL, 5)
         input_sizer.Add(self.input_combo, 0, flag=wx.EXPAND | wx.ALL, border=5)
         input_sizer.Add(self.input_grid, 0, flag=wx.EXPAND | wx.ALL, border=5)
-        input_sizer.Add(self.temporal_combo, 0,wx.EXPAND | wx.ALIGN_LEFT, 5)
+        input_sizer.Add(self.temporal_combo, 0, wx.EXPAND | wx.ALIGN_LEFT, 5)
         input_sizer.Add(self.spatial_combo, 0, wx.EXPAND | wx.ALIGN_LEFT, 5)
 
         # Place input and output sizers onto the middle panel sizer

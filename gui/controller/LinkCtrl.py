@@ -418,7 +418,7 @@ class LinkCtrl(LinkView):
         Returns: None
 
         """
-        frame = wx.Frame(self.parent, size=(630, 630), style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE)
+        frame = wx.Frame(self.parent, size=(630, 685), style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE)
 
         title = self.get_output_model_text() + " --> " + self.get_input_model_text()
         controller = SpatialCtrl(frame)

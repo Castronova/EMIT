@@ -9,12 +9,12 @@ class SpatialView:
 
         # Creating all the necessary panels
         top_panel = wx.Panel(panel)
-        middle_panel = wx.Panel(panel)
-        lower_panel = wx.Panel(panel)
+        bottom_panel = wx.Panel(panel)
 
         # create the sizers
         sizer_top_panel = wx.BoxSizer(wx.HORIZONTAL)
-        sizer_middle_panel = wx.BoxSizer(wx.HORIZONTAL)
+        input_sizer = wx.BoxSizer(wx.VERTICAL)
+        output_sizer = wx.BoxSizer(wx.VERTICAL)
         sizer_lower_panel = wx.BoxSizer(wx.HORIZONTAL)
 
         # add elements to the top panel
@@ -22,31 +22,31 @@ class SpatialView:
         sizer_top_panel.Add(self.plot.plot, 1, wx.EXPAND | wx.ALL, 2)
         top_panel.SetSizer(sizer_top_panel)
 
-        # add elements to the middle panel
-        self.input_combobox = wx.ComboBox(parent=middle_panel, choices=["---"])
-        self.output_combobox = wx.ComboBox(parent=middle_panel, choices=["---"])
-        sizer_middle_panel.Add(self.input_combobox, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
-        sizer_middle_panel.AddSpacer(10)
-        sizer_middle_panel.Add(self.output_combobox, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
-        middle_panel.SetSizer(sizer_middle_panel)
+        # create lower panel components
+        self.input_combobox = wx.ComboBox(parent=bottom_panel, choices=["---"])
+        self.input_grid = wx.grid.Grid(bottom_panel, size=(300, -1))
+        self.output_combobox = wx.ComboBox(parent=bottom_panel, choices=["---"])
+        self.output_grid = wx.grid.Grid(bottom_panel, size=(300, -1))
 
-        # add elements to the bottom panel
-        self.input_grid = wx.grid.Grid(lower_panel)
-        self.output_grid = wx.grid.Grid(lower_panel)
         setup_grid(self.input_grid, 'Input Exchange Item Metadata')
         setup_grid(self.output_grid, 'Output Exchange Item Metadata')
 
-        sizer_lower_panel.Add(self.input_grid, 1, wx.EXPAND|wx.ALL, 10)
-        sizer_lower_panel.AddSpacer(10)
-        sizer_lower_panel.Add(self.output_grid, 1, wx.EXPAND|wx.ALL, 10)
-        lower_panel.SetSizer(sizer_lower_panel)
-        #sizer_middle_panel.AddSpacer(10)
+        # add elements to the bottom panel
+        input_sizer.Add(self.input_combobox, proportion=0, flag=wx.ALL | wx.EXPAND, border=5)
+        # proportion=1 allows the grid to expand while resizing. Setting it to 0 will keep the grid height the same
+        input_sizer.Add(self.input_grid, proportion=1, flag=wx.ALL | wx.EXPAND, border=5)
+        output_sizer.Add(self.output_combobox, proportion=0, flag=wx.ALL | wx.EXPAND, border=5)
+        output_sizer.Add(self.output_grid, proportion=1, flag=wx.ALL | wx.EXPAND, border=5)
+
+        sizer_lower_panel.Add(input_sizer, proportion=1, flag=wx.EXPAND, border=5)
+        sizer_lower_panel.Add(output_sizer, proportion=1, flag=wx.EXPAND, border=5)
+
+        bottom_panel.SetSizer(sizer_lower_panel)
 
         # add panels to frame
         sizer_spatial_view = wx.BoxSizer(wx.VERTICAL)
         sizer_spatial_view.Add(top_panel, 1, wx.EXPAND | wx.ALL, 2)
-        sizer_spatial_view.Add(middle_panel, 0, wx.EXPAND | wx.ALL, 2)
-        sizer_spatial_view.Add(lower_panel, 1, wx.EXPAND | wx.ALL, 2)
+        sizer_spatial_view.Add(bottom_panel, 1, wx.EXPAND | wx.ALL, 2)
         panel.SetSizer(sizer_spatial_view)
 
 

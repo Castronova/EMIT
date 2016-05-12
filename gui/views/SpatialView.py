@@ -1,11 +1,15 @@
 import wx
 import wx.grid
-
+import sys
 from gui.controller.PlotForSiteViewerCtrl import PlotForSiteViewerCtrl
 
 
 class SpatialView:
     def __init__(self, panel):
+        if sys.platform == "darwin":
+            panel.SetSize((625, 635))
+        elif sys.platform == "win32":
+            panel.SetSize((640, 650))
 
         # Creating all the necessary panels
         top_panel = wx.Panel(panel)

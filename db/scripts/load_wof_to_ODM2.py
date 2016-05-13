@@ -256,7 +256,7 @@ def load_wof(dbpath):
     # ParentOrganizationID = NULL (doesn't exist in WaterML)
     organizationInfo = ('Unknown',
                         valuesResult.timeSeries[0].values[0].source[0].sourceCode,
-                        valuesResult.timeSeries[0].values[0].source[0].set_organization_data,
+                        valuesResult.timeSeries[0].values[0].source[0].organization,
                         valuesResult.timeSeries[0].values[0].source[0].sourceDescription,
                         valuesResult.timeSeries[0].values[0].source[0].sourceLink[0])
 

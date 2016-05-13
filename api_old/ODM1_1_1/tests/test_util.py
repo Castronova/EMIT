@@ -114,7 +114,7 @@ def add_qcl(session):
 
 def add_source(session):
     source = Source()
-    source.set_organization_data = "Test Organization"
+    source.organization = "Test Organization"
     source.description = "This is a test"
     source.contact_name = "Test Name"
     source.phone = "555-1234"
@@ -164,7 +164,7 @@ def add_vertical_datum_cv(session):
 def add_lab_method(session):
     lab_method = LabMethod()
     lab_method.name = "Test Lab"
-    lab_method.set_organization_data = "Test Org"
+    lab_method.organization = "Test Org"
     lab_method.method_name = "Test Method"
     lab_method.method_description = "Test Description"
     lab_method.method_link = "Test Link"

@@ -66,12 +66,12 @@ class CanvasCtrl(CanvasView):
 
         # Canvas Pop up menu
         self.popup_menu = wx.Menu()
-        add_link_menu = self.popup_menu.Append(0, "Add Link")
-        load_menu = self.popup_menu.Append(1, "Load")
-        save_menu = self.popup_menu.Append(2, "Save Configuration")
-        save_as_menu = self.popup_menu.Append(3, "Save Configuration As")
-        run_menu = self.popup_menu.Append(4, "Run")
-        clear_menu = self.popup_menu.Append(5, "Clear Configuration")
+        add_link_menu = self.popup_menu.Append(1, "Add Link")
+        load_menu = self.popup_menu.Append(2, "Load")
+        save_menu = self.popup_menu.Append(3, "Save Configuration")
+        save_as_menu = self.popup_menu.Append(4, "Save Configuration As")
+        run_menu = self.popup_menu.Append(5, "Run")
+        clear_menu = self.popup_menu.Append(6, "Clear Configuration")
 
         # Context menu bindings
         self.Bind(wx.EVT_MENU, self.on_add_link, add_link_menu)

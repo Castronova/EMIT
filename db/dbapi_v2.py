@@ -2,7 +2,7 @@ import datetime
 import time
 import uuid
 
-# import apsw as sqlite3
+import apsw as sqlite3
 import numpy
 import sqlalchemy
 from odm2api.ODM2 import models

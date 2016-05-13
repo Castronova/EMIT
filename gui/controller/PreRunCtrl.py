@@ -7,7 +7,7 @@ from gui.controller.UserCtrl import UserCtrl
 from gui.views.PreRunView import PreRunView
 
 
-class PreRunViewCtrl(PreRunView):
+class PreRunCtrl(PreRunView):
     def __init__(self, parent=None):
         PreRunView.__init__(self, parent=parent)
 
@@ -85,7 +85,7 @@ class PreRunViewCtrl(PreRunView):
                     self.variableList.SetStringItem(pos, col_number, str(key))
                     col_number = 0
         else:
-            elog.debug("PreRunViewCtrl.insert_data must be a dictionary")
+            elog.debug("PreRunCtrl.insert_data must be a dictionary")
         return
 
     def populate_variable_list(self):

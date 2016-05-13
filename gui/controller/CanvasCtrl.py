@@ -25,6 +25,7 @@ from gui.views.ContextView import LinkContextMenu, ModelContextMenu, CanvasConte
 from sprint import *
 from transform.space import SpatialInterpolation
 from transform.time import TemporalInterpolation
+from gui.controller.PreRunCtrl import PreRunCtrl
 
 
 class CanvasCtrl(CanvasView):
@@ -63,6 +64,68 @@ class CanvasCtrl(CanvasView):
         self.failed_models = 0
         self.logicCanvasThreads = {}
 
+        # Canvas Pop up menu
+        self.popup_menu = wx.Menu()
+        add_link_menu = self.popup_menu.Append(0, "Add Link")
+        load_menu = self.popup_menu.Append(1, "Load")
+        save_menu = self.popup_menu.Append(2, "Save Configuration")
+        save_as_menu = self.popup_menu.Append(3, "Save Configuration As")
+        run_menu = self.popup_menu.Append(4, "Run")
+        clear_menu = self.popup_menu.Append(5, "Clear Configuration")
+
+        # Context menu bindings
+        self.Bind(wx.EVT_MENU, self.on_add_link, add_link_menu)
+        self.Bind(wx.EVT_MENU, self.on_load, load_menu)
+        self.Bind(wx.EVT_MENU, self.on_save, save_menu)
+        self.Bind(wx.EVT_MENU, self.on_save_as, save_as_menu)
+        self.Bind(wx.EVT_MENU, self.on_run, run_menu)
+        self.Bind(wx.EVT_MENU, self.on_clear_canvas, clear_menu)
+        self.FloatCanvas.Bind(wx.EVT_CONTEXT_MENU, self.on_canvas_right_click)
+
+    def on_canvas_right_click(self, event):
+        self.enable_all_context_menu()
+        self.disable_some_context_menu_items()
+        pos = event.GetPosition()
+        pos = self.ScreenToClient(pos)
+        self.PopupMenu(self.popup_menu, pos)
+
+    def disable_some_context_menu_items(self):
+        """
+        When there are no models on the canvas disable everything but load
+        When there is one model on the canvas enable everything but Add Link and Run
+        When there are two or more models on the canvas enable everything
+        :return:
+        """
+        if len(self.models) <= 1:
+            self.popup_menu.GetMenuItems()[0].Enable(False)
+            if len(self.models) <= 0:
+                self.popup_menu.GetMenuItems()[2].Enable(False)
+                self.popup_menu.GetMenuItems()[3].Enable(False)
+                self.popup_menu.GetMenuItems()[5].Enable(False)
+
+        if len(self.links) <= 0:
+            self.popup_menu.GetMenuItems()[4].Enable(False)
+
+    def enable_all_context_menu(self):
+        for item in self.popup_menu.GetMenuItems():
+            item.Enable()
+
+    def on_add_link(self, event):
+        self.FloatCanvas.SetMode(self.GuiLink)
+
+    def on_load(self, event):
+        self.GetTopLevelParent().on_load_configuration(event)
+
+    def on_save(self, event):
+        self.GetTopLevelParent().on_save_configuration(event)
+
+    def on_save_as(self, event):
+        self.GetTopLevelParent().on_save_configuration_as(event)
+
+    def on_run(self, event):
+        pre_run = PreRunCtrl(self)
+        pre_run.Show()
+
     def UnBindAllMouseEvents(self):
         self.Unbind(FC.EVT_LEFT_DOWN)
         self.Unbind(FC.EVT_LEFT_UP)
@@ -77,7 +140,7 @@ class CanvasCtrl(CanvasView):
     def initBindings(self):
         self.FloatCanvas.Bind(FC.EVT_MOTION, self.OnMove)
         self.FloatCanvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp)
-        self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.LaunchContext)
+        # self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.LaunchContext)
 
         # engine bindings
         engineEvent.onModelAdded += self.draw_box
@@ -88,7 +151,7 @@ class CanvasCtrl(CanvasView):
     def initSubscribers(self):
         Publisher.subscribe(self.setCursor, "setCursor")
         Publisher.subscribe(self.run, "run")
-        Publisher.subscribe(self.clear, "clear")
+        # Publisher.subscribe(self.on_clear_canvas, "clear")
         Publisher.subscribe(self.AddDatabaseConnection, "DatabaseConnection")
         Publisher.subscribe(self.SaveSimulation, "SetSavePath")
         Publisher.subscribe(self.loadsimulation, "SetLoadPath")
@@ -106,8 +169,6 @@ class CanvasCtrl(CanvasView):
         """
         self._currentDbSession = event.dbsession
         self._dbid = event.dbid
-
-
 
     def OnMove(self, event):
         if self.Moving:
@@ -400,8 +461,8 @@ class CanvasCtrl(CanvasView):
 
             self.FloatCanvas.Draw()
 
-    def clear(self, link_obj=None, model_obj=None):
-
+    def on_clear_canvas(self, event):
+        print "Clear canvas called"
         # clear links and models in the engine
         success = engine.clearAll()
 
@@ -903,10 +964,10 @@ class CanvasCtrl(CanvasView):
     def LaunchContext(self, event):
 
         # if canvas is selected
-        if type(event) == wx.lib.floatcanvas.FloatCanvas._MouseEvent:
-            self.PopupMenu(CanvasContextMenu(self), event.GetPosition())
+        # if type(event) == wx.lib.floatcanvas.FloatCanvas._MouseEvent:
+        #     self.PopupMenu(CanvasContextMenu(self), event.GetPosition())
 
-        elif type(event) == LogicCanvasObjects.ScaledBitmapWithRotation:
+        if type(event) == LogicCanvasObjects.ScaledBitmapWithRotation:
             # if object is link
             # event should be SmoothLineWithArrow...
             if event.type == "ArrowHead":

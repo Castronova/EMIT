@@ -9,7 +9,7 @@ from api_old.ODM2.Simulation.services import readSimulation
 from emitLogging import elog
 from gui import events
 from gui.controller.ModelCtrl import ModelCtrl
-from gui.controller.PreRunCtrl import PreRunViewCtrl
+from gui.controller.PreRunCtrl import PreRunCtrl
 from sprint import *
 
 __author__ = 'tonycastronova'
@@ -143,7 +143,7 @@ class CanvasContextMenu(wx.Menu):
         self.parent.run()
 
     def OnRunModel(self, e):
-        preRunDialog = PreRunViewCtrl(self.parent)
+        preRunDialog = PreRunCtrl(self.parent)
         preRunDialog.Show()
 
     def OnClickClear(self, e):
@@ -151,7 +151,7 @@ class CanvasContextMenu(wx.Menu):
                                wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
 
         if dlg.ShowModal() != wx.ID_NO:
-            self.parent.clear()
+            self.parent.on_clear_canvas()
             elog.info("Configurations have been cleared")
 
     def SaveConfiguration(self, e):

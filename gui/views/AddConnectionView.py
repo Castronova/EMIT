@@ -1,4 +1,5 @@
 import wx
+import sys
 
 
 class AddConnectionView(wx.Frame):
@@ -74,6 +75,12 @@ class AddConnectionView(wx.Frame):
         self.panel.SetSizer(hbox)
         hbox.Fit(self)
 
-        self.SetMaxSize((-1, 365))  # Set max height to disable resizing the window vertically
+        # Set max height to disable resizing the window vertically
+        if sys.platform == "darwin":
+            self.SetMaxSize((-1, 300))
+        elif sys.platform == "win32":
+            self.SetMaxSize((-1, 320))
+        else:
+            self.SetMaxSize((-1, 365))
 
         self.Show()

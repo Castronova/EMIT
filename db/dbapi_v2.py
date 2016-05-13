@@ -286,52 +286,104 @@ class sqlite():
         return sim
 
     def createTimeStepUnit(self, timestepabbv, timestepname):
-        timestepunit = self.read.getUnitByName(timestepname)
-        if timestepunit is None:
-            timestepunit = self.write.createUnit('time', timestepabbv, timestepname)
-        return timestepunit
+        timestepunit = self.read.getUnits(name = timestepname)
+        if not timestepunit:
+            u = models.Units()
+            u.UnitsTypeCV = 'time'
+            u.UnitsAbbreviation = timestepabbv
+            u.UnitsName = timestepname
+            self.write.createUnit(u)
+            timestepunit = self.read.getUnits(name = timestepname)
+        return timestepunit[0]
 
     def createModel(self, modelcode, modeldesc, modelname):
-        model = self.read.getModelByCode(modelcode=modelcode)
+        model = self.read.getModels(codes=modelcode)
         if not model:
-            model = self.write.createModel(code=modelcode, name=modelname, description=modeldesc)
-
-        return model
+            m = models.Models()
+            m.ModelCode = modelcode
+            m.ModelName = modelname
+            m.ModelDescription = modeldesc
+            self.write.createModel(m)
+            model = self.read.getModels(codes=modelcode)
+        return model[0]
 
     def createMethod(self, organization):
-        method = self.read.getMethodByCode('simulation')
+        method = self.read.getMethods(codes=['simulation'])
         if not method:
-            method = self.write.createMethod(code='simulation', name='simulation', vType='calculated',
-                                             orgId=organization.OrganizationID, description='Model Simulation Results')
-        return method
+            m = models.Methods()
+            m.MethodCode = 'simulation'
+            m.MethodName = 'simulation'
+            m.MethodTypeCV = 'calculated'
+            m.OrganizationID = organization.OrganizationID
+            m.MethodDescription = 'Model Simulation Results'
+            self.write.createMethod(m)
+            method = self.read.getMethods(codes=['simulation'])
+        return method[0]
 
     def createAffiliation(self, organizationid, personid, user_obj):
 
 
-        affiliation = self.read.getAffiliationByPersonAndOrg(user_obj.person.first_name, user_obj.person.last_name,
-                                                             user_obj.organization.code)
-        if not affiliation:
-            affiliation = self.write.createAffiliation(personid, organizationid, user_obj.email,
-                                                       user_obj.phone, user_obj.address, user_obj.personLink,
-                                                       user_obj.isPrimaryOrganizationContact, user_obj.startDate,
-                                                       user_obj.affiliationEnd)
-        return affiliation
+        # todo: remove this when the read.getAffiliations code is fixed
+        # affiliation = self.read.getAffiliations(personfirst=user_obj.person.first_name, personlast=user_obj.person.last_name, orgcode=user_obj.organization.code)
+        results = self.cursor.execute('SELECT * FROM Affiliations WHERE OrganizationID = ? AND PersonID = ?', [organizationid, personid]).fetchall()
+
+        if not results:
+            a = models.Affiliations()
+            a.PersonID = personid
+            a.OrganizationID = organizationid
+            a.PrimaryEmail =  user_obj.email
+            a.PrimaryPhone = user_obj.phone
+            a.PrimaryAddress = user_obj.address
+            a.PersonLink = user_obj.personLink
+            a.IsPrimaryOrganizationContact = user_obj.isPrimaryOrganizationContact
+            a.AffiliationStartDate = user_obj.startDate
+            a.AffiliationEndDate = user_obj.affiliationEnd
+            self.write.createAffiliation(a)
+            results = self.cursor.execute('SELECT * FROM Affiliations WHERE OrganizationID = ? AND PersonID = ?', [organizationid, personid]).fetchall()
+
+        # todo: remove this when the read.getAffiliations code is fixed
+        affiliations = []
+        for res in results:
+            a = models.Affiliations()
+            a.PersonID = res[0]
+            a.OrganizationID = res[1]
+            a.IsPrimaryOrganizationContact = res[2]
+            a.AffiliationStartDate = res[3]
+            a.AffiliationEndDate = res[4]
+            a.PrimaryPhone = res[5]
+            a.PrimaryEmail =  res[6]
+            a.PrimaryAddress = res[7]
+            a.PersonLink = res[8]
+            affiliations.append(a)
+
+        return affiliations
 
     def createOrganization(self, user_obj):
 
-        organization = self.read.getOrganizationByCode(user_obj.organization.code)
+        organization = self.read.getOrganizations(codes = [user_obj.organization.code])
         if not organization:
-            organization = self.write.createOrganization(user_obj.organization.typeCV, user_obj.organization.code,
-                                                         user_obj.organization.name, user_obj.organization.description,
-                                                         user_obj.organization.link, user_obj.organization.parent)
-        return organization
+            o = models.Organizations()
+            o.OrganizationTypeCV = user_obj.organization.typeCV
+            o.OrganizationCode = user_obj.organization.code
+            o.OrganizationName = user_obj.organization.name
+            o.OrganizationDescription = user_obj.organization.description
+            o.OrganizationLink = user_obj.organization.link
+            o.ParentOrganizationID = user_obj.organization.parent
+            self.write.createOrganization(o)
+            organization = self.read.getOrganizations(codes = [user_obj.organization.code])
+        return organization[0]
 
     def createPerson(self, user_obj):
 
-        person = self.read.getPersonByName(user_obj.person.first_name, user_obj.person.last_name)
+        person = self.read.getPeople(firstname=user_obj.person.first_name, lastname=user_obj.person.last_name)
         if not person:
-            person = self.write.createPerson(user_obj.person.first_name, user_obj.person.last_name, user_obj.person.middle_name)
-        return person
+            p = models.People()
+            p.PersonFirstName = user_obj.person.first_name
+            p.PersonMiddleName = user_obj.person.middle_name
+            p.PersonLastName = user_obj.person.last_name
+            self.write.createPerson(p)
+            person = self.read.getPeople(firstname=user_obj.person.first_name, lastname=user_obj.person.last_name)
+        return person[0]
 
     ############ Custom SQL QUERIES ############
 

@@ -80,7 +80,7 @@ class CanvasCtrl(CanvasView):
         self.Bind(wx.EVT_MENU, self.on_save_as, save_as_menu)
         self.Bind(wx.EVT_MENU, self.on_run, run_menu)
         self.Bind(wx.EVT_MENU, self.on_clear_canvas, clear_menu)
-        self.FloatCanvas.Bind(wx.EVT_CONTEXT_MENU, self.on_canvas_right_click)
+        # self.FloatCanvas.Bind(wx.EVT_CONTEXT_MENU, self.on_canvas_right_click)
 
     def on_canvas_right_click(self, event):
         self.enable_all_context_menu()
@@ -140,7 +140,7 @@ class CanvasCtrl(CanvasView):
     def initBindings(self):
         self.FloatCanvas.Bind(FC.EVT_MOTION, self.OnMove)
         self.FloatCanvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp)
-        # self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.LaunchContext)
+        self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.LaunchContext)
 
         # engine bindings
         engineEvent.onModelAdded += self.draw_box
@@ -964,8 +964,8 @@ class CanvasCtrl(CanvasView):
     def LaunchContext(self, event):
 
         # if canvas is selected
-        # if type(event) == wx.lib.floatcanvas.FloatCanvas._MouseEvent:
-        #     self.PopupMenu(CanvasContextMenu(self), event.GetPosition())
+        if type(event) == wx.lib.floatcanvas.FloatCanvas._MouseEvent:
+            self.PopupMenu(CanvasContextMenu(self), event.GetPosition())
 
         if type(event) == LogicCanvasObjects.ScaledBitmapWithRotation:
             # if object is link

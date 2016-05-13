@@ -207,21 +207,41 @@ class sqlite():
             #                                                       vType='unknown',
             #                                                       nodv=-999)
 
-            # create unit
-            unit = self.read.getUnitByName(e.unit().UnitName())
+            # # create unit
+            # unit = self.read.getUnitByName(e.unit().UnitName())
+            # if not unit:
+            #     unit = self.write.createUnit(type=e.unit().UnitTypeCV(), abbrev=e.unit().UnitAbbreviation(),  name=e.unit().UnitName())
+
+            unit = self.read.getUnits(name=e.unit().UnitName())
             if not unit:
-                unit = self.write.createUnit(type=e.unit().UnitTypeCV(), abbrev=e.unit().UnitAbbreviation(),  name=e.unit().UnitName())
+                u = models.Units()
+                u.UnitsAbbreviation = e.unit().UnitAbbreviation
+                u.UnitsName = e.unit().UnitName()
+                u.UnitsTypeCV = e.unit().UnitTypeCV()
+                self.write.createUnit(u)
+                unit = self.read.getUnits(name=e.unit().UnitName())
 
             # create spatial reference
             srs = e.srs()
             refcode = "%s:%s" %(srs.GetAttrValue("AUTHORITY", 0), srs.GetAttrValue("AUTHORITY", 1))
-            spatialref = self.read.getSpatialReferenceByCode(refcode)
-            if not spatialref:
-                spatialref = self.write.createSpatialReference(srsCode=refcode,
-                                                               srsName=srs.GetAttrValue("GEOGCS", 0),
-                                                               srsDescription="%s|%s|%s"%(srs.GetAttrValue("PROJCS", 0),
-                                                                                          srs.GetAttrValue("GEOGCS", 0),
-                                                                                          srs.GetAttrValue("DATUM", 0)))
+            # spatialref = self.read.getSpatialReferenceByCode(refcode)
+            # if not spatialref:
+            #     spatialref = self.write.createSpatialReference(srsCode=refcode,
+            #                                                    srsName=srs.GetAttrValue("GEOGCS", 0),
+            #                                                    srsDescription="%s|%s|%s"%(srs.GetAttrValue("PROJCS", 0),
+            #                                                                               srs.GetAttrValue("GEOGCS", 0),
+            #                                                                               srs.GetAttrValue("DATUM", 0)))
+            spatialrefs = self.read.getSpatialReference(srsCodes=[refcode])
+            if not spatialrefs:
+                sr = models.SpatialReferences()
+                sr.SRSCode = refcode
+                sr.SRSName = srs.GetAttrValue("GEOGCS", 0)
+                sr.SRSDescription = "%s|%s|%s" % (srs.GetAttrValue("PROJCS", 0), srs.GetAttrValue("GEOGCS", 0), srs.GetAttrValue("DATUM", 0))
+                self.write.createSpatialReference(sr)
+                spatialrefs = self.read.getSpatialReference(srsCodes=[refcode])
+            spatialref = spatialrefs[0]
+
+
             st = time.time()
             samplingfeaturesids = []
             for i in range(0, len(geometries)):

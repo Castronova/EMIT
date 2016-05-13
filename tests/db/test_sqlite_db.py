@@ -144,23 +144,25 @@ class test_sqlite_db(unittest.TestCase):
         self.assertTrue(len(item.getGeometries2()) == len(item.getValues2()[0]))
 
         # build user object
-        user_json = '{"3987225b-9466-4f98-bf85-49c9aa82b079": {"affiliation": {"address": "8200 old main, logan ut, 84322","affiliationEnd": null,"email": "tony.castronova@usu.edu","isPrimaryOrganizationContact": false,"personLink": null,"phone": "435-797-0853","startDate": "2014-03-10T00:00:00"},"organization": {"code": "usu","description": null,"link": null,"name": "Utah State University","parent": null,"typeCV": "university"},"person": {"firstname": "tony","lastname": "castronova","middlename": null}},"ef323a55-39df-4cb8-b267-06e53298f1bb": {"affiliation": {"address": "8200 old main, logan ut, 84322","affiliationEnd": null,"email": "tony.castronova@usu.edu","isPrimaryOrganizationContact": false,"personLink": null,"phone": null,"startDate": "2014-03-10T00:00:00"},"organization": {"code": "uwrl","description": "description = research laboratory Affiliated with utah state university","link": null,"name": "Utah Water Research Laboratory","parent": "usu","typeCV": "university"},"person": {"firstname": "tony","lastname": "castronova","middlename": null}}}'
-        user_obj = user.BuildAffiliationfromJSON(user_json)
+        if not os.path.exists(os.environ['APP_USER_PATH']):
+            self.assertTrue(1 == 0, 'No User.json found!')
+        user_obj = user.jsonToDict(os.environ['APP_USER_PATH'])
 
         # get affiliation
-        self.emptysqlite.read.getAffiliationsByPerson('tony','castronova')
+        # self.emptysqlite.read.getAffiliationsByPerson('tony','castronova')
 
 
         # query simulations
-        simulations = self.emptysqlite.getAllSimulations()
-        self.assertTrue(len(simulations) == 0)
+        # simulations = self.emptysqlite.getAllSimulations()
+        # self.assertTrue(len(simulations) == 0)
 
         # create the simulation
         st = dt(2014, 3, 1, 12, 0, 0)
         et = dt(2014, 3, 1, 23, 0, 0)
         description = 'Some model descipription'
         name = 'test simulation'
-        self.emptysqlite.create_simulation('My Simulation', user_obj[0], None, item, st, et, 1, 'hours', description, name)
+        u = user_obj[user_obj.keys()[0]]  # grab the first user
+        self.emptysqlite.create_simulation('My Simulation', u, None, item, st, et, 1, 'hours', description, name)
 
         # query simulations
         simulations = self.emptysqlite.read.getAllSimulations()

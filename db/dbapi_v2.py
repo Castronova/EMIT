@@ -133,31 +133,47 @@ class sqlite():
         affiliation = self.createAffiliation(organization.OrganizationID, person.PersonID, user_obj)
 
         # get the timestep unit id
-        #todo: This is not returning a timestepunit!!!  This may need to be added to the database
         timestepunit = self.createTimeStepUnit(timestep_unit, timestep_unit)
 
+        # insert method
         method = self.createMethod(organization)
 
-        action = self.write.createAction(type='Simulation',
-                                         methodid=method.MethodID,
-                                         begindatetime=datetime.datetime.now(),
-                                         begindatetimeoffset=int((datetime.datetime.now() - datetime.datetime.utcnow()).total_seconds()/3600))
+        # # insert action
+        # # todo: this is broken in the odm2api.  See issue #67: https://github.com/ODM2/ODM2PythonAPI/issues/67
+        # ab = models.ActionBy()
+        # ab.AffiliationID = affiliation[0].AffiliationID
+        # ab.IsActionLead = True
+        # a = models.Actions()
+        # a.ActionTypeCV = 'Simulation'
+        # a.MethodID = method.MethodID
+        # a.BeginDateTime = datetime.datetime.now()
+        # a.BeginDateTimeUTCOffset = int((datetime.datetime.now() - datetime.datetime.utcnow()).total_seconds()/3600)
+        # self.write.createAction(a, ab)
+        # actions = self.read.getActions(type=a.ActionTypeCV)
+        # action = actions[0]
 
-        # create actionby
-        self.write.createActionBy(actionid=action.ActionID,
-                                             affiliationid=affiliation.AffiliationID)
 
         # create processing level
-        processinglevel = self.read.getProcessingLevelByCode(processingCode=2)
-        if not processinglevel: processinglevel = self.write.createProcessingLevel(code=2,
-                                                                                   definition='Derived Product',
-                                                                                   explanation='Derived products require scientific and technical interpretation and include multiple-sensor data. An example might be basin average precipitation derived from rain gages using an interpolation procedure.')
+        processinglevels = self.read.getProcessingLevels(codes=[2])
+        if not processinglevels:
+            pl = models.ProcessingLevels()
+            pl.ProcessingLevelCode = 2
+            pl.Definition = 'Derived Product'
+            pl.Explanation ='Derived products require scientific and technical interpretation and include multiple-sensor data. An example might be basin average precipitation derived from rain gages using an interpolation procedure.'
+            self.write.createProcessingLevel(pl)
+            processinglevels = self.read.getProcessingLevels(codes=[2])
+        processinglevel = processinglevels[0]
 
         # create dataset
-        dataset = self.write.createDataset(dstype='Simulation Input',
-                                           dscode='Input_%s'%name,
-                                           dstitle='Input for Simulation: %s'%name,
-                                           dsabstract=description)
+        ds = models.DataSets()
+        ds.DataSetAbstract = description
+        ds.DataSetTitle = 'Input for Simulation : %s' % name
+        ds.DataSetCode = 'Input_%s' % name
+        ds.DataSetTypeCV = 'Simulation Input'
+        ds.DataSetUUID = uuid.uuid4().hex
+        self.write.createDataset(ds)
+        datasets = self.read.getDataSets(codes=[ds.DataSetCode])
+        dataset = datasets[0]
 
 
         # make sure the exchange item is represented as a list
@@ -174,11 +190,22 @@ class sqlite():
             # create variable
             # TODO: This is not correct!
             # todo: implement variable vType
-            variable = self.read.getVariableByCode(e.variable().VariableNameCV())
-            if not variable: variable = self.write.createVariable(code=e.variable().VariableNameCV(),
-                                                                  name=e.variable().VariableDefinition(),
-                                                                  vType='unknown',
-                                                                  nodv=-999)
+            variables = self.read.getVariables(e.variable().VariableNameCV())
+            if not variables:
+                v = models.Variables()
+                v.VariableCode = e.variable().VariableNameCV()
+                v.VariableNameCV = e.variable().VariableDefinition()
+                v.VariableTypeCV = 'unknown'
+                v.NoDataValue = -999
+                self.write.createVariable(v)
+                variables = self.read.getVariables(e.variable().VariableNameCV())
+            variable = variables[0]
+
+            # # variable = self.read.getVariableByCode(e.variable().VariableNameCV())
+            # if not variable: variable = self.write.createVariable(code=e.variable().VariableNameCV(),
+            #                                                       name=e.variable().VariableDefinition(),
+            #                                                       vType='unknown',
+            #                                                       nodv=-999)
 
             # create unit
             unit = self.read.getUnitByName(e.unit().UnitName())
@@ -308,8 +335,12 @@ class sqlite():
         return model[0]
 
     def createMethod(self, organization):
-        method = self.read.getMethods(codes=['simulation'])
-        if not method:
+
+
+        # method = self.read.getMethods(codes=['simulation'])
+        results = self.cursor.execute('SELECT * FROM Methods WHERE MethodCode = ?', ['simulation']).fetchall()
+
+        if not results:
             m = models.Methods()
             m.MethodCode = 'simulation'
             m.MethodName = 'simulation'
@@ -317,8 +348,19 @@ class sqlite():
             m.OrganizationID = organization.OrganizationID
             m.MethodDescription = 'Model Simulation Results'
             self.write.createMethod(m)
-            method = self.read.getMethods(codes=['simulation'])
-        return method[0]
+            results = self.cursor.execute('SELECT * FROM Methods WHERE MethodCode = ?', ['simulation']).fetchone()
+
+        # todo: remove once read.getMethods is fixed
+        m = models.Methods()
+        m.MethodID = results[0]
+        m.MethodTypeCV = results[1]
+        m.MethodCode = results[2]
+        m.MethodName = results[3]
+        m.MethodDescription = results[4]
+        m.MethodLink = results[5]
+        m.OrganizationID = results[6]
+
+        return m
 
     def createAffiliation(self, organizationid, personid, user_obj):
 

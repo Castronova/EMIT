@@ -89,7 +89,25 @@ class Affiliation(object):
         return aff_dict
 
 
-def jsonToDict(user_filepath):
+def combine_organization_affiliation(organization, affiliation):
+    """
+    Joins Organization Objects dictionaries into a single object
+    Args:
+        organization: Organization Object
+        affiliation: Affiliation Object
+
+    Returns: dictionary of all organization and affiliation members
+    """
+    # get class members for organization and affiliation
+    org_members = organization.__dict__
+    aff_members = affiliation.toSerializableDict()
+
+    temp = org_members.copy()
+    temp.update(aff_members)
+    return temp
+
+
+def json_to_dict(user_filepath):
     """
     Creates a json serializable dictionary from the EMIT users.json file
     Args:

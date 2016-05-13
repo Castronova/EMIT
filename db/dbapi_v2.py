@@ -2,7 +2,7 @@ import datetime
 import time
 import uuid
 
-import apsw as sqlite3
+# import apsw as sqlite3
 import numpy
 import sqlalchemy
 from odm2api.ODM2 import models
@@ -422,17 +422,17 @@ class sqlite():
 
     def createOrganization(self, user_obj):
 
-        organization = self.read.getOrganizations(codes = [user_obj.organization.code])
+        organization = self.read.getOrganizations(codes = [user_obj.set_organization_data.code])
         if not organization:
             o = models.Organizations()
-            o.OrganizationTypeCV = user_obj.organization.typeCV
-            o.OrganizationCode = user_obj.organization.code
-            o.OrganizationName = user_obj.organization.name
-            o.OrganizationDescription = user_obj.organization.description
-            o.OrganizationLink = user_obj.organization.link
-            o.ParentOrganizationID = user_obj.organization.parent
+            o.OrganizationTypeCV = user_obj.set_organization_data.typeCV
+            o.OrganizationCode = user_obj.set_organization_data.code
+            o.OrganizationName = user_obj.set_organization_data.name
+            o.OrganizationDescription = user_obj.set_organization_data.description
+            o.OrganizationLink = user_obj.set_organization_data.link
+            o.ParentOrganizationID = user_obj.set_organization_data.parent
             self.write.createOrganization(o)
-            organization = self.read.getOrganizations(codes = [user_obj.organization.code])
+            organization = self.read.getOrganizations(codes = [user_obj.set_organization_data.code])
         return organization[0]
 
     def createPerson(self, user_obj):

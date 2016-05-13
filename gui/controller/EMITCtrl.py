@@ -86,11 +86,6 @@ class EMITCtrl(EMITView):
         pwd = cipher.decrypt(phash)
         return usr, pwd
 
-    def refreshUserAccount(self):
-        # This method is here because AddNewUserDialog.on_ok looks for this method at the end of the function
-        # The refresh was implemented so the pre-run dialog user account box would refresh after adding new user
-        return
-
     ##################################
     # EVENTS
     ##################################

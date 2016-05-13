@@ -28,7 +28,7 @@ def copy_series(from_series):
 	new.method_id = from_series.method_id
 	new.method_description = from_series.method_description
 	new.source_id = from_series.source_id
-	new.organization = from_series.organization
+	new.organization = from_series.set_organization_data
 	new.citation = from_series.citation
 	new.quality_control_level_id = from_series.quality_control_level_id
 	new.quality_control_level_code = from_series.quality_control_level_code

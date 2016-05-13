@@ -115,7 +115,7 @@ class PreRunViewCtrl(PreRunView):
 
         # Get users
         path = os.environ['APP_USER_PATH']
-        self.user_data = users.jsonToDict(path)
+        self.user_data = users.json_to_dict(path)
         account_names = []
         for affiliation in self.user_data.itervalues():
             account_names.append(affiliation.ID())
@@ -150,12 +150,12 @@ class PreRunViewCtrl(PreRunView):
         controller = UserCtrl(self)
         controller.CenterOnScreen()
         controller.Show()
+        controller.Bind(wx.EVT_CLOSE, self.on_user_ctrl_closed)
 
     def on_cancel(self, e):
         self.Close(True)
 
     def on_run(self, e):
-
         # get data to send to the engine
         name = self.simulation_name_textbox.GetValue()
         db = self.database_combo.GetValue()
@@ -163,11 +163,6 @@ class PreRunViewCtrl(PreRunView):
         datasets = self.get_selected_items()
 
         user_info = self.get_user_info()
-
-        # for affil in self.accounts:
-        #     userID = self.getAccountID()
-        #     if affil.ID() == user_name:
-        #         user_info_json = affil.toJSON()
 
         # todo: check all constraints before executing a simulation
         # raise exceptions before executing the simulation
@@ -186,3 +181,13 @@ class PreRunViewCtrl(PreRunView):
         engineAccessors.runSimulation(**kwargs)
 
         self.Close()
+
+    def on_user_ctrl_closed(self, event):
+        """
+        Detects when the user ctrl has been closed
+        Allows this class to refresh the user account and not the UserCtrl class
+        :param event:
+        :return:
+        """
+        event.GetEventObject().Destroy()
+        self.refresh_user_account()

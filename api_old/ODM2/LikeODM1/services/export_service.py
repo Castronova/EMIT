@@ -68,7 +68,7 @@ class ExportService():
                 data.append('')
                 data.append('')
         if src:
-            data.append(series.organization)
+            data.append(series.set_organization_data)
             data.append(series.source_description)
             data.append(series.citation)
         if qcl:
@@ -297,7 +297,7 @@ class ExportService():
         source = series.source
         source_node = ET.SubElement(parent, "SourceInformation")
         org = ET.SubElement(source_node, "Organization")
-        org.text = source.organization
+        org.text = source.set_organization_data
         source_desc = ET.SubElement(source_node, "SourceDescription")
         source_desc.text = source.description
         source_link = ET.SubElement(source_node, "SourceLink")
@@ -390,7 +390,7 @@ class ExportService():
             lab_name = ET.SubElement(lab_method_id, "LabName")
             if lab_method: lab_name.text = lab_method.name
             lab_org = ET.SubElement(lab_method_id, "LabOrganization")
-            if lab_method: lab_org.text = lab_method.organization
+            if lab_method: lab_org.text = lab_method.set_organization_data
             method_name = ET.SubElement(lab_method_id, "LabMethodName")
             if lab_method: method_name.text = lab_method.method_name
             method_desc = ET.SubElement(lab_method_id, "LabMethodDescription")

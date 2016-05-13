@@ -81,7 +81,7 @@ class SimulationPlotCtrl(TimeSeriesPlotView):
             writer.writerow(["Variable Name: %s" % str(varInfo.variable)])
             writer.writerow(["Unit: %s" % str(varInfo.unit)])
             writer.writerow(["Type: %s" % str(varInfo.type)])
-            writer.writerow(["Organization: %s" % str(varInfo.organization)])
+            writer.writerow(["Organization: %s" % str(varInfo.set_organization_data)])
             writer.writerow(["#"])
             writer.writerow(["#---End Disclaimer"])
             writer.writerow(["#"])

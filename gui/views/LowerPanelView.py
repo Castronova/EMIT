@@ -184,7 +184,7 @@ class TimeSeriesTab(wx.Panel):
 
     def open_odm2_viewer(self, object):
         variable_list_entries = {}
-        variable_list_entries[object.resultid] = [object.featurecode, object.variable, object.unit, object.type, object.organization, object.date_created]
+        variable_list_entries[object.resultid] = [object.featurecode, object.variable, object.unit, object.type, object.set_organization_data, object.date_created]
         TimeSeriesObjectCtrl(parentClass=self, timeseries_variables=variable_list_entries)
 
     def open_wof_viewer(self, siteObject):

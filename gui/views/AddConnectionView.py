@@ -74,4 +74,6 @@ class AddConnectionView(wx.Frame):
         self.panel.SetSizer(hbox)
         hbox.Fit(self)
 
+        self.SetMaxSize((-1, 365))  # Set max height to disable resizing the window vertically
+
         self.Show()

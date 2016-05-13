@@ -1,15 +1,10 @@
 import wx
 import wx.grid
-import sys
 from gui.controller.PlotForSiteViewerCtrl import PlotForSiteViewerCtrl
 
 
 class SpatialView:
     def __init__(self, panel):
-        if sys.platform == "darwin":
-            panel.SetSize((625, 635))
-        elif sys.platform == "win32":
-            panel.SetSize((640, 650))
 
         # Creating all the necessary panels
         top_panel = wx.Panel(panel)
@@ -50,7 +45,8 @@ class SpatialView:
         # add panels to frame
         sizer_spatial_view = wx.BoxSizer(wx.VERTICAL)
         sizer_spatial_view.Add(top_panel, 1, wx.EXPAND | wx.ALL, 2)
-        sizer_spatial_view.Add(bottom_panel, 1, wx.EXPAND | wx.ALL, 2)
+        #  proportion=0 makes the panel same size when resizing
+        sizer_spatial_view.Add(bottom_panel, 0, wx.EXPAND | wx.ALL, 2)
         panel.SetSizer(sizer_spatial_view)
 
 

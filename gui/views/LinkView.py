@@ -10,7 +10,7 @@ import coordinator.engineAccessors as engine
 class LinkView(wx.Frame):
     def __init__(self, parent, output, input):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=wx.EmptyString, pos=wx.DefaultPosition,
-                          style=wx.DEFAULT_FRAME_STYLE | wx.FRAME_FLOAT_ON_PARENT)
+                          style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         # Create all necessary panels
         panel = wx.Panel(self)  # Top level panel

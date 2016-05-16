@@ -196,13 +196,9 @@ class ToolboxViewCtrl(ToolboxView):
         try:
             filename = self.filepath[filename]
 
-            # Generate random coordinates about the center of the canvas
-            x = random.randint(-200, 200)
-            y = random.randint(-200, 200)
-
             # Send the message to logicCanvas
             # todo: replace with custom event
-            Publisher.sendMessage('AddModel', filepath=filename, x=x, y=y, uniqueId=None, title=None)
+            Publisher.sendMessage('AddModel', filepath=filename)
 
         except Exception, e:
             # Clicked on a folder

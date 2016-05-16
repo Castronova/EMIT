@@ -221,7 +221,7 @@ class EMITCtrl(EMITView):
                 self.save_path += '.sim'
             self.loading_path = self.save_path
             self.defaultLoadDirectory = os.path.dirname(self.loading_path)
-            Publisher.sendMessage('SetSavePath', path=self.save_path)  # send message to canvascontroller.SaveSimulation
+            Publisher.sendMessage('SetSavePath', path=self.save_path)  # send message to canvascontroller.save_simulation
             txt = save.Filename.split('.sim')[0]
             e = dict(cat=self.Toolbox.cat, txt=txt, fullpath=save.Path)
             events.onSimulationSaved.fire(**e)  # calls loadSIMFile from logicToolBox
@@ -245,7 +245,7 @@ class EMITCtrl(EMITView):
         else:
             path = self.loading_path
 
-        Publisher.sendMessage('SetSavePath', path=path)  # send message to canvascontroller.SaveSimulation
+        Publisher.sendMessage('SetSavePath', path=path)  # send message to canvascontroller.save_simulation
         self.Toolbox.RefreshToolbox()
 
     def on_switch_lower_panel_tab(self, event):

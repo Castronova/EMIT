@@ -151,6 +151,26 @@ class sqlite():
         # self.write.createAction(a, ab)
         # actions = self.read.getActions(type=a.ActionTypeCV)
         # action = actions[0]
+        actions = self.read.getActions(type='Simulation')
+        if not actions:
+            actions = self.read.getActions()
+            actionid = int(actions[-1].ActionID) + 1 if len(actions) > 0 else 1
+            self.cursor.execute('INSERT INTO Actions VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                                [actionid,
+                                'Simulation',
+                                method.MethodID,
+                                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                int((datetime.datetime.now() - datetime.datetime.utcnow()).total_seconds()/3600),
+                                 None, None, None, None
+                                 ]
+                                )
+        else:
+            actionid = actions.ActionID
+
+        ab = self.cursor.execute('SELECT * FROM ActionBy').fetchall()
+        bridgeid = int(ab[-1][0]) + 1 if len(ab) > 0 else 1
+        self.cursor.execute('INSERT INTO ActionBy VALUES (?,?,?,?,?)', [bridgeid, actionid, affiliation[0].AffiliationID, True, None])
+
 
 
         # create processing level
@@ -242,6 +262,8 @@ class sqlite():
             spatialref = spatialrefs[0]
 
 
+            # todo: remove getSamplingFeatureID__Geometry_EQUALS and just insert duplicates
+            # todo: insert sampling features bulk
             st = time.time()
             samplingfeaturesids = []
             for i in range(0, len(geometries)):
@@ -407,15 +429,16 @@ class sqlite():
         affiliations = []
         for res in results:
             a = models.Affiliations()
-            a.PersonID = res[0]
-            a.OrganizationID = res[1]
-            a.IsPrimaryOrganizationContact = res[2]
-            a.AffiliationStartDate = res[3]
-            a.AffiliationEndDate = res[4]
-            a.PrimaryPhone = res[5]
-            a.PrimaryEmail =  res[6]
-            a.PrimaryAddress = res[7]
-            a.PersonLink = res[8]
+            a.AffiliationID = res[0]
+            a.PersonID = res[1]
+            a.OrganizationID = res[2]
+            a.IsPrimaryOrganizationContact = res[3]
+            a.AffiliationStartDate = res[4]
+            a.AffiliationEndDate = res[5]
+            a.PrimaryPhone = res[6]
+            a.PrimaryEmail =  res[7]
+            a.PrimaryAddress = res[8]
+            a.PersonLink = res[9]
             affiliations.append(a)
 
         return affiliations

@@ -205,7 +205,6 @@ class sqlite():
 
             geometries = numpy.array(e.getGeometries2())
             dates = numpy.array(e.getDates2())
-            datavalues = numpy.array( e.getValues2())
 
             # create variable
             sPrint('inserting variables', MessageType.DEBUG)
@@ -276,6 +275,7 @@ class sqlite():
             sPrint('%3.5f sec' % (time.time() - st), MessageType.DEBUG)
             sPrint('\n', MessageType.INFO)
 
+            geom_index = 0
             for resultid in resultids:
 
                 # create time series result
@@ -288,14 +288,18 @@ class sqlite():
                 sPrint('%3.5f sec' % (time.time() - st), MessageType.DEBUG)
                 sPrint('\n', MessageType.INFO)
 
-                values = datavalues.flatten(order='C') # flatten row-wise, [t1g1, t1g2, ..., t1gn, t2g1, t2g2, ..., t2gn, ...]
-                valuedates = dates[:,1]  # get all rows of the datetime column of the dates array [t1, t2, t3, ..., tn]
-                flattened_ids = []
-                flattened_dates = []
-                geom_count = len(geometries)
+                # get datavalues corresponding to this resultid (i.e. geometry)
+                datavalues = e.getValues2(geom_index, geom_index)
+                geom_index += 1 # increment to the next geometry
 
-                for dt in valuedates:
-                    flattened_dates.extend([dt] * geom_count)  # [t1, t1, ..., t1, t2, t2, ..., t2, tn, tn, ..., tn]
+                values = datavalues.flatten(order='C') # flatten row-wise, [t1g, t2g, ..., tng]
+                valuedates = dates[:,1]  # get all rows of the datetime column of the dates array [t1, t2, t3, ..., tn]
+                # flattened_ids = []
+                # flattened_dates = []
+                # geom_count = len(geometries)
+
+                # for dt in valuedates:
+                #     flattened_dates.extend([dt] * geom_count)  # [t1, t1, ..., t1, t2, t2, ..., t2, tn, tn, ..., tn]
 
                 st = time.time()
                 try:
@@ -303,7 +307,7 @@ class sqlite():
                     self.insert_timeseries_result_values_bulk(ResultIDs=resultid,
                                                               TimeAggregationInterval=timestep_value,
                                                               TimeAggregationIntervalUnitsID=timestepunit.UnitsID,
-                                                              DataValues=values, ValueDateTimes=flattened_dates,
+                                                              DataValues=values, ValueDateTimes=valuedates,
                                                               ValueDateTimeUTCOffset=-6, CensorCodeCV='nc',
                                                               QualityCodeCV='unknown')
                     bulk = time.time() - st

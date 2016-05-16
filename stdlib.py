@@ -337,7 +337,7 @@ class ExchangeItem(object):
 
         except Exception as e:
             elog.error('Error ExchangeItem.setValuesBySlice: %s' % e)
-            sPrint('Error setting values for times %s, geometries %s' % (str(time_index_slice), str(geometry_index_slice)),
+            sPrint('Error setting values for times %s, geometries %s: %s' % (str(time_index_slice), str(geometry_index_slice), e),
                    MessageType.ERROR)
             return False
         return True

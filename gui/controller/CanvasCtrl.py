@@ -21,7 +21,7 @@ from gui import events
 from gui.controller.CanvasObjectsCtrl import SmoothLineWithArrow, ModelBox
 from gui.controller.LinkCtrl import LinkCtrl
 from gui.views.CanvasView import CanvasView
-from gui.views.ContextView import LinkContextMenu, ModelContextMenu, CanvasContextMenu
+from gui.views.ContextView import LinkContextMenu, ModelContextMenu #, CanvasContextMenu
 from sprint import *
 from transform.space import SpatialInterpolation
 from transform.time import TemporalInterpolation
@@ -80,14 +80,12 @@ class CanvasCtrl(CanvasView):
         self.Bind(wx.EVT_MENU, self.on_save_as, save_as_menu)
         self.Bind(wx.EVT_MENU, self.on_run, run_menu)
         self.Bind(wx.EVT_MENU, self.on_clear_canvas, clear_menu)
-        # self.FloatCanvas.Bind(wx.EVT_CONTEXT_MENU, self.on_canvas_right_click)
+        self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.on_canvas_right_click)
 
     def on_canvas_right_click(self, event):
         self.enable_all_context_menu()
         self.disable_some_context_menu_items()
-        pos = event.GetPosition()
-        pos = self.ScreenToClient(pos)
-        self.PopupMenu(self.popup_menu, pos)
+        self.PopupMenu(self.popup_menu, event.GetPosition())
 
     def disable_some_context_menu_items(self):
         """
@@ -140,7 +138,7 @@ class CanvasCtrl(CanvasView):
     def initBindings(self):
         self.FloatCanvas.Bind(FC.EVT_MOTION, self.OnMove)
         self.FloatCanvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp)
-        self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.LaunchContext)
+        # self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.LaunchContext)
 
         # engine bindings
         engineEvent.onModelAdded += self.draw_box
@@ -227,12 +225,12 @@ class CanvasCtrl(CanvasView):
                 name = name.replace("_", "  ")
                 name = name + "\n" + "ID = " + self.getUniqueId()
 
-            B = ModelBox(type, (x,y), name, id)
-            self.FloatCanvas.AddObject(B)
-            self.models[B] = id
+            model_box = ModelBox(type, (x,y), name, id)
+            self.FloatCanvas.AddObject(model_box)
+            self.models[model_box] = id
 
-            B.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit)
-            B.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
+            model_box.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit)
+            model_box.Bind(FC.EVT_FC_RIGHT_DOWN, self.LaunchContext)
             self.FloatCanvas.Draw()
 
             elog.info(name + ' has been added to the canvas.')
@@ -962,11 +960,6 @@ class CanvasCtrl(CanvasView):
         self._Cursor = value
 
     def LaunchContext(self, event):
-
-        # if canvas is selected
-        if type(event) == wx.lib.floatcanvas.FloatCanvas._MouseEvent:
-            self.PopupMenu(CanvasContextMenu(self), event.GetPosition())
-
         if type(event) == LogicCanvasObjects.ScaledBitmapWithRotation:
             # if object is link
             # event should be SmoothLineWithArrow...

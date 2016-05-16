@@ -88,7 +88,7 @@ class ModelContextMenu(wx.Menu):
         model_details.Show()
 
     def RemoveModel(self, e):
-        self.parent.RemoveModel(self.model_obj)
+        self.parent.remove_model(self.model_obj)
 
 
 class ToolboxContextMenu(wx.Menu):

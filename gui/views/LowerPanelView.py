@@ -311,9 +311,9 @@ class TimeSeriesTab(wx.Panel):
                 self.m_olvSeries.SetObjects(data)
 
                 # set the current database in canvas controller
-                Publisher.sendMessage('SetCurrentDb',value=selected_db)  # sends to CanvasController.getCurrentDbSession
+                Publisher.sendMessage('SetCurrentDb',value=selected_db)  # sends to CanvasController.get_current_database_session
 
-                # fire the onDbChanged Event
+                # fire the on_database_changed Event
                 kwargs = dict(dbsession=session,
                               dbname=db['name'],
                               dbid=db['id'])
@@ -547,4 +547,4 @@ class SimulationDataTab(DataSeries):
                 self.table.SetObjects(data)
 
                 # set the current database in canvas controller
-                Publisher.sendMessage('SetCurrentDb', value=selected_db)  # sends to CanvasController.getCurrentDbSession
+                Publisher.sendMessage('SetCurrentDb', value=selected_db)  # sends to CanvasController.get_current_database_session

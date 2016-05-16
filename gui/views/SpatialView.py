@@ -92,7 +92,7 @@ def setup_grid(grid, title):
     grid.SetDefaultCellBackgroundColour('WHITE')
 
     # change color and size of header
-    grid.SetCellSize(0,0,1,2)  # span cols 0 and 1
+    grid.SetCellSize(0, 0, 1, 2)  # span cols 0 and 1
     grid.SetCellBackgroundColour(0, 0, wx.Colour(195, 195, 195))  # Grey
 
     # set the table column size

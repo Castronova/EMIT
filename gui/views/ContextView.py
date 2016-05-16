@@ -69,6 +69,9 @@ class ModelContextMenu(wx.Menu):
         self.Bind(wx.EVT_MENU, self.RemoveModel, mmi)
 
     def ShowModelDetails(self, e):
+        # from gui.controller.ModelDetailsCtrl import ModelDetailsCtrl
+        # controller = ModelDetailsCtrl(self)
+
 
         # create a frame to bind the details page to
         f = wx.Frame(self.GetParent())

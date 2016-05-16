@@ -58,7 +58,7 @@ class EMITView(wx.Frame):
 
         self.SetMenuBar(self._menu_bar)
 
-        wx.CallAfter(self._postStart)
+        # wx.CallAfter(self._postStart)
 
         # creating components
         self.Toolbox = ToolboxViewCtrl(self.pnlDocking)

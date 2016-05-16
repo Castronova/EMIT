@@ -11,6 +11,7 @@ from datetime import datetime as dt
 from datetime import timedelta
 import environment
 import sprint
+import numpy
 
 class test_sqlite_db(unittest.TestCase):
 
@@ -109,8 +110,92 @@ class test_sqlite_db(unittest.TestCase):
         self.assertTrue(len(cvs) > 1)
 
 
-    def test_create_simulation(self):
+    def test_insert_many_tsrv(self):
 
+
+        item, geometries  = self.setup_model(geomcount=1, valuecount=50000)
+        timesteps, geomcount = item.getValues2().shape
+        dates = item.getDates()[:,1]
+
+        sprint.sPrint('\n')
+        sprint.sPrint('Inserting a simulation containing %d timesteps and %d geometries' % (timesteps, geomcount), sprint.MessageType.INFO)
+        sprint.sPrint('\n')
+
+        self.assertTrue(len(item.getDates2()) == len(item.getValues2()))
+        self.assertTrue(len(item.getGeometries2()) == len(item.getValues2()[0]))
+
+        description = 'Some description'
+        name = 'test simulation with many result values'
+
+        # build user object
+        if not os.path.exists(os.environ['APP_USER_PATH']):
+            self.assertTrue(1 == 0, 'No User.json found!')
+        user_obj = user.json_to_dict(os.environ['APP_USER_PATH'])
+        u = user_obj[user_obj.keys()[0]]  # grab the first user
+
+        self.emptysqlite.create_simulation(name, u, None, item, dates[0], dates[-1], 1, 'minutes', description, name)
+
+        s = self.emptysqlite.read.getSimulations()
+        self.assertTrue(len(s) == 1)
+
+        actionid = s[0].ActionID
+        factions = self.emptysqlite.cursor.execute('SELECT * FROM FeatureActions WHERE ActionID = %d' % actionid).fetchall()
+        sampling_feature_ids = [f[1] for f in factions]
+        feature_action_ids = [f[0] for f in factions]
+
+        results = self.emptysqlite.read.getResults(actionid=actionid)
+        for i in range(len(results)):
+            res = results[i]
+            resgeom = res.FeatureActionObj.SamplingFeatureObj.FeatureGeometryWKT
+            resvalues = self.emptysqlite.read.getResultValues(res.ResultID)
+
+            self.assertTrue(resgeom == geometries[i].ExportToWkt())
+            self.assertTrue(len(resvalues) == timesteps)
+
+
+    def test_insert_many_geoms(self):
+
+        item, geometries  = self.setup_model(geomcount=1000, valuecount=2000)
+        timesteps, geomcount = item.getValues2().shape
+        dates = item.getDates()[:,1]
+
+        sprint.sPrint('\n')
+        sprint.sPrint('Inserting a simulation containing %d timesteps and %d geometries' % (timesteps, geomcount), sprint.MessageType.INFO)
+        sprint.sPrint('\n')
+
+        self.assertTrue(len(item.getDates2()) == len(item.getValues2()))
+        self.assertTrue(len(item.getGeometries2()) == len(item.getValues2()[0]))
+
+        description = 'Some description'
+        name = 'test simulation with many feature geometries'
+
+        # build user object
+        if not os.path.exists(os.environ['APP_USER_PATH']):
+            self.assertTrue(1 == 0, 'No User.json found!')
+        user_obj = user.json_to_dict(os.environ['APP_USER_PATH'])
+        u = user_obj[user_obj.keys()[0]]  # grab the first user
+
+        self.emptysqlite.create_simulation(name, u, None, item, dates[0], dates[-1], 1, 'minutes', description, name)
+
+        s = self.emptysqlite.read.getSimulations()
+        self.assertTrue(len(s) == 1)
+
+        actionid = s[0].ActionID
+        factions = self.emptysqlite.cursor.execute('SELECT * FROM FeatureActions WHERE ActionID = %d' % actionid).fetchall()
+        sampling_feature_ids = [f[1] for f in factions]
+        feature_action_ids = [f[0] for f in factions]
+
+        results = self.emptysqlite.read.getResults(actionid=actionid)
+        for i in range(len(results)):
+            res = results[i]
+            resgeom = res.FeatureActionObj.SamplingFeatureObj.FeatureGeometryWKT
+            resvalues = self.emptysqlite.read.getResultValues(res.ResultID)
+
+            self.assertTrue(resgeom == geometries[i].ExportToWkt())
+            self.assertTrue(len(resvalues) == timesteps)
+
+
+    def setup_model(self, geomcount, valuecount):
 
         # create an exchange item
         unit = mdl.create_unit('cubic meters per second')
@@ -120,107 +205,20 @@ class test_sqlite_db(unittest.TestCase):
         item = stdlib.ExchangeItem(name='Test', desc='Test Exchange Item', unit=unit, variable=variable)
 
         # set exchange item geometries
-        xcoords = [1,2,3]
-        ycoords = [2,3,4]
-        points = geometry.build_point_geometries(xcoords, ycoords)
-        item.addGeometries2(points)
-        self.assertTrue(len(item.getGeometries2()) == len(points))
+        xcoords = [i for i in range(geomcount)]
+        ycoords = [i*1.5 for i in range(geomcount)]
+        geoms = geometry.build_point_geometries(xcoords, ycoords)
+        item.addGeometries2(geoms)
 
         # set exchange item values
-        start_time = dt.now()                       # set start time to 'now'
-        end_time = start_time + timedelta(days=100) # set endtime to 100 days later
-        current_time = start_time                   # initial time
-        dates = []                                  # list to hold dates
-        values = []                                 # list to hold values for each date
+        start_time = dt.now()
+        end_time = start_time+timedelta(minutes=valuecount - 1)
+        time_step = 60 # in seconds
+        item.initializeDatesValues(start_datetime=start_time, end_datetime=end_time, timestep_in_seconds=time_step)
+        values = numpy.random.rand(valuecount, geomcount)
 
-        # populate dates list
-        while current_time <= end_time:
+        # for i in range(len(dates)):
+        item.setValuesBySlice(values) #, time_index_slice=(0,num_timesteps,1))
 
-            # add date
-            dates.append(current_time)
-
-            # add some random values for each geometry
-            values.append([random.random() for pt in points] )
-
-            # increment time by 1 day
-            current_time += timedelta(days=1)
-
-        # set dates and values in the exchange item
-        item.setValues2(values, dates)
-
-        self.assertTrue(len(item.getDates2()) == len(item.getValues2()))
-        self.assertTrue(len(item.getGeometries2()) == len(item.getValues2()[0]))
-
-        # build user object
-        if not os.path.exists(os.environ['APP_USER_PATH']):
-            self.assertTrue(1 == 0, 'No User.json found!')
-        user_obj = user.json_to_dict(os.environ['APP_USER_PATH'])
-
-        # get affiliation
-        # self.emptysqlite.read.getAffiliationsByPerson('tony','castronova')
-
-
-        # query simulations
-        # simulations = self.emptysqlite.getAllSimulations()
-        # self.assertTrue(len(simulations) == 0)
-
-        # create the simulation
-        st = dt(2014, 3, 1, 12, 0, 0)
-        et = dt(2014, 3, 1, 23, 0, 0)
-        description = 'Some model descipription'
-        name = 'test simulation'
-        u = user_obj[user_obj.keys()[0]]  # grab the first user
-        self.emptysqlite.create_simulation('My Simulation', u, None, item, st, et, 1, 'hours', description, name)
-
-        # query simulations
-        simulations = self.emptysqlite.read.getSimulations()
-        self.assertTrue(len(simulations) == 1)
-
-        simulation = self.emptysqlite.read.getSimulations(name = 'My Simulation')
-        self.assertTrue(simulation is not None)
-
-
-
-    # # todo: re-write
-    # def test_insert_many(self):
-    #
-    #     # create an exchange item
-    #     unit = mdl.create_unit('cubic meters per second')
-    #     variable = mdl.create_variable('streamflow')
-    #
-    #     # create exchange item
-    #     item = stdlib.ExchangeItem(name='Test', desc='Test Exchange Item', unit=unit, variable=variable)
-    #
-    #
-    #     # set exchange item geometries
-    #     xcoords = [i for i in range(1000)]
-    #     ycoords = [i*1.5 for i in range(1000)]
-    #     geoms = geometry.build_point_geometries(xcoords, ycoords)
-    #     item.addGeometries2(geoms)
-    #     self.assertTrue(len(item.getGeometries2()) == len(geoms))
-    #
-    #     # set exchange item values
-    #     start_time = dt.now()
-    #     end_time = start_time+timedelta(days=2000)
-    #     time_step = 60*60*24
-    #     item.initializeDatesValues(start_datetime=start_time, end_datetime=end_time, timestep_in_seconds=time_step)
-    #     dates = [start_time + i*timedelta(days=1) for i in range(2000)]
-    #     values = [random.random() for g in geoms]
-    #
-    #     for i in range(len(dates)):
-    #         item.setValuesBySlice(values, time_index_slice=(i,i+1,1))
-    #
-    #
-    #     self.assertTrue(len(item.getDates2()) == len(item.getValues2()))
-    #     self.assertTrue(len(item.getGeometries2()) == len(item.getValues2()[0]))
-    #
-    #     description = 'Some description'
-    #     name = 'test simulation'
-    #
-    #     # build user object
-    #     user_json = '{"3987225b-9466-4f98-bf85-49c9aa82b079": {"affiliation": {"address": "8200 old main, logan ut, 84322","affiliationEnd": null,"email": "tony.castronova@usu.edu","isPrimaryOrganizationContact": false,"personLink": null,"phone": "435-797-0853","startDate": "2014-03-10T00:00:00"},"organization": {"code": "usu","description": null,"link": null,"name": "Utah State University","parent": null,"typeCV": "university"},"person": {"firstname": "tony","lastname": "castronova","middlename": null}},"ef323a55-39df-4cb8-b267-06e53298f1bb": {"affiliation": {"address": "8200 old main, logan ut, 84322","affiliationEnd": null,"email": "tony.castronova@usu.edu","isPrimaryOrganizationContact": false,"personLink": null,"phone": null,"startDate": "2014-03-10T00:00:00"},"organization": {"code": "uwrl","description": "description = research laboratory Affiliated with utah state university","link": null,"name": "Utah Water Research Laboratory","parent": "usu","typeCV": "university"},"person": {"firstname": "tony","lastname": "castronova","middlename": null}}}'
-    #     user_obj = user.BuildAffiliationfromJSON(user_json)
-    #
-    #     self.emptysqlite.create_simulation('My Simulation', user_obj[0], None, item, start_time, end_time, 1, 'days', description, name)
-
+        return item, geoms
 

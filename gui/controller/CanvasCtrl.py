@@ -4,13 +4,10 @@ import time
 import uuid
 import xml.etree.ElementTree as et
 from xml.dom import minidom
-
 import numpy as N
 import wx
 from wx.lib.floatcanvas import FloatCanvas as FC
-from wx.lib.floatcanvas.NavCanvas import NavCanvas
 from wx.lib.pubsub import pub as Publisher
-
 import coordinator.engineAccessors as engine
 import coordinator.events as engineEvent
 import datatypes
@@ -21,7 +18,7 @@ from gui import events
 from gui.controller.CanvasObjectsCtrl import SmoothLineWithArrow, ModelBox
 from gui.controller.LinkCtrl import LinkCtrl
 from gui.views.CanvasView import CanvasView
-from gui.views.ContextView import LinkContextMenu, ModelContextMenu #, CanvasContextMenu
+from gui.views.ContextView import LinkContextMenu, ModelContextMenu
 from sprint import *
 from transform.space import SpatialInterpolation
 from transform.time import TemporalInterpolation
@@ -58,7 +55,6 @@ class CanvasCtrl(CanvasView):
         self._currentDbSession = None
         self._dbid = None
         self.model_coords = {}
-        self.uniqueId = None
         self.defaultLoadDirectory = os.getcwd() + "/models/MyConfigurations/"
 
         self.failed_models = 0
@@ -218,12 +214,11 @@ class CanvasCtrl(CanvasView):
         if name:
             x, y = xCoord, yCoord
 
-            if self.getUniqueId() is not None and type == datatypes.ModelTypes.Data:
+            if type == datatypes.ModelTypes.Data:
                 # Strip out last bit of the name (normally includes an id), e.g. "rainfall-5" -> "rainfall"
                 sub = name.rfind('-')-name.__len__()
                 name = name[:sub]
                 name = name.replace("_", "  ")
-                name = name + "\n" + "ID = " + self.getUniqueId()
 
             model_box = ModelBox(type, (x,y), name, id)
             self.FloatCanvas.AddObject(model_box)
@@ -306,9 +301,6 @@ class CanvasCtrl(CanvasView):
 
             self.FloatCanvas.Draw()
 
-    def getUniqueId(self):
-        return self.uniqueId
-
     def is_link_bidirectional(self, id1, id2):
         for pair in self.links.values():
             # get the ids of the models in this link pair
@@ -318,18 +310,18 @@ class CanvasCtrl(CanvasView):
 
         return False
 
-    def addModel(self, filepath, x, y, uid=None, uniqueId=None, title=None):
+    @staticmethod
+    def get_random_canvas_coordinate():
+        x = random.randint(-200, 200)
+        y = random.randint(-200, 200)
+        return x, y
+
+    def addModel(self, filepath, uid=None):
         """
         Adds a model to the canvas using x,y.  This is useful if adding by file click/dialog
         :param filename:  filename / path
-        :param x: x location
-        :param y: y location
         :return: None
         """
-        if uniqueId is not None:
-            self.uniqueId = uniqueId
-        if title is not None:
-            self.title = title
 
         # make sure the correct file type was dragged
         name, ext = os.path.splitext(filepath)
@@ -337,6 +329,8 @@ class CanvasCtrl(CanvasView):
         # generate an ID for this model
         if uid is None:
             uid = uuid.uuid4().hex
+
+        x, y = self.get_random_canvas_coordinate()
 
         # save these coordinates for drawing once the model is loaded
         self.set_model_coords(uid, x=x, y=y)
@@ -859,26 +853,6 @@ class CanvasCtrl(CanvasView):
             time.sleep(0.5)
         self.LoadLinks(links)
         return
-
-    def LoadModels(self, models):
-        for model in models:
-            attrib = self.appendChild(model)
-            self.addModel(filepath=attrib['path'], x=float(attrib['xcoordinate']), y=float(attrib['ycoordinate']),
-                              uid=attrib['id'])
-        wx.CallAfter(self.FloatCanvas.Draw)
-
-    def LoadDataModels(self, datamodels, conn_ids):
-        for model in datamodels:
-            attrib = self.appendChild(model)
-
-            # Swapping the database id with conn_ids
-            attrib['databaseid'] = conn_ids[attrib['databaseid']]
-            self._dbid = attrib['databaseid']
-
-            self.addModel(filepath=attrib['resultid'], x=float(attrib['xcoordinate']),
-                              y=float(attrib['ycoordinate']),  uid=attrib['databaseid'],
-                              title=attrib['name'], uniqueId=attrib['resultid'])
-        wx.CallAfter(self.FloatCanvas.Draw)
 
     def LoadLinks(self, links):
 

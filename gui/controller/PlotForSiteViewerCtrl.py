@@ -84,7 +84,7 @@ class PlotForSiteViewerCtrl(ViewPlotForSiteViewer):
     def clearPlot(self):
 
         # clear axis
-        self.axes.on_clear_canvas()
+        self.axes.clear()
         for ax in self.__axis:
             ax.cla()
 

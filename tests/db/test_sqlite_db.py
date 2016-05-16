@@ -1,5 +1,5 @@
 import unittest
-import os
+import os, sys
 from odm2api.ODMconnection import dbconnection
 import coordinator.users as user
 from db.dbapi_v2 import sqlite
@@ -10,6 +10,7 @@ import random
 from datetime import datetime as dt
 from datetime import timedelta
 import environment
+import sprint
 
 class test_sqlite_db(unittest.TestCase):
 
@@ -42,6 +43,13 @@ class test_sqlite_db(unittest.TestCase):
         for line in populated_dump_script.split(';\n'):
             self.popsqlite.cursor.execute(line)
 
+        # initialize environment variables
+        environment.getEnvironmentVars()
+        if sys.gettrace():
+            print 'Detected Debug Mode'
+            # initialize debug listener (reroute messages to console)
+            self.d = sprint.DebugListener()
+        sprint.PrintTarget.CONSOLE = 1134
 
     def tearDown(self):
 
@@ -146,7 +154,7 @@ class test_sqlite_db(unittest.TestCase):
         # build user object
         if not os.path.exists(os.environ['APP_USER_PATH']):
             self.assertTrue(1 == 0, 'No User.json found!')
-        user_obj = user.jsonToDict(os.environ['APP_USER_PATH'])
+        user_obj = user.json_to_dict(os.environ['APP_USER_PATH'])
 
         # get affiliation
         # self.emptysqlite.read.getAffiliationsByPerson('tony','castronova')
@@ -165,9 +173,10 @@ class test_sqlite_db(unittest.TestCase):
         self.emptysqlite.create_simulation('My Simulation', u, None, item, st, et, 1, 'hours', description, name)
 
         # query simulations
-        simulations = self.emptysqlite.read.getAllSimulations()
+        simulations = self.emptysqlite.read.getSimulations()
         self.assertTrue(len(simulations) == 1)
-        simulation = self.emptysqlite.read.getSimulationByName('My Simulation')
+
+        simulation = self.emptysqlite.read.getSimulations(name = 'My Simulation')
         self.assertTrue(simulation is not None)
 
 

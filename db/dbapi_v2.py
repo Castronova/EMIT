@@ -128,29 +128,26 @@ class sqlite():
 
 
         # todo: handle multiple affiliations
+
+
+        sPrint('Inserting Person', MessageType.DEBUG)
         person = self.createPerson(user_obj)
+
+        sPrint('inserting organization', MessageType.DEBUG)
         organization = self.createOrganization(user_obj)
+
+        sPrint('inserting affiliation', MessageType.DEBUG)
         affiliation = self.createAffiliation(organization.OrganizationID, person.PersonID, user_obj)
 
         # get the timestep unit id
+        sPrint('inserting time step unit', MessageType.DEBUG)
         timestepunit = self.createTimeStepUnit(timestep_unit, timestep_unit)
 
         # insert method
+        sPrint('inserting method', MessageType.DEBUG)
         method = self.createMethod(organization)
 
-        # # insert action
-        # # todo: this is broken in the odm2api.  See issue #67: https://github.com/ODM2/ODM2PythonAPI/issues/67
-        # ab = models.ActionBy()
-        # ab.AffiliationID = affiliation[0].AffiliationID
-        # ab.IsActionLead = True
-        # a = models.Actions()
-        # a.ActionTypeCV = 'Simulation'
-        # a.MethodID = method.MethodID
-        # a.BeginDateTime = datetime.datetime.now()
-        # a.BeginDateTimeUTCOffset = int((datetime.datetime.now() - datetime.datetime.utcnow()).total_seconds()/3600)
-        # self.write.createAction(a, ab)
-        # actions = self.read.getActions(type=a.ActionTypeCV)
-        # action = actions[0]
+        sPrint('inserting action', MessageType.DEBUG)
         actions = self.read.getActions(type='Simulation')
         if not actions:
             actions = self.read.getActions()
@@ -167,6 +164,7 @@ class sqlite():
         else:
             actionid = actions.ActionID
 
+        sPrint('inserting actionby', MessageType.DEBUG)
         ab = self.cursor.execute('SELECT * FROM ActionBy').fetchall()
         bridgeid = int(ab[-1][0]) + 1 if len(ab) > 0 else 1
         self.cursor.execute('INSERT INTO ActionBy VALUES (?,?,?,?,?)', [bridgeid, actionid, affiliation[0].AffiliationID, True, None])
@@ -174,6 +172,7 @@ class sqlite():
 
 
         # create processing level
+        sPrint('inserting processing levels', MessageType.DEBUG)
         processinglevels = self.read.getProcessingLevels(codes=[2])
         if not processinglevels:
             pl = models.ProcessingLevels()
@@ -185,6 +184,7 @@ class sqlite():
         processinglevel = processinglevels[0]
 
         # create dataset
+        sPrint('inserting dataset', MessageType.DEBUG)
         ds = models.DataSets()
         ds.DataSetAbstract = description
         ds.DataSetTitle = 'Input for Simulation : %s' % name
@@ -208,9 +208,8 @@ class sqlite():
             datavalues = numpy.array( e.getValues2())
 
             # create variable
-            # TODO: This is not correct!
-            # todo: implement variable vType
-            variables = self.read.getVariables(e.variable().VariableNameCV())
+            sPrint('inserting variables', MessageType.DEBUG)
+            variables = self.read.getVariables(codes=[e.variable().VariableNameCV()])
             if not variables:
                 v = models.Variables()
                 v.VariableCode = e.variable().VariableNameCV()
@@ -218,89 +217,76 @@ class sqlite():
                 v.VariableTypeCV = 'unknown'
                 v.NoDataValue = -999
                 self.write.createVariable(v)
-                variables = self.read.getVariables(e.variable().VariableNameCV())
+                variables = self.read.getVariables(codes=[e.variable().VariableNameCV()])
             variable = variables[0]
 
-            # # variable = self.read.getVariableByCode(e.variable().VariableNameCV())
-            # if not variable: variable = self.write.createVariable(code=e.variable().VariableNameCV(),
-            #                                                       name=e.variable().VariableDefinition(),
-            #                                                       vType='unknown',
-            #                                                       nodv=-999)
-
-            # # create unit
-            # unit = self.read.getUnitByName(e.unit().UnitName())
-            # if not unit:
-            #     unit = self.write.createUnit(type=e.unit().UnitTypeCV(), abbrev=e.unit().UnitAbbreviation(),  name=e.unit().UnitName())
-
-            unit = self.read.getUnits(name=e.unit().UnitName())
-            if not unit:
+            units = self.read.getUnits(name=e.unit().UnitName())
+            sPrint('inserting units', MessageType.DEBUG)
+            if not units:
                 u = models.Units()
-                u.UnitsAbbreviation = e.unit().UnitAbbreviation
+                u.UnitsAbbreviation = e.unit().UnitAbbreviation()
                 u.UnitsName = e.unit().UnitName()
                 u.UnitsTypeCV = e.unit().UnitTypeCV()
                 self.write.createUnit(u)
-                unit = self.read.getUnits(name=e.unit().UnitName())
+                units = self.read.getUnits(name=e.unit().UnitName())
+            unit = units[0]
 
             # create spatial reference
+            sPrint('inserting srs', MessageType.DEBUG)
             srs = e.srs()
             refcode = "%s:%s" %(srs.GetAttrValue("AUTHORITY", 0), srs.GetAttrValue("AUTHORITY", 1))
-            # spatialref = self.read.getSpatialReferenceByCode(refcode)
-            # if not spatialref:
-            #     spatialref = self.write.createSpatialReference(srsCode=refcode,
-            #                                                    srsName=srs.GetAttrValue("GEOGCS", 0),
-            #                                                    srsDescription="%s|%s|%s"%(srs.GetAttrValue("PROJCS", 0),
-            #                                                                               srs.GetAttrValue("GEOGCS", 0),
-            #                                                                               srs.GetAttrValue("DATUM", 0)))
-            spatialrefs = self.read.getSpatialReference(srsCodes=[refcode])
-            if not spatialrefs:
+            spatialref = self.read.getSpatialReference(srsCodes=[refcode])
+            if not spatialref:
                 sr = models.SpatialReferences()
                 sr.SRSCode = refcode
                 sr.SRSName = srs.GetAttrValue("GEOGCS", 0)
                 sr.SRSDescription = "%s|%s|%s" % (srs.GetAttrValue("PROJCS", 0), srs.GetAttrValue("GEOGCS", 0), srs.GetAttrValue("DATUM", 0))
                 self.write.createSpatialReference(sr)
-                spatialrefs = self.read.getSpatialReference(srsCodes=[refcode])
-            spatialref = spatialrefs[0]
+                spatialref = self.read.getSpatialReference(srsCodes=[refcode])
 
 
-            # todo: remove getSamplingFeatureID__Geometry_EQUALS and just insert duplicates
             # todo: insert sampling features bulk
+            sPrint('inserting sampling features', MessageType.DEBUG)
             st = time.time()
             samplingfeaturesids = []
             for i in range(0, len(geometries)):
                 # create sampling features
                 geom_wkt = geometries[i].ExportToWkt()
                 geom_type = geometries[i].type
-                samplingFeature = self.getSamplingFeatureID__Geometry_EQUALS(geom_wkt)
-                if not samplingFeature:
-                    samplingFeature = self.insert_sampling_feature(type='site',geometryType=geom_type, WKTgeometry=geom_wkt)
+                samplingFeature = self.insert_sampling_feature(type='site',geometryType=geom_type, WKTgeometry=geom_wkt)
                 samplingfeaturesids.append(samplingFeature.SamplingFeatureID)
             bench_insert_sf = (time.time() - st)
-            sPrint('Inserting Sampling Features (not bulk) %3.5f sec' % bench_insert_sf, MessageType.INFO)
+            sPrint('%3.5f sec' % bench_insert_sf, MessageType.DEBUG)
+            sPrint('\n', MessageType.INFO)
 
+            sPrint('inserting feature actions', MessageType.DEBUG)
             st = time.time()
             featureactions = []
-            action_ids = [action.ActionID] * len(samplingfeaturesids)
+            action_ids = [actionid] * len(samplingfeaturesids)
             featureactionids = self.insert_feature_actions_bulk(samplingfeaturesids, action_ids)
             bench_insert_fa += (time.time() - st)
-            sPrint('Inserting Feature Actions (bulk) %3.5f sec' % bench_insert_fa, MessageType.INFO)
+            sPrint('%3.5f sec' % bench_insert_fa, MessageType.DEBUG)
+            sPrint('\n', MessageType.INFO)
 
+            sPrint('inserting results', MessageType.DEBUG)
             st = time.time()
             resultids = self.insert_results_bulk(FeatureActionIDs=featureactionids, ResultTypeCV='time series', VariableID=variable.VariableID,
                                      UnitsID=unit.UnitsID, ValueCount=len(dates), ProcessingLevelID=processinglevel.ProcessingLevelID,
                                                  SampledMediumCV='unknown')
-            sPrint('Inserting Results (bulk) %3.5f sec' % (time.time() - st), MessageType.INFO)
+            sPrint('%3.5f sec' % (time.time() - st), MessageType.DEBUG)
+            sPrint('\n', MessageType.INFO)
 
             for resultid in resultids:
 
-                # hack: this is necessary since createTimeSeries requires a Result object. This can be removed when the function is fixed
-                resultObj = models.Results
-                resultObj.ResultID = resultid
-
                 # create time series result
+                sPrint('inserting time series results', MessageType.DEBUG)
                 st = time.time()
-                tsr = self.write.createTimeSeriesResult(resultObj, aggregationstatistic='Unknown')
-                # self.insert_timeseries_results_bulk(resultIDs=resultid, timespacing=timestep_value, timespacing_unitid=timestepunit.UnitsID)
-                sPrint('Inserting Timeseries Results %3.5f sec' % (time.time() - st), MessageType.INFO)
+                vals = [None]*11
+                vals[0] = resultid   # insert result id
+                vals[-1] = 'Unknown' # insert aggregation statistic
+                self.cursor.execute('INSERT INTO TimeSeriesResults VALUES (?,?,?,?,?,?,?,?,?,?,?)', vals)
+                sPrint('%3.5f sec' % (time.time() - st), MessageType.DEBUG)
+                sPrint('\n', MessageType.INFO)
 
                 values = datavalues.flatten(order='C') # flatten row-wise, [t1g1, t1g2, ..., t1gn, t2g1, t2g2, ..., t2gn, ...]
                 valuedates = dates[:,1]  # get all rows of the datetime column of the dates array [t1, t2, t3, ..., tn]
@@ -311,11 +297,9 @@ class sqlite():
                 for dt in valuedates:
                     flattened_dates.extend([dt] * geom_count)  # [t1, t1, ..., t1, t2, t2, ..., t2, tn, tn, ..., tn]
 
-                # for i in range(geom_count):
-                #     flattened_ids.extend(resultids)     # [id1, id2, ..., idn, id1, id2, ..., idn, ...]
-
                 st = time.time()
                 try:
+                    sPrint('insert time series result values (%d records)' % len(values), MessageType.DEBUG)
                     self.insert_timeseries_result_values_bulk(ResultIDs=resultid,
                                                               TimeAggregationInterval=timestep_value,
                                                               TimeAggregationIntervalUnitsID=timestepunit.UnitsID,
@@ -323,8 +307,8 @@ class sqlite():
                                                               ValueDateTimeUTCOffset=-6, CensorCodeCV='nc',
                                                               QualityCodeCV='unknown')
                     bulk = time.time() - st
-                    sPrint('Bulk Inserting Timeseries Results Values (%d records)... %3.5f seconds' % (
-                    len(values), bulk), MessageType.INFO)
+                    sPrint('%3.5f sec' % (bulk), MessageType.DEBUG)
+                    sPrint('\n', MessageType.INFO)
 
                 except Exception, e:
                     msg = 'Encountered an error while inserting timeseries result values: %s' %e
@@ -336,25 +320,43 @@ class sqlite():
 
 
         # create the model instance
+        sPrint('insert model', MessageType.DEBUG)
         model = self.createModel(name, description, name)
 
         # create simulation
-        # TODO: remove hardcoded time offsets!
-        sim = self.write.createSimulation(actionid=action.ActionID,
-                                          modelID=model.ModelID,
-                                          simulationName=coupledSimulationName,
-                                          simulationDescription=description,
-                                          simulationStartDateTime=simulation_start ,
-                                          simulationStartOffset=-6,
-                                          simulationEndDateTime=simulation_end,
-                                          simulationEndOffset=-6,
-                                          timeStepValue =timestep_value,
-                                          timeStepUnitID=timestepunit.UnitsID,
-                                          inputDatasetID=dataset.DataSetID)
+        sPrint('insert simulation', MessageType.DEBUG)
+        # determine utc offsets based on current timezone
+        is_dst = time.daylight and time.localtime().tm_isdst > 0
+        utc_offset = - (time.altzone if is_dst else time.timezone) / (3600)
 
-        return sim
+        simulation = models.Simulations()
+        simulation.ActionID = actionid
+        simulation.ModelID = model.ModelID
+        simulation.SimulationName = coupledSimulationName
+        # todo: allow the user to provide a model description in the Pre-run control
+        simulation.SimulationDescription = ""
+        simulation.SimulationStartDateTime = simulation_start
+        simulation.SimulationStartDateTimeUTCOffset = utc_offset
+        simulation.SimulationEndDateTime = simulation_end
+        simulation.SimulationEndDateTimeUTCOffset = utc_offset
+        simulation.TimeStepValue = timestep_value
+        simulation.TimeStepUnitsID = timestepunit.UnitsID
+        simulation.InputDataSetID = dataset.DataSetID
+
+        self.write.createSimulation(simulation)
+
+        return simulation
 
     def createTimeStepUnit(self, timestepabbv, timestepname):
+        """
+        Inserts the model's time step unit if it doesn't already exist in the database
+        Args:
+            timestepabbv: unit abbreviation (type:str)
+            timestepname: unit name (type:str)
+
+        Returns: the inserted (or retrieved) unit object (type:models.Unit)
+
+        """
         timestepunit = self.read.getUnits(name = timestepname)
         if not timestepunit:
             u = models.Units()
@@ -366,14 +368,22 @@ class sqlite():
         return timestepunit[0]
 
     def createModel(self, modelcode, modeldesc, modelname):
-        model = self.read.getModels(codes=modelcode)
-        if not model:
-            m = models.Models()
-            m.ModelCode = modelcode
-            m.ModelName = modelname
-            m.ModelDescription = modeldesc
-            self.write.createModel(m)
-            model = self.read.getModels(codes=modelcode)
+        """
+        Inserts a model object into the sqlite database
+        Args:
+            modelcode: short code given to the model (type:str)
+            modeldesc: description of model (type:str)
+            modelname: name given to the model (type:str)
+
+        Returns: The inserted model object (type:models.Model)
+
+        """
+        m = models.Models()
+        m.ModelCode = modelcode
+        m.ModelName = modelname
+        m.ModelDescription = modeldesc
+        self.write.createModel(m)
+        model = self.read.getModels(codes=[modelcode])
         return model[0]
 
     def createMethod(self, organization):
@@ -472,7 +482,7 @@ class sqlite():
 
     ############ Custom SQL QUERIES ############
 
-    def insert_sampling_feature(self, type='site',code='',name=None,description=None,geometryType=None,elevation=None,elevationDatum=None,WKTgeometry=None):
+    def insert_sampling_feature(self, type='site',name=None,description=None,geometryType=None,elevation=None,elevationDatum=None,WKTgeometry=None):
         '''
         Inserts a sampling feature.  This function was created to support the insertion of Geometry object since this
         functionality is currently lacking from the ODM2PythonAPI.
@@ -485,24 +495,25 @@ class sqlite():
         :param geometry: Geometry of the sampling feature (Shapely Geometry object)
         :return: ID of the sampling feature which was inserted into the database
         '''
+
+        # get the last record index
+        nextID = self.get_next_insert_id(models.SamplingFeatures)
+
         UUID=str(uuid.uuid4())
         FeatureTypeCV=type
-        FeatureCode = code
+        FeatureCode = 'feature_%d' % nextID
         FeatureName=name
         FeatureDescription=description
         FeatureGeoTypeCV=geometryType
-        FeatureGeometry=WKTgeometry
+        FeatureGeometry = None
+        FeatureGeometryWKT=WKTgeometry
         Elevation=elevation
         ElevationDatumCV=elevationDatum
 
-        # get the last record index
-        nextID = self.get_next_insert_id(models.TimeSeriesResultValues)
 
-        values = [nextID,UUID,FeatureTypeCV,FeatureCode,FeatureName,FeatureDescription, FeatureGeoTypeCV, FeatureGeometry, Elevation,ElevationDatumCV]
-        self.cursor.execute('INSERT INTO SamplingFeatures VALUES (?, ?, ?, ?, ?, ?, ?, geomFromText(?), ?, ?)'
+        values = [nextID,UUID,FeatureTypeCV,FeatureCode,FeatureName,FeatureDescription,FeatureGeoTypeCV,FeatureGeometry,FeatureGeometryWKT,Elevation,ElevationDatumCV]
+        self.cursor.execute('INSERT INTO SamplingFeatures VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
                             , values)
-
-        # self.conn.commit()
 
         featureObj = models.SamplingFeatures()
         featureObj.SamplingFeatureID = nextID
@@ -599,7 +610,7 @@ class sqlite():
         vals = zip(valueIDs, result_ids, DataValues, value_date_times, time_offsets, censor_codes, quality_codes, time_intervals, time_unit_ids)
 
         # insert values in chunks of 10,000
-        sPrint('Begin inserting %d value' % len(vals), MessageType.INFO)
+        sPrint('Begin inserting %d value' % len(vals), MessageType.DEBUG)
 
         self.cursor.execute("BEGIN TRANSACTION;")
         chunk_size = 10000
@@ -607,9 +618,9 @@ class sqlite():
         for i in range(0, len(vals), chunk_size):
             sidx = i
             eidx = i + chunk_size if (i + chunk_size) < len(vals) else len(vals)
-            percent_complete = float(i) / float(len(vals)) * 100
-            sPrint('.. inserting records %3.1f %% complete' % (percent_complete), MessageType.INFO)
+            percent_complete = float(eidx) / float(len(vals)) * 100
             self.cursor.executemany('INSERT INTO TimeSeriesResultValues VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', vals[sidx:eidx])
+            sPrint('.. inserted %d records, %3.1f %% complete' % ((eidx - sidx), percent_complete), MessageType.DEBUG)
         self.cursor.execute("COMMIT;")
 
         return 1

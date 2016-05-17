@@ -11,17 +11,7 @@ class ModelDetailsCtrl(ModelDetailsView):
 
         # Key is section, value is section position in the grid
         self.__section_row_number = {-1: -1}
-
-        # self.add_data_to_section(0, "first data point", "something else")
-        # self.add_section("General")
-        # self.add_section("Input")
-        # self.add_data_to_section(0, "first data point", "something else")
-        # self.add_data_to_section(0, "first data point", "something else")
-        # self.add_section("Output")
-        # self.add_data_to_section(1, "second data point", "cool")
-        # self.add_data_to_section(1, "second data point", "cool")
-        self.add_data_to_section(1, "second data point", "cool")
-
+        self.grid.SetScrollLineY(15)
 
     def add_section(self, name):
         max_position = self.get_max_section_position() # rename max_position to section
@@ -34,7 +24,7 @@ class ModelDetailsCtrl(ModelDetailsView):
         # Set the section title
         self.grid.SetCellValue(self.__section_row_number[max_position] + 1, 0, str(name))
 
-        self.grid.SetCellBackgroundColour(self.__section_row_number[max_position] + 1, 0, wx.Colour(250, 250, 250))
+        self.grid.SetCellBackgroundColour(self.__section_row_number[max_position] + 1, 0, wx.Colour(186, 195, 211))
 
         # Add the new created section to the dictionary for storage
         self.__section_row_number[max_position + 1] = self.grid.GetNumberRows() - 1
@@ -53,7 +43,7 @@ class ModelDetailsCtrl(ModelDetailsView):
             self.grid.SetCellValue(self.__section_row_number[section] + 1, 1, str(value))
             self._update_section()
             self.grid.AutoSize()
-            self.resize_window_to_fit()
+            self._min_grid_width_size = self.get_grid_width()
             return True
 
         # Section does not exist

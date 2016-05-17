@@ -68,7 +68,7 @@ class ModelContextMenu(wx.Menu):
         self.AppendItem(mmi)
         self.Bind(wx.EVT_MENU, self.RemoveModel, mmi)
 
-    def ShowModelDetails(self, e):
+    def ShowModelDetails(self, event):
         from gui.controller.ModelDetailsCtrl import ModelDetailsCtrl
         from utilities import gui
         controller = ModelDetailsCtrl(self)
@@ -81,10 +81,10 @@ class ModelContextMenu(wx.Menu):
 
         atts = engine.getModelById(self.model_obj.ID)['attrib']
 
+        # Populate the grid
         data = gui.parse_config(atts["mdl"])
         section = 0
         for key, value in data.iteritems():
-            # controller.add_data_to_section(0, key, value)
             if isinstance(value, list):
                 controller.add_section(key)
                 for sub_data in value:
@@ -92,7 +92,9 @@ class ModelContextMenu(wx.Menu):
                         controller.add_data_to_section(section, k, v)
                 section += 1
 
-
+        # Enables the scroll bars on startup
+        x, y = controller.GetSize()
+        controller.SetSize((x + 1, y + 1))
 
         if 'mdl' in atts.keys():
             model_details.PopulateSummary(atts['mdl'])

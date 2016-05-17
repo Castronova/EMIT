@@ -11,6 +11,8 @@ from gui import events
 from gui.controller.ModelCtrl import ModelCtrl
 from gui.controller.PreRunCtrl import PreRunCtrl
 from sprint import *
+from gui.controller.ModelDetailsCtrl import ModelDetailsCtrl
+from utilities import gui
 
 __author__ = 'tonycastronova'
 
@@ -69,8 +71,7 @@ class ModelContextMenu(wx.Menu):
         self.Bind(wx.EVT_MENU, self.RemoveModel, mmi)
 
     def ShowModelDetails(self, event):
-        from gui.controller.ModelDetailsCtrl import ModelDetailsCtrl
-        from utilities import gui
+
         controller = ModelDetailsCtrl(self)
 
         # create a frame to bind the details page to
@@ -83,18 +84,7 @@ class ModelContextMenu(wx.Menu):
 
         # Populate the grid
         data = gui.parse_config(atts["mdl"])
-        section = 0
-        for key, value in data.iteritems():
-            if isinstance(value, list):
-                controller.add_section(key)
-                for sub_data in value:
-                    for k, v in sub_data.iteritems():
-                        controller.add_data_to_section(section, k, v)
-                section += 1
-
-        # Enables the scroll bars on startup
-        x, y = controller.GetSize()
-        controller.SetSize((x + 1, y + 1))
+        controller.add_data(data)
 
         if 'mdl' in atts.keys():
             model_details.PopulateSummary(atts['mdl'])

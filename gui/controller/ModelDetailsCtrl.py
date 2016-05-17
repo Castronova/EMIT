@@ -11,7 +11,6 @@ class ModelDetailsCtrl(ModelDetailsView):
 
         # Key is section, value is section position in the grid
         self.__section_row_number = {-1: -1}
-        self.grid.SetScrollLineY(15)
 
     def add_section(self, name):
         max_position = self.get_max_section_position() # rename max_position to section
@@ -49,6 +48,23 @@ class ModelDetailsCtrl(ModelDetailsView):
         # Section does not exist
         return False
 
+    def add_data(self, data):
+        """
+        :param data: Must be a dictionary, where the values are a list of dictionaries
+        :return:
+        """
+        sorted_sections = sorted(data.keys())
+        section = 0
+        for each_section in sorted_sections:
+            if isinstance(data[each_section], list):
+                self.add_section(each_section)
+                for sub_data in data[each_section]:
+                    for k, v in sub_data.iteritems():
+                        self.add_data_to_section(section, k, v)
+                section += 1
+
+        self.enable_scroll_bar_on_startup()
+
     def enable_drag_grid_size(self, enable=False):
         self.grid.EnableDragGridSize(enable)
 
@@ -57,6 +73,14 @@ class ModelDetailsCtrl(ModelDetailsView):
 
     def enable_grid_lines(self, enable=True):
         self.grid.EnableGridLines(enable)
+
+    def enable_scroll_bar_on_startup(self):
+        """
+        Enables the scroll bars after loading data.
+        :return:
+        """
+        x, y = self.GetSize()
+        self.SetSize((x + 1, y + 1))
 
     def get_max_section_position(self):
         max_position = -1

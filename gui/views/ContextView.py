@@ -69,9 +69,9 @@ class ModelContextMenu(wx.Menu):
         self.Bind(wx.EVT_MENU, self.RemoveModel, mmi)
 
     def ShowModelDetails(self, e):
-        # from gui.controller.ModelDetailsCtrl import ModelDetailsCtrl
-        # controller = ModelDetailsCtrl(self)
-
+        from gui.controller.ModelDetailsCtrl import ModelDetailsCtrl
+        from utilities import gui
+        controller = ModelDetailsCtrl(self)
 
         # create a frame to bind the details page to
         f = wx.Frame(self.GetParent())
@@ -80,6 +80,20 @@ class ModelContextMenu(wx.Menu):
         model_details = ModelCtrl(f, model_id=self.model_obj.ID, **kwargs)
 
         atts = engine.getModelById(self.model_obj.ID)['attrib']
+
+        data = gui.parse_config(atts["mdl"])
+        section = 0
+        for key, value in data.iteritems():
+            # controller.add_data_to_section(0, key, value)
+            if isinstance(value, list):
+                controller.add_section(key)
+                for sub_data in value:
+                    for k, v in sub_data.iteritems():
+                        controller.add_data_to_section(section, k, v)
+                section += 1
+
+
+
         if 'mdl' in atts.keys():
             model_details.PopulateSummary(atts['mdl'])
 

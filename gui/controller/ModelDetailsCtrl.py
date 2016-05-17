@@ -1,6 +1,7 @@
 from gui.views.ModelDetailsView import ModelDetailsView
 import wx
 
+
 class ModelDetailsCtrl(ModelDetailsView):
     def __init__(self, parent):
         ModelDetailsView.__init__(self)
@@ -8,25 +9,35 @@ class ModelDetailsCtrl(ModelDetailsView):
         self.parent = parent
         self.enable_editing(False)
 
-        self.__section_row_number = [-1]
+        # Key is section, value is section position in the grid
+        self.__section_row_number = {-1: -1}
 
-        self.add_section("General")
-        self.add_section("Input")
-        self.add_section("Output")
-        self.add_data_to_section(0, "first data point", "something else")
+        # self.add_data_to_section(0, "first data point", "something else")
+        # self.add_section("General")
+        # self.add_section("Input")
+        # self.add_data_to_section(0, "first data point", "something else")
+        # self.add_data_to_section(0, "first data point", "something else")
+        # self.add_section("Output")
+        # self.add_data_to_section(1, "second data point", "cool")
+        # self.add_data_to_section(1, "second data point", "cool")
+        self.add_data_to_section(1, "second data point", "cool")
+
 
     def add_section(self, name):
+        max_position = self.get_max_section_position() # rename max_position to section
         # Create a new row that will become the section
-        self.grid.InsertRows(pos=self.__section_row_number[-1] + 1)
+        self.grid.InsertRows(pos=self.__section_row_number[max_position] + 1)
 
         # Set the cell to expand and fill the size of the grid
-        self.grid.SetCellSize(row=self.__section_row_number[-1] + 1, col=0, num_rows=1, num_cols=self.grid.GetNumberCols())
+        self.grid.SetCellSize(row=self.__section_row_number[max_position] + 1, col=0, num_rows=1, num_cols=self.grid.GetNumberCols())
 
         # Set the section title
-        self.grid.SetCellValue(self.__section_row_number[-1] + 1, 0, str(name))
+        self.grid.SetCellValue(self.__section_row_number[max_position] + 1, 0, str(name))
 
-        self.grid.SetCellBackgroundColour(self.__section_row_number[-1] + 1, 0, wx.Colour(250, 250, 250))
-        self.__section_row_number.append(self.__section_row_number[-1] + 1)
+        self.grid.SetCellBackgroundColour(self.__section_row_number[max_position] + 1, 0, wx.Colour(250, 250, 250))
+
+        # Add the new created section to the dictionary for storage
+        self.__section_row_number[max_position + 1] = self.grid.GetNumberRows() - 1
 
     def add_data_to_section(self, section, key, value):
         """
@@ -37,9 +48,10 @@ class ModelDetailsCtrl(ModelDetailsView):
         """
         if section in self.__section_row_number:
 
-            self.grid.InsertRows(pos=section + 1)
-            self.grid.SetCellValue(section + 1, 0, str(key))
-            self.grid.SetCellValue(section + 1, 1, str(value))
+            self.grid.InsertRows(pos=self.__section_row_number[section] + 1)
+            self.grid.SetCellValue(self.__section_row_number[section] + 1, 0, str(key))
+            self.grid.SetCellValue(self.__section_row_number[section] + 1, 1, str(value))
+            self._update_section()
             self.grid.AutoSize()
             self.resize_window_to_fit()
             return True
@@ -55,3 +67,18 @@ class ModelDetailsCtrl(ModelDetailsView):
 
     def enable_grid_lines(self, enable=True):
         self.grid.EnableGridLines(enable)
+
+    def get_max_section_position(self):
+        max_position = -1
+        for key, value in self.__section_row_number.iteritems():
+            if key > max_position:
+                max_position = key
+        return max_position
+
+    def _update_section(self):
+        """
+        Update the values in the section. The value is the row on the grid the section is at
+        :return:
+        """
+        for i in range(len(self.__section_row_number) - 1):
+            self.__section_row_number[i] += 1

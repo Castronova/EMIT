@@ -233,11 +233,14 @@ class CanvasCtrl(CanvasView):
 
             self.FloatCanvas.Draw()
 
-    def createLoadedLinks(self, from_model, to_model):
-        if self.do_pair_models_have_link(from_model, to_model):
-            #  Replace the one way arrow with a bidirectional
-            line = self.get_line_from_pair_model(from_model, to_model)
+    def createLoadedLinks(self, to_model, from_model):
+        # Check if a line already exist between the two models
+        line = self.get_line_from_pair_model(from_model, to_model)
+        if line:
             self.remove_link_image(line)
+
+        if self.does_link_exist_between_models(from_model, to_model) and len(self.links) > 0:
+            #  Replace the one way arrow with a bidirectional
             self.createLine(from_model, to_model, "multiArrow.png")
         else:
             self.createLine(from_model, to_model, "rightArrowBlue60.png")
@@ -259,11 +262,13 @@ class CanvasCtrl(CanvasView):
         if len(self.links) <= 0:
             self.popup_menu.GetMenuItems()[4].Enable(False)
 
-    def do_pair_models_have_link(self, R1, R2):
-        for key, value in self.links.iteritems():
-            if R1 in value and R2 in value:
-                return True
-        return False
+    def does_link_exist_between_models(self, R1, R2):
+        # Return true if a link exist between the models, else return false
+        link = engine.getLinksBtwnModels(R1.ID, R2.ID)
+
+        if len(link) == 0:
+            return False
+        return True
 
     def enable_all_context_menu(self):
         for item in self.popup_menu.GetMenuItems():

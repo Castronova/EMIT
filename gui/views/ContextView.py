@@ -68,7 +68,6 @@ class ModelContextMenu(wx.Menu):
         self.Bind(wx.EVT_MENU, self.RemoveModel, mmi)
 
     def ShowModelDetails(self, event):
-
         # create a frame to bind the details page to
         f = wx.Frame(self.GetParent())
 
@@ -77,17 +76,24 @@ class ModelContextMenu(wx.Menu):
 
         atts = engine.getModelById(self.model_obj.ID)['attrib']
 
-        # Populate the grid
-        data = gui.parse_config(atts["mdl"])
-        model_details.properties_page_controller.add_data(data)
-
         if 'mdl' in atts.keys():
+            # Populate the grid
+            data = gui.parse_config(atts["mdl"])
             model_details.PopulateSummary(atts['mdl'])
+            model_details.properties_page_controller.add_data(data)
 
         else:  # This means the model is coming from a database.
             oei = model_details.spatial_page.controller.get_output_exchange_item_by_id(self.model_obj.ID)
             iei = model_details.spatial_page.controller.get_input_exchange_item_by_id(self.model_obj.ID)
             model_details.PopulateProperties(engine.getModelById(self.model_obj.ID), iei=iei, oei=oei)
+
+            # Populate the new properties grid
+            model_details.properties_page_controller.add_section("General")
+            for key, value in engine.getModelById(self.model_obj.ID).iteritems():
+                if isinstance(value, dict):
+                    for k, v in value.iteritems():
+                        model_details.properties_page_controller.add_data_to_section(0, k, v)
+                model_details.properties_page_controller.add_data_to_section(0, key, value)
 
         model_details.Show()
 

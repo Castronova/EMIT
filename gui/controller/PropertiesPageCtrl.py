@@ -52,7 +52,8 @@ class PropertiesPageCtrl(PropertiesPageView):
 
     def add_data(self, data):
         """
-        :param data: Must be a dictionary, where the values are a list of dictionaries
+        Populates the grid table. The values in data become the sub section in the grid(left column)
+        :param data: Must be a dictionary, where the values are a list of dictionaries. data: type(dict: [dict])
         :return:
         """
         sorted_sections = sorted(data.keys())

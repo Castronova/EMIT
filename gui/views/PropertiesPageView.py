@@ -2,20 +2,6 @@ import wx
 import wx.grid
 
 
-class NewModelView(wx.Frame):
-    def __init__(self):
-        wx.Frame.__init__(self, parent=None, size=(550, 550))
-
-        # Create panel
-        self.panel = wx.Panel(self)
-        self.notebook = wx.Notebook(self.panel)
-
-        frame_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        frame_sizer.Add(self.notebook, 1, wx.EXPAND | wx.ALL, 0)
-        self.panel.SetSizer(frame_sizer)
-        self.Show()
-
-
 class PropertiesPageView(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)

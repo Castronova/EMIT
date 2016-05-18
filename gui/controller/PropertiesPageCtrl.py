@@ -1,17 +1,5 @@
-from gui.views.NewModelView import NewModelView
-from gui.views.NewModelView import PropertiesPageView
+from gui.views.PropertiesPageView import PropertiesPageView
 import wx
-
-
-class NewModelCtrl(NewModelView):
-    def __init__(self, parent):
-        NewModelView.__init__(self)
-        self.parent = parent
-        self.properties_page_controller = PropertiesPageCtrl(self.notebook)
-        self.add_page(self.properties_page_controller, "Properties")
-
-    def add_page(self, panel, title="No title"):
-        self.notebook.AddPage(panel, str(title))
 
 
 class PropertiesPageCtrl(PropertiesPageView):

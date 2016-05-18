@@ -68,11 +68,6 @@ class ModelContextMenu(wx.Menu):
         self.Bind(wx.EVT_MENU, self.RemoveModel, mmi)
 
     def ShowModelDetails(self, event):
-        from gui.controller.NewModelCtrl import NewModelCtrl
-        # c = NewModelCtrl(self)
-
-        # controller = ModelDetailsCtrl(self)
-        controller = NewModelCtrl(self)
 
         # create a frame to bind the details page to
         f = wx.Frame(self.GetParent())
@@ -84,9 +79,7 @@ class ModelContextMenu(wx.Menu):
 
         # Populate the grid
         data = gui.parse_config(atts["mdl"])
-        # controller.add_data(data)
-        controller.properties_page_controller.add_data(data)
-        # c.details_page_controller.add_data(data)
+        model_details.properties_page_controller.add_data(data)
 
         if 'mdl' in atts.keys():
             model_details.PopulateSummary(atts['mdl'])

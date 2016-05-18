@@ -1,7 +1,7 @@
 import wx
 import wx.propgrid as wxpg
 from wx.lib.pubsub import pub as Publisher
-
+from gui.controller.PropertiesPageCtrl import PropertiesPageCtrl
 from gui.views.ModelView import ModelView
 from utilities import gui
 
@@ -11,6 +11,10 @@ class ModelCtrl(ModelView):
     def __init__(self, parent, model_id=None, **kwargs):
 
         ModelView.__init__(self, parent, **kwargs)
+
+        self.parent = parent
+        self.properties_page_controller = PropertiesPageCtrl(self.notebook)
+        self.notebook.AddPage(self.properties_page_controller, "Properties")
 
         #Bindings
         if self.edit:

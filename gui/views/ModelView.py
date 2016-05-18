@@ -3,6 +3,7 @@ import wx
 import wx.xrc
 import wx.propgrid as wxpg
 
+
 class ModelView(wx.Frame):
     def __init__(self, parent, edit=True, spatial=False, temporal=False, properties=True, configuration=False):
         if sys.platform == "darwin":

@@ -58,6 +58,7 @@ class EMITCtrl(EMITView):
 
         # All other bindings
         self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.on_switch_lower_panel_tab)
+        self.Bind(wx.EVT_CLOSE, self.on_close)
         events.onSaveFromCanvas += self.on_save_configuration_as
 
     def check_users_json(self):
@@ -121,6 +122,8 @@ class EMITCtrl(EMITView):
     def on_close(self, event):
         dial = wx.MessageDialog(None, 'Are you sure to quit?', 'Question',
             wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
+
+        dial.SetYesNoLabels(yes="Quit", no="Cancel")
         if event == None or dial.ShowModal() == wx.ID_YES:
 
             # kill multiprocessing

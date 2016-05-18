@@ -7,11 +7,8 @@ from api_old.ODM2.Core.services import readCore
 from api_old.ODM2.Results.services import readResults
 from api_old.ODM2.Simulation.services import readSimulation
 from emitLogging import elog
-from gui import events
 from gui.controller.ModelCtrl import ModelCtrl
-from gui.controller.PreRunCtrl import PreRunCtrl
 from sprint import *
-from gui.controller.ModelDetailsCtrl import ModelDetailsCtrl
 from utilities import gui
 
 __author__ = 'tonycastronova'
@@ -71,8 +68,11 @@ class ModelContextMenu(wx.Menu):
         self.Bind(wx.EVT_MENU, self.RemoveModel, mmi)
 
     def ShowModelDetails(self, event):
+        from gui.controller.NewModelCtrl import NewModelCtrl
+        # c = NewModelCtrl(self)
 
-        controller = ModelDetailsCtrl(self)
+        # controller = ModelDetailsCtrl(self)
+        controller = NewModelCtrl(self)
 
         # create a frame to bind the details page to
         f = wx.Frame(self.GetParent())
@@ -84,7 +84,9 @@ class ModelContextMenu(wx.Menu):
 
         # Populate the grid
         data = gui.parse_config(atts["mdl"])
-        controller.add_data(data)
+        # controller.add_data(data)
+        controller.properties_page_controller.add_data(data)
+        # c.details_page_controller.add_data(data)
 
         if 'mdl' in atts.keys():
             model_details.PopulateSummary(atts['mdl'])

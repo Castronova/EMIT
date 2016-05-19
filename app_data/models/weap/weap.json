@@ -1,0 +1,49 @@
+{
+	"software": [{
+		"filepath ": "./weap.py",
+		"classname": "weap"
+	}],
+
+	"model": [{
+		"code": "WEAP",
+		"name": "Water Evaluation And Planning System",
+		"description": ""
+	}],
+
+	
+	"general": [{
+		"name": "Water Evaluation And Planning System",
+		"description": "",
+		"simulation_start": "10/01/2009 00:00:00",
+		"simulation_end": "05/31/2010 00:00:00"
+	}],
+
+	
+	"time_step": [{
+		"name": "hours",
+		"abbreviation": "hr",
+		"value": 1
+	}],
+
+	
+	"output": [{
+		"variable_name_cv": "excess",
+		"unit_type_cv": "inches"
+	}],
+
+		
+	"input": [{
+		"variable_name_cv": "precipitation",
+		"unit_type_cv": "international inch",
+		"elementset": "./test/gis/rhf_watershed.shp"
+	}],
+
+	"model inputs": [{
+		"area_path": "Z:\\windows_shared\\WEAP\bear_river_example\\Lecture18_LowerBearRiver-Hydroinformatics\\LowerBearRiver-Hydroinformatics",
+		"active_area": "EMIT TESTING"
+	}],
+
+	"options": [{
+		"ignorecv": 1
+	}]
+}

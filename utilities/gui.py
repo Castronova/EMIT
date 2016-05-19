@@ -148,7 +148,6 @@ def validate_config_ini(ini_path):
 
     return 1
 
-
 def parse_config(ini):
     """
     parses metadata stored in *.ini file.  This file is use by both the GUI and the ENGINE.
@@ -199,6 +198,26 @@ def parse_config(ini):
         return config_params
     else:
         return None
+
+def parse_json(path):
+    import json
+    with open(path, "r") as f:
+        try:
+            data = json.load(f)
+
+            for key, value in data.iteritems():
+                for item in value:
+                    item["type"] = key.upper()
+
+            # Set the base directory
+            basedir = os.path.realpath(os.path.dirname(path))
+            data["basedir"] = basedir
+
+        except ValueError:
+            print "Failed to parse json"
+            data = {}
+
+    return data
 
 def connect_to_ODM2_db(title, desc, engine, address, db, user, pwd):
 

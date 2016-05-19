@@ -77,7 +77,7 @@ def build_exchange_items_from_config(params):
         # get all input and output exchange items as a list
         iotype = stdlib.ExchangeItemType.OUTPUT if io['type'].upper() == stdlib.ExchangeItemType.OUTPUT else stdlib.ExchangeItemType.INPUT
 
-        for key,value in io.iteritems():
+        for key, value in io.iteritems():
             sPrint(key, MessageType.DEBUG)
 
             if key == 'variable_name_cv':

@@ -1,6 +1,6 @@
 {
 	"software": [{
-		"filepath ": "./weather.py",
+		"filepath": "./weather.py",
 		"classname": "weatherReader"
 	}],
 	

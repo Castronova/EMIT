@@ -1,6 +1,6 @@
 {
   "software":[{
-      "filepath": "./ranodomizer.py",
+      "filepath": "./randomizer.py",
       "classname": "randomizer"
   }],
 

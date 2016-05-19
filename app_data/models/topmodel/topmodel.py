@@ -46,8 +46,10 @@ class topmodel(feed_forward.Wrapper):
 
         # read input parameters
         sPrint('Reading input parameters')
-        self.topo_input = inputs["ti"];
-        self.fac_input = inputs["fac"];
+
+        self.base_directory = config_params["basedir"]
+        self.topo_input = self.base_directory + inputs["ti"][1:]
+        self.fac_input = self.base_directory + inputs["fac"][1:]
 
         #read model input parameters
         self.c = float(inputs['m'])

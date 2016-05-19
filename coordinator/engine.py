@@ -497,6 +497,11 @@ class Coordinator(object):
             # parse the model configuration parameters
             params = parse_config(ini_path)
 
+            json_path = ini_path[:-4] + ".json"
+            data = parse_json(json_path)
+            ini_path = json_path
+            params = data
+
             if params is not None:
 
                 try:

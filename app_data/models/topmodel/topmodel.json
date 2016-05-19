@@ -1,6 +1,6 @@
 {
 	"software": [{
-		"filepath ": "./topmodel.py",
+		"filepath": "./topmodel.py",
 		"classname": "topmodel"
 	}],
 

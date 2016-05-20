@@ -17,7 +17,7 @@ class PropertiesPageView(wx.Panel):
         self.grid.SetRowLabelSize(0)
 
         self.frame_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.frame_sizer.Add(self.grid, 1, wx.EXPAND | wx.ALL, 5)
+        self.frame_sizer.Add(self.grid, 1, wx.EXPAND | wx.ALL, 0)
         self.SetSizer(self.frame_sizer)
 
     def get_grid_width(self):

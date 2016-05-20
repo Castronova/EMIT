@@ -11,6 +11,7 @@ from gui.controller.ModelCtrl import ModelCtrl
 from gui.views.ContextView import ToolboxContextMenu
 from gui.views.ToolboxView import ToolboxView
 from sprint import *
+from utilities import gui
 
 
 # todo: refactor
@@ -247,14 +248,14 @@ class ToolboxViewCtrl(ToolboxView):
         if ext == '.mdl':
             kwargs = {'spatial': False}
             model_details = ModelCtrl(self, **kwargs)
-            try:
-                model_details.PopulateEdit(filepath)
-                model_details.PopulateSummary(filepath)
-                model_details.Show()
-            except Exception, e:
-                msg = 'Encountered and error when displaying model details: %s' % e
-                elog.error(msg)
-                sPrint(msg, MessageType.ERROR)
+
+            # Use .json instead of .mdl
+            path = filepath[:-4] + ".json"
+            data = gui.parse_json(path)
+            model_details.properties_page_controller.add_data(data)
+            model_details.PopulateEdit(filepath)
+            model_details.Show()
+
         if ext == '.sim':
 
             kwargs = {'configuration': True, 'edit': False, 'properties': False, 'spatial': False}

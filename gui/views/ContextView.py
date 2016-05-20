@@ -78,8 +78,9 @@ class ModelContextMenu(wx.Menu):
 
         if 'mdl' in atts.keys():
             # Populate the grid
-            data = gui.parse_config(atts["mdl"])
-            model_details.PopulateSummary(atts['mdl'])
+            # Use json file instead of mdl
+            path = atts["mdl"][:-4] + ".json"
+            data = gui.parse_json(path)
             model_details.properties_page_controller.add_data(data)
 
         else:  # This means the model is coming from a database.

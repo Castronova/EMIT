@@ -199,8 +199,10 @@ def parse_config(ini):
     else:
         return None
 
+
 def parse_json(path):
     import json
+
     with open(path, "r") as f:
         try:
             data = json.load(f)
@@ -209,8 +211,11 @@ def parse_json(path):
                 for item in value:
                     item["type"] = key.upper()
 
-            # Set the base directory
             basedir = os.path.realpath(os.path.dirname(path))
+
+            join_model_path_base_directory(data, basedir)
+
+            # Set the base directory
             data["basedir"] = basedir
 
         except ValueError:
@@ -218,6 +223,27 @@ def parse_json(path):
             data = {}
 
     return data
+
+
+def join_model_path_base_directory(data, path):
+    """
+    Sometimes the models json files do not contain a full path
+    so this method adds the full path to any missing values
+    :param data: comes from parse_json()
+    :return: updates the dictionary it received
+    """
+    for key, value in data.items():
+        for item in value:
+            for k, v in item.items():
+                if isinstance(v, unicode):
+                    v = v.encode("utf8")  # Convert the value from a unicode to a string
+
+                if str(v)[0] == ".":
+                    new_value = {
+                        k: path + v[1:]
+                    }
+                    item.update(new_value)
+
 
 def connect_to_ODM2_db(title, desc, engine, address, db, user, pwd):
 

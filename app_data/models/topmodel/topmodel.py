@@ -48,8 +48,16 @@ class topmodel(feed_forward.Wrapper):
         sPrint('Reading input parameters')
 
         self.base_directory = config_params["basedir"]
-        self.topo_input = self.base_directory + inputs["ti"][1:]
-        self.fac_input = self.base_directory + inputs["fac"][1:]
+
+        if inputs["ti"][0] == '.':
+            # Check if inputs[""] starts with a period
+            # parse_json does not add the base directory to everything like parse_config does
+            # Because of that, it needs to check.
+            self.topo_input = self.base_directory + inputs["ti"][1:]
+            self.fac_input = self.base_directory + inputs["fac"][1:]
+        else:
+            self.topo_input = inputs["ti"]
+            self.fac_input = inputs["fac"]
 
         #read model input parameters
         self.c = float(inputs['m'])

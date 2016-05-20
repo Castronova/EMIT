@@ -7,12 +7,12 @@
 	"model": [{
 		"code": "TOPMODEL",
 		"name": "TOPographic MODEL",
-		"description": "TOPMODEL is a physically based, distributed watershed model that simulates hydrologic fluxes of water (infiltration-excess overland flow, saturation overland flow, infiltration, exfiltration, subsurface flow, evapotranspiration, and channel routing) through a watershed. The model simulates explicit groundwater/surface­ water interactions by predicting the movement of the water table, which determines where saturated land-surface areas develop and have the potential to produce saturation overland flow."
+		"description": "TOPMODEL is a physically based, distributed watershed model that simulates hydrologic fluxes of water (infiltration-excess overland flow, saturation overland flow, infiltration, exfiltration, subsurface flow, evapotranspiration, and channel routing) through a watershed. The model simulates explicit groundwater/surface- water interactions by predicting the movement of the water table, which determines where saturated land-surface areas develop and have the potential to produce saturation overland flow."
 	}],
 
 	"general": [{
 		"name": "TOPMODEL",
-		"description": "TOPMODEL is a physically based, distributed watershed model that simulates hydrologic fluxes of water (infiltration-excess overland flow, saturation overland flow, infiltration, exfiltration, subsurface flow, evapotranspiration, and channel routing) through a watershed. The model simulates explicit groundwater/surface­ water interactions by predicting the movement of the water table, which determines where saturated land-surface areas develop and have the potential to produce saturation overland flow.",
+		"description": "TOPMODEL is a physically based, distributed watershed model that simulates hydrologic fluxes of water (infiltration-excess overland flow, saturation overland flow, infiltration, exfiltration, subsurface flow, evapotranspiration, and channel routing) through a watershed. The model simulates explicit groundwater/surface- water interactions by predicting the movement of the water table, which determines where saturated land-surface areas develop and have the potential to produce saturation overland flow.",
 		"simulation_start": "10/01/2009 00:00:00",
 		"simulation_end": "05/31/2010 00:00:00"
 	}],

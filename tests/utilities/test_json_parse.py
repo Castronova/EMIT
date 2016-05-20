@@ -76,3 +76,20 @@ class test_json_parse(unittest.TestCase):
             data = json.load(f)
         f.close()
         self.assertIsInstance(data, dict, "data is not a dictionary")
+
+    def test_unicode_to_string(self):
+        """
+        When converting the .mdl to .json, hidden characters were copied which caused errors when parsing the json
+        This test checks the two spots where the hidden characters existed.
+        :return:
+        """
+        path = os.path.realpath("../../")
+        path += "/app_data/models/topmodel/topmodel.json"
+        with open(path, "r") as f2:
+
+            data = f2.read()
+            json_data = json.loads(data)
+
+            self.assertIsInstance(str(json_data["model"][0]["description"]), str, "Not a string")
+
+        f2.close()

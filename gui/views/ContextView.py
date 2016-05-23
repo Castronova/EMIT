@@ -77,13 +77,10 @@ class ModelContextMenu(wx.Menu):
 
         atts = engine.getModelById(self.model_obj.ID)['attrib']
 
-        if 'mdl' in atts.keys():
+        if 'json' in atts.keys():
             # Populate the grid
-            # Use json file instead of mdl
-            path = atts["mdl"][:-4] + ".json"
-            data = models.parse_json(path)
+            data = models.parse_json(atts["json"])
             model_details.properties_page_controller.add_data(data)
-
         else:  # This means the model is coming from a database.
             oei = model_details.spatial_page.controller.get_output_exchange_item_by_id(self.model_obj.ID)
             iei = model_details.spatial_page.controller.get_input_exchange_item_by_id(self.model_obj.ID)

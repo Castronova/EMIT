@@ -12,6 +12,7 @@ from gui.views.ContextView import ToolboxContextMenu
 from gui.views.ToolboxView import ToolboxView
 from sprint import *
 from utilities import gui
+from utilities import models
 
 
 # todo: refactor
@@ -251,7 +252,7 @@ class ToolboxViewCtrl(ToolboxView):
 
             # Use .json instead of .mdl
             path = filepath[:-4] + ".json"
-            data = gui.parse_json(path)
+            data = models.parse_json(path)
             model_details.properties_page_controller.add_data(data)
             model_details.PopulateEdit(filepath)
             model_details.Show()

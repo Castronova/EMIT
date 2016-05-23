@@ -39,12 +39,11 @@ class ini_types():
     classname = 'str'
     ignorecv = 'str'
     code = 'str'
-    description = 'str'
     generic_string = 'str'
     directory = 'str'
 
-def validate_config_ini(ini_path):
 
+def validate_config_ini(ini_path):  # Deprecated. Use utilities.models.validate_json_model
     try:
 
         cparser = ConfigParser.ConfigParser(None, multidict)
@@ -148,7 +147,8 @@ def validate_config_ini(ini_path):
 
     return 1
 
-def parse_config(ini):
+
+def parse_config(ini):  # Deprecated. Use utilities.models.parse_json
     """
     parses metadata stored in *.ini file.  This file is use by both the GUI and the ENGINE.
     """
@@ -198,51 +198,6 @@ def parse_config(ini):
         return config_params
     else:
         return None
-
-
-def parse_json(path):
-    import json
-
-    with open(path, "r") as f:
-        try:
-            data = json.load(f)
-
-            for key, value in data.iteritems():
-                for item in value:
-                    item["type"] = key.upper()
-
-            basedir = os.path.realpath(os.path.dirname(path))
-
-            join_model_path_base_directory(data, basedir)
-
-            # Set the base directory
-            data["basedir"] = basedir
-
-        except ValueError:
-            print "Failed to parse json"
-            data = {}
-
-    return data
-
-
-def join_model_path_base_directory(data, path):
-    """
-    Sometimes the models json files do not contain a full path
-    so this method adds the full path to any missing values
-    :param data: comes from parse_json()
-    :return: updates the dictionary it received
-    """
-    for key, value in data.items():
-        for item in value:
-            for k, v in item.items():
-                if isinstance(v, unicode):
-                    v = v.encode("utf8")  # Convert the value from a unicode to a string
-
-                if str(v)[0] == ".":
-                    new_value = {
-                        k: path + v[1:]
-                    }
-                    item.update(new_value)
 
 
 def connect_to_ODM2_db(title, desc, engine, address, db, user, pwd):

@@ -10,6 +10,7 @@ from emitLogging import elog
 from gui.controller.ModelCtrl import ModelCtrl
 from sprint import *
 from utilities import gui
+from utilities import models
 
 __author__ = 'tonycastronova'
 
@@ -80,7 +81,7 @@ class ModelContextMenu(wx.Menu):
             # Populate the grid
             # Use json file instead of mdl
             path = atts["mdl"][:-4] + ".json"
-            data = gui.parse_json(path)
+            data = models.parse_json(path)
             model_details.properties_page_controller.add_data(data)
 
         else:  # This means the model is coming from a database.

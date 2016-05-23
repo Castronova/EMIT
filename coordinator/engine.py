@@ -15,6 +15,7 @@ from utilities.mdl import *
 from wrappers import feed_forward
 from wrappers import odm2_data
 from wrappers import time_step
+from utilities.models import *
 
 """
 Purpose: This file contains the logic used to run coupled model simulations
@@ -495,11 +496,13 @@ class Coordinator(object):
                 return 0
 
             # parse the model configuration parameters
-            params = parse_config(ini_path)
+            # params = parse_config(ini_path)
 
             # Comment these four lines to run a .mdl file instead of json
             json_path = ini_path[:-4] + ".json"
+
             data = parse_json(json_path)
+            validate_json_model(data)
             ini_path = json_path
             params = data
 

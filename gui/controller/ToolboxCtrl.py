@@ -1,21 +1,15 @@
 import ConfigParser
 import fnmatch
 import random
-
 import wx
 from wx.lib.pubsub import pub as Publisher
-
 from emitLogging import elog
 from gui import events
 from gui.controller.ModelCtrl import ModelCtrl
 from gui.views.ContextView import ToolboxContextMenu
 from gui.views.ToolboxView import ToolboxView
 from sprint import *
-from utilities import gui
 from utilities import models
-
-
-# todo: refactor
 
 
 class ToolboxViewCtrl(ToolboxView):
@@ -94,11 +88,10 @@ class ToolboxViewCtrl(ToolboxView):
                         self.dirlist = []
 
                         for root, dirnames, filenames in os.walk(apath):
-                            for filename in fnmatch.filter(filenames, '*.mdl'):
+                            for filename in fnmatch.filter(filenames, '*.json'):
                                 matches.append(os.path.join(root, filename))
                                 fullpath = join(root, filename)
-                                txt = filename.split('.mdl')[0]
-                                self.loadMDLFile(cat, txt, fullpath)
+                                self.load_json_file(cat, fullpath)
 
                 # populate simulations
                 if 'Configurations' in folder_path:
@@ -158,21 +151,15 @@ class ToolboxViewCtrl(ToolboxView):
 
         return d
 
-    def loadMDLFile(self, cat, txt, fullpath):
-        mdl_parser = ConfigParser.ConfigParser(None, multidict)
-        mdl_parser.read(fullpath)
-        mdls = mdl_parser.sections()
-        for s in mdls:
-            section = s.split('^')[0]
-            if section == 'general':
-                # options = cparser.options(s)
-                txt = mdl_parser.get(s, 'name')
+    def load_json_file(self, cat, fullpath):
+        data = models.parse_json(fullpath)
+        txt = data["general"][0]["name"]
 
         child = self.tree.AppendItem(cat, txt)
         self.filepath[txt] = fullpath
         self.items[child] = fullpath
 
-        child.__setattr__('path', fullpath)
+        child.__setattr__("path", fullpath)
         self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Expanded)
         self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Normal)
 

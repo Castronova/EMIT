@@ -37,14 +37,12 @@ def join_model_path_base_directory(data, path):
     for key, value in data.items():
         for item in value:
             for k, v in item.items():
-                if isinstance(v, unicode):
-                    v = v.encode("utf8")  # Convert the value from a unicode to a string
-
-                if str(v)[0] == ".":
-                    new_value = {
-                        k: path + v[1:]
-                    }
-                    item.update(new_value)
+                if v:
+                    if str(v)[0] == ".":
+                        new_value = {
+                            k: path + v[1:]
+                        }
+                        item.update(new_value)
 
 
 def parse_json(path):

@@ -146,20 +146,20 @@ class CanvasCtrl(CanvasView):
         # save these coordinates for drawing once the model is loaded
         self.set_model_coordinate(uid, x=x, y=y)
 
-        if ext == '.mdl' or ext == '.sim':
+        if ext == '.json' or ext == '.sim':
 
-            if ext == '.mdl':
+            if ext == '.json':
                 print 'ADDING MODEL'
                 # load the model within the engine process
-                engine.addModel(id=uid, attrib={'mdl': filepath})
+                engine.addModel(id=uid, attrib={'json': filepath})
 
             elif ext == '.sim':
                 # load the simulation
                 try:
                     self.load_simulation(filepath)
                 except Exception, e:
-                    elog.error('Configuration failed to load: %s'%e.message)
-                    sPrint('Configuration failed to load: %s'%e.message, MessageType.ERROR)
+                    elog.error('Configuration failed to load: %s' % e.message)
+                    sPrint('Configuration failed to load: %s' % e.message, MessageType.ERROR)
         else:
             #  Model is from a database
             attrib = dict(databaseid=self._dbid, resultid=name)

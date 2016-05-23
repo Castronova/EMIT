@@ -478,32 +478,24 @@ class Coordinator(object):
                               name=inst.name(),
                               instance=inst,
                               desc=inst.description(),
-                              input_exchange_items= iei,
-                              output_exchange_items=  oei,
+                              input_exchange_items=iei,
+                              output_exchange_items=oei,
                               params=attrib)
             thisModel.attrib(attrib)
 
-        elif 'mdl' in attrib:
-        # if type == datatypes.ModelTypes.FeedForward or type == datatypes.ModelTypes.TimeStep:
+        elif 'json' in attrib:
+            sPrint('Found JSON', MessageType.DEBUG)
 
-            sPrint('Found MDL', MessageType.DEBUG)
-
-            ini_path = attrib['mdl']
+            json_path = attrib['json']
 
             # exit early if mdl doesn't exist
-            if not os.path.exists(ini_path):
-                sPrint('Could not locate *.mdl at location: %s' % ini_path)
+            if not os.path.exists(json_path):
+                sPrint('Could not locate *.json at location: %s' % json_path)
                 return 0
 
-            # parse the model configuration parameters
-            # params = parse_config(ini_path)
-
-            # Comment these four lines to run a .mdl file instead of json
-            json_path = ini_path[:-4] + ".json"
 
             data = parse_json(json_path)
             validate_json_model(data)
-            ini_path = json_path
             params = data
 
             if params is not None:
@@ -515,8 +507,8 @@ class Coordinator(object):
                     sPrint('Finished Loading', MessageType.DEBUG)
                     # make sure this model doesnt already exist
                     if name in self.__models:
-                        elog.warning('Model named '+name+' already exists in configuration')
-                        sPrint('Model named '+name+' already exists in configuration', MessageType.WARNING)
+                        elog.warning('Model named ' + name + ' already exists in configuration')
+                        sPrint('Model named ' + name + ' already exists in configuration', MessageType.WARNING)
                         return None
 
                     iei = model_inst.inputs().values()
@@ -527,11 +519,11 @@ class Coordinator(object):
                                       name=model_inst.name(),
                                       instance=model_inst,
                                       desc=model_inst.description(),
-                                      input_exchange_items= iei,
-                                      output_exchange_items= oei,
+                                      input_exchange_items=iei,
+                                      output_exchange_items=oei,
                                       params=params)
 
-                    thisModel.params_path(ini_path)
+                    thisModel.params_path(json_path)
                     thisModel.attrib(attrib)
 
                 except Exception, e:
@@ -614,7 +606,7 @@ class Coordinator(object):
                 return id
         return None
 
-    def get_model_by_id_summary(self,id):
+    def get_model_by_id_summary(self, id):
         """
         Gets a summarized version of the model by id
 

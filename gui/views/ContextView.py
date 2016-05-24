@@ -11,6 +11,7 @@ from gui.controller.ModelCtrl import ModelCtrl
 from sprint import *
 from utilities import gui
 from utilities import models
+from PIL import ImageDraw
 
 __author__ = 'tonycastronova'
 

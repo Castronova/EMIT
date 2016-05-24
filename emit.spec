@@ -36,7 +36,7 @@ a = Analysis(['./EMIT.py'],
 
 #a.datas += [('./app_data/config/.settings.ini', './app_data/config/.settings.ini', 'DATA')]
 #a.datas += [('./log/.emptyfile', './log/.emptyfile', 'DATA')]
-a.datas += [('./data/connections', './data/connections', 'DATA')]
+#a.datas += [('./data/connections', './data/connections', 'DATA')]
 a.datas += [('./data/preferences', './data/preferences', 'DATA')]
 a.datas += [('./app_data/db/.dbload', './app_data/db/.dbload', 'DATA')]
 dict_tree = Tree(get_pandas_path(), prefix='pandas', excludes=["*.pyc"])

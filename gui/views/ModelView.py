@@ -5,7 +5,7 @@ import wx.propgrid as wxpg
 
 
 class ModelView(wx.Frame):
-    def __init__(self, parent, edit=True, spatial=False, temporal=False, properties=True, configuration=False):
+    def __init__(self, parent, edit=True, spatial=False, temporal=False, configuration=False):
         if sys.platform == "darwin":
             width, height = (640, 690)
         elif sys.platform == "win32":
@@ -42,8 +42,7 @@ class ModelView(wx.Frame):
         if edit:
             self.txtctrlView = wx.Panel(self.notebook, wx.ID_ANY, wx.DefaultPosition,
                                         wx.DefaultSize, wx.TAB_TRAVERSAL)
-            self.notebook.AddPage(self.txtctrlView, u"Edit Properties", False)
-            self.SaveButton = wx.Button(self.txtctrlView, wx.ID_ANY, u"Save Changes",
+            self.SaveButton = wx.Button(self.txtctrlView, wx.ID_ANY, "Save Changes",
                                         wx.DefaultPosition, wx.DefaultSize, 0)
             self.txtctrlView.SetSizer(txtctrlSizer)
             self.TextDisplay = wx.TextCtrl(self.txtctrlView, wx.ID_ANY, wx.EmptyString,
@@ -56,7 +55,7 @@ class ModelView(wx.Frame):
         if configuration:
             xmlPanel = wx.Panel(self.notebook, wx.ID_ANY, wx.DefaultPosition,
                                 wx.DefaultSize, wx.TAB_TRAVERSAL)
-            self.notebook.AddPage(xmlPanel, u"Simulation Properties", False)
+            self.notebook.AddPage(xmlPanel, "Simulation Properties", False)
             txtSizer = wx.BoxSizer(wx.VERTICAL)
             self.xmlTextCtrl = wx.TextCtrl(xmlPanel, -1,
                                            wx.EmptyString,
@@ -65,7 +64,7 @@ class ModelView(wx.Frame):
             txtSizer.Add(self.xmlTextCtrl, 0, wx.ALL, 5)
             xmlPanel.SetSizer(txtSizer)
 
-        sizer_notebook.Add(self.notebook, 1, wx.EXPAND | wx.ALL, 5)
+        sizer_notebook.Add(self.notebook, 1, wx.EXPAND | wx.ALL, 0)
 
         self.SetSizer(sizer_notebook)
         self.Layout()

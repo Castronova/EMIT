@@ -20,6 +20,7 @@ class ModelCtrl(ModelView):
 
         #  Bindings
         if self.edit:
+            self.notebook.AddPage(self.txtctrlView, "Edit Properties", False)
             self.SaveButton.Bind(wx.EVT_BUTTON, self.OnSave)
 
         if self.spatial:

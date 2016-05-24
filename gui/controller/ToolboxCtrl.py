@@ -226,22 +226,16 @@ class ToolboxViewCtrl(ToolboxView):
         self.tree.Collapse(self.root_mdl)
 
     def ShowDetails(self):
+        name = self.tree.GetItemText(self.tree.GetSelection())
+        path = self.filepath.get(name)
 
-        item = self.tree.GetSelection()
-        key = self.tree.GetItemText(item)
+        filename, ext = os.path.splitext(path)
+        if ext == '.json':
+            model_details = ModelCtrl(self)
 
-        filepath = self.filepath.get(key)
-
-        filename, ext = os.path.splitext(filepath)
-        if ext == '.mdl':
-            kwargs = {'spatial': False}
-            model_details = ModelCtrl(self, **kwargs)
-
-            # Use .json instead of .mdl
-            path = filepath[:-4] + ".json"
             data = models.parse_json(path)
             model_details.properties_page_controller.add_data(data)
-            model_details.PopulateEdit(filepath)
+            model_details.PopulateEdit(path)
             model_details.Show()
 
         if ext == '.sim':
@@ -249,7 +243,7 @@ class ToolboxViewCtrl(ToolboxView):
             kwargs = {'configuration': True, 'edit': False, 'properties': False, 'spatial': False}
             model_details = ModelCtrl(self, **kwargs)
             try:
-                model_details.ConfigurationDisplay(filepath)
+                model_details.ConfigurationDisplay(path)
                 model_details.Show()
             except:
                 dlg = wx.MessageDialog(None, 'Error trying to view details', 'Error', wx.OK)

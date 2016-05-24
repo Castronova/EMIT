@@ -50,8 +50,8 @@ class ModelView(wx.Frame):
                                            wx.DefaultPosition, wx.Size(450, 500),
                                            wx.TE_MULTILINE | wx.TE_WORDWRAP)
 
-            txtctrlSizer.Add(self.TextDisplay, 0, wx.ALL | wx.EXPAND, 5)
-            txtctrlSizer.Add(self.SaveButton, 0, wx.ALL, 5)
+            txtctrlSizer.Add(self.TextDisplay, 1, wx.ALL | wx.EXPAND, 5)
+            txtctrlSizer.Add(self.SaveButton, 0, wx.ALL | wx.ALIGN_RIGHT, 5)
 
         if configuration:
             xmlPanel = wx.Panel(self.notebook, wx.ID_ANY, wx.DefaultPosition,

@@ -16,9 +16,9 @@ class ModelCtrl(ModelView):
         self.properties_page_controller = PropertiesPageCtrl(self.notebook)
         self.notebook.AddPage(self.properties_page_controller, "Properties")
         if self.spatial_page:
-            self.notebook.AddPage(self.spatial_page, u"Spatial Definition")
+            self.notebook.AddPage(self.spatial_page, "Spatial Definition")
 
-        #Bindings
+        #  Bindings
         if self.edit:
             self.SaveButton.Bind(wx.EVT_BUTTON, self.OnSave)
 
@@ -57,67 +57,6 @@ class ModelCtrl(ModelView):
         self.TextDisplay.SetValue(filehandle.read())
         filehandle.close()
         self.SetTitle("Details")
-
-    # def PopulateSummary(self, fileExtension):
-    #
-    #     d = gui.parse_config(fileExtension)
-    #
-    #     sections = sorted(d.keys())
-    #
-    #     for section in sections:
-    #         if section is 'basedir':
-    #             pass
-    #         else:
-    #             try:
-    #                 g = self.PropertyGrid.Append( wxpg.PropertyCategory(section))
-    #             except:
-    #                 pass
-    #
-    #         if isinstance (d[section], list):
-    #             items = d[section]
-    #             for item in items:
-    #                 while len(item.keys()) > 0:
-    #                     for keyitem in item.keys():
-    #                         var = item.pop(keyitem)
-    #                         try:
-    #                             self.PropertyGrid.Append( wxpg.StringProperty(str(keyitem), value=str(var)))
-    #                         except:
-    #                             pass
-
-    def PopulateProperties(self, modelid, iei=None, oei=None):
-        # Fills on the information for models from the database
-        # Also implement this to populate all models not only from database
-        # PopulateSummary works only for models not from database.
-        # iei = input exchange item.
-        # oei = output exchange item.
-        # not all models will have inputs & outputs so that's why their set to None by default.
-
-        self.PropertyGrid.Append(wxpg.PropertyCategory("General"))
-        self.PopulatePropertyGrid(modelid)
-
-        if iei:
-            self.PropertyGrid.Append(wxpg.PropertyCategory("Input"))
-            self.PopulatePropertyGrid(iei[0])
-
-        if oei:
-            self.PropertyGrid.Append(wxpg.PropertyCategory("Output"))
-            self.PopulatePropertyGrid(oei[0])
-
-    def PopulatePropertyGrid(self, dictionary):
-        #  A recursive method, checks if there is a dictionary inside a dictionary.
-        if not dictionary:  # if empty dictionary than do nothing
-            return
-        for key, value in dictionary.iteritems():
-            if type(value) is dict:
-                self.PopulatePropertyGrid(value)
-            elif type(value) is list:
-                value = value[0] # Extract dictionary
-                self.PopulatePropertyGrid(value)
-            else:
-                try:
-                    self.PropertyGrid.Append(wxpg.StringProperty(str(key).capitalize(), value=str(value)))
-                except:
-                    pass
 
     def setup_spatial(self, model_id):
         iei = self.spatial_page.controller.get_input_exchange_item_by_id(model_id)

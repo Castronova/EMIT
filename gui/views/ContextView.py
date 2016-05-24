@@ -82,11 +82,6 @@ class ModelContextMenu(wx.Menu):
             data = models.parse_json(atts["json"])
             model_details.properties_page_controller.add_data(data)
         else:  # This means the model is coming from a database.
-            oei = model_details.spatial_page.controller.get_output_exchange_item_by_id(self.model_obj.ID)
-            iei = model_details.spatial_page.controller.get_input_exchange_item_by_id(self.model_obj.ID)
-            model_details.PopulateProperties(engine.getModelById(self.model_obj.ID), iei=iei, oei=oei)
-
-            # Populate the new properties grid
             model_details.properties_page_controller.add_section("General")
             for key, value in engine.getModelById(self.model_obj.ID).iteritems():
                 if isinstance(value, dict):

@@ -160,14 +160,13 @@ class TimeSeriesTab(wx.Panel):
         return values
 
     def get_possible_wof_connections(self):
-
         currentdir = os.path.dirname(os.path.abspath(__file__))
         wof_txt = os.path.abspath(os.path.join(currentdir, '../../data/wofsites'))
-        params = {}
         cparser = ConfigParser.ConfigParser(None, multidict)
         cparser.read(wof_txt)
         sections = cparser.sections()
         wsdl = []
+
         for s in sections:
             d={}
             options = cparser.options(s)
@@ -175,11 +174,6 @@ class TimeSeriesTab(wx.Panel):
                 d[option] = cparser.get(s, option)
 
             wsdl.append(d)
-
-
-        #wsdl["Red Butte Creek"] = "http://data.iutahepscor.org/RedButteCreekWOF/cuahsi_1_1.asmx?WSDL"
-        #wsdl["Provo River"] = "http://data.iutahepscor.org/ProvoRiverWOF/cuahsi_1_1.asmx?WSDL"
-        #wsdl["Logan River"] = "http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL"
         return wsdl
 
     def open_odm2_viewer(self, object):

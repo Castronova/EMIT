@@ -39,6 +39,7 @@ a = Analysis(['./EMIT.py'],
 #a.datas += [('./data/connections', './data/connections', 'DATA')]
 a.datas += [('./data/preferences', './data/preferences', 'DATA')]
 a.datas += [('./app_data/db/.dbload', './app_data/db/.dbload', 'DATA')]
+a.datas += [("./data/wofsites", "./data/wofsites", "DATA")]
 dict_tree = Tree(get_pandas_path(), prefix='pandas', excludes=["*.pyc"])
 a.datas += dict_tree
 a.binaries = filter(lambda x: 'pandas' not in x[0], a.binaries)

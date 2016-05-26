@@ -9,6 +9,7 @@ import db.dbapi_v2 as db2
 from odm2api.ODMconnection import dbconnection
 from sprint import *
 
+
 class DatabaseCtrl(ViewDatabase):
     def __init__(self, *args, **kwargs):
 
@@ -23,12 +24,9 @@ class DatabaseCtrl(ViewDatabase):
         self.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.LaunchContext)
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListItemSelect)
 
-        Publisher.subscribe(self.olvrefresh, "olvrefresh")
-
-
     def DefineColumns(self, cols):
         """
-            Define the columns that will be displayed in the Object List View control
+        Define the columns that will be displayed in the Object List View control
         :param cols: a list of column names
         :return: None
         """
@@ -46,8 +44,6 @@ class DatabaseCtrl(ViewDatabase):
         initialSeries = [record_object]
 
         self.SetObjects(initialSeries)
-
-        # self.SetColumnWidth(6, 2000)
 
     def LaunchContext(self, event):
 
@@ -93,8 +89,3 @@ class DatabaseCtrl(ViewDatabase):
                     return session
 
         return None
-
-    def olvrefresh(self):
-        self.RepopulateList()
-        self.AutoSizeColumns()
-        self.Refresh()

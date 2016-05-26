@@ -26,6 +26,7 @@ from gui.controller.WofSitesCtrl import WofSitesCtrl
 from sprint import *
 from utilities import db as dbUtilities
 from webservice import wateroneflow
+from gui.controller.NewTimeSeriesCtrl import NewTimeSeriesCtrl
 
 
 class ViewLowerPanel:
@@ -33,6 +34,7 @@ class ViewLowerPanel:
 
         console = consoleCtrl(notebook)
         timeseries = TimeSeriesTab(notebook)
+        # timeseries = NewTimeSeriesCtrl(notebook)
         simulations = SimulationDataTab(notebook)
         notebook.AddPage(console, "Console")
         notebook.AddPage(timeseries, "Time Series")
@@ -68,25 +70,21 @@ class multidict(dict):
         return (self[key] for key in self)
 
 
-
 class TimeSeriesTab(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
         self._databases = {}
-        self._connection_added = True
 
         connection_choices = []
-        self.connection_combobox = wx.Choice(self, wx.ID_ANY, wx.DefaultPosition, wx.Size(200, -1), connection_choices,
-                                             0)
+        self.connection_combobox = wx.Choice(self, size=(200, -1), choices=connection_choices)
         self.__selected_choice_idx = 0
         self.connection_combobox.SetSelection(self.__selected_choice_idx)
 
-        self.connection_refresh_button = wx.Button(self, wx.ID_ANY, u"Refresh", wx.DefaultPosition, wx.DefaultSize, 0)
-        self.addConnectionButton = wx.Button(self, wx.ID_ANY, u"Add Connection", wx.DefaultPosition, wx.DefaultSize, 0)
-        self.m_olvSeries = DatabaseCtrl(self, pos=wx.DefaultPosition, size=wx.DefaultSize, id=wx.ID_ANY,
-                                        style=wx.LC_REPORT | wx.SUNKEN_BORDER)
+        self.connection_refresh_button = wx.Button(self, label="Refresh")
+        self.addConnectionButton = wx.Button(self, label="Add Connection")
+        self.table = DatabaseCtrl(self)
         self.table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
-        self.m_olvSeries.DefineColumns(self.table_columns)
+        self.table.DefineColumns(self.table_columns)
 
         seriesSelectorSizer = wx.BoxSizer(wx.VERTICAL)
         buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -96,27 +94,23 @@ class TimeSeriesTab(wx.Panel):
         buttonSizer.Add(self.addConnectionButton, 0, flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=10)
         buttonSizer.AddSpacer((0, 0), 1, wx.EXPAND, 5)
         buttonSizer.Add(self.connection_refresh_button, 0, flag=wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, border=2)
-        seriesSelectorSizer.Add( buttonSizer, 0, wx.ALL|wx.EXPAND, 0)
-        seriesSelectorSizer.Add(self.m_olvSeries, 1, wx.ALL | wx.EXPAND, 0)
+        seriesSelectorSizer.Add( buttonSizer, 0, wx.ALL | wx.EXPAND, 0)
+        seriesSelectorSizer.Add(self.table, 1, wx.ALL | wx.EXPAND, 0)
 
         self.SetSizer(seriesSelectorSizer)
-        self.Layout()
 
         engineEvent.onDatabaseConnected += self.refreshConnectionsListBoxTS
 
         # build custom context menu
-        self.menu = TimeSeriesContextMenu(self.m_olvSeries)
-        self.m_olvSeries.setContextMenu(self.menu)
-
-        # object to hold the current session
-        self.__current_session = None
+        self.menu = TimeSeriesContextMenu(self.table)
+        self.table.setContextMenu(self.menu)
 
         # intialize key bindings
         self.initBindings()
 
     def initBindings(self):
-        self.addConnectionButton.Bind(wx.EVT_LEFT_DOWN, self.AddConnection)
-        self.connection_refresh_button.Bind(wx.EVT_LEFT_DOWN, self.OLVRefresh)
+        self.addConnectionButton.Bind(wx.EVT_BUTTON, self.AddConnection)
+        self.connection_refresh_button.Bind(wx.EVT_BUTTON, self.OLVRefresh)
         self.connection_combobox.Bind(wx.EVT_CHOICE, self.DbChanged)
 
     def DbChanged(self, event):
@@ -124,33 +118,21 @@ class TimeSeriesTab(wx.Panel):
         self.OLVRefresh(event)
 
     def refreshConnectionsListBoxTS(self, connection_added):
+        self._databases = engine.getDbConnections()
 
-        if connection_added:
-            self._databases = engine.getDbConnections()
+        choices = ['---']
+        for k, v in self._databases.iteritems():
+            choices.append(self._databases[k]['name'])
 
-            choices = ['---']
-            for k, v in self._databases.iteritems():
-                choices.append(self._databases[k]['name'])
+        wofconnections = self.get_possible_wof_connections()
+        for con in wofconnections:
+            for key, value in con.iteritems():
+                if key == 'name':
+                    choices.append(value)
 
-            wofconnections = self.get_possible_wof_connections()
-            for con in wofconnections:
-                for key, value in con.iteritems():
-                    if key == 'name':
-                        choices.append(value)
+        choices.sort()
 
-            choices.sort()
-
-            self.connection_combobox.SetItems(choices)
-
-
-            # set the selected choice
-            self.connection_combobox.SetSelection( self.__selected_choice_idx)
-
-    def connection_added_status(self, value=None, connection_string=''):
-        if value is not None:
-            self._connection_added = value
-            self._conection_string = connection_string
-        return self._connection_added
+        self.connection_combobox.SetItems(choices)
 
     def AddConnection(self, event):
         connection = AddConnectionCtrl(self)
@@ -215,7 +197,7 @@ class TimeSeriesTab(wx.Panel):
         self.wofsites = self.generate_wof_data_from_XML()
         api.network_code = self.wofsites[1][1][1]
         self.table_columns = ["Site Name", "Network", "County", "State", "Site Type", "Site Code"]
-        self.m_olvSeries.DefineColumns(self.table_columns)
+        self.table.DefineColumns(self.table_columns)
 
         output = []
         for site in self.wofsites:
@@ -230,14 +212,14 @@ class TimeSeriesTab(wx.Panel):
 
             record_object = type('WOFRecord', (object,), data)
             output.extend([record_object])
-        self.m_olvSeries.AutoSizeColumns()
-        self.m_olvSeries.SetObjects(output)
-        self.m_olvSeries.SetColumnWidth(0, 500)
-        self.m_olvSeries.SetColumnWidth(1, 150)
-        self.m_olvSeries.SetColumnWidth(2, 150)
-        self.m_olvSeries.SetColumnWidth(3, 150)
-        self.m_olvSeries.SetColumnWidth(4, 165)
-        self.m_olvSeries.SetColumnWidth(5, 200)
+        self.table.AutoSizeColumns()
+        self.table.SetObjects(output)
+        self.table.SetColumnWidth(0, 500)
+        self.table.SetColumnWidth(1, 150)
+        self.table.SetColumnWidth(2, 150)
+        self.table.SetColumnWidth(3, 150)
+        self.table.SetColumnWidth(4, 165)
+        self.table.SetColumnWidth(5, 200)
 
     def refresh_database(self):
         # get the name of the selected database
@@ -249,7 +231,7 @@ class TimeSeriesTab(wx.Panel):
                     return con
 
         self.table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
-        self.m_olvSeries.DefineColumns(self.table_columns)
+        self.table.DefineColumns(self.table_columns)
 
         self.__selected_choice_idx = self.connection_combobox.GetSelection()
 
@@ -302,7 +284,7 @@ class TimeSeriesTab(wx.Panel):
                         data.extend([record_object])
 
                 # set the data objects in the olv control
-                self.m_olvSeries.SetObjects(data)
+                self.table.SetObjects(data)
 
                 # set the current database in canvas controller
                 Publisher.sendMessage('SetCurrentDb',value=selected_db)  # sends to CanvasController.get_current_database_session
@@ -326,13 +308,13 @@ class TimeSeriesTab(wx.Panel):
                 elog.debug("Wof web service took to long or failed.")
                 elog.info("Web service took to long. Wof may be down.")
 
+
 class DataSeries(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.Size(500, 500),
                           style=wx.TAB_TRAVERSAL)
 
         self._databases = {}
-        self._connection_added = True
 
         connection_choices = []
         self.connection_combobox = wx.Choice(self, wx.ID_ANY, wx.DefaultPosition, wx.Size(200, -1), connection_choices,
@@ -340,13 +322,9 @@ class DataSeries(wx.Panel):
         self.__selected_choice_idx = 0
         self.connection_combobox.SetSelection(0)
 
-        self.connection_refresh_button = wx.Button(self, wx.ID_ANY, u"Refresh", wx.DefaultPosition, wx.DefaultSize, 0)
-        self.addConnectionButton = wx.Button(self, wx.ID_ANY, u"Add Connection", wx.DefaultPosition, wx.DefaultSize, 0)
-
-        self.table = DatabaseCtrl(self, pos=wx.DefaultPosition, size=wx.DefaultSize, id=wx.ID_ANY,
-                                  style=wx.LC_REPORT | wx.SUNKEN_BORDER)
-
-
+        self.connection_refresh_button = wx.Button(self, label="Refresh")
+        self.addConnectionButton = wx.Button(self, label="Add Connection")
+        self.table = DatabaseCtrl(self)
 
         # Sizers
         seriesSelectorSizer = wx.BoxSizer(wx.VERTICAL)
@@ -361,7 +339,6 @@ class DataSeries(wx.Panel):
         seriesSelectorSizer.Add(self.table, 1, wx.ALL|wx.EXPAND, 0)
 
         self.SetSizer(seriesSelectorSizer)
-        self.Layout()
 
         engineEvent.onDatabaseConnected += self.refreshConnectionsListBox
 
@@ -390,12 +367,6 @@ class DataSeries(wx.Panel):
             # set the selected choice
             self.connection_combobox.SetSelection( self.__selected_choice_idx)
 
-    def connection_added_status(self,value=None,connection_string=''):
-        if value is not None:
-            self._connection_added = value
-            self._connection_string = connection_string
-        return self._connection_added
-
     def AddConnection(self, event):
         AddConnectionCtrl(self)
 
@@ -415,8 +386,6 @@ class DataSeries(wx.Panel):
 
 class SimulationDataTab(DataSeries):
     def __init__(self, parent):
-        #  wx.Panel.__init__(self, parent)
-
         super(SimulationDataTab, self).__init__(parent)
         self.parent = parent
 

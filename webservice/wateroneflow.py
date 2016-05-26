@@ -1,9 +1,6 @@
-__author__ = 'tonycastronova'
-
 import collections
-
+import xml.etree.ElementTree
 from suds.client import Client
-
 from emitLogging import elog
 
 
@@ -39,7 +36,7 @@ class WaterOneFlow(object):
     def __init__(self, wsdl, network):
         self.wsdl = wsdl
         self.conn = Client(wsdl)
-        self.network_code = network + ":"
+        self.network_code = network
 
     def _getSiteType(self, site):
         try:
@@ -100,10 +97,6 @@ class WaterOneFlow(object):
 
         return valuesList
 
-    def connectToNetwork(self, link):
-        connection = Client(link)
-        return connection
-
     def createJSONFileForReading(self, json):
         # Open this file in a browser to view in parsed
         file = open("test.json", "w")
@@ -134,7 +127,46 @@ class WaterOneFlow(object):
         else:
             site_objects = self.conn.service.GetSites(value)
         createXMLFileForReading(site_objects)
-        #return site_objects
+        # return site_objects
+
+    def get_sites_in_xml(self, value=None):
+        """
+        Returns a list of the sites and information about them in xml
+        :param value:
+        :return:
+        """
+        if value:
+            site_objects = self.conn.service.GetSites(value)
+        else:
+            site_objects = self.conn.service.GetSites("")
+        return site_objects
+
+    def get_sites_in_list(self):
+        """
+        :return: a 2-D list of the sites and info about them
+        """
+        xml_sites = self.get_sites_in_xml()
+        root = xml.etree.ElementTree.fromstring(xml_sites)
+        output = []
+        for child in root:
+            if "site" in child.tag:
+                d = []
+                for step_child in child:
+                    for onemore in step_child:
+                        if "siteName" in onemore.tag:
+                            d.append(onemore.text)
+                        if "siteCode" in onemore.tag:
+                            d.append(onemore.items()[1][1])
+                            d.append(onemore.text)
+                        if "siteProperty" in onemore.tag:
+                            if onemore.attrib.items()[0][1] == "County":
+                                d.append(onemore.text)
+                            if onemore.attrib.items()[0][1] == "State":
+                                d.append(onemore.text)
+                            if onemore.attrib.items()[0][1] == "Site Type":
+                                d.append(onemore.text)
+                output.append(d)
+        return output
 
     def getSitesObject(self, value=None):
         #  Returns JSON

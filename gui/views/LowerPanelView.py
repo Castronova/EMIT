@@ -31,14 +31,26 @@ from gui.controller.NewTimeSeriesCtrl import NewTimeSeriesCtrl
 
 class ViewLowerPanel:
     def __init__(self, notebook):
+        self.notebook = notebook
+        self.current_tab = 0
 
         console = consoleCtrl(notebook)
-        timeseries = TimeSeriesTab(notebook)
-        # timeseries = NewTimeSeriesCtrl(notebook)
+        # self.timeseries = TimeSeriesTab(notebook)
+        self.timeseries = NewTimeSeriesCtrl(notebook)
         simulations = SimulationDataTab(notebook)
         notebook.AddPage(console, "Console")
-        notebook.AddPage(timeseries, "Time Series")
+        notebook.AddPage(self.timeseries, "Time Series")
         notebook.AddPage(simulations, "Simulations")
+        self.notebook.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.on_tab_changed)
+
+    def on_tab_changed(self, event):
+        if event.GetSelection() == self.current_tab:
+            return
+        self.current_tab = event.GetSelection()
+        event.GetEventObject().SetSelection(self.current_tab)
+        if self.current_tab == 1:
+            self.timeseries.load_connection_combo()
+        return
 
 
 class multidict(dict):
@@ -259,6 +271,7 @@ class TimeSeriesTab(wx.Panel):
                          zip([col.lower().replace(' ','_') for col in self.table_columns],["" for c in self.table_columns])}
                     record_object = type('DataRecord', (object,), d)
                     data = [record_object]
+                    # data = []
                 else:
 
                     # loop through all of the returned data

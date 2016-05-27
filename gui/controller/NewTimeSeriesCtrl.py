@@ -1,6 +1,5 @@
 from gui.views.NewTimeSeriesView import NewTimeSeriesView
 from webservice import wateroneflow
-import sys
 import wx
 import os
 import json
@@ -36,10 +35,6 @@ class NewTimeSeriesCtrl(NewTimeSeriesView):
         self.table.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.on_double_click)
         self.table.Bind(wx.EVT_SIZE, self._handle_table_resizing)
 
-    def alternate_row_color(self, color="#DCEBEE"):
-        for i in range(self.table.GetItemCount()):
-            if i % 2 == 0:
-                self.table.SetItemBackgroundColour(i, color)
 
     def append_to_connection_combo(self, item):
         if item in self.connection_options:  # Do not add duplicate items
@@ -47,25 +42,6 @@ class NewTimeSeriesCtrl(NewTimeSeriesView):
         self.connection_options.append(item)
         self.connection_options.sort()
         self.connection_combo.SetItems(self.connection_options)
-
-    def auto_size_table(self):
-        for i in range(self.table.GetColumnCount()):
-            self.table.SetColumnWidth(col=i, width=wx.LIST_AUTOSIZE)
-        self.expand_table_to_fill_panel()
-
-    def clear_table(self):
-        """
-        Clears everything in the table including the header names
-        :return:
-        """
-        self.table.ClearAll()
-
-    def clear_content(self):
-        """
-        Clears everything in the table except the header names
-        :return:
-        """
-        self.table.DeleteAllItems()
 
     def convert_selected_row_into_object(self):
         item = self.get_selected_row()
@@ -79,15 +55,6 @@ class NewTimeSeriesCtrl(NewTimeSeriesView):
         }
         record_object = type("WOFRecord", (object,), data)
         return record_object
-
-    def expand_table_to_fill_panel(self):
-        """
-        Sets the width of the table to fill up any white space
-        :return:
-        """
-        last_column_index = self.table.GetColumnCount() - 1
-        size = self.GetTopLevelParent().GetSize()[1]
-        self.table.SetColumnWidth(last_column_index, size)
 
     def get_selected_database(self):
         """
@@ -176,33 +143,6 @@ class NewTimeSeriesCtrl(NewTimeSeriesView):
             data.append(str(getattr(organization, 'OrganizationName', 'N/A')))
             rows.append(data)
         return rows
-
-    def set_columns(self, columns):
-        """
-        Sets the name of the columns
-        :param columns: a list of strings
-        :return:
-        """
-        self.clear_table()
-        for i in range(len(columns)):
-            self.table.InsertColumn(i, columns[i])
-
-    def set_table_content(self, data):
-        """
-        :param data: 2D list
-        :return:
-        """
-        if self.table.GetColumnCount() == 0:
-            print "No column headers have been created"
-            return
-
-        for i in range(len(data)):
-            index = self.table.InsertStringItem(sys.maxint, "")
-            for j in range(len(data[i])):
-                self.table.SetStringItem(index, j, data[i][j])
-
-        self.auto_size_table()
-        self.alternate_row_color()
 
     def _load_wof(self, name):
         """

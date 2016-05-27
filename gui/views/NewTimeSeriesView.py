@@ -37,3 +37,63 @@ class NewTimeSeriesView(wx.Panel):
         main_sizer.Add(self.table, 1, wx.EXPAND | wx.ALL, 0)
 
         self.SetSizer(main_sizer)
+
+    def alternate_row_color(self, color="#DCEBEE"):
+        for i in range(self.table.GetItemCount()):
+            if i % 2 == 0:
+                self.table.SetItemBackgroundColour(i, color)
+
+    def auto_size_table(self):
+        for i in range(self.table.GetColumnCount()):
+            self.table.SetColumnWidth(col=i, width=wx.LIST_AUTOSIZE)
+        self.expand_table_to_fill_panel()
+
+    def clear_table(self):
+        """
+        Clears everything in the table including the header names
+        :return:
+        """
+        self.table.ClearAll()
+
+    def clear_content(self):
+        """
+        Clears everything in the table except the header names
+        :return:
+        """
+        self.table.DeleteAllItems()
+
+    def expand_table_to_fill_panel(self):
+        """
+        Sets the width of the table to fill up any white space
+        :return:
+        """
+        last_column_index = self.table.GetColumnCount() - 1
+        size = self.GetTopLevelParent().GetSize()[1]
+        self.table.SetColumnWidth(last_column_index, size)
+
+    def set_columns(self, columns):
+        """
+        Sets the name of the columns
+        :param columns: a list of strings
+        :return:
+        """
+        self.clear_table()
+        for i in range(len(columns)):
+            self.table.InsertColumn(i, columns[i])
+
+    def set_table_content(self, data):
+        """
+        :param data: 2D list
+        :return:
+        """
+        if self.table.GetColumnCount() == 0:
+            print "No column headers have been created"
+            return
+
+        for i in range(len(data)):
+            index = self.table.InsertStringItem(999999, "")
+            for j in range(len(data[i])):
+                self.table.SetStringItem(index, j, data[i][j])
+
+        self.auto_size_table()
+        self.alternate_row_color()

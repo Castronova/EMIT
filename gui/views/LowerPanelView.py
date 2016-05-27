@@ -81,245 +81,247 @@ class multidict(dict):
     def itervalues(self):
         return (self[key] for key in self)
 
-
-class TimeSeriesTab(wx.Panel):
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent)
-        self._databases = {}
-
-        connection_choices = []
-        self.connection_combobox = wx.Choice(self, size=(200, -1), choices=connection_choices)
-        self.__selected_choice_idx = 0
-        self.connection_combobox.SetSelection(self.__selected_choice_idx)
-
-        self.connection_refresh_button = wx.Button(self, label="Refresh")
-        self.addConnectionButton = wx.Button(self, label="Add Connection")
-        self.table = DatabaseCtrl(self)
-        self.table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
-        self.table.DefineColumns(self.table_columns)
-
-        seriesSelectorSizer = wx.BoxSizer(wx.VERTICAL)
-        buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
-        buttonSizer.SetMinSize(wx.Size(-1, 45))
-
-        buttonSizer.Add(self.connection_combobox, 0, flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=2)
-        buttonSizer.Add(self.addConnectionButton, 0, flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=10)
-        buttonSizer.AddSpacer((0, 0), 1, wx.EXPAND, 5)
-        buttonSizer.Add(self.connection_refresh_button, 0, flag=wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, border=2)
-        seriesSelectorSizer.Add( buttonSizer, 0, wx.ALL | wx.EXPAND, 0)
-        seriesSelectorSizer.Add(self.table, 1, wx.ALL | wx.EXPAND, 0)
-
-        self.SetSizer(seriesSelectorSizer)
-
-        engineEvent.onDatabaseConnected += self.refreshConnectionsListBoxTS
-
-        # build custom context menu
-        self.menu = TimeSeriesContextMenu(self.table)
-        self.table.setContextMenu(self.menu)
-
-        # intialize key bindings
-        self.initBindings()
-
-    def initBindings(self):
-        self.addConnectionButton.Bind(wx.EVT_BUTTON, self.AddConnection)
-        self.connection_refresh_button.Bind(wx.EVT_BUTTON, self.OLVRefresh)
-        self.connection_combobox.Bind(wx.EVT_CHOICE, self.DbChanged)
-
-    def DbChanged(self, event):
-        # refresh the database
-        self.OLVRefresh(event)
-
-    def refreshConnectionsListBoxTS(self, connection_added):
-        self._databases = engine.getDbConnections()
-
-        choices = ['---']
-        for k, v in self._databases.iteritems():
-            choices.append(self._databases[k]['name'])
-
-        wofconnections = self.get_possible_wof_connections()
-        for con in wofconnections:
-            for key, value in con.iteritems():
-                if key == 'name':
-                    choices.append(value)
-
-        choices.sort()
-
-        self.connection_combobox.SetItems(choices)
-
-    def AddConnection(self, event):
-        connection = AddConnectionCtrl(self)
-
-    def getParsedValues(self, siteObject, startDate, endDate):
-        values = self.api.parseValues(siteObject.site_code, self.selectedVariables, startDate, endDate)
-        return values
-
-    def get_possible_wof_connections(self):
-        currentdir = os.path.dirname(os.path.abspath(__file__))
-        wof_txt = os.path.abspath(os.path.join(currentdir, '../../data/wofsites'))
-        cparser = ConfigParser.ConfigParser(None, multidict)
-        cparser.read(wof_txt)
-        sections = cparser.sections()
-        wsdl = []
-
-        for s in sections:
-            d={}
-            options = cparser.options(s)
-            for option in options:
-                d[option] = cparser.get(s, option)
-
-            wsdl.append(d)
-        return wsdl
-
-    def open_odm2_viewer(self, object):
-        variable_list_entries = {}
-        variable_list_entries[object.resultid] = [object.featurecode, object.variable, object.unit, object.type, object.organization, object.date_created]
-        TimeSeriesObjectCtrl(parentClass=self, timeseries_variables=variable_list_entries)
-
-    def open_wof_viewer(self, siteObject):
-        self.selectedVariables = None
-        siteview = WofSitesCtrl(self, siteObject, self.api)
-        return
-
-    def generate_wof_data_from_XML(self):
-        root = xml.etree.ElementTree.parse('wof.xml').getroot()
-        output = []
-        for child in root:
-            if "site" in child.tag:
-                d = []
-                for step_child in child:
-                    for onemore in step_child:
-                        if "siteName" in onemore.tag:
-                            d.append(['site_name', onemore.text])
-                        if "siteCode" in onemore.tag:
-                            d.append(['network', onemore.items()[1][1]])
-                            d.append(['site_code', onemore.text])
-                        if "siteProperty" in onemore.tag:
-                            if onemore.attrib.items()[0][1] == "County":
-                                d.append(['county', onemore.text])
-                            if onemore.attrib.items()[0][1] == "State":
-                                d.append(['state', onemore.text])
-                            if onemore.attrib.items()[0][1] == "Site Type":
-                                d.append(['site_type', onemore.text])
-                output.append(d)
-        return output
-
-    def setup_wof_table(self, api):
-        #self.wofsites = api.getSitesObject()
-        api.getSites()
-        self.wofsites = self.generate_wof_data_from_XML()
-        api.network_code = self.wofsites[1][1][1]
-        self.table_columns = ["Site Name", "Network", "County", "State", "Site Type", "Site Code"]
-        self.table.DefineColumns(self.table_columns)
-
-        output = []
-        for site in self.wofsites:
-            data = {
-                    "site_name": site[0][1],
-                    "network": site[1][1],
-                    "county": site[3][1],
-                    "state": site[4][1],
-                    "site_type": site[5][1],
-                    "site_code": site[2][1]
-                }
-
-            record_object = type('WOFRecord', (object,), data)
-            output.extend([record_object])
-        self.table.AutoSizeColumns()
-        self.table.SetObjects(output)
-        self.table.SetColumnWidth(0, 500)
-        self.table.SetColumnWidth(1, 150)
-        self.table.SetColumnWidth(2, 150)
-        self.table.SetColumnWidth(3, 150)
-        self.table.SetColumnWidth(4, 165)
-        self.table.SetColumnWidth(5, 200)
-
-    def refresh_database(self):
-        # get the name of the selected database
-        selected_db = self.connection_combobox.GetStringSelection()
-
-        for con in self.get_possible_wof_connections():
-            for key, value in con.iteritems():
-                if selected_db == value:
-                    return con
-
-        self.table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
-        self.table.DefineColumns(self.table_columns)
-
-        self.__selected_choice_idx = self.connection_combobox.GetSelection()
-
-        for key, db in self._databases.iteritems():
-            # get the database session associated with the selected name
-            if db['name'] == selected_db:
-
-                # query the database and get basic series info
-
-                series = None
-                # fixme: This breaks for SQLite since it is implemented in dbapi_v2
-                if db['args']['engine'] == 'sqlite':
-                    session = dbconnection2.createConnection(engine=db['args']['engine'], address=db['args']['address'])
-                    # gui_utils.connect_to_db()
-                    s = db2.connect(session)
-                    series = s.getAllSeries()
-
-                else:  # fixme: this is old api for postgresql and mysql (need to update to dbapi_v2)
-                    session_factory = dbUtilities.build_session_from_connection_string(db['connection_string'])
-                    session = db2.connect(session_factory)
-                    series = session.getAllSeries()
-
-                if series is None:
-                    d = {key: value for (key, value) in
-                         zip([col.lower().replace(' ','_') for col in self.table_columns],["" for c in self.table_columns])}
-                    record_object = type('DataRecord', (object,), d)
-                    data = [record_object]
-                    # data = []
-                else:
-
-                    # loop through all of the returned data
-                    data = []
-                    for s in series:
-
-                        variable = s.VariableObj
-                        unit = s.UnitsObj
-                        action = s.FeatureActionObj.ActionObj
-                        samplingfeature = s.FeatureActionObj.SamplingFeatureObj
-                        organization = s.FeatureActionObj.ActionObj.MethodObj.OrganizationObj
-                        d = {
-                            'resultid': s.ResultID or 'N/A',
-                            'variable': getattr(variable, 'VariableCode', 'N/A'),
-                            'unit': getattr(unit, 'UnitsName', 'N/A'),
-                            'date_created': getattr(action, 'BeginDateTime', 'N/A'),
-                            'type': getattr(action, 'ActionTypeCV', 'N/A'),
-                            'featurecode': getattr(samplingfeature, 'SamplingFeatureCode', 'N/A'),
-                            'organization': getattr(organization, 'OrganizationName', 'N/A')
-                        }
-
-                        record_object = type('DataRecord', (object,), d)
-                        data.extend([record_object])
-
-                # set the data objects in the olv control
-                self.table.SetObjects(data)
-
-                # set the current database in canvas controller
-                Publisher.sendMessage('SetCurrentDb',value=selected_db)  # sends to CanvasController.get_current_database_session
-
-                # fire the on_database_changed Event
-                kwargs = dict(dbsession=session,
-                              dbname=db['name'],
-                              dbid=db['id'])
-                events.onDbChanged.fire(**kwargs)
-                break
-
-        return
-
-    def OLVRefresh(self, event):
-        value = self.refresh_database()
-        if value is not None:
-            try:
-                self.api = wateroneflow.WaterOneFlow(value['wsdl'], value['network'])
-                self.setup_wof_table(self.api)
-            except Exception:
-                elog.debug("Wof web service took to long or failed.")
-                elog.info("Web service took to long. Wof may be down.")
+# This class has been replaced with NewTimeSeriesTab.
+# The SimulationsTab class will also be taken over
+# by the NewTimeSeriesTabView
+# class TimeSeriesTab(wx.Panel):
+#     def __init__(self, parent):
+#         wx.Panel.__init__(self, parent)
+#         self._databases = {}
+#
+#         connection_choices = []
+#         self.connection_combobox = wx.Choice(self, size=(200, -1), choices=connection_choices)
+#         self.__selected_choice_idx = 0
+#         self.connection_combobox.SetSelection(self.__selected_choice_idx)
+#
+#         self.connection_refresh_button = wx.Button(self, label="Refresh")
+#         self.addConnectionButton = wx.Button(self, label="Add Connection")
+#         self.table = DatabaseCtrl(self)
+#         self.table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
+#         self.table.DefineColumns(self.table_columns)
+#
+#         seriesSelectorSizer = wx.BoxSizer(wx.VERTICAL)
+#         buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
+#         buttonSizer.SetMinSize(wx.Size(-1, 45))
+#
+#         buttonSizer.Add(self.connection_combobox, 0, flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=2)
+#         buttonSizer.Add(self.addConnectionButton, 0, flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=10)
+#         buttonSizer.AddSpacer((0, 0), 1, wx.EXPAND, 5)
+#         buttonSizer.Add(self.connection_refresh_button, 0, flag=wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, border=2)
+#         seriesSelectorSizer.Add( buttonSizer, 0, wx.ALL | wx.EXPAND, 0)
+#         seriesSelectorSizer.Add(self.table, 1, wx.ALL | wx.EXPAND, 0)
+#
+#         self.SetSizer(seriesSelectorSizer)
+#
+#         engineEvent.onDatabaseConnected += self.refreshConnectionsListBoxTS
+#
+#         # build custom context menu
+#         self.menu = TimeSeriesContextMenu(self.table)
+#         self.table.setContextMenu(self.menu)
+#
+#         # intialize key bindings
+#         self.initBindings()
+#
+#     def initBindings(self):
+#         self.addConnectionButton.Bind(wx.EVT_BUTTON, self.AddConnection)
+#         self.connection_refresh_button.Bind(wx.EVT_BUTTON, self.OLVRefresh)
+#         self.connection_combobox.Bind(wx.EVT_CHOICE, self.DbChanged)
+#
+#     def DbChanged(self, event):
+#         # refresh the database
+#         self.OLVRefresh(event)
+#
+#     def refreshConnectionsListBoxTS(self, connection_added):
+#         self._databases = engine.getDbConnections()
+#
+#         choices = ['---']
+#         for k, v in self._databases.iteritems():
+#             choices.append(self._databases[k]['name'])
+#
+#         wofconnections = self.get_possible_wof_connections()
+#         for con in wofconnections:
+#             for key, value in con.iteritems():
+#                 if key == 'name':
+#                     choices.append(value)
+#
+#         choices.sort()
+#
+#         self.connection_combobox.SetItems(choices)
+#
+#     def AddConnection(self, event):
+#         connection = AddConnectionCtrl(self)
+#
+#     def getParsedValues(self, siteObject, startDate, endDate):
+#         values = self.api.parseValues(siteObject.site_code, self.selectedVariables, startDate, endDate)
+#         return values
+#
+#     def get_possible_wof_connections(self):
+#         currentdir = os.path.dirname(os.path.abspath(__file__))
+#         wof_txt = os.path.abspath(os.path.join(currentdir, '../../data/wofsites'))
+#         cparser = ConfigParser.ConfigParser(None, multidict)
+#         cparser.read(wof_txt)
+#         sections = cparser.sections()
+#         wsdl = []
+#
+#         for s in sections:
+#             d={}
+#             options = cparser.options(s)
+#             for option in options:
+#                 d[option] = cparser.get(s, option)
+#
+#             wsdl.append(d)
+#         return wsdl
+#
+#     def open_odm2_viewer(self, object):
+#         variable_list_entries = {}
+#         variable_list_entries[object.resultid] = [object.featurecode, object.variable, object.unit, object.type, object.organization, object.date_created]
+#         TimeSeriesObjectCtrl(parentClass=self, timeseries_variables=variable_list_entries)
+#
+#     def open_wof_viewer(self, siteObject):
+#         self.selectedVariables = None
+#         siteview = WofSitesCtrl(self, siteObject, self.api)
+#         return
+#
+#     def generate_wof_data_from_XML(self):
+#         root = xml.etree.ElementTree.parse('wof.xml').getroot()
+#         output = []
+#         for child in root:
+#             if "site" in child.tag:
+#                 d = []
+#                 for step_child in child:
+#                     for onemore in step_child:
+#                         if "siteName" in onemore.tag:
+#                             d.append(['site_name', onemore.text])
+#                         if "siteCode" in onemore.tag:
+#                             d.append(['network', onemore.items()[1][1]])
+#                             d.append(['site_code', onemore.text])
+#                         if "siteProperty" in onemore.tag:
+#                             if onemore.attrib.items()[0][1] == "County":
+#                                 d.append(['county', onemore.text])
+#                             if onemore.attrib.items()[0][1] == "State":
+#                                 d.append(['state', onemore.text])
+#                             if onemore.attrib.items()[0][1] == "Site Type":
+#                                 d.append(['site_type', onemore.text])
+#                 output.append(d)
+#         return output
+#
+#     def setup_wof_table(self, api):
+#         #self.wofsites = api.getSitesObject()
+#         api.getSites()
+#         self.wofsites = self.generate_wof_data_from_XML()
+#         api.network_code = self.wofsites[1][1][1]
+#         self.table_columns = ["Site Name", "Network", "County", "State", "Site Type", "Site Code"]
+#         self.table.DefineColumns(self.table_columns)
+#
+#         output = []
+#         for site in self.wofsites:
+#             data = {
+#                     "site_name": site[0][1],
+#                     "network": site[1][1],
+#                     "county": site[3][1],
+#                     "state": site[4][1],
+#                     "site_type": site[5][1],
+#                     "site_code": site[2][1]
+#                 }
+#
+#             record_object = type('WOFRecord', (object,), data)
+#             output.extend([record_object])
+#         self.table.AutoSizeColumns()
+#         self.table.SetObjects(output)
+#         self.table.SetColumnWidth(0, 500)
+#         self.table.SetColumnWidth(1, 150)
+#         self.table.SetColumnWidth(2, 150)
+#         self.table.SetColumnWidth(3, 150)
+#         self.table.SetColumnWidth(4, 165)
+#         self.table.SetColumnWidth(5, 200)
+#
+#     def refresh_database(self):
+#         # get the name of the selected database
+#         selected_db = self.connection_combobox.GetStringSelection()
+#
+#         for con in self.get_possible_wof_connections():
+#             for key, value in con.iteritems():
+#                 if selected_db == value:
+#                     return con
+#
+#         self.table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
+#         self.table.DefineColumns(self.table_columns)
+#
+#         self.__selected_choice_idx = self.connection_combobox.GetSelection()
+#
+#         for key, db in self._databases.iteritems():
+#             # get the database session associated with the selected name
+#             if db['name'] == selected_db:
+#
+#                 # query the database and get basic series info
+#
+#                 series = None
+#                 # fixme: This breaks for SQLite since it is implemented in dbapi_v2
+#                 if db['args']['engine'] == 'sqlite':
+#                     session = dbconnection2.createConnection(engine=db['args']['engine'], address=db['args']['address'])
+#                     # gui_utils.connect_to_db()
+#                     s = db2.connect(session)
+#                     series = s.getAllSeries()
+#
+#                 else:  # fixme: this is old api for postgresql and mysql (need to update to dbapi_v2)
+#                     session_factory = dbUtilities.build_session_from_connection_string(db['connection_string'])
+#                     session = db2.connect(session_factory)
+#                     series = session.getAllSeries()
+#
+#                 if series is None:
+#                     d = {key: value for (key, value) in
+#                          zip([col.lower().replace(' ','_') for col in self.table_columns],["" for c in self.table_columns])}
+#                     record_object = type('DataRecord', (object,), d)
+#                     data = [record_object]
+#                     # data = []
+#                 else:
+#
+#                     # loop through all of the returned data
+#                     data = []
+#                     for s in series:
+#
+#                         variable = s.VariableObj
+#                         unit = s.UnitsObj
+#                         action = s.FeatureActionObj.ActionObj
+#                         samplingfeature = s.FeatureActionObj.SamplingFeatureObj
+#                         organization = s.FeatureActionObj.ActionObj.MethodObj.OrganizationObj
+#                         d = {
+#                             'resultid': s.ResultID or 'N/A',
+#                             'variable': getattr(variable, 'VariableCode', 'N/A'),
+#                             'unit': getattr(unit, 'UnitsName', 'N/A'),
+#                             'date_created': getattr(action, 'BeginDateTime', 'N/A'),
+#                             'type': getattr(action, 'ActionTypeCV', 'N/A'),
+#                             'featurecode': getattr(samplingfeature, 'SamplingFeatureCode', 'N/A'),
+#                             'organization': getattr(organization, 'OrganizationName', 'N/A')
+#                         }
+#
+#                         record_object = type('DataRecord', (object,), d)
+#                         data.extend([record_object])
+#
+#                 # set the data objects in the olv control
+#                 self.table.SetObjects(data)
+#
+#                 # set the current database in canvas controller
+#                 Publisher.sendMessage('SetCurrentDb',value=selected_db)  # sends to CanvasController.get_current_database_session
+#
+#                 # fire the on_database_changed Event
+#                 kwargs = dict(dbsession=session,
+#                               dbname=db['name'],
+#                               dbid=db['id'])
+#                 events.onDbChanged.fire(**kwargs)
+#                 break
+#
+#         return
+#
+#     def OLVRefresh(self, event):
+#         value = self.refresh_database()
+#         if value is not None:
+#             try:
+#                 self.api = wateroneflow.WaterOneFlow(value['wsdl'], value['network'])
+#                 self.setup_wof_table(self.api)
+#             except Exception:
+#                 elog.debug("Wof web service took to long or failed.")
+#                 elog.info("Web service took to long. Wof may be down.")
 
 
 class DataSeries(wx.Panel):

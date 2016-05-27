@@ -45,6 +45,7 @@ class NewTimeSeriesCtrl(NewTimeSeriesView):
         if item in self.connection_options:  # Do not add duplicate items
             return
         self.connection_options.append(item)
+        self.connection_options.sort()
         self.connection_combo.SetItems(self.connection_options)
 
     def auto_size_table(self):
@@ -130,9 +131,9 @@ class NewTimeSeriesCtrl(NewTimeSeriesView):
         db = self.get_selected_database()
 
         if db["args"]["engine"] == "sqlite":
-            session = dbconnection2.createConnection(engine=db["args"]["engine"], address=db["args"]["address"])
-            s = db2.connect(session)
-            series = s.getAllSeries()
+            session_factory = dbconnection2.createConnection(engine=db["args"]["engine"], address=db["args"]["address"])
+            session = db2.connect(session_factory)
+            series = session.getAllSeries()
         elif db["args"]["engine"] == "postgresql":  # db is postresql
             session_factory = dbUtilities.build_session_from_connection_string(db["connection_string"])
             session = db2.connect(session_factory)
@@ -155,26 +156,26 @@ class NewTimeSeriesCtrl(NewTimeSeriesView):
         """
         Turns the results from the sql database to a format that can be loaded into the ListCtrl
         :param series:
-        :return: data: 2D list to be loaded into set_table_content()
+        :return: rows: 2D list to be loaded into set_table_content()
         """
-        data = []
+        rows = []
         for s in series:
-            a = []
+            data = []
             variable = s.VariableObj
             unit = s.UnitsObj
             action = s.FeatureActionObj.ActionObj
             samplingfeature = s.FeatureActionObj.SamplingFeatureObj
             organization = s.FeatureActionObj.ActionObj.MethodObj.OrganizationObj
 
-            a.append(str(getattr(s, "ResultID", "N/A")))
-            a.append(str(getattr(variable, 'VariableCode', 'N/A')))
-            a.append(str(getattr(unit, 'UnitsName', 'N/A')))
-            a.append(str(getattr(action, 'BeginDateTime', 'N/A')))
-            a.append(str(getattr(action, 'ActionTypeCV', 'N/A')))
-            a.append(str(getattr(samplingfeature, 'SamplingFeatureCode', 'N/A')))
-            a.append(str(getattr(organization, 'OrganizationName', 'N/A')))
-            data.append(a)
-        return data
+            data.append(str(getattr(s, "ResultID", "N/A")))
+            data.append(str(getattr(variable, 'VariableCode', 'N/A')))
+            data.append(str(getattr(unit, 'UnitsName', 'N/A')))
+            data.append(str(getattr(action, 'BeginDateTime', 'N/A')))
+            data.append(str(getattr(action, 'ActionTypeCV', 'N/A')))
+            data.append(str(getattr(samplingfeature, 'SamplingFeatureCode', 'N/A')))
+            data.append(str(getattr(organization, 'OrganizationName', 'N/A')))
+            rows.append(data)
+        return rows
 
     def set_columns(self, columns):
         """
@@ -253,9 +254,19 @@ class NewTimeSeriesCtrl(NewTimeSeriesView):
         self.PopupMenu(self.popup_menu)
 
     def on_refresh_table(self, event):
-        if self.connection_combo.GetStringSelection() != "---":
-            self._load_wof(self.connection_combo.GetStringSelection())
+        """
+        Refreshes both the table and the connection combo
+        :param event:
+        :return:
+        """
+        self.load_connection_combo()
+        selection = self.connection_combo.GetStringSelection()
+        if selection != "---":
+            if selection in self.wof_names:
+                self._load_wof(selection)
+                return
+
+            self.load_SQL_database()
 
     def on_view_menu(self, event):
         self.on_double_click(event)
-

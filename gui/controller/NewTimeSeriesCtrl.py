@@ -7,6 +7,7 @@ import json
 import coordinator.engineAccessors as engineAccessors
 from gui.controller.WofSitesCtrl import WofSitesCtrl
 from odm2api.ODMconnection import dbconnection as dbconnection2
+from gui.controller.AddConnectionCtrl import AddConnectionCtrl
 import db.dbapi_v2 as db2
 from utilities import db as dbUtilities
 
@@ -28,11 +29,10 @@ class NewTimeSeriesCtrl(NewTimeSeriesView):
 
         self.alternate_row_color()
         self.connection_combo.Bind(wx.EVT_CHOICE, self.on_connection_combo)
+        self.add_connection_button.Bind(wx.EVT_BUTTON, self.on_add_connection)
         self.refresh_button.Bind(wx.EVT_BUTTON, self.on_refresh_table)
-
         self.Bind(wx.EVT_MENU, self.on_view_menu, self.view_menu)
         self.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.on_right_click)
-
         self.table.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.on_double_click)
         self.table.Bind(wx.EVT_SIZE, self._handle_table_resizing)
 
@@ -224,6 +224,9 @@ class NewTimeSeriesCtrl(NewTimeSeriesView):
         event.Skip()
         size = self.table.GetClientSize()
         self.empty_list_message.SetDimensions(0, size.GetHeight() / 3, size.GetWidth(), size.GetHeight())
+
+    def on_add_connection(self, event):
+        AddConnectionCtrl(self)
 
     def on_connection_combo(self, event):
         self.empty_list_message.Hide()

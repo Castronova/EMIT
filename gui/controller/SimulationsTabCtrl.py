@@ -6,6 +6,7 @@ import db.dbapi_v2 as db2
 from utilities import db as dbUtilities
 from gui.controller.SimulationPlotCtrl import SimulationPlotCtrl
 from odm2api.ODMconnection import dbconnection
+from gui.controller.AddConnectionCtrl import AddConnectionCtrl
 
 
 class SimulationsTabCtrl(TimeSeriesView):
@@ -20,6 +21,7 @@ class SimulationsTabCtrl(TimeSeriesView):
         self.Bind(wx.EVT_MENU, self.on_view_menu, self.view_menu)
         self.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.on_right_click)
         self.connection_combo.Bind(wx.EVT_CHOICE, self.on_connection_combo)
+        self.add_connection_button.Bind(wx.EVT_BUTTON, self.on_add_connection)
         self.refresh_button.Bind(wx.EVT_BUTTON, self.on_refresh)
         self.table.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.on_double_click)
         engineEvents.onDatabaseConnected += self.on_refresh_connection_combo
@@ -114,6 +116,9 @@ class SimulationsTabCtrl(TimeSeriesView):
     ###############################
     # EVENTS
     ###############################
+
+    def on_add_connection(self, event):
+        AddConnectionCtrl(self)
 
     def on_connection_combo(self, event):
         self.empty_list_message.Hide()

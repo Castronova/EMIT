@@ -73,7 +73,7 @@ class NewSimulationsTabCtrl(TimeSeriesView):
         return None
 
     def load_SQL_database(self):
-        table_columns = ["Simulation ID", "Simulation Name", "Model Name", "Simulation Start", "Simulation End", "Date Created","Owner"]
+        table_columns = ["Simulation ID", "Simulation Name", "Date Created","Owner"]
         self.set_columns(table_columns)
         db = self.get_selected_database()
         if db["args"]["engine"] == "sqlite":

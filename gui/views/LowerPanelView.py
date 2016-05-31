@@ -26,7 +26,7 @@ from gui.controller.WofSitesCtrl import WofSitesCtrl
 from sprint import *
 from utilities import db as dbUtilities
 from webservice import wateroneflow
-from gui.controller.NewTimeSeriesCtrl import NewTimeSeriesCtrl
+from gui.controller.TimeSeriesCtrl import TimeSeriesCtrl
 
 
 class ViewLowerPanel:
@@ -36,7 +36,7 @@ class ViewLowerPanel:
 
         console = consoleCtrl(notebook)
         # self.timeseries = TimeSeriesTab(notebook)
-        self.timeseries = NewTimeSeriesCtrl(notebook)
+        self.timeseries = TimeSeriesCtrl(notebook)
         simulations = SimulationDataTab(notebook)
         notebook.AddPage(console, "Console")
         notebook.AddPage(self.timeseries, "Time Series")
@@ -175,6 +175,10 @@ class SimulationDataTab(DataSeries):
     def open_simulation_viewer(self, object):
         results = self.menu.getData(object.simulation_id)
         if results:
+
+            sim_plot_ctrl = SimulationPlotCtrl(parentClass=self)
+            sim_plot_ctrl.SetTitle("Results for Simulation: " + str(object.simulation_name))
+
             keys = results.keys()[0]
 
             plot_data = {}
@@ -183,7 +187,7 @@ class SimulationDataTab(DataSeries):
             sub_variables = results[keys]
             for sub in sub_variables:
                 variable_list_entries[sub[2].ResultID] = [sub[2].VariableObj.VariableCode,
-                                                          sub[2].UnitObj.UnitsAbbreviation,
+                                                          sub[2].UnitsObj.UnitsAbbreviation,
                                                           sub[2].FeatureActionObj.ActionObj.BeginDateTime,
                                                           sub[2].FeatureActionObj.ActionObj.EndDateTime,
                                                           sub[2].VariableObj.VariableNameCV,
@@ -192,8 +196,7 @@ class SimulationDataTab(DataSeries):
                 # Get the data belonging to the model
                 plot_data[sub[2].ResultID] = [sub[0], sub[1]]
 
-            sim_plot_ctrl = SimulationPlotCtrl(parentClass=self, timeseries_variables=variable_list_entries)
-            sim_plot_ctrl.SetTitle("Results for Simulation: " + str(object.model_name))
+            sim_plot_ctrl.set_timeseries_variables(variable_list_entries)
             sim_plot_ctrl.plot_data = plot_data
         else:
             elog.debug("Received no data. SimulationDataTab.open_simulation_viewer()")

@@ -288,66 +288,42 @@ class SimulationContextMenu(ContextMenu):
 
     def getData(self, simulationID):
 
+        res = None
         session = self.parent.getDbSession()
         if session is not None:
-            if session.__module__ == 'db.dbapi_v2':
-                conn = session
+            conn = session
 
-                results = []
-                try:
-                    sPrint('getting results for simulationId: %s' % simulationID, MessageType.DEBUG)
-                    # results = conn.read.getResultsBySimulationID(simulationID)
-                    results = conn.read.getResultsBySimulationID(simulationID)
-                except Exception, e:
-                    sPrint('Encountered and exeption: %s' % e, MessageType.ERROR)
-                finally:
-                    sPrint('Found %d result records: ' % len(results), MessageType.DEBUG)
+            results = []
+            try:
+                sPrint('getting results for simulationId: %s' % simulationID, MessageType.DEBUG)
+                results = conn.read.getResults(simulationid=simulationID)
+            except Exception, e:
+                sPrint('Encountered and exeption: %s' % e, MessageType.ERROR)
+            finally:
+                sPrint('Found %d result records: ' % len(results), MessageType.DEBUG)
 
-                if len(results) == 0:
-                    sPrint('No results found for simulation id %s.' % simulationID, MessageType.ERROR)
-                    return {}
+            if len(results) == 0:
+                sPrint('No results found for simulation id %s.' % simulationID, MessageType.ERROR)
+                return None
 
-                res = {}
-                for r in results:
-                    variable_name = r.VariableObj.VariableCode
+            res = {}
+            for r in results:
+                variable_name = r.VariableObj.VariableCode
 
-                    sPrint('retrieving time series results for resultid: %d' % r.ResultID, MessageType.DEBUG)
-                    result_values = conn.read.getTimeSeriesResultValuesByResultId(r.ResultID)
+                sPrint('retrieving time series results for resultid: %d' % r.ResultID, MessageType.DEBUG)
+                result_values = conn.read.getResultValues(resultid=r.ResultID)
 
-                    sPrint('parsing dates and values from pandas object', MessageType.DEBUG)
-                    dates = list(result_values.ValueDateTime)
-                    values = list(result_values.DataValue)
+                sPrint('parsing dates and values from pandas object', MessageType.DEBUG)
+                dates = list(result_values.ValueDateTime)
+                values = list(result_values.DataValue)
 
-                    if variable_name in res:
-                        res[variable_name].append([dates, values, r])
-                    else:
-                        res[variable_name] = [[dates, values, r]]
+                if variable_name in res:
+                    res[variable_name].append([dates, values, r])
+                else:
+                    res[variable_name] = [[dates, values, r]]
 
-                return res
+        return res
 
-            else:
-                readsim = readSimulation(session)
-                readres = readResults(session)
-                results = readsim.getResultsBySimulationID(simulationID)
-
-                res = {}
-                for r in results:
-                    variable_name = r.VariableObj.VariableCode
-                    result_values = readres.getTimeSeriesValuesByResultId(int(r.ResultID))
-
-                    dates = []
-                    values = []
-                    for val in result_values:
-                        dates.append(val.ValueDateTime)
-                        values.append(val.DataValue)
-
-                    # save data series based on variable
-                    if variable_name in res:
-                        res[variable_name].append([dates, values, r])
-                    else:
-                        res[variable_name] = [[dates, values, r]]
-
-                return res
 
     def on_view(self, event):
         object = self.parent.GetSelectedObject()

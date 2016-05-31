@@ -1,4 +1,4 @@
-from gui.views.NewTimeSeriesView import NewTimeSeriesView
+from gui.views.TimeSeriesView import TimeSeriesView
 from webservice import wateroneflow
 import wx
 import os
@@ -11,9 +11,9 @@ import db.dbapi_v2 as db2
 from utilities import db as dbUtilities
 
 
-class NewTimeSeriesCtrl(NewTimeSeriesView):
+class TimeSeriesCtrl(TimeSeriesView):
     def __init__(self, parent):
-        NewTimeSeriesView.__init__(self, parent)
+        TimeSeriesView.__init__(self, parent)
         self.api = None
 
         self.databases = {}

@@ -11,14 +11,15 @@ from gui.views.TimeSeriesPlotView import TimeSeriesPlotView
 
 class SimulationPlotCtrl(TimeSeriesPlotView):
 
-    def __init__(self, parent=None, parentClass=None, timeseries_variables={}):
+    def __init__(self, parent=None, parentClass=None, timeseries_variables=None):
 
         table_cols = ["id", "Variable", "Units", "Begin Date",
                       "End Date", "Description", "Organization"]
 
         TimeSeriesPlotView.__init__(self, parent, "", table_cols)
 
-        self.populateVariableList(timeseries_variables)
+        if timeseries_variables is not None:
+            self.populateVariableList(timeseries_variables)
 
         self.parentClass = parentClass  # used to access methods from parent class
 
@@ -34,6 +35,9 @@ class SimulationPlotCtrl(TimeSeriesPlotView):
         self.disableBtns(None)
         self.plot_data = None
         self._objects = None
+
+    def set_timeseries_variables(self, timeseries_variables):
+        self.populateVariableList(timeseries_variables)
 
     def addToCanvas(self, event):
         pass

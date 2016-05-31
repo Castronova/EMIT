@@ -27,6 +27,7 @@ from sprint import *
 from utilities import db as dbUtilities
 from webservice import wateroneflow
 from gui.controller.TimeSeriesCtrl import TimeSeriesCtrl
+from gui.controller.NewSimulationsTabCtrl import NewSimulationsTabCtrl
 
 
 class ViewLowerPanel:
@@ -37,7 +38,8 @@ class ViewLowerPanel:
         console = consoleCtrl(notebook)
         # self.timeseries = TimeSeriesTab(notebook)
         self.timeseries = TimeSeriesCtrl(notebook)
-        simulations = SimulationDataTab(notebook)
+        # simulations = SimulationDataTab(notebook)
+        simulations = NewSimulationsTabCtrl(notebook)
         notebook.AddPage(console, "Console")
         notebook.AddPage(self.timeseries, "Time Series")
         notebook.AddPage(simulations, "Simulations")
@@ -52,34 +54,6 @@ class ViewLowerPanel:
             self.timeseries.load_connection_combo()
         return
 
-
-class multidict(dict):
-    """
-    Dictionary class that has been extended for Ordering and Duplicate Keys
-    """
-
-    def __init__(self, *args, **kw):
-        self.itemlist = super(multidict, self).keys()
-        self._unique = 0
-
-    def __setitem__(self, key, val):
-        if isinstance(val, dict):
-            self._unique += 1
-            key += '^' + str(self._unique)
-        self.itemlist.append(key)
-        dict.__setitem__(self, key, val)
-
-    def __iter__(self):
-        return iter(self.itemlist)
-
-    def keys(self):
-        return self.itemlist
-
-    def values(self):
-        return [self[key] for key in self]
-
-    def itervalues(self):
-        return (self[key] for key in self)
 
 class DataSeries(wx.Panel):
     def __init__(self, parent):

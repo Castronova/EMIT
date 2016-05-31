@@ -81,6 +81,13 @@ class TimeSeriesView(wx.Panel):
         size = self.GetTopLevelParent().GetSize()[1]
         self.table.SetColumnWidth(last_column_index, size)
 
+    def get_selected_row(self):
+        row_number = self.table.GetFirstSelected()
+        data = []
+        for i in range(self.table.GetColumnCount()):
+            data.append(self.table.GetItem(row_number, i).GetText())
+        return data
+
     def _handle_table_resizing(self, event):
         event.Skip()
         size = self.table.GetClientSize()
@@ -94,7 +101,7 @@ class TimeSeriesView(wx.Panel):
         """
         self.clear_table()
         for i in range(len(columns)):
-            self.table.InsertColumn(i, columns[i])
+            self.table.InsertColumn(i, columns[i], width=wx.LIST_AUTOSIZE_USEHEADER)
 
     def set_table_content(self, data):
         """

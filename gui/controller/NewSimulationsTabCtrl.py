@@ -6,6 +6,8 @@ from odm2api.ODMconnection import dbconnection as dbconnection2
 import db.dbapi_v2 as db2
 from utilities import db as dbUtilities
 from gui.controller.SimulationPlotCtrl import SimulationPlotCtrl
+from odm2api.ODMconnection import dbconnection
+from utilities import db as dbutils
 
 
 class NewSimulationsTabCtrl(TimeSeriesView):
@@ -21,7 +23,48 @@ class NewSimulationsTabCtrl(TimeSeriesView):
         self.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.on_right_click)
         self.connection_combo.Bind(wx.EVT_CHOICE, self.on_connection_combo)
         self.refresh_button.Bind(wx.EVT_BUTTON, self.on_refresh)
+        self.table.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.on_double_click)
         engineEvents.onDatabaseConnected += self.on_refresh_connection_combo
+
+    def getDbSession(self): # Rename to get_database_session or connection
+        db = self.get_selected_database()
+        if db["args"]['engine'] == "sqlite":
+            session = dbconnection.createConnection(engine=db['args']['engine'], address=db['args']['address'])
+            conn = db2.connect(session)
+            return conn
+        else:
+            session = dbutils.build_session_from_connection_string(db['connection_string'])
+            return session
+
+    def getData(self, simulation_id):
+        session = self.getDbSession()
+        if not session:
+            print "Failed"
+            return
+
+        conn = session
+
+        results = []
+        results = conn.read.getResults(simulationid=simulation_id)
+
+        if len(results) == 0:  # add below self.empty_list_message.Show()
+            return None
+
+        res = {}
+        for r in results:
+            variable_name = r.VariableObj.VariableCode
+
+            result_values = conn.read.getResultValues(resultid=r.ResultID)
+
+            dates = list(result_values.ValueDateTime)
+            values = list(result_values.DataValue)
+
+            if variable_name in res:
+                res[variable_name].append([dates, values, r])
+            else:
+                res[variable_name] = [[dates, values, r]]
+
+        return res
 
     def get_selected_database(self):
         for key, value in engineAccessors.getDbConnections().iteritems():
@@ -85,6 +128,9 @@ class NewSimulationsTabCtrl(TimeSeriesView):
         self.clear_table()
         self.load_SQL_database()
 
+    def on_double_click(self, event):
+        self.on_view_menu(event)
+
     def on_refresh(self, event):
         """
         Refresh both the connection combo box and the table
@@ -108,4 +154,30 @@ class NewSimulationsTabCtrl(TimeSeriesView):
         self.PopupMenu(self.popup_menu)
 
     def on_view_menu(self, event):
-        print "open simulationviewer"
+        row_data = self.get_selected_row()
+        results = self.getData(row_data[0])
+        if results:
+            controller = SimulationPlotCtrl(parentClass=self)
+            controller.SetTitle("Results for Simulation: " + row_data[1])
+
+            plot_data = {}
+            variable_list_entries = {}
+
+            for variable, value in results.iteritems():
+                sub_variables = value
+                for sub in sub_variables:
+                    variable_list_entries[sub[2].ResultID] = [sub[2].VariableObj.VariableCode,
+                                                          sub[2].UnitsObj.UnitsAbbreviation,
+                                                          sub[2].FeatureActionObj.ActionObj.BeginDateTime,
+                                                          sub[2].FeatureActionObj.ActionObj.EndDateTime,
+                                                          sub[2].VariableObj.VariableNameCV,
+                                                          sub[2].FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName]
+
+                # Get the data belonging to the model
+                plot_data[sub[2].ResultID] = [sub[0], sub[1]]
+
+            controller.set_timeseries_variables(variable_list_entries)
+            controller.plot_data = plot_data
+        else:
+            print "receive None"
+

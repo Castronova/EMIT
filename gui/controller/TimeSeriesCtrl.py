@@ -59,13 +59,6 @@ class TimeSeriesCtrl(TimeSeriesView):
                 break
         return db
 
-    def get_selected_row(self):
-        row_number = self.table.GetFirstSelected()
-        data = []
-        for i in range(self.table.GetColumnCount()):
-            data.append(self.table.GetItem(row_number, i).GetText())
-        return data
-
     @staticmethod
     def get_wof_connection_names():
         currentdir = os.path.dirname(os.path.abspath(__file__))

@@ -106,7 +106,7 @@ class sqlite():
     def create_input_dataset(self, connection, resultids,type,code="",title="",abstract=""):
         pass
 
-    def create_simulation(self, coupledSimulationName, user_obj, config_params, ei, simulation_start, simulation_end, timestep_value, timestep_unit, description, name):
+    def create_simulation(self, coupledSimulationName, user_obj, action_date, action_utc_offset, ei, simulation_start, simulation_end, timestep_value, timestep_unit, description, name):
         """
         Inserts a simulation record into the database
         Args:
@@ -149,20 +149,26 @@ class sqlite():
 
         sPrint('inserting action', MessageType.DEBUG)
         actions = self.read.getActions(type='Simulation')
-        if not actions:
+        actionid = None
+        for action in actions:
+            if abs(action.BeginDateTime - action_date) < datetime.timedelta(seconds=1) and \
+                            action.BeginDateTimeUTCOffset == action_utc_offset:
+                actionid = action.ActionID
+                break
+        if actionid is None:
             actions = self.read.getActions()
             actionid = int(actions[-1].ActionID) + 1 if len(actions) > 0 else 1
             self.cursor.execute('INSERT INTO Actions VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
                                 [actionid,
                                 'Simulation',
                                 method.MethodID,
-                                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                int((datetime.datetime.now() - datetime.datetime.utcnow()).total_seconds()/3600),
+                                action_date.strftime('%Y-%m-%d %H:%M:%S'),
+                                action_utc_offset,
+                                # datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                # int((datetime.datetime.now() - datetime.datetime.utcnow()).total_seconds()/3600),
                                  None, None, None, None
                                  ]
                                 )
-        else:
-            actionid = actions[0].ActionID
 
         sPrint('inserting actionby', MessageType.DEBUG)
         ab = self.cursor.execute('SELECT * FROM ActionBy').fetchall()

@@ -179,14 +179,15 @@ class SimulationDataTab(DataSeries):
             sim_plot_ctrl = SimulationPlotCtrl(parentClass=self)
             sim_plot_ctrl.SetTitle("Results for Simulation: " + str(object.simulation_name))
 
-            keys = results.keys()[0]
+            # keys = results.keys()[0]
 
             plot_data = {}
             variable_list_entries = {}
 
-            sub_variables = results[keys]
-            for sub in sub_variables:
-                variable_list_entries[sub[2].ResultID] = [sub[2].VariableObj.VariableCode,
+            for variable, value in results.iteritems():
+                sub_variables = value
+                for sub in sub_variables:
+                    variable_list_entries[sub[2].ResultID] = [sub[2].VariableObj.VariableCode,
                                                           sub[2].UnitsObj.UnitsAbbreviation,
                                                           sub[2].FeatureActionObj.ActionObj.BeginDateTime,
                                                           sub[2].FeatureActionObj.ActionObj.EndDateTime,

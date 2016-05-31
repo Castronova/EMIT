@@ -2,15 +2,13 @@ from gui.views.TimeSeriesView import TimeSeriesView
 import wx
 import coordinator.events as engineEvents
 import coordinator.engineAccessors as engineAccessors
-from odm2api.ODMconnection import dbconnection as dbconnection2
 import db.dbapi_v2 as db2
 from utilities import db as dbUtilities
 from gui.controller.SimulationPlotCtrl import SimulationPlotCtrl
 from odm2api.ODMconnection import dbconnection
-from utilities import db as dbutils
 
 
-class NewSimulationsTabCtrl(TimeSeriesView):
+class SimulationsTabCtrl(TimeSeriesView):
     def __init__(self, parent):
         TimeSeriesView.__init__(self, parent)
 
@@ -26,35 +24,39 @@ class NewSimulationsTabCtrl(TimeSeriesView):
         self.table.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.on_double_click)
         engineEvents.onDatabaseConnected += self.on_refresh_connection_combo
 
-    def getDbSession(self): # Rename to get_database_session or connection
+    def get_database_session(self):
+        """
+        Connect to the respective database and return the session
+        Exception is raised if it is not a sqlite or postresql
+        :return:
+        """
         db = self.get_selected_database()
         if db["args"]['engine'] == "sqlite":
-            session = dbconnection.createConnection(engine=db['args']['engine'], address=db['args']['address'])
-            conn = db2.connect(session)
-            return conn
-        else:
-            session = dbutils.build_session_from_connection_string(db['connection_string'])
+            session_factory = dbconnection.createConnection(engine=db["args"]["engine"], address=db["args"]["address"],
+                                                     db=db["args"]["db"], user=db["args"]["user"],
+                                                     password=db["args"]["pwd"])
+            session = db2.connect(session_factory)
             return session
+        elif db["args"]["engine"] == "postgresql":
+            session_factory = dbUtilities.build_session_from_connection_string(db['connection_string'])
+            session = db2.connect(session_factory)
+            return session
+        else:
+            raise Exception("Failed to load simulations database")
 
-    def getData(self, simulation_id):
-        session = self.getDbSession()
-        if not session:
-            print "Failed"
-            return
+    def get_row_data(self, simulation_id):
+        session = self.get_database_session()
 
-        conn = session
+        results = session.read.getResults(simulationid=simulation_id)
 
-        results = []
-        results = conn.read.getResults(simulationid=simulation_id)
-
-        if len(results) == 0:  # add below self.empty_list_message.Show()
+        if len(results) == 0:
+            self.empty_list_message.Show()  # No results were returned
             return None
 
         res = {}
         for r in results:
             variable_name = r.VariableObj.VariableCode
-
-            result_values = conn.read.getResultValues(resultid=r.ResultID)
+            result_values = session.read.getResultValues(resultid=r.ResultID)
 
             dates = list(result_values.ValueDateTime)
             values = list(result_values.DataValue)
@@ -75,19 +77,9 @@ class NewSimulationsTabCtrl(TimeSeriesView):
     def load_SQL_database(self):
         table_columns = ["Simulation ID", "Simulation Name", "Date Created","Owner"]
         self.set_columns(table_columns)
-        db = self.get_selected_database()
-        if db["args"]["engine"] == "sqlite":
-            session = dbconnection2.createConnection(engine=db["args"]["engine"], address=db["args"]["address"],
-                                                     db=db["args"]["db"], user=db["args"]["user"],
-                                                     password=db["args"]["pwd"])
-            conn = db2.connect(session)
-            simulations = conn.getAllSimulations()
-        elif db["args"]["engine"] == "postgresql":
-            session_factory = dbUtilities.build_session_from_connection_string(db["connection_string"])
-            session = db2.connect(session_factory)
-            simulations = session.getAllSimulations()
-        else:
-            raise Exception("Failed to load simulations database")
+
+        session = self.get_database_session()
+        simulations = session.getAllSimulations()
 
         if not simulations:
             self.empty_list_message.Show()
@@ -155,29 +147,31 @@ class NewSimulationsTabCtrl(TimeSeriesView):
 
     def on_view_menu(self, event):
         row_data = self.get_selected_row()
-        results = self.getData(row_data[0])
-        if results:
-            controller = SimulationPlotCtrl(parentClass=self)
-            controller.SetTitle("Results for Simulation: " + row_data[1])
+        results = self.get_row_data(row_data[0])
 
-            plot_data = {}
-            variable_list_entries = {}
+        if not results:
+            print "Results is None"
+            return
 
-            for variable, value in results.iteritems():
-                sub_variables = value
-                for sub in sub_variables:
-                    variable_list_entries[sub[2].ResultID] = [sub[2].VariableObj.VariableCode,
-                                                          sub[2].UnitsObj.UnitsAbbreviation,
-                                                          sub[2].FeatureActionObj.ActionObj.BeginDateTime,
-                                                          sub[2].FeatureActionObj.ActionObj.EndDateTime,
-                                                          sub[2].VariableObj.VariableNameCV,
-                                                          sub[2].FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName]
+        controller = SimulationPlotCtrl(parentClass=self)
+        controller.SetTitle("Results for Simulation: " + row_data[1])
 
-                # Get the data belonging to the model
-                plot_data[sub[2].ResultID] = [sub[0], sub[1]]
+        plot_data = {}
+        variable_list_entries = {}
 
-            controller.set_timeseries_variables(variable_list_entries)
-            controller.plot_data = plot_data
-        else:
-            print "receive None"
+        for variable, value in results.iteritems():
+            sub_variables = value
+            for sub in sub_variables:
+                variable_list_entries[sub[2].ResultID] = [sub[2].VariableObj.VariableCode,
+                                                      sub[2].UnitsObj.UnitsAbbreviation,
+                                                      sub[2].FeatureActionObj.ActionObj.BeginDateTime,
+                                                      sub[2].FeatureActionObj.ActionObj.EndDateTime,
+                                                      sub[2].VariableObj.VariableNameCV,
+                                                      sub[2].FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName]
 
+            # Get the data belonging to the model
+            plot_data[sub[2].ResultID] = [sub[0], sub[1]]
+
+        # controller.set_timeseries_variables(variable_list_entries)
+        controller.populate_variable_list(variable_list_entries)
+        controller.plot_data = plot_data

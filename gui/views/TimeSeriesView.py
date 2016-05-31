@@ -82,6 +82,10 @@ class TimeSeriesView(wx.Panel):
         self.table.SetColumnWidth(last_column_index, size)
 
     def get_selected_row(self):
+        """
+        Gets the first selected row
+        :return: data: type(list)
+        """
         row_number = self.table.GetFirstSelected()
         data = []
         for i in range(self.table.GetColumnCount()):

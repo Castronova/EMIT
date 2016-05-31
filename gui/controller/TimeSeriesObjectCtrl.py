@@ -119,7 +119,7 @@ class TimeSeriesObjectCtrl(TimeSeriesPlotView):
             self.autoSizeColumns()
             self.alternateRowColor()
         else:
-            elog.debug("populateVariableList()---data passed is not a dictionary")
+            elog.debug("populate_variable_list()---data passed is not a dictionary")
             elog.error("Received wrong format of data")
 
     def setEndDate(self, event):

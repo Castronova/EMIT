@@ -19,7 +19,7 @@ class SimulationPlotCtrl(TimeSeriesPlotView):
         TimeSeriesPlotView.__init__(self, parent, "", table_cols)
 
         if timeseries_variables is not None:
-            self.populateVariableList(timeseries_variables)
+            self.populate_variable_list(timeseries_variables)
 
         self.parentClass = parentClass  # used to access methods from parent class
 
@@ -35,9 +35,6 @@ class SimulationPlotCtrl(TimeSeriesPlotView):
         self.disableBtns(None)
         self.plot_data = None
         self._objects = None
-
-    def set_timeseries_variables(self, timeseries_variables):
-        self.populateVariableList(timeseries_variables)
 
     def addToCanvas(self, event):
         pass
@@ -115,7 +112,7 @@ class SimulationPlotCtrl(TimeSeriesPlotView):
             elog.debug("DetachedInstanceError. See resobj.VariableObj" + str(e))
             elog.error("Failed to load the graph.  Try restarting.")
 
-    def populateVariableList(self, data):
+    def populate_variable_list(self, data):
         if isinstance(data, dict):
             self._data = data
             rowNumber = 0
@@ -134,7 +131,7 @@ class SimulationPlotCtrl(TimeSeriesPlotView):
             self.autoSizeColumns()
             self.alternateRowColor()
         else:
-            elog.debug("populateVariableList()---data passed is not a dictionary")
+            elog.debug("populate_variable_list()---data passed is not a dictionary")
             elog.error("Received wrong format of data")
 
     def setEndDate(self, event):

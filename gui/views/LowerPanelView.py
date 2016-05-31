@@ -1,7 +1,7 @@
 import wx
 from gui.controller.ConsoleOutputCtrl import consoleCtrl
 from gui.controller.TimeSeriesCtrl import TimeSeriesCtrl
-from gui.controller.NewSimulationsTabCtrl import NewSimulationsTabCtrl
+from gui.controller.SimulationsTabCtrl import SimulationsTabCtrl
 
 
 class ViewLowerPanel:
@@ -11,7 +11,7 @@ class ViewLowerPanel:
 
         console = consoleCtrl(notebook)
         self.timeseries = TimeSeriesCtrl(notebook)
-        simulations = NewSimulationsTabCtrl(notebook)
+        simulations = SimulationsTabCtrl(notebook)
         notebook.AddPage(console, "Console")
         notebook.AddPage(self.timeseries, "Time Series")
         notebook.AddPage(simulations, "Simulations")

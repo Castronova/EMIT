@@ -5,6 +5,7 @@ import coordinator.engineAccessors as engineAccessors
 from odm2api.ODMconnection import dbconnection as dbconnection2
 import db.dbapi_v2 as db2
 from utilities import db as dbUtilities
+from gui.controller.SimulationPlotCtrl import SimulationPlotCtrl
 
 
 class NewSimulationsTabCtrl(TimeSeriesView):
@@ -16,6 +17,8 @@ class NewSimulationsTabCtrl(TimeSeriesView):
         self.alternate_row_color()
 
         # Bind Events
+        self.Bind(wx.EVT_MENU, self.on_view_menu, self.view_menu)
+        self.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.on_right_click)
         self.connection_combo.Bind(wx.EVT_CHOICE, self.on_connection_combo)
         self.refresh_button.Bind(wx.EVT_BUTTON, self.on_refresh)
         engineEvents.onDatabaseConnected += self.on_refresh_connection_combo
@@ -100,3 +103,9 @@ class NewSimulationsTabCtrl(TimeSeriesView):
         connections = engineAccessors.getDbConnections()
         for key, value in connections.iteritems():
             self.append_to_connection_combo(value["name"])
+
+    def on_right_click(self, event):
+        self.PopupMenu(self.popup_menu)
+
+    def on_view_menu(self, event):
+        print "open simulationviewer"

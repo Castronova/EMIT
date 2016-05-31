@@ -33,8 +33,10 @@ class DatabaseCtrl(ViewDatabase):
 
         variable_names = [col.lower().replace(' ', '_') for col in cols]
 
-        seriesColumns = [ColumnDefn(col, align="left", minimumWidth=150, valueGetter=col.lower().replace(' ', '_'))
+        width = 200
+        seriesColumns = [ColumnDefn(col, align="left", minimumWidth=width, valueGetter=col.lower().replace(' ', '_'))
                          for col in cols]
+        seriesColumns[-1].isSearchable=True
 
         self.SetColumns(seriesColumns)
 
@@ -44,6 +46,8 @@ class DatabaseCtrl(ViewDatabase):
         initialSeries = [record_object]
 
         self.SetObjects(initialSeries)
+
+        self.AutoSizeColumns()
 
     def LaunchContext(self, event):
 

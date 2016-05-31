@@ -3,7 +3,7 @@ __author__ = 'tonycastronova'
 import sys
 
 from emitLogging import elog
-
+from sprint import *
 
 class EventResponse:
     def __init__(self, **kwargs):
@@ -36,7 +36,8 @@ class EventManager(object):
             return self.__handlers[name]
         else:
             # ignore if no handlers are assigned, but print warning message to log
-            elog.warning('No handlers for event: %s', name)
+            # elog.warning('No handlers for event: %s' % name)
+            sPrint('No handlers for event %s' % name, MessageType.ERROR)
 
             # raise Exception("No handlers for event: ", name)
 
@@ -61,7 +62,8 @@ class EventHook(object):
     def fire(self, **kwargs):
 
         if sys.gettrace():
-            elog.debug('Event fired: %s' % self.__name)
+            # elog.debug('Event fired: %s' % self.__name)
+            sPrint('Event fired: %s' % self.__name, MessageType.INFO)
 
         # count = 0  # to prevent event firing twice.
         evt_mgr = EventManager()

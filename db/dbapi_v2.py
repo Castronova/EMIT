@@ -162,7 +162,7 @@ class sqlite():
                                  ]
                                 )
         else:
-            actionid = actions.ActionID
+            actionid = actions[0].ActionID
 
         sPrint('inserting actionby', MessageType.DEBUG)
         ab = self.cursor.execute('SELECT * FROM ActionBy').fetchall()
@@ -394,7 +394,7 @@ class sqlite():
 
 
         # method = self.read.getMethods(codes=['simulation'])
-        results = self.cursor.execute('SELECT * FROM Methods WHERE MethodCode = ?', ['simulation']).fetchall()
+        results = self.cursor.execute('SELECT * FROM Methods WHERE MethodCode = ?', ['simulation']).fetchone()
 
         if not results:
             m = models.Methods()

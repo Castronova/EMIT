@@ -38,10 +38,20 @@ class TimeSeriesView(wx.Panel):
 
         self.SetSizer(main_sizer)
 
+        # Events
+        self.table.Bind(wx.EVT_SIZE, self._handle_table_resizing)
+
     def alternate_row_color(self, color="#DCEBEE"):
         for i in range(self.table.GetItemCount()):
             if i % 2 == 0:
                 self.table.SetItemBackgroundColour(i, color)
+
+    def append_to_connection_combo(self, item):
+        if item in self.connection_options:  # Do not add duplicate items
+            return
+        self.connection_options.append(item)
+        self.connection_options.sort()
+        self.connection_combo.SetItems(self.connection_options)
 
     def auto_size_table(self):
         for i in range(self.table.GetColumnCount()):
@@ -70,6 +80,11 @@ class TimeSeriesView(wx.Panel):
         last_column_index = self.table.GetColumnCount() - 1
         size = self.GetTopLevelParent().GetSize()[1]
         self.table.SetColumnWidth(last_column_index, size)
+
+    def _handle_table_resizing(self, event):
+        event.Skip()
+        size = self.table.GetClientSize()
+        self.empty_list_message.SetDimensions(0, size.GetHeight() / 3, size.GetWidth(), size.GetHeight())
 
     def set_columns(self, columns):
         """

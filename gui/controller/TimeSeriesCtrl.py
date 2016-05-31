@@ -33,15 +33,6 @@ class TimeSeriesCtrl(TimeSeriesView):
         self.Bind(wx.EVT_MENU, self.on_view_menu, self.view_menu)
         self.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.on_right_click)
         self.table.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.on_double_click)
-        self.table.Bind(wx.EVT_SIZE, self._handle_table_resizing)
-
-
-    def append_to_connection_combo(self, item):
-        if item in self.connection_options:  # Do not add duplicate items
-            return
-        self.connection_options.append(item)
-        self.connection_options.sort()
-        self.connection_combo.SetItems(self.connection_options)
 
     def convert_selected_row_into_object(self):
         item = self.get_selected_row()
@@ -159,11 +150,6 @@ class TimeSeriesCtrl(TimeSeriesView):
     ###############################
     # EVENTS
     ###############################
-
-    def _handle_table_resizing(self, event):
-        event.Skip()
-        size = self.table.GetClientSize()
-        self.empty_list_message.SetDimensions(0, size.GetHeight() / 3, size.GetWidth(), size.GetHeight())
 
     def on_add_connection(self, event):
         AddConnectionCtrl(self)

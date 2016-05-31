@@ -483,10 +483,10 @@ class Coordinator(object):
                               params=attrib)
             thisModel.attrib(attrib)
 
-        elif 'json' in attrib:
-            sPrint('Found JSON', MessageType.DEBUG)
+        elif 'mdl' in attrib:
+            sPrint('Found MDL', MessageType.DEBUG)
 
-            json_path = attrib['json']
+            json_path = attrib['mdl']
 
             # exit early if mdl doesn't exist
             if not os.path.exists(json_path):

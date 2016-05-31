@@ -1,34 +1,44 @@
-[software]
-filepath  = ./slow_loading.py
-classname = slowloading
+{
+	"software":[{
+		"filepath": "./slow_loading.py",
+		"classname": "slowloading"
+	}],
 
-[model]
-code = Slow Loading Model
-name = Slow Loading Model
-description = This is a component the takes a while to initialize.  It is used for testing concurrency
+	"model":[{
+			"code": "Slow Loading Model",
+			"name": "Slow Loading Model",
+			"description": "This is a component the takes a while to initialize.  It is used for testing concurrency"
+		}],
 
-[general]
-name = Slow Loading Test
-description = This model takes a while to load, but does nothing during run phase.
-simulation_start = 03/01/2014 12:00:00
-simulation_end = 05/01/2014 13:00:00
+	"general":[{
+		"name": "Slow Loading Test",
+		"description": "This model takes a while to load, but does nothing during run phase.",
+		"simulation_start": "03/01/2014 12:00:00",
+		"simulation_end": "05/01/2014 13:00:00"
+	}],
 
-[input]
-variable_name_cv = Test Input
-unit_type_cv = international inch
-elementset = POLYGON ((15 20, 20 20, 25 30, 15 25, 15 20))
-epsg_code = 2921
+	"input":[{
+		"variable_name_cv": "Test Input",
+		"unit_type_cv": "international inch",
+		"elementset": "POLYGON ((15 20, 20 20, 25 30, 15 25, 15 20))",
+		"epsg_code": 2921
+	}],
 
-[output]
-variable_name_cv = Test Output
-unit_type_cv = international inch
-elementset = POLYGON ((15 20, 20 20, 25 30, 15 25, 15 20))
-epsg_code = 2921
 
-[time_step]
-name = hours
-abbreviation = hr
-value = 1
+	"output":[{
+		"variable_name_cv": "Test Output",
+		"unit_type_cv": "international inch",
+		"elementset": "POLYGON ((15 20, 20 20, 25 30, 15 25, 15 20))",
+		"epsg_code": 2921
+	}],
 
-[options]
-ignorecv = 1
+	"time_step": [{
+		"name": "hours",
+		"abbreviation": "hr",
+		"value": 1
+	}],
+
+	"options": [{
+		"ignorecv": 1
+	}]
+}

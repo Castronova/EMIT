@@ -9,7 +9,7 @@ class test_json_parse(unittest.TestCase):
 
     def test_parse_multiplier(self):
         path = os.path.realpath("../../")
-        path += "/app_data/models/multiplier/multiplier.json"
+        path += "/app_data/models/multiplier/multiplier.mdl"
         self.assertTrue(os.path.exists(path), path + " does not exist")
 
         with open(path, "r") as f:
@@ -19,7 +19,7 @@ class test_json_parse(unittest.TestCase):
 
     def test_parse_randomizer(self):
         path = os.path.realpath("../../")
-        path += "/app_data/models/randomizer/randomizer.json"
+        path += "/app_data/models/randomizer/randomizer.mdl"
         self.assertTrue(os.path.exists(path), path + " does not exist")
 
         with open(path, "r") as f:
@@ -29,7 +29,7 @@ class test_json_parse(unittest.TestCase):
 
     def test_parse_slow_loading(self):
         path = os.path.realpath("../../")
-        path += "/app_data/models/slow_loading/slow_loading.json"
+        path += "/app_data/models/slow_loading/slow_loading.mdl"
         self.assertTrue(os.path.exists(path), path + " does not exist")
 
         with open(path, "r") as f:
@@ -39,7 +39,7 @@ class test_json_parse(unittest.TestCase):
 
     def test_parse_top_model(self):
         path = os.path.realpath("../../")
-        path += "/app_data/models/topmodel/topmodel.json"
+        path += "/app_data/models/topmodel/topmodel.mdl"
         self.assertTrue(os.path.exists(path), path + " does not exist")
 
         with open(path, "r") as f:
@@ -49,7 +49,7 @@ class test_json_parse(unittest.TestCase):
 
     def test_parse_ueb_model(self):
         path = os.path.realpath("../../")
-        path += "/app_data/models/ueb/ueb.json"
+        path += "/app_data/models/ueb/ueb.mdl"
         self.assertTrue(os.path.exists(path), path + " does not exist")
 
         with open(path, "r") as f:
@@ -59,7 +59,7 @@ class test_json_parse(unittest.TestCase):
 
     def test_parse_weap_model(self):
         path = os.path.realpath("../../")
-        path += "/app_data/models/weap/weap.json"
+        path += "/app_data/models/weap/weap.mdl"
         self.assertTrue(os.path.exists(path), path + " does not exist")
 
         with open(path, "r") as f:
@@ -69,7 +69,7 @@ class test_json_parse(unittest.TestCase):
 
     def test_parse_weather_model(self):
         path = os.path.realpath("../../")
-        path += "/app_data/models/weather/weatherReader.json"
+        path += "/app_data/models/weather/weatherReader.mdl"
         self.assertTrue(os.path.exists(path), path + " does not exist")
 
         with open(path, "r") as f:
@@ -84,7 +84,7 @@ class test_json_parse(unittest.TestCase):
         :return:
         """
         path = os.path.realpath("../../")
-        path += "/app_data/models/topmodel/topmodel.json"
+        path += "/app_data/models/topmodel/topmodel.mdl"
         with open(path, "r") as f2:
 
             data = f2.read()

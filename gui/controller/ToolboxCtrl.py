@@ -88,7 +88,7 @@ class ToolboxViewCtrl(ToolboxView):
                         self.dirlist = []
 
                         for root, dirnames, filenames in os.walk(apath):
-                            for filename in fnmatch.filter(filenames, '*.json'):
+                            for filename in fnmatch.filter(filenames, '*.mdl'):
                                 matches.append(os.path.join(root, filename))
                                 fullpath = join(root, filename)
                                 self.load_json_file(cat, fullpath)
@@ -230,7 +230,7 @@ class ToolboxViewCtrl(ToolboxView):
         path = self.filepath.get(name)
 
         filename, ext = os.path.splitext(path)
-        if ext == '.json':
+        if ext == '.mdl':
             model_details = ModelCtrl(self)
 
             data = models.parse_json(path)

@@ -188,9 +188,9 @@ class sqlite():
         ds = models.DataSets()
         ds.DataSetAbstract = description
         ds.DataSetTitle = 'Input for Simulation : %s' % name
-        ds.DataSetCode = 'Input_%s' % name
         ds.DataSetTypeCV = 'Simulation Input'
         ds.DataSetUUID = uuid.uuid4().hex
+        ds.DataSetCode = 'Input_%s_%s' % (name, ds.DataSetUUID)  # this must be unique, so using uuid
         self.write.createDataset(ds)
         datasets = self.read.getDataSets(codes=[ds.DataSetCode])
         dataset = datasets[0]
@@ -245,7 +245,6 @@ class sqlite():
 
 
             # todo: insert sampling features bulk
-            sPrint('inserting sampling features', MessageType.DEBUG)
             st = time.time()
             samplingfeaturesids = []
             for i in range(0, len(geometries)):
@@ -255,38 +254,31 @@ class sqlite():
                 samplingFeature = self.insert_sampling_feature(type='site',geometryType=geom_type, WKTgeometry=geom_wkt)
                 samplingfeaturesids.append(samplingFeature.SamplingFeatureID)
             bench_insert_sf = (time.time() - st)
-            sPrint('%3.5f sec' % bench_insert_sf, MessageType.DEBUG)
-            sPrint('\n', MessageType.INFO)
+            sPrint('inserting sampling features...%3.5f sec' % bench_insert_sf, MessageType.DEBUG)
 
-            sPrint('inserting feature actions', MessageType.DEBUG)
             st = time.time()
             featureactions = []
             action_ids = [actionid] * len(samplingfeaturesids)
             featureactionids = self.insert_feature_actions_bulk(samplingfeaturesids, action_ids)
             bench_insert_fa += (time.time() - st)
-            sPrint('%3.5f sec' % bench_insert_fa, MessageType.DEBUG)
-            sPrint('\n', MessageType.INFO)
+            sPrint('inserting feature actions...%3.5f sec' % bench_insert_fa, MessageType.DEBUG)
 
-            sPrint('inserting results', MessageType.DEBUG)
             st = time.time()
             resultids = self.insert_results_bulk(FeatureActionIDs=featureactionids, ResultTypeCV='time series', VariableID=variable.VariableID,
                                      UnitsID=unit.UnitsID, ValueCount=len(dates), ProcessingLevelID=processinglevel.ProcessingLevelID,
                                                  SampledMediumCV='unknown')
-            sPrint('%3.5f sec' % (time.time() - st), MessageType.DEBUG)
-            sPrint('\n', MessageType.INFO)
+            sPrint('inserting results...%3.5f sec' % (time.time() - st), MessageType.DEBUG)
 
             geom_index = 0
             for resultid in resultids:
 
                 # create time series result
-                sPrint('inserting time series results', MessageType.DEBUG)
                 st = time.time()
                 vals = [None]*11
                 vals[0] = resultid   # insert result id
                 vals[-1] = 'Unknown' # insert aggregation statistic
                 self.cursor.execute('INSERT INTO TimeSeriesResults VALUES (?,?,?,?,?,?,?,?,?,?,?)', vals)
-                sPrint('%3.5f sec' % (time.time() - st), MessageType.DEBUG)
-                sPrint('\n', MessageType.INFO)
+                sPrint('inserting time series results...%3.5f sec' % (time.time() - st), MessageType.DEBUG)
 
                 # get datavalues corresponding to this resultid (i.e. geometry)
                 datavalues = e.getValues2(geom_index, geom_index)
@@ -294,16 +286,9 @@ class sqlite():
 
                 values = datavalues.flatten(order='C') # flatten row-wise, [t1g, t2g, ..., tng]
                 valuedates = dates[:,1]  # get all rows of the datetime column of the dates array [t1, t2, t3, ..., tn]
-                # flattened_ids = []
-                # flattened_dates = []
-                # geom_count = len(geometries)
-
-                # for dt in valuedates:
-                #     flattened_dates.extend([dt] * geom_count)  # [t1, t1, ..., t1, t2, t2, ..., t2, tn, tn, ..., tn]
 
                 st = time.time()
                 try:
-                    sPrint('insert time series result values (%d records)' % len(values), MessageType.DEBUG)
                     self.insert_timeseries_result_values_bulk(ResultIDs=resultid,
                                                               TimeAggregationInterval=timestep_value,
                                                               TimeAggregationIntervalUnitsID=timestepunit.UnitsID,
@@ -311,8 +296,7 @@ class sqlite():
                                                               ValueDateTimeUTCOffset=-6, CensorCodeCV='nc',
                                                               QualityCodeCV='unknown')
                     bulk = time.time() - st
-                    sPrint('%3.5f sec' % (bulk), MessageType.DEBUG)
-                    sPrint('\n', MessageType.INFO)
+                    sPrint('insert time series result values (%d records)...%3.5f sec' % (len(values), bulk), MessageType.DEBUG)
 
                 except Exception, e:
                     msg = 'Encountered an error while inserting timeseries result values: %s' %e
@@ -325,7 +309,8 @@ class sqlite():
 
         # create the model instance
         sPrint('insert model', MessageType.DEBUG)
-        model = self.createModel(name, description, name)
+        model_code = '%s_%s' % (name, str(uuid.uuid4().hex))  # must be unique
+        model = self.createModel(model_code, description, name)
 
         # create simulation
         sPrint('insert simulation', MessageType.DEBUG)

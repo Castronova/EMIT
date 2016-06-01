@@ -4,7 +4,7 @@ import wx
 
 class ModelInputPromptView(wx.Frame):
     def __init__(self, parent, path):
-        wx.Frame.__init__(self, parent, style=wx.DEFAULT_FRAME_STYLE | wx.STAY_ON_TOP)
+        wx.Frame.__init__(self, parent, style=wx.DEFAULT_FRAME_STYLE | wx.FRAME_FLOAT_ON_PARENT)
 
         panel = wx.Panel(self)
         data = models.parse_json(path)

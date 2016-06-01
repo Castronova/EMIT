@@ -23,11 +23,13 @@ class ModelInputPromptView(wx.Frame):
         # Add components dynamically
         for item in model_inputs:
             static_text = wx.StaticText(panel, id=count, label=item["label"] + ":")
-            text_ctrl = wx.TextCtrl(panel, id=count)
             help_text = wx.StaticText(panel, id=count, label=item["help"])
+            text_ctrl = None
             file_explorer_button = None
             if item["input"] == "file":
                 file_explorer_button = wx.Button(panel, id=count, label="File", style=wx.BU_EXACTFIT)
+            else:
+                text_ctrl = wx.TextCtrl(panel, id=count)
 
             font = wx.Font(pointSize=8, family=wx.DEFAULT, style=wx.NORMAL, weight=wx.NORMAL)
             help_text.SetFont(font)
@@ -44,22 +46,19 @@ class ModelInputPromptView(wx.Frame):
 
         # Create sizers
         frame_sizer = wx.BoxSizer(wx.VERTICAL)
-        flex_grid_sizer = wx.FlexGridSizer(rows=count * 2, cols=3, vgap=1, hgap=5)
+        flex_grid_sizer = wx.FlexGridSizer(rows=count * 3, cols=1, vgap=1, hgap=5)
 
         # Add components to sizer
         for i in range(count):
             flex_grid_sizer.Add(self.static_texts[i])
-            flex_grid_sizer.Add(self.text_ctrls[i], 1, wx.EXPAND)
             if self.inputs[i]:
-                flex_grid_sizer.Add(self.inputs[i])
+                flex_grid_sizer.Add(self.inputs[i], 1, wx.EXPAND)
             else:
-                flex_grid_sizer.AddSpacer((0, 0))
+                flex_grid_sizer.Add(self.text_ctrls[i], 1, wx.EXPAND)
 
-            flex_grid_sizer.AddSpacer((0, 0))
-            flex_grid_sizer.Add(self.help_texts[i], 1, wx.EXPAND | wx.BOTTOM, 10)
-            flex_grid_sizer.AddSpacer((0, 0))
+            flex_grid_sizer.Add(self.help_texts[i], 1, wx.EXPAND | wx.BOTTOM, 15)
 
-        flex_grid_sizer.AddGrowableCol(1, 1)  # Set the second column to expand and fill space
+        flex_grid_sizer.AddGrowableCol(0, 1)  # Set the first column to expand and fill space
 
         frame_sizer.Add(flex_grid_sizer, proportion=1, flag=wx.ALL | wx.EXPAND, border=10)
         frame_sizer.Add(break_line, 0, wx.EXPAND, 5)

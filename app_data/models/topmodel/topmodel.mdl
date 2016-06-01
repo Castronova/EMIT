@@ -45,5 +45,25 @@
 
 	"options":[{
 		"ignorecv": 1
+	}],
+
+	"model_inputs": [{
+	    "label": "Topographic index",
+	    "help": "this is a help text for topographic index",
+	    "variable": "ti",
+	    "type": "file",
+	    "required": "True"
+	}, {
+	    "label": "Infiltration",
+	    "help": "this is a help text for infiltration",
+	    "variable": "infil",
+	    "type": "text",
+	    "required": "True"
+	}, {
+	    "label": "Third item",
+	    "help": "this is a help text for third item",
+	    "variable": "three",
+	    "type": "file",
+	    "required": "False"
 	}]
 }

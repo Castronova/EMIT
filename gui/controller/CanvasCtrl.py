@@ -101,11 +101,9 @@ class CanvasCtrl(CanvasView):
     def initSubscribers(self):
         Publisher.subscribe(self.setCursor, "setCursor")
         Publisher.subscribe(self.run, "run")
-        # Publisher.subscribe(self.on_clear_canvas, "clear")
         Publisher.subscribe(self.add_database_connection, "DatabaseConnection")
         Publisher.subscribe(self.save_simulation, "SetSavePath")
         Publisher.subscribe(self.load_simulation, "SetLoadPath")
-        Publisher.subscribe(self.addModel, "AddModel")  # subscribes to object list view
 
     def add_database_connection(self, title, desc, dbengine, address, name, user, pwd):
         kwargs = dict(title=title, desc=desc, engine=dbengine, address=address, dbname=name, user=user, pwd=pwd)

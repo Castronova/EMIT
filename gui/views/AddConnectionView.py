@@ -67,7 +67,7 @@ class AddConnectionView(wx.Frame):
 
         hbox = wx.BoxSizer(wx.VERTICAL)  # wrapping the flex grid sizer in order to put some space around the window
         hbox.Add(fgs, proportion=1, flag=wx.ALL | wx.EXPAND, border=10)
-        hbox.Add(break_line, 0, wx.EXPAND | wx.ALL, border=5)
+        hbox.Add(break_line, 0, wx.EXPAND, border=5)
         hbox.Add(button_sizer, 0, wx.ALL | wx.ALIGN_RIGHT, border=5)
 
         fgs.AddGrowableCol(1, 1)

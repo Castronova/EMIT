@@ -185,9 +185,8 @@ class ToolboxViewCtrl(ToolboxView):
         try:
             filename = self.filepath[filename]
 
-            # Send the message to logicCanvas
-            # todo: replace with custom event
-            Publisher.sendMessage('AddModel', filepath=filename)
+            # self.GetTopLevelParent().Canvas.addModel(filepath=filename)
+            self.GetTopLevelParent().model_input_prompt(filename)
 
         except Exception, e:
             # Clicked on a folder

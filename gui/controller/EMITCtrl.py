@@ -12,6 +12,7 @@ from gui.controller.NetcdfCtrl import NetcdfCtrl
 from gui.controller.UserCtrl import UserCtrl
 from gui.controller.SettingsCtrl import SettingsCtrl
 from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
+from gui.controller.ModelInputPromptCtrl import ModelInputPromptCtrl
 
 
 class EMITCtrl(EMITView):
@@ -61,13 +62,16 @@ class EMITCtrl(EMITView):
         self.Bind(wx.EVT_CLOSE, self.on_close)
         events.onSaveFromCanvas += self.on_save_configuration_as
 
+    def model_input_prompt(self, path):
+        ModelInputPromptCtrl(self, path)
+        self.Canvas.addModel(filepath=path)
+
     def check_users_json(self):
         UserCtrl.create_user_json()
         if UserCtrl.is_user_json_empty():
             controller = UserCtrl(self)
             controller.CenterOnScreen()
             controller.Show()
-
 
     def decrypt_db_username_password(self, uhash, phash):
         """

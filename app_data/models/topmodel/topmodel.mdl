@@ -51,19 +51,19 @@
 	    "label": "Topographic index",
 	    "help": "this is a help text for topographic index",
 	    "variable": "ti",
-	    "type": "file",
+	    "input": "file",
 	    "required": "True"
 	}, {
 	    "label": "Infiltration",
 	    "help": "this is a help text for infiltration",
 	    "variable": "infil",
-	    "type": "text",
+	    "input": "text",
 	    "required": "True"
 	}, {
 	    "label": "Third item",
 	    "help": "this is a help text for third item",
 	    "variable": "three",
-	    "type": "file",
+	    "input": "file",
 	    "required": "False"
 	}]
 }

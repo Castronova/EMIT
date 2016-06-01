@@ -3,8 +3,6 @@ from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 from emitLogging import elog
 from gui.controller.PlotForSiteViewerCtrl import PlotForSiteViewerCtrl
 
-__author__ = 'tonycastronova'
-
 
 class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
     def __init__(self, parent):

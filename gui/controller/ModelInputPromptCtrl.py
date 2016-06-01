@@ -12,7 +12,6 @@ class ModelInputPromptCtrl(ModelInputPromptView):
             if button:
                 button.Bind(wx.EVT_BUTTON, self.on_file_browser)
 
-
     ####################################
     # EVENTS
     ####################################

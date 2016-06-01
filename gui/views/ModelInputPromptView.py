@@ -4,7 +4,7 @@ import wx
 
 class ModelInputPromptView(wx.Frame):
     def __init__(self, parent, path):
-        wx.Frame.__init__(self, parent, title="Input Prompt", style=wx.DEFAULT_FRAME_STYLE | wx.STAY_ON_TOP)
+        wx.Frame.__init__(self, parent, style=wx.DEFAULT_FRAME_STYLE | wx.STAY_ON_TOP)
 
         panel = wx.Panel(self)
         data = models.parse_json(path)
@@ -12,6 +12,9 @@ class ModelInputPromptView(wx.Frame):
         if "model_inputs" not in data:
             print "Data does not have 'model_inputs' as key"
             return
+
+        title = "Input for " + data["model"][0]["code"]
+        self.SetTitle(title)
 
         model_inputs = data["model_inputs"]
         count = 0  # Keeps track of how many input items there are
@@ -24,12 +27,11 @@ class ModelInputPromptView(wx.Frame):
         for item in model_inputs:
             static_text = wx.StaticText(panel, id=count, label=item["label"] + ":")
             help_text = wx.StaticText(panel, id=count, label=item["help"])
-            text_ctrl = None
+            text_ctrl = wx.TextCtrl(panel, id=count)
+
             file_explorer_button = None
             if item["input"] == "file":
-                file_explorer_button = wx.Button(panel, id=count, label="File", style=wx.BU_EXACTFIT)
-            else:
-                text_ctrl = wx.TextCtrl(panel, id=count)
+                file_explorer_button = wx.Button(panel, id=count, label="Browse", style=wx.BU_EXACTFIT)
 
             font = wx.Font(pointSize=8, family=wx.DEFAULT, style=wx.NORMAL, weight=wx.NORMAL)
             help_text.SetFont(font)
@@ -42,7 +44,7 @@ class ModelInputPromptView(wx.Frame):
             count += 1
 
         break_line = wx.StaticLine(panel)
-        self.submit_button = wx.Button(panel, label="Submit", style=wx.BU_EXACTFIT)
+        self.submit_button = wx.Button(panel, label="Load Model", style=wx.BU_EXACTFIT)
 
         # Create sizers
         frame_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -50,13 +52,17 @@ class ModelInputPromptView(wx.Frame):
 
         # Add components to sizer
         for i in range(count):
-            flex_grid_sizer.Add(self.static_texts[i])
-            if self.inputs[i]:
-                flex_grid_sizer.Add(self.inputs[i], 1, wx.EXPAND)
-            else:
-                flex_grid_sizer.Add(self.text_ctrls[i], 1, wx.EXPAND)
+            # Used to act as if there were two columns. Allows the text ctrl to overflow into the second column
+            sizer = wx.BoxSizer(wx.HORIZONTAL)
 
-            flex_grid_sizer.Add(self.help_texts[i], 1, wx.EXPAND | wx.BOTTOM, 15)
+            flex_grid_sizer.Add(self.static_texts[i])
+
+            sizer.Add(self.text_ctrls[i], 1, wx.EXPAND)
+            if self.inputs[i]:
+                sizer.Add(self.inputs[i], 0, wx.EXPAND)
+
+            flex_grid_sizer.Add(sizer, 1, wx.EXPAND)
+            flex_grid_sizer.Add(self.help_texts[i], 1, wx.BOTTOM, 15)
 
         flex_grid_sizer.AddGrowableCol(0, 1)  # Set the first column to expand and fill space
 
@@ -66,6 +72,7 @@ class ModelInputPromptView(wx.Frame):
 
         panel.SetSizer(frame_sizer)
         frame_sizer.Fit(self)
+        self.SetSize((300, -1))
 
         self.Show()
         # Disables all other windows in the application so that the user can only interact with this window.

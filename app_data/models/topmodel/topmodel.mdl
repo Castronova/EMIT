@@ -55,7 +55,7 @@
 	    "required": "True"
 	}, {
 	    "label": "Infiltration",
-	    "help": "this is a help text for infiltration",
+	    "help": "this is a help text for infiltrationthis is a help text for infiltrationthis is a help text for infiltrationthis is a help text for infiltrationthis is a help text for infiltrationthis is a help text for infiltration",
 	    "variable": "infil",
 	    "input": "text",
 	    "required": "True"

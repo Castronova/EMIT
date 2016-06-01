@@ -54,6 +54,7 @@ class ModelInputPromptView(wx.Frame):
         for i in range(count):
             # Used to act as if there were two columns. Allows the text ctrl to overflow into the second column
             sizer = wx.BoxSizer(wx.HORIZONTAL)
+            word_wrap_sizer = wx.BoxSizer(wx.HORIZONTAL)  # For wrapping the help text
 
             flex_grid_sizer.Add(self.static_texts[i])
 
@@ -62,7 +63,9 @@ class ModelInputPromptView(wx.Frame):
                 sizer.Add(self.inputs[i], 0, wx.EXPAND)
 
             flex_grid_sizer.Add(sizer, 1, wx.EXPAND)
-            flex_grid_sizer.Add(self.help_texts[i], 1, wx.BOTTOM, 15)
+            word_wrap_sizer.Add(self.help_texts[i], 1, wx.EXPAND)
+            flex_grid_sizer.Add(word_wrap_sizer, 1, wx.EXPAND | wx.BOTTOM, 15)
+            flex_grid_sizer.AddGrowableRow(((i + 1) * 3) - 1, 1)
 
         flex_grid_sizer.AddGrowableCol(0, 1)  # Set the first column to expand and fill space
 

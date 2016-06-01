@@ -96,36 +96,6 @@ class ModelContextMenu(wx.Menu):
         self.parent.remove_model(self.model_obj)
 
 
-class ToolboxContextMenu(wx.Menu):
-    def __init__(self, parent, e, removable, folder):
-        super(ToolboxContextMenu, self).__init__()
-
-        self.arrow_obj = e
-        self.parent = parent
-        if not folder:
-            mmi = wx.MenuItem(self, wx.NewId(), 'View Details')
-            self.AppendItem(mmi)
-            self.Bind(wx.EVT_MENU, self.OnViewDetails, mmi)
-
-        if removable:
-            # mr stands for menu remove
-            mr = wx.MenuItem(self, wx.NewId(), 'Remove')
-            self.AppendItem(mr)
-            self.Bind(wx.EVT_MENU, self.OnRemove, mr)
-
-    def OnViewDetails(self, e):
-        self.parent.ShowDetails()
-
-    def OnExpandAll(self, e):
-        self.parent.OnExpandAll()
-
-    def OnCollapseAll(self, e):
-        self.parent.OnCollapseAll()
-
-    def OnRemove(self, e):
-        self.parent.Remove(e)
-
-
 class ContextMenu(wx.Menu):
     def __init__(self, parent):
         super(ContextMenu, self).__init__()

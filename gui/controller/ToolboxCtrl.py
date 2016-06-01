@@ -6,7 +6,6 @@ from wx.lib.pubsub import pub as Publisher
 from emitLogging import elog
 from gui import events
 from gui.controller.ModelCtrl import ModelCtrl
-from gui.views.ContextView import ToolboxContextMenu
 from gui.views.ToolboxView import ToolboxView
 from sprint import *
 from utilities import models
@@ -21,7 +20,6 @@ class ToolboxViewCtrl(ToolboxView):
         ToolboxView.__init__(self, parent)
 
         self.p = parent
-        # config_params = {}
 
         self.cat = ""
         self.items = {}
@@ -31,7 +29,7 @@ class ToolboxViewCtrl(ToolboxView):
         # initialize event bindings
         self.initBinding()
 
-        self.loadToolbox(self.getModelPath())
+        self.loadToolbox(self.modelpaths)
 
         self.tree.SetItemImage(self.root_mdl, self.fldropenidx, which=wx.TreeItemIcon_Expanded)
         self.tree.SetItemImage(self.root_mdl, self.fldropenidx, which=wx.TreeItemIcon_Normal)
@@ -41,9 +39,27 @@ class ToolboxViewCtrl(ToolboxView):
         self.componentBranch.Expand()
         self.simConfigurations.Expand()
 
+        # Context Menu
+        self.popup_menu = wx.Menu()
+        view_details_menu = self.popup_menu.Append(1, "View Details")
+        remove_menu = self.popup_menu.Append(2, "Remove")
+
+        # Context menu bindings
+        self.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.on_right_click)
+        self.Bind(wx.EVT_MENU, self.on_view_details, view_details_menu)
+        self.Bind(wx.EVT_MENU, self.on_remove, remove_menu)
+
+    def on_view_details(self, event):
+        self.ShowDetails()
+
+    def on_remove(self, event):
+        self.Remove(event)
+
+    def on_right_click(self, event):
+        self.PopupMenu(self.popup_menu)
+
     def initBinding(self):
         self.Bind(wx.EVT_SIZE, self.OnSize)
-        self.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnItemContextMenu)
         self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.onDoubleClick)
         events.onSimulationSaved += self.loadSIMFile
 
@@ -111,17 +127,11 @@ class ToolboxViewCtrl(ToolboxView):
 
     def RefreshToolbox(self):
         self.tree.DeleteChildren(self.tree.GetRootItem())
-        self.loadToolbox(self.getModelPath())
+        self.loadToolbox(self.modelpaths)
 
         self.root_mdl.Expand()
         self.componentBranch.Expand()
         self.simConfigurations.Expand()
-
-    def getModelPath(self):
-        return self.modelpaths
-
-    def getCat(self):
-        return self.cat
 
     def parseModelPaths(self):
         """
@@ -192,28 +202,6 @@ class ToolboxViewCtrl(ToolboxView):
             # Clicked on a folder
             elog.error(e)
             pass
-
-    def OnItemContextMenu(self, evt):
-
-        self.tree.GetSelection()
-        item = self.tree.GetSelection()
-        key = self.tree.GetItemText(item)
-        filepath = self.filepath.get(key)
-
-        folder = False
-        removable = False
-        if filepath is not None:
-            name, ext = os.path.splitext(filepath)
-
-            if ext == '.sim':
-                removable = True
-            else:
-                removable = False
-        else:
-            folder = True
-
-        if not folder:
-            self.tree.PopupMenu(ToolboxContextMenu(self, evt, removable, folder))
 
     def OnSize(self, evt):
         self.tree.SetSize(self.GetSize())

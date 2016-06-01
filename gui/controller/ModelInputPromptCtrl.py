@@ -6,6 +6,10 @@ class ModelInputPromptCtrl(ModelInputPromptView):
     def __init__(self, parent, path):
         ModelInputPromptView.__init__(self, parent, path)
 
+        if not self.IsShown():
+            # IsShown()==False when data does not have model_input as key
+            return
+
         # Bindings
         self.Bind(wx.EVT_CLOSE, self.on_close)
         for button in self.inputs:

@@ -10,7 +10,6 @@ class ModelInputPromptView(wx.Frame):
         data = models.parse_json(path)
 
         if "model_inputs" not in data:
-            print "Data does not have 'model_inputs' as key"
             return
 
         title = "Input for " + data["model"][0]["code"]

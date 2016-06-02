@@ -19,14 +19,14 @@ class TimeSeriesCtrl(TimeSeriesView):
         self.databases = {}
 
         table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
-        self.set_columns(table_columns)
+        self.table.set_columns(table_columns)
 
         # Add the wof sites to the connection combo option
         self.wof_names = self.get_wof_connection_names()
         for key, value in self.wof_names.iteritems():
             self.append_to_connection_combo(key)
 
-        self.alternate_row_color()
+        self.table.alternate_row_color()
         self.connection_combo.Bind(wx.EVT_CHOICE, self.on_connection_combo)
         self.add_connection_button.Bind(wx.EVT_BUTTON, self.on_add_connection)
         self.refresh_button.Bind(wx.EVT_BUTTON, self.on_refresh_table)
@@ -35,7 +35,7 @@ class TimeSeriesCtrl(TimeSeriesView):
         self.table.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.on_double_click)
 
     def convert_selected_row_into_object(self):
-        item = self.get_selected_row()
+        item = self.table.get_selected_row()
         data = {
             "site_name": item[0],
             "network": item[1],
@@ -78,7 +78,7 @@ class TimeSeriesCtrl(TimeSeriesView):
 
     def load_SQL_database(self):
         table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
-        self.set_columns(table_columns)
+        self.table.set_columns(table_columns)
         db = self.get_selected_database()
 
         if db["args"]["engine"] == "sqlite":
@@ -94,13 +94,13 @@ class TimeSeriesCtrl(TimeSeriesView):
             raise Exception("Failed to load database")
 
         if not series:
-            self.empty_list_message.Show()
+            self.table.empty_list_message.Show()
             return
 
-        self.empty_list_message.Hide()
+        self.table.empty_list_message.Hide()
         data = self.series_to_table_data(series)
 
-        self.set_table_content(data)
+        self.table.set_table_content(data)
 
     @staticmethod
     def series_to_table_data(series):
@@ -134,11 +134,11 @@ class TimeSeriesCtrl(TimeSeriesView):
         :return:
         """
         columns = ["Site Name", "Network", "County", "State", "Site Type", "Site Code"]
-        self.set_columns(columns)
+        self.table.set_columns(columns)
         value = self.wof_names[name]
         self.api = wateroneflow.WaterOneFlow(value['wsdl'], value['network'])
         data = self.api.get_sites_in_list()
-        self.set_table_content(data)
+        self.table.set_table_content(data)
 
     ###############################
     # EVENTS
@@ -148,13 +148,13 @@ class TimeSeriesCtrl(TimeSeriesView):
         AddConnectionCtrl(self)
 
     def on_connection_combo(self, event):
-        self.empty_list_message.Hide()
+        self.table.empty_list_message.Hide()
         selection = event.GetEventObject().GetStringSelection()
         if selection == "---":
-            self.clear_content()
+            self.table.clear_content()
             return
 
-        self.clear_table()
+        self.table.clear_table()
         if selection in self.wof_names:
             self._load_wof(selection)
             return

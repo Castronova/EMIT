@@ -14,8 +14,8 @@ class SimulationsTabCtrl(TimeSeriesView):
         TimeSeriesView.__init__(self, parent)
 
         table_columns = ["Simulation ID", "Simulation Name", "Date Created","Owner"]
-        self.set_columns(table_columns)
-        self.alternate_row_color()
+        self.table.set_columns(table_columns)
+        self.table.alternate_row_color()
 
         # Bind Events
         self.Bind(wx.EVT_MENU, self.on_view_menu, self.view_menu)
@@ -52,7 +52,7 @@ class SimulationsTabCtrl(TimeSeriesView):
         results = session.read.getResults(simulationid=simulation_id)
 
         if len(results) == 0:
-            self.empty_list_message.Show()  # No results were returned
+            self.table.empty_list_message.Show()  # No results were returned
             return None
 
         res = {}
@@ -78,18 +78,18 @@ class SimulationsTabCtrl(TimeSeriesView):
 
     def load_SQL_database(self):
         table_columns = ["Simulation ID", "Simulation Name", "Date Created","Owner"]
-        self.set_columns(table_columns)
+        self.table.set_columns(table_columns)
 
         session = self.get_database_session()
         simulations = session.getAllSimulations()
 
         if not simulations:
-            self.empty_list_message.Show()
+            self.table.empty_list_message.Show()
             return
 
-        self.empty_list_message.Hide()
+        self.table.empty_list_message.Hide()
         data = self.simulations_to_table_data(simulations)
-        self.set_table_content(data)
+        self.table.set_table_content(data)
 
     @staticmethod
     def simulations_to_table_data(series):
@@ -121,8 +121,8 @@ class SimulationsTabCtrl(TimeSeriesView):
         AddConnectionCtrl(self)
 
     def on_connection_combo(self, event):
-        self.empty_list_message.Hide()
-        self.clear_table()
+        self.table.empty_list_message.Hide()
+        self.table.clear_table()
         self.load_SQL_database()
 
     def on_double_click(self, event):
@@ -151,7 +151,7 @@ class SimulationsTabCtrl(TimeSeriesView):
         self.PopupMenu(self.popup_menu)
 
     def on_view_menu(self, event):
-        row_data = self.get_selected_row()
+        row_data = self.table.get_selected_row()
         results = self.get_row_data(row_data[0])
 
         if not results:

@@ -61,6 +61,7 @@ class CustomListCtrl(wx.ListCtrl):
 
     def _handle_table_resizing(self, event):
         event.Skip()
+        self.expand_table_to_fill_panel()
         size = self.GetClientSize()
         self.empty_list_message.SetDimensions(0, size.GetHeight() / 3, size.GetWidth(), size.GetHeight())
 

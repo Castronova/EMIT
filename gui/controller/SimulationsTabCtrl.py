@@ -122,6 +122,11 @@ class SimulationsTabCtrl(TimeSeriesView):
 
     def on_connection_combo(self, event):
         self.table.empty_list_message.Hide()
+        selection = event.GetEventObject().GetStringSelection()
+        if selection == "---":
+            self.table.clear_content()
+            return
+
         self.table.clear_table()
         self.load_SQL_database()
 

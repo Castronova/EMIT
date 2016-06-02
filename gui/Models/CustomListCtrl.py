@@ -44,6 +44,8 @@ class CustomListCtrl(wx.ListCtrl):
         Sets the width of the table to fill up any white space
         :return:
         """
+        if not self.GetColumnCount():
+            return
         last_column_index = self.GetColumnCount() - 1
         size = self.GetTopLevelParent().GetSize()[0]
         self.SetColumnWidth(last_column_index, size)
@@ -51,9 +53,12 @@ class CustomListCtrl(wx.ListCtrl):
     def get_selected_row(self):
         """
         Gets the first selected row
-        :return: data: type(list)
+        :return: data: type(list). Return None if no row is selected
         """
         row_number = self.GetFirstSelected()
+        if row_number == -1:
+            return None
+
         data = []
         for i in range(self.GetColumnCount()):
             data.append(self.GetItem(row_number, i).GetText())
@@ -88,7 +93,7 @@ class CustomListCtrl(wx.ListCtrl):
         for i in range(len(data)):
             index = self.InsertStringItem(999999, "")
             for j in range(len(data[i])):
-                self.SetStringItem(index, j, data[i][j])
+                self.SetStringItem(index, j, str(data[i][j]))
 
         self.auto_size_table()
         self.alternate_row_color()

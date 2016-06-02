@@ -4,7 +4,8 @@ import coordinator.events as engineEvents
 import coordinator.engineAccessors as engineAccessors
 import db.dbapi_v2 as db2
 from utilities import db as dbUtilities
-from gui.controller.SimulationPlotCtrl import SimulationPlotCtrl
+# from gui.controller.SimulationPlotCtrl import SimulationPlotCtrl
+from gui.controller.SimulationPlotCtrl import SimulationsPlotCtrl
 from odm2api.ODMconnection import dbconnection
 from gui.controller.AddConnectionCtrl import AddConnectionCtrl
 
@@ -163,25 +164,46 @@ class SimulationsTabCtrl(TimeSeriesView):
             print "Results is None"
             return
 
-        controller = SimulationPlotCtrl(parentClass=self)
+        table_data = []
+        table_columns = ["id", "Variable", "Units", "Begin Date", "End Date", "Description", "Organization"]
+
+        controller = SimulationsPlotCtrl(self, columns=table_columns)
         controller.SetTitle("Results for Simulation: " + row_data[1])
+        for key, value in results.iteritems():
+            row = []
+            for item in value:
+                row.append(item[2].ResultID)
+                row.append(item[2].VariableObj.VariableCode)
+                row.append(item[2].UnitsObj.UnitsAbbreviation)
+                row.append(item[2].FeatureActionObj.ActionObj.BeginDateTime)
+                row.append(item[2].FeatureActionObj.ActionObj.EndDateTime)
+                row.append(item[2].VariableObj.VariableNameCV)
+                row.append(item[2].FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName)
 
-        plot_data = {}
-        variable_list_entries = {}
+            table_data.append(row)
+            controller.data[row[0]] = item[0], item[1]
 
-        for variable, value in results.iteritems():
-            sub_variables = value
-            for sub in sub_variables:
-                variable_list_entries[sub[2].ResultID] = [sub[2].VariableObj.VariableCode,
-                                                      sub[2].UnitsObj.UnitsAbbreviation,
-                                                      sub[2].FeatureActionObj.ActionObj.BeginDateTime,
-                                                      sub[2].FeatureActionObj.ActionObj.EndDateTime,
-                                                      sub[2].VariableObj.VariableNameCV,
-                                                      sub[2].FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName]
+        controller.table.set_table_content(table_data)
 
-            # Get the data belonging to the model
-            plot_data[sub[2].ResultID] = [sub[0], sub[1]]
 
-        # controller.set_timeseries_variables(variable_list_entries)
-        controller.populate_variable_list(variable_list_entries)
-        controller.plot_data = plot_data
+
+        #
+        # plot_data = {}
+        # variable_list_entries = {}
+        #
+        # for variable, value in results.iteritems():
+        #     sub_variables = value
+        #     for sub in sub_variables:
+        #         variable_list_entries[sub[2].ResultID] = [sub[2].VariableObj.VariableCode,
+        #                                               sub[2].UnitsObj.UnitsAbbreviation,
+        #                                               sub[2].FeatureActionObj.ActionObj.BeginDateTime,
+        #                                               sub[2].FeatureActionObj.ActionObj.EndDateTime,
+        #                                               sub[2].VariableObj.VariableNameCV,
+        #                                               sub[2].FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName]
+        #
+        #     # Get the data belonging to the model
+        #     plot_data[sub[2].ResultID] = [sub[0], sub[1]]
+        #
+        # # controller.set_timeseries_variables(variable_list_entries)
+        # controller.populate_variable_list(variable_list_entries)
+        # controller.plot_data = plot_data

@@ -3,7 +3,7 @@ from gui.controller.PlotForSiteViewerCtrl import PlotForSiteViewerCtrl
 from gui.Models.CustomListCtrl import CustomListCtrl
 
 
-class SimulationsVIew(wx.Frame):
+class SimulationsPlotView(wx.Frame):
     def __init__(self, parent):
         wx.Frame.__init__(self, parent)
 
@@ -48,6 +48,7 @@ class SimulationsVIew(wx.Frame):
         middle_panel_sizer.Add(self.plot_button, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 2)
 
         middle_panel.SetSizer(middle_panel_sizer)
+        middle_panel_sizer.Fit(middle_panel)
 
         ###############################
         # BOTTOM PANEL COMPONENTS
@@ -69,23 +70,6 @@ class SimulationsVIew(wx.Frame):
 
         panel.SetSizer(frame_sizer)
         frame_sizer.Fit(self)
-        data = [(1, 2,), (2, 3), (3, 4)]  # x, y
-        self.plot_data(data)
         self.CenterOnScreen()
         self.Show()
 
-        # Test data
-        columns = ["column 1", "column 2", "column 3", "column 4"]
-        data = [["row 1", "row 1", "row1", "row 1"], ["row 2", "row 2", "row 2", "row 2"]]
-        self.table.set_columns(columns)
-        self.table.set_table_content(data)
-
-    def plot_data(self, data):
-        if len(data):
-            self.temporal_plot.plotData(data, "some name", None)
-
-
-if __name__ == '__main__':
-    app = wx.App()
-    SimulationsVIew(None)
-    app.MainLoop()

@@ -19,6 +19,14 @@ class consoleCtrl(ConsoleView):
         self.addr = (self.host, self.port)
         self.linenum = 1
 
+        # Pop up menu
+        self.popup_menu = wx.Menu()
+        clear_menu = self.popup_menu.Append(1, "Clear")
+
+        # Bindings
+        self.log.Bind(wx.EVT_CONTEXT_MENU, self.on_right_click)
+        self.log.Bind(wx.EVT_MENU, self.on_clear, clear_menu)
+
         # start the message server
         self.thread = threading.Thread(target=self.messageServer, name='MessageServer')
         self.thread.daemon = True
@@ -68,7 +76,6 @@ class consoleCtrl(ConsoleView):
         # increment line numbers after each print
         self.linenum += 1
 
-
     def messageServer(self):
 
         udpsocket = socket(AF_INET, SOCK_DGRAM)
@@ -85,3 +92,14 @@ class consoleCtrl(ConsoleView):
             if os.environ.has_key(key):
                 if int(os.environ[key]):
                     self.Print(text, type)
+
+    ###########################
+    # EVENTS
+    ###########################
+
+    def on_clear(self, event):
+        self.log.Clear()
+        self.resetLineNumbers()
+
+    def on_right_click(self, event):
+        self.log.PopupMenu(self.popup_menu)

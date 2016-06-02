@@ -78,9 +78,9 @@ class ModelContextMenu(wx.Menu):
 
         atts = engine.getModelById(self.model_obj.ID)['attrib']
 
-        if 'json' in atts.keys():
+        if 'mdl' in atts.keys():
             # Populate the grid
-            data = models.parse_json(atts["json"])
+            data = models.parse_json(atts["mdl"])
             model_details.properties_page_controller.add_data(data)
         else:  # This means the model is coming from a database.
             model_details.properties_page_controller.add_section("General")

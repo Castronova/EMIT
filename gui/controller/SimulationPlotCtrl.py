@@ -1,6 +1,4 @@
 import wx
-
-
 from gui.views.SimulationsPlotView import SimulationsPlotView
 
 

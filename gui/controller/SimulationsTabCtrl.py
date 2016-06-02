@@ -161,11 +161,10 @@ class SimulationsTabCtrl(TimeSeriesView):
         results = self.get_row_data(row_data[0])
 
         if not results:
-            print "Results is None"
             return
 
         table_data = []
-        table_columns = ["id", "Variable", "Units", "Begin Date", "End Date", "Description", "Organization"]
+        table_columns = ["ID", "Variable", "Units", "Begin Date", "End Date", "Description", "Organization"]
 
         controller = SimulationsPlotCtrl(self, columns=table_columns)
         controller.SetTitle("Results for Simulation: " + row_data[1])
@@ -184,26 +183,3 @@ class SimulationsTabCtrl(TimeSeriesView):
             controller.data[row[0]] = item[0], item[1]
 
         controller.table.set_table_content(table_data)
-
-
-
-        #
-        # plot_data = {}
-        # variable_list_entries = {}
-        #
-        # for variable, value in results.iteritems():
-        #     sub_variables = value
-        #     for sub in sub_variables:
-        #         variable_list_entries[sub[2].ResultID] = [sub[2].VariableObj.VariableCode,
-        #                                               sub[2].UnitsObj.UnitsAbbreviation,
-        #                                               sub[2].FeatureActionObj.ActionObj.BeginDateTime,
-        #                                               sub[2].FeatureActionObj.ActionObj.EndDateTime,
-        #                                               sub[2].VariableObj.VariableNameCV,
-        #                                               sub[2].FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName]
-        #
-        #     # Get the data belonging to the model
-        #     plot_data[sub[2].ResultID] = [sub[0], sub[1]]
-        #
-        # # controller.set_timeseries_variables(variable_list_entries)
-        # controller.populate_variable_list(variable_list_entries)
-        # controller.plot_data = plot_data

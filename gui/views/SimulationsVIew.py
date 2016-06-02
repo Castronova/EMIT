@@ -71,7 +71,7 @@ class SimulationsVIew(wx.Frame):
         frame_sizer.Fit(self)
         data = [(1, 2,), (2, 3), (3, 4)]  # x, y
         self.plot_data(data)
-
+        self.CenterOnScreen()
         self.Show()
 
         # Test data

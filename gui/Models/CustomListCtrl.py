@@ -45,7 +45,7 @@ class CustomListCtrl(wx.ListCtrl):
         :return:
         """
         last_column_index = self.GetColumnCount() - 1
-        size = self.GetTopLevelParent().GetSize()[1]
+        size = self.GetTopLevelParent().GetSize()[0]
         self.SetColumnWidth(last_column_index, size)
 
     def get_selected_row(self):

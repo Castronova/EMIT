@@ -23,6 +23,7 @@ from sprint import *
 from transform.space import SpatialInterpolation
 from transform.time import TemporalInterpolation
 from gui.controller.PreRunCtrl import PreRunCtrl
+from PIL import ImageDraw  # Do not remove this import
 
 
 class CanvasCtrl(CanvasView):

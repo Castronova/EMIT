@@ -2,7 +2,6 @@ import wx
 import coordinator.engineAccessors as engine
 from gui.controller.ModelCtrl import ModelCtrl
 from utilities import models
-from PIL import ImageDraw
 
 
 class LinkContextMenu(wx.Menu):

@@ -4,7 +4,6 @@ import coordinator.events as engineEvents
 import coordinator.engineAccessors as engineAccessors
 import db.dbapi_v2 as db2
 from utilities import db as dbUtilities
-# from gui.controller.SimulationPlotCtrl import SimulationPlotCtrl
 from gui.controller.SimulationPlotCtrl import SimulationsPlotCtrl
 from odm2api.ODMconnection import dbconnection
 from gui.controller.AddConnectionCtrl import AddConnectionCtrl
@@ -18,9 +17,13 @@ class SimulationsTabCtrl(TimeSeriesView):
         self.table.set_columns(table_columns)
         self.table.alternate_row_color()
 
+        # Pop up menu
+        self.popup_menu = wx.Menu()
+        view_menu = self.popup_menu.Append(1, "View")
+
         # Bind Events
-        self.Bind(wx.EVT_MENU, self.on_view_menu, self.view_menu)
-        self.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.on_right_click)
+        self.Bind(wx.EVT_MENU, self.on_view_menu, view_menu)
+        self.table.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.on_right_click)
         self.connection_combo.Bind(wx.EVT_CHOICE, self.on_connection_combo)
         self.add_connection_button.Bind(wx.EVT_BUTTON, self.on_add_connection)
         self.refresh_button.Bind(wx.EVT_BUTTON, self.on_refresh)
@@ -123,7 +126,7 @@ class SimulationsTabCtrl(TimeSeriesView):
 
     def on_connection_combo(self, event):
         self.table.empty_list_message.Hide()
-        selection = event.GetEventObject().GetStringSelection()
+        selection = self.connection_combo.GetStringSelection()
         if selection == "---":
             self.table.clear_content()
             return
@@ -158,6 +161,9 @@ class SimulationsTabCtrl(TimeSeriesView):
 
     def on_view_menu(self, event):
         row_data = self.table.get_selected_row()
+        if not row_data:
+            return  # No rows in the table
+
         results = self.get_row_data(row_data[0])
 
         if not results:
@@ -167,7 +173,7 @@ class SimulationsTabCtrl(TimeSeriesView):
         table_columns = ["ID", "Variable", "Units", "Begin Date", "End Date", "Description", "Organization"]
 
         controller = SimulationsPlotCtrl(self, columns=table_columns)
-        controller.SetTitle("Results for Simulation: " + row_data[1])
+        controller.SetTitle("Resul###ts for Simulation: " + row_data[1])
         for key, value in results.iteritems():
             row = []
             for item in value:

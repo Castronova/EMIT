@@ -13,10 +13,6 @@ class TimeSeriesView(wx.Panel):
         self.refresh_button = wx.Button(self, label="Refresh")
         self.table = CustomListCtrl(self)
 
-        # Pop up menu
-        self.popup_menu = wx.Menu()
-        self.view_menu = self.popup_menu.Append(1, "View")
-
         # Create sizers
         button_sizer = wx.BoxSizer(wx.HORIZONTAL)
         main_sizer = wx.BoxSizer(wx.VERTICAL)

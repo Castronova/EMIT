@@ -21,6 +21,10 @@ class TimeSeriesCtrl(TimeSeriesView):
         table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
         self.table.set_columns(table_columns)
 
+        # Pop up menu
+        self.popup_menu = wx.Menu()
+        view_menu = self.popup_menu.Append(1, "View")
+
         # Add the wof sites to the connection combo option
         self.wof_names = self.get_wof_connection_names()
         for key, value in self.wof_names.iteritems():
@@ -30,7 +34,7 @@ class TimeSeriesCtrl(TimeSeriesView):
         self.connection_combo.Bind(wx.EVT_CHOICE, self.on_connection_combo)
         self.add_connection_button.Bind(wx.EVT_BUTTON, self.on_add_connection)
         self.refresh_button.Bind(wx.EVT_BUTTON, self.on_refresh_table)
-        self.Bind(wx.EVT_MENU, self.on_view_menu, self.view_menu)
+        self.Bind(wx.EVT_MENU, self.on_view_menu, view_menu)
         self.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.on_right_click)
         self.table.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.on_double_click)
 

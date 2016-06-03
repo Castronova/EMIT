@@ -9,9 +9,18 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         if columns:
             self.table.set_columns(columns)
 
-        self.plot_button.Bind(wx.EVT_BUTTON, self.on_plot)
-
         self.data = {}  # Dictionary to hold the data respective to the row ID
+        self.start_date_object = wx.DateTime_Now() - 1 * wx.DateSpan_Day()  # Default date is yesterday
+        self.end_date_object = wx.DateTime_Now()  # Default date is today
+
+        self.start_date_picker.SetValue(self.start_date_object)
+        self.end_date_picker.SetValue(self.end_date_object)
+
+        # Bindings
+        self.plot_button.Bind(wx.EVT_BUTTON, self.on_plot)
+        self.table.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_row_selected)
+        self.start_date_picker.Bind(wx.EVT_DATE_CHANGED, self.on_start_date_change)
+        self.end_date_picker.Bind(wx.EVT_DATE_CHANGED, self.on_end_date_change)
 
     def get_selected_id(self):
         """
@@ -25,6 +34,39 @@ class SimulationsPlotCtrl(SimulationsPlotView):
     ##########################
     # EVENTS
     ##########################
+
+    def on_end_date_change(self, event):
+        """
+        Prevents the end date from being set to before the start date
+        :param event:
+        :return:
+        """
+        if self.start_date_picker.GetValue() > self.end_date_picker.GetValue():
+            self.end_date_picker.SetValue(self.end_date_object)
+        else:
+            self.end_date_object = self.end_date_picker.GetValue()
+
+    def on_row_selected(self, event):
+        """
+        Set the date pickers to match the start and end date of the row selected dates
+        :param event:
+        :return:
+        """
+        date = wx.DateTime()
+        start_date_string = self.table.get_selected_row()[3]
+        if date.ParseFormat(start_date_string, "%Y-%m-%d %H:%M:%S") == -1:
+            raise Exception("start_date_string is not in the right format")
+        self.start_date_picker.SetValue(date)
+        self.start_date_object = date
+
+        end_date_string = self.table.get_selected_row()[4]
+        if str(end_date_string) == "None":
+            self.end_date_picker.SetValue(wx.DateTime_Now())
+        elif date.ParseFormat(end_date_string, "%Y-%m-%d %H:%M:%S") == -1:
+            raise Exception("end_date_string is not in the right format")
+        else:
+            self.end_date_picker.SetValue(date)
+            self.end_date_object = date
 
     def on_plot(self, event):
         """
@@ -51,3 +93,14 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         self.temporal_plot.clearPlot()
         self.temporal_plot.plotData(data, name, None, units)
         return True
+
+    def on_start_date_change(self, event):
+        """
+        Prevents the start date from being set to after the end date
+        :param event:
+        :return:
+        """
+        if self.start_date_picker.GetValue() > self.end_date_picker.GetValue():
+            self.start_date_picker.SetValue(self.start_date_object)
+        else:
+            self.start_date_object = self.start_date_picker.GetValue()

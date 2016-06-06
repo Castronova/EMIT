@@ -14,6 +14,20 @@ class ViewPlotForSiteViewer:
         self.axes.margins(0)
         self.plot = FigureCanvas(panel, -1, self.figure)
 
+    def add_padding_to_plot(self, left=None, bottom=None, right=None, top=None, wspace=None, hspace=None):
+        """
+        Adjust the location of the plot. Parameters must be floats
+        :param left:
+        :param bottom:
+        :param right:
+        :param top:
+        :param wspace:
+        :param hspace:
+        :return:
+        """
+        # self.figure.tight_layout() is also another possible way to do this
+        self.figure.subplots_adjust(left=left, bottom=bottom, right=right, top=top, wspace=wspace, hspace=hspace)
+
     def setTitle(self, title=""):
         self.axes.set_title(str(title))
 

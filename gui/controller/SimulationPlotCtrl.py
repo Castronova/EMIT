@@ -17,8 +17,8 @@ class SimulationsPlotCtrl(SimulationsPlotView):
 
         self.start_date_picker.SetValue(self.start_date_object)
         self.end_date_picker.SetValue(self.end_date_object)
-
-        self.temporal_plot.rotate_x_axis_label()
+        self.temporal_plot.add_padding_to_plot(bottom=0.15)
+        self.spatial_plot.add_padding_to_plot(bottom=0.15)
 
         # Bindings
         self.plot_button.Bind(wx.EVT_BUTTON, self.on_plot)
@@ -34,6 +34,61 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         if row:
             return int(row[0])
         return -1
+
+    def _plot_point(self, string_points, color):
+        """
+        To prevent errors, this method should only be called by plot_spatial()
+        :param string_points:
+        :param color: Hexadecimal example: #FFFFFF
+        :return:
+        """
+        points = string_points.split(" ")
+        x_value = float(points[0].strip("(").strip(")"))
+        y_value = float(points[1].strip("(").strip(")"))
+
+        self.spatial_plot.axes.scatter(x_value, y_value, color=color)
+
+    def _plot_polygon(self, string_points, color):
+        """
+        To prevent errors, this method should only be called by plot_spatial()
+        :param string_points:
+        :param color: Hexadecimal example: #FFFFFF
+        :return:
+        """
+        data = []
+        for index in string_points[1:-1].split(","):  # Parse the string into tuples with float values
+            value = index.strip("(").strip(")")
+            space_position = value.find(" ")
+            x_value = float(value[:space_position])
+            y_value = float(value[space_position + 1:])
+            data.append((x_value, y_value))
+        p_coll = PolyCollection([data], closed=True, facecolors=color, alpha=0.5, edgecolors=None, linewidths=(2,))
+        self.spatial_plot.axes.add_collection(p_coll, autolim=True)
+
+    def plot_spatial(self, ID, title):
+        """
+        Plots the spatial of the selected row
+        :param ID: type(Int). Must match a row the selected row's ID
+        :return:
+        """
+        self.spatial_plot.clearPlot()
+        color = "#0DACFF"
+        geometries = self.geometries[ID][0]  # Returns a string
+        points = geometries[geometries.find("("):]
+        if "POLYGON" in geometries:
+            self._plot_polygon(points, color)
+        elif "POINT" in geometries:
+            self._plot_point(points, color)
+        else:
+            raise Exception("plot_spatial() failed. Geometries must be POLYGON OR POINT")
+
+        self.spatial_plot.rotate_x_axis_label()
+        self.spatial_plot.setTitle(str(title))
+        self.spatial_plot.axes.set_ylabel("Some Y label")
+        self.spatial_plot.axes.set_xlabel("Some X label")
+        self.spatial_plot.axes.grid(True)
+        self.spatial_plot.axes.margins(0.1)
+        self.spatial_plot.reDraw()
 
     ##########################
     # EVENTS
@@ -78,27 +133,6 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         #  Plot Spatial
         self.plot_spatial(self.get_selected_id(), self.table.get_selected_row()[1])
 
-    def plot_spatial(self, ID, title):
-        """
-        Plots the spatial of the selected row
-        :param ID: type(Int). Must match a row the selected row's ID
-        :return:
-        """
-        self.spatial_plot.clearPlot()
-        color = "#0DACFF"
-        geometries = self.geometries[ID][0]  # Returns a string
-        points = geometries[geometries.find("("):]
-        if "POLYGON" in geometries:
-            self._plot_polygon(points, color)
-        elif "POINT" in geometries:
-            self._plot_point(points, color)
-
-        self.spatial_plot.rotate_x_axis_label()
-        self.spatial_plot.setTitle(str(title))
-        self.spatial_plot.axes.grid(True)
-        self.spatial_plot.axes.margins(0.1)
-        self.spatial_plot.reDraw()
-
     def on_plot(self, event):
         """
         Grabs the data related to the selected row. self.data must be set otherwise it will not plot
@@ -126,36 +160,6 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         self.temporal_plot.plotData(data, name, None, units)
 
         return True
-
-    def _plot_point(self, string_points, color):
-        """
-        To prevent errors, this method should only be called by plot_spatial()
-        :param string_points:
-        :param color: Hexadecimal example: #FFFFFF
-        :return:
-        """
-        points = string_points.split(" ")
-        x_value = float(points[0].strip("(").strip(")"))
-        y_value = float(points[1].strip("(").strip(")"))
-
-        self.spatial_plot.axes.scatter(x_value, y_value, color=color)
-
-    def _plot_polygon(self, string_points, color):
-        """
-        To prevent errors, this method should only be called by plot_spatial()
-        :param string_points:
-        :param color: Hexadecimal example: #FFFFFF
-        :return:
-        """
-        data = []
-        for index in string_points[1:-1].split(","):  # Parse the string into tuples with float values
-            value = index.strip("(").strip(")")
-            space_position = value.find(" ")
-            x_value = float(value[:space_position])
-            y_value = float(value[space_position + 1:])
-            data.append((x_value, y_value))
-        p_coll = PolyCollection([data], closed=True, facecolors=color, alpha=0.5, edgecolors=None, linewidths=(2,))
-        self.spatial_plot.axes.add_collection(p_coll, autolim=True)
 
     def on_start_date_change(self, event):
         """

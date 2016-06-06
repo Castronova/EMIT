@@ -17,14 +17,23 @@ class SimulationsPlotCtrl(SimulationsPlotView):
 
         self.start_date_picker.SetValue(self.start_date_object)
         self.end_date_picker.SetValue(self.end_date_object)
+
+        # Adding room for the x axis labels to be visible
         self.temporal_plot.add_padding_to_plot(bottom=0.15)
         self.spatial_plot.add_padding_to_plot(bottom=0.15)
+
+        # Highlighting variables
+        self.start_highlight_x = None
+        self.end_highlight_x = None
+        self.__highlighted_region = None  # Set to None after redrawing to prevent errors
 
         # Bindings
         self.plot_button.Bind(wx.EVT_BUTTON, self.on_plot)
         self.table.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_row_selected)
         self.start_date_picker.Bind(wx.EVT_DATE_CHANGED, self.on_start_date_change)
         self.end_date_picker.Bind(wx.EVT_DATE_CHANGED, self.on_end_date_change)
+        self.spatial_plot.plot.mpl_connect("button_press_event", self.on_mouse_pressed)
+        self.spatial_plot.plot.mpl_connect("button_release_event", self.on_mouse_release)
 
     def get_selected_id(self):
         """
@@ -108,12 +117,40 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         else:
             self.end_date_object = self.end_date_picker.GetValue()
 
+    def on_mouse_release(self, event):
+        """
+        Highlights a region
+        :param event: MouseEvent. See Matplotlib event handling for more information
+        :return:
+        """
+        if event.button == 1:  # Accept only mouse left clicks
+            self.end_highlight_x = event.xdata
+
+            # Highlight. # Returns a Polygon instance
+            self.__highlighted_region = self.spatial_plot.axes.axvspan(xmin=self.start_highlight_x,
+                                                                       xmax=self.end_highlight_x,
+                                                                       color="red", alpha=0.5)
+            self.spatial_plot.reDraw()
+
+    def on_mouse_pressed(self, event):
+        """
+        Set self.__highlighted_region to None after redrawing to prevent errors
+        Sets the start position for highlighting
+        :param event: MouseEvent. See Matplotlib event handling for more information
+        :return:
+        """
+        if event.button == 1:  # Accept only mouse left releases
+            self.start_highlight_x = event.xdata
+            if self.__highlighted_region:
+                self.__highlighted_region.remove()  # Remove previous highlighted region
+
     def on_row_selected(self, event):
         """
         Set the date pickers to match the start and end date of the row selected dates
         :param event:
         :return:
         """
+        self.__highlighted_region = None
         date = wx.DateTime()
         start_date_string = self.table.get_selected_row()[3]
         if date.ParseFormat(start_date_string, "%Y-%m-%d %H:%M:%S") == -1:

@@ -10,11 +10,14 @@ class SimulationsPlotCtrl(SimulationsPlotView):
             self.table.set_columns(columns)
 
         self.data = {}  # Dictionary to hold the data respective to the row ID
+        self.geometries = {}  # Holds the geometries respective to the row ID
         self.start_date_object = wx.DateTime_Now() - 1 * wx.DateSpan_Day()  # Default date is yesterday
         self.end_date_object = wx.DateTime_Now()  # Default date is today
 
         self.start_date_picker.SetValue(self.start_date_object)
         self.end_date_picker.SetValue(self.end_date_object)
+
+        self.temporal_plot.rotate_x_axis_label()
 
         # Bindings
         self.plot_button.Bind(wx.EVT_BUTTON, self.on_plot)
@@ -71,6 +74,10 @@ class SimulationsPlotCtrl(SimulationsPlotView):
             self.end_date_picker.SetValue(date)
             self.end_date_object = date
 
+        #  Plot Spatial
+
+        pass
+
     def on_plot(self, event):
         """
         Grabs the data related to the selected row. self.data must be set otherwise it will not plot
@@ -94,7 +101,9 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         name = self.table.get_selected_row()[1]
         units = self.table.get_selected_row()[2]
         self.temporal_plot.clearPlot()
+        self.temporal_plot.rotate_x_axis_label()
         self.temporal_plot.plotData(data, name, None, units)
+
         return True
 
     def on_start_date_change(self, event):

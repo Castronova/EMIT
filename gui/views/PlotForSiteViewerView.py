@@ -38,7 +38,21 @@ class ViewPlotForSiteViewer:
         self.axes.set_xlabel(x)
         self.axes.set_ylabel(y)
 
+    def rotate_x_axis_label(self, angle=45):
+        """
+        Rotates the x-axis labels
+        Must be called before redrawing to have effect
+        :param angle: angle of rotation
+        :return:
+        """
+        for label in self.axes.xaxis.get_ticklabels():
+            label.set_rotation(angle)
 
-
-
-
+    def set_x_axis_label_font_size(self, font_size=10):
+        """
+        Must be called before redrawing to have effect
+        :param font_size:
+        :return:
+        """
+        for label in self.axes.xaxis.get_ticklabels():
+            label.set_fontsize(font_size)

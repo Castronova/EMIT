@@ -173,9 +173,11 @@ class SimulationsTabCtrl(TimeSeriesView):
         table_columns = ["ID", "Variable", "Units", "Begin Date", "End Date", "Description", "Organization"]
 
         controller = SimulationsPlotCtrl(self, columns=table_columns)
-        controller.SetTitle("Resul###ts for Simulation: " + row_data[1])
+        controller.SetTitle("Results for Simulation: " + row_data[1])
+
         for key, value in results.iteritems():
             row = []
+            wkt = []
             for item in value:
                 row.append(item[2].ResultID)
                 row.append(item[2].VariableObj.VariableCode)
@@ -184,8 +186,10 @@ class SimulationsTabCtrl(TimeSeriesView):
                 row.append(item[2].FeatureActionObj.ActionObj.EndDateTime)
                 row.append(item[2].VariableObj.VariableNameCV)
                 row.append(item[2].FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName)
+                wkt.append(item[2].FeatureActionObj.SamplingFeatureObj.FeatureGeometryWKT)
 
             table_data.append(row)
             controller.data[row[0]] = item[0], item[1]
+            controller.geometries[row[0]] = wkt
 
         controller.table.set_table_content(table_data)

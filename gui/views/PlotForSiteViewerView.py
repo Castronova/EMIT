@@ -34,10 +34,6 @@ class ViewPlotForSiteViewer:
         """
         self.axes.legend(loc=location)
 
-    def setAxisLabel(self, x="", y=""):
-        self.axes.set_xlabel(x)
-        self.axes.set_ylabel(y)
-
     def rotate_x_axis_label(self, angle=45):
         """
         Rotates the x-axis labels
@@ -47,6 +43,10 @@ class ViewPlotForSiteViewer:
         """
         for label in self.axes.xaxis.get_ticklabels():
             label.set_rotation(angle)
+
+    def setAxisLabel(self, x="", y=""):
+        self.axes.set_xlabel(x)
+        self.axes.set_ylabel(y)
 
     def set_x_axis_label_font_size(self, font_size=10):
         """

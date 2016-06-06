@@ -37,12 +37,15 @@ class SimulationsPlotCtrl(SimulationsPlotView):
 
     def on_end_date_change(self, event):
         """
-        Prevents the end date from being set to before the start date
+        Prevents the end date from being set to before the start date and
+        prevent the end date from being set to a day after today
         :param event:
         :return:
         """
-        if self.start_date_picker.GetValue() > self.end_date_picker.GetValue():
+        if self.start_date_picker.GetValue() > self.end_date_picker.GetValue():  # Prevent start date to overlap end
             self.end_date_picker.SetValue(self.end_date_object)
+        elif self.end_date_picker.GetValue() > wx.DateTime_Now():
+            self.end_date_picker.SetValue(self.end_date_object)  # Prevent end date to be set to after today
         else:
             self.end_date_object = self.end_date_picker.GetValue()
 

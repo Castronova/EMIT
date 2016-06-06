@@ -9,7 +9,7 @@ class SimulationsPlotView(wx.Frame):
 
         # Create panels
         panel = wx.Panel(self)
-        top_panel = wx.Panel(panel)
+        top_panel = wx.Panel(panel, size=(1050, 450))
         middle_panel = wx.Panel(panel)
         bottom_panel = wx.Panel(panel, size=(-1, 250))
 
@@ -21,12 +21,17 @@ class SimulationsPlotView(wx.Frame):
         self.temporal_plot = PlotForSiteViewerCtrl(top_panel)
         self.spatial_plot = PlotForSiteViewerCtrl(top_panel)
 
+        # Allows the plots to size equally
+        self.temporal_plot.plot.SetMinSize(wx.Size(1, 1))
+        self.spatial_plot.plot.SetMinSize(wx.Size(1, 1))
+
         # Create sizer and add components to sizer
         top_panel_sizer = wx.BoxSizer(wx.HORIZONTAL)
         top_panel_sizer.Add(self.temporal_plot.plot, 1, wx.EXPAND | wx.ALL, 2)
         top_panel_sizer.Add(self.spatial_plot.plot, 1, wx.EXPAND | wx.ALL, 2)
 
         top_panel.SetSizer(top_panel_sizer)
+        top_panel_sizer.Fit(top_panel)
 
         ###############################
         # MIDDLE PANEL COMPONENTS

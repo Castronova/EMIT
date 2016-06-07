@@ -1,6 +1,7 @@
 import wx
 from gui.views.SimulationsPlotView import SimulationsPlotView
 from matplotlib.collections import PolyCollection
+from utilities import geometry
 
 
 class SimulationsPlotCtrl(SimulationsPlotView):
@@ -82,14 +83,20 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         """
         self.spatial_plot.clear_plot()
         color = "#0DACFF"
-        geometries = self.geometries[ID][0]  # Returns a string
-        points = geometries[geometries.find("("):]
-        if "POLYGON" in geometries:
-            self._plot_polygon(points, color)
-        elif "POINT" in geometries:
-            self._plot_point(points, color)
-        else:
-            raise Exception("plot_spatial() failed. Geometries must be POLYGON OR POINT")
+        # geometries = self.geometries[ID][0]  # Returns a string
+        # geometry_object = geometry.fromWKT(geometries)  # Convert the string to a wkt object
+        # if "POLYGON" in geometries:
+        #     self._plot_polygon(geometry_object, color)
+        # elif "POINT" in geometries:
+        #     self._plot_point(geometry_object, color)
+        # else:
+        #     raise Exception("plot_spatial() failed. Geometries must be POLYGON OR POINT")
+
+        geometries = self.geometries[ID][0]
+        geometries = geometry.fromWKT(geometries)
+        self.spatial_plot.plot_geometry(geometries, color, title)
+
+
 
         self.spatial_plot.rotate_x_axis_label()
         self.spatial_plot.set_title(str(title))

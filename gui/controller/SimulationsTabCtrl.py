@@ -167,6 +167,7 @@ class SimulationsTabCtrl(TimeSeriesView):
         results = self.get_row_data(row_data[0])
 
         if not results:
+            self.table.empty_list_message.Hide()
             return
 
         table_data = []
@@ -178,18 +179,20 @@ class SimulationsTabCtrl(TimeSeriesView):
         for key, value in results.iteritems():
             row = []
             wkt = []
-            for item in value:
-                row.append(item[2].ResultID)
-                row.append(item[2].VariableObj.VariableCode)
-                row.append(item[2].UnitsObj.UnitsAbbreviation)
-                row.append(item[2].FeatureActionObj.ActionObj.BeginDateTime)
-                row.append(item[2].FeatureActionObj.ActionObj.EndDateTime)
-                row.append(item[2].VariableObj.VariableNameCV)
-                row.append(item[2].FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName)
-                wkt.append(item[2].FeatureActionObj.SamplingFeatureObj.FeatureGeometryWKT)
+            row.append(value[0][2].ResultID)
+            row.append(value[0][2].VariableObj.VariableCode)
+            row.append(value[0][2].UnitsObj.UnitsAbbreviation)
+            row.append(value[0][2].FeatureActionObj.ActionObj.BeginDateTime)
+            row.append(value[0][2].FeatureActionObj.ActionObj.EndDateTime)
+            row.append(value[0][2].VariableObj.VariableNameCV)
+            row.append(value[0][2].FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName)
+            wkt.append(value[0][2].FeatureActionObj.SamplingFeatureObj.FeatureGeometryWKT)
+
+            if len(row) != len(table_columns):  # If these do not match, the app will crash
+                raise Exception("Number of columns must match the number of items in the row")
 
             table_data.append(row)
-            controller.data[row[0]] = item[0], item[1]
+            controller.data[row[0]] = value[0][0], value[0][1]
             controller.geometries[row[0]] = wkt
 
         controller.table.set_table_content(table_data)

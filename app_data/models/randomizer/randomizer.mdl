@@ -29,7 +29,7 @@
       "elementset": "POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))",
       "epsg_code": 2921
     }, {
-      "variable_name_cv": "multipolygon",
+      "variable_name_cv": "random POLYGON 10-100",
       "unit_type_cv": "international inch",
       "elementset": "MULTIPOLYGON (((30 20, 45 40, 10 40, 30 20)), ((15 5, 40 10, 10 20, 5 10, 15 5)))",
       "epsg_code": 2921
@@ -39,7 +39,7 @@
       "elementset": "POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))",
       "epsg_code": 2921
     }, {
-      "variable_name_cv": "multipoint",
+      "variable_name_cv": "random POINT 1-10",
       "unit_type_cv": "international inch",
       "elementset": "MULTIPOINT ((10 40), (40 30), (20 20), (30 10))"
     }, {

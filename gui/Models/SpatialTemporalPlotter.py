@@ -126,6 +126,29 @@ class SpatialTemporalPlotter(Plotter):
     def plot_linestring(self, data):
         print "plot_linestring has not been implemented"
 
+    def plot_geometry(self, geometry_object, color, title):
+        """
+        A general plot method that will plot the respective type
+        :param geometry_object:
+        :param color:
+        :return:
+        """
+        if geometry_object[0].GetGeometryName().upper() == "POLYGON":
+            self.plot_polygon(geometry_object, color)
+        elif geometry_object[0].GetGeometryName().upper() == "POINT":
+            self.plot_point(geometry_object, color)
+        elif geometry_object[0].GetGeometryName().upper() == "LINESTRING":
+            self.plot_linestring(geometry_object)
+        else:
+            print "Not found"
+            return
+
+        self.set_title(title)
+        self.axes.grid(True)
+
+        self.axes.margins(0.1)
+        self.redraw()
+
     def getNextColor(self):
          return next(self.__color_cycle)
 

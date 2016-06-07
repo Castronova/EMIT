@@ -1,6 +1,5 @@
 import wx
 from gui.views.SimulationsPlotView import SimulationsPlotView
-from matplotlib.collections import PolyCollection
 from utilities import geometry
 
 
@@ -44,36 +43,6 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         if row:
             return int(row[0])
         return -1
-
-    def _plot_point(self, string_points, color):
-        """
-        To prevent errors, this method should only be called by plot_spatial()
-        :param string_points:
-        :param color: Hexadecimal example: #FFFFFF
-        :return:
-        """
-        points = string_points.split(" ")
-        x_value = float(points[0].strip("(").strip(")"))
-        y_value = float(points[1].strip("(").strip(")"))
-
-        self.spatial_plot.axes.scatter(x_value, y_value, color=color)
-
-    def _plot_polygon(self, string_points, color):
-        """
-        To prevent errors, this method should only be called by plot_spatial()
-        :param string_points:
-        :param color: Hexadecimal example: #FFFFFF
-        :return:
-        """
-        data = []
-        for index in string_points[1:-1].split(","):  # Parse the string into tuples with float values
-            value = index.strip("(").strip(")")
-            space_position = value.find(" ")
-            x_value = float(value[:space_position])
-            y_value = float(value[space_position + 1:])
-            data.append((x_value, y_value))
-        p_coll = PolyCollection([data], closed=True, facecolors=color, alpha=0.5, edgecolors=None, linewidths=(2,))
-        self.spatial_plot.axes.add_collection(p_coll, autolim=True)
 
     def plot_spatial(self, ID, title):
         """

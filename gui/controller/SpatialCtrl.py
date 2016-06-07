@@ -1,8 +1,5 @@
-import numpy
 import wx
-from matplotlib.collections import PolyCollection
 from osgeo import ogr
-
 import stdlib
 from coordinator import engineAccessors
 from emitLogging import elog

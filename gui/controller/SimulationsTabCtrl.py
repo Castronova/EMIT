@@ -186,7 +186,9 @@ class SimulationsTabCtrl(TimeSeriesView):
             row.append(value[0][2].FeatureActionObj.ActionObj.EndDateTime)
             row.append(value[0][2].VariableObj.VariableNameCV)
             row.append(value[0][2].FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName)
-            wkt.append(value[0][2].FeatureActionObj.SamplingFeatureObj.FeatureGeometryWKT)
+            for item in value:
+                wkt.append(item[2].FeatureActionObj.SamplingFeatureObj.FeatureGeometryWKT)
+                # wkt.append(value[0][2].FeatureActionObj.SamplingFeatureObj.FeatureGeometryWKT)
 
             if len(row) != len(table_columns):  # If these do not match, the app will crash
                 raise Exception("Number of columns must match the number of items in the row")

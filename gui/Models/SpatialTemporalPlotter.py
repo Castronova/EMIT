@@ -107,10 +107,11 @@ class SpatialTemporalPlotter(Plotter):
 
     def plot_polygon(self, data, color):
         poly_list = []
-        reference = data[0].GetGeometryRef(0)
-        points = numpy.array(reference.GetPoints())
-        a = tuple(map(tuple, points[:, 0:2]))
-        poly_list.append(a)
+        for item in data:
+            reference = item.GetGeometryRef(0)
+            points = numpy.array(reference.GetPoints())
+            a = tuple(map(tuple, points[:, 0:2]))
+            poly_list.append(a)
 
         p_coll = PolyCollection(poly_list, closed=True, facecolor=color, alpha=0.5, edgecolor=None, linewidths=(2,))
         self.axes.add_collection(p_coll, autolim=True)

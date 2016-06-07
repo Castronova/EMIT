@@ -83,27 +83,12 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         """
         self.spatial_plot.clear_plot()
         color = "#0DACFF"
-        # geometries = self.geometries[ID][0]  # Returns a string
-        # geometry_object = geometry.fromWKT(geometries)  # Convert the string to a wkt object
-        # if "POLYGON" in geometries:
-        #     self._plot_polygon(geometry_object, color)
-        # elif "POINT" in geometries:
-        #     self._plot_point(geometry_object, color)
-        # else:
-        #     raise Exception("plot_spatial() failed. Geometries must be POLYGON OR POINT")
 
         geometries = self.geometries[ID][0]
         geometries = geometry.fromWKT(geometries)
-        self.spatial_plot.plot_geometry(geometries, color, title)
-
-
-
         self.spatial_plot.rotate_x_axis_label()
-        self.spatial_plot.set_title(str(title))
-        self.spatial_plot.axes.set_ylabel("Some Y label")
-        self.spatial_plot.axes.set_xlabel("Some X label")
-        self.spatial_plot.axes.grid(True)
-        self.spatial_plot.axes.margins(0.1)
+        self.spatial_plot.plot_geometry(geometries, color, title)
+        self.spatial_plot.set_legend([title])
         self.spatial_plot.redraw()
 
     ##########################

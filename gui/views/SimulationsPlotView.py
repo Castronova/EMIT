@@ -78,4 +78,3 @@ class SimulationsPlotView(wx.Frame):
         frame_sizer.Fit(self)
         self.CenterOnScreen()
         self.Show()
-

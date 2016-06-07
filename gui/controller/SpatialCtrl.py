@@ -189,24 +189,8 @@ class SpatialCtrl(SpatialView):
         color = self.get_color_by_plot_name(data_in)
 
         self.plot.plot_geometry(data, color, plot_title)
-
-        # if data[0].GetGeometryName().upper() == "POLYGON":
-        #     self.plot.plot_polygon(data, color)
-        # elif data[0].GetGeometryName().upper() == "POINT":
-        #     self.plot.plot_point(data, color)
-        # elif data[0].GetGeometryName().upper() == "LINESTRING":
-        #     self.plot.plot_linestring(data)
-        # else:
-        #     return
-        #
-        # self.plot.set_title(plot_title)
-        # self.set_legend()
-        #
-        # self.plot.axes.grid(True)
-        #
-        # # If margin is 0 the graph will fill the plot.
-        # self.plot.axes.margins(0.1)
-        # self.plot.redraw()
+        self.set_legend()
+        self.plot.redraw()
 
     def update_ei_table(self, type=stdlib.ExchangeItemType.INPUT):
 

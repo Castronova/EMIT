@@ -105,9 +105,6 @@ class SpatialTemporalPlotter(Plotter):
         # redraw the cavas
         self.redraw()
 
-    def redraw(self):
-        self.plot.draw()
-
     def plot_polygon(self, data, color):
         poly_list = []
         reference = data[0].GetGeometryRef(0)
@@ -129,6 +126,7 @@ class SpatialTemporalPlotter(Plotter):
     def plot_geometry(self, geometry_object, color, title):
         """
         A general plot method that will plot the respective type
+        Must call redraw afterwards to have an effect
         :param geometry_object:
         :param color:
         :return:
@@ -140,16 +138,13 @@ class SpatialTemporalPlotter(Plotter):
         elif geometry_object[0].GetGeometryName().upper() == "LINESTRING":
             self.plot_linestring(geometry_object)
         else:
-            print "Not found"
-            return
+            raise Exception("plot_geometry() failed. Geometries must be POLYGON OR POINT")
 
         self.set_title(title)
         self.axes.grid(True)
 
+        # If margin is 0 the graph will fill the plot
         self.axes.margins(0.1)
-        self.redraw()
 
     def getNextColor(self):
          return next(self.__color_cycle)
-
-

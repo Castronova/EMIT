@@ -1,6 +1,7 @@
 import wx
-from gui.controller.PlotForSiteViewerCtrl import PlotForSiteViewerCtrl
+
 from gui.Models.CustomListCtrl import CustomListCtrl
+from gui.Models.SpatialTemporalPlotter import SpatialTemporalPlotter
 
 
 class SimulationsPlotView(wx.Frame):
@@ -18,8 +19,8 @@ class SimulationsPlotView(wx.Frame):
         ###############################
 
         # Create components
-        self.spatial_plot = PlotForSiteViewerCtrl(top_panel)
-        self.temporal_plot = PlotForSiteViewerCtrl(top_panel)
+        self.spatial_plot = SpatialTemporalPlotter(top_panel)
+        self.temporal_plot = SpatialTemporalPlotter(top_panel)
 
         # Allows the plots to size equally
         self.spatial_plot.plot.SetMinSize(wx.Size(1, 1))

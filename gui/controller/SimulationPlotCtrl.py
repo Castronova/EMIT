@@ -80,7 +80,7 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         :param ID: type(Int). Must match a row the selected row's ID
         :return:
         """
-        self.spatial_plot.clearPlot()
+        self.spatial_plot.clear_plot()
         color = "#0DACFF"
         geometries = self.geometries[ID][0]  # Returns a string
         points = geometries[geometries.find("("):]
@@ -92,12 +92,12 @@ class SimulationsPlotCtrl(SimulationsPlotView):
             raise Exception("plot_spatial() failed. Geometries must be POLYGON OR POINT")
 
         self.spatial_plot.rotate_x_axis_label()
-        self.spatial_plot.setTitle(str(title))
+        self.spatial_plot.set_title(str(title))
         self.spatial_plot.axes.set_ylabel("Some Y label")
         self.spatial_plot.axes.set_xlabel("Some X label")
         self.spatial_plot.axes.grid(True)
         self.spatial_plot.axes.margins(0.1)
-        self.spatial_plot.reDraw()
+        self.spatial_plot.redraw()
 
     ##########################
     # EVENTS
@@ -130,7 +130,7 @@ class SimulationsPlotCtrl(SimulationsPlotView):
             self.__highlighted_region = self.spatial_plot.axes.axvspan(xmin=self.start_highlight_x,
                                                                        xmax=self.end_highlight_x,
                                                                        color="red", alpha=0.5)
-            self.spatial_plot.reDraw()
+            self.spatial_plot.redraw()
 
     def on_mouse_pressed(self, event):
         """
@@ -192,9 +192,9 @@ class SimulationsPlotCtrl(SimulationsPlotView):
 
         name = self.table.get_selected_row()[1]
         units = self.table.get_selected_row()[2]
-        self.temporal_plot.clearPlot()
+        self.temporal_plot.clear_plot()
         self.temporal_plot.rotate_x_axis_label()
-        self.temporal_plot.plotData(data, name, None, units)
+        self.temporal_plot.plot_dates(data, name, None, units)
 
         return True
 

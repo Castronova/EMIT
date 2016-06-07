@@ -126,10 +126,10 @@ class TimeSeriesObjectCtrl(TimeSeriesPlotView):
         self.end_date = self.endDatePicker.GetValue()
 
     def setPlotLabel(self, x_label, y_label):
-        self.plot.setAxisLabel(x_label, y_label)
+        self.plot.set_axis_label(x_label, y_label)
 
     def setstartDate(self, event):
         self.start_date = self.startDatePicker.GetValue()
 
     def setPlotTitle(self, title):
-        self.plot.setTitle(title)
+        self.plot.set_title(title)

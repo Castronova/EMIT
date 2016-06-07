@@ -1,7 +1,8 @@
 import wx
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
+
 from emitLogging import elog
-from gui.controller.PlotForSiteViewerCtrl import PlotForSiteViewerCtrl
+from gui.Models.SpatialTemporalPlotter import SpatialTemporalPlotter
 
 
 class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
@@ -28,7 +29,7 @@ class TimeSeriesPlotView(wx.Frame):
 
         hboxTopPanel = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.plot = PlotForSiteViewerCtrl(self.toppanel)
+        self.plot = SpatialTemporalPlotter(self.toppanel)
         hboxTopPanel.Add(self.plot.plot, 1, wx.EXPAND | wx.ALL, 2)
 
         self.toppanel.SetSizer(hboxTopPanel)
@@ -108,9 +109,9 @@ class TimeSeriesPlotView(wx.Frame):
                 return int(id)
 
     def plotGraph(self, data, var_name, y_units=None, no_data=None):
-        self.plot.clearPlot()
+        self.plot.clear_plot()
         if data is not None:
-            self.plot.plotData(data, str(var_name), no_data, y_units)
+            self.plot.plot_dates(data, str(var_name), no_data, y_units)
         else:
             elog.info("Received no data to plot")
             elog.info("data is None")

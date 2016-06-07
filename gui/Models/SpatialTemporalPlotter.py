@@ -1,6 +1,7 @@
-import numpy
-from gui.views.PlotForSiteViewerView import ViewPlotForSiteViewer
 import matplotlib as mpl
+import numpy
+from gui.Models.Plotter import Plotter
+from matplotlib.collections import PolyCollection
 
 
 class color_cycle(object):
@@ -23,9 +24,9 @@ class color_cycle(object):
         return self.__colors[self.current]
 
 
-class PlotForSiteViewerCtrl(ViewPlotForSiteViewer):
+class SpatialTemporalPlotter(Plotter):
     def __init__(self, panel):
-        ViewPlotForSiteViewer.__init__(self, panel)
+        Plotter.__init__(self, panel)
 
         # stores the plot objects
         self.plots = []
@@ -37,7 +38,33 @@ class PlotForSiteViewerCtrl(ViewPlotForSiteViewer):
         # matplotlib color cycle used to ensure primary and secondary axis are not displayed with the same color
         self.__color_cycle = color_cycle()
 
-    def plotData(self, data, name, noDataValue, ylabel=""):
+    def clear_plot(self):
+
+        # clear axis
+        self.axes.clear()
+        for ax in self.__axis:
+            ax.cla()
+
+        # reset the axis container
+        self.__axis = []
+
+        self.axes.grid()
+        self.axes.margins(0)
+
+        # clear the plot objects
+        self.__plot_count = 0
+        self.plots = []
+
+        self.redraw()
+
+    def plot_dates(self, data, name, noDataValue, ylabel=""):
+        """
+        :param data: type([datetime, floats])
+        :param name:
+        :param noDataValue:
+        :param ylabel:
+        :return:
+        """
 
         if len(data) == 0:
             return
@@ -76,29 +103,28 @@ class PlotForSiteViewerCtrl(ViewPlotForSiteViewer):
         self.displayLegend(0)
 
         # redraw the cavas
-        self.reDraw()
+        self.redraw()
 
-    def reDraw(self):
+    def redraw(self):
         self.plot.draw()
 
-    def clearPlot(self):
+    def plot_polygon(self, data, color):
+        poly_list = []
+        reference = data[0].GetGeometryRef(0)
+        points = numpy.array(reference.GetPoints())
+        a = tuple(map(tuple, points[:, 0:2]))
+        poly_list.append(a)
 
-        # clear axis
-        self.axes.clear()
-        for ax in self.__axis:
-            ax.cla()
+        p_coll = PolyCollection(poly_list, closed=True, facecolor=color, alpha=0.5, edgecolor=None, linewidths=(2,))
+        self.axes.add_collection(p_coll, autolim=True)
 
-        # reset the axis container
-        self.__axis = []
+    def plot_point(self, data, color):
+        # get x,y points
+        x, y = zip(*[(g.GetX(), g.GetY()) for g in data])
+        self.axes.scatter(x, y, color=color)
 
-        self.axes.grid()
-        self.axes.margins(0)
-
-        # clear the plot objects
-        self.__plot_count = 0
-        self.plots = []
-
-        self.reDraw()
+    def plot_linestring(self, data):
+        print "plot_linestring has not been implemented"
 
     def getNextColor(self):
          return next(self.__color_cycle)

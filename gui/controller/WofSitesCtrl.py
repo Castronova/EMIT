@@ -282,7 +282,7 @@ class WofSitesCtrl(TimeSeriesPlotView):
         Returns: None
         """
 
-        self.plot.clearPlot()
+        self.plot.clear_plot()
 
         for key in series_keys:
 
@@ -310,7 +310,7 @@ class WofSitesCtrl(TimeSeriesPlotView):
             # self.plot.setTitle(self.getSelectedVariableName())
             # self.plot.setAxisLabel(" ", data[0].variable.unit.unitName)
             ylabel = data[0].variable.unit.unitName
-            self.plot.plotData(plotData, series_info.var_name, noData, ylabel)
+            self.plot.plot_dates(plotData, series_info.var_name, noData, ylabel)
 
 
     # THREADED

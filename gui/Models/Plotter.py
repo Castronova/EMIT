@@ -5,7 +5,7 @@ import seaborn as sb
 sb.set_style("ticks")
 
 
-class ViewPlotForSiteViewer:
+class Plotter:
     def __init__(self, panel):
         self.figure = matplotlib.figure.Figure()
         self.axes = self.figure.add_subplot(111)
@@ -27,9 +27,6 @@ class ViewPlotForSiteViewer:
         """
         # self.figure.tight_layout() is also another possible way to do this
         self.figure.subplots_adjust(left=left, bottom=bottom, right=right, top=top, wspace=wspace, hspace=hspace)
-
-    def setTitle(self, title=""):
-        self.axes.set_title(str(title))
 
     def displayLegend(self, location='upper right'):
         """
@@ -58,9 +55,12 @@ class ViewPlotForSiteViewer:
         for label in self.axes.xaxis.get_ticklabels():
             label.set_rotation(angle)
 
-    def setAxisLabel(self, x="", y=""):
+    def set_axis_label(self, x="", y=""):
         self.axes.set_xlabel(x)
         self.axes.set_ylabel(y)
+
+    def set_title(self, title):
+        self.axes.set_title(str(title))
 
     def set_x_axis_label_font_size(self, font_size=10):
         """

@@ -53,12 +53,22 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         self.spatial_plot.clear_plot()
         color = "#0DACFF"
 
-        geometries = self.geometries[ID][0]
-        geometries = geometry.fromWKT(geometries)
+        geometries = self.get_geometries(ID)
         self.spatial_plot.rotate_x_axis_label()
         self.spatial_plot.plot_geometry(geometries, color, title)
         self.spatial_plot.set_legend([title])
         self.spatial_plot.redraw()
+
+    def get_geometries(self, ID):
+        """
+        Converts the geometry string to objects
+        :param ID: Int
+        :return: a list of geometry objects
+        """
+        geometries = []
+        for item in self.geometries[ID]:
+            geometries.append(geometry.fromWKT(item)[0])
+        return geometries
 
     ##########################
     # EVENTS

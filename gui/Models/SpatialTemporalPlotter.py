@@ -31,6 +31,9 @@ class SpatialTemporalPlotter(Plotter):
         # stores the plot objects
         self.plots = []
         self.__plot_count = 0
+        # self.highlighted_vertices = set()  # Rename to selected_vertices
+        self.highlighted_vertices = []  # Keeps track of the highlighted vertices index
+        self.marker = None  # Must be a matplotlib line2D object
 
         # stores the axis objects
         self.__axis = []
@@ -56,6 +59,31 @@ class SpatialTemporalPlotter(Plotter):
         self.plots = []
 
         self.redraw()
+
+    def getNextColor(self):
+         return next(self.__color_cycle)
+
+    def highlight_vertex(self, pick_event):
+        """
+        Only one marker can be used to highlight. self.marker is that one marker
+        :param pick_event: matplotlib mouse pick event
+        :return:
+        """
+        if not self.marker:
+            self.marker, = pick_event.artist.axes.plot([], [], "o")  # Create a plot
+            self.marker.set_color("y")  # Set color to yellow
+
+        # Check if vertice has been highlighted
+        if pick_event.ind[0] in self.highlighted_vertices:
+            self.highlighted_vertices.remove(pick_event.ind[0])  # Remove highlight
+        else:
+            self.highlighted_vertices.append(pick_event.ind[0])  # Add highlight
+
+        self.highlighted_vertices.sort()
+        x, y = pick_event.artist.get_data()
+        # Highlight only those in self.highlighted_vertices
+        self.marker.set_data(x[self.highlighted_vertices], y[self.highlighted_vertices])
+        pick_event.artist.axes.figure.canvas.draw()
 
     def plot_dates(self, data, name, noDataValue, ylabel=""):
         """
@@ -149,5 +177,10 @@ class SpatialTemporalPlotter(Plotter):
         # If margin is 0 the graph will fill the plot
         self.axes.margins(0.1)
 
-    def getNextColor(self):
-         return next(self.__color_cycle)
+    def reset_highlighter(self):
+        """
+        Resets the variables needed to highlight
+        :return:
+        """
+        self.marker = None
+        self.highlighted_vertices = []

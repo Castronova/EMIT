@@ -1,6 +1,7 @@
 import wx
 from gui.views.SimulationsPlotView import SimulationsPlotView
 from utilities import geometry
+import matplotlib
 
 
 class SimulationsPlotCtrl(SimulationsPlotView):
@@ -22,28 +23,18 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         self.temporal_plot.add_padding_to_plot(bottom=0.15)
         self.spatial_plot.add_padding_to_plot(bottom=0.15)
 
-        # Highlighting variables
-        self.start_highlight_x = None
-        self.end_highlight_x = None
-        self.__highlighted_region = None  # Set to None after redrawing to prevent errors
-
         # Bindings
         self.plot_button.Bind(wx.EVT_BUTTON, self.on_plot)
         self.table.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_row_selected)
         self.start_date_picker.Bind(wx.EVT_DATE_CHANGED, self.on_start_date_change)
         self.end_date_picker.Bind(wx.EVT_DATE_CHANGED, self.on_end_date_change)
-        # self.spatial_plot.plot.mpl_connect("button_press_event", self.on_mouse_pressed)
-        # self.spatial_plot.plot.mpl_connect("button_release_event", self.on_mouse_release)
-        self.spatial_plot.plot.mpl_connect('pick_event', self.on_pick)
+        self.spatial_plot.plot.mpl_connect('pick_event', self.on_pick_spatial)
 
-    def on_pick(self, event):
-        if self.__highlighted_region:
-            event.artist.set_color("b")
-            self.__highlighted_region = 0
-        else:
-            event.artist.set_color("y")
-            self.__highlighted_region = 1
-        self.spatial_plot.redraw()
+    def on_pick_spatial(self, event):
+        if isinstance(event.artist, matplotlib.lines.Line2D):
+            self.spatial_plot.highlight_vertex(event)
+        elif isinstance(event.artist, matplotlib.collections.PolyCollection):
+            print "poly collection pick event not implemented yet"
 
     def get_selected_id(self):
         """
@@ -104,7 +95,7 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         :param event:
         :return:
         """
-        self.__highlighted_region = None
+        self.spatial_plot.reset_highlighter()
         date = wx.DateTime()
         start_date_string = self.table.get_selected_row()[3]
         if date.ParseFormat(start_date_string, "%Y-%m-%d %H:%M:%S") == -1:

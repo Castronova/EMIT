@@ -141,6 +141,12 @@ class TimeSeriesCtrl(TimeSeriesView):
         self.table.set_columns(columns)
         value = self.wof_names[name]
         self.api = wateroneflow.WaterOneFlow(value['wsdl'], value['network'])
+
+        if not self.api.conn:  # Check if connection failed
+            self.table.set_empty_message_text("Connection Failed")
+            self.table.empty_list_message.Show()
+            return
+
         data = self.api.get_sites_in_list()
         self.table.set_table_content(data)
 
@@ -152,6 +158,7 @@ class TimeSeriesCtrl(TimeSeriesView):
         AddConnectionCtrl(self)
 
     def on_connection_combo(self, event):
+        self.table.set_empty_message_text("This list is empty")
         self.table.empty_list_message.Hide()
         selection = event.GetEventObject().GetStringSelection()
         if selection == "---":

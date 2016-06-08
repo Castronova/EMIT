@@ -35,8 +35,21 @@ class WaterOneFlow(object):
 
     def __init__(self, wsdl, network):
         self.wsdl = wsdl
-        self.conn = Client(wsdl)
+        self.conn = self.test_connection(wsdl)
         self.network_code = network
+
+    def test_connection(self, wsdl):
+        """
+        If there is not internet then Client(wsdl) will return error
+        :param wsdl:
+        :return:
+        """
+        connection = None
+        try:
+            connection = Client(wsdl)
+        except:
+            pass
+        return connection
 
     def _getSiteType(self, site):
         try:

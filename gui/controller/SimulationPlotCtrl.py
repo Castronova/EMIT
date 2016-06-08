@@ -37,7 +37,13 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         self.spatial_plot.plot.mpl_connect('pick_event', self.on_pick)
 
     def on_pick(self, event):
-        print "selected a point"
+        if self.__highlighted_region:
+            event.artist.set_color("b")
+            self.__highlighted_region = 0
+        else:
+            event.artist.set_color("y")
+            self.__highlighted_region = 1
+        self.spatial_plot.redraw()
 
     def get_selected_id(self):
         """
@@ -91,33 +97,6 @@ class SimulationsPlotCtrl(SimulationsPlotView):
             self.end_date_picker.SetValue(self.end_date_object)  # Prevent end date to be set to after today
         else:
             self.end_date_object = self.end_date_picker.GetValue()
-
-    def on_mouse_release(self, event):
-        """
-        Highlights a region
-        :param event: MouseEvent. See Matplotlib event handling for more information
-        :return:
-        """
-        if event.button == 1:  # Accept only mouse left clicks
-            self.end_highlight_x = event.xdata
-
-            # Highlight. # Returns a Polygon instance
-            self.__highlighted_region = self.spatial_plot.axes.axvspan(xmin=self.start_highlight_x,
-                                                                       xmax=self.end_highlight_x,
-                                                                       color="red", alpha=0.5)
-            self.spatial_plot.redraw()
-
-    def on_mouse_pressed(self, event):
-        """
-        Set self.__highlighted_region to None after redrawing to prevent errors
-        Sets the start position for highlighting
-        :param event: MouseEvent. See Matplotlib event handling for more information
-        :return:
-        """
-        if event.button == 1:  # Accept only mouse left releases
-            self.start_highlight_x = event.xdata
-            if self.__highlighted_region:
-                self.__highlighted_region.remove()  # Remove previous highlighted region
 
     def on_row_selected(self, event):
         """

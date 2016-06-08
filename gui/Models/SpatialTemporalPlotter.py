@@ -114,13 +114,14 @@ class SpatialTemporalPlotter(Plotter):
             poly_list.append(a)
 
         p_coll = PolyCollection(poly_list, closed=True, facecolor=color, alpha=0.5, edgecolor=None, linewidths=(2,))
+        p_coll.set_picker(True)  # Enable pick event
         self.axes.add_collection(p_coll, autolim=True)
 
     def plot_point(self, data, color):
         # get x,y points
         x, y = zip(*[(g.GetX(), g.GetY()) for g in data])
         # self.axes.scatter(x, y, color=color)
-        self.axes.plot(x, y, marker="o", picker=5)
+        self.axes.plot(x, y, marker="o", picker=5)  # picker is float distance in points where a click is valid
 
     def plot_linestring(self, data):
         print "plot_linestring has not been implemented"

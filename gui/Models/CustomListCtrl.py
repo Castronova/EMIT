@@ -80,6 +80,9 @@ class CustomListCtrl(wx.ListCtrl):
         for i in range(len(columns)):
             self.InsertColumn(i, columns[i], width=wx.LIST_AUTOSIZE_USEHEADER)
 
+    def set_empty_message_text(self, text):
+        self.empty_list_message.SetLabel(text)
+
     def set_table_content(self, data):
         """
         data must be a 2D list [[row1 column1, row1 column2, ...], [row2, column1, row2 column2, ...]]

@@ -32,8 +32,12 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         self.table.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_row_selected)
         self.start_date_picker.Bind(wx.EVT_DATE_CHANGED, self.on_start_date_change)
         self.end_date_picker.Bind(wx.EVT_DATE_CHANGED, self.on_end_date_change)
-        self.spatial_plot.plot.mpl_connect("button_press_event", self.on_mouse_pressed)
-        self.spatial_plot.plot.mpl_connect("button_release_event", self.on_mouse_release)
+        # self.spatial_plot.plot.mpl_connect("button_press_event", self.on_mouse_pressed)
+        # self.spatial_plot.plot.mpl_connect("button_release_event", self.on_mouse_release)
+        self.spatial_plot.plot.mpl_connect('pick_event', self.on_pick)
+
+    def on_pick(self, event):
+        print "selected a point"
 
     def get_selected_id(self):
         """

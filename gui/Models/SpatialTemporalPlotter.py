@@ -119,7 +119,8 @@ class SpatialTemporalPlotter(Plotter):
     def plot_point(self, data, color):
         # get x,y points
         x, y = zip(*[(g.GetX(), g.GetY()) for g in data])
-        self.axes.scatter(x, y, color=color)
+        # self.axes.scatter(x, y, color=color)
+        self.axes.plot(x, y, marker="o", picker=5)
 
     def plot_linestring(self, data):
         print "plot_linestring has not been implemented"

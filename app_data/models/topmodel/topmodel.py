@@ -41,29 +41,16 @@ class topmodel(feed_forward.Wrapper):
         self.inputs(value=io[stdlib.ExchangeItemType.INPUT])
         self.outputs(value=io[stdlib.ExchangeItemType.OUTPUT])
 
-        # model_inputs
-        inputs = config_params['model inputs'][0]
-
         # read input parameters
         sPrint('Reading input parameters')
 
-        self.base_directory = config_params["basedir"]
-
-        if inputs["ti"][0] == '.':
-            # Check if inputs[""] starts with a period
-            # parse_json does not add the base directory to everything like parse_config does
-            # Because of that, it needs to check.
-            self.topo_input = self.base_directory + inputs["ti"][1:]
-            self.fac_input = self.base_directory + inputs["fac"][1:]
-        else:
-            self.topo_input = inputs["ti"]
-            self.fac_input = inputs["fac"]
-
         #read model input parameters
-        self.c = float(inputs['m'])
-        self.Tmax = float(inputs["tmax"])
-        self.R = float(inputs["r"])
-        self.interception = float(inputs["interception"])
+        self.topo_input = config_params['ti']
+        self.fac_input = config_params['fac']
+        self.c = config_params['m']
+        self.Tmax = config_params["tmax"]
+        self.R = config_params["r"]
+        self.interception = config_params["interception"]
         self.ti = []
         self.freq = []
 
@@ -95,7 +82,7 @@ class topmodel(feed_forward.Wrapper):
 
         sPrint('Component Initialization Completed Successfully')
 
-    def run(self,inputs):
+    def run(self, inputs):
 
 
 

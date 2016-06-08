@@ -125,3 +125,108 @@ def validate_json_model(data):
         return 0
 
     return 1
+
+def write_simulation_json(models, canvas_shapes, links, path):
+
+    json_models = []
+    json_links = []
+    for i in range(len(models)):
+
+        model = models[i]
+
+        # parse the original parameters to identify model inputs
+        params = parse_json(model['params']['path'])
+
+        # model input properties
+        model_inputs = dict()
+        if 'model_inputs' in params:
+            for input in params['model_inputs']:
+                # get the variable name
+                var = input['variable']
+
+                # get the variable value from the model
+                model_inputs[var] = model['params'][var]
+
+
+        # canvas object properties
+        bbox = canvas_shapes[i].BoundingBox
+        model_properties= dict(xcoordinate=str((bbox[0][0] + bbox[1][0]) / 2),
+                               ycoordinate=str((bbox[0][1] + bbox[1][1]) / 2),
+                               name=model['name'],
+                               id=model['id'],
+                               model_inputs=model_inputs,
+                               path=model['params']['path']
+                               )
+        json_models.append(model_properties)
+
+    for link in links:
+        link = dict(from_name=link['source_component_name'],
+                    from_id=link['source_component_id'],
+                    from_item=link['output_name'],
+                    from_item_id=link['output_id'],
+                    to_name=link['target_component_name'],
+                    to_id=link['target_component_id'],
+                    to_item=link['input_name'],
+                    to_item_id=link['input_name'],
+                    temporal_transformation=link['temporal_interpolation'],
+                    spatial_transformation=link['spatial_interpolation']
+        )
+        json_links.append(link)
+
+    # add models and links to obj that will be serialized
+    sim = dict(models=json_models,
+               links=json_links)
+
+    with open(path, 'w') as f:
+        sim_json = json.dumps(sim, sort_keys=True, indent=4, separators=(',', ': '))
+        f.write(sim_json)
+
+    elog.info('Configuration saved: ', path)
+    sPrint('Configuration was saved successfully: ' + str(path))
+
+        #     # save db id if the model depends on one
+        #     if 'databaseid' in model['attrib']:
+        #         if model['attrib']['databaseid'] not in db_ids:
+        #             db_ids.append(model['attrib']['databaseid'])
+
+
+        # save required databases
+        # for db_id in db_ids:
+        #     attributes = {}
+        #
+        #     connections = engine.getDbConnections()
+        #
+        #     db_conn = connections[db_id]['args']
+        #
+        #     if db_conn:
+        #         attributes['name'] = db_conn['name']
+        #         attributes['address'] = db_conn['address']
+        #         attributes['pwd'] = db_conn['pwd']
+        #         attributes['desc'] = db_conn['desc']
+        #         attributes['engine'] = db_conn['engine']
+        #         attributes['db'] = db_conn['db']
+        #         attributes['user'] = db_conn['user']
+        #         attributes['databaseid'] = db_conn['id']
+        #         attributes['connection_string'] = str(db_conn['connection_string'])
+        #         connectionelement = et.SubElement(tree, 'DbConnection')
+        #
+        #         connectionnameelement = et.SubElement(connectionelement, "name")
+        #         connectionnameelement.text = attributes['name']
+        #         connectionaddresselement = et.SubElement(connectionelement, "address")
+        #         connectionaddresselement.text = attributes['address']
+        #         connectionpwdelement = et.SubElement(connectionelement, "pwd")
+        #         connectionpwdelement.text = attributes['pwd']
+        #         connectiondescelement = et.SubElement(connectionelement, "desc")
+        #         connectiondescelement.text = attributes['desc']
+        #         connectionengineelement = et.SubElement(connectionelement, "engine")
+        #         connectionengineelement.text = attributes['engine']
+        #         connectiondbelement = et.SubElement(connectionelement, "db")
+        #         connectiondbelement.text = attributes['db']
+        #         connectionuserelement = et.SubElement(connectionelement, "user")
+        #         connectionuserelement.text = attributes['user']
+        #         connectiondatabaseidelement = et.SubElement(connectionelement, "databaseid")
+        #         connectiondatabaseidelement.text = attributes['databaseid']
+        #         connectionconnectionstringelement = et.SubElement(connectionelement, "connection_string")
+        #         connectionconnectionstringelement.text = attributes['connection_string']
+
+

@@ -7,9 +7,10 @@ def Close():
     e.setTasks(task)
     return 1
 
-def addModel(id=None, attrib=None):
+def addModel(id=None, **params):
     e = Engine()
-    kwargs = dict(attrib=attrib, id=id, event='onModelAdded')
+    kwargs = dict(id=id, event='onModelAdded')
+    kwargs.update(params)
     task = [('add_model', kwargs)]
     e.setTasks(task)
 

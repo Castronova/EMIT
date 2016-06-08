@@ -304,7 +304,7 @@ def load_model(config_params):
         sPrint('AbsPath: %s'%abspath, MessageType.DEBUG)
 
         filename = os.path.basename(abspath)
-        module = imp.load_source(filename, abspath)
+        module = imp.load_source(classname, abspath)
         model_class = getattr(module, classname)
         sPrint('Model Class Extracted Successfully', MessageType.DEBUG)
 

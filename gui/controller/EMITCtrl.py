@@ -6,6 +6,7 @@ import wx
 from gui import events
 from wx.lib.pubsub import pub as Publisher
 from coordinator.engineManager import Engine
+import coordinator.engineAccessors as engine
 from emitLogging import elog
 import threading
 from gui.controller.NetcdfCtrl import NetcdfCtrl
@@ -13,6 +14,8 @@ from gui.controller.UserCtrl import UserCtrl
 from gui.controller.SettingsCtrl import SettingsCtrl
 from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
 from gui.controller.ModelInputPromptCtrl import ModelInputPromptCtrl
+from utilities import models
+
 
 
 class EMITCtrl(EMITView):
@@ -21,23 +24,13 @@ class EMITCtrl(EMITView):
         EMITView.__init__(self, parent)
         self.FloatCanvas = self.Canvas.FloatCanvas
         connections_txt = os.environ['APP_CONNECTIONS_PATH']
-        local_db_path = os.environ['APP_LOCAL_DB_PATH']
+        self.local_db_path = os.environ['APP_LOCAL_DB_PATH']
 
-        # connect to databases defined in the connections file
-        dbs = gui.read_database_connection_from_file(connections_txt)
-        for db in dbs:
-            usr, pwd = self.decrypt_db_username_password(db['username'], db['password'])
-            if usr is not None:
-                engine.connectToDb(db['name'],db['description'],db['engine'],db['address'],db['database'],usr,pwd)
-            else:
-                msg = 'Could not resolve database username for %s/%s.  Make sure secret.py is created correcly.' % (db['address'], db['database'])
-                sPrint(msg, MessageType.ERROR)
+        # load databases threaded
+        t = threading.Thread(target=self.connect_to_databases, name='Connect_To_Databases', args=(connections_txt,))
+        t.setDaemon(True)
+        t.start()
 
-        # load the local database into the engine
-        engine.connectToDb(title='ODM2 SQLite (local)', desc='Local SQLite database',
-                           engine='sqlite', address=local_db_path,
-                           dbname=None, user=None,
-                           pwd=None, default=True)
         self.check_users_json()
 
         # File Option Bindings
@@ -64,7 +57,7 @@ class EMITCtrl(EMITView):
 
     def model_input_prompt(self, path):
         ModelInputPromptCtrl(self, path)
-        self.Canvas.addModel(filepath=path)
+        # self.Canvas.addModel(filepath=path)
 
     def check_users_json(self):
         UserCtrl.create_user_json()
@@ -72,6 +65,23 @@ class EMITCtrl(EMITView):
             controller = UserCtrl(self)
             controller.CenterOnScreen()
             controller.Show()
+
+    def connect_to_databases(self, connections_txt):
+        # connect to databases defined in the connections file
+        dbs = gui.read_database_connection_from_file(connections_txt)
+        for db in dbs:
+            usr, pwd = self.decrypt_db_username_password(db['username'], db['password'])
+            if usr is not None:
+                engine.connectToDb(db['name'],db['description'],db['engine'],db['address'],db['database'],usr,pwd)
+            else:
+                msg = 'Could not resolve database username for %s/%s.  Make sure secret.py is created correcly.' % (db['address'], db['database'])
+                sPrint(msg, MessageType.ERROR)
+
+        # load the local database into the engine
+        engine.connectToDb(title='ODM2 SQLite (local)', desc='Local SQLite database',
+                           engine='sqlite', address=self.local_db_path,
+                           dbname=None, user=None,
+                           pwd=None, default=True)
 
     def decrypt_db_username_password(self, uhash, phash):
         """
@@ -251,6 +261,8 @@ class EMITCtrl(EMITView):
             print self.loading_path
         else:
             path = self.loading_path
+
+        # models.save_simulation(self.models, self.links, path)
 
         Publisher.sendMessage('SetSavePath', path=path)  # send message to canvascontroller.save_simulation
         self.Toolbox.RefreshToolbox()

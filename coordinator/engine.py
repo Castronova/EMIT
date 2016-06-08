@@ -438,7 +438,48 @@ class Coordinator(object):
         else:
             return self.__default_db
 
-    def add_model(self, id=None, attrib=None):
+    def add_model(self, **params):
+
+        try:
+            # load model
+            sPrint('Loading Model', MessageType.DEBUG)
+            name, model_inst = load_model(params)
+            sPrint('Finished Loading', MessageType.DEBUG)
+            # make sure this model doesnt already exist
+            if name in self.__models:
+                elog.warning('Model named ' + name + ' already exists in configuration')
+                sPrint('Model named ' + name + ' already exists in configuration', MessageType.WARNING)
+                return None
+
+            iei = model_inst.inputs().values()
+            oei = model_inst.outputs().values()
+
+            # create a model instance
+            thisModel = Model(id= params['id'],
+                              name=model_inst.name(),
+                              instance=model_inst,
+                              desc=model_inst.description(),
+                              input_exchange_items=iei,
+                              output_exchange_items=oei,
+                              params=params)
+
+        except Exception, e:
+            sPrint('Encountered an error while loading model: %s' % e, MessageType.ERROR)
+            elog.error('Encountered an error while loading model: %s' % e)
+            thisModel = None
+
+        if thisModel is not None:
+            # save the model
+            self.__models[thisModel.name()] = thisModel
+            sPrint('Model Loaded', MessageType.DEBUG)
+            return {'id': thisModel.id(), 'name': thisModel.name(), 'model_type': thisModel.type()}
+        else:
+            elog.error('Failed to load model.')
+            sPrint('Failed to load model.', MessageType.ERROR)
+            return 0
+
+
+    def add_model_old(self, id=None, attrib=None):
         """
         Adds a model to the Coordinator
 

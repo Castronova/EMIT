@@ -193,9 +193,8 @@ class ToolboxViewCtrl(ToolboxView):
         id = event.GetItem()
         filename = id.GetText()
         try:
+            # get selected filename
             filename = self.filepath[filename]
-
-            # self.GetTopLevelParent().Canvas.addModel(filepath=filename)
             self.GetTopLevelParent().model_input_prompt(filename)
 
         except Exception, e:

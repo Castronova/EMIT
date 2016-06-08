@@ -1,7 +1,4 @@
 import os
-
-__author__ = 'tonycastronova'
-
 import random
 from wrappers import feed_forward
 import stdlib

@@ -1,26 +1,43 @@
 from utilities import models
 import wx
-
+from sprint import *
 
 class ModelInputPromptView(wx.Frame):
     def __init__(self, parent, path):
         wx.Frame.__init__(self, parent, style=wx.DEFAULT_FRAME_STYLE | wx.FRAME_FLOAT_ON_PARENT)
 
         panel = wx.Panel(self)
-        data = models.parse_json(path)
+        self.params = models.parse_json(path)
+        self.params.update({'path':path,
+                            'type':path[-3:]})
 
-        if "model_inputs" not in data:
+        self.valid_params = 1
+        self.has_inputs = 1 if 'model_inputs' in self.params else 0
+
+        # if a sim file is being loaded return, else proceed
+        if not self.has_inputs:
             return
+        if self.params['type'] == 'sim':
+            return
+        elif self.params['type'] == 'mdl':
+            if not models.validate_json_model(self.params):
+                sPrint('Encountered and error when validating parameters: %s' %path)
+                self.valid_params = 0  # set the parameter validation as True
+                return
 
-        title = "Input for " + data["model"][0]["code"]
+
+        title = "Input for " + self.params["model"][0]["code"]
         self.SetTitle(title)
 
-        model_inputs = data["model_inputs"]
+        model_inputs = self.params["model_inputs"]
         count = 0  # Keeps track of how many input items there are
         self.static_texts = []
         self.text_ctrls = []
         self.help_texts = []
         self.inputs = []
+        self.variable_names = []
+        self.variable_types = []
+        self.required = []
 
         # Add components dynamically
         for item in model_inputs:
@@ -35,14 +52,27 @@ class ModelInputPromptView(wx.Frame):
             font = wx.Font(pointSize=8, family=wx.DEFAULT, style=wx.NORMAL, weight=wx.NORMAL)
             help_text.SetFont(font)
 
+            # set default values
+            if 'default' in item:
+                text_ctrl.Value = str(item['default'])
+
+            # save variable types
+            if 'datatype' in item:
+                self.variable_types.append(item['datatype'])
+            else:
+                self.variable_types.append('str')
+
             # Keep track of all the components in the lists
             self.static_texts.append(static_text)
             self.text_ctrls.append(text_ctrl)
             self.inputs.append(file_explorer_button)
             self.help_texts.append(help_text)
+            self.variable_names.append(item['variable'])
+            self.required.append(bool(item['required']) if 'required' in item else False)
             count += 1
 
         break_line = wx.StaticLine(panel)
+        self.cancel_button = wx.Button(panel, label="Cancel", style=wx.BU_EXACTFIT)
         self.submit_button = wx.Button(panel, label="Load Model", style=wx.BU_EXACTFIT)
 
         # Create sizers
@@ -70,11 +100,14 @@ class ModelInputPromptView(wx.Frame):
 
         frame_sizer.Add(flex_grid_sizer, proportion=1, flag=wx.ALL | wx.EXPAND, border=10)
         frame_sizer.Add(break_line, 0, wx.EXPAND, 5)
+        frame_sizer.Add(self.cancel_button, 0, wx.ALL | wx.ALIGN_RIGHT, 5)
         frame_sizer.Add(self.submit_button, 0, wx.ALL | wx.ALIGN_RIGHT, 5)
 
         panel.SetSizer(frame_sizer)
         frame_sizer.Fit(self)
         self.SetSize((300, -1))
+
+
 
         self.Show()
         # Disables all other windows in the application so that the user can only interact with this window.

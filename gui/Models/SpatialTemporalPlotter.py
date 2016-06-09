@@ -193,8 +193,13 @@ class SpatialTemporalPlotter(Plotter):
         collection = self.axes.scatter(x, y, marker="o", color=color, picker=True)
         return collection
 
-    def plot_linestring(self, data):
-        print "plot_linestring has not been implemented"
+    def plot_linestring(self, data, color):
+        x = []
+        y = []
+        for i in data[0].GetPoints():
+            x.append(i[0])
+            y.append(i[1])
+        self.axes.plot(x, y, marker="o", color=color)
 
     def plot_geometry(self, geometry_object, title, color=None):
         """
@@ -213,7 +218,7 @@ class SpatialTemporalPlotter(Plotter):
         elif geometry_object[0].GetGeometryName().upper() == "POINT":
             self.plot_point(geometry_object, color)
         elif geometry_object[0].GetGeometryName().upper() == "LINESTRING":
-            self.plot_linestring(geometry_object)
+            self.plot_linestring(geometry_object, color)
         else:
             raise Exception("plot_geometry() failed. Geometries must be POLYGON OR POINT")
 

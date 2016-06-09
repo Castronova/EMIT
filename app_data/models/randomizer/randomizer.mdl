@@ -45,7 +45,7 @@
     }, {
       "variable_name_cv": "random POINT 10-100",
       "unit_type_cv": "international inch",
-      "elementset": "POINT(-1214208.0463092658 314026.13196701976)"
+      "elementset": "LINESTRING (30 10, 10 30, 40 40)"
     }, {
       "variable_name_cv": "random POINT 100-1000",
       "unit_type_cv": "international inch",

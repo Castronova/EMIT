@@ -100,15 +100,14 @@ class ModelInputPromptView(wx.Frame):
 
         frame_sizer.Add(flex_grid_sizer, proportion=1, flag=wx.ALL | wx.EXPAND, border=10)
         frame_sizer.Add(break_line, 0, wx.EXPAND, 5)
-        frame_sizer.Add(self.cancel_button, 0, wx.ALL | wx.ALIGN_RIGHT, 5)
-        frame_sizer.Add(self.submit_button, 0, wx.ALL | wx.ALIGN_RIGHT, 5)
+
+        button_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        button_sizer.Add(self.cancel_button, 0, wx.ALL | wx.EXPAND, 5)
+        button_sizer.Add(self.submit_button, 0, wx.ALL | wx.EXPAND, 5)
+        frame_sizer.Add(button_sizer, 0, wx.ALL | wx.ALIGN_RIGHT, 5)
 
         panel.SetSizer(frame_sizer)
         frame_sizer.Fit(self)
         self.SetSize((300, -1))
 
-
-
         self.Show()
-        # Disables all other windows in the application so that the user can only interact with this window.
-        self.MakeModal(True)

@@ -43,7 +43,7 @@
       "unit_type_cv": "international inch",
       "elementset": "MULTIPOINT ((10 40), (40 30), (20 20), (30 10))"
     }, {
-      "variable_name_cv": "random POINT 10-100",
+      "variable_name_cv": "random LINESTRING 10-100",
       "unit_type_cv": "international inch",
       "elementset": "LINESTRING (30 10, 10 30, 40 40)"
     }, {

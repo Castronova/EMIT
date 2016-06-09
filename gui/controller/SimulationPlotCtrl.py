@@ -35,6 +35,8 @@ class SimulationsPlotCtrl(SimulationsPlotView):
             self.spatial_plot.highlight_vertex(event)
         elif isinstance(event.artist, matplotlib.collections.PolyCollection):
             self.spatial_plot.highlight_polygon(event)
+        elif isinstance(event.artist, matplotlib.collections.LineCollection):
+            self.spatial_plot.highlight_line(event)
         else:
             print "More to come"
 

@@ -2,6 +2,7 @@ import matplotlib as mpl
 import numpy
 from gui.Models.Plotter import Plotter
 from matplotlib.collections import PolyCollection
+from matplotlib.collections import LineCollection
 
 
 class color_cycle(object):
@@ -36,6 +37,7 @@ class SpatialTemporalPlotter(Plotter):
         self.marker = None  # Must be a matplotlib line2D object
         self.x_scatter_data, self.y_scatter_data = None, None  # Holds the scatter data for highlighting
         self.poly_list = None  # Holds the data for the plotted polygon
+        self.line_data = None  # Holds the line collection for highlighting
         self.highlight_color = "y"  # Yellow is used when highlighting
         self.color = "#0DACFF"  # The standard color for objects that are not highlighted
 
@@ -77,6 +79,10 @@ class SpatialTemporalPlotter(Plotter):
             if polygon.get_facecolor().all() == polygon.get_edgecolor().all():
                 data.append(polygon)
         return data
+
+    def highlight_line(self, event):
+        print "highlight_line()"
+        pass
 
     def highlight_polygon(self, pick_event):
         if pick_event.artist.get_facecolor()[0].all() == pick_event.artist.get_edgecolor()[0].all():
@@ -194,12 +200,25 @@ class SpatialTemporalPlotter(Plotter):
         return collection
 
     def plot_linestring(self, data, color):
-        x = []
-        y = []
-        for i in data[0].GetPoints():
-            x.append(i[0])
-            y.append(i[1])
-        self.axes.plot(x, y, marker="o", color=color)
+        # x = []
+        # y = []
+        # for i in data[0].GetPoints():
+        #     x.append(i[0])
+        #     y.append(i[1])
+        # self.axes.plot(x, y, marker="o", color=color, picker=True)
+
+        segment = []
+        points = []
+        for point in data[0].GetPoints():
+            points.append(point[:-1])
+
+        for i in range(len(points) - 1):
+            segment.append((points[i], points[i + 1]))
+
+        self.line_data = segment
+        l_coll = LineCollection(segment, color=color)
+        l_coll.set_picker(True)
+        self.axes.add_collection(l_coll, autolim=True)
 
     def plot_geometry(self, geometry_object, title, color=None):
         """
@@ -237,3 +256,4 @@ class SpatialTemporalPlotter(Plotter):
         self.highlighted_vertices = []
         self.x_scatter_data, self.y_scatter_data = None, None
         self.poly_list = None
+        self.line_data = None

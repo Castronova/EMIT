@@ -1,12 +1,18 @@
 from utilities import models
 import wx
 from sprint import *
+import wx.lib.scrolledpanel
+
 
 class ModelInputPromptView(wx.Frame):
     def __init__(self, parent, path):
         wx.Frame.__init__(self, parent, style=wx.DEFAULT_FRAME_STYLE | wx.FRAME_FLOAT_ON_PARENT)
 
+        # Create panels
         panel = wx.Panel(self)
+        scroll_panel = wx.lib.scrolledpanel.ScrolledPanel(panel)
+        scroll_panel.SetupScrolling(scroll_x=False)  # Disable scrolling horizontally
+
         self.params = models.parse_json(path)
         self.params.update({'path':path,
                             'type':path[-3:]})
@@ -41,13 +47,13 @@ class ModelInputPromptView(wx.Frame):
 
         # Add components dynamically
         for item in model_inputs:
-            static_text = wx.StaticText(panel, id=count, label=item["label"] + ":")
-            help_text = wx.StaticText(panel, id=count, label=item["help"])
-            text_ctrl = wx.TextCtrl(panel, id=count)
+            static_text = wx.StaticText(scroll_panel, id=count, label=item["label"] + ":")
+            help_text = wx.StaticText(scroll_panel, id=count, label=item["help"])
+            text_ctrl = wx.TextCtrl(scroll_panel, id=count)
 
             file_explorer_button = None
             if item["input"] == "file":
-                file_explorer_button = wx.Button(panel, id=count, label="Browse", style=wx.BU_EXACTFIT)
+                file_explorer_button = wx.Button(scroll_panel, id=count, label="Browse", style=wx.BU_EXACTFIT)
 
             font = wx.Font(pointSize=8, family=wx.DEFAULT, style=wx.NORMAL, weight=wx.NORMAL)
             help_text.SetFont(font)
@@ -77,7 +83,9 @@ class ModelInputPromptView(wx.Frame):
 
         # Create sizers
         frame_sizer = wx.BoxSizer(wx.VERTICAL)
+        scroll_panel_sizer = wx.BoxSizer(wx.VERTICAL)
         flex_grid_sizer = wx.FlexGridSizer(rows=count * 3, cols=1, vgap=1, hgap=5)
+        button_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         # Add components to sizer
         for i in range(count):
@@ -98,16 +106,20 @@ class ModelInputPromptView(wx.Frame):
 
         flex_grid_sizer.AddGrowableCol(0, 1)  # Set the first column to expand and fill space
 
-        frame_sizer.Add(flex_grid_sizer, proportion=1, flag=wx.ALL | wx.EXPAND, border=10)
-        frame_sizer.Add(break_line, 0, wx.EXPAND, 5)
+        # Adding the flex grid sizer to scroll panel sizer to give margin to the side of the scroll bar
+        scroll_panel_sizer.Add(flex_grid_sizer, 1, wx.ALL | wx.EXPAND, 20)
+        scroll_panel.SetSizer(scroll_panel_sizer)
+        scroll_panel_sizer.Fit(scroll_panel)
 
-        button_sizer = wx.BoxSizer(wx.HORIZONTAL)
         button_sizer.Add(self.cancel_button, 0, wx.ALL | wx.EXPAND, 5)
         button_sizer.Add(self.submit_button, 0, wx.ALL | wx.EXPAND, 5)
+
+        frame_sizer.Add(scroll_panel, proportion=1, flag=wx.LEFT | wx.EXPAND, border=-10)
+        frame_sizer.Add(break_line, 0, wx.EXPAND, 5)
         frame_sizer.Add(button_sizer, 0, wx.ALL | wx.ALIGN_RIGHT, 5)
 
         panel.SetSizer(frame_sizer)
         frame_sizer.Fit(self)
-        self.SetSize((300, -1))
+        self.SetSize((-1, 400))
 
         self.Show()

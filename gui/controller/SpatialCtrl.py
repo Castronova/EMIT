@@ -185,7 +185,7 @@ class SpatialCtrl(SpatialView):
         # color = "#019477"
         color = self.get_color_by_plot_name(data_in)
 
-        self.plot.plot_geometry(data, color, plot_title)
+        self.plot.plot_geometry(data, plot_title, color)
         self.set_legend()
         self.plot.redraw()
 

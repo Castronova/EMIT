@@ -34,6 +34,10 @@ class SpatialTemporalPlotter(Plotter):
         # self.highlighted_vertices = set()  # Rename to selected_vertices
         self.highlighted_vertices = []  # Keeps track of the highlighted vertices index
         self.marker = None  # Must be a matplotlib line2D object
+        self.x_scatter_data, self.y_scatter_data = None, None  # Holds the scatter data for highlighting
+        self.poly_list = None  # Holds the data for the plotted polygon
+        self.highlight_color = "y"  # Yellow is used when highlighting
+        self.color = "#0DACFF"  # The standard color for objects that are not highlighted
 
         # stores the axis objects
         self.__axis = []
@@ -63,6 +67,25 @@ class SpatialTemporalPlotter(Plotter):
     def getNextColor(self):
          return next(self.__color_cycle)
 
+    def get_highlighted_polygons(self):
+        """
+        Returns all the highlighted polygons
+        :return: type(list)
+        """
+        data = []
+        for polygon in self.axes.collections:
+            if polygon.get_facecolor().all() == polygon.get_edgecolor().all():
+                data.append(polygon)
+        return data
+
+    def highlight_polygon(self, pick_event):
+        if pick_event.artist.get_facecolor()[0].all() == pick_event.artist.get_edgecolor()[0].all():
+            pick_event.artist.set_facecolor(self.color)
+            pick_event.artist.set_edgecolor(None)
+        else:
+            pick_event.artist.set_color(self.highlight_color)
+        pick_event.artist.axes.figure.canvas.draw()
+
     def highlight_vertex(self, pick_event):
         """
         Only one marker can be used to highlight. self.marker is that one marker
@@ -73,17 +96,31 @@ class SpatialTemporalPlotter(Plotter):
             self.marker, = pick_event.artist.axes.plot([], [], "o")  # Create a plot
             self.marker.set_color("y")  # Set color to yellow
 
-        # Check if vertice has been highlighted
+        # Check if vertex has been highlighted
         if pick_event.ind[0] in self.highlighted_vertices:
             self.highlighted_vertices.remove(pick_event.ind[0])  # Remove highlight
         else:
             self.highlighted_vertices.append(pick_event.ind[0])  # Add highlight
 
         self.highlighted_vertices.sort()
-        x, y = pick_event.artist.get_data()
+        x = self._get_vertices_data_points(self.x_scatter_data, pick_event.ind[0])
+        y = self._get_vertices_data_points(self.y_scatter_data, pick_event.ind[0])
+
         # Highlight only those in self.highlighted_vertices
-        self.marker.set_data(x[self.highlighted_vertices], y[self.highlighted_vertices])
+        self.marker.set_data(x, y)
         pick_event.artist.axes.figure.canvas.draw()
+
+    def _get_vertices_data_points(self, data, index):
+        """
+        :param data: x_data or y_data, type(tuple or list)
+        :param index: index of the selected vertex, type(int)
+        :return: type(list) contains the x & y values that are highlight and should be plotted
+        """
+        a = []
+        for i in self.highlighted_vertices:
+            a.append(data[i])
+
+        return a
 
     def plot_dates(self, data, name, noDataValue, ylabel=""):
         """
@@ -141,27 +178,36 @@ class SpatialTemporalPlotter(Plotter):
             a = tuple(map(tuple, points[:, 0:2]))
             poly_list.append(a)
 
-        p_coll = PolyCollection(poly_list, closed=True, facecolor=color, alpha=0.5, edgecolor=None, linewidths=(2,))
-        p_coll.set_picker(True)  # Enable pick event
-        self.axes.add_collection(p_coll, autolim=True)
+        self.poly_list = poly_list
 
-    def plot_point(self, data, color):
+        # Plot multiple polygons and add them to collection as individual polygons
+        for poly in self.poly_list:
+            p_coll = PolyCollection([poly], closed=True, facecolor=color, alpha=0.5, edgecolor=None, linewidths=(2,))
+            p_coll.set_picker(True)  # Enable pick event
+            self.axes.add_collection(p_coll, autolim=True)
+
+    def plot_point(self, data, color):  # Rename to plot scatter
         # get x,y points
         x, y = zip(*[(g.GetX(), g.GetY()) for g in data])
-        # self.axes.scatter(x, y, color=color)
-        self.axes.plot(x, y, marker="o", picker=5)  # picker is float distance in points where a click is valid
+        self.x_scatter_data, self.y_scatter_data = x, y
+        collection = self.axes.scatter(x, y, marker="o", color=color, picker=True)
+        return collection
 
     def plot_linestring(self, data):
         print "plot_linestring has not been implemented"
 
-    def plot_geometry(self, geometry_object, color, title):
+    def plot_geometry(self, geometry_object, title, color=None):
         """
         A general plot method that will plot the respective type
         Must call redraw afterwards to have an effect
         :param geometry_object:
-        :param color:
+        :param title: title for the plot
+        :param color: # Hexadecimal
         :return:
         """
+        if not color:
+            color = self.color
+
         if geometry_object[0].GetGeometryName().upper() == "POLYGON":
             self.plot_polygon(geometry_object, color)
         elif geometry_object[0].GetGeometryName().upper() == "POINT":
@@ -184,3 +230,5 @@ class SpatialTemporalPlotter(Plotter):
         """
         self.marker = None
         self.highlighted_vertices = []
+        self.x_scatter_data, self.y_scatter_data = None, None
+        self.poly_list = None

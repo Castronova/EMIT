@@ -31,10 +31,12 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         self.spatial_plot.plot.mpl_connect('pick_event', self.on_pick_spatial)
 
     def on_pick_spatial(self, event):
-        if isinstance(event.artist, matplotlib.lines.Line2D):
+        if isinstance(event.artist, matplotlib.collections.PathCollection):
             self.spatial_plot.highlight_vertex(event)
         elif isinstance(event.artist, matplotlib.collections.PolyCollection):
-            print "poly collection pick event not implemented yet"
+            self.spatial_plot.highlight_polygon(event)
+        else:
+            print "More to come"
 
     def get_selected_id(self):
         """
@@ -52,11 +54,10 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         :return:
         """
         self.spatial_plot.clear_plot()
-        color = "#0DACFF"
 
         geometries = self.get_geometries(ID)
         self.spatial_plot.rotate_x_axis_label()
-        self.spatial_plot.plot_geometry(geometries, color, title)
+        self.spatial_plot.plot_geometry(geometries, title)
         self.spatial_plot.set_legend([title])
         self.spatial_plot.redraw()
 

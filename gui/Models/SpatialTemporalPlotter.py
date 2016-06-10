@@ -3,6 +3,8 @@ import numpy
 from gui.Models.Plotter import Plotter
 from matplotlib.collections import PolyCollection
 from matplotlib.collections import LineCollection
+import matplotlib.lines as lines
+import numpy as np
 
 
 class color_cycle(object):
@@ -82,7 +84,11 @@ class SpatialTemporalPlotter(Plotter):
 
     def highlight_line(self, event):
         print "highlight_line()"
-        pass
+        ind = event.ind[0]
+        self.selected[ind] = 1 - self.selected[ind]
+        self.lines.set_color(self.normal_selected_color[self.selected])
+        event.canvas.draw()
+
 
     def highlight_polygon(self, pick_event):
         if pick_event.artist.get_facecolor()[0].all() == pick_event.artist.get_edgecolor()[0].all():
@@ -100,7 +106,7 @@ class SpatialTemporalPlotter(Plotter):
         """
         if not self.marker:
             self.marker, = pick_event.artist.axes.plot([], [], "o")  # Create a plot
-            self.marker.set_color("y")  # Set color to yellow
+            self.marker.set_color(self.highlight_color)  # Set color to yellow
 
         # Check if vertex has been highlighted
         if pick_event.ind[0] in self.highlighted_vertices:
@@ -205,7 +211,9 @@ class SpatialTemporalPlotter(Plotter):
         # for i in data[0].GetPoints():
         #     x.append(i[0])
         #     y.append(i[1])
-        # self.axes.plot(x, y, marker="o", color=color, picker=True)
+        #
+        # self.x_scatter_data, self.y_scatter_data = x, y
+        # line, = self.axes.plot(x, y, marker="o", color=color, picker=True)
 
         segment = []
         points = []
@@ -216,9 +224,14 @@ class SpatialTemporalPlotter(Plotter):
             segment.append((points[i], points[i + 1]))
 
         self.line_data = segment
-        l_coll = LineCollection(segment, color=color)
+        self.normal_selected_color = np.array([[0, 0, 1, 1.0], [1, 0, 0, 1.0]])
+        self.selected = np.zeros(len(self.line_data), dtype=int)
+        colors = self.normal_selected_color[self.selected]
+        # l_coll = LineCollection(segment, color=color)
+        l_coll = LineCollection(segment, pickradius=10, colors=colors)
         l_coll.set_picker(True)
-        self.axes.add_collection(l_coll, autolim=True)
+        self.lines = l_coll
+        self.axes.add_collection(l_coll)
 
     def plot_geometry(self, geometry_object, title, color=None):
         """

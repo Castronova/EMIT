@@ -3,8 +3,8 @@ import numpy
 from gui.Models.Plotter import Plotter
 from matplotlib.collections import PolyCollection
 from matplotlib.collections import LineCollection
-import matplotlib.lines as lines
 import numpy as np
+import matplotlib
 
 
 class color_cycle(object):
@@ -39,9 +39,11 @@ class SpatialTemporalPlotter(Plotter):
         self.marker = None  # Must be a matplotlib line2D object
         self.x_scatter_data, self.y_scatter_data = None, None  # Holds the scatter data for highlighting
         self.poly_list = None  # Holds the data for the plotted polygon
-        self.line_data = None  # Holds the line collection for highlighting
         self.highlight_color = "y"  # Yellow is used when highlighting
         self.color = "#0DACFF"  # The standard color for objects that are not highlighted
+        self._color_converter = matplotlib.colors.ColorConverter()
+        self.line_collection = None  # Holds the line collection data
+        self.highlighted_lines = []
 
         # stores the axis objects
         self.__axis = []
@@ -82,13 +84,28 @@ class SpatialTemporalPlotter(Plotter):
                 data.append(polygon)
         return data
 
-    def highlight_line(self, event):
-        print "highlight_line()"
-        ind = event.ind[0]
-        self.selected[ind] = 1 - self.selected[ind]
-        self.lines.set_color(self.normal_selected_color[self.selected])
-        event.canvas.draw()
+    def get_highlighted_lines(self):
+        if not self.line_collection:
+            return []  # No lines have been plotted
 
+        lines = []
+        for i in range(len(self.highlighted_lines)):
+            if self.highlighted_lines[i]:
+                lines.append(self.line_collection.get_segments()[i])
+        return lines
+
+    def highlight_line(self, event):
+        """
+        Highlighted lines have value 1 in self.highlighted_lines
+        Recolor the collection
+        :param event:
+        :return:
+        """
+        ind = event.ind[0]
+        self.highlighted_lines[ind] = 1 - self.highlighted_lines[ind]  # Alternate between 0-1
+        collections, = event.artist.axes.collections
+        collections.set_color(self.__line_colors[self.highlighted_lines])
+        event.canvas.draw()
 
     def highlight_polygon(self, pick_event):
         if pick_event.artist.get_facecolor()[0].all() == pick_event.artist.get_edgecolor()[0].all():
@@ -206,32 +223,26 @@ class SpatialTemporalPlotter(Plotter):
         return collection
 
     def plot_linestring(self, data, color):
-        # x = []
-        # y = []
-        # for i in data[0].GetPoints():
-        #     x.append(i[0])
-        #     y.append(i[1])
-        #
-        # self.x_scatter_data, self.y_scatter_data = x, y
-        # line, = self.axes.plot(x, y, marker="o", color=color, picker=True)
-
-        segment = []
+        """
+        A segment is from point A to point b. It is created from grabbing the previous point to the next point
+        :param data: geometry object
+        :param color:  # Hexadecimal
+        :return:
+        """
+        segments = []
         points = []
-        for point in data[0].GetPoints():
+        for point in data[0].GetPoints():  # Remove the z coordinate in data
             points.append(point[:-1])
 
-        for i in range(len(points) - 1):
-            segment.append((points[i], points[i + 1]))
+        for i in range(len(points) - 1):  # Create the segments
+            segments.append((points[i], points[i + 1]))
 
-        self.line_data = segment
-        self.normal_selected_color = np.array([[0, 0, 1, 1.0], [1, 0, 0, 1.0]])
-        self.selected = np.zeros(len(self.line_data), dtype=int)
-        colors = self.normal_selected_color[self.selected]
-        # l_coll = LineCollection(segment, color=color)
-        l_coll = LineCollection(segment, pickradius=10, colors=colors)
-        l_coll.set_picker(True)
-        self.lines = l_coll
-        self.axes.add_collection(l_coll)
+        self.__line_colors = np.array([self._color_converter.to_rgba(color), self._color_converter.to_rgba(self.highlight_color)])
+        self.highlighted_lines = [0] * len(segments)
+        colors = self.__line_colors[self.highlighted_lines]
+        self.line_collection = LineCollection(segments, pickradius=10, colors=colors)
+        self.line_collection.set_picker(True)
+        self.axes.add_collection(self.line_collection)
 
     def plot_geometry(self, geometry_object, title, color=None):
         """
@@ -269,4 +280,4 @@ class SpatialTemporalPlotter(Plotter):
         self.highlighted_vertices = []
         self.x_scatter_data, self.y_scatter_data = None, None
         self.poly_list = None
-        self.line_data = None
+        self.line_collection = None

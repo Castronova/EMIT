@@ -55,9 +55,7 @@ class SimulationsPlotCtrl(SimulationsPlotView):
             return self.spatial_plot.get_highlighted_vertices()
 
         if len(self.spatial_plot.get_highlighted_lines()):
-            print "Commented for now until line string is fixed"
-            # return self.spatial_plot.get_highlighted_lines()
-            return {}
+            return self.spatial_plot.get_highlighted_lines()
 
         return {}
 

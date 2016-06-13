@@ -104,10 +104,14 @@ class SpatialTemporalPlotter(Plotter):
             return {}  # No lines have been plotted
 
         lines = {}
-        for i in range(len(self.highlighted_lines)):
-            if self.highlighted_lines[i]:
+        # for i in range(len(self.highlighted_lines)):
+            # if self.highlighted_lines[i]:
                 # lines.append(self.line_collection.get_segments()[i])
-                lines[i] = self.line_collection.get_segments()[i]
+                # lines[i] = self.line_collection.get_segments()[i]
+
+            # pass
+        for line in self.highlighted_lines:
+            lines[line] = self.line_segments[0]
         return lines
 
     def highlight_line(self, event):
@@ -117,10 +121,23 @@ class SpatialTemporalPlotter(Plotter):
         :param event:
         :return:
         """
+        # ind = event.ind[0]
+        # self.highlighted_lines[ind] = 1 - self.highlighted_lines[ind]  # Alternate between 0-1
+        # collections, = event.artist.axes.collections
+        # collections.set_color(self.__line_colors[self.highlighted_lines])
+        # event.canvas.draw()
         ind = event.ind[0]
-        self.highlighted_lines[ind] = 1 - self.highlighted_lines[ind]  # Alternate between 0-1
-        collections, = event.artist.axes.collections
-        collections.set_color(self.__line_colors[self.highlighted_lines])
+        line_idx = self.segment_line[ind]
+
+        if line_idx not in self.highlighted_lines:
+            self.highlighted_lines.append(line_idx)
+        else:
+            self.highlighted_lines.remove(line_idx)
+
+        highlight_idx = self.line_segments[line_idx]
+        self.selected[highlight_idx] = 1 - self.selected[highlight_idx]
+        lines, = event.artist.axes.collections
+        lines.set_color(self.__line_colors[self.selected])
         event.canvas.draw()
 
     def highlight_polygon(self, pick_event):
@@ -246,18 +263,57 @@ class SpatialTemporalPlotter(Plotter):
         :param color:  # Hexadecimal
         :return:
         """
-        segments = []
+        # segments = []
+        # self.__line_segment = {}
         points = []
-        for point in data[0].GetPoints():  # Remove the z coordinate in data
-            points.append(point[:-1])
+        segments = []
+        # for point in data[0].GetPoints():  # Remove the z coordinate in data
+        #     points.append(point[:-1])
+        #
+        # for i in range(len(points) - 1):  # Create the segments
+        #     segments.append((points[i], points[i + 1]))
+        #
+        #
+        # self.__line_colors = np.array([self._color_converter.to_rgba(color), self._color_converter.to_rgba(self.highlight_color)])
+        # self.highlighted_lines = np.zeros(len(segments), dtype=int)
+        # colors = self.__line_colors[self.highlighted_lines]
+        # self.line_collection = LineCollection(segments, pickradius=10, colors=colors, linewidths=2)
+        # self.line_collection.set_picker(True)
+        # self.axes.add_collection(self.line_collection)
 
-        for i in range(len(points) - 1):  # Create the segments
-            segments.append((points[i], points[i + 1]))
+        self.line_segments = {}
+        self.segment_line = {}
+        self.idx = 0
+        self.last_segment = 0
+        # line_segments[idx] = range(last_segment, last_segment + len(points) - 1)
+        # for i in range(len(points) - 1):
+        #     segments.append([points[i], points[i + 1]])
+        #     segment_line[last_segment + i] = idx
+        # last_segment += len(points) - 1
+        # idx += 1
+        #
+        # normal_selected_color = np.array([self._color_converter.to_rgba(color), self._color_converter.to_rgba(self.highlight_color)])
+        # selected = np.zeros(len(segments), dtype=int)
+        # colors = normal_selected_color[selected]
+        # self.line_collection = LineCollection(segments, pickradius=10, linewidths=2, colors=colors)
+        # self.line_collection.set_picker(True)
+        # self.axes.add_collection(self.line_collection)
+
+        points = []
+        for geo_object in data:
+            for point in geo_object.GetPoints():  # remove the z coordinate
+                points.append(point[:-1])
+            self.line_segments[self.idx] = range(self.last_segment, self.last_segment + len(points) - 1)
+            for i in range(len(points) - 1):
+                segments.append([points[i], points[i + 1]])
+                self.segment_line[self.last_segment + i] = self.idx
+            self.last_segment += len(points) - 1
+            self.idx += 1
 
         self.__line_colors = np.array([self._color_converter.to_rgba(color), self._color_converter.to_rgba(self.highlight_color)])
-        self.highlighted_lines = [0] * len(segments)
-        colors = self.__line_colors[self.highlighted_lines]
-        self.line_collection = LineCollection(segments, pickradius=10, colors=colors)
+        self.selected = np.zeros(len(segments), dtype=int)  # Rename to highlighted lines or selected lines
+        colors = self.__line_colors[self.selected]
+        self.line_collection = LineCollection(segments, pickradius=10, linewidths=2, colors=colors)
         self.line_collection.set_picker(True)
         self.axes.add_collection(self.line_collection)
 

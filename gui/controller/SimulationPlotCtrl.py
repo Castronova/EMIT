@@ -15,6 +15,7 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         self.geometries = {}  # Holds the geometries respective to the row ID
         self.start_date_object = wx.DateTime_Now() - 1 * wx.DateSpan_Day()  # Default date is yesterday
         self.end_date_object = wx.DateTime_Now()  # Default date is today
+        self._row_start_date = None
 
         self.start_date_picker.SetValue(self.start_date_object)
         self.end_date_picker.SetValue(self.end_date_object)
@@ -147,6 +148,7 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         start_date_string = self.table.get_selected_row()[3]
         if date.ParseFormat(start_date_string, "%Y-%m-%d %H:%M:%S") == -1:
             raise Exception("start_date_string is not in the right format")
+        self._row_start_date = date
         self.start_date_picker.SetValue(date)
         self.start_date_object = date
 
@@ -201,11 +203,17 @@ class SimulationsPlotCtrl(SimulationsPlotView):
 
     def on_start_date_change(self, event):
         """
-        Prevents the start date from being set to after the end date
+        Prevents the start date from being set to after the end date and
+        prevent start date from being set to before the row's start date
         :param event:
         :return:
         """
-        if self.start_date_picker.GetValue() > self.end_date_picker.GetValue():
+        if not self._row_start_date:
+            return  # Start date has not been set
+
+        if self.start_date_picker.GetValue() < self._row_start_date:
+            self.start_date_picker.SetValue(self._row_start_date)
+        elif self.start_date_picker.GetValue() > self.end_date_picker.GetValue():
             self.start_date_picker.SetValue(self.start_date_object)
         else:
             self.start_date_object = self.start_date_picker.GetValue()

@@ -73,25 +73,41 @@ class SpatialTemporalPlotter(Plotter):
     def getNextColor(self):
          return next(self.__color_cycle)
 
+    def get_highlighted_vertices(self):
+        """
+        Returns the index and the coordinates of the highlighted vertices in a dictionary.
+        Key is index, value are coordinates
+        :return:
+        """
+        data = {}
+        for vertex in self.highlighted_vertices:
+            data[vertex] = [self.x_scatter_data[vertex], self.y_scatter_data[vertex]]
+        return data
+
     def get_highlighted_polygons(self):
         """
-        Returns all the highlighted polygons
-        :return: type(list)
+        Returns all the highlighted polygons.
+        Key is index, value are object
+        :return: type(dict)
         """
-        data = []
-        for polygon in self.axes.collections:
-            if polygon.get_facecolor().all() == polygon.get_edgecolor().all():
-                data.append(polygon)
+        if not self.poly_list:  # Check if polygon has been plotted
+            return {}  # No polygons have been plotted.
+
+        data = {}
+        for i in range(len(self.axes.collections)):
+            if self.axes.collections[i].get_facecolor().all() == self.axes.collections[i].get_edgecolor().all():
+                data[i] = self.axes.collections[i]
         return data
 
     def get_highlighted_lines(self):
         if not self.line_collection:
-            return []  # No lines have been plotted
+            return {}  # No lines have been plotted
 
-        lines = []
+        lines = {}
         for i in range(len(self.highlighted_lines)):
             if self.highlighted_lines[i]:
-                lines.append(self.line_collection.get_segments()[i])
+                # lines.append(self.line_collection.get_segments()[i])
+                lines[i] = self.line_collection.get_segments()[i]
         return lines
 
     def highlight_line(self, event):
@@ -172,18 +188,19 @@ class SpatialTemporalPlotter(Plotter):
         # get the next line color
         color = self.getNextColor()
 
-        if self.__plot_count == 0:
-            # plot data on the primary axis
-            p = self.axes.plot_date(dates, nvals, label=name, color=color, linestyle='-', marker=None)
-            self.axes.legend(p, [pl.get_label() for pl in self.plots], loc=0)
-            self.axes.set_ylabel(ylabel)
+        # if self.__plot_count == 0:
+        # plot data on the primary axis
+        # p = self.axes.plot_date(dates, nvals, label=name, color=color, linestyle='-', marker=None)
+        p = self.axes.plot_date(dates, nvals, label=name, color=color, linestyle="None", marker=".")
+        self.axes.legend(p, [pl.get_label() for pl in self.plots], loc=0)
+        self.axes.set_ylabel(ylabel)
 
-        elif self.__plot_count > 0:
-            # plot data on the secondary axis
-            ax = self.axes.twinx()
-            self.__axis.append(ax)
-            p = ax.plot_date(dates, nvals, label=name, color=color, linestyle='-', marker=None)
-            ax.set_ylabel(ylabel)
+        # elif self.__plot_count > 0:
+        #     # plot data on the secondary axis
+        #     ax = self.axes.twinx()
+        #     self.__axis.append(ax)
+        #     p = ax.plot_date(dates, nvals, label=name, color=color, linestyle='-', marker=None)
+        #     ax.set_ylabel(ylabel)
 
         # save each of the plots
         self.plots.extend(p)

@@ -29,6 +29,7 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         self.start_date_picker.Bind(wx.EVT_DATE_CHANGED, self.on_start_date_change)
         self.end_date_picker.Bind(wx.EVT_DATE_CHANGED, self.on_end_date_change)
         self.spatial_plot.plot.mpl_connect('pick_event', self.on_pick_spatial)
+        self.plot_button.Disable()
 
     def on_pick_spatial(self, event):
         if isinstance(event.artist, matplotlib.collections.PathCollection):
@@ -40,6 +41,26 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         else:
             print "More to come"
 
+        self.plot_highlighted_timeseries()
+
+    def get_highlighted_geometry(self):
+        """
+        Return index and object or coordinate of the highlighted spatial
+        :return: type(dict)
+        """
+        if len(self.spatial_plot.get_highlighted_polygons()):
+            return self.spatial_plot.get_highlighted_polygons()
+
+        if len(self.spatial_plot.get_highlighted_vertices()):
+            return self.spatial_plot.get_highlighted_vertices()
+
+        if len(self.spatial_plot.get_highlighted_lines()):
+            print "Commented for now until line string is fixed"
+            # return self.spatial_plot.get_highlighted_lines()
+            return {}
+
+        return {}
+
     def get_selected_id(self):
         """
         :return: the ID type(Int) of the selected row or -1 if no row is selected
@@ -48,6 +69,42 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         if row:
             return int(row[0])
         return -1
+
+    def get_geometries(self, ID):
+        """
+        Converts the geometry string to objects
+        :param ID: Int
+        :return: a list of geometry objects
+        """
+        geometries = []
+        for item in self.geometries[ID]:
+            geometries.append(geometry.fromWKT(item)[0])
+        return geometries
+
+    def plot_highlighted_timeseries(self):
+        """
+        Plots the time series for the highlighted geometries
+        :return:
+        """
+        row_data = self.data[self.get_selected_id()]
+        time_series_data = []
+
+        # Get the highlighted time series data
+        geometry = self.get_highlighted_geometry()
+        for key, value in geometry.iteritems():
+            time_series_data.append(row_data[key])
+
+        self.temporal_plot.clear_plot()
+        self.temporal_plot.rotate_x_axis_label()
+
+        for data in time_series_data:
+            date_object, value = data
+
+            d = []
+            for i in range(len(date_object)):
+                d.append((date_object[i], value[i]))
+
+            self.temporal_plot.plot_dates(d, "some name", None, "cool units")
 
     def plot_spatial(self, ID, title):
         """
@@ -62,17 +119,6 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         self.spatial_plot.plot_geometry(geometries, title)
         self.spatial_plot.set_legend([title])
         self.spatial_plot.redraw()
-
-    def get_geometries(self, ID):
-        """
-        Converts the geometry string to objects
-        :param ID: Int
-        :return: a list of geometry objects
-        """
-        geometries = []
-        for item in self.geometries[ID]:
-            geometries.append(geometry.fromWKT(item)[0])
-        return geometries
 
     ##########################
     # EVENTS
@@ -118,9 +164,16 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         #  Plot Spatial
         self.plot_spatial(self.get_selected_id(), self.table.get_selected_row()[1])
 
+    def plot_partial(self, data):
+        print "plot partial"
+        selected_data = data[self.spatial_plot.highlighted_vertices[0] - 1]
+
+        return selected_data
+
     def on_plot(self, event):
         """
         Grabs the data related to the selected row. self.data must be set otherwise it will not plot
+        Plots all the data to the row selected. Highlight to only plot the selected data
         :param event:
         :return: True if plot was successful, False if plot failed
         """
@@ -132,7 +185,9 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         if not len(self.data) or ID not in self.data:
             return False  # self.data has not been set or set incorrectly
 
-        date_time_objects, value = self.data[ID]
+        data = self.data[ID]
+
+        date_time_objects, value = data
 
         data = []
         for i in range(len(date_time_objects)):

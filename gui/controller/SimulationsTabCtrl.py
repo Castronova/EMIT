@@ -179,6 +179,7 @@ class SimulationsTabCtrl(TimeSeriesView):
         for key, value in results.iteritems():
             row = []
             wkt = []
+            wkt_data = []
             row.append(value[0][2].ResultID)
             row.append(value[0][2].VariableObj.VariableCode)
             row.append(value[0][2].UnitsObj.UnitsAbbreviation)
@@ -188,13 +189,13 @@ class SimulationsTabCtrl(TimeSeriesView):
             row.append(value[0][2].FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName)
             for item in value:
                 wkt.append(item[2].FeatureActionObj.SamplingFeatureObj.FeatureGeometryWKT)
-                # wkt.append(value[0][2].FeatureActionObj.SamplingFeatureObj.FeatureGeometryWKT)
+                wkt_data.append([item[0], item[1]])
 
             if len(row) != len(table_columns):  # If these do not match, the app will crash
                 raise Exception("Number of columns must match the number of items in the row")
 
             table_data.append(row)
-            controller.data[row[0]] = value[0][0], value[0][1]
+            controller.data[row[0]] = wkt_data
             controller.geometries[row[0]] = wkt
 
         controller.table.set_table_content(table_data)

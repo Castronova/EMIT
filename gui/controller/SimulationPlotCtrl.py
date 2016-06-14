@@ -16,6 +16,7 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         self.start_date_object = wx.DateTime_Now() - 1 * wx.DateSpan_Day()  # Default date is yesterday
         self.end_date_object = wx.DateTime_Now()  # Default date is today
         self._row_start_date = None
+        self._row_end_date = None
 
         self.start_date_picker.SetValue(self.start_date_object)
         self.end_date_picker.SetValue(self.end_date_object)
@@ -95,7 +96,9 @@ class SimulationsPlotCtrl(SimulationsPlotView):
 
         self.temporal_plot.clear_plot()
         self.temporal_plot.rotate_x_axis_label()
-
+        units = self.table.get_selected_row()[2]
+        name = self.get_geometries(self.get_selected_id())[0]
+        name = name.GetGeometryName()
         for data in time_series_data:
             date_object, value = data
 
@@ -103,7 +106,7 @@ class SimulationsPlotCtrl(SimulationsPlotView):
             for i in range(len(date_object)):
                 d.append((date_object[i], value[i]))
 
-            self.temporal_plot.plot_dates(d, "some name", None, "cool units")
+            self.temporal_plot.plot_dates(d, name, None, units)
 
     def plot_spatial(self, ID, title):
         """
@@ -130,7 +133,12 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         :param event:
         :return:
         """
-        if self.start_date_picker.GetValue() > self.end_date_picker.GetValue():  # Prevent start date to overlap end
+        if not self._row_end_date:
+            return  # End date has not been set. Select a row to set date
+
+        if self.end_date_picker.GetValue() > self._row_end_date:
+            self.end_date_picker.SetValue(self._row_end_date)
+        elif self.start_date_picker.GetValue() > self.end_date_picker.GetValue():  # Prevent start date to overlap end
             self.end_date_picker.SetValue(self.end_date_object)
         elif self.end_date_picker.GetValue() > wx.DateTime_Now():
             self.end_date_picker.SetValue(self.end_date_object)  # Prevent end date to be set to after today
@@ -140,26 +148,30 @@ class SimulationsPlotCtrl(SimulationsPlotView):
     def on_row_selected(self, event):
         """
         Set the date pickers to match the start and end date of the row selected dates
+        The date variable needs to be reset in order to get the start dates to stick
         :param event:
         :return:
         """
         self.spatial_plot.reset_highlighter()
         date = wx.DateTime()
         start_date_string = self.table.get_selected_row()[3]
-        if date.ParseFormat(start_date_string, "%Y-%m-%d %H:%M:%S") == -1:
+        if date.ParseFormat(start_date_string, "%Y-%m-%d") == -1:
             raise Exception("start_date_string is not in the right format")
         self._row_start_date = date
         self.start_date_picker.SetValue(date)
         self.start_date_object = date
 
+        date = wx.DateTime()  # Need to reset the date
+
         end_date_string = self.table.get_selected_row()[4]
         if str(end_date_string) == "None":
             self.end_date_picker.SetValue(wx.DateTime_Now())
-        elif date.ParseFormat(end_date_string, "%Y-%m-%d %H:%M:%S") == -1:
+        elif date.ParseFormat(end_date_string, "%Y-%m-%d") == -1:
             raise Exception("end_date_string is not in the right format")
         else:
             self.end_date_picker.SetValue(date)
             self.end_date_object = date
+        self._row_end_date = self.end_date_picker.GetValue()
 
         #  Plot Spatial
         self.plot_spatial(self.get_selected_id(), self.table.get_selected_row()[1])

@@ -183,8 +183,13 @@ class SimulationsTabCtrl(TimeSeriesView):
             row.append(value[0][2].ResultID)
             row.append(value[0][2].VariableObj.VariableCode)
             row.append(value[0][2].UnitsObj.UnitsAbbreviation)
-            row.append(value[0][2].FeatureActionObj.ActionObj.BeginDateTime)
-            row.append(value[0][2].FeatureActionObj.ActionObj.EndDateTime)
+            # These two dates below do not match that what the data has
+            # row.append(value[0][2].FeatureActionObj.ActionObj.BeginDateTime)
+            # row.append(value[0][2].FeatureActionObj.ActionObj.EndDateTime)
+
+            # Using the data values for start and end date
+            row.append(value[0][0][0].date())  # Start date
+            row.append(value[0][0][-1].date())  # End date
             row.append(value[0][2].VariableObj.VariableNameCV)
             row.append(value[0][2].FeatureActionObj.ActionObj.MethodObj.OrganizationObj.OrganizationName)
             for item in value:

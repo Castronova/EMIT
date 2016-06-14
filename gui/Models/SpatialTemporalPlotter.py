@@ -4,7 +4,7 @@ from gui.Models.Plotter import Plotter
 from matplotlib.collections import PolyCollection
 from matplotlib.collections import LineCollection
 import numpy as np
-import matplotlib
+from matplotlib.colors import ColorConverter
 
 
 class color_cycle(object):
@@ -41,9 +41,10 @@ class SpatialTemporalPlotter(Plotter):
         self.poly_list = None  # Holds the data for the plotted polygon
         self.highlight_color = "y"  # Yellow is used when highlighting
         self.color = "#0DACFF"  # The standard color for objects that are not highlighted
-        self._color_converter = matplotlib.colors.ColorConverter()
+        self._color_converter = ColorConverter()
         self.line_collection = None  # Holds the line collection data
         self.highlighted_lines = []
+        self.selected_lines = []
 
         # stores the axis objects
         self.__axis = []
@@ -129,9 +130,9 @@ class SpatialTemporalPlotter(Plotter):
             self.highlighted_lines.remove(line_idx)
 
         highlight_idx = self.line_segments[line_idx]
-        self.selected[highlight_idx] = 1 - self.selected[highlight_idx]
+        self.selected_lines[highlight_idx] = 1 - self.selected_lines[highlight_idx]
         lines, = event.artist.axes.collections
-        lines.set_color(self.__line_colors[self.selected])
+        lines.set_color(self.__line_colors[self.selected_lines])
         event.canvas.draw_idle()
 
     def highlight_polygon(self, pick_event):
@@ -203,9 +204,9 @@ class SpatialTemporalPlotter(Plotter):
         # plot data on the primary axis
         # p = self.axes.plot_date(dates, nvals, label=name, color=color, linestyle='-', marker=None)
         p = self.axes.plot_date(dates, nvals, label=name, color=color, linestyle="None", marker=".")
-        self.axes.legend(p, [pl.get_label() for pl in self.plots], loc=0)
+        # self.axes.legend(p, [pl.get_label() for pl in self.plots], loc=0)
         self.axes.set_ylabel(ylabel)
-
+        # Has no effect
         # elif self.__plot_count > 0:
         #     # plot data on the secondary axis
         #     ax = self.axes.twinx()
@@ -217,14 +218,12 @@ class SpatialTemporalPlotter(Plotter):
         self.plots.extend(p)
 
         # rebuild the legend
-        self.axes.legend(self.plots, [pl.get_label() for pl in self.plots], loc=0)
-
+        # self.axes.legend(self.plots, [pl.get_label() for pl in self.plots], loc=0)  # Has no effect
+        # self.axes.legend(handles=[p])
         # increment the plot counter
-        self.__plot_count += 1
+        # self.__plot_count += 1 # Has no effect
 
         self.displayLegend(0)
-
-        # redraw the cavas
         self.redraw()
 
     def plot_polygon(self, data, color):
@@ -274,8 +273,8 @@ class SpatialTemporalPlotter(Plotter):
             index += 1
 
         self.__line_colors = np.array([self._color_converter.to_rgba(color), self._color_converter.to_rgba(self.highlight_color)])
-        self.selected = np.zeros(len(segments), dtype=int)  # Rename to highlighted lines or selected lines
-        colors = self.__line_colors[self.selected]
+        self.selected_lines = np.zeros(len(segments), dtype=int)  # Must be a np.zero array
+        colors = self.__line_colors[self.selected_lines]
         self.line_collection = LineCollection(segments, pickradius=10, linewidths=2, colors=colors)
         self.line_collection.set_picker(True)
         self.axes.add_collection(self.line_collection)
@@ -317,3 +316,17 @@ class SpatialTemporalPlotter(Plotter):
         self.x_scatter_data, self.y_scatter_data = None, None
         self.poly_list = None
         self.line_collection = None
+
+    def set_line_width(self, width):
+        """
+        Sets the width of the lines plotted
+        Does not work with scatter plot
+        :param width: real number
+        :return:
+        """
+        if not len(self.plots):
+            return  # Nothing has been plotted
+
+        for line in self.plots:
+            line.set_linewidth(width)
+        self.redraw()

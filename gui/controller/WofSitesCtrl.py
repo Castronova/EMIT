@@ -122,6 +122,9 @@ class WofSitesCtrl(TimeSeriesPlotView):
                 varInfo = self.getSelectedVariable()
                 end, parent, siteobject, start, var_code = self._preparationToGetValues()
                 code = '%s__%s__%s__%s' % (siteobject.site_code, var_code, start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
+
+                variables = [['V1', varInfo[0]]]
+
                 values = []
                 for v in self.wofSeries.getData(code)[0].values[0].value:
                     values.append([v._dateTime.strftime('%m-%d-%Y %H:%M:%S'), v.value])
@@ -145,9 +148,15 @@ class WofSitesCtrl(TimeSeriesPlotView):
                     f.write("# Description: %s \n" % varInfo[6])
                     f.write(hline)
                     f.write("# \n")
+                    f.write('# Column Legend \n')
+                    for variable in variables:
+                        f.write('# %s = %s\n' % (variable[0], variable[1]))
                     f.write("# \n")
-                    f.write("# Date, Value \n")
-
+                    f.write(hline)
+                    f.write("# \n")
+                    f.write("# \n")
+                    for variable in variables:
+                        f.write("# Date, %s\n" % ', '.join(v[0] for v in variables))
                     for d in values:
                         f.write('%s, %s \n' % (d[0], d[1]))
 

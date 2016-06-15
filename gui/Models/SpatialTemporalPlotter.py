@@ -197,17 +197,12 @@ class SpatialTemporalPlotter(Plotter):
         nvals[nvals == noDataValue] = None
         nvals[numpy.isnan(nvals)] = None
 
-        # get the next line color
-        color = self.getNextColor()
-
-        # p = self.axes.plot_date(dates, nvals, label=name, color=color, linestyle='-', marker=None)
-        p = self.axes.plot_date(dates, nvals, label=name, color=color, linestyle="None", marker=".")
+        p = self.axes.plot_date(dates, nvals, label=name, linestyle="None", marker=".")
         self.axes.set_ylabel(ylabel)
 
         # save each of the plots
         self.plots.extend(p)
 
-        self.displayLegend(0)
         self.redraw()
 
     def plot_polygon(self, data, color):

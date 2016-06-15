@@ -31,7 +31,6 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         self.start_date_picker.Bind(wx.EVT_DATE_CHANGED, self.on_start_date_change)
         self.end_date_picker.Bind(wx.EVT_DATE_CHANGED, self.on_end_date_change)
         self.spatial_plot.plot.mpl_connect('pick_event', self.on_pick_spatial)
-        self.plot_button.Disable()
 
     def on_pick_spatial(self, event):
         if isinstance(event.artist, matplotlib.collections.PathCollection):
@@ -211,35 +210,7 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         self.plot_spatial(self.get_selected_id(), self.table.get_selected_row()[1])
 
     def on_plot(self, event):
-        """
-        Grabs the data related to the selected row. self.data must be set otherwise it will not plot
-        Plots all the data to the row selected. Highlight to only plot the selected data
-        :param event:
-        :return: True if plot was successful, False if plot failed
-        """
-        ID = self.get_selected_id()
-
-        if ID == -1:
-            return False  # No selected row
-
-        if not len(self.data) or ID not in self.data:
-            return False  # self.data has not been set or set incorrectly
-
-        data = self.data[ID]
-
-        date_time_objects, value = data
-
-        data = []
-        for i in range(len(date_time_objects)):
-            data.append((date_time_objects[i], value[i]))
-
-        name = self.table.get_selected_row()[1]
-        units = self.table.get_selected_row()[2]
-        self.temporal_plot.clear_plot()
-        self.temporal_plot.rotate_x_axis_label()
-        self.temporal_plot.plot_dates(data, name, None, units)
-
-        return True
+        self.plot_highlighted_timeseries()
 
     def on_start_date_change(self, event):
         """

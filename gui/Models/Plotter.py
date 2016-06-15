@@ -28,7 +28,7 @@ class Plotter:
         # self.figure.tight_layout() is also another possible way to do this
         self.figure.subplots_adjust(left=left, bottom=bottom, right=right, top=top, wspace=wspace, hspace=hspace)
 
-    def displayLegend(self, location='upper right'):
+    def display_legend(self, location='upper right'):
         """
         Taken from http://matplotlib.org/api/figure_api.html
         'best'         : 0,
@@ -44,6 +44,7 @@ class Plotter:
         'center'       : 10,
         """
         self.axes.legend(loc=location)
+        self.redraw()
 
     def redraw(self):
         """

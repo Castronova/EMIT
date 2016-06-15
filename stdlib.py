@@ -142,7 +142,7 @@ class Geometry2(ogr.Geometry):
         self.update_hash()
 
 class ExchangeItem(object):
-    def __init__(self, id=None, name=None, desc=None, geometry=[], unit=None, variable=None, noData=-999, srs_epsg=4269, type=ExchangeItemType.INPUT):
+    def __init__(self, id=None, name=None, desc=None, geometry=[], unit=None, variable=None, noData=None, srs_epsg=4269, type=ExchangeItemType.INPUT):
 
         self.__name = name
         self.__description = desc
@@ -432,7 +432,7 @@ class ExchangeItem(object):
         :return: datavalues between start_time and end_time.  If not given, entire time range will be returned.
         """
 
-        # set initial value end index as the length of the geometery array
+        # set initial value end index as the length of the geometry array
         if geom_idx_end is None:
             geom_idx_end = len(self.__geoms2) + 1
         else:

@@ -130,7 +130,7 @@ class sqlite():
         # todo: handle multiple affiliations
 
 
-        sPrint('Inserting Person', MessageType.DEBUG)
+        sPrint('Inserting person', MessageType.DEBUG)
         person = self.createPerson(user_obj)
 
         sPrint('inserting organization', MessageType.DEBUG)
@@ -324,23 +324,27 @@ class sqlite():
         is_dst = time.daylight and time.localtime().tm_isdst > 0
         utc_offset = - (time.altzone if is_dst else time.timezone) / (3600)
 
-        simulation = models.Simulations()
-        simulation.ActionID = actionid
-        simulation.ModelID = model.ModelID
-        simulation.SimulationName = coupledSimulationName
-        # todo: allow the user to provide a model description in the Pre-run control
-        simulation.SimulationDescription = ""
-        simulation.SimulationStartDateTime = simulation_start
-        simulation.SimulationStartDateTimeUTCOffset = utc_offset
-        simulation.SimulationEndDateTime = simulation_end
-        simulation.SimulationEndDateTimeUTCOffset = utc_offset
-        simulation.TimeStepValue = timestep_value
-        simulation.TimeStepUnitsID = timestepunit.UnitsID
-        simulation.InputDataSetID = dataset.DataSetID
+        simulation_exists = 1 if len(self.read.getSimulations(actionid=actionid)) > 0 else 0
+        if not simulation_exists:
+            simulation = models.Simulations()
+            simulation.ActionID = actionid
+            simulation.ModelID = model.ModelID
+            simulation.SimulationName = coupledSimulationName
+            # todo: allow the user to provide a model description in the Pre-run control
+            simulation.SimulationDescription = ""
+            simulation.SimulationStartDateTime = simulation_start
+            simulation.SimulationStartDateTimeUTCOffset = utc_offset
+            simulation.SimulationEndDateTime = simulation_end
+            simulation.SimulationEndDateTimeUTCOffset = utc_offset
+            simulation.TimeStepValue = timestep_value
+            simulation.TimeStepUnitsID = timestepunit.UnitsID
+            simulation.InputDataSetID = dataset.DataSetID
 
-        self.write.createSimulation(simulation)
+            self.write.createSimulation(simulation)
 
-        return simulation
+            return simulation
+        else:
+            return self.read.getSimulations(actionid=actionid)[0]
 
     def createTimeStepUnit(self, timestepabbv, timestepname):
         """
@@ -574,9 +578,18 @@ class sqlite():
             elog.error('Length of Values and Dates must be equal')
             return False
 
-        valCount = len(DataValues)
 
-        # convert parameters values into array values
+
+        # convert datetime into apsw accepted format
+        value_date_times = numpy.array([str(d) for d in ValueDateTimes])
+
+        # isolate all of the finite values (i.e. nan will violate the not null constraint)
+        data_exists = numpy.isfinite(DataValues)
+        value_date_times = value_date_times[data_exists]
+        data = numpy.array(DataValues)[data_exists]
+
+        # convert parameters values into arrays
+        valCount = len(data)
         censor_codes = [CensorCodeCV] * valCount
         quality_codes = [QualityCodeCV] * valCount
         time_unit_ids = [TimeAggregationIntervalUnitsID] * valCount
@@ -584,25 +597,14 @@ class sqlite():
         time_offsets = [ValueDateTimeUTCOffset] * valCount
         result_ids = [ResultIDs] * valCount
 
-        # convert datetime into apsw accepted format
-        value_date_times = [str(d) for d in ValueDateTimes]
-
-        # result_ids = [ResultID] * valCount
-
-        # cannot be none: resultid, timeaggregation interval
-        # cannot be empty: datavale, valuedatetime
-        # self.spatialDb.execute('INSERT INTO')
-
         # get the last record index
-
         nextID = self.get_next_insert_id(models.TimeSeriesResultValues)
 
-
+        # build array of value ids
         valueIDs = range(nextID, nextID + valCount, 1)
 
-
-        # vals = [ID, ResultID, DataValue, ValueDateTime, ValueDateTimeUTCOffset, CensorCodeCV, QualityCodeCV, TimeAggregationInterval, TimeAggregationIntervalUnitsID]
-        vals = zip(valueIDs, result_ids, DataValues, value_date_times, time_offsets, censor_codes, quality_codes, time_intervals, time_unit_ids)
+        # prepare all data for inserting
+        vals = zip(valueIDs, result_ids, data, value_date_times, time_offsets, censor_codes, quality_codes, time_intervals, time_unit_ids)
 
         # insert values in chunks of 10,000
         sPrint('Begin inserting %d value' % len(vals), MessageType.DEBUG)

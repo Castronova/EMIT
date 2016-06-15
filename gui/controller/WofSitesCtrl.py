@@ -307,11 +307,9 @@ class WofSitesCtrl(TimeSeriesPlotView):
 
                 noData = data[0].variable.noDataValue
 
-            # self.plot.setTitle(self.getSelectedVariableName())
-            # self.plot.setAxisLabel(" ", data[0].variable.unit.unitName)
             ylabel = data[0].variable.unit.unitName
             self.plot.plot_dates(plotData, series_info.var_name, noData, ylabel)
-
+            self.plot.display_legend(0)
 
     # THREADED
     def updateStatusBarLoading(self):

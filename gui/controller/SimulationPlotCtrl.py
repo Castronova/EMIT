@@ -216,29 +216,31 @@ class SimulationsPlotCtrl(SimulationsPlotView):
             writer.writerow(["Organization: %s" % row[6]])
             writer.writerow(["#"])
             writer.writerow(["#------------------End Disclaimer"])
-            columns = ["Dates", "Values", " "] * len(row_data)
+            columns = ["Dates", "Values", " "] * len(row_data)  # Dynamically add columns with spacer
             writer.writerow(columns)
 
             rows = []
-            a, b = zip(*row_data)  # Rename to dates, values
-            for i in range(len(a)):
-                q = zip(*[a[i], b[i]])
+            dates, values = zip(*row_data)  # Unzip row_data, separate into dates and values
+            for i in range(len(dates)):
+                q = zip(*[dates[i], values[i]])  # Unzip the dates and values
                 for j in range(len(q)):
-                    rows.append(q[j])
+                    rows.append(q[j])  # A list of date and value. example [(date, value)]
 
+            # Keeps track of where to divide the rows list in order to write multiple columns and rows
             count = len(rows) / len(row_data)
-            print count
+
             for i in range(count):
                 row = []
                 for j in range(len(row_data)):
                     data = rows[i + (count * j)]
                     row.append(data)
 
+                #  Convert the list(row) into separate values to write to different columns
                 write_row = []
                 for item in row:
                     write_row.append(item[0])
                     write_row.append(item[1])
-                    write_row.append("")
+                    write_row.append("")  # Add spacer column
                 writer.writerow(write_row)
 
             file_handler.close()

@@ -31,7 +31,7 @@
 	"input": [{
 		"variable_name_cv": "precipitation",
 		"unit_type_cv": "international inch",
-		"elementset": "./test/gis/rhf_watershed.shp"
+		"elementset": "./right_hand_fork/rhf_watershed.shp"
 	}],
 
 	"model inputs": [{

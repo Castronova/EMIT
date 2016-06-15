@@ -1,4 +1,5 @@
 import wx
+import csv
 from gui.views.SimulationsPlotView import SimulationsPlotView
 from utilities import geometry
 import matplotlib
@@ -27,6 +28,7 @@ class SimulationsPlotCtrl(SimulationsPlotView):
 
         # Bindings
         self.plot_button.Bind(wx.EVT_BUTTON, self.on_plot)
+        self.export_button.Bind(wx.EVT_BUTTON, self.on_export)
         self.table.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_row_selected)
         self.start_date_picker.Bind(wx.EVT_DATE_CHANGED, self.on_start_date_change)
         self.end_date_picker.Bind(wx.EVT_DATE_CHANGED, self.on_end_date_change)
@@ -100,10 +102,10 @@ class SimulationsPlotCtrl(SimulationsPlotView):
 
         # data.reverse()
 
-        for i in range(len(data)-1, 0):
+        for i in range(len(data)-1, 0, -1):
             date.ParseFormat(str(data[i][0]), "%Y-%m-%d %H:%M:%S")
             if self.end_date_object < date:
-                end_index = -i
+                end_index = i
             else:
                 break
         # data.reverse()  # Reverse back
@@ -177,6 +179,69 @@ class SimulationsPlotCtrl(SimulationsPlotView):
             self.end_date_picker.SetValue(self.end_date_object)  # Prevent end date to be set to after today
         else:
             self.end_date_object = self.end_date_picker.GetValue()
+
+    def on_export(self, event):
+        """
+        Exports all the data pertaining to the selected row
+        Exports only one row, the top most selected row
+        File format: CSV
+        :param event:
+        :return:
+        """
+        ID = self.get_selected_id()
+
+        if ID == -1:
+            return  # No selected row
+
+        file_browser = wx.FileDialog(parent=self, message="Choose Path",
+                                     wildcard="CSV Files (*.csv)|*.csv", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+
+        if file_browser.ShowModal() == wx.ID_OK:
+            path = file_browser.GetPath()
+            file_handler = open(path, "w")
+            writer = csv.writer(file_handler, delimiter=',')
+            row = self.table.get_selected_row()
+            row_data = self.data[ID]
+
+            writer.writerow(["#-------------------Disclaimer:"])
+            writer.writerow(["#"])
+            writer.writerow(["Date created: %s" % str("Day simulation was created")])
+            writer.writerow(["Date exported: %s" % str("todays date")])
+            writer.writerow(["ID: %s" % ID])
+            writer.writerow(["Variable: %s" % row[1]])
+            writer.writerow(["Units: %s" % row[2]])
+            writer.writerow(["Begin date: %s" % row[3]])
+            writer.writerow(["End date: %s" % row[4]])
+            writer.writerow(["Description: %s" % row[5]])
+            writer.writerow(["Organization: %s" % row[6]])
+            writer.writerow(["#"])
+            writer.writerow(["#------------------End Disclaimer"])
+            columns = ["Dates", "Values", " "] * len(row_data)
+            writer.writerow(columns)
+
+            rows = []
+            a, b = zip(*row_data)  # Rename to dates, values
+            for i in range(len(a)):
+                q = zip(*[a[i], b[i]])
+                for j in range(len(q)):
+                    rows.append(q[j])
+
+            count = len(rows) / len(row_data)
+            print count
+            for i in range(count):
+                row = []
+                for j in range(len(row_data)):
+                    data = rows[i + (count * j)]
+                    row.append(data)
+
+                write_row = []
+                for item in row:
+                    write_row.append(item[0])
+                    write_row.append(item[1])
+                    write_row.append("")
+                writer.writerow(write_row)
+
+            file_handler.close()
 
     def on_row_selected(self, event):
         """

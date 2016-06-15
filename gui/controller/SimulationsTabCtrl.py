@@ -7,6 +7,7 @@ from utilities import db as dbUtilities
 from gui.controller.SimulationPlotCtrl import SimulationsPlotCtrl
 from odm2api.ODMconnection import dbconnection
 from gui.controller.AddConnectionCtrl import AddConnectionCtrl
+from sprint import *
 
 
 class SimulationsTabCtrl(TimeSeriesView):
@@ -55,7 +56,7 @@ class SimulationsTabCtrl(TimeSeriesView):
 
         results = session.read.getResults(simulationid=simulation_id)
 
-        if len(results) == 0:
+        if not len(results):
             self.table.empty_list_message.Show()  # No results were returned
             return None
 
@@ -162,12 +163,14 @@ class SimulationsTabCtrl(TimeSeriesView):
     def on_view_menu(self, event):
         row_data = self.table.get_selected_row()
         if not row_data:
+            sPrint("No rows in the table", messageType=MessageType.INFO)
             return  # No rows in the table
 
         results = self.get_row_data(row_data[0])
 
         if not results:
             self.table.empty_list_message.Hide()
+            sPrint("No results were found", messageType=MessageType.INFO)
             return
 
         table_data = []

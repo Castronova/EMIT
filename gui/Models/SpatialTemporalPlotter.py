@@ -200,28 +200,12 @@ class SpatialTemporalPlotter(Plotter):
         # get the next line color
         color = self.getNextColor()
 
-        # if self.__plot_count == 0:
-        # plot data on the primary axis
         # p = self.axes.plot_date(dates, nvals, label=name, color=color, linestyle='-', marker=None)
         p = self.axes.plot_date(dates, nvals, label=name, color=color, linestyle="None", marker=".")
-        # self.axes.legend(p, [pl.get_label() for pl in self.plots], loc=0)
         self.axes.set_ylabel(ylabel)
-        # Has no effect
-        # elif self.__plot_count > 0:
-        #     # plot data on the secondary axis
-        #     ax = self.axes.twinx()
-        #     self.__axis.append(ax)
-        #     p = ax.plot_date(dates, nvals, label=name, color=color, linestyle='-', marker=None)
-        #     ax.set_ylabel(ylabel)
 
         # save each of the plots
         self.plots.extend(p)
-
-        # rebuild the legend
-        # self.axes.legend(self.plots, [pl.get_label() for pl in self.plots], loc=0)  # Has no effect
-        # self.axes.legend(handles=[p])
-        # increment the plot counter
-        # self.__plot_count += 1 # Has no effect
 
         self.displayLegend(0)
         self.redraw()

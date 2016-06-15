@@ -81,11 +81,44 @@ class SimulationsPlotCtrl(SimulationsPlotView):
             geometries.append(geometry.fromWKT(item)[0])
         return geometries
 
+    def parse_data_to_range(self, data):
+        """
+        List are pass by reference so need to reverse twice to keep the original
+        Gets two indexs where the data can be sliced to get the data within
+        the dates in the picker
+        :param data:
+        :return:
+        """
+        start_index = 0
+        end_index = -1
+        date = wx.DateTime()
+        for i in range(len(data)):
+            date.ParseFormat(str(data[i][0]), "%Y-%m-%d %H:%M:%S")
+            if self.start_date_object > date:
+                start_index = i
+            else:
+                break
+
+        data.reverse()
+
+        for i in range(len(data)):
+            date.ParseFormat(str(data[i][0]), "%Y-%m-%d %H:%M:%S")
+            if self.end_date_object < date:
+                end_index = i
+            else:
+                break
+        data.reverse()  # Reverse back
+
+        return start_index, end_index
+
     def plot_highlighted_timeseries(self):
         """
         Plots the time series for the highlighted geometries
         :return:
         """
+        if self.get_selected_id() == -1:
+            return
+
         row_data = self.data[self.get_selected_id()]
         time_series_data = []
 
@@ -106,7 +139,8 @@ class SimulationsPlotCtrl(SimulationsPlotView):
             for i in range(len(date_object)):
                 d.append((date_object[i], value[i]))
 
-            self.temporal_plot.plot_dates(d, name, None, units)
+            start_index, end_index = self.parse_data_to_range(d)
+            self.temporal_plot.plot_dates(d[start_index + 1: -end_index], name, None, units)
 
     def plot_spatial(self, ID, title):
         """
@@ -175,12 +209,6 @@ class SimulationsPlotCtrl(SimulationsPlotView):
 
         #  Plot Spatial
         self.plot_spatial(self.get_selected_id(), self.table.get_selected_row()[1])
-
-    def plot_partial(self, data):
-        print "plot partial"
-        selected_data = data[self.spatial_plot.highlighted_vertices[0] - 1]
-
-        return selected_data
 
     def on_plot(self, event):
         """

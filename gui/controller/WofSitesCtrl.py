@@ -119,33 +119,38 @@ class WofSitesCtrl(TimeSeriesPlotView):
                 if path[-4] != '.':
                     path += '.csv'
                 file = open(path, 'w')
-                writer = csv.writer(file, delimiter=',')
                 varInfo = self.getSelectedVariable()
                 end, parent, siteobject, start, var_code = self._preparationToGetValues()
-                values = parent.getParsedValues(siteobject, start, end)
+                code = '%s__%s__%s__%s' % (siteobject.site_code, var_code, start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
+                values = []
+                for v in self.wofSeries.getData(code)[0].values[0].value:
+                    values.append([v._dateTime.strftime('%m-%d-%Y %H:%M:%S'), v.value])
 
-                writer.writerow(["#-------------------------Disclaimer:  This is a data set that was exported by EMIT ... use at your own risk..."])
-                writer.writerow(["#"])
-                writer.writerow(["#Date Exported: %s" % getTodayDate()])
-                writer.writerow(["#Site Name: %s" % siteobject.site_name])
-                writer.writerow(["#Site Code: %s" % siteobject.site_code])
-                writer.writerow(["#Variable Name: %s" % varInfo[0]])
-                writer.writerow(["#Variable Code: %s" % var_code])
-                writer.writerow(["#Unit: %s" % varInfo[1]])
-                writer.writerow(["#Category: %s" % varInfo[2]])
-                writer.writerow(["#Type: %s" % varInfo[3]])
-                writer.writerow(["#Begin Date: %s" % varInfo[4]])
-                writer.writerow(["#End Date: %s" % varInfo[5]])
-                writer.writerow(["#Description: %s" % varInfo[6]])
-                writer.writerow(["#"])
-                writer.writerow(["#-------------------------End Disclaimer"])
-                writer.writerow(["#"])
-                writer.writerow(["#Dates", "Values"])
+                with open(path, 'w') as f:
+                    hline = '#' + 75*'-' + '\n'
+                    f.write(hline)
+                    f.write('# \n')
+                    f.write('# NOTICE: this data set that was exported by the EMIT model coupling framework, use at your own risk \n')
+                    f.write("# \n")
+                    f.write("# Date Exported: %s \n" % getTodayDate())
+                    f.write("# Site Name: %s \n" % siteobject.site_name)
+                    f.write("# Site Code: %s \n" % siteobject.site_code)
+                    f.write("# Variable Name: %s \n" % varInfo[0])
+                    f.write("# Variable Code: %s \n" % var_code)
+                    f.write("# Unit: %s \n" % varInfo[1])
+                    f.write("# Category: %s \n" % varInfo[2])
+                    f.write("# Type: %s \n" % varInfo[3])
+                    f.write("# Begin Date: %s \n" % varInfo[4])
+                    f.write("# End Date: %s \n" % varInfo[5])
+                    f.write("# Description: %s \n" % varInfo[6])
+                    f.write(hline)
+                    f.write("# \n")
+                    f.write("# \n")
+                    f.write("# Date, Value \n")
 
-                for d in values:
-                    writer.writerow([d[0], d[1]])
+                    for d in values:
+                        f.write('%s, %s \n' % (d[0], d[1]))
 
-                file.close()
         else:
             elog.info("Select a variable to export")
 

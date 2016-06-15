@@ -98,15 +98,15 @@ class SimulationsPlotCtrl(SimulationsPlotView):
             else:
                 break
 
-        data.reverse()
+        # data.reverse()
 
-        for i in range(len(data)):
+        for i in range(len(data)-1, 0):
             date.ParseFormat(str(data[i][0]), "%Y-%m-%d %H:%M:%S")
             if self.end_date_object < date:
-                end_index = i
+                end_index = -i
             else:
                 break
-        data.reverse()  # Reverse back
+        # data.reverse()  # Reverse back
 
         return start_index, end_index
 
@@ -139,7 +139,7 @@ class SimulationsPlotCtrl(SimulationsPlotView):
                 d.append((date_object[i], value[i]))
 
             start_index, end_index = self.parse_data_to_range(d)
-            self.temporal_plot.plot_dates(d[start_index + 1: -end_index], name, None, units)
+            self.temporal_plot.plot_dates(d[start_index : end_index], name, None, units)
 
     def plot_spatial(self, ID, title):
         """

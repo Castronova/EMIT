@@ -26,15 +26,25 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         self.temporal_plot.add_padding_to_plot(bottom=0.15)
         self.spatial_plot.add_padding_to_plot(bottom=0.15)
 
+        # Tool tips
         self.export_button.SetToolTip(wx.ToolTip("Export selected row"))
 
+        # Pop up menu
+        self.popup_menu = wx.Menu()
+        export_menu = wx.Menu()
+        export_menu.Append(1, "Export")
+        export_menu.Append(2, "Export All")
+        self.popup_menu.AppendMenu(1, "Export", export_menu)  # Nest export
+
         # Bindings
-        self.plot_button.Bind(wx.EVT_BUTTON, self.on_plot)
+        self.refresh_button.Bind(wx.EVT_BUTTON, self.on_plot)
         self.export_button.Bind(wx.EVT_BUTTON, self.on_export)
         self.table.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_row_selected)
         self.start_date_picker.Bind(wx.EVT_DATE_CHANGED, self.on_start_date_change)
         self.end_date_picker.Bind(wx.EVT_DATE_CHANGED, self.on_end_date_change)
         self.spatial_plot.plot.mpl_connect('pick_event', self.on_pick_spatial)
+        self.table.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.on_table_right_click)
+        export_menu.Bind(wx.EVT_MENU, self.on_export_menu)
 
     def on_pick_spatial(self, event):
         if isinstance(event.artist, matplotlib.collections.PathCollection):
@@ -182,7 +192,7 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         else:
             self.end_date_object = self.end_date_picker.GetValue()
 
-    def on_export(self, event):
+    def on_export(self, event=None, export_highlighted=False):
         """
         Exports all the data pertaining to the selected row
         Exports only one row, the top most selected row
@@ -222,9 +232,24 @@ class SimulationsPlotCtrl(SimulationsPlotView):
             writer.writerow(columns)
 
             rows = []
+
+            if export_highlighted:
+                time_series_data = []
+                geometry = self.get_highlighted_geometry()
+                for key, value in geometry.iteritems():
+                    time_series_data.append(row_data[key])
+
+                row_data = time_series_data
+
+            # else:
             dates, values = zip(*row_data)  # Unzip row_data, separate into dates and values
             for i in range(len(dates)):
                 q = zip(*[dates[i], values[i]])  # Unzip the dates and values
+
+                if export_highlighted:
+                    start_index, end_index = self.parse_data_to_range(q)
+                    q = q[start_index: end_index]
+
                 for j in range(len(q)):
                     rows.append(q[j])  # A list of date and value. example [(date, value)]
 
@@ -246,6 +271,22 @@ class SimulationsPlotCtrl(SimulationsPlotView):
                 writer.writerow(write_row)
 
             file_handler.close()
+
+    def on_export_menu(self, event):
+        """
+        The ID should match that of when export menu is created
+        :param event:
+        :return:
+        """
+        if event.GetId() == 1:
+            self.on_export(export_highlighted=True)
+            return
+
+        if event.GetId() == 2:
+            self.on_export()
+            return
+
+        print "something else"
 
     def on_row_selected(self, event):
         """
@@ -297,3 +338,6 @@ class SimulationsPlotCtrl(SimulationsPlotView):
             self.start_date_picker.SetValue(self.start_date_object)
         else:
             self.start_date_object = self.start_date_picker.GetValue()
+
+    def on_table_right_click(self, event):
+        self.PopupMenu(self.popup_menu)

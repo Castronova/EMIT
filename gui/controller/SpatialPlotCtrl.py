@@ -6,7 +6,7 @@ from emitLogging import elog
 from gui.views.SpatialPlotView import ViewSpatialPlot
 
 
-class SpatialPlotCtrl(ViewSpatialPlot):
+class SpatialPlotCtrl(ViewSpatialPlot):  # Delete me. Unused code
 
     def __init__(self, parent, title='', xlabel='', ylabel=''):
 

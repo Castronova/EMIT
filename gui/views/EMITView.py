@@ -5,7 +5,7 @@ import wx.lib.agw.aui as aui
 from wx.lib.newevent import NewEvent
 from LowerPanelView import ViewLowerPanel
 from gui.controller.CanvasCtrl import CanvasCtrl
-from gui.controller.ToolboxCtrl import ToolboxViewCtrl
+from gui.controller.ToolboxCtrl import ToolboxCtrl
 
 # create custom events
 wxCreateBox, EVT_CREATE_BOX = NewEvent()
@@ -60,7 +60,7 @@ class EMITView(wx.Frame):
         # wx.CallAfter(self._postStart)
 
         # creating components
-        self.Toolbox = ToolboxViewCtrl(self.pnlDocking)
+        self.Toolbox = ToolboxCtrl(self.pnlDocking)
         self.Canvas = CanvasCtrl(self.pnlDocking)
 
         self.Toolbox.Hide()
@@ -130,6 +130,6 @@ class EMITView(wx.Frame):
 
         self._default_perspective = self.m_mgr.SavePerspective()
 
-    def _postStart(self):
-        # Starts stuff after program has initiated
-        self.Canvas.ZoomToFit(event=None)
+    # def _postStart(self):  # Unused code
+    #     # Starts stuff after program has initiated
+    #     self.Canvas.ZoomToFit(event=None)

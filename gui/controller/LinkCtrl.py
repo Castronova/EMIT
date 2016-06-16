@@ -77,9 +77,6 @@ class LinkCtrl(LinkView):
             self.swap_button.Disable()
 
     def activate_controls(self, activate=True):
-
-        # todo: this needs to be expanded to check if any forms have been changed
-
         if activate:
             self.save_button.Enable()
             self.spatial_combo.Enable()

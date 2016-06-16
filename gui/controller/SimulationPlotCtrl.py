@@ -3,6 +3,7 @@ import csv
 from gui.views.SimulationsPlotView import SimulationsPlotView
 from utilities import geometry
 import matplotlib
+from sprint import *
 
 
 class SimulationsPlotCtrl(SimulationsPlotView):
@@ -27,24 +28,21 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         self.spatial_plot.add_padding_to_plot(bottom=0.15)
 
         # Tool tips
-        self.export_button.SetToolTip(wx.ToolTip("Export selected row"))
+        self.export_button.SetToolTip(wx.ToolTip("Export data of highlighted region"))
 
         # Pop up menu
         self.popup_menu = wx.Menu()
-        export_menu = wx.Menu()
-        export_menu.Append(1, "Export")
-        export_menu.Append(2, "Export All")
-        self.popup_menu.AppendMenu(1, "Export", export_menu)  # Nest export
+        export_menu = self.popup_menu.Append(1, "Export All")
 
         # Bindings
-        self.refresh_button.Bind(wx.EVT_BUTTON, self.on_plot)
+        self.refresh_button.Bind(wx.EVT_BUTTON, self.on_refresh)
         self.export_button.Bind(wx.EVT_BUTTON, self.on_export)
         self.table.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_row_selected)
         self.start_date_picker.Bind(wx.EVT_DATE_CHANGED, self.on_start_date_change)
         self.end_date_picker.Bind(wx.EVT_DATE_CHANGED, self.on_end_date_change)
         self.spatial_plot.plot.mpl_connect('pick_event', self.on_pick_spatial)
         self.table.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.on_table_right_click)
-        export_menu.Bind(wx.EVT_MENU, self.on_export_menu)
+        self.Bind(wx.EVT_MENU, self.on_export_menu, export_menu)
 
     def on_pick_spatial(self, event):
         if isinstance(event.artist, matplotlib.collections.PathCollection):
@@ -94,6 +92,26 @@ class SimulationsPlotCtrl(SimulationsPlotView):
             geometries.append(geometry.fromWKT(item)[0])
         return geometries
 
+    def get_highlighted_timeseries_data(self):
+        """
+        Gets the time series data for the highlighted geometries
+        Returns empty list if nothing is highlighted
+        :return: type(list)
+        """
+        ID = self.get_selected_id()
+
+        if ID == -1:
+            return []  # No selected row
+
+        row_data = self.data[ID]
+
+        time_series_data = []
+        geometry = self.get_highlighted_geometry()
+        for key, value in geometry.iteritems():
+            time_series_data.append(row_data[key])
+
+        return time_series_data
+
     def parse_data_to_range(self, data):
         """
         List are pass by reference so need to reverse twice to keep the original
@@ -132,13 +150,7 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         if self.get_selected_id() == -1:
             return
 
-        row_data = self.data[self.get_selected_id()]
-        time_series_data = []
-
-        # Get the highlighted time series data
-        geometry = self.get_highlighted_geometry()
-        for key, value in geometry.iteritems():
-            time_series_data.append(row_data[key])
+        time_series_data = self.get_highlighted_timeseries_data()
 
         self.temporal_plot.clear_plot()
         self.temporal_plot.rotate_x_axis_label()
@@ -192,7 +204,7 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         else:
             self.end_date_object = self.end_date_picker.GetValue()
 
-    def on_export(self, event=None, export_highlighted=False):
+    def on_export(self, event=None, export_all=False):
         """
         Exports all the data pertaining to the selected row
         Exports only one row, the top most selected row
@@ -203,7 +215,12 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         ID = self.get_selected_id()
 
         if ID == -1:
+            sPrint("Select a row before exporting", messageType=MessageType.INFO)
             return  # No selected row
+
+        if not len(self.get_highlighted_geometry()) and not export_all:
+            sPrint("Highlight a region to export", messageType=MessageType.INFO)
+            return  # Nothing is highlighted
 
         file_browser = wx.FileDialog(parent=self, message="Choose Path",
                                      wildcard="CSV Files (*.csv)|*.csv", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
@@ -228,30 +245,24 @@ class SimulationsPlotCtrl(SimulationsPlotView):
             writer.writerow(["Organization: %s" % row[6]])
             writer.writerow(["#"])
             writer.writerow(["#------------------End Disclaimer"])
+
+            if not export_all:
+                row_data = self.get_highlighted_timeseries_data()
+
             columns = ["Dates", "Values", " "] * len(row_data)  # Dynamically add columns with spacer
             writer.writerow(columns)
 
             rows = []
-
-            if export_highlighted:
-                time_series_data = []
-                geometry = self.get_highlighted_geometry()
-                for key, value in geometry.iteritems():
-                    time_series_data.append(row_data[key])
-
-                row_data = time_series_data
-
-            # else:
             dates, values = zip(*row_data)  # Unzip row_data, separate into dates and values
             for i in range(len(dates)):
-                q = zip(*[dates[i], values[i]])  # Unzip the dates and values
+                data = zip(*[dates[i], values[i]])  # Unzip the dates and values
 
-                if export_highlighted:
-                    start_index, end_index = self.parse_data_to_range(q)
-                    q = q[start_index: end_index]
+                if not export_all:
+                    start_index, end_index = self.parse_data_to_range(data)
+                    data = data[start_index: end_index]
 
-                for j in range(len(q)):
-                    rows.append(q[j])  # A list of date and value. example [(date, value)]
+                for j in range(len(data)):
+                    rows.append(data[j])  # A list of date and value. example [(date, value)]
 
             # Keeps track of where to divide the rows list in order to write multiple columns and rows
             count = len(rows) / len(row_data)
@@ -274,19 +285,11 @@ class SimulationsPlotCtrl(SimulationsPlotView):
 
     def on_export_menu(self, event):
         """
-        The ID should match that of when export menu is created
+        Handles what happens when pop up export is clicked
         :param event:
         :return:
         """
-        if event.GetId() == 1:
-            self.on_export(export_highlighted=True)
-            return
-
-        if event.GetId() == 2:
-            self.on_export()
-            return
-
-        print "something else"
+        self.on_export(export_all=True)
 
     def on_row_selected(self, event):
         """
@@ -296,6 +299,7 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         :return:
         """
         self.spatial_plot.reset_highlighter()
+        self.temporal_plot.clear_plot()
         date = wx.DateTime()
         start_date_string = self.table.get_selected_row()[3]
         if date.ParseFormat(start_date_string, "%Y-%m-%d") == -1:
@@ -319,7 +323,7 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         #  Plot Spatial
         self.plot_spatial(self.get_selected_id(), self.table.get_selected_row()[1])
 
-    def on_plot(self, event):
+    def on_refresh(self, event):
         self.plot_highlighted_timeseries()
 
     def on_start_date_change(self, event):

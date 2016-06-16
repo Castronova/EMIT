@@ -1,4 +1,3 @@
-import coordinator.engineAccessors as engine
 from gui.views.EMITView import EMITView
 from sprint import *
 from utilities import gui
@@ -14,8 +13,6 @@ from gui.controller.UserCtrl import UserCtrl
 from gui.controller.SettingsCtrl import SettingsCtrl
 from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
 from gui.controller.ModelInputPromptCtrl import ModelInputPromptCtrl
-from utilities import models
-
 
 
 class EMITCtrl(EMITView):

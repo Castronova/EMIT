@@ -26,6 +26,8 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         self.temporal_plot.add_padding_to_plot(bottom=0.15)
         self.spatial_plot.add_padding_to_plot(bottom=0.15)
 
+        self.export_button.SetToolTip(wx.ToolTip("Export selected row"))
+
         # Bindings
         self.plot_button.Bind(wx.EVT_BUTTON, self.on_plot)
         self.export_button.Bind(wx.EVT_BUTTON, self.on_export)

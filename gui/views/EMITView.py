@@ -53,7 +53,6 @@ class EMITView(wx.Frame):
         self._menu_bar.Append(self.view_menu, "&View")
         self._menu_bar.Append(self.data_menu, "Data")
 
-        # todo: implement and enable the CSV menu option below
         self._add_file.Enable(False)
 
         self.SetMenuBar(self._menu_bar)

@@ -1,5 +1,6 @@
 import collections
-import xml.etree.ElementTree
+from xml.etree import ElementTree
+from io import StringIO
 from suds.client import Client
 from emitLogging import elog
 
@@ -154,32 +155,66 @@ class WaterOneFlow(object):
             site_objects = self.conn.service.GetSites("")
         return site_objects
 
-    def get_sites_in_list(self):
+    def parse_sites_waterml(self):
         """
-        :return: a 2-D list of the sites and info about them
+        Uses XPATH to efficiently parse site information from the waterml getSites response.
+
+        returns: A list of metadata for each site: [[name, network, code, county, state, type, lat, lon], [...]]
         """
+
+
         xml_sites = self.get_sites_in_xml()
-        root = xml.etree.ElementTree.fromstring(xml_sites)
+        root = ElementTree.fromstring(xml_sites)
+
+        # define namespaces
+        my_namespaces = dict([node for _, node in ElementTree.iterparse(StringIO(xml_sites), events=['start-ns'])])
+        my_namespaces['wml'] = 'http://www.cuahsi.org/waterML/1.1/'
+
+        # get all site elements
+        sites = root.findall("./wml:site", my_namespaces)
         output = []
-        for child in root:
-            if "site" in child.tag:
-                d = []
-                for step_child in child:
-                    for onemore in step_child:
-                        if "siteName" in onemore.tag:
-                            d.append(onemore.text)
-                        if "siteCode" in onemore.tag:
-                            d.append(onemore.items()[1][1])
-                            d.append(onemore.text)
-                        if "siteProperty" in onemore.tag:
-                            if onemore.attrib.items()[0][1] == "County":
-                                d.append(onemore.text)
-                            if onemore.attrib.items()[0][1] == "State":
-                                d.append(onemore.text)
-                            if onemore.attrib.items()[0][1] == "Site Type":
-                                d.append(onemore.text)
-                output.append(d)
+        for site in sites:
+            d = []
+            d.append(site.find('./wml:siteInfo/wml:siteName', my_namespaces).text)
+            d.append(site.find('./wml:siteInfo/wml:siteCode', my_namespaces).attrib['network'])
+            d.append(site.find('./wml:siteInfo/wml:siteCode', my_namespaces).text)
+
+            d.append(site.find('./wml:siteInfo/wml:siteProperty[@name="County"]', my_namespaces).text)
+            d.append(site.find('./wml:siteInfo/wml:siteProperty[@name="State"]', my_namespaces).text)
+            d.append(site.find('./wml:siteInfo/wml:siteProperty[@name="Site Type"]', my_namespaces).text)
+
+            d.append(site.find('./wml:siteInfo/wml:geoLocation/wml:geogLocation/wml:latitude', my_namespaces).text)
+            d.append(site.find('./wml:siteInfo/wml:geoLocation/wml:geogLocation/wml:longitude', my_namespaces).text)
+            output.append(d)
         return output
+
+
+    # def get_sites_in_list(self):
+    #     """
+    #     :return: a 2-D list of the sites and info about them
+    #     """
+    #     xml_sites = self.get_sites_in_xml()
+    #     root = xml.etree.ElementTree.fromstring(xml_sites)
+    #     output = []
+    #     for child in root:
+    #         if "site" in child.tag:
+    #             d = []
+    #             for step_child in child:
+    #                 for onemore in step_child:
+    #                     if "siteName" in onemore.tag:
+    #                         d.append(onemore.text)
+    #                     elif "siteCode" in onemore.tag:
+    #                         d.append(onemore.items()[1][1])
+    #                         d.append(onemore.text)
+    #                     elif "siteProperty" in onemore.tag:
+    #                         if onemore.attrib.items()[0][1] == "County":
+    #                             d.append(onemore.text)
+    #                         if onemore.attrib.items()[0][1] == "State":
+    #                             d.append(onemore.text)
+    #                         if onemore.attrib.items()[0][1] == "Site Type":
+    #                             d.append(onemore.text)
+    #             output.append(d)
+    #     return output
 
     def getSitesObject(self, value=None):
         #  Returns JSON

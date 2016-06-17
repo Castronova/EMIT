@@ -16,6 +16,8 @@ class TimeSeriesCtrl(TimeSeriesView):
         TimeSeriesView.__init__(self, parent)
         self.api = None
 
+        self.sites_metadata = []
+
         self.databases = {}
 
         table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
@@ -39,16 +41,18 @@ class TimeSeriesCtrl(TimeSeriesView):
         self.table.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.on_double_click)
 
     def convert_selected_row_into_object(self):
-        item = self.table.get_selected_row()
-        data = {
-            "site_name": item[0],
-            "network": item[1],
-            "county": item[3],
-            "state": item[4],
-            "site_type": item[5],
-            "site_code": item[2]
-        }
+
+        # get the index of the selected table row
+        idx = self.table.GetFirstSelected()
+
+        # grab the data associated with this site and build dictionary
+        row_data = self.sites_metadata[idx]
+        keys = ['site_name', 'network', 'site_code', 'county', 'state', 'site_type', 'latitude', 'longitude']
+        data = dict(zip(keys, row_data))
+
+        # cast dictionary into an object
         record_object = type("WOFRecord", (object,), data)
+
         return record_object
 
     def get_selected_database(self):
@@ -147,8 +151,11 @@ class TimeSeriesCtrl(TimeSeriesView):
             self.table.empty_list_message.Show()
             return
 
-        data = self.api.get_sites_in_list()
+        data = self.api.parse_sites_waterml()
         self.table.set_table_content(data)
+
+        # save the site data
+        self.sites_metadata = data
 
     ###############################
     # EVENTS

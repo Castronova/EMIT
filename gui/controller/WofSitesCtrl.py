@@ -118,12 +118,11 @@ class WofSitesCtrl(TimeSeriesPlotView):
                 path = save.GetPath()
                 if path[-4] != '.':
                     path += '.csv'
-                file = open(path, 'w')
                 varInfo = self.getSelectedVariable()
                 end, parent, siteobject, start, var_code = self._preparationToGetValues()
                 code = '%s__%s__%s__%s' % (siteobject.site_code, var_code, start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
 
-                variables = [['V1', varInfo[0]]]
+                variables = [['V1', varInfo[0], var_code, varInfo[1], varInfo[6], siteobject.latitude, siteobject.longitude]]
 
                 values = []
                 for v in self.wofSeries.getData(code)[0].values[0].value:
@@ -138,25 +137,23 @@ class WofSitesCtrl(TimeSeriesPlotView):
                     f.write("# Date Exported: %s \n" % getTodayDate())
                     f.write("# Site Name: %s \n" % siteobject.site_name)
                     f.write("# Site Code: %s \n" % siteobject.site_code)
-                    f.write("# Variable Name: %s \n" % varInfo[0])
-                    f.write("# Variable Code: %s \n" % var_code)
-                    f.write("# Unit: %s \n" % varInfo[1])
                     f.write("# Category: %s \n" % varInfo[2])
                     f.write("# Type: %s \n" % varInfo[3])
                     f.write("# Begin Date: %s \n" % varInfo[4])
                     f.write("# End Date: %s \n" % varInfo[5])
-                    f.write("# Description: %s \n" % varInfo[6])
                     f.write(hline)
                     f.write("# \n")
-                    f.write('# Column Legend \n')
+                    f.write('# Data Description \n')
+                    f.write("# \n")
+                    f.write('# V[idx] = Variable Name, Variable Code, Unit, Description, Latitude, Longitude \n')
+                    f.write("# \n")
                     for variable in variables:
-                        f.write('# %s = %s\n' % (variable[0], variable[1]))
+                        f.write('# %s = %s\n' % (variable[0], ', '.join(variable[1:])))
                     f.write("# \n")
                     f.write(hline)
                     f.write("# \n")
                     f.write("# \n")
-                    for variable in variables:
-                        f.write("# Date, %s\n" % ', '.join(v[0] for v in variables))
+                    f.write("# Date, %s\n" % ', '.join(v[0] for v in variables))
                     for d in values:
                         f.write('%s, %s \n' % (d[0], d[1]))
 

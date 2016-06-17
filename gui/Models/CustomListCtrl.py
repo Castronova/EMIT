@@ -93,9 +93,11 @@ class CustomListCtrl(wx.ListCtrl):
             print "No column headers have been created"
             return
 
-        for i in range(len(data)):
+        # loop through all of the site metadata
+        for i in range(len(data[:-2])):
             index = self.InsertStringItem(999999, "")
-            for j in range(len(data[i])):
+            # omit the last two columns (lat and lon)
+            for j in range(len(data[i])-2):
                 self.SetStringItem(index, j, str(data[i][j]))
 
         self.auto_size_table()

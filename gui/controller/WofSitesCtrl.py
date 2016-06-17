@@ -1,4 +1,3 @@
-import csv
 import datetime as dt
 import threading
 import time
@@ -17,8 +16,7 @@ class WofSitesCtrl(TimeSeriesPlotView):
 
         table_cols = ["Variable Name", "Unit", "Category", "Type", "Begin Date Time", "End Date Time", "Description"]
         TimeSeriesPlotView.__init__(self, parent, siteObject.site_name, table_cols)
-        self.siteobject = siteObject
-        # self.Bind(wx.EVT_BUTTON, self.previewPlot, self.PlotBtn)
+        self.site_objects = siteObject
         self.Bind(wx.EVT_BUTTON, self.onPreview, self.PlotBtn)
         self.Bind(wx.EVT_DATE_CHANGED, self.setStartDate, self.startDatePicker)
         self.Bind(wx.EVT_DATE_CHANGED, self.setEndDate, self.endDatePicker)
@@ -57,7 +55,7 @@ class WofSitesCtrl(TimeSeriesPlotView):
     def _preparationToGetValues(self):
         code = self.getSelectedVariableCode()
         parent = self.Parent
-        siteobject = self.siteobject
+        siteobject = self.site_objects
 
         # convert wx._misc.DateTime to python datetime
         start = dt.datetime.strptime('%sT%s'%(self.start_date.FormatISODate(), self.start_date.FormatISOTime()),
@@ -250,7 +248,7 @@ class WofSitesCtrl(TimeSeriesPlotView):
         series_keys = []
         for i in range(len(var_codes)):
             # add this series to the wof series container
-            key = self.wofSeries.addDataSeries(self.siteobject.site_code, var_codes[i], var_names[i], sd, ed)
+            key = self.wofSeries.addDataSeries(self.site_objects.site_code, var_codes[i], var_names[i], sd, ed)
 
             # save the key that is returned
             series_keys.append(key)

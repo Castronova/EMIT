@@ -4,6 +4,7 @@ from gui.views.SimulationsPlotView import SimulationsPlotView
 from utilities import geometry
 import matplotlib
 from sprint import *
+from utilities.gui import get_todays_date
 
 
 class SimulationsPlotCtrl(SimulationsPlotView):
@@ -56,6 +57,44 @@ class SimulationsPlotCtrl(SimulationsPlotView):
 
         self.plot_highlighted_timeseries()
 
+    def get_data_start_end_date(self):
+        """
+        Returns the start and end date of the highlighted regions.
+        If nothing is highlighted return the start and end date of the selected row
+        Return -1 if no row is selected
+        :return:
+        """
+        ID = self.get_selected_id()
+        if ID == -1:
+            return -1, -1  # No selected row return -1
+
+        row_data = self.get_highlighted_timeseries_data()
+
+        if not len(row_data):
+            row = self.table.get_selected_row()  # Nothing is highlighted
+            return row[3], row[4]
+
+        for data in row_data:
+            date_object, value = data
+
+            d = []
+            for i in range(len(date_object)):
+                d.append((date_object[i], value[i]))
+
+            start_index, end_index = self.parse_data_to_range(d)
+            return d[start_index][0], d[end_index][0]
+
+    def get_geometries(self, ID):
+        """
+        Converts the geometry string to objects
+        :param ID: Int
+        :return: a list of geometry objects
+        """
+        geometries = []
+        for item in self.geometries[ID]:
+            geometries.append(geometry.fromWKT(item)[0])
+        return geometries
+
     def get_highlighted_geometry(self):
         """
         Return index and object or coordinate of the highlighted spatial
@@ -71,26 +110,6 @@ class SimulationsPlotCtrl(SimulationsPlotView):
             return self.spatial_plot.get_highlighted_lines()
 
         return {}
-
-    def get_selected_id(self):
-        """
-        :return: the ID type(Int) of the selected row or -1 if no row is selected
-        """
-        row = self.table.get_selected_row()
-        if row:
-            return int(row[0])
-        return -1
-
-    def get_geometries(self, ID):
-        """
-        Converts the geometry string to objects
-        :param ID: Int
-        :return: a list of geometry objects
-        """
-        geometries = []
-        for item in self.geometries[ID]:
-            geometries.append(geometry.fromWKT(item)[0])
-        return geometries
 
     def get_highlighted_timeseries_data(self):
         """
@@ -112,12 +131,20 @@ class SimulationsPlotCtrl(SimulationsPlotView):
 
         return time_series_data
 
+    def get_selected_id(self):
+        """
+        :return: the ID type(Int) of the selected row or -1 if no row is selected
+        """
+        row = self.table.get_selected_row()
+        if row:
+            return int(row[0])
+        return -1
+
     def parse_data_to_range(self, data):
         """
-        List are pass by reference so need to reverse twice to keep the original
         Gets two indexs where the data can be sliced to get the data within
         the dates in the picker
-        :param data:
+        :param data: type(list[(date1, value1), (date2, value2), ..., (dateN, valueN)])
         :return:
         """
         start_index = 0
@@ -125,20 +152,17 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         date = wx.DateTime()
         for i in range(len(data)):
             date.ParseFormat(str(data[i][0]), "%Y-%m-%d %H:%M:%S")
-            if self.start_date_object > date:
+            if self.start_date_object >= date:
                 start_index = i
             else:
                 break
 
-        # data.reverse()
-
         for i in range(len(data)-1, 0, -1):
             date.ParseFormat(str(data[i][0]), "%Y-%m-%d %H:%M:%S")
-            if self.end_date_object < date:
+            if self.end_date_object <= date:
                 end_index = i
             else:
                 break
-        # data.reverse()  # Reverse back
 
         return start_index, end_index
 
@@ -227,24 +251,31 @@ class SimulationsPlotCtrl(SimulationsPlotView):
 
         if file_browser.ShowModal() == wx.ID_OK:
             path = file_browser.GetPath()
+            header_line_break = '#' + 100 * '-'
+            disclaimer = "# NOTICE: this data set was exported by the EMIT model coupling framework. " \
+                         "Use at your own risk"
             file_handler = open(path, "w")
             writer = csv.writer(file_handler, delimiter=',')
             row = self.table.get_selected_row()
             row_data = self.data[ID]
 
-            writer.writerow(["#-------------------Disclaimer:"])
+            start_date, end_date = self.get_data_start_end_date()
+
+            writer.writerow([header_line_break])
+            writer.writerow([disclaimer])
             writer.writerow(["#"])
-            writer.writerow(["Date created: %s" % str("Day simulation was created")])
-            writer.writerow(["Date exported: %s" % str("todays date")])
-            writer.writerow(["ID: %s" % ID])
-            writer.writerow(["Variable: %s" % row[1]])
-            writer.writerow(["Units: %s" % row[2]])
-            writer.writerow(["Begin date: %s" % row[3]])
-            writer.writerow(["End date: %s" % row[4]])
-            writer.writerow(["Description: %s" % row[5]])
-            writer.writerow(["Organization: %s" % row[6]])
+            writer.writerow(["# Date created: %s" % str("Day simulation was created")])
+            writer.writerow(["# Date exported: %s" % get_todays_date()])
+            writer.writerow(["# ID: %s" % ID])
+            writer.writerow(["# Variable: %s" % row[1]])
+            writer.writerow(["# Units: %s" % row[2]])
+            writer.writerow(["# Begin date: %s" % str(start_date)])
+            writer.writerow(["# End date: %s" % str(end_date)])
+            writer.writerow(["# Description: %s" % row[5]])
+            writer.writerow(["# Organization: %s" % row[6]])
             writer.writerow(["#"])
-            writer.writerow(["#------------------End Disclaimer"])
+
+            writer.writerow([header_line_break])
 
             if not export_all:
                 row_data = self.get_highlighted_timeseries_data()

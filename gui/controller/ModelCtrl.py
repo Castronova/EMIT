@@ -51,7 +51,6 @@ class ModelCtrl(ModelView):
             self.Close()
 
     def PopulateEdit(self, fileExtension):
-
         # the text edit window
         self.current_file = fileExtension
         filehandle=open(fileExtension)

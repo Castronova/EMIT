@@ -89,15 +89,19 @@ class CustomListCtrl(wx.ListCtrl):
         :param data: 2D list
         :return:
         """
-        if self.GetColumnCount() == 0:
+
+        number_of_columns = self.GetColumnCount()
+        if number_of_columns == 0:
             print "No column headers have been created"
             return
 
         # loop through all of the site metadata
-        for i in range(len(data[:-2])):
+        for i in range(len(data)):
             index = self.InsertStringItem(999999, "")
-            # omit the last two columns (lat and lon)
-            for j in range(len(data[i])-2):
+            if number_of_columns < len(data[i]):
+                raise Exception("The length of the row must match the number of columns")
+
+            for j in range(len(data[i])):
                 self.SetStringItem(index, j, str(data[i][j]))
 
         self.auto_size_table()

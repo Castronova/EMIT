@@ -5,9 +5,6 @@ from gui.Resources import icons
 
 class ToolboxView(wx.Panel):
     def __init__(self, parent):
-        # create object to store the currently selected item's path
-        self.__currently_selected_item_path = None
-
         wx.Panel.__init__(self, parent)
 
         self.tree = CT.CustomTreeCtrl(self, -1, style=wx.TR_DEFAULT_STYLE)

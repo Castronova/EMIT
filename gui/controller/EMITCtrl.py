@@ -239,7 +239,7 @@ class EMITCtrl(EMITView):
             txt = save.Filename.split('.sim')[0]
             e = dict(cat=self.Toolbox.cat, txt=txt, fullpath=save.Path)
             self.Toolbox.loadSIMFile(e)
-            self.Toolbox.RefreshToolbox()
+            self.Toolbox.refresh_toolbox()
         else:
             save.Destroy()
 
@@ -262,7 +262,7 @@ class EMITCtrl(EMITView):
         # models.save_simulation(self.models, self.links, path)
 
         Publisher.sendMessage('SetSavePath', path=path)  # send message to canvascontroller.save_simulation
-        self.Toolbox.RefreshToolbox()
+        self.Toolbox.refresh_toolbox()
 
     def on_switch_lower_panel_tab(self, event):
         try:

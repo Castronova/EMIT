@@ -153,11 +153,13 @@ class TimeSeriesCtrl(TimeSeriesView):
             return
 
         data = self.api.parse_sites_waterml()
-        data = [d[:-2] for d in data]  # omit the last items  (latitude and longitude)
-        self.table.set_table_content(data)
 
         # save the site data
         self.sites_metadata = data
+
+        data = [d[:-2] for d in data]  # omit the last items  (latitude and longitude)
+        self.table.set_table_content(data)
+
 
     ###############################
     # EVENTS

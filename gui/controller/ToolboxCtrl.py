@@ -11,7 +11,7 @@ from sprint import *
 from utilities import models
 
 
-class ToolboxViewCtrl(ToolboxView):
+class ToolboxCtrl(ToolboxView):
     modelpaths = ""
 
     def __init__(self, parent):
@@ -61,7 +61,6 @@ class ToolboxViewCtrl(ToolboxView):
     def initBinding(self):
         self.Bind(wx.EVT_SIZE, self.OnSize)
         self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.onDoubleClick)
-        events.onSimulationSaved += self.loadSIMFile
 
     def loadToolbox(self, modelpaths):
         # add base-level folders
@@ -123,7 +122,8 @@ class ToolboxViewCtrl(ToolboxView):
                                 e = dict(cat=self.cat, txt=txt, fullpath=fullpath)
 
                                 # fixme: this should not call onSimulationSaved
-                                events.onSimulationSaved.fire(**e)
+                                # events.onSimulationSaved.fire(**e)
+                                self.loadSIMFile(e)
 
     def RefreshToolbox(self):
         self.tree.DeleteChildren(self.tree.GetRootItem())
@@ -174,10 +174,10 @@ class ToolboxViewCtrl(ToolboxView):
         self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Normal)
 
     def loadSIMFile(self, e):
-        child = self.tree.AppendItem(e.cat, e.txt)
-        self.filepath[e.txt] = e.fullpath
-        self.items[child] = e.fullpath
-        child.__setattr__('path', e.fullpath)
+        child = self.tree.AppendItem(e["cat"], e["txt"])
+        self.filepath[e["txt"]] = e["fullpath"]
+        self.items[child] = e["fullpath"]
+        child.__setattr__('path', e["fullpath"])
         self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Expanded)
         self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Normal)
 

@@ -712,7 +712,6 @@ class CanvasCtrl(CanvasView):
     def on_model_left_clicked(self, event):
         cur = self.getCursor()
 
-        # TODO: Not sure if this is and above used for anything
         if cur.Name == 'link':
             self.linkRects.append(event)
 

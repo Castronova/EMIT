@@ -1,4 +1,3 @@
-import coordinator.engineAccessors as engine
 from gui.views.EMITView import EMITView
 from sprint import *
 from utilities import gui
@@ -14,8 +13,6 @@ from gui.controller.UserCtrl import UserCtrl
 from gui.controller.SettingsCtrl import SettingsCtrl
 from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
 from gui.controller.ModelInputPromptCtrl import ModelInputPromptCtrl
-from utilities import models
-
 
 
 class EMITCtrl(EMITView):
@@ -241,7 +238,7 @@ class EMITCtrl(EMITView):
             Publisher.sendMessage('SetSavePath', path=self.save_path)  # send message to canvascontroller.save_simulation
             txt = save.Filename.split('.sim')[0]
             e = dict(cat=self.Toolbox.cat, txt=txt, fullpath=save.Path)
-            events.onSimulationSaved.fire(**e)  # calls loadSIMFile from logicToolBox
+            self.Toolbox.loadSIMFile(e)
             self.Toolbox.RefreshToolbox()
         else:
             save.Destroy()

@@ -86,6 +86,7 @@ class WofSitesCtrl(TimeSeriesPlotView):
         )
 
         engine.addModel(attrib=args)
+
         self.Close()
 
     def dicToObj(self, data):
@@ -132,7 +133,7 @@ class WofSitesCtrl(TimeSeriesPlotView):
                     hline = '#' + 75*'-' + '\n'
                     f.write(hline)
                     f.write('# \n')
-                    f.write('# NOTICE: this data set that was exported by the EMIT model coupling framework, use at your own risk \n')
+                    f.write('# NOTICE: this data set that was exported by the EMIT model coupling framework. Use at your own risk \n')
                     f.write("# \n")
                     f.write("# Date Exported: %s \n" % getTodayDate())
                     f.write("# Site Name: %s \n" % siteobject.site_name)

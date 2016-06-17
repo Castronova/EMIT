@@ -160,7 +160,6 @@ class TimeSeriesCtrl(TimeSeriesView):
         data = [d[:-2] for d in data]  # omit the last items  (latitude and longitude)
         self.table.set_table_content(data)
 
-
     ###############################
     # EVENTS
     ###############################

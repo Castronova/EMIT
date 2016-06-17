@@ -6,9 +6,8 @@ import datetime
 import imp
 import sys
 import uuid
-
+import time
 from odm2api.ODMconnection import dbconnection as dbconnection2
-
 import utilities.io as io
 from api_old.ODMconnection import dbconnection
 from emitLogging import elog
@@ -576,3 +575,6 @@ def loadAccounts():
         file.close()
 
     return known_users
+
+def get_todays_date():
+    return time.strftime("%m/%d/%Y")

@@ -1,4 +1,3 @@
-import csv
 import datetime as dt
 import threading
 import time
@@ -18,7 +17,6 @@ class WofSitesCtrl(TimeSeriesPlotView):
         table_cols = ["Variable Name", "Unit", "Category", "Type", "Begin Date Time", "End Date Time", "Description"]
         TimeSeriesPlotView.__init__(self, parent, siteObject.site_name, table_cols)
         self.site_objects = siteObject
-        # self.Bind(wx.EVT_BUTTON, self.previewPlot, self.PlotBtn)
         self.Bind(wx.EVT_BUTTON, self.onPreview, self.PlotBtn)
         self.Bind(wx.EVT_DATE_CHANGED, self.setStartDate, self.startDatePicker)
         self.Bind(wx.EVT_DATE_CHANGED, self.setEndDate, self.endDatePicker)

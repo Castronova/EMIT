@@ -99,6 +99,7 @@ class CanvasCtrl(CanvasView):
         # engine bindings
         engineEvent.onModelAdded += self.draw_box
         engineEvent.onLinkAdded += self.draw_link
+        engineEvent.onModelAddFailed += self.on_model_add_failed
         events.onDbChanged += self.on_database_changed
 
     def initSubscribers(self):
@@ -372,6 +373,8 @@ class CanvasCtrl(CanvasView):
         models = params['models'] if 'models' in params else []
         links = params['links'] if 'links' in params else []
         datamodels = params['datamodels'] if 'datamodels' in params else []
+
+        self.failed_models = 0
         total = len(models) + len(datamodels) + len(self.models) + self.failed_models
 
         # start thread that will load links when once all models have been loaded
@@ -574,8 +577,11 @@ class CanvasCtrl(CanvasView):
 
     def wait_for_model_loading(self, total, links):
         #  This method waits for all the models in the file to be loaded before linking
-        while len(self.models) < total:
+        while (len(self.models)  + self.failed_models) <  total:
             time.sleep(0.5)
+
+        if self.failed_models != 0:
+            sPrint('One or models failed to load', MessageType.ERROR)
         self.load_links(links)
         return
 
@@ -745,6 +751,19 @@ class CanvasCtrl(CanvasView):
                                     self.MovingObject.Width/2 - distFromCenter[0],
                                     self.MovingObject.Height/2 - distFromCenter[1],
                                     self.MovingObject.Height/2 + distFromCenter[1]]) - overlap
+
+    def on_model_add_failed(self, event):
+        """
+        Increments the number of failed models
+        Args:
+            event:
+
+        Returns: None
+
+        """
+
+        sPrint('Failed to add model')
+        self.failed_models += 1
 
     def on_save(self, event):
         self.GetTopLevelParent().on_save_configuration(event)

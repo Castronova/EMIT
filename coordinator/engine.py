@@ -382,6 +382,7 @@ class Coordinator(object):
                          'description': self._db[db_id]['description'],
                          'connection_string': self._db[db_id]['connection_string'],
                          'id': db_id, 'args': args}
+        db.update({'success': True})
         return db
 
 
@@ -439,6 +440,15 @@ class Coordinator(object):
             return self.__default_db
 
     def add_model(self, **params):
+        """
+        Adds a model to the engine
+        Args:
+            **params:  id: modelid
+                       config_params
+
+        Returns:  on success returns dict(id:?, name:?, model_type:?). on failure returns 0
+
+        """
 
         try:
             # load model
@@ -472,11 +482,11 @@ class Coordinator(object):
             # save the model
             self.__models[thisModel.name()] = thisModel
             sPrint('Model Loaded', MessageType.DEBUG)
-            return {'id': thisModel.id(), 'name': thisModel.name(), 'model_type': thisModel.type()}
+            return {'success': True, 'id': thisModel.id(), 'name': thisModel.name(), 'model_type': thisModel.type()}
         else:
             elog.error('Failed to load model.')
             sPrint('Failed to load model.', MessageType.ERROR)
-            return 0
+            return {'success': False}
 
 
     def add_model_old(self, id=None, attrib=None):
@@ -665,14 +675,15 @@ class Coordinator(object):
 
         for m in self.__models:
             if self.__models[m].id() == id:
-                return {'params': self.__models[m].get_config_params(),
+                return {'success': True,
+                        'params': self.__models[m].get_config_params(),
                         'name': self.__models[m].name(),
                         'id': self.__models[m].id(),
                         'description': self.__models[m].description(),
                         'type': self.__models[m].type(),
                         'attrib': self.__models[m].attrib(),
                         }
-        return None
+        return {'success':False}
 
     def get_model_by_id(self,id):
         """
@@ -741,10 +752,10 @@ class Coordinator(object):
             self.__links[id] = link
 
             # return link
-            return link.get_id()
+            return {'success': True, 'id': link.get_id()}
         else:
             elog.warning('Could Not Create Link :(')
-            return 0
+            return {'sucess': False}
 
     def add_link_by_name(self,from_id, from_item_name, to_id, to_item_name):
         """
@@ -1091,7 +1102,7 @@ class Coordinator(object):
             user_info: user's information 
             datasets: datasets to save
 
-        Returns: None
+        Returns: dict(success=True, message='') or 0
 
         """
 
@@ -1130,9 +1141,10 @@ class Coordinator(object):
             return dict(success=True, message='')
 
         except Exception as e:
-            elog.debug(e)
+            msg  = 'An error occurred during simulation: %s' % e
+            elog.debug(msg)
+            sPrint(msg, MessageType.ERROR)
             return dict(success=False, message=e)
-            # raise Exception(e.args[0])
 
 
 

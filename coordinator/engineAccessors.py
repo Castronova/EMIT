@@ -9,7 +9,7 @@ def Close():
 
 def addModel(id=None, **params):
     e = Engine()
-    kwargs = dict(id=id, event='onModelAdded')
+    kwargs = dict(id=id, event_success='onModelAdded', event_fail="onModelAddFailed")
     kwargs.update(params)
     task = [('add_model', kwargs)]
     e.setTasks(task)
@@ -22,7 +22,7 @@ def addModel(id=None, **params):
 
 def connectToDbFromFile(dbtextfile=None):
     e = Engine()
-    kwargs = dict(filepath=dbtextfile, event='onDatabaseConnected')
+    kwargs = dict(filepath=dbtextfile, event_success='onDatabaseConnected')
     task = [('connect_to_db_from_file',kwargs)]
     e.setTasks(task)
 
@@ -31,10 +31,9 @@ def connectToDbFromFile(dbtextfile=None):
     e.thread.join()
 
 def connectToDb(title, desc, engine, address, dbname, user, pwd, default=False):
-    kwargs = dict(title=title, desc=desc, engine=engine, address=address, dbname=dbname, user=user, pwd=pwd, default=default)
+    kwargs = dict(title=title, desc=desc, engine=engine, address=address, dbname=dbname, user=user, pwd=pwd, default=default, event_success='onDatabaseConnected')
     e = Engine()
-    kwargs['event'] ='onDatabaseConnected'
-    task = [('connect_to_db',kwargs)]
+    task = [('connect_to_db', kwargs)]
     e.setTasks(task)
 
     e.thread = Thread(target = e.check_for_process_results, name='connectToDb')
@@ -137,7 +136,7 @@ def getAllModels():
 
 def runSimulation(simulationName=None, dbName=None, user_info=None, datasets=None):
     e = Engine()
-    kwargs = dict(simulationName=simulationName, dbName=dbName, user_info=user_info, datasets=datasets, event='onSimulationFinished')
+    kwargs = dict(simulationName=simulationName, dbName=dbName, user_info=user_info, datasets=datasets, event_success='onSimulationFinished')
     task = [('run_simulation', kwargs)]
     e.setTasks(task)
 

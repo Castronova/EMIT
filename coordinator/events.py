@@ -10,6 +10,7 @@ onSomething = EventHook('onSomething')
 
 # Model related Events
 onModelAdded = EventHook('onModelAdded')
+onModelAddFailed = EventHook('onModelAddFailed')
 onModelRemoved = EventHook('onModelRemoved')
 
 

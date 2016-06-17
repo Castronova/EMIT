@@ -161,8 +161,6 @@ class WaterOneFlow(object):
 
         returns: A list of metadata for each site: [[name, network, code, county, state, type, lat, lon], [...]]
         """
-
-
         xml_sites = self.get_sites_in_xml()
         root = ElementTree.fromstring(xml_sites)
 
@@ -186,8 +184,8 @@ class WaterOneFlow(object):
             d.append(site.find('./wml:siteInfo/wml:geoLocation/wml:geogLocation/wml:latitude', my_namespaces).text)
             d.append(site.find('./wml:siteInfo/wml:geoLocation/wml:geogLocation/wml:longitude', my_namespaces).text)
             output.append(d)
-        return output
 
+        return output
 
     # def get_sites_in_list(self):
     #     """

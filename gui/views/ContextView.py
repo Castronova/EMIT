@@ -41,13 +41,18 @@ class ModelContextMenu(wx.Menu):
         kwargs = {'edit': False, 'spatial': True}
         model_details = ModelCtrl(f, model_id=self.model_obj.ID, **kwargs)
 
-        atts = engine.getModelById(self.model_obj.ID)['attrib']
+        model = engine.getModelById(self.model_obj.ID)
 
-        if 'mdl' in atts.keys():
-            # Populate the grid
-            data = models.parse_json(atts["mdl"])
+        if "params" in model.keys():
+            path = model["params"]["path"]  # Get the model file path
+            data = models.parse_json(path)
             model_details.properties_page_controller.add_data(data)
-        else:  # This means the model is coming from a database.
+        elif "mdl" in model["attrib"]:
+            # Populate the grid
+            data = models.parse_json(model["attrib"]["mdl"])
+            model_details.properties_page_controller.add_data(data)
+        else:
+            # A default way to load the data
             model_details.properties_page_controller.add_section("General")
             for key, value in engine.getModelById(self.model_obj.ID).iteritems():
                 if isinstance(value, dict):

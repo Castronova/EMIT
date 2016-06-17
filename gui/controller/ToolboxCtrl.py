@@ -19,15 +19,10 @@ class ToolboxCtrl(ToolboxView):
         # Initialize the View
         ToolboxView.__init__(self, parent)
 
-        self.p = parent
-
         self.cat = ""
         self.items = {}
         self.filepath = {}
         self.modelpaths = self.parseModelPaths()
-
-        # initialize event bindings
-        self.initBinding()
 
         self.loadToolbox(self.modelpaths)
 
@@ -49,18 +44,31 @@ class ToolboxCtrl(ToolboxView):
         self.Bind(wx.EVT_MENU, self.on_view_details, view_details_menu)
         self.Bind(wx.EVT_MENU, self.on_remove, remove_menu)
 
+        # initialize event bindings
+        self.Bind(wx.EVT_SIZE, self.OnSize)
+        self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.onDoubleClick)
+
     def on_view_details(self, event):
-        self.ShowDetails()
+        """
+        Files must be in json format in order for method to work
+        :param event:
+        :return:
+        """
+        name = self.tree.GetItemText(self.tree.GetSelection())
+        path = self.filepath.get(name)
+
+        model_details = ModelCtrl(self)
+
+        data = models.parse_json(path)
+        model_details.properties_page_controller.add_data(data)
+        model_details.PopulateEdit(path)
+        model_details.Show()
 
     def on_remove(self, event):
         self.Remove(event)
 
     def on_right_click(self, event):
         self.PopupMenu(self.popup_menu)
-
-    def initBinding(self):
-        self.Bind(wx.EVT_SIZE, self.OnSize)
-        self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.onDoubleClick)
 
     def loadToolbox(self, modelpaths):
         # add base-level folders
@@ -100,7 +108,6 @@ class ToolboxCtrl(ToolboxView):
                     for p in path.split(';'):
                         apath = os.path.realpath(__file__ + "../../../../" + p)
                         matches = []
-                        self.dirlist = []
 
                         for root, dirnames, filenames in os.walk(apath):
                             for filename in fnmatch.filter(filenames, '*.mdl'):
@@ -113,7 +120,6 @@ class ToolboxCtrl(ToolboxView):
                     for p in path.split(';'):
                         apath = join(dirname(abspath(__file__)), '../../' + p)
                         matches = []
-                        self.dirlist = []
                         for root, dirnames, filenames in os.walk(apath):
                             for filename in fnmatch.filter(filenames, '*.sim'):
                                 matches.append(os.path.join(root, filename))
@@ -125,7 +131,7 @@ class ToolboxCtrl(ToolboxView):
                                 # events.onSimulationSaved.fire(**e)
                                 self.loadSIMFile(e)
 
-    def RefreshToolbox(self):
+    def refresh_toolbox(self):
         self.tree.DeleteChildren(self.tree.GetRootItem())
         self.loadToolbox(self.modelpaths)
 
@@ -137,7 +143,6 @@ class ToolboxCtrl(ToolboxView):
         """
         reads the APP_TOOLBOX_PATH and parses the model/config paths
         Returns: modelpaths lists
-
         """
 
         ini = os.environ['APP_TOOLBOX_PATH']
@@ -181,14 +186,6 @@ class ToolboxCtrl(ToolboxView):
         self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Expanded)
         self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Normal)
 
-    def SetCurrentlySelected(self, evt):
-        item = self.tree.GetSelection()
-
-        for i in self.items.keys():
-            if i == item:
-                self.__currently_selected_item_path = os.path.abspath(self.items[i])
-                break
-
     def onDoubleClick(self, event):
         id = event.GetItem()
         filename = id.GetText()
@@ -200,40 +197,9 @@ class ToolboxCtrl(ToolboxView):
         except Exception, e:
             # Clicked on a folder
             elog.error(e)
-            pass
 
-    def OnSize(self, evt):
+    def OnSize(self, event):
         self.tree.SetSize(self.GetSize())
-
-    def OnExpandAll(self):
-        self.tree.Expand(self.root_mdl)
-
-    def OnCollapseAll(self):
-        self.tree.Collapse(self.root_mdl)
-
-    def ShowDetails(self):
-        name = self.tree.GetItemText(self.tree.GetSelection())
-        path = self.filepath.get(name)
-
-        filename, ext = os.path.splitext(path)
-        if ext == '.mdl':
-            model_details = ModelCtrl(self)
-
-            data = models.parse_json(path)
-            model_details.properties_page_controller.add_data(data)
-            model_details.PopulateEdit(path)
-            model_details.Show()
-
-        if ext == '.sim':
-
-            kwargs = {'configuration': True, 'edit': False, 'properties': False, 'spatial': False}
-            model_details = ModelCtrl(self, **kwargs)
-            try:
-                model_details.ConfigurationDisplay(path)
-                model_details.Show()
-            except:
-                dlg = wx.MessageDialog(None, 'Error trying to view details', 'Error', wx.OK)
-                dlg.ShowModal()
 
     def Remove(self, e):
         dlg = wx.MessageDialog(None, 'Are you sure you would like to delete?', 'Question',

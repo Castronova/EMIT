@@ -16,26 +16,16 @@
 		"simulation_start": "03/01/2014 12:00:00",
 		"simulation_end": "05/01/2014 13:00:00"
 	}],
-	
-	"time_step": [{
-		"name": "hours",
-		"abbreviation": "hr",
-		"value": 1
-		
-	}],
-	
-	"output": [{
-		"variable_name_cv": "Precipitation",
-		"unit_type_cv": "international inch",
-		"elementset": "./test/gis/rhf_watershed.shp"
-	}],
-	
-	"model inputs": [{
-		"weather_csv": "./test/data/weather.csv"
-		
-	}],
-	
+
 	"options":[{
 		"ignorecv": 1
+	}],
+
+	"model_inputs": [{
+	    "label": "Weather CSV Filex",
+	    "help": "CSV file containing weather data [click here] for more details.",
+	    "variable": "weather_csv",
+	    "input": "file",
+	    "required": "True"
 	}]
 }

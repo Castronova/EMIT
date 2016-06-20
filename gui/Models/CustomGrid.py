@@ -47,7 +47,7 @@ class CustomGrid(wx.grid.Grid):
         self.InsertRows(pos=self.__section_row_number[max_position] + 1)
 
         # Set the cell to expand and fill the size of the grid
-        self.SetCellSize(row=self.__section_row_number[max_position] + 1, col=0, num_rows=1, num_cols=self.grid.GetNumberCols())
+        self.SetCellSize(row=self.__section_row_number[max_position] + 1, col=0, num_rows=1, num_cols=self.GetNumberCols())
 
         # Set the section title
         self.SetCellValue(self.__section_row_number[max_position] + 1, 0, str(name))

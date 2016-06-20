@@ -54,7 +54,7 @@ class NetcdfDetailsView(wx.Frame):
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.top_panel, 1, wx.EXPAND | wx.ALL, 2)
-        sizer.Add(self.bottom_panel, 1, wx.EXPAND | wx.ALL, 2)
+        sizer.Add(self.bottom_panel, 0, wx.EXPAND | wx.ALL, 2)
         panel.SetSizer(sizer)
 
         self.Show()

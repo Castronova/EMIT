@@ -31,7 +31,6 @@ class ModelInputPromptView(wx.Frame):
                 self.valid_params = 0  # set the parameter validation as True
                 return
 
-
         title = "Input for " + self.params["model"][0]["code"]
         self.SetTitle(title)
 

@@ -19,7 +19,7 @@ class NetcdfDetailsCtrl(NetcdfDetailsView):
 
         # populate the property grid
         # self.populateList()
-
+        self.populate_grid()
         # populate the combo boxes
         # if len(self.variables) > 0:
         #     self.x_spatial_var_combo.AppendItems(self.variables)
@@ -74,13 +74,11 @@ class NetcdfDetailsCtrl(NetcdfDetailsView):
         self.Close()
 
     def populateList(self):
-        alreadyUsed = {}
-
         # connect to the selected netcdf file
         self.ds = nc.Dataset(self.fileurl)
 
         # get all of the attributes of this file and add them to the property grid
-        keys =  self.ds.__dict__.keys()
+        keys = self.ds.__dict__.keys()
         g = self.property_grid.Append(wxpg.PropertyCategory("Global Attributes"))
         for key in keys:
             self.property_grid.Append(wxpg.StringProperty(str(key), value=str(self.ds.__dict__[key])))
@@ -96,7 +94,8 @@ class NetcdfDetailsCtrl(NetcdfDetailsView):
             try:
                 drange = '%3.3f.....%3.3f' % (self.ds.variables[dim][0], self.ds.variables[dim][-1])
                 self.property_grid.Append(wxpg.StringProperty(label='data range', name=dim+'_min', value=str(drange)))
-            except: pass
+            except:
+                pass
 
         # get all of the variable properties and add them to the property grid
         self.variables = self.ds.variables.keys()
@@ -105,5 +104,46 @@ class NetcdfDetailsCtrl(NetcdfDetailsView):
             info = self.ds.variables[var].__dict__.keys()
             for i in info:
                 self.property_grid.Append(wxpg.StringProperty(label=str(i), name=str(var)+'_'+str(i), value=str(self.ds.variables[var].__dict__[i])))
+
+    def populate_grid(self):
+        data_set = nc.Dataset(self.fileurl)  # Change fileurl to URL
+        # self.property_grid.add_section("Global Attributes")  # Change global attributes to general
+        # data = data_set.__dict__
+
+        dimensions = data_set.dimensions
+        variables = data_set.variables
+
+        grid_data = {}
+        for key, value in dimensions.iteritems():
+            grid_data[key + " (dimensions)"] = [{
+                "size": len(value),
+                "is unlimited": value.isunlimited()
+            }]
+
+        for key, value in variables.iteritems():
+            info = value.__dict__.keys()
+            section_name = key + " (variables)"
+            items = {}
+            for i in info:
+                items = {
+                    str(value.__dict__[i]): variables[key].__dict__[i]
+                }
+            grid_data[section_name] = [items]
+
+        # for key, value in variables.iteritems()
+        self.property_grid.add_data(grid_data)
+
+        # key + "_" + i
+
+
+
+
+
+
+
+
+
+
+
 
 

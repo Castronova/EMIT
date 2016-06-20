@@ -1,17 +1,19 @@
 import wx
 import wx.propgrid as wxpg
+from gui.Models.CustomGrid import CustomGrid
 
 
 class NetcdfDetailsView(wx.Frame):
 
     def __init__(self, parent):
-        wx.Frame.__init__(self, parent=parent, id=-1, title=str("Netcdf file information"), pos=wx.DefaultPosition,
-                          size=(650, 565), style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
+        wx.Frame.__init__(self, parent=parent, size=(650, 565),
+                          style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
         panel = wx.Panel(self)
         self.top_panel = wx.Panel(panel)
         self.bottom_panel = wx.Panel(panel)
 
-        self.property_grid = MyPropertyGrid(self.top_panel, id=wx.ID_ANY, pos=wx.Point(0, 0), size=(500, 400))
+        # self.property_grid = MyPropertyGrid(self.top_panel, id=wx.ID_ANY, pos=wx.Point(0, 0), size=(500, 400))
+        self.property_grid = CustomGrid(self.top_panel)
 
         #  Makes the property grid fill the entire top panel
         hbox_top_panel = wx.BoxSizer(wx.HORIZONTAL)
@@ -56,8 +58,3 @@ class NetcdfDetailsView(wx.Frame):
         panel.SetSizer(sizer)
 
         self.Show()
-
-
-class MyPropertyGrid(wx.propgrid.PropertyGrid):
-    def __init__(self, *args, **kwargs):
-        wxpg.PropertyGrid.__init__(self, *args, **kwargs)

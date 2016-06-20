@@ -9,16 +9,16 @@ import requests
 import wx
 
 from gui.controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
-from gui.views.NetcdfViewer import NetcdfViewer
+from gui.views.OpenDapExplorerView import OpenDapExplorerView
 
 
-class NetcdfCtrl(NetcdfViewer):
+class NetcdfCtrl(OpenDapExplorerView):
 
     def __init__(self, parent):  # What parameters does this need?
         # namespaces for XML parsing
         self.thredds = "http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0"
         self.xlink = "http://www.w3.org/1999/xlink"
-        NetcdfViewer.__init__(self, parent=parent)
+        OpenDapExplorerView.__init__(self, parent=parent)
         self.Bind(wx.EVT_BUTTON, self.downloadFile, self.download_btn)
         self.Bind(wx.EVT_BUTTON, self.onView, self.view_btn)
         self.Bind(wx.EVT_BUTTON, self.RunCrawler, self.get_btn)

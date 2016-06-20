@@ -18,20 +18,20 @@ class NetcdfDetailsCtrl(NetcdfDetailsView):
         self.variables = []
 
         # populate the property grid
-        self.populateList()
+        # self.populateList()
 
         # populate the combo boxes
-        if len(self.variables) > 0:
-            self.x_spatial_var_combo.AppendItems(self.variables)
-            self.y_spatial_var_combo.AppendItems(self.variables)
-            self.time_var_combo.AppendItems(self.variables)
-        self.time_step_combo.AppendItems(['seconds', 'minutes', 'hours', 'days', 'years'])
-        self.Bind(wx.EVT_BUTTON, self.addToCanvasBTn, self.add_to_canvas_btn)
-
-        self.time_step_combo.Bind(wx.EVT_COMBOBOX, self.checkComboBoxSelections)
-        self.x_spatial_var_combo.Bind(wx.EVT_COMBOBOX, self.checkComboBoxSelections)
-        self.y_spatial_var_combo.Bind(wx.EVT_COMBOBOX, self.checkComboBoxSelections)
-        self.time_var_combo.Bind(wx.EVT_COMBOBOX, self.checkComboBoxSelections)
+        # if len(self.variables) > 0:
+        #     self.x_spatial_var_combo.AppendItems(self.variables)
+        #     self.y_spatial_var_combo.AppendItems(self.variables)
+        #     self.time_var_combo.AppendItems(self.variables)
+        # self.time_step_combo.AppendItems(['seconds', 'minutes', 'hours', 'days', 'years'])
+        # self.Bind(wx.EVT_BUTTON, self.addToCanvasBTn, self.add_to_canvas_btn)
+        #
+        # self.time_step_combo.Bind(wx.EVT_COMBOBOX, self.checkComboBoxSelections)
+        # self.x_spatial_var_combo.Bind(wx.EVT_COMBOBOX, self.checkComboBoxSelections)
+        # self.y_spatial_var_combo.Bind(wx.EVT_COMBOBOX, self.checkComboBoxSelections)
+        # self.time_var_combo.Bind(wx.EVT_COMBOBOX, self.checkComboBoxSelections)
 
     def checkComboBoxSelections(self, event):
         """

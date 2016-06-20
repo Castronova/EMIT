@@ -9,9 +9,6 @@ class ModelInputPromptCtrl(ModelInputPromptView):
     def __init__(self, parent, path):
         ModelInputPromptView.__init__(self, parent, path)
 
-        # Disables all other windows in the application so that the user can only interact with this window.
-        self.MakeModal(True)
-
         # exit if parameters are invalid
         if not self.valid_params:
             return
@@ -26,6 +23,9 @@ class ModelInputPromptCtrl(ModelInputPromptView):
             else:
                 self.emitCtrl.Canvas.load_simulation(path)
             return
+
+        # Disables all other windows in the application so that the user can only interact with this window.
+        self.MakeModal(True)
 
         # Bindings
         self.Bind(wx.EVT_CLOSE, self.on_close)

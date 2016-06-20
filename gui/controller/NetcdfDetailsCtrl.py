@@ -18,20 +18,20 @@ class NetcdfDetailsCtrl(NetcdfDetailsView):
         self.variables = []
 
         # populate the property grid
-        # self.populateList()
         self.populate_grid()
+
         # populate the combo boxes
-        # if len(self.variables) > 0:
-        #     self.x_spatial_var_combo.AppendItems(self.variables)
-        #     self.y_spatial_var_combo.AppendItems(self.variables)
-        #     self.time_var_combo.AppendItems(self.variables)
-        # self.time_step_combo.AppendItems(['seconds', 'minutes', 'hours', 'days', 'years'])
-        # self.Bind(wx.EVT_BUTTON, self.addToCanvasBTn, self.add_to_canvas_btn)
+        if len(self.variables) > 0:
+            self.x_spatial_var_combo.AppendItems(self.variables)
+            self.y_spatial_var_combo.AppendItems(self.variables)
+            self.time_var_combo.AppendItems(self.variables)
+        self.time_step_combo.AppendItems(['seconds', 'minutes', 'hours', 'days', 'years'])
+        self.Bind(wx.EVT_BUTTON, self.addToCanvasBTn, self.add_to_canvas_btn)
         #
-        # self.time_step_combo.Bind(wx.EVT_COMBOBOX, self.checkComboBoxSelections)
-        # self.x_spatial_var_combo.Bind(wx.EVT_COMBOBOX, self.checkComboBoxSelections)
-        # self.y_spatial_var_combo.Bind(wx.EVT_COMBOBOX, self.checkComboBoxSelections)
-        # self.time_var_combo.Bind(wx.EVT_COMBOBOX, self.checkComboBoxSelections)
+        self.time_step_combo.Bind(wx.EVT_COMBOBOX, self.checkComboBoxSelections)
+        self.x_spatial_var_combo.Bind(wx.EVT_COMBOBOX, self.checkComboBoxSelections)
+        self.y_spatial_var_combo.Bind(wx.EVT_COMBOBOX, self.checkComboBoxSelections)
+        self.time_var_combo.Bind(wx.EVT_COMBOBOX, self.checkComboBoxSelections)
 
     def checkComboBoxSelections(self, event):
         """
@@ -106,44 +106,20 @@ class NetcdfDetailsCtrl(NetcdfDetailsView):
                 self.property_grid.Append(wxpg.StringProperty(label=str(i), name=str(var)+'_'+str(i), value=str(self.ds.variables[var].__dict__[i])))
 
     def populate_grid(self):
-        data_set = nc.Dataset(self.fileurl)  # Change fileurl to URL
-        # self.property_grid.add_section("Global Attributes")  # Change global attributes to general
-        # data = data_set.__dict__
+        self.ds = nc.Dataset(self.fileurl)
+        section = 0
+        self.property_grid.add_section("Global Attributes")
+        for key, value in self.ds.__dict__.iteritems():
+            self.property_grid.add_data_to_section(section, key, value)
 
-        dimensions = data_set.dimensions
-        variables = data_set.variables
+        for key, value in self.ds.dimensions.iteritems():
+            self.property_grid.add_section(key + " (dimensions)")
+            section += 1
+            self.property_grid.add_data_to_section(section, "size", len(value))
+            self.property_grid.add_data_to_section(section, "is unlimited", value.isunlimited())
 
-        grid_data = {}
-        for key, value in dimensions.iteritems():
-            grid_data[key + " (dimensions)"] = [{
-                "size": len(value),
-                "is unlimited": value.isunlimited()
-            }]
-
-        for key, value in variables.iteritems():
-            info = value.__dict__.keys()
-            section_name = key + " (variables)"
-            items = {}
-            for i in info:
-                items = {
-                    str(value.__dict__[i]): variables[key].__dict__[i]
-                }
-            grid_data[section_name] = [items]
-
-        # for key, value in variables.iteritems()
-        self.property_grid.add_data(grid_data)
-
-        # key + "_" + i
-
-
-
-
-
-
-
-
-
-
-
-
-
+        for key, value in self.ds.variables.iteritems():
+            self.property_grid.add_section(key + " (variable)")
+            section += 1
+            for k, v in value.__dict__.iteritems():
+                self.property_grid.add_data_to_section(section, k, v)

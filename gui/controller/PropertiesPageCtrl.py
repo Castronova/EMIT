@@ -68,6 +68,35 @@ class PropertiesPageCtrl(PropertiesPageView):
 
         self.enable_scroll_bar_on_startup()
 
+    def add_data_simulation(self, data):
+        """
+        Handles data that comes from a simulation
+        Model names are sections
+        :param data: Must be a dictionary, where the values are a list of dictionaries. data: type(dict: [dict])
+        :return:
+        """
+        sorted_sections = sorted(data.keys())
+        section = 0
+        for each_section in sorted_sections:
+            if isinstance(data[each_section], list):
+                self.add_section(each_section)
+                for models in data[each_section]:
+                    for k, v in models.iteritems():
+                        if not isinstance(v, dict):
+                            self.add_data_to_section(section, k, v)
+                        else:
+                            if not len(v):
+                                self.add_data_to_section(section, k, None)
+                            for key, value in v.iteritems():
+                                self.add_data_to_section(section, key, value)
+                section += 1
+
+        self.enable_scroll_bar_on_startup()
+
+    def __split_section_by_model(self, models):
+
+        pass
+
     def enable_drag_grid_size(self, enable=False):
         self.grid.EnableDragGridSize(enable)
 

@@ -60,7 +60,12 @@ class ToolboxCtrl(ToolboxView):
         model_details = ModelCtrl(self)
 
         data = models.parse_json(path)
-        model_details.properties_page_controller.add_data(data)
+
+        if path[-4:] == ".sim":
+            model_details.properties_page_controller.add_data_simulation(data)
+        else:
+            # Not a simulation
+            model_details.properties_page_controller.add_data(data)
         model_details.PopulateEdit(path)
         model_details.Show()
 

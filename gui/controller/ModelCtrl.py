@@ -1,10 +1,7 @@
 import wx
-import wx.propgrid as wxpg
 from wx.lib.pubsub import pub as Publisher
-from gui.controller.PropertiesPageCtrl import PropertiesPageCtrl
 from gui.views.ModelView import ModelView
-from utilities import gui
-
+from gui.Models.CustomGrid import CustomGrid
 
 class ModelCtrl(ModelView):
 
@@ -13,7 +10,7 @@ class ModelCtrl(ModelView):
         ModelView.__init__(self, parent, **kwargs)
 
         self.parent = parent
-        self.properties_page_controller = PropertiesPageCtrl(self.notebook)
+        self.properties_page_controller = CustomGrid(self.notebook)
         self.notebook.AddPage(self.properties_page_controller, "Properties")
         if self.spatial_page:
             self.notebook.AddPage(self.spatial_page, "Spatial Definition")

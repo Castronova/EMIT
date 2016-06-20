@@ -22,25 +22,6 @@ class CustomGrid(wx.grid.Grid):
 
         self.Bind(wx.EVT_SIZE, self.frame_resizing)
 
-    def get_grid_width(self):
-        return self.GetColSize(0) + self.GetColSize(1)
-
-    def resize_grid_to_fill_white_space(self):
-        col_size = self.GetColSize(0)
-        C, R = self.GetSize()
-        if C - col_size > 0:
-            self.SetColSize(1, C - col_size)
-
-    def restore_min_grid_width(self):
-        # Sets the width of the grid to fit the content.
-        self.SetColSize(1, self._min_grid_width_size)
-
-    def resize_window_to_fit(self):
-        self.frame_sizer.Fit(self)
-
-    def set_cell_background_color(self, row, column, color):
-        self.SetCellBackgroundColour(row, column, color)
-
     def add_section(self, name):
         max_position = self.get_max_section_position() # rename max_position to section
         # Create a new row that will become the section
@@ -120,10 +101,6 @@ class CustomGrid(wx.grid.Grid):
 
         self.enable_scroll_bar_on_startup()
 
-    def __split_section_by_model(self, models):
-
-        pass
-
     def enable_drag_grid_size(self, enable=False):
         self.EnableDragGridSize(enable)
 
@@ -141,12 +118,31 @@ class CustomGrid(wx.grid.Grid):
         x, y = self.GetSize()
         self.SetSize((x + 1, y + 1))
 
+    def get_grid_width(self):
+        return self.GetColSize(0) + self.GetColSize(1)
+
     def get_max_section_position(self):
         max_position = -1
         for key, value in self.__section_row_number.iteritems():
             if key > max_position:
                 max_position = key
         return max_position
+
+    def resize_grid_to_fill_white_space(self):
+        col_size = self.GetColSize(0)
+        C, R = self.GetSize()
+        if C - col_size > 0:
+            self.SetColSize(1, C - col_size)
+
+    def restore_min_grid_width(self):
+        # Sets the width of the grid to fit the content.
+        self.SetColSize(1, self._min_grid_width_size)
+
+    def resize_window_to_fit(self):
+        self.frame_sizer.Fit(self)
+
+    def set_cell_background_color(self, row, column, color):
+        self.SetCellBackgroundColour(row, column, color)
 
     def _update_section(self):
         """

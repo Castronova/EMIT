@@ -117,7 +117,8 @@ class CustomGrid(wx.grid.Grid):
 		if section_tag:
 			for item in data:  # Base case
 				if section_tag not in item:
-					return  # section_tag is not a key in data
+					# section_tag is not a key in data
+					raise Exception("CustomGrid.add_list_of_dictionary -> section_tag is not a key in item")
 
 		for item in data:
 			if section_tag:
@@ -125,7 +126,29 @@ class CustomGrid(wx.grid.Grid):
 			else:
 				section = self.add_section(item["type"])
 			for key, value in item.iteritems():
-				self.add_data_to_section(section, key, value)
+				if isinstance(value, dict):
+					self.add_dictionary(value)
+				else:
+					self.add_data_to_section(section, key, value)
+
+	def add_dictionary(self, data, section_name=None):
+		"""
+		:param data:
+		:param section_name:
+		:return:
+		"""
+		if not len(data):
+			return  # Empty dictionary
+
+		if not isinstance(data, dict):
+			raise Exception("CustomGrid.add_dictionary() -> data must be a dictionary")
+
+		section = max(self.__section_row_number.keys())  # Get a default section
+		if section_name:
+			section = self.add_section(section_name)
+
+		for key, value in data.iteritems():
+			self.add_data_to_section(section, key, value)
 
 	def enable_drag_grid_size(self, enable=False):
 		self.EnableDragGridSize(enable)

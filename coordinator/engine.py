@@ -565,29 +565,33 @@ class Coordinator(object):
         """
 
         # check that from and to models exist in composition
-        From = self.get_model_by_id(from_id)
-        To = self.get_model_by_id(to_id)
+        from_model= self.get_model(from_id)
+        to_model = self.get_model(to_id)
+
         try:
 
-            if self.get_model_by_id(from_id) is None: raise Exception('> '+from_id+' does not exist in configuration')
-            if self.get_model_by_id(to_id) is None: raise Exception('> ' + to_id+' does not exist in configuration')
+            if from_model is None:
+                raise Exception('> '+from_id+' does not exist in configuration')
+            if to_model is None:
+                raise Exception('> ' + to_id+' does not exist in configuration')
+
         except Exception, e:
             elog.error(e)
-            return 0
+            return None
 
         # check that input and output exchange items exist
-        ii = To.get_input_exchange_item_by_name(to_item_id)
-        oi = From.get_output_exchange_item_by_name(from_item_id)
+        ii = to_model.get_input_exchange_item_by_name(to_item_id)
+        oi = from_model.get_output_exchange_item_by_name(from_item_id)
 
         if ii is not None and oi is not None:
-            # generate a unique model id
+            # generate a unique id
             if uid is None:
-                id = 'L'+uuid.uuid4().hex
+                lid = 'L'+uuid.uuid4().hex
             else:
-                id = uid
+                lid = uid
 
             # create link
-            link = Link(id,From,To,oi,ii)
+            link = Link(lid, from_model, to_model, oi, ii)
 
             # add spatial and temporal interpolations
             if spatial_interp is not None:
@@ -596,15 +600,18 @@ class Coordinator(object):
                 link.temporal_interpolation(temporal_interp)
 
             # save the link
-            self.__links[id] = link
+            self.__links[lid] = link
 
-            # return link
-            return {'success': True, 'id': link.get_id()}
+            return link
+
         else:
-            elog.warning('Could Not Create Link :(')
-            return {'sucess': False}
 
-    def add_link_by_name(self,from_id, from_item_name, to_id, to_item_name):
+            msg = 'Failed to create link'
+            elog.error(msg)
+            sPrint(msg, MessageType.ERROR)
+            return None
+
+    def add_link_by_name(self, from_id, from_item_name, to_id, to_item_name):
         """
         Creates a new link in the Coordinator
 
@@ -1191,3 +1198,27 @@ class Serializable(Coordinator):
             return {'success': True, 'result': res}
         else:
             return {'success': False, 'result': res}
+
+    def add_link(self,from_id, from_item_id, to_id, to_item_id, spatial_interp=None, temporal_interp=None, uid=None):
+        """
+        Creates a new link in the Coordinator
+
+        Args:
+            from_id: id of the source model (type:string)
+            from_item_id: id of the source exchange item (type:string)
+            to_id: id of the target model (type:string)
+            to_item_id: id of the target exchange item (type:string)
+            spatial_interp: spatial_interpolation
+            temporal_interp: temporal_interpolation
+            uid: unique id for the link
+
+        Returns: id of the link that was created or 0
+
+        """
+
+        res = super(Serializable, self).add_link(from_id, from_item_id, to_id, to_item_id, spatial_interp, temporal_interp, uid)
+
+        if res is not None:
+            return {'success': True, 'result':{'id': res.get_id()}}
+        else:
+            return {'success': False, 'result': None}

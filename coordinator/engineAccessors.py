@@ -96,7 +96,7 @@ def getLinksBtwnModels(from_model_id, to_model_id):
     task = [('get_links_btwn_models', kwargs)]
     e.setTasks(task)
     result = e.processTasks()
-    return result
+    return result.pop('result')
 
 def getLinkById(linkid):
     e = Engine()

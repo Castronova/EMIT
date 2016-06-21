@@ -736,23 +736,23 @@ class Coordinator(object):
             source_id = link.source_component().id()
             target_id = link.target_component().id()
             if source_id == from_model_id and target_id == to_model_id:
-                # links.append(link)
-                spatial = link.spatial_interpolation().name() \
-                    if link.spatial_interpolation() is not None \
-                    else 'None'
-                temporal = link.temporal_interpolation().name() \
-                    if link.temporal_interpolation() is not None \
-                    else 'None'
-                link_dict = dict(id=link.get_id(),
-                                 source_id=source_id,
-                                 target_id=target_id,
-                                 source_name=link.source_component().name(),
-                                 target_name=link.target_component().name(),
-                                 source_item=link.source_exchange_item().name(),
-                                 target_item=link.target_exchange_item().name(),
-                                 spatial_interpolation=spatial,
-                                 temporal_interpolation=temporal)
-                links.append(link_dict)
+                links.append(link)
+                # spatial = link.spatial_interpolation().name() \
+                #     if link.spatial_interpolation() is not None \
+                #     else 'None'
+                # temporal = link.temporal_interpolation().name() \
+                #     if link.temporal_interpolation() is not None \
+                #     else 'None'
+                # link_dict = dict(id=link.get_id(),
+                #                  source_id=source_id,
+                #                  target_id=target_id,
+                #                  source_name=link.source_component().name(),
+                #                  target_name=link.target_component().name(),
+                #                  source_item=link.source_exchange_item().name(),
+                #                  target_item=link.target_exchange_item().name(),
+                #                  spatial_interpolation=spatial,
+                #                  temporal_interpolation=temporal)
+                # links.append(link_dict)
 
         return links
 
@@ -1161,3 +1161,41 @@ class Serializable(Coordinator):
     def remove_all_models_and_links(self):
         res = super(Serializable, self).remove_all_models_and_links()
         return {'success': True, 'result': res}
+
+    def get_links_btwn_models(self, from_model_id, to_model_id):
+        """
+        Gets all information related to a link between the specified models
+        Args:
+            from_model_id: id of the source model (type:string)
+            to_model_id: id of the target model (type:string)
+
+        Returns: list of link dictionary objects (one for each exchange item on the link)
+
+        """
+
+        links = super(Serializable, self).get_links_btwn_models(from_model_id, to_model_id)
+
+        serialized_links = []
+
+        for link in links:
+            source_id = link.source_component().id()
+            target_id = link.target_component().id()
+
+            # links.append(link)
+            spatial = link.spatial_interpolation().name() \
+                if link.spatial_interpolation() is not None else 'None'
+            temporal = link.temporal_interpolation().name() \
+                if link.temporal_interpolation() is not None else 'None'
+
+            d = dict(id=link.get_id(),
+                     source_id=source_id,
+                     target_id=target_id,
+                     source_name=link.source_component().name(),
+                     target_name=link.target_component().name(),
+                     source_item=link.source_exchange_item().name(),
+                     target_item=link.target_exchange_item().name(),
+                     spatial_interpolation=spatial,
+                     temporal_interpolation=temporal)
+            serialized_links.append(d)
+
+        return {'success': True, 'result': serialized_links}

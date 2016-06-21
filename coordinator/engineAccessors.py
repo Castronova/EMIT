@@ -84,7 +84,7 @@ def getModelById(modelid):
     task = [('get_model_by_id_summary', kwargs)]
     e.setTasks(task)
     result = e.processTasks()
-    return result
+    return result.pop('result')
 
 def getExchangeItems(modelid, exchange_item_type='INPUT', returnGeoms=True):
     e = Engine()
@@ -92,7 +92,7 @@ def getExchangeItems(modelid, exchange_item_type='INPUT', returnGeoms=True):
     task = [('get_exchange_item_info', kwargs)]
     e.setTasks(task)
     result = e.processTasks()
-    return result
+    return result.pop('result')
 
 def getLinksBtwnModels(from_model_id, to_model_id):
     e = Engine()

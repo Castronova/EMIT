@@ -672,18 +672,18 @@ class Coordinator(object):
         :param id: model id
         :return: serializable summary of the model's metadata
         """
-
         for m in self.__models:
             if self.__models[m].id() == id:
-                return {'success': True,
-                        'params': self.__models[m].get_config_params(),
+                res =   {'params': self.__models[m].get_config_params(),
                         'name': self.__models[m].name(),
                         'id': self.__models[m].id(),
                         'description': self.__models[m].description(),
                         'type': self.__models[m].type(),
-                        'attrib': self.__models[m].attrib(),
+                        'attrib': self.__models[m].attrib()
                         }
-        return {'success':False}
+
+                return {'success': True, 'result': res}
+        return {'success': False, 'result': None}
 
     def get_model_by_id(self,id):
         """
@@ -975,7 +975,7 @@ class Coordinator(object):
             exchange_item_type: the type of exchange item to retrieve (type: stdlib.ExchangeItemType)
             returnGeoms: indicate if geometries should be returned (type: bool)
 
-        Returns: list of exchange items in a serializable format 
+        Returns: dict(success=bool, result=[list of exchange items in a serializable format])
 
         """
 
@@ -990,13 +990,13 @@ class Coordinator(object):
         elif exchange_item_type == stdlib.ExchangeItemType.OUTPUT:
             items = model.get_output_exchange_items()
         else:
-            sPrint('Invalid exchange item type provided')
-            return None
+            sPrint('Invalid exchange item type provided', MessageType.ERROR)
+            return {'success':'False', 'result': None}
 
         for i in items:
             ei_values.append(self.summarize_exhange_item(i, returnGeoms))
 
-        return ei_values
+        return {'success': 'True', 'result': ei_values}
 
     def update_link(self, link_id, from_geom_dict, from_to_spatial_map):
 

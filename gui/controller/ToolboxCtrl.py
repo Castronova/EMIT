@@ -66,6 +66,8 @@ class ToolboxCtrl(ToolboxView):
         else:
             # Not a simulation
             model_details.properties_page_controller.add_data(data)
+
+
         model_details.PopulateEdit(path)
         model_details.Show()
 

@@ -19,7 +19,7 @@ class NetcdfCtrl(OpenDapExplorerView):
         self.thredds = "http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0"
         self.xlink = "http://www.w3.org/1999/xlink"
         OpenDapExplorerView.__init__(self, parent=parent)
-        self.Bind(wx.EVT_BUTTON, self.downloadFile, self.download_btn)
+        self.Bind(wx.EVT_BUTTON, self.on_download, self.download_btn)
         self.Bind(wx.EVT_BUTTON, self.onView, self.view_btn)
         self.Bind(wx.EVT_BUTTON, self.RunCrawler, self.get_btn)
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.enableBtns)
@@ -79,7 +79,7 @@ class NetcdfCtrl(OpenDapExplorerView):
         self.view_btn.Disable()
         self.download_btn.Disable()
 
-    def downloadFile(self, event):
+    def on_download(self, event):
 
         # get the file url by rowid and colid
         rowid = self.getSelectedIndexRow()
@@ -87,7 +87,7 @@ class NetcdfCtrl(OpenDapExplorerView):
         url = self.TableValues[rowid][colid]
 
         # open a dialog to get save path
-        saveFileDialog = wx.FileDialog(self, "Save NetCDF file", "", "", "nc files (*.nc)|*.nc", wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+        saveFileDialog = wx.FileDialog(self, message="Save NetCDF file", defaultDir=os.getcwd(), wildcard="nc files (*.nc)|*.nc", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
         if saveFileDialog.ShowModal() == wx.ID_CANCEL:
             return
         output_path = saveFileDialog.GetPath()

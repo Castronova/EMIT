@@ -46,7 +46,7 @@ class ModelInputPromptView(wx.Frame):
 
         # Add components dynamically
         for item in model_inputs:
-            static_text = wx.StaticText(scroll_panel, id=count, label=item["label"] + ":")
+            static_text = wx.StaticText(scroll_panel, id=count, label=item["name"] + ":")
             help_text = wx.StaticText(scroll_panel, id=count, label=item["help"])
             text_ctrl = wx.TextCtrl(scroll_panel, id=count)
 

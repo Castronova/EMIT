@@ -24,29 +24,35 @@
   }],
 
   "output": [{
+  	  "name": "random POLYGON 1-10",
       "variable_name_cv": "random POLYGON 1-10",
       "unit_type_cv": "international inch",
       "elementset": "POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))",
       "epsg_code": 2921
     }, {
+      "name": "random POLYGON 10-100",
       "variable_name_cv": "random POLYGON 10-100",
       "unit_type_cv": "international inch",
       "elementset": "MULTIPOLYGON (((30 20, 45 40, 10 40, 30 20)), ((15 5, 40 10, 10 20, 5 10, 15 5)))",
       "epsg_code": 2921
     }, {
+      "name": "random POLYGON 100-1000",
       "variable_name_cv": "random POLYGON 100-1000",
       "unit_type_cv": "international inch",
       "elementset": "POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))",
       "epsg_code": 2921
     }, {
+      "name": "random POINT 1-10",
       "variable_name_cv": "random POINT 1-10",
       "unit_type_cv": "international inch",
       "elementset": "MULTIPOINT ((10 40), (40 30), (20 20), (30 10))"
     }, {
+      "name": "random LINESTRING 10-100",
       "variable_name_cv": "random LINESTRING 10-100",
       "unit_type_cv": "international inch",
       "elementset": "LINESTRING (30 10, 10 30, 40 40)"
     }, {
+      "name": "random POINT 100-1000",
       "variable_name_cv": "random POINT 100-1000",
       "unit_type_cv": "international inch",
       "elementset": "POINT(-1214208.0463092658 314026.13196701976)"

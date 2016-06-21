@@ -29,6 +29,7 @@
   ],
   "output":[
     {
+	  "name": "multipliedValue",
       "variable_name_cv": "multipliedValue",
       "unit_type_cv": "international inch",
       "elementset": "POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))",
@@ -37,6 +38,7 @@
   ],
   "input":[
     {
+	  "name": "some_value",
       "variable_name_cv": "some_value",
       "unit_type_cv": "international inch",
       "elementset": "POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))",

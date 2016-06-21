@@ -24,18 +24,22 @@
 	}],
 
 	"output": [{
+		"name": "Snow Water Equivalent",
 		"variable_name_cv": "Snow Water Equivalent",
 		"unit_type_cv": "meters"
 	}, {
+		"name": "Surface Water Input Total",
 		"variable_name_cv": "Surface Water Input Total",
 		"unit_type_cv": "meters"
 	}],
 
 
 	"input": [{
+		"name": "Precipitation",
 		"variable_name_cv": "Precipitation",
 		"unit_type_cv": "meters per hour"
 	}, {
+		"name": "Temperature",
 		"variable_name_cv": "Temperature",
 		"unit_type_cv": "degrees celsius"
 	}],

@@ -27,12 +27,14 @@
 
 	
 	"output": [{
+		"name": "excess",
 		"variable_name_cv": "excess",
 		"unit_type_cv": "inches"
 	}],
 
 		
 	"input": [{
+		"name": "precipitation",
 		"variable_name_cv": "precipitation",
 		"unit_type_cv": "international inch",
 		"elementset": "./test/gis/rhf_watershed.shp"

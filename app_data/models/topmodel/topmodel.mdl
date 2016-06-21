@@ -48,19 +48,19 @@
 	}],
 
 	"model_inputs": [{
-	    "label": "Topographic index",
+	    "name": "Topographic index",
 	    "help": "ASCII raster representing topographic indices for every gridcell in the watershed",
 	    "variable": "ti",
 	    "input": "file",
 	    "required": "True"
 	}, {
-	    "label": "Flow Accumulation",
+	    "name": "Flow Accumulation",
 	    "help": "ASCII raster representing the flow accumulation for each cell in the watershed",
 	    "variable": "fac",
 	    "input": "file",
 	    "required": "True"
 	}, {
-	    "label": "Interception",
+	    "name": "Interception",
 	    "help": "Loss of rainfall due to interception",
 	    "variable": "interception",
 	    "input": "text",
@@ -68,7 +68,7 @@
 	    "default": 0.0,
 	    "datatype": "float"
 	}, {
-	    "label": "Saturated Soil Transmissivity",
+	    "name": "Saturated Soil Transmissivity",
 	    "help": "Soil transmissivity",
 	    "variable": "tmax",
 	    "input": "text",
@@ -76,7 +76,7 @@
 	    "default": 250000,
 	    "datatype": "float"
 	}, {
-	    "label": "Recession Coefficient",
+	    "name": "Recession Coefficient",
 	    "help": "Groundwater recession coefficient",
 	    "variable": "r",
 	    "input": "text",
@@ -84,7 +84,7 @@
 	    "default": 9.66,
 	    "datatype": "float"
     }, {
-	    "label": "Scaling Parameter",
+	    "name": "Scaling Parameter",
 	    "help": "Dimensionless scaling parameter",
 	    "variable": "m",
 	    "input": "text",

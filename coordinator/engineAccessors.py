@@ -67,16 +67,12 @@ def removeModelById(modelid):
     return result
 
 def clearAll():
-    """
-    Clears all the models and links in the configuration
-    :return: True on success
-    """
     e = Engine()
     kwargs = dict()
-    task = [('clear_all',kwargs)]
+    task = [('remove_all_models_and_links', kwargs)]
     e.setTasks(task)
     result = e.processTasks()
-    return result
+    return result.pop('result')
 
 def getModelById(modelid):
     e = Engine()

@@ -168,14 +168,14 @@ class LinkView(wx.Frame):
         self.resize_grid_to_fill_white_space(grid)
 
     def input_combo_choices(self):
-        self.input_items = engine.getExchangeItems(self.input_component['id'], stdlib.ExchangeItemType.INPUT, returnGeoms=False)
+        self.input_items = engine.getExchangeItems(self.input_component['id'], stdlib.ExchangeItemType.INPUT)
         if self.input_items is not None:
             return [item['name'] for item in self.input_items]
         else:
             return [' ']
 
     def output_combo_choices(self):
-        self.output_items = engine.getExchangeItems(self.output_component['id'], stdlib.ExchangeItemType.OUTPUT, returnGeoms=False)
+        self.output_items = engine.getExchangeItems(self.output_component['id'], stdlib.ExchangeItemType.OUTPUT)
         if self.output_items is not None:
             return [item['name'] for item in self.output_items]
         else:

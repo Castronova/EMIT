@@ -143,8 +143,8 @@ class Engine:
                     # if the function fails, set the result to None
                     # This expects all functions to return a dictionary with a 'success' key in it
                     if not isinstance(result, dict):
-                        sPrint('%s should return a dictionary as a result, otherwise expect errors in engineManager' % str(next_task_name))
-
+                        sPrint('%s should return a dictionary as a result, otherwise expect errors in engineManager' % str(next_task_name), MessageType.ERROR)
+                        result = {}
                     else:
                         task_successful = result.pop('success')
 

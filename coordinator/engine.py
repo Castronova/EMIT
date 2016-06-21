@@ -317,7 +317,7 @@ class Coordinator(object):
         # TODO: Get this from gui dialog
         self.preferences = os.path.abspath(os.path.join(os.path.dirname(__file__),'../data/preferences'))
 
-    def clear_all(self):
+    def remove_all_models_and_links(self):
         """
         Clears all the model and link objects from the controller
 
@@ -1157,3 +1157,7 @@ class Serializable(Coordinator):
             return {'success': True, 'result': res}
 
         return {'success': False, 'result': None}
+
+    def remove_all_models_and_links(self):
+        res = super(Serializable, self).remove_all_models_and_links()
+        return {'success': True, 'result': res}

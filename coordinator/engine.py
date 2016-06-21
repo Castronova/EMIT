@@ -328,6 +328,20 @@ class Coordinator(object):
         self.__models = {}
         return True
 
+    def remove_link_by_id(self, id):
+        """
+        Removes a link using the link id
+        Args:
+            id: id of the link to remove
+
+        Returns: 1 if successful, otherwise 0
+
+        """
+        if id in self.__links:
+            self.__links.pop(id, None)
+            return 1
+        return 0
+
     def get_status(self):
         """
         Returns: the current status of the Engine.
@@ -705,19 +719,7 @@ class Coordinator(object):
             )
         return models
 
-    def remove_link_by_id(self,id):
-        """
-        Removes a link using the link id
-        Args:
-            id: id of the link to remove
 
-        Returns: 1 if successful, otherwise 0
-
-        """
-        if id in self.__links:
-            self.__links.pop(id,None)
-            return 1
-        return 0
 
     def get_links_btwn_models(self, from_model_id, to_model_id):
         """
@@ -1181,3 +1183,11 @@ class Serializable(Coordinator):
             serialized_links.append(d)
 
         return {'success': True, 'result': serialized_links}
+
+    def remove_link_by_id(self, id):
+
+        res = super(Serializable, self).remove_link_by_id()
+        if res:
+            return {'success': True, 'result': res}
+        else:
+            return {'success': False, 'result': res}

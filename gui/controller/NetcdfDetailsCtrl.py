@@ -83,6 +83,8 @@ class NetcdfDetailsCtrl(NetcdfDetailsView):
             self.property_grid.add_data_to_section(section, "size", len(value))
             self.property_grid.add_data_to_section(section, "is unlimited", value.isunlimited())
 
+        self.variables = self.ds.variables.keys()
+
         for key, value in self.ds.variables.iteritems():
             self.property_grid.add_section(key + " (variable)")
             section += 1

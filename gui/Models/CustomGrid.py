@@ -13,12 +13,12 @@ class CustomGrid(wx.grid.Grid):
         self.SetColLabelSize(0)
         self.SetRowLabelSize(0)
 
+        # Disable editing
+        self.enable_editing(False)
+        self.enable_drag_grid_size()
+
         # Key is section, value is section position in the grid
         self.__section_row_number = {-1: -1}
-
-        self.frame_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.frame_sizer.Add(self, 1, wx.EXPAND | wx.ALL, 0)
-        self.SetSizer(self.frame_sizer)
 
         self.Bind(wx.EVT_SIZE, self.frame_resizing)
 
@@ -138,9 +138,6 @@ class CustomGrid(wx.grid.Grid):
         # Sets the width of the grid to fit the content.
         self.SetColSize(1, self._min_grid_width_size)
 
-    def resize_window_to_fit(self):
-        self.frame_sizer.Fit(self)
-
     def set_cell_background_color(self, row, column, color):
         self.SetCellBackgroundColour(row, column, color)
 
@@ -157,10 +154,11 @@ class CustomGrid(wx.grid.Grid):
     ###############################
 
     def frame_resizing(self, event):
+        event.Skip()
         #  Handles resizing the grid so the content is always show
         if self.GetSize()[0] < self._min_grid_width_size:
             self.restore_min_grid_width()
         else:
             self.resize_grid_to_fill_white_space()
-        event.Skip()
+
 

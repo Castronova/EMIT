@@ -1,9 +1,6 @@
 import datetime as dt
-
 import netCDF4 as nc
 import wx
-import wx.propgrid as wxpg
-
 import wrappers
 from coordinator import engineAccessors as engine
 from gui.views.NetcdfDetailsView import NetcdfDetailsView
@@ -17,7 +14,6 @@ class NetcdfDetailsCtrl(NetcdfDetailsView):
         self.Title = "NetCDF Viewer --- " + filename
         self.variables = []
 
-        # populate the property grid
         self.populate_grid()
 
         # populate the combo boxes
@@ -32,6 +28,7 @@ class NetcdfDetailsCtrl(NetcdfDetailsView):
         self.x_spatial_var_combo.Bind(wx.EVT_COMBOBOX, self.checkComboBoxSelections)
         self.y_spatial_var_combo.Bind(wx.EVT_COMBOBOX, self.checkComboBoxSelections)
         self.time_var_combo.Bind(wx.EVT_COMBOBOX, self.checkComboBoxSelections)
+        self.SetSize((-1, 565))
 
     def checkComboBoxSelections(self, event):
         """
@@ -72,38 +69,6 @@ class NetcdfDetailsCtrl(NetcdfDetailsView):
 
         # close the window
         self.Close()
-
-    def populateList(self):
-        # connect to the selected netcdf file
-        self.ds = nc.Dataset(self.fileurl)
-
-        # get all of the attributes of this file and add them to the property grid
-        keys = self.ds.__dict__.keys()
-        g = self.property_grid.Append(wxpg.PropertyCategory("Global Attributes"))
-        for key in keys:
-            self.property_grid.Append(wxpg.StringProperty(str(key), value=str(self.ds.__dict__[key])))
-
-
-        # get all of the dimension properties and add them to the property grid
-        dims = self.ds.dimensions.keys()
-        for dim in dims:
-            self.property_grid.Append(wxpg.PropertyCategory(dim + ' (dimension)'))
-            self.property_grid.Append(wxpg.StringProperty(label='size', name=dim+'_size', value=str(len(self.ds.dimensions[dim]))))
-            self.property_grid.Append(wxpg.StringProperty(label='is unlimited', name=dim+'_isunlimited', value=str(self.ds.dimensions[dim].isunlimited())))
-
-            try:
-                drange = '%3.3f.....%3.3f' % (self.ds.variables[dim][0], self.ds.variables[dim][-1])
-                self.property_grid.Append(wxpg.StringProperty(label='data range', name=dim+'_min', value=str(drange)))
-            except:
-                pass
-
-        # get all of the variable properties and add them to the property grid
-        self.variables = self.ds.variables.keys()
-        for var in self.variables:
-            g = self.property_grid.Append(wxpg.PropertyCategory(var +' (variable)'))
-            info = self.ds.variables[var].__dict__.keys()
-            for i in info:
-                self.property_grid.Append(wxpg.StringProperty(label=str(i), name=str(var)+'_'+str(i), value=str(self.ds.variables[var].__dict__[i])))
 
     def populate_grid(self):
         self.ds = nc.Dataset(self.fileurl)

@@ -67,7 +67,6 @@ class ModelView(wx.Frame):
         sizer_notebook.Add(self.notebook, 1, wx.EXPAND | wx.ALL, 0)
 
         self.SetSizer(sizer_notebook)
-        self.Layout()
 
         self.Centre(wx.BOTH)
 

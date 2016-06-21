@@ -23,13 +23,6 @@ class ModelCtrl(ModelView):
         if self.spatial:
             self.setup_spatial(model_id)
 
-    def ConfigurationDisplay(self, fileExtension):
-        self.current_file = fileExtension
-        filehandle=open(fileExtension)
-        self.xmlTextCtrl.SetValue(filehandle.read())
-        filehandle.close()
-        self.SetTitle("Details")
-
     def OnSave(self, event):
 
         dlg = wx.MessageDialog(None, 'Are you sure you would like to overwrite?', 'Question', wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)

@@ -731,29 +731,11 @@ class Coordinator(object):
         """
 
         links = []
-        link_dict = {}
         for linkid, link in self.__links.iteritems():
             source_id = link.source_component().id()
             target_id = link.target_component().id()
             if source_id == from_model_id and target_id == to_model_id:
                 links.append(link)
-                # spatial = link.spatial_interpolation().name() \
-                #     if link.spatial_interpolation() is not None \
-                #     else 'None'
-                # temporal = link.temporal_interpolation().name() \
-                #     if link.temporal_interpolation() is not None \
-                #     else 'None'
-                # link_dict = dict(id=link.get_id(),
-                #                  source_id=source_id,
-                #                  target_id=target_id,
-                #                  source_name=link.source_component().name(),
-                #                  target_name=link.target_component().name(),
-                #                  source_item=link.source_exchange_item().name(),
-                #                  target_item=link.target_exchange_item().name(),
-                #                  spatial_interpolation=spatial,
-                #                  temporal_interpolation=temporal)
-                # links.append(link_dict)
-
         return links
 
     def get_exchange_items(self, modelid, exchange_item_type=stdlib.ExchangeItemType.INPUT):

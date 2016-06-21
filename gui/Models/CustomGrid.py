@@ -26,7 +26,7 @@ class CustomGrid(wx.grid.Grid):
 	def add_section(self, name):
 		"""
 
-		:rtype: object
+		:return: The position of the recently added section
 		"""
 		max_position = self.get_max_section_position() # rename max_position to section
 		# Create a new row that will become the section
@@ -42,6 +42,7 @@ class CustomGrid(wx.grid.Grid):
 
 		# Add the new created section to the dictionary for storage
 		self.__section_row_number[max_position + 1] = self.GetNumberRows() - 1
+		return max_position + 1
 
 	def add_data_to_section(self, section, key, value):
 		"""
@@ -96,22 +97,58 @@ class CustomGrid(wx.grid.Grid):
 		:return:
 		"""
 		sorted_sections = sorted(data.keys())
-		section = 0
 		for each_section in sorted_sections:
 			if isinstance(data[each_section], list):
-				self.add_section(each_section)
-				for models in data[each_section]:
-					for k, v in models.iteritems():
-						if not isinstance(v, dict):
-							self.add_data_to_section(section, k, v)
-						else:
-							if not len(v):
-								self.add_data_to_section(section, k, None)
-							for key, value in v.iteritems():
-								self.add_data_to_section(section, key, value)
-				section += 1
+				if each_section != "models":
+					self.add_list_of_dictionary(data[each_section])
+				if each_section == "models":
+					self.add_list_of_dictionary(data[each_section], "name")
 
 		self.enable_scroll_bar_on_startup()
+
+	def add_list_of_dictionary(self, data, section_tag=None):
+		"""
+		The section_tag is a key that must exist in data. The section tag will be the name of the section
+		If section_tag is None, then the section name will be the item that has "type" as a key
+		:param data:
+		:param section_tag: type(String) a key that exist in data
+		:return:
+		"""
+		if section_tag:
+			for item in data:  # Base case
+				if section_tag not in item:
+					# section_tag is not a key in data
+					raise Exception("CustomGrid.add_list_of_dictionary -> section_tag is not a key in item")
+
+		for item in data:
+			if section_tag:
+				section = self.add_section(item["type"] + " (" + item[section_tag] + ")")
+			else:
+				section = self.add_section(item["type"])
+			for key, value in item.iteritems():
+				if isinstance(value, dict):
+					self.add_dictionary(value)
+				else:
+					self.add_data_to_section(section, key, value)
+
+	def add_dictionary(self, data, section_name=None):
+		"""
+		:param data:
+		:param section_name:
+		:return:
+		"""
+		if not len(data):
+			return  # Empty dictionary
+
+		if not isinstance(data, dict):
+			raise Exception("CustomGrid.add_dictionary() -> data must be a dictionary")
+
+		section = max(self.__section_row_number.keys())  # Get a default section
+		if section_name:
+			section = self.add_section(section_name)
+
+		for key, value in data.iteritems():
+			self.add_data_to_section(section, key, value)
 
 	def enable_drag_grid_size(self, enable=False):
 		self.EnableDragGridSize(enable)

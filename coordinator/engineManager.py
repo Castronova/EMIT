@@ -1,4 +1,4 @@
-from coordinator.engine import Coordinator
+from coordinator.engine import Coordinator, Serializable
 from multiprocessing import Process
 import sys
 from multiprocessing import Queue
@@ -16,7 +16,8 @@ class EngineBorg:
     def __init__(self):
         if not EngineBorg.__monostate:
             EngineBorg.__monostate = self.__dict__
-            self.engine = Coordinator()
+            # self.engine = Coordinator()
+            self.engine = Serializable()
 
         else:
             self.__dict__ = EngineBorg.__monostate
@@ -191,11 +192,13 @@ class Engine:
 
         result = self.processTasks()
         if 'event' in result.keys():
+            # This assumes that result has an "event" key and a "result" key
             evt_name= result.pop('event')
             evt = getattr(events, evt_name)
+            res = result.pop('result')
 
             try:
-                wx.CallAfter(evt.fire, **result)
+                wx.CallAfter(evt.fire, **res)
             except:
                 pass
 

@@ -81,15 +81,15 @@ def clearAll():
 def getModelById(modelid):
     e = Engine()
     kwargs = dict(id=modelid)
-    task = [('get_model_by_id_summary', kwargs)]
+    task = [('get_model_by_id', kwargs)]
     e.setTasks(task)
     result = e.processTasks()
     return result.pop('result')
 
-def getExchangeItems(modelid, exchange_item_type='INPUT', returnGeoms=True):
+def getExchangeItems(modelid, type='INPUT'):
     e = Engine()
-    kwargs = dict(modelid=modelid, exchange_item_type=exchange_item_type, returnGeoms=returnGeoms)
-    task = [('get_exchange_item_info', kwargs)]
+    kwargs = dict(modelid=modelid, type=type)
+    task = [('get_exchange_items', kwargs)]
     e.setTasks(task)
     result = e.processTasks()
     return result.pop('result')

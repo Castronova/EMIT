@@ -10,7 +10,7 @@ from emitLogging import elog
 from sprint import *
 from transform import space_base
 from transform import time_base
-from utilities.gui import *
+import utilities.gui as gui
 from utilities.mdl import *
 from wrappers import feed_forward
 from wrappers import odm2_data
@@ -385,7 +385,6 @@ class Coordinator(object):
         db.update({'success': True})
         return db
 
-
     def get_db_args_by_name(self, db_name):
         """
         Gets database arguments for a specific database name
@@ -453,7 +452,7 @@ class Coordinator(object):
         try:
             # load model
             sPrint('Loading Model', MessageType.DEBUG)
-            name, model_inst = load_model(params)
+            name, model_inst = gui.load_model(params)
             sPrint('Finished Loading', MessageType.DEBUG)
             # make sure this model doesnt already exist
             if name in self.__models:
@@ -481,151 +480,13 @@ class Coordinator(object):
         if thisModel is not None:
             # save the model
             self.__models[thisModel.name()] = thisModel
-            sPrint('Model Loaded', MessageType.DEBUG)
-            return {'success': True, 'id': thisModel.id(), 'name': thisModel.name(), 'model_type': thisModel.type()}
+            return thisModel
+            # sPrint('Model Loaded', MessageType.DEBUG)
+            # return {'success': True, 'id': thisModel.id(), 'name': thisModel.name(), 'model_type': thisModel.type()}
         else:
             elog.error('Failed to load model.')
             sPrint('Failed to load model.', MessageType.ERROR)
-            return {'success': False}
-
-
-    def add_model_old(self, id=None, attrib=None):
-        """
-        Adds a model to the Coordinator
-
-        Args:
-            id: id that will be assigned to the model
-            attrib: model load parameters (see *.mdl)
-
-        Returns: dictionary of model id, name, and type or None (type:dict or type:None)
-
-        """
-
-        thisModel = None
-        sPrint('Adding Model in Engine', MessageType.DEBUG)
-        if id is None:
-            id = 'M' + uuid.uuid4().hex
-
-
-        if 'type' in attrib.keys():
-
-            sPrint('Found type', MessageType.DEBUG)
-
-            try:
-                getattr(wrappers, attrib['type'])
-            except:
-                elog.critical('Could not locate wrapper of type %s.  Make sure the wrapper is specified in wrappers.__init__.' % (attrib['type']))
-                sPrint('Could not locate wrapper of type %s.  Make sure the wrapper is specified in wrappers.__init__.' % (attrib['type']), MessageType.CRITICAL)
-
-            sPrint('Instantiating the component wrapper', MessageType.DEBUG)
-            # instantiate the component wrapper
-            inst = getattr(wrappers, attrib['type']).Wrapper(attrib)
-            oei = inst.outputs().values()
-            iei = inst.inputs().values()
-            sPrint('Model Instantiated', MessageType.DEBUG)
-
-            # create a model instance
-            thisModel = Model(id=id,
-                              name=inst.name(),
-                              instance=inst,
-                              desc=inst.description(),
-                              input_exchange_items=iei,
-                              output_exchange_items=oei,
-                              params=attrib)
-            thisModel.attrib(attrib)
-
-        elif 'mdl' in attrib:
-            sPrint('Found MDL', MessageType.DEBUG)
-
-            json_path = attrib['mdl']
-
-            # exit early if mdl doesn't exist
-            if not os.path.exists(json_path):
-                sPrint('Could not locate *.json at location: %s' % json_path)
-                return 0
-
-
-            data = parse_json(json_path)
-            validate_json_model(data)
-            params = data
-
-            if params is not None:
-
-                try:
-                    # load model
-                    sPrint('Loading Model', MessageType.DEBUG)
-                    name, model_inst = load_model(params)
-                    sPrint('Finished Loading', MessageType.DEBUG)
-                    # make sure this model doesnt already exist
-                    if name in self.__models:
-                        elog.warning('Model named ' + name + ' already exists in configuration')
-                        sPrint('Model named ' + name + ' already exists in configuration', MessageType.WARNING)
-                        return None
-
-                    iei = model_inst.inputs().values()
-                    oei = model_inst.outputs().values()
-
-                    # create a model instance
-                    thisModel = Model(id= id,
-                                      name=model_inst.name(),
-                                      instance=model_inst,
-                                      desc=model_inst.description(),
-                                      input_exchange_items=iei,
-                                      output_exchange_items=oei,
-                                      params=params)
-
-                    thisModel.params_path(json_path)
-                    thisModel.attrib(attrib)
-
-                except Exception, e:
-                    sPrint('Encountered an error while loading model: %s' % e, MessageType.ERROR)
-                    elog.error('Encountered an error while loading model: %s' % e)
-                    thisModel = None
-
-
-        elif 'databaseid' in attrib and 'resultid' in attrib:
-
-            databaseid = attrib['databaseid']
-            resultid = attrib['resultid']
-
-            # get the database session
-            session = self._db[databaseid]['session']
-
-            # create odm2 datamodel instance
-            inst = odm2_data.odm2(resultid=resultid, session=session)
-            oei = inst.outputs().values()
-
-            # Make sure the series is not already in the canvas
-            # List of canvas models are kept as a dict with keys in the format of 'NAME-ID'
-            if inst.name()+'-'+resultid in self.__models:
-                elog.warning('Series named '+inst.name()+' already exists in configuration')
-                sPrint('Series named '+inst.name()+' already exists in configuration', MessageType.WARNING)
-                return None
-
-            # create a model instance
-            thisModel = Model(id=id,
-                              name=inst.name(),
-                              instance=inst,
-                              desc=inst.description(),
-                              input_exchange_items= [],
-                              output_exchange_items=  oei,
-                              params=None)
-
-
-            # save the result and database ids
-            att = {'resultid':resultid}
-            att['databaseid'] = databaseid
-            thisModel.attrib(att)
-
-        if thisModel is not None:
-            # save the model
-            self.__models[thisModel.name()] = thisModel
-            sPrint('Model Loaded', MessageType.DEBUG)
-            return {'id':thisModel.id(), 'name':thisModel.name(), 'model_type':thisModel.type()}
-        else:
-            elog.error('Failed to load model.')
-            sPrint('Failed to load model.', MessageType.ERROR)
-            return 0
+            return None
 
     def remove_model_by_id(self,id):
         """
@@ -657,35 +518,7 @@ class Coordinator(object):
                 return id
         return None
 
-    def get_model_by_id_summary(self, id):
-        """
-        Gets a summarized version of the model by id
-
-        Args:
-            id: id of the model to return (type:string)
-
-        Returns: dictionary of summarized metadata (type:dict)
-
-        """
-        """
-        finds the model that corresponds with the given id and return a summary of its metadata
-        :param id: model id
-        :return: serializable summary of the model's metadata
-        """
-        for m in self.__models:
-            if self.__models[m].id() == id:
-                res =   {'params': self.__models[m].get_config_params(),
-                        'name': self.__models[m].name(),
-                        'id': self.__models[m].id(),
-                        'description': self.__models[m].description(),
-                        'type': self.__models[m].type(),
-                        'attrib': self.__models[m].attrib()
-                        }
-
-                return {'success': True, 'result': res}
-        return {'success': False, 'result': None}
-
-    def get_model_by_id(self,id):
+    def get_model(self, id):
         """
         Gets a model within the Coordinator by id
 
@@ -872,50 +705,6 @@ class Coordinator(object):
             )
         return models
 
-    def summarize_exhange_item(self, item, returnGeoms=True):
-        """
-        Summarizes exchange item information into a serializable object
-
-        Args:
-            item: the exchange item to summarize (type:stdlib.ExchangeItem)
-            returnGeoms: indicate if geometries should be returned (type:bool)
-
-        Returns: summarized exchange item (type:dict)
-
-        """
-
-        # get data that is common for all geometries
-        geom_srs = item.srs().ExportToPrettyWkt()
-        geom_count = len(item.getGeometries2())
-        geom_type = item.getGeometries2()[0].GetGeometryType()
-        geom_extent = 'Not Implemented Yet'
-
-        # initialize the geometry dictionary
-        geom_dict = dict(srs = geom_srs,
-                         type = geom_type,
-                         count = geom_count,
-                         extent = geom_extent,
-                         wkb = [],
-                         hash = [])
-
-        if returnGeoms:
-
-           # get the geometries and hashes
-            geometries = item.getGeometries2()
-            geoms = [g.ExportToWkb() for g in geometries]
-            hashs = [g.hash for g in geometries]
-
-            geom_dict['wkb'] = geoms
-            geom_dict['hash'] = hashs
-
-        return dict(name=item.name(),
-                    description=item.description(),
-                    id=item.id(),
-                    unit=item.unit(),
-                    variable=item.variable(),
-                    type=item.type(),
-                    geometry=geom_dict)
-
     def remove_link_by_id(self,id):
         """
         Removes a link using the link id
@@ -967,22 +756,19 @@ class Coordinator(object):
 
         return links
 
-    def get_exchange_item_info(self, modelid, exchange_item_type=stdlib.ExchangeItemType.INPUT, returnGeoms=True):
+    def get_exchange_items(self, modelid, exchange_item_type=stdlib.ExchangeItemType.INPUT):
         """
         Gets all information related to input or output exchange items for a specific model
         Args:
             modelid: id of the model for which the exchange item will be retrieved (type:string)
             exchange_item_type: the type of exchange item to retrieve (type: stdlib.ExchangeItemType)
-            returnGeoms: indicate if geometries should be returned (type: bool)
 
-        Returns: dict(success=bool, result=[list of exchange items in a serializable format])
+        Returns: exchange items based on model id
 
         """
 
-        ei_values = []
-
         # get model by id
-        model = self.get_model_by_id(modelid)
+        model = self.get_model(modelid)
 
         # get input or output exchange items
         if exchange_item_type == stdlib.ExchangeItemType.INPUT:
@@ -991,12 +777,9 @@ class Coordinator(object):
             items = model.get_output_exchange_items()
         else:
             sPrint('Invalid exchange item type provided', MessageType.ERROR)
-            return {'success':'False', 'result': None}
+            return None
 
-        for i in items:
-            ei_values.append(self.summarize_exhange_item(i, returnGeoms))
-
-        return {'success': 'True', 'result': ei_values}
+        return items
 
     def update_link(self, link_id, from_geom_dict, from_to_spatial_map):
 
@@ -1146,8 +929,6 @@ class Coordinator(object):
             sPrint(msg, MessageType.ERROR)
             return dict(success=False, message=e)
 
-
-
     def connect_to_db(self, title, desc, engine, address, dbname, user, pwd, default=False):
         """
         Establishes a connection with a database for saving simulation results
@@ -1166,7 +947,8 @@ class Coordinator(object):
 
         """
 
-        connection = connect_to_db(title, desc, engine, address, dbname, user, pwd)
+
+        connection = gui.connect_to_db(title, desc, engine, address, dbname, user, pwd)
 
         if connection:
             dbs = self.add_db_connection(connection)
@@ -1174,12 +956,8 @@ class Coordinator(object):
             if default:
                 self.set_default_database(connection.keys()[0])
 
-            return {'success':True, 'ids':connection.keys()}
-        else:
-            return {'success':False, 'ids':None}
-
-        # TODO: this function only needs to resturn the connection key or None.  It is not necessary to also indicate success or failure as it will be apparent from the returned data.
-
+            return connection.keys()
+        return None
 
     def load_simulation(self, simulation_file):
         """
@@ -1216,7 +994,6 @@ class Coordinator(object):
         else:
             elog.error('Could not find path %s' % simulation_file)
 
-
     def show_db_results(self, args):
         """
         displays the results that were saved to the database
@@ -1249,3 +1026,134 @@ class Coordinator(object):
         else:
             elog.info('No results found')
 
+class Serializable(Coordinator):
+    """
+    This class returns serializable objects for Engine functions, ideally for multiprocessing.
+    """
+    def __init__(self):
+        super(Serializable, self).__init__()
+
+
+    def __summarize_exhange_item(self, item):
+        """
+        Summarizes exchange item information into a serializable object
+
+        Args:
+            item: the exchange item to summarize (type:stdlib.ExchangeItem)
+
+        Returns: summarized exchange item (type:dict)
+
+        """
+
+        # get data that is common for all geometries
+        geom_srs = item.srs().ExportToPrettyWkt()
+        geom_count = len(item.getGeometries2())
+        geom_type = item.getGeometries2()[0].GetGeometryType()
+        geom_extent = 'Not Implemented Yet'
+
+        # initialize the geometry dictionary
+        geom_dict = dict(srs = geom_srs,
+                         type = geom_type,
+                         count = geom_count,
+                         extent = geom_extent,
+                         wkb = [],
+                         hash = [])
+
+
+       # get the geometries and hashes
+        geometries = item.getGeometries2()
+        geoms = [g.ExportToWkb() for g in geometries]
+        hashs = [g.hash for g in geometries]
+
+        geom_dict['wkb'] = geoms
+        geom_dict['hash'] = hashs
+
+        return dict(name=item.name(),
+                    description=item.description(),
+                    id=item.id(),
+                    unit=item.unit(),
+                    variable=item.variable(),
+                    type=item.type(),
+                    geometry=geom_dict)
+
+
+    def connect_to_db(self, title, desc, engine, address, dbname, user, pwd, default=False):
+        """
+        Establishes a connection with a database for saving simulation results and returns the connection id
+
+        Args:
+            title: title to give database (local use only)
+            desc: database description
+            engine: the engine that should be used to connect to the data base (e.g. postgres)
+            address: address of the database
+            dbname: name of the database to connect with (server name)
+            user: user name, required to establish a connection
+            pwd:  password for connecting to the database
+            default: designates if this database should be used as the default for saving simulation results
+
+        Returns: dict(success:True or False, result{ids:[connection id] or None})
+
+        """
+
+        db_ids = super(Serializable, self).connect_to_db(title, desc, engine, address, dbname, user, pwd)
+
+        if db_ids is None:
+            return {'success': False, 'result':None}
+        else:
+            return {'success': True, 'result':{'ids': db_ids}}
+
+    def add_model(self, **params):
+        """
+        Adds a model to the engine
+        Args:
+            **params:  id: modelid
+                       config_params
+
+        Returns:  dict(success:True or False, result:{id:id, name:model name, model_type:simulation type} or None)
+
+        """
+
+        res = super(Serializable, self).add_model(**params)
+
+        if res is None:
+            return {'success': False, 'result': None}
+        else:
+            result = dict(id=res.id(), name=res.name(), model_type=res.type())
+            return {'success': True, 'result': result}
+
+    def get_exchange_items(self, modelid, type=stdlib.ExchangeItemType.INPUT):
+
+        eis = super(Serializable, self).get_exchange_items(modelid, type)
+
+        if eis is None:
+            return {'success': False, 'result': None}
+        else:
+            res = []
+            for ei in eis:
+                res.append(self.__summarize_exhange_item(ei))
+            return {'success': 'True', 'result': res}
+
+    def get_model_by_id(self, id):
+        """
+        Gets a summarized version of the model by id
+
+        Args:
+            id: id of the model to return (type:string)
+
+        Returns: dictionary of summarized metadata (type:dict)
+
+        """
+
+        model = super(Serializable, self).get_model(id)
+
+        if model is not None:
+            res = {'params': model.get_config_params(),
+                   'name': model.name(),
+                   'id': model.id(),
+                   'description': model.description(),
+                   'type': model.type(),
+                   'attrib': model.attrib()
+                   }
+            return {'success': True, 'result': res}
+
+        return {'success': False, 'result': None}

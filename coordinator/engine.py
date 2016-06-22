@@ -39,7 +39,8 @@ class EngineStatus(object):
         return 'The Engine status is currently set to: %s' % self.__engineStatus
 
 class Link(object):
-    def __init__(self, id, from_linkable_component, to_linkable_component, from_item, to_item):
+    def __init__(self, id, from_linkable_component, to_linkable_component,
+                 from_item, to_item):
         """
         defines the link object.  Links are used to pass data between models during simulation runtime. This class
         captures the information that is necessary to define a unique linkage between model components.
@@ -72,7 +73,8 @@ class Link(object):
 
         """
 
-        return [self.__from_lc,self.__from_item], [self.__to_lc,self.__to_item]
+        return [self.__from_lc, self.__from_item], \
+               [self.__to_lc, self.__to_item]
 
     def source_exchange_item(self):
         """
@@ -144,7 +146,8 @@ class Link(object):
         return self.__temporal_interpolation
 
 class Model(object):
-    def __init__(self, id, name, instance, desc=None, input_exchange_items=[], output_exchange_items=[], params=None):
+    def __init__(self, id, name, instance, desc=None, input_exchange_items=[],
+                 output_exchange_items=[], params=None):
         """
         Defines a linkable model that can be loaded into a configuration
         Args:
@@ -164,7 +167,7 @@ class Model(object):
         self.__oei = {}
         self.__id = id
         self.__params = params
-        self.__attrib  = {}
+        self.__attrib = {}
 
         for iei in input_exchange_items:
             self.__iei[iei.name()] = iei
@@ -186,6 +189,10 @@ class Model(object):
     def attrib(self, value=None):
         """
         Provides a method for storing model specific attributes
+        Args:
+            value: #todo
+
+        Returns: #todo
         """
         if value is not None:
             self.__attrib = value
@@ -198,20 +205,23 @@ class Model(object):
 
         """
         if len(self.__iei.keys()) > 0:
-            return [j for i,j in self.__iei.items()]
-        else: return []
+            return [j for i, j in self.__iei.items()]
+        else:
+            return []
 
     def get_output_exchange_items(self):
         """
         Gets model output exchange items
-        Returns: list of exchange item objects (type: list[stdlib.ExchangeItem])
+        Returns: list of exchange item objects
+                 (type: list[stdlib.ExchangeItem])
 
         """
         if len(self.__oei.keys()) > 0:
-            return [j for i,j in self.__oei.items()]
-        else: return []
+            return [j for i, j in self.__oei.items()]
+        else:
+            return []
 
-    def get_input_exchange_item_by_name(self,value):
+    def get_input_exchange_item_by_name(self, value):
         """
         Gets an input exchange item by name
         Args:
@@ -228,7 +238,7 @@ class Model(object):
             elog.error('Could not find Input Exchange Item: '+value)
             return None
 
-    def get_output_exchange_item_by_name(self,value):
+    def get_output_exchange_item_by_name(self, value):
         """
         Gets an output exchange item by name
         Args:
@@ -242,9 +252,8 @@ class Model(object):
         if value in i.outputs():
             return i.outputs()[value]
         else:
-            elog.error('Could not find Output Exchange Item: '+value)
+            elog.error('Could not find Output Exchange Item: ' + value)
             return None
-
 
     def description(self):
         """
@@ -299,6 +308,7 @@ class Model(object):
             self.__params_path = value
         return self.__params_path
 
+
 class Coordinator(object):
     def __init__(self):
         """
@@ -314,7 +324,8 @@ class Coordinator(object):
         self.status = EngineStatus()
 
         # TODO: Get this from gui dialog
-        self.preferences = os.path.abspath(os.path.join(os.path.dirname(__file__),'../data/preferences'))
+        self.preferences = os.path.abspath(os.path.join(
+            os.path.dirname(__file__), '../data/preferences'))
 
     def remove_all_models_and_links(self):
         """
@@ -327,17 +338,17 @@ class Coordinator(object):
         self.__models = {}
         return True
 
-    def remove_link_by_id(self, id):
+    def remove_link_by_id(self, linkid):
         """
         Removes a link using the link id
         Args:
-            id: id of the link to remove
+            linkid: id of the link to remove
 
         Returns: 1 if successful, otherwise 0
 
         """
         if id in self.__links:
-            self.__links.pop(id, None)
+            self.__links.pop(linkid, None)
             return 1
         return 0
 
@@ -361,7 +372,7 @@ class Coordinator(object):
             self.__models[model.name()] = model
         return self.__models
 
-    def add_db_connection(self,value):
+    def add_db_connection(self, value):
         """
         Adds a database connection to the Coordinator
 
@@ -384,7 +395,7 @@ class Coordinator(object):
         # return the database connection dictionary without sqlalchemy objects
         db = {}
         for db_id in self._db.iterkeys():
-            args =  self._db[db_id]['args']
+            args = self._db[db_id]['args']
 
             # todo: remove this by migrating all databases to the latest ODM2 and use ODM2PythonAPI exclusively
             # make sure address is the string location of the database (this is necessary to be compatible with the old ODM2 and ODM2PythonAPI)(
@@ -416,7 +427,7 @@ class Coordinator(object):
                 return database['args']
         return None
 
-    def set_default_database(self,db_id=None):
+    def set_default_database(self, db_id=None):
         """
         Sets the default database for results saving
 
@@ -431,9 +442,11 @@ class Coordinator(object):
             try:
                 self.__default_db = self._db[db_id]
                 self.__default_db['id'] = db_id
-                sPrint('Default database : %s'%self._db[db_id]['connection_string'], MessageType.INFO)
+                sPrint('Default database : %s' %
+                       self._db[db_id]['connection_string'], MessageType.INFO)
             except Exception, e :
-                msg = 'Encountered and error when setting default database: %s' % e
+                msg = 'Encountered and error when setting default ' \
+                      'database: %s' % e
                 elog.error(msg)
                 sPrint(msg, MessageType.ERROR)
         else:
@@ -469,8 +482,10 @@ class Coordinator(object):
             sPrint('Finished Loading', MessageType.DEBUG)
             # make sure this model doesnt already exist
             if name in self.__models:
-                elog.warning('Model named ' + name + ' already exists in configuration')
-                sPrint('Model named ' + name + ' already exists in configuration', MessageType.WARNING)
+                elog.warning('Model named ' + name +
+                             ' already exists in configuration')
+                sPrint('Model named ' + name +
+                       ' already exists in configuration', MessageType.WARNING)
                 return None
 
             iei = model_inst.inputs().values()
@@ -486,7 +501,8 @@ class Coordinator(object):
                               params=params)
 
         except Exception, e:
-            sPrint('Encountered an error while loading model: %s' % e, MessageType.ERROR)
+            sPrint('Encountered an error while loading model: %s' %
+                   e, MessageType.ERROR)
             elog.error('Encountered an error while loading model: %s' % e)
             thisModel = None
 
@@ -494,14 +510,12 @@ class Coordinator(object):
             # save the model
             self.__models[thisModel.name()] = thisModel
             return thisModel
-            # sPrint('Model Loaded', MessageType.DEBUG)
-            # return {'success': True, 'id': thisModel.id(), 'name': thisModel.name(), 'model_type': thisModel.type()}
         else:
             elog.error('Failed to load model.')
             sPrint('Failed to load model.', MessageType.ERROR)
             return None
 
-    def remove_model_by_id(self,id):
+    def remove_model_by_id(self, id):
         """
         Removes a model from the Coordinator by id
 
@@ -546,7 +560,8 @@ class Coordinator(object):
                 return self.__models[m]
         return None
 
-    def add_link(self,from_id, from_item_id, to_id, to_item_id, spatial_interp=None, temporal_interp=None, uid=None):
+    def add_link(self,from_id, from_item_id, to_id, to_item_id,
+                 spatial_interp=None, temporal_interp=None, uid=None):
         """
         Creates a new link in the Coordinator 
 
@@ -570,9 +585,11 @@ class Coordinator(object):
         try:
 
             if from_model is None:
-                raise Exception('> '+from_id+' does not exist in configuration')
+                raise Exception('> '+from_id+
+                                ' does not exist in configuration')
             if to_model is None:
-                raise Exception('> ' + to_id+' does not exist in configuration')
+                raise Exception('> ' + to_id +
+                                ' does not exist in configuration')
 
         except Exception, e:
             elog.error(e)
@@ -620,7 +637,8 @@ class Coordinator(object):
             to_id: id of the target model (type:string)
             to_item_name: name of the target exchange item (type:string)
 
-        Returns: the link object that is created or None (type:engine.Link or None)
+        Returns: the link object that is created or None
+                 (type:engine.Link or None)
 
         """
 
@@ -629,8 +647,10 @@ class Coordinator(object):
         To = self.get_model_by_id(to_id)
         try:
 
-            if self.get_model_by_id(from_id) is None: raise Exception(from_id+' does not exist in configuration')
-            if self.get_model_by_id(to_id) is None: raise Exception(to_id+' does not exist in configuration')
+            if self.get_model_by_id(from_id) is None:
+                raise Exception(from_id+' does not exist in configuration')
+            if self.get_model_by_id(to_id) is None:
+                raise Exception(to_id+' does not exist in configuration')
         except Exception, e:
             elog.error(e)
             return None
@@ -644,7 +664,7 @@ class Coordinator(object):
             id = 'L'+uuid.uuid4().hex[:5]
 
             # create link
-            link = Link(id,From,To,oi,ii)
+            link = Link(id, From, To, oi, ii)
             self.__links[id] = link
 
             return link
@@ -662,7 +682,6 @@ class Coordinator(object):
         Returns: dictionary of link objects (type: dict{engine.Link})
 
         """
-
 
         links = {}
         for linkid, link in self.__links.iteritems():
@@ -708,7 +727,8 @@ class Coordinator(object):
         """
         Gets all the models that have been loaded into the Coordinator
 
-        Returns: dictionary of summarized models that have been loaded (type:dict)
+        Returns: dictionary of summarized models that have been loaded
+                 (type:dict)
 
         """
         models = []
@@ -724,8 +744,6 @@ class Coordinator(object):
                     }
             )
         return models
-
-
 
     def get_links_btwn_models(self, from_model_id, to_model_id):
         """
@@ -746,12 +764,16 @@ class Coordinator(object):
                 links.append(link)
         return links
 
-    def get_exchange_items(self, modelid, exchange_item_type=stdlib.ExchangeItemType.INPUT):
+    def get_exchange_items(self, modelid,
+                           exchange_item_type=stdlib.ExchangeItemType.INPUT):
         """
-        Gets all information related to input or output exchange items for a specific model
+        Gets all information related to input or output exchange items for a
+        specific model
         Args:
-            modelid: id of the model for which the exchange item will be retrieved (type:string)
-            exchange_item_type: the type of exchange item to retrieve (type: stdlib.ExchangeItemType)
+            modelid: id of the model for which the exchange item will be
+                     retrieved (type:string)
+            exchange_item_type: the type of exchange item to retrieve
+                                (type: stdlib.ExchangeItemType)
 
         Returns: exchange items based on model id
 
@@ -780,36 +802,39 @@ class Coordinator(object):
         for t_geom in t_item.geometries():
 
             # get this list index of the to-geom
-            mapped = next((g for g in from_to_spatial_map if g[1] == t_geom), 0)
+            mapped = next((g for g in from_to_spatial_map if g[1] == t_geom),
+                          0)
 
             # if mapping was found
             if mapped:
 
-                f_geom ,t_geom= mapped
+                f_geom , t_geom= mapped
 
                 # update the datavalues with the mapped dates and values
                 t_geom.datavalues().set_timeseries(from_geom_dict[f_geom])
 
         # todo:
         # loop through spatial map array
-        for f,t in from_to_spatial_map:
-            if t != None:
+        for f, t in from_to_spatial_map:
+            if t is not None:
                 pass
 
     def update_links(self, model, exchangeitems):
         """
-        Updates the model associated with the link.  This is necessary after the run phase to update the data values stored on the link object
+        Updates the model associated with the link.  This is necessary after
+        the run phase to update the data values stored on the link object
         Args:
             model: model object that will be updated (type:engine.Model)
-            exchangeitems: list of exchange item to be updated (type:stdlib.ExchangeItem)
+            exchangeitems: list of exchange item to be updated
+                           (type:stdlib.ExchangeItem)
 
         Returns: None
 
         """
 
         name = model.name()
-        for id,link_inst in self.__links.iteritems():
-            f,t = link_inst.get_link()
+        for id, link_inst in self.__links.iteritems():
+            f, t = link_inst.get_link()
 
             if t[0].name() == name:
                 for item in exchangeitems:
@@ -842,7 +867,7 @@ class Coordinator(object):
         cycles = net.recursive_simple_cycles(g)
         for cycle in cycles:
             # remove edges that form cycles
-            g.remove_edge(cycle[0],cycle[1])
+            g.remove_edge(cycle[0], cycle[1])
 
         # perform toposort
         order = net.topological_sort(g)
@@ -853,7 +878,7 @@ class Coordinator(object):
             for i in xrange(0,len(order)-1):
                 if order[i] == cycle[1] and order[i+1] == cycle[0]:
                     order.insert(i+2, cycle[1])
-                    order.insert(i+3,cycle[0])
+                    order.insert(i+3, cycle[0])
                     break
 
 
@@ -865,7 +890,8 @@ class Coordinator(object):
         # return execution order
         return order
 
-    def run_simulation(self, simulationName=None, dbName=None, user_info=None, datasets=None):
+    def run_simulation(self, simulationName=None, dbName=None, user_info=None,
+                       datasets=None):
         """
         Executes a model simulation.
 
@@ -896,20 +922,25 @@ class Coordinator(object):
                 types.extend(inspect.getmro(model.instance().__class__))
 
             # make sure that feed forward and time-step models are not mixed together
-            if (feed_forward.Wrapper in types) and (time_step.time_step_wrapper in types):
-                return dict(success=False, message='Cannot mix feed-forward and time-step models')
+            if (feed_forward.Wrapper in types) and \
+                    (time_step.time_step_wrapper in types):
+                return dict(success=False,
+                            message='Cannot mix feed-forward and time-step models')
 
             else:
                 # threadManager = ThreadManager()
                 if feed_forward.Wrapper in types:
-                    t = threading.Thread(target=run.run_feed_forward, args=(self,ds), name='Engine_RunFeedForward')
+                    t = threading.Thread(target=run.run_feed_forward,
+                                         args=(self, ds),
+                                         name='Engine_RunFeedForward')
                     t.start()
-                    # run.run_feed_forward(self)
+
                 elif time_step.time_step_wrapper in types:
 
-                    t = threading.Thread(target=run.run_time_step, args=(self,ds), name='Engine_RunTimeStep')
+                    t = threading.Thread(target=run.run_time_step,
+                                         args=(self, ds),
+                                         name='Engine_RunTimeStep')
                     t.start()
-                    #run.run_time_step(self)
 
             return dict(success=True, message='')
 
@@ -919,26 +950,29 @@ class Coordinator(object):
             sPrint(msg, MessageType.ERROR)
             return dict(success=False, message=e)
 
-    def connect_to_db(self, title, desc, engine, address, dbname, user, pwd, default=False):
+    def connect_to_db(self, title, desc, engine, address, dbname, user, pwd,
+                      default=False):
         """
         Establishes a connection with a database for saving simulation results
 
         Args:
             title: title to give database (local use only)
             desc: database description
-            engine: the engine that should be used to connect to the data base (e.g. postgres)
+            engine: the engine that should be used to connect to the data
+                    base (e.g. postgres)
             address: address of the database
             dbname: name of the database to connect with (server name)
             user: user name, required to establish a connection
             pwd:  password for connecting to the database
-            default: designates if this database should be used as the default for saving simulation results
+            default: designates if this database should be used as the default
+                     for saving simulation results
 
         Returns: returns database id 
 
         """
 
-
-        connection = gui.connect_to_db(title, desc, engine, address, dbname, user, pwd)
+        connection = gui.connect_to_db(title, desc, engine, address, dbname,
+                                       user, pwd)
 
         if connection:
             dbs = self.add_db_connection(connection)
@@ -966,7 +1000,7 @@ class Coordinator(object):
 
         link_objs = []
         if os.path.isfile(abspath):
-            with open(abspath,'r') as f:
+            with open(abspath, 'r') as f:
                 lines = f.readlines()
                 for line in lines:
                     command = line.strip()
@@ -1002,17 +1036,20 @@ class Coordinator(object):
             elog.error('could not find database id: %s' % db_id)
             return
 
-
         # get all result entries
-        self._coreread = readCore(self._db[db_id]['session'])
+        self.coreread = readCore(self._db[db_id]['session'])
 
-        results = self._coreread.getAllResult()
+        results = self.coreread.getAllResult()
 
         if results:
             elog.info('Id   Type     Variable    Unit    ValueCount')
             for result in results:
-                elog('%s    %s   %s  %s  %s '%(result.ResultID, result.ResultTypeCV,result.VariableObj.VariableCode,
-                                         result.UnitObj.UnitsName,result.ValueCount))
+                elog('%s    %s   %s  %s  %s ' %
+                     (result.ResultID,
+                      result.ResultTypeCV,
+                      result.VariableObj.VariableCode,
+                      result.UnitObj.UnitsName,
+                      result.ValueCount))
         else:
             elog.info('No results found')
 

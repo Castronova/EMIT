@@ -23,34 +23,46 @@ Purpose: This file contains the logic used to run coupled model simulations
 
 class EngineStatus(object):
     """
-    Defines the current status of the Engine.  Status is defined using the stdlib.Status class
+    Defines the current status of the Engine.  Status is defined using the
+    stdlib.Status class
     """
 
     def __init__(self):
         self.__engineStatus = stdlib.Status.UNDEFINED
+
     def set(self, status=stdlib.Status.UNDEFINED):
         if status in dir(stdlib.Status):
             self.__engineStatus = status
         else:
-            sPrint('Failed to set engine status.  Status must by instance of stdlib.Status')
+            sPrint('Failed to set engine status.  '
+                   'Status must by instance of stdlib.Status')
+
     def get(self):
         return self.__engineStatus
+
     def __str__(self):
-        return 'The Engine status is currently set to: %s' % self.__engineStatus
+        return 'The Engine status is currently set to: %s' % \
+               self.__engineStatus
+
 
 class Link(object):
     def __init__(self, id, from_linkable_component, to_linkable_component,
                  from_item, to_item):
         """
-        defines the link object.  Links are used to pass data between models during simulation runtime. This class
-        captures the information that is necessary to define a unique linkage between model components.
+        defines the link object.  Links are used to pass data between models
+        during simulation runtime. This class captures the information that is
+        necessary to define a unique linkage between model components.
 
         Args:
             id: unique id for the link object (type:string)
-            from_linkable_component: the component object that is providing output  (type:Engine.Model)
-            to_linkable_component: the component object that is accepting input (type:Engine.Model)
-            from_item: The exchange item that is passed as output (type: stdlib.ExchangeItem)
-            to_item: the exchange item that is accepted as input (type: stdlib.ExchangeItem)
+            from_linkable_component: the component object that is providing
+                                     output (type:Engine.Model)
+            to_linkable_component: the component object that is accepting input
+                                   (type:Engine.Model)
+            from_item: The exchange item that is passed as output
+                       (type: stdlib.ExchangeItem)
+            to_item: the exchange item that is accepted as input
+                     (type: stdlib.ExchangeItem)
 
         Returns: Link
 
@@ -68,8 +80,10 @@ class Link(object):
 
     def get_link(self):
         """
-        Gets the Engine.Model and Stdlib.ExchangeItem objects that comprise the like object
-        Returns: tuple( [from model, from exchange item], [to model, to exchange item] )
+        Gets the Engine.Model and Stdlib.ExchangeItem objects that comprise
+        the link object
+        Returns: tuple( [from model, from exchange item],
+                        [to model, to exchange item] )
 
         """
 
@@ -145,6 +159,7 @@ class Link(object):
                 self.__temporal_interpolation = value
         return self.__temporal_interpolation
 
+
 class Model(object):
     def __init__(self, id, name, instance, desc=None, input_exchange_items=[],
                  output_exchange_items=[], params=None):
@@ -155,9 +170,12 @@ class Model(object):
             name: name of the model (type: string)
             instance: instantiated model object
             desc: description of the model (type: string)
-            input_exchange_items: list of input exchange items (type: list[stdlib.ExchangeItem] )
-            output_exchange_items: list of output exchange items (type: list[stdlib.ExchangeItem] )
-            params: model loading parameters (e.g. *.mdl params) (type: list[ dict{  )
+            input_exchange_items: list of input exchange items
+                                  (type: list[stdlib.ExchangeItem] )
+            output_exchange_items: list of output exchange items
+                                   (type: list[stdlib.ExchangeItem] )
+            params: model loading parameters (e.g. *.mdl params)
+                    (type: list[ dict{  )
 
         Returns: Model
 
@@ -201,7 +219,8 @@ class Model(object):
     def get_input_exchange_items(self):
         """
         Gets model input exchange items
-        Returns: list of exchange item objects (type: list[stdlib.ExchangeItem])
+        Returns: list of exchange item objects
+                 (type: list[stdlib.ExchangeItem])
 
         """
         if len(self.__iei.keys()) > 0:
@@ -397,14 +416,17 @@ class Coordinator(object):
         for db_id in self._db.iterkeys():
             args = self._db[db_id]['args']
 
-            # todo: remove this by migrating all databases to the latest ODM2 and use ODM2PythonAPI exclusively
-            # make sure address is the string location of the database (this is necessary to be compatible with the old ODM2 and ODM2PythonAPI)(
+            # todo: remove this by migrating all databases to the latest ODM2
+            # make sure address is the string location of the database
+            # (this is necessary to be compatible with the old ODM2 and
+            # ODM2PythonAPI)
             if isinstance(args['address'], sqlalchemy.engine.url.URL):
                 args['address'] = self._db[db_id]['connection_string'].database
 
             db[db_id] = {'name': self._db[db_id]['name'],
                          'description': self._db[db_id]['description'],
-                         'connection_string': self._db[db_id]['connection_string'],
+                         'connection_string':
+                             self._db[db_id]['connection_string'],
                          'id': db_id, 'args': args}
         db.update({'success': True})
         return db
@@ -416,11 +438,11 @@ class Coordinator(object):
         Args:
             db_name: name of the database to retrieve arguments for
 
-        Returns: dictionary of database arguments or None (type:dict or type:None)
+        Returns: dictionary of database arguments or None
+                 (type:dict or type:None)
 
         """
         # return the database args dictionary for a given name
-        db = {}
         for db_id in self._db.iterkeys():
             database = self._db[db_id]
             if database['name'] == db_name:
@@ -444,7 +466,7 @@ class Coordinator(object):
                 self.__default_db['id'] = db_id
                 sPrint('Default database : %s' %
                        self._db[db_id]['connection_string'], MessageType.INFO)
-            except Exception, e :
+            except Exception, e:
                 msg = 'Encountered and error when setting default ' \
                       'database: %s' % e
                 elog.error(msg)
@@ -471,7 +493,8 @@ class Coordinator(object):
             **params:  id: modelid
                        config_params
 
-        Returns:  on success returns dict(id:?, name:?, model_type:?). on failure returns 0
+        Returns:  on success returns dict(id:?, name:?, model_type:?). on
+                  failure returns 0
 
         """
 
@@ -492,75 +515,77 @@ class Coordinator(object):
             oei = model_inst.outputs().values()
 
             # create a model instance
-            thisModel = Model(id= params['id'],
-                              name=model_inst.name(),
-                              instance=model_inst,
-                              desc=model_inst.description(),
-                              input_exchange_items=iei,
-                              output_exchange_items=oei,
-                              params=params)
+            this_model = Model(id=params['id'],
+                               name=model_inst.name(),
+                               instance=model_inst,
+                               desc=model_inst.description(),
+                               input_exchange_items=iei,
+                               output_exchange_items=oei,
+                               params=params)
 
         except Exception, e:
             sPrint('Encountered an error while loading model: %s' %
                    e, MessageType.ERROR)
             elog.error('Encountered an error while loading model: %s' % e)
-            thisModel = None
+            this_model = None
 
-        if thisModel is not None:
+        if this_model is not None:
             # save the model
-            self.__models[thisModel.name()] = thisModel
-            return thisModel
+            self.__models[this_model.name()] = this_model
+            return this_model
         else:
             elog.error('Failed to load model.')
             sPrint('Failed to load model.', MessageType.ERROR)
             return None
 
-    def remove_model_by_id(self, id):
+    def remove_model_by_id(self, model_id):
         """
         Removes a model from the Coordinator by id
 
         Args:
-            id: id of the model to remove (type:string)
+            model_id: id of the model to remove (type:string)
 
-        Returns: the id of the model that was removed or None (type:string or None)
+        Returns: the id of the model that was removed or None
+                 (type:string or None)
 
         """
         for m in self.__models:
-            if self.__models[m].id() == id:
+            if self.__models[m].id() == model_id:
 
                 # remove the model
-                self.__models.pop(m,None)
+                self.__models.pop(m, None)
 
                 # find all links associated with the model
-                remove_these_links  = []
+                remove_these_links = []
                 for l in self.__links:
-                    FROM, TO = self.__links[l].get_link()
-                    if FROM[0].id() == id or TO[0].id() == id:
+                    from_model, to_model = self.__links[l].get_link()
+                    if from_model[0].id() == model_id or \
+                       to_model[0].id() == model_id:
                         remove_these_links.append(l)
 
                 # remove all links associated with the model
                 for link in remove_these_links:
-                    self.__links.pop(link,None)
+                    self.__links.pop(link, None)
 
-                return id
+                return model_id
         return None
 
-    def get_model(self, id):
+    def get_model(self, model_id):
         """
         Gets a model within the Coordinator by id
 
         Args:
-            id: id of the model to return (type:string)
+            model_id: id of the model to return (type:string)
 
         Returns: model or None (type:engine.Model or None)
 
         """
         for m in self.__models:
-            if self.__models[m].id() == id:
+            if self.__models[m].id() == model_id:
                 return self.__models[m]
         return None
 
-    def add_link(self,from_id, from_item_id, to_id, to_item_id,
+    def add_link(self, from_id, from_item_id, to_id, to_item_id,
                  spatial_interp=None, temporal_interp=None, uid=None):
         """
         Creates a new link in the Coordinator 
@@ -579,13 +604,13 @@ class Coordinator(object):
         """
 
         # check that from and to models exist in composition
-        from_model= self.get_model(from_id)
+        from_model = self.get_model(from_id)
         to_model = self.get_model(to_id)
 
         try:
 
             if from_model is None:
-                raise Exception('> '+from_id+
+                raise Exception('> '+from_id +
                                 ' does not exist in configuration')
             if to_model is None:
                 raise Exception('> ' + to_id +
@@ -643,29 +668,29 @@ class Coordinator(object):
         """
 
         # check that from and to models exist in composition
-        From = self.get_model_by_id(from_id)
-        To = self.get_model_by_id(to_id)
+        from_model = self.get_model(from_id)
+        to_model = self.get_model(to_id)
         try:
 
-            if self.get_model_by_id(from_id) is None:
+            if self.get_model(from_id) is None:
                 raise Exception(from_id+' does not exist in configuration')
-            if self.get_model_by_id(to_id) is None:
+            if self.get_model(to_id) is None:
                 raise Exception(to_id+' does not exist in configuration')
         except Exception, e:
             elog.error(e)
             return None
 
         # check that input and output exchange items exist
-        ii = To.get_input_exchange_item_by_name(to_item_name)
-        oi = From.get_output_exchange_item_by_name(from_item_name)
+        ii = to_model.get_input_exchange_item_by_name(to_item_name)
+        oi = from_model.get_output_exchange_item_by_name(from_item_name)
 
         if ii is not None and oi is not None:
             # generate a unique model id
-            id = 'L'+uuid.uuid4().hex[:5]
+            linkid = 'L'+uuid.uuid4().hex[:5]
 
             # create link
-            link = Link(id, From, To, oi, ii)
-            self.__links[id] = link
+            link = Link(linkid, from_model, to_model, oi, ii)
+            self.__links[linkid] = link
 
             return link
         else:
@@ -674,7 +699,9 @@ class Coordinator(object):
 
     def get_from_links_by_model(self, model_id):
         """
-        Gets links corresponding to a specific model id in which the model is the source component. This is useful for determining where data will pass (direction)
+        Gets links corresponding to a specific model id in which the model is
+        the source component. This is useful for determining where data will
+        pass (direction)
 
         Args:
             model_id: id of the model to retrieve links for (type:string)
@@ -710,17 +737,32 @@ class Coordinator(object):
                 else 'None'
             links.append(dict(
                         id=l,
-                        output_name=self.__links[l].source_exchange_item().name(),
-                        output_id=self.__links[l].source_exchange_item().id(),
-                        input_name=self.__links[l].target_exchange_item().name(),
+                        output_name=self.__links[l]
+                                        .source_exchange_item()
+                                        .name(),
+                        output_id=self.__links[l]
+                                      .source_exchange_item()
+                                      .id(),
+                        input_name=self.__links[l]
+                                       .target_exchange_item()
+                                       .name(),
                         input_id=self.__links[l].target_exchange_item().id(),
                         spatial_interpolation=spatial,
                         temporal_interpolation=temporal,
-                        source_component_name=self.__links[l].source_component().name(),
-                        target_component_name=self.__links[l].target_component().name(),
-                        source_component_id=self.__links[l].source_component().id(),
-                        target_component_id=self.__links[l].target_component().id(),
-                            ))
+                        source_component_name=self.__links[l]
+                                                  .source_component()
+                                                  .name(),
+                        target_component_name=self.__links[l]
+                                                  .target_component()
+                                                  .name(),
+                        source_component_id=self.__links[l]
+                                                .source_component()
+                                                .id(),
+                        target_component_id=self.__links[l]
+                                                .target_component()
+                                                .id()
+                        )
+                    )
         return links
 
     def get_all_models(self):
@@ -740,8 +782,8 @@ class Coordinator(object):
                     'id': self.__models[m].id(),
                     'description': self.__models[m].description(),
                     'type': self.__models[m].type(),
-                    'attrib': self.__models[m].attrib(),
-                    }
+                    'attrib': self.__models[m].attrib()
+                 }
             )
         return models
 
@@ -752,7 +794,8 @@ class Coordinator(object):
             from_model_id: id of the source model (type:string)
             to_model_id: id of the target model (type:string)
 
-        Returns: list of link dictionary objects (one for each exchange item on the link)
+        Returns: list of link dictionary objects (one for each exchange item
+                 on the link)
 
         """
 
@@ -808,7 +851,7 @@ class Coordinator(object):
             # if mapping was found
             if mapped:
 
-                f_geom , t_geom= mapped
+                f_geom, t_geom = mapped
 
                 # update the datavalues with the mapped dates and values
                 t_geom.datavalues().set_timeseries(from_geom_dict[f_geom])
@@ -909,9 +952,6 @@ class Coordinator(object):
         ds = None
         if None not in [simulationName, dbName, user_info, datasets]:
             db = self.get_db_args_by_name(dbName)
-
-            # user_list= Users.BuildAffiliationfromJSON(user_info)
-
             ds = run.dataSaveInfo(simulationName, db, user_info, datasets)
 
         try:
@@ -921,11 +961,12 @@ class Coordinator(object):
             for model in models.itervalues() :
                 types.extend(inspect.getmro(model.instance().__class__))
 
-            # make sure that feed forward and time-step models are not mixed together
+            # make sure that feed forward and time-step models are not mixed
             if (feed_forward.Wrapper in types) and \
                     (time_step.time_step_wrapper in types):
                 return dict(success=False,
-                            message='Cannot mix feed-forward and time-step models')
+                            message='Cannot mix feed-forward and '
+                                    'time-step models')
 
             else:
                 # threadManager = ThreadManager()

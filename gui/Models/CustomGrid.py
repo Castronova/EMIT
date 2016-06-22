@@ -99,8 +99,10 @@ class CustomGrid(wx.grid.Grid):
 		sorted_sections = sorted(data.keys())
 		for each_section in sorted_sections:
 			if isinstance(data[each_section], list):
-				if each_section != "models":
-					self.add_list_of_dictionary(data[each_section])
+				if each_section == "links":
+					for item in data[each_section]:
+						self.add_dictionary(item, "Link " + item["from_name"] + " -> " + item["to_name"])
+
 				if each_section == "models":
 					self.add_list_of_dictionary(data[each_section], "name")
 

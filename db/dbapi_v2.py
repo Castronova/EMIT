@@ -2,7 +2,7 @@ import datetime
 import time
 import uuid
 
-# import apsw as sqlite3
+import sqlite3.dbapi2 as sqlite3
 import numpy
 import sqlalchemy
 from odm2api.ODM2 import models
@@ -49,7 +49,6 @@ class sqlite():
 
 
         # build sqlalchemy connection
-        # self.connection = dbconnection.createConnection('sqlite', sqlitepath)
         self.connection = session
         sqlitepath = session.engine.url.database
 
@@ -60,16 +59,8 @@ class sqlite():
         self.delete = DeleteODM2(self.connection)
 
         # create connection using spatialite for custom sql queries
-        self.conn = sqlite3.Connection(sqlitepath)
+        self.conn = sqlite3.connect(sqlitepath)
         self.cursor = self.conn.cursor()
-
-        # load mod_spatialite extension
-        self.conn.enableloadextension(True)
-        try:
-            self.cursor.execute('SELECT load_extension("mod_spatialite")')
-        except Exception, e:
-            elog.error('Encountered and error when attempting to load mod_spatialite: %s' % e)
-            sPrint('Could not load mod_spatialite.  Your database will not be geo-enabled', MessageType.WARNING)
 
 
     def get_next_insert_id(self, cls):
@@ -94,9 +85,9 @@ class sqlite():
         nextID = lastID[0] + 1 # increment the last id
         return nextID
 
-    def create_user(self, userInfo):
-        person = self.write.createPerson(userInfo['firstName'], userInfo['lastName'])
-        return person.PersonID
+    # def create_user(self, userInfo):
+    #     person = self.write.createPerson(userInfo['firstName'], userInfo['lastName'])
+    #     return person.PersonID
 
     def create_organization(self, organInfo):
         org = self.write.createOrganization(organInfo['cvType'], organInfo['code'], organInfo['name'],
@@ -158,22 +149,28 @@ class sqlite():
         if actionid is None:
             actions = self.read.getActions()
             actionid = int(actions[-1].ActionID) + 1 if len(actions) > 0 else 1
-            self.cursor.execute('INSERT INTO Actions VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            self.cursor.execute('INSERT INTO Actions VALUES '
+                                '(?, ?, ?, ?, ?, ?, ?, ?, ?)',
                                 [actionid,
-                                'Simulation',
-                                method.MethodID,
-                                action_date.strftime('%Y-%m-%d %H:%M:%S'),
-                                action_utc_offset,
-                                # datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                # int((datetime.datetime.now() - datetime.datetime.utcnow()).total_seconds()/3600),
-                                 None, None, None, None
+                                 'Simulation',
+                                 method.MethodID,
+                                 action_date.strftime('%Y-%m-%d %H:%M:%S'),
+                                 action_utc_offset,
+                                 None,
+                                 None,
+                                 None,
+                                 None
                                  ]
                                 )
+            self.conn.commit()
 
         sPrint('inserting actionby', MessageType.DEBUG)
         ab = self.cursor.execute('SELECT * FROM ActionBy').fetchall()
         bridgeid = int(ab[-1][0]) + 1 if len(ab) > 0 else 1
-        self.cursor.execute('INSERT INTO ActionBy VALUES (?,?,?,?,?)', [bridgeid, actionid, affiliation[0].AffiliationID, True, None])
+        self.cursor.execute('INSERT INTO ActionBy VALUES (?,?,?,?,?)',
+                            [bridgeid, actionid, affiliation[0].AffiliationID,
+                             True, None])
+        self.conn.commit()
 
 
 
@@ -184,7 +181,11 @@ class sqlite():
             pl = models.ProcessingLevels()
             pl.ProcessingLevelCode = 2
             pl.Definition = 'Derived Product'
-            pl.Explanation ='Derived products require scientific and technical interpretation and include multiple-sensor data. An example might be basin average precipitation derived from rain gages using an interpolation procedure.'
+            pl.Explanation ='Derived products require scientific and ' \
+                            'technical interpretation and include ' \
+                            'multiple-sensor data. An example might be basin' \
+                            ' average precipitation derived from rain gages ' \
+                            'using an interpolation procedure.'
             self.write.createProcessingLevel(pl)
             processinglevels = self.read.getProcessingLevels(codes=[2])
         processinglevel = processinglevels[0]
@@ -284,6 +285,8 @@ class sqlite():
                 vals[0] = resultid   # insert result id
                 vals[-1] = 'Unknown' # insert aggregation statistic
                 self.cursor.execute('INSERT INTO TimeSeriesResults VALUES (?,?,?,?,?,?,?,?,?,?,?)', vals)
+                self.conn.commit()
+
                 sPrint('inserting time series results...%3.5f sec' % (time.time() - st), MessageType.DEBUG)
 
                 # get datavalues corresponding to this resultid (i.e. geometry)
@@ -513,6 +516,7 @@ class sqlite():
         values = [nextID,UUID,FeatureTypeCV,FeatureCode,FeatureName,FeatureDescription,FeatureGeoTypeCV,FeatureGeometry,FeatureGeometryWKT,Elevation,ElevationDatumCV]
         self.cursor.execute('INSERT INTO SamplingFeatures VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
                             , values)
+        self.conn.commit()
 
         featureObj = models.SamplingFeatures()
         featureObj.SamplingFeatureID = nextID
@@ -609,7 +613,7 @@ class sqlite():
         # insert values in chunks of 10,000
         sPrint('Begin inserting %d value' % len(vals), MessageType.DEBUG)
 
-        self.cursor.execute("BEGIN TRANSACTION;")
+        # self.cursor.execute("BEGIN TRANSACTION;")
         chunk_size = 10000
         percent_complete = 0
         for i in range(0, len(vals), chunk_size):
@@ -618,8 +622,8 @@ class sqlite():
             percent_complete = float(eidx) / float(len(vals)) * 100
             self.cursor.executemany('INSERT INTO TimeSeriesResultValues VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', vals[sidx:eidx])
             sPrint('.. inserted %d records, %3.1f %% complete' % ((eidx - sidx), percent_complete), MessageType.DEBUG)
-        self.cursor.execute("COMMIT;")
-
+        # self.cursor.execute("COMMIT;")
+        self.conn.commit()
         return 1
 
     def insert_feature_actions_bulk(self, SamplingFeatureIDs = [], ActionIDs = []):
@@ -639,12 +643,15 @@ class sqlite():
 
         # get the last record index
         res = self.cursor.execute('SELECT last_insert_rowid() FROM FeatureActions')
+        self.conn.commit()
+
         startID = res.fetchone() or (-1,)
         startID = startID[0] + 1 # increment the last id
 
         FeatureActionIDs = range(startID, startID + valCount, 1)
         vals = zip(FeatureActionIDs, SamplingFeatureIDs, ActionIDs)
         self.cursor.executemany('INSERT OR IGNORE INTO FeatureActions VALUES (?, ?, ?)', vals)
+        self.conn.commit()
 
 
         # return the feature action ids
@@ -708,6 +715,7 @@ class sqlite():
                    ProcessingLevelID, ResultDateTime, ResultDateTimeUTCOffset, ValidDateTime, ValidDateTimeUTCOffset,
                    StatusCV, SampledMediumCV, ValueCount)
         self.cursor.executemany('INSERT INTO Results VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', vals)
+        self.conn.commit()
 
 
         # return the feature action ids
@@ -761,6 +769,7 @@ class sqlite():
         vals = zip(resultIDs, aggregationstatistic, xloc, xloc_unitid, yloc, yloc_unitid, zloc, zloc_unitid, srsID,
                    timespacing, timespacing_unitid)
         self.cursor.executemany('INSERT INTO TimeSeriesResults VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', vals)
+        self.conn.commit()
 
 
         # return the feature action ids

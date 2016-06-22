@@ -2,9 +2,8 @@ import threading
 
 import networkx as net
 import sqlalchemy
-
+import stdlib
 import run
-import wrappers
 from api_old.ODM2.Core.services import *
 from emitLogging import elog
 from sprint import *
@@ -1017,13 +1016,14 @@ class Coordinator(object):
         else:
             elog.info('No results found')
 
+
 class Serializable(Coordinator):
     """
-    This class returns serializable objects for Engine functions, ideally for multiprocessing.
+    This class returns serializable objects for Engine functions, ideally for
+    multiprocessing.
     """
     def __init__(self):
         super(Serializable, self).__init__()
-
 
     def __summarize_exhange_item(self, item):
         """
@@ -1043,15 +1043,14 @@ class Serializable(Coordinator):
         geom_extent = 'Not Implemented Yet'
 
         # initialize the geometry dictionary
-        geom_dict = dict(srs = geom_srs,
-                         type = geom_type,
-                         count = geom_count,
-                         extent = geom_extent,
-                         wkb = [],
-                         hash = [])
+        geom_dict = dict(srs=geom_srs,
+                         type=geom_type,
+                         count=geom_count,
+                         extent=geom_extent,
+                         wkb=[],
+                         hash=[])
 
-
-       # get the geometries and hashes
+        # get the geometries and hashes
         geometries = item.getGeometries2()
         geoms = [g.ExportToWkb() for g in geometries]
         hashs = [g.hash for g in geometries]
@@ -1067,31 +1066,37 @@ class Serializable(Coordinator):
                     type=item.type(),
                     geometry=geom_dict)
 
-
-    def connect_to_db(self, title, desc, engine, address, dbname, user, pwd, default=False):
+    def connect_to_db(self, title, desc, engine, address, dbname, user, pwd,
+                      default=False):
         """
-        Establishes a connection with a database for saving simulation results and returns the connection id
+        Establishes a connection with a database for saving simulation results
+        and returns the connection id
 
         Args:
             title: title to give database (local use only)
             desc: database description
-            engine: the engine that should be used to connect to the data base (e.g. postgres)
+            engine: the engine that should be used to connect to the data base
+                    (e.g. postgres)
             address: address of the database
             dbname: name of the database to connect with (server name)
             user: user name, required to establish a connection
             pwd:  password for connecting to the database
-            default: designates if this database should be used as the default for saving simulation results
+            default: designates if this database should be used as the default
+                     for saving simulation results
 
-        Returns: dict(success:True or False, result{ids:[connection id] or None})
+        Returns: dict(success:True or False, result{ids:[connection id] or
+                                                                         None})
 
         """
 
-        db_ids = super(Serializable, self).connect_to_db(title, desc, engine, address, dbname, user, pwd)
+        db_ids = super(Serializable, self).connect_to_db(title, desc, engine,
+                                                         address, dbname, user,
+                                                         pwd)
 
         if db_ids is None:
-            return {'success': False, 'result':None}
+            return {'success': False, 'result': None}
         else:
-            return {'success': True, 'result':{'ids': db_ids}}
+            return {'success': True, 'result': {'ids': db_ids}}
 
     def add_model(self, **params):
         """
@@ -1100,7 +1105,8 @@ class Serializable(Coordinator):
             **params:  id: modelid
                        config_params
 
-        Returns:  dict(success:True or False, result:{id:id, name:model name, model_type:simulation type} or None)
+        Returns:  dict(success:True or False, result:{id:id, name:model name,
+                  model_type:simulation type} or None)
 
         """
 
@@ -1112,9 +1118,9 @@ class Serializable(Coordinator):
             result = dict(id=res.id(), name=res.name(), model_type=res.type())
             return {'success': True, 'result': result}
 
-    def get_exchange_items(self, modelid, type=stdlib.ExchangeItemType.INPUT):
+    def get_exchange_items(self, modelid, eitype=stdlib.ExchangeItemType.INPUT):
 
-        eis = super(Serializable, self).get_exchange_items(modelid, type)
+        eis = super(Serializable, self).get_exchange_items(modelid, eitype)
 
         if eis is None:
             return {'success': False, 'result': None}
@@ -1124,18 +1130,18 @@ class Serializable(Coordinator):
                 res.append(self.__summarize_exhange_item(ei))
             return {'success': 'True', 'result': res}
 
-    def get_model_by_id(self, id):
+    def get_model_by_id(self, modelid):
         """
         Gets a summarized version of the model by id
 
         Args:
-            id: id of the model to return (type:string)
+            modelid: id of the model to return (type:string)
 
         Returns: dictionary of summarized metadata (type:dict)
 
         """
 
-        model = super(Serializable, self).get_model(id)
+        model = super(Serializable, self).get_model(modelid)
 
         if model is not None:
             res = {'params': model.get_config_params(),
@@ -1160,11 +1166,13 @@ class Serializable(Coordinator):
             from_model_id: id of the source model (type:string)
             to_model_id: id of the target model (type:string)
 
-        Returns: list of link dictionary objects (one for each exchange item on the link)
+        Returns: list of link dictionary objects (one for each exchange item on
+                 the link)
 
         """
 
-        links = super(Serializable, self).get_links_btwn_models(from_model_id, to_model_id)
+        links = super(Serializable, self).get_links_btwn_models(from_model_id,
+                                                                to_model_id)
 
         serialized_links = []
 
@@ -1191,15 +1199,16 @@ class Serializable(Coordinator):
 
         return {'success': True, 'result': serialized_links}
 
-    def remove_link_by_id(self, id):
+    def remove_link_by_id(self, linkid):
 
-        res = super(Serializable, self).remove_link_by_id()
+        res = super(Serializable, self).remove_link_by_id(linkid)
         if res:
             return {'success': True, 'result': res}
         else:
             return {'success': False, 'result': res}
 
-    def add_link(self,from_id, from_item_id, to_id, to_item_id, spatial_interp=None, temporal_interp=None, uid=None):
+    def add_link(self, from_id, from_item_id, to_id, to_item_id,
+                 spatial_interp=None, temporal_interp=None, uid=None):
         """
         Creates a new link in the Coordinator
 
@@ -1216,9 +1225,11 @@ class Serializable(Coordinator):
 
         """
 
-        res = super(Serializable, self).add_link(from_id, from_item_id, to_id, to_item_id, spatial_interp, temporal_interp, uid)
+        res = super(Serializable, self).add_link(from_id, from_item_id, to_id,
+                                                 to_item_id, spatial_interp,
+                                                 temporal_interp, uid)
 
         if res is not None:
-            return {'success': True, 'result':{'id': res.get_id()}}
+            return {'success': True, 'result': {'id': res.get_id()}}
         else:
             return {'success': False, 'result': None}

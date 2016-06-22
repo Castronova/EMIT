@@ -84,7 +84,7 @@ def getModelById(modelid):
 
 def getExchangeItems(modelid, type='INPUT'):
     e = Engine()
-    kwargs = dict(modelid=modelid, type=type)
+    kwargs = dict(modelid=modelid, eitype=type)
     task = [('get_exchange_items', kwargs)]
     e.setTasks(task)
     result = e.processTasks()

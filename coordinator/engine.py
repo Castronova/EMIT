@@ -15,6 +15,7 @@ from wrappers import feed_forward
 from wrappers import odm2_data
 from wrappers import time_step
 from utilities.models import *
+from . import terminal
 
 """
 Purpose: This file contains the logic used to run coupled model simulations
@@ -521,7 +522,7 @@ class Coordinator(object):
             sPrint('Failed to load model.', MessageType.ERROR)
             return None
 
-    def remove_model_by_id(self, model_id):
+    def remove_model(self, model_id):
         """
         Removes a model from the Coordinator by id
 
@@ -1031,7 +1032,7 @@ class Coordinator(object):
                     if len(command) > 0:
                         if command[0] != '#':
                             # print '%s'%command
-                            self.parse_args(command.split(' '))
+                            terminal.parse_args(command.split(' '))
 
                             if 'link' in command:
                                 link_objs.append(command.split(' ')[1:])
@@ -1248,6 +1249,26 @@ class Serializable(Coordinator):
     def remove_all_models_and_links(self):
         res = super(Serializable, self).remove_all_models_and_links()
         return {'success': True, 'result': res}
+
+
+    def remove_model(self, model_id):
+        """
+        Removes a model from the Coordinator by id
+
+        Args:
+            model_id: id of the model to remove (type:string)
+
+        Returns: the id of the model that was removed or None
+                 (type:string or None)
+
+        """
+
+        res = super(Serializable, self).remove_model(model_id)
+
+        if res is not None:
+            return {'success': True, 'result': res}
+        else:
+            return {'success': False, 'result': None}
 
     def get_links_btwn_models(self, from_model_id, to_model_id):
         """

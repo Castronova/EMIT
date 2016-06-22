@@ -1025,7 +1025,8 @@ class Serializable(Coordinator):
     def __init__(self):
         super(Serializable, self).__init__()
 
-    def __summarize_exhange_item(self, item):
+    @staticmethod
+    def __summarize_exhange_item(item):
         """
         Summarizes exchange item information into a serializable object
 
@@ -1118,7 +1119,8 @@ class Serializable(Coordinator):
             result = dict(id=res.id(), name=res.name(), model_type=res.type())
             return {'success': True, 'result': result}
 
-    def get_exchange_items(self, modelid, eitype=stdlib.ExchangeItemType.INPUT):
+    def get_exchange_items(self, modelid,
+                           eitype=stdlib.ExchangeItemType.INPUT):
 
         eis = super(Serializable, self).get_exchange_items(modelid, eitype)
 

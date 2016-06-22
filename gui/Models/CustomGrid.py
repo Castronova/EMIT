@@ -89,23 +89,6 @@ class CustomGrid(wx.grid.Grid):
 
 		self.enable_scroll_bar_on_startup()
 
-	def add_data_simulation(self, data):
-		"""
-		Handles data that comes from a simulation
-		Model names are sections
-		:param data: Must be a dictionary, where the values are a list of dictionaries. data: type(dict: [dict])
-		:return:
-		"""
-		sorted_sections = sorted(data.keys())
-		for each_section in sorted_sections:
-			if isinstance(data[each_section], list):
-				if each_section != "models":
-					self.add_list_of_dictionary(data[each_section])
-				if each_section == "models":
-					self.add_list_of_dictionary(data[each_section], "name")
-
-		self.enable_scroll_bar_on_startup()
-
 	def add_list_of_dictionary(self, data, section_tag=None):
 		"""
 		The section_tag is a key that must exist in data. The section tag will be the name of the section
@@ -122,7 +105,11 @@ class CustomGrid(wx.grid.Grid):
 
 		for item in data:
 			if section_tag:
-				section = self.add_section(item["type"] + " (" + item[section_tag] + ")")
+				item_type = str(item["type"])
+				item_type = item_type.capitalize()
+				item_type = self.remove_last_letter(item_type, "s")
+
+				section = self.add_section(item_type + " (" + item[section_tag] + ")")
 			else:
 				section = self.add_section(item["type"])
 			for key, value in item.iteritems():
@@ -130,6 +117,17 @@ class CustomGrid(wx.grid.Grid):
 					self.add_dictionary(value)
 				else:
 					self.add_data_to_section(section, key, value)
+
+	@staticmethod
+	def remove_last_letter(word, letter):
+		index = word.find(letter)
+		if index == -1:
+			return word  # Letter not found in word
+
+		if len(word) -1 == index:
+			return word[:5]  # Return the word without the last letter
+
+		return word  # Anything else, return the word as it is
 
 	def add_dictionary(self, data, section_name=None):
 		"""

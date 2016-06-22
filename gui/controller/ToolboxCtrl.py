@@ -62,7 +62,19 @@ class ToolboxCtrl(ToolboxView):
         data = models.parse_json(path)
 
         if path[-4:] == ".sim":
-            model_details.properties_page_controller.add_data_simulation(data)
+            # model_details.properties_page_controller.add_data_simulation(data)
+
+            sorted_sections = sorted(data.keys())
+            for each_section in sorted_sections:
+                if isinstance(data[each_section], list):
+                    if each_section == "links":
+                        for item in data[each_section]:
+                            model_details.properties_page_controller.add_dictionary(item, "Link " + item["from_name"] + " -> " + item["to_name"])
+
+                    if each_section == "models":
+                        model_details.properties_page_controller.add_list_of_dictionary(data[each_section], "name")
+
+            model_details.properties_page_controller.enable_scroll_bar_on_startup()
         else:
             # Not a simulation
             model_details.properties_page_controller.add_data(data)

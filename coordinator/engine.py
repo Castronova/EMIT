@@ -408,28 +408,11 @@ class Coordinator(object):
         """
         Gets all database connections that have been loaded in the Coordinator
 
-        Returns: dictionary of database connection information (type:dict)
+        Returns: dictionary of database connections (type:dict)
 
         """
-        # return the database connection dictionary without sqlalchemy objects
-        db = {}
-        for db_id in self._db.iterkeys():
-            args = self._db[db_id]['args']
 
-            # todo: remove this by migrating all databases to the latest ODM2
-            # make sure address is the string location of the database
-            # (this is necessary to be compatible with the old ODM2 and
-            # ODM2PythonAPI)
-            if isinstance(args['address'], sqlalchemy.engine.url.URL):
-                args['address'] = self._db[db_id]['connection_string'].database
-
-            db[db_id] = {'name': self._db[db_id]['name'],
-                         'description': self._db[db_id]['description'],
-                         'connection_string':
-                             self._db[db_id]['connection_string'],
-                         'id': db_id, 'args': args}
-        db.update({'success': True})
-        return db
+        return self._db
 
     def get_db_args_by_name(self, db_name):
         """
@@ -1176,6 +1159,33 @@ class Serializable(Coordinator):
             return {'success': False, 'result': None}
         else:
             return {'success': True, 'result': {'ids': db_ids}}
+
+    def get_db_connections(self):
+        """
+        Gets all database connections that have been loaded in the Coordinator
+        in a serializable dictionary
+
+        Returns: dictionary of database connection information (type:dict)
+
+        """
+
+        res = super(Serializable, self).get_db_connections()
+
+        db = {}
+        for db_id in res.iterkeys():
+            args = self._db[db_id]['args']
+            if isinstance(args['address'], sqlalchemy.engine.url.URL):
+                args['address'] = self._db[db_id]['connection_string'].database
+
+            db[db_id] = {'name': self._db[db_id]['name'],
+                         'description': self._db[db_id]['description'],
+                         'connection_string':
+                             self._db[db_id]['connection_string'],
+                         'id': db_id, 'args': args}
+
+        return {'success': True, 'result': db}
+
+
 
     def add_model(self, **params):
         """

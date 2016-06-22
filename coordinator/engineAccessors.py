@@ -20,35 +20,40 @@ def addModel(id=None, **params):
     e.thread.start()
     ############################
 
-def connectToDbFromFile(dbtextfile=None):
-    e = Engine()
-    kwargs = dict(filepath=dbtextfile, event_success='onDatabaseConnected')
-    task = [('connect_to_db_from_file',kwargs)]
-    e.setTasks(task)
+# def connectToDbFromFile(dbtextfile=None):
+#     e = Engine()
+#     kwargs = dict(filepath=dbtextfile, event_success='onDatabaseConnected')
+#     task = [('connect_to_db_from_file',kwargs)]
+#     e.setTasks(task)
+#
+#     e.thread = Thread(target = e.check_for_process_results, name='connectToDbFromFile')
+#     e.thread.start()
+#     e.thread.join()
 
-    e.thread = Thread(target = e.check_for_process_results, name='connectToDbFromFile')
-    e.thread.start()
-    e.thread.join()
 
-def connectToDb(title, desc, engine, address, dbname, user, pwd, default=False):
-    kwargs = dict(title=title, desc=desc, engine=engine, address=address, dbname=dbname, user=user, pwd=pwd, default=default, event_success='onDatabaseConnected')
+def connectToDb(title, desc, engine, address, dbname, user, pwd,
+                default=False):
+    kwargs = dict(title=title, desc=desc, engine=engine, address=address,
+                  dbname=dbname, user=user, pwd=pwd, default=default,
+                  event_success='onDatabaseConnected')
     e = Engine()
     task = [('connect_to_db', kwargs)]
     e.setTasks(task)
 
-    e.thread = Thread(target = e.check_for_process_results, name='connectToDb')
+    e.thread = Thread(target=e.check_for_process_results, name='connectToDb')
     e.thread.start()
 
-def addLink(source_id=None, source_item=None, target_id=None, target_item=None, spatial_interpolation=None,
-            temporal_interpolation=None,uid=None):
+def addLink(source_id=None, source_item=None, target_id=None, target_item=None,
+            spatial_interpolation=None, temporal_interpolation=None, uid=None):
     e = Engine()
-    kwargs = dict(from_id=source_id, from_item_id=source_item, to_id=target_id, to_item_id=target_item,
-                  spatial_interp=spatial_interpolation, temporal_interp=temporal_interpolation,uid=uid)
+    kwargs = dict(from_id=source_id, from_item_id=source_item, to_id=target_id,
+                  to_item_id=target_item, spatial_interp=spatial_interpolation,
+                  temporal_interp=temporal_interpolation, uid=uid)
     task = [('add_link', kwargs)]
     e.setTasks(task)
 
     result = e.processTasks()
-    return result
+    return result.pop('result')
 
 def getDbConnections():
     e = Engine()
@@ -56,7 +61,7 @@ def getDbConnections():
     task = [('get_db_connections',kwargs)]
     e.setTasks(task)
     result = e.processTasks()
-    return result
+    return result.pop('result')
 
 def removeModelById(modelid):
     e = Engine()

@@ -12,6 +12,7 @@ class ModelInputPromptView(wx.Frame):
         panel = wx.Panel(self)
         scroll_panel = wx.lib.scrolledpanel.ScrolledPanel(panel)
         scroll_panel.SetupScrolling(scroll_x=False)  # Disable scrolling horizontally
+        bottom_panel = wx.Panel(panel)
 
         self.params = models.parse_json(path)
         self.params.update({'path':path,
@@ -77,13 +78,15 @@ class ModelInputPromptView(wx.Frame):
             count += 1
 
         break_line = wx.StaticLine(panel)
-        self.cancel_button = wx.Button(panel, label="Cancel", style=wx.BU_EXACTFIT)
-        self.submit_button = wx.Button(panel, label="Load Model", style=wx.BU_EXACTFIT)
+        self.cancel_button = wx.Button(bottom_panel, label="Cancel", style=wx.BU_EXACTFIT)
+        self.submit_button = wx.Button(bottom_panel, label="Load Model", style=wx.BU_EXACTFIT)
+        self.help_button = wx.Button(bottom_panel, label="Help", style=wx.BU_EXACTFIT)
 
         # Create sizers
         frame_sizer = wx.BoxSizer(wx.VERTICAL)
         scroll_panel_sizer = wx.BoxSizer(wx.VERTICAL)
         flex_grid_sizer = wx.FlexGridSizer(rows=count * 3, cols=1, vgap=1, hgap=5)
+
         button_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         # Add components to sizer
@@ -110,12 +113,15 @@ class ModelInputPromptView(wx.Frame):
         scroll_panel.SetSizer(scroll_panel_sizer)
         scroll_panel_sizer.Fit(scroll_panel)
 
-        button_sizer.Add(self.cancel_button, 0, wx.ALL | wx.EXPAND, 5)
-        button_sizer.Add(self.submit_button, 0, wx.ALL | wx.EXPAND, 5)
+        button_sizer.Add(self.help_button, 0, wx.ALL | wx.ALIGN_LEFT, 5)
+        button_sizer.AddSpacer((0, 0), 1, wx.EXPAND, 5)
+        button_sizer.Add(self.cancel_button, 0, wx.ALL | wx.ALIGN_RIGHT, 5)
+        button_sizer.Add(self.submit_button, 0, wx.EXPAND | wx.ALL, 5)
+        bottom_panel.SetSizer(button_sizer)
 
         frame_sizer.Add(scroll_panel, proportion=1, flag=wx.LEFT | wx.EXPAND, border=-10)
         frame_sizer.Add(break_line, 0, wx.EXPAND, 5)
-        frame_sizer.Add(button_sizer, 0, wx.ALL | wx.ALIGN_RIGHT, 5)
+        frame_sizer.Add(bottom_panel, 0, wx.ALL | wx.EXPAND, 3)
 
         panel.SetSizer(frame_sizer)
         frame_sizer.Fit(self)

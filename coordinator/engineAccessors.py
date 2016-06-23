@@ -81,7 +81,7 @@ def clearAll():
 
 def getModelById(modelid):
     e = Engine()
-    kwargs = dict(id=modelid)
+    kwargs = dict(modelid=modelid)
     task = [('get_model_by_id', kwargs)]
     e.setTasks(task)
     result = e.processTasks()

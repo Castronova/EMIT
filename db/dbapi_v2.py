@@ -618,23 +618,31 @@ class sqlite():
         # return the id of the inserted record
         return self.cursor.lastrowid
 
-    def insert_timeseries_result_values_bulk(self, ResultIDs = 1, DataValues = [], ValueDateTimes = [],
-                                             QualityCodeCV = 'unknown', TimeAggregationIntervalUnitsID = 1,
-                                             TimeAggregationInterval = 1, CensorCodeCV = 'nc', ValueDateTimeUTCOffset = -6):
+    def insert_timeseries_result_values_bulk(self, ResultIDs=1,
+                                             DataValues=[],
+                                             ValueDateTimes=[],
+                                             QualityCodeCV='unknown',
+                                             TimeAggregationIntervalUnitsID=1,
+                                             TimeAggregationInterval=1,
+                                             CensorCodeCV='nc',
+                                             ValueDateTimeUTCOffset=-6):
         """
         Performs a bulk insert of time series result values
-        :return: True if successful, else False
-        ValueID                         (integer)
-        ResultID                        (integer)
-        DataValue                       (float)
-        ValueDateTime                   (datetime)
-        ValueDateTimeUTCOffset          (integer)
-        CensorCodeCV                    (varchar(255))
-        QualityCodeCV                   (varchar(255))
-        TimeAggregationInterval         (float)
-        TimeAggregationIntervalUnitsID  (integer)
+        Args:
+            ResultIDs: int
+            DataValues: [float]
+            ValueDateTimes: [datetime]
+            QualityCodeCV: str
+            TimeAggregationIntervalUnitsID: int
+            TimeAggregationInterval: int
+            CensorCodeCV: str
+            ValueDateTimeUTCOffset: int
+
+        Returns: 1 if successful, otherwise 0
+
         """
-        if ResultIDs == None:
+
+        if ResultIDs is None:
             elog.error('Result ID cannot be None')
             return False
 
@@ -642,12 +650,11 @@ class sqlite():
             elog.error('Length of Values and Dates must be equal')
             return False
 
-
-
         # convert datetime into apsw accepted format
         value_date_times = numpy.array([str(d) for d in ValueDateTimes])
 
-        # isolate all of the finite values (i.e. nan will violate the not null constraint)
+        # isolate all of the finite values (i.e. nan will violate the not
+        # null constraint)
         data_exists = numpy.isfinite(DataValues)
         value_date_times = value_date_times[data_exists]
         data = numpy.array(DataValues)[data_exists]
@@ -668,7 +675,9 @@ class sqlite():
         valueIDs = range(nextID, nextID + valCount, 1)
 
         # prepare all data for inserting
-        vals = zip(valueIDs, result_ids, data, value_date_times, time_offsets, censor_codes, quality_codes, time_intervals, time_unit_ids)
+        vals = zip(valueIDs, result_ids, data, value_date_times,
+                   time_offsets, censor_codes, quality_codes, time_intervals,
+                   time_unit_ids)
 
         # insert values in chunks of 10,000
         sPrint('Begin inserting %d value' % len(vals), MessageType.DEBUG)
@@ -680,9 +689,10 @@ class sqlite():
             sidx = i
             eidx = i + chunk_size if (i + chunk_size) < len(vals) else len(vals)
             percent_complete = float(eidx) / float(len(vals)) * 100
-            self.cursor.executemany('INSERT INTO TimeSeriesResultValues VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', vals[sidx:eidx])
-            sPrint('.. inserted %d records, %3.1f %% complete' % ((eidx - sidx), percent_complete), MessageType.DEBUG)
-        # self.cursor.execute("COMMIT;")
+            self.cursor.executemany('INSERT INTO TimeSeriesResultValues VALUES '
+                                    '(?, ?, ?, ?, ?, ?, ?, ?, ?)', vals[sidx:eidx])
+            sPrint('.. inserted %d records, %3.1f %% complete' %
+                   ((eidx - sidx), percent_complete), MessageType.DEBUG)
         self.conn.commit()
         return 1
 

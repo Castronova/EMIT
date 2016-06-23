@@ -51,10 +51,8 @@ def save(obj, datasave, modelids):
         sPrint('..found %d items to save for model %s' % (len(items), model_name), MessageType.INFO)
 
         if len(items) > 0:
-            # get config parameters
-            config_params=model_obj.get_config_params()
 
-
+            # create a simulation in the database
             id = db.create_simulation(coupledSimulationName=datasave.simulationName,
                                       user_obj=datasave.user,
                                       action_date=action_date,

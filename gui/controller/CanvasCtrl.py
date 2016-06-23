@@ -231,15 +231,13 @@ class CanvasCtrl(CanvasView):
             if line:
                 self.remove_link_image(line)
 
-
-            if '%s_%s'%(from_model.ID, to_model.ID) in added_links:
-            # if self.does_link_exist_between_models(from_model, to_model) and len(self.links) > 0:
+            # check to see if the a link already exists in the opposite dir
+            if '%s_%s' % (to_model.ID, from_model.ID) in added_links:
                 #  Replace the one way arrow with a bidirectional
                 self.createLine(from_model, to_model, "multiArrow.png")
             else:
                 self.createLine(from_model, to_model, "rightArrowBlue60.png")
-                added_links.append('%s_%s'%(from_model.ID, to_model.ID))
-
+                added_links.append('%s_%s' % (from_model.ID, to_model.ID))
 
     def disable_some_context_menu_items(self):
         """

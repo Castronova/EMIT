@@ -937,7 +937,7 @@ class Coordinator(object):
                                         'in model: {%s}' % m.name()})
 
                 return dict(success=True, event='onSimulationSuccess',
-                            result={'msg':'Simulation Completed Successfully'})
+                            result={'msg': 'Simulation Completed Successfully'})
 
     def connect_to_db(self, title, desc, engine, address, dbname, user, pwd,
                       default=False):

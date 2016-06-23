@@ -138,7 +138,7 @@ class PreRunCtrl(PreRunView):
     def sort_output_model(self, models):
         output_name_list = {}
         for model_id, model_name in sorted(models.items(), key=lambda x: x[1]):
-            oei = engineAccessors.getExchangeItems(model_id, exchange_item_type='OUTPUT', returnGeoms=False)
+            oei = engineAccessors.getExchangeItems(model_id, type='OUTPUT')
             output_name_list[model_name] = [ei['name'] for ei in oei]
         return output_name_list
 

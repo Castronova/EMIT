@@ -68,7 +68,6 @@ class EMITView(wx.Frame):
         self._init_sizers()
 
         self.filename = None
-        self.loading_path = None
 
         self.Center()
 

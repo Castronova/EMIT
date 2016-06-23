@@ -114,7 +114,7 @@ def getAllModels():
     task = [('get_all_models', kwargs)]
     e.setTasks(task)
     result = e.processTasks()
-    return result
+    return result.pop('result')
 
 def runSimulation(simulationName=None, dbName=None, user_info=None, datasets=None):
     e = Engine()

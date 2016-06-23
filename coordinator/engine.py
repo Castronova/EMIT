@@ -713,45 +713,6 @@ class Coordinator(object):
 
         return self.__links
 
-        # links = []
-        # for l in self.__links.iterkeys():
-        #
-        #     spatial = self.__links[l].spatial_interpolation().name() \
-        #         if self.__links[l].spatial_interpolation() is not None \
-        #         else 'None'
-        #     temporal = self.__links[l].temporal_interpolation().name() \
-        #         if self.__links[l].temporal_interpolation() is not None \
-        #         else 'None'
-        #     links.append(dict(
-        #                 id=l,
-        #                 output_name=self.__links[l]
-        #                                 .source_exchange_item()
-        #                                 .name(),
-        #                 output_id=self.__links[l]
-        #                               .source_exchange_item()
-        #                               .id(),
-        #                 input_name=self.__links[l]
-        #                                .target_exchange_item()
-        #                                .name(),
-        #                 input_id=self.__links[l].target_exchange_item().id(),
-        #                 spatial_interpolation=spatial,
-        #                 temporal_interpolation=temporal,
-        #                 source_component_name=self.__links[l]
-        #                                           .source_component()
-        #                                           .name(),
-        #                 target_component_name=self.__links[l]
-        #                                           .target_component()
-        #                                           .name(),
-        #                 source_component_id=self.__links[l]
-        #                                         .source_component()
-        #                                         .id(),
-        #                 target_component_id=self.__links[l]
-        #                                         .target_component()
-        #                                         .id()
-        #                 )
-        #             )
-        # return links
-
     def get_all_models(self):
         """
         Gets all the models that have been loaded into the Coordinator
@@ -760,19 +721,8 @@ class Coordinator(object):
                  (type:dict)
 
         """
-        models = []
-        for m in self.__models:
 
-            models.append(
-                {'params': self.__models[m].get_config_params(),
-                    'name': self.__models[m].name(),
-                    'id': self.__models[m].id(),
-                    'description': self.__models[m].description(),
-                    'type': self.__models[m].type(),
-                    'attrib': self.__models[m].attrib()
-                 }
-            )
-        return models
+        return self.__models
 
     def get_links_btwn_models(self, from_model_id, to_model_id):
         """
@@ -1210,6 +1160,30 @@ class Serializable(Coordinator):
         else:
             result = dict(id=res.id(), name=res.name(), model_type=res.type())
             return {'success': True, 'result': result}
+
+
+    def get_all_models(self):
+        """
+        gets all the models that are loaded in the coordinator
+        Returns: serializable dictionary of all models
+
+        """
+        models = super(Serializable, self).get_all_models()
+
+        model_list = []
+        for m in models:
+
+            model_list.append(
+                {'params': models[m].get_config_params(),
+                    'name':models[m].name(),
+                    'id': models[m].id(),
+                    'description': models[m].description(),
+                    'type': models[m].type(),
+                    'attrib': models[m].attrib()
+                 }
+            )
+        return {'success': True, 'result': models}
+
 
     def get_exchange_items(self, modelid,
                            eitype=stdlib.ExchangeItemType.INPUT):

@@ -106,7 +106,6 @@ class CanvasCtrl(CanvasView):
         Publisher.subscribe(self.setCursor, "setCursor")
         Publisher.subscribe(self.run, "run")
         Publisher.subscribe(self.add_database_connection, "DatabaseConnection")
-        Publisher.subscribe(self.load_simulation, "SetLoadPath")
 
     def add_database_connection(self, title, desc, dbengine, address, name, user, pwd):
         kwargs = dict(title=title, desc=desc, engine=dbengine, address=address, dbname=name, user=user, pwd=pwd)

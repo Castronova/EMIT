@@ -51,7 +51,7 @@ def run_feed_forward(obj, ds=None):
 
     exec_order = obj.determine_execution_order()
     for i in range(0, len(exec_order)):
-        elog.info('%d.) %s' % (i + 1, obj.get_model_by_id(exec_order[i]).name()))
+        elog.info('%d.) %s' % (i + 1, obj.get_model_by_id(exec_order[i])["result"]["name"]))
 
     links = {}
     spatial_maps = {}
@@ -92,7 +92,7 @@ def run_feed_forward(obj, ds=None):
     # todo:  move this into function
     # prepare all models
     for modelid in exec_order:
-        model_obj = obj.get_model_by_id(modelid)
+        model_obj = obj.get_model(modelid)
         model_inst = model_obj.instance()
         model_inst.prepare()
 
@@ -117,7 +117,7 @@ def run_feed_forward(obj, ds=None):
         st = time.time()
 
         # get the current model instance
-        model_obj = obj.get_model_by_id(modelid)
+        model_obj = obj.get_model(modelid)
         model_inst = model_obj.instance()
         sPrint('Executing module: %s \n' % model_inst.name(), MessageType.INFO)
 

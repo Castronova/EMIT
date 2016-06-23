@@ -38,7 +38,7 @@ def save(obj, datasave, modelids):
     for modelid in modelids:
 
         # get the current model instance
-        model_obj = obj.get_model_by_id(modelid)
+        model_obj = obj.get_model(modelid)
         model_inst = model_obj.instance()
         model_name = model_inst.name()
 

@@ -202,27 +202,16 @@ class EMITCtrl(EMITView):
 
     def on_load_configuration(self, event):
 
-        openFileDialog = wx.FileDialog(self, message="Load New File",
+        file_dialog = wx.FileDialog(self, message="Load New File",
                                        defaultDir=self.defaultLoadDirectory,
                                        defaultFile="",
                                        wildcard="Simulation Files (*.sim)|*.sim|MDL Files (*.mdl)|*.mdl",
                                        style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
 
-        if openFileDialog.ShowModal() == wx.ID_OK:
-            filename = openFileDialog.GetFilename()
-            elog.info("Filename is: " + filename)
-            # proceed loading the file chosen by the user
-            # this can be done with e.g. wxPython input streams:
-            filepath = (openFileDialog.GetPath())
-            try:
-                Publisher.sendMessage('SetLoadPath', file=filepath)  # send message to canvascontroller
-            except:
-                elog.error("Could not load file")
-
-            self.filename = openFileDialog.GetFilename()
-            self.loading_path = filepath
-
-            self.defaultLoadDirectory = os.path.dirname(filepath)
+        if file_dialog.ShowModal() == wx.ID_OK:
+            self.defaultLoadDirectory = os.path.dirname(file_dialog.GetPath())
+            self.model_input_prompt(file_dialog.GetPath())
+        file_dialog.Destroy()
 
     def on_save_configuration_as(self, event):
         # Executes from File ->Save As

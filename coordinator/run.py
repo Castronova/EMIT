@@ -51,7 +51,7 @@ def run_feed_forward(obj, ds=None):
 
     exec_order = obj.determine_execution_order()
     for i in range(0, len(exec_order)):
-        elog.info('%d.) %s' % (i + 1, obj.get_model_by_id(exec_order[i]).name()))
+        elog.info('%d.) %s' % (i + 1, obj.get_model(model_id=exec_order[i]).name()))
 
     links = {}
     spatial_maps = {}
@@ -89,11 +89,9 @@ def run_feed_forward(obj, ds=None):
             # save the spatial mapping based on link key
             spatial_maps[key] = spatial_interp.transform(source_geoms, target_geoms)
 
-    # todo:  move this into function
     # prepare all models
     for modelid in exec_order:
-        model_obj = obj.get_model_by_id(modelid)
-        model_inst = model_obj.instance()
+        model_inst = obj.get_model_object(modelid).instance()
         model_inst.prepare()
 
         if model_inst.status() != stdlib.Status.READY:
@@ -117,25 +115,34 @@ def run_feed_forward(obj, ds=None):
         st = time.time()
 
         # get the current model instance
-        model_obj = obj.get_model_by_id(modelid)
-        model_inst = model_obj.instance()
+        model_inst = obj.get_model_object(modelid).instance()
         sPrint('Executing module: %s \n' % model_inst.name(), MessageType.INFO)
 
-        #  retrieve inputs from database
-        sPrint("[1 of 3] Retrieving input data... ")
-        input_data = model_inst.inputs()
+        try:
+            #  retrieve inputs from database
+            sPrint("[1 of 3] Retrieving input data... ")
+            input_data = model_inst.inputs()
 
-        # pass these inputs ts to the models' run function
-        sPrint("[2 of 3] Performing calculation... ")
-        model_inst.run(input_data)
+            # pass these inputs ts to the models' run function
+            sPrint("[2 of 3] Performing calculation... ")
+            model_inst.run(input_data)
 
-        # update links
-        sPrint("[3 of 3] Updating links... ")
-        oei = model_inst.outputs()
-        update.update_links_feed_forward(links[modelid], oei, spatial_maps)
+            # update links
+            sPrint("[3 of 3] Updating links... ")
+            oei = model_inst.outputs()
+            update.update_links_feed_forward(links[modelid], oei, spatial_maps)
 
-        model_inst.finish()
-        elog.info('..module simulation completed in %3.2f seconds' % (time.time() - st))
+            model_inst.finish()
+            elog.info('..module simulation completed in %3.2f seconds' % (time.time() - st))
+
+        except Exception:
+            # set the model status to failed
+            model_inst.status(stdlib.Status.FAILED)
+            return
+            # raise Exception('Error during model execution')
+
+        # set the model status to successful
+        model_inst.status(stdlib.Status.SUCCESS)
 
     sPrint('------------------------------------------\n' +
               '         Simulation Summary \n' +
@@ -145,7 +152,7 @@ def run_feed_forward(obj, ds=None):
               '------------------------------------------')
 
     # update engine status
-    obj.status.set(stdlib.Status.FINISHED)
+    obj.status.set(stdlib.Status.SUCCESS)
 
     # save simulation results
     model_ids = exec_order

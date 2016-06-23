@@ -39,7 +39,7 @@ def save(obj, datasave, modelids):
 
         # get the current model instance
         model_obj = obj.get_model_by_id(modelid)
-        model_inst = model_obj.instance()
+        model_inst = obj.get_model_object(modelid).instance()
         model_name = model_inst.name()
 
         # get the output exchange items to save for this model
@@ -55,19 +55,21 @@ def save(obj, datasave, modelids):
             config_params=model_obj.get_config_params()
 
 
-            id = db.create_simulation(  coupledSimulationName=datasave.simulationName,
-                                        user_obj=datasave.user,
-                                        action_date=action_date,
-                                        action_utc_offset=action_utc_offset,
-                                        ei=items,
-                                        simulation_start = model_inst.simulation_start(),
-                                        simulation_end = model_inst.simulation_end(),
-                                        timestep_value = model_inst.time_step(),
-                                        timestep_unit = 'seconds',
-                                        description = model_inst.description(),
-                                        name = model_inst.name()
-                                    )
+            id = db.create_simulation(coupledSimulationName=datasave.simulationName,
+                                      user_obj=datasave.user,
+                                      action_date=action_date,
+                                      action_utc_offset=action_utc_offset,
+                                      ei=items,
+                                      simulation_start=model_inst.simulation_start(),
+                                      simulation_end=model_inst.simulation_end(),
+                                      timestep_value=model_inst.time_step(),
+                                      timestep_unit='seconds',
+                                      description=model_inst.description(),
+                                      name=model_inst.name()
+                                      )
             if id is None:
-                sPrint('Failed to save results for: %s ' % (model_name), MessageType.ERROR)
+                sPrint('Failed to save results for: %s ' %
+                       (model_name), MessageType.ERROR)
 
-    sPrint('Saving Complete, elapsed time = %3.5f seconds' % (time.time() - st), MessageType.INFO)
+    sPrint('Saving Complete, elapsed time = %3.5f seconds' %
+           (time.time() - st), MessageType.INFO)

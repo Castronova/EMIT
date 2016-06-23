@@ -79,7 +79,7 @@ class SpatialCtrl(SpatialView):
 
     def get_exchange_items_names(self, model_id, model_type="INPUT"):
         # model_type must match INPUT or OUTPUT
-        items = engineAccessors.getExchangeItems(modelid=model_id, exchange_item_type=model_type.upper(), returnGeoms=False)
+        items = engineAccessors.getExchangeItems(modelid=model_id, item=model_type.upper())
         if items is not None:
             return [item['name'] for item in items]
         return [""]

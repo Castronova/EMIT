@@ -193,14 +193,14 @@ class Engine:
         result = self.processTasks()
         if 'event' in result.keys():
             # This assumes that result has an "event" key and a "result" key
-            evt_name= result.pop('event')
+            evt_name = result.pop('event')
             evt = getattr(events, evt_name)
             res = result.pop('result')
 
             try:
                 wx.CallAfter(evt.fire, **res)
-            except:
-                pass
+            except Exception as e:
+                print e
 
 
     def close(self):

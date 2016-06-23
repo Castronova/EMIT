@@ -49,8 +49,8 @@ class testFeedForwardSimulation(unittest.TestCase):
 
 
         # add a link from randomizer to multiplier
-        rand_oei =  self.engine.get_exchange_item_info(modelid=1234, exchange_item_type=stdlib.ExchangeItemType.OUTPUT)
-        mult_iei = self.engine.get_exchange_item_info(modelid=1235, exchange_item_type=stdlib.ExchangeItemType.INPUT)
+        rand_oei =  self.engine.get_exchange_item_info(modelid=1234, eitype=stdlib.ExchangeItemType.OUTPUT)
+        mult_iei = self.engine.get_exchange_item_info(modelid=1235, eitype=stdlib.ExchangeItemType.INPUT)
         self.engine.add_link(from_id=1234, from_item_id=rand_oei[0]['name'],
                              to_id=1235, to_item_id=mult_iei[0]['name'],
                              spatial_interp=None,

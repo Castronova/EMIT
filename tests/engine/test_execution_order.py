@@ -42,8 +42,8 @@ class test_link_order(unittest.TestCase):
         self.assertTrue(len(self.engine.Models()) == 2)
 
         # create link
-        rand_oei =  self.engine.get_exchange_item_info(modelid=id1, exchange_item_type=stdlib.ExchangeItemType.OUTPUT)
-        mult_iei = self.engine.get_exchange_item_info(modelid=id2, exchange_item_type=stdlib.ExchangeItemType.INPUT)
+        rand_oei =  self.engine.get_exchange_item_info(modelid=id1, eitype=stdlib.ExchangeItemType.OUTPUT)
+        mult_iei = self.engine.get_exchange_item_info(modelid=id2, eitype=stdlib.ExchangeItemType.INPUT)
         self.engine.add_link(from_id=id1, from_item_id=rand_oei[0]['name'],
                              to_id=id2, to_item_id=mult_iei[0]['name'],
                              spatial_interp=None,

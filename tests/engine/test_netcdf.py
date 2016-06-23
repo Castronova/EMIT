@@ -55,8 +55,8 @@ class testNetcdfSimulation(unittest.TestCase):
         self.assertTrue(len(models) == 2)
 
         # add a link from WaterOneFlow to multiplier
-        wof_oei =  self.engine.get_exchange_item_info(modelid=1234, exchange_item_type=stdlib.ExchangeItemType.OUTPUT)
-        mul_iei =  self.engine.get_exchange_item_info(modelid=1235, exchange_item_type=stdlib.ExchangeItemType.INPUT)
+        wof_oei =  self.engine.get_exchange_item_info(modelid=1234, eitype=stdlib.ExchangeItemType.OUTPUT)
+        mul_iei =  self.engine.get_exchange_item_info(modelid=1235, eitype=stdlib.ExchangeItemType.INPUT)
         self.engine.add_link(from_id=1234, from_item_id=wof_oei[0]['name'],
                              to_id=1235, to_item_id=mul_iei[0]['name'],
                              spatial_interp=None,

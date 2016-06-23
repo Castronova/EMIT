@@ -118,12 +118,15 @@ def getAllModels():
 
 def runSimulation(simulationName=None, dbName=None, user_info=None, datasets=None):
     e = Engine()
-    kwargs = dict(simulationName=simulationName, dbName=dbName, user_info=user_info, datasets=datasets, event_success='onSimulationFinished')
+    kwargs = dict(simulationName=simulationName,
+                  dbName=dbName,
+                  user_info=user_info,
+                  datasets=datasets)
+
     task = [('run_simulation', kwargs)]
     e.setTasks(task)
 
     e.thread = Thread(target=e.check_for_process_results)
     e.thread.start()
     e.thread.join()
-    return '1'
 

@@ -569,6 +569,10 @@ class Coordinator(object):
                 return self.__models[m]
         return None
 
+    def get_model_object(self, model_id):
+        return self.get_model(model_id=model_id)
+
+
     def add_link(self, from_id, from_item_id, to_id, to_item_id,
                  spatial_interp=None, temporal_interp=None, uid=None):
         """
@@ -891,42 +895,49 @@ class Coordinator(object):
             db = self.get_db_args_by_name(dbName)
             ds = run.dataSaveInfo(simulationName, db, user_info, datasets)
 
-        try:
-            # determine if the simulation is feed-forward or time-step
-            models = self.Models()
-            types = []
-            for model in models.itervalues() :
-                types.extend(inspect.getmro(model.instance().__class__))
+        # determine if the simulation is feed-forward or time-step
+        models = self.Models()
+        types = []
+        for model in models.itervalues() :
+            types.extend(inspect.getmro(model.instance().__class__))
 
-            # make sure that feed forward and time-step models are not mixed
-            if (feed_forward.Wrapper in types) and \
-                    (time_step.time_step_wrapper in types):
-                return dict(success=False,
-                            message='Cannot mix feed-forward and '
-                                    'time-step models')
+        # make sure that feed forward and time-step models are not mixed
+        if (feed_forward.Wrapper in types) and \
+                (time_step.time_step_wrapper in types):
+            return dict(success=False,
+                        message='Cannot mix feed-forward and '
+                                'time-step models')
 
-            else:
-                # threadManager = ThreadManager()
-                if feed_forward.Wrapper in types:
-                    t = threading.Thread(target=run.run_feed_forward,
-                                         args=(self, ds),
-                                         name='Engine_RunFeedForward')
-                    t.start()
+        else:
+            # threadManager = ThreadManager()
+            t = None
+            if feed_forward.Wrapper in types:
+                t = threading.Thread(target=run.run_feed_forward,
+                                     args=(self, ds),
+                                     name='Engine_RunFeedForward')
+                t.start()
 
-                elif time_step.time_step_wrapper in types:
+            elif time_step.time_step_wrapper in types:
 
-                    t = threading.Thread(target=run.run_time_step,
-                                         args=(self, ds),
-                                         name='Engine_RunTimeStep')
-                    t.start()
+                t = threading.Thread(target=run.run_time_step,
+                                     args=(self, ds),
+                                     name='Engine_RunTimeStep')
+                t.start()
 
-            return dict(success=True, message='')
+            if t is not None:
+                t.join()
 
-        except Exception as e:
-            msg  = 'An error occurred during simulation: %s' % e
-            elog.debug(msg)
-            sPrint(msg, MessageType.ERROR)
-            return dict(success=False, message=e)
+                # check the status of each model to determine of
+                # simulation was successful
+                for m in models.itervalues():
+                    if m.instance().status() != stdlib.Status.SUCCESS:
+                        return dict(success=False,
+                                    event='onSimulationFail',
+                                    result={'msg':'Error occurred during simulation '
+                                        'in model: {%s}' % m.name()})
+
+                return dict(success=True, event='onSimulationSuccess',
+                            result={'msg':'Simulation Completed Successfully'})
 
     def connect_to_db(self, title, desc, engine, address, dbname, user, pwd,
                       default=False):

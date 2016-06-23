@@ -67,12 +67,8 @@ class randomizer(feed_forward.Wrapper):
                 # save list of values for each geom at current time
                 vals.append(v)
 
-
             # save calculated values for this output exchange item
             output.setValues2(vals, dates)
-            # self.set_geom_values(output.name(), geom, ts)
-
-        print 'Run Complete'
 
     def finish(self):
         """

@@ -21,10 +21,8 @@ onLinkUpdated = EventHook('onLinkUpdate')
 
 
 # Simulation related Events
-onSimulationFinished = EventHook('onSimulationFinished')
-onSimulationError = EventHook('onSimulationError')
-onSimulationLoaded = EventHook('onSimulationLoaded')
-
+onSimulationSuccess = EventHook('onSimulationSuccess')
+onSimulationFail = EventHook('onSimulationFail')
 
 # Database related Events
 onDatabaseConnected = EventHook('onDatabaseConnected')

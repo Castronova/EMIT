@@ -101,6 +101,8 @@ class CanvasCtrl(CanvasView):
         engineEvent.onLinkAdded += self.draw_link
         engineEvent.onModelAddFailed += self.on_model_add_failed
         events.onDbChanged += self.on_database_changed
+        engineEvent.onSimulationSuccess += self.on_simulation_success
+        engineEvent.onSimulationFail += self.on_simulation_fail
 
     def initSubscribers(self):
         Publisher.subscribe(self.setCursor, "setCursor")
@@ -769,6 +771,13 @@ class CanvasCtrl(CanvasView):
 
     def on_save_as(self, event):
         self.GetTopLevelParent().on_save_configuration_as(event)
+
+    def on_simulation_fail(self, event):
+        sPrint('Simulation Failed!', MessageType.ERROR)
+
+    def on_simulation_success(self, event):
+        sPrint('Simulation Success!')
+
 
     def on_run(self, event):
         pre_run = PreRunCtrl(self)

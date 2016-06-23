@@ -22,6 +22,7 @@ class EMITCtrl(EMITView):
         self.FloatCanvas = self.Canvas.FloatCanvas
         connections_txt = os.environ['APP_CONNECTIONS_PATH']
         self.local_db_path = os.environ['APP_LOCAL_DB_PATH']
+        self.loading_path = None
 
         # load databases threaded
         t = threading.Thread(target=self.connect_to_databases, name='Connect_To_Databases', args=(connections_txt,))
@@ -235,33 +236,18 @@ class EMITCtrl(EMITView):
                 self.save_path += '.sim'
             self.loading_path = self.save_path
             self.defaultLoadDirectory = os.path.dirname(self.loading_path)
-            Publisher.sendMessage('SetSavePath', path=self.save_path)  # send message to canvascontroller.save_simulation
+            self.Canvas.save_simulation(self.save_path)
             txt = save.Filename.split('.sim')[0]
             e = dict(cat=self.Toolbox.cat, txt=txt, fullpath=save.Path)
             self.Toolbox.loadSIMFile(e)
             self.Toolbox.refresh_toolbox()
-        else:
-            save.Destroy()
+        save.Destroy()
 
     def on_save_configuration(self, event):
         if not self.loading_path:
-            save = wx.FileDialog(self.Canvas.GetTopLevelParent(), "Save Configuration", "", "",
-                                 "Simulation Files (*.sim)|*.sim", wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
-
-            if save.ShowModal() == wx.ID_OK:
-                self.save_path = save.GetPath() + ".sim"
-            else:
-                save.Destroy()
-
-            path = save.GetPath()
-            self.loading_path = save.GetPath()
-            print self.loading_path
-        else:
-            path = self.loading_path
-
-        # models.save_simulation(self.models, self.links, path)
-
-        Publisher.sendMessage('SetSavePath', path=path)  # send message to canvascontroller.save_simulation
+            self.on_save_configuration_as(event)
+            return
+        self.Canvas.save_simulation(self.save_path)
         self.Toolbox.refresh_toolbox()
 
     def on_switch_lower_panel_tab(self, event):

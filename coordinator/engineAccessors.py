@@ -20,17 +20,6 @@ def addModel(id=None, **params):
     e.thread.start()
     ############################
 
-# def connectToDbFromFile(dbtextfile=None):
-#     e = Engine()
-#     kwargs = dict(filepath=dbtextfile, event_success='onDatabaseConnected')
-#     task = [('connect_to_db_from_file',kwargs)]
-#     e.setTasks(task)
-#
-#     e.thread = Thread(target = e.check_for_process_results, name='connectToDbFromFile')
-#     e.thread.start()
-#     e.thread.join()
-
-
 def connectToDb(title, desc, engine, address, dbname, user, pwd,
                 default=False):
     kwargs = dict(title=title, desc=desc, engine=engine, address=address,
@@ -65,8 +54,8 @@ def getDbConnections():
 
 def removeModelById(modelid):
     e = Engine()
-    kwargs = dict(id=modelid)
-    task = [('remove_model_by_id',kwargs)]
+    kwargs = dict(modelid=modelid)
+    task = [('remove_model',kwargs)]
     e.setTasks(task)
     result = e.processTasks()
     return result
@@ -103,17 +92,9 @@ def getLinksBtwnModels(from_model_id, to_model_id):
     result = e.processTasks()
     return result.pop('result')
 
-# def getLinkById(linkid):
-#     e = Engine()
-#     kwargs = dict(id=linkid)
-#     task = [('get_link_by_id_summary', kwargs)]
-#     e.setTasks(task)
-#     result = e.processTasks()
-#     return result
-
 def removeLinkById(linkid):
     e = Engine()
-    kwargs = dict(id=linkid)
+    kwargs = dict(linkid=linkid)
     task = [('remove_link_by_id', kwargs)]
     e.setTasks(task)
     result = e.processTasks()
@@ -125,7 +106,7 @@ def getAllLinks():
     task = [('get_all_links', kwargs)]
     e.setTasks(task)
     result = e.processTasks()
-    return result
+    return result.pop('result')
 
 def getAllModels():
     e = Engine()

@@ -707,47 +707,50 @@ class Coordinator(object):
         """
         Gets all links that have been created/loaded in the Coordinator
 
-        Returns: dictionary of summarized link information (type:dict)
+        Returns: all links (type:dict)
 
         """
-        links = []
-        for l in self.__links.iterkeys():
 
-            spatial = self.__links[l].spatial_interpolation().name() \
-                if self.__links[l].spatial_interpolation() is not None \
-                else 'None'
-            temporal = self.__links[l].temporal_interpolation().name() \
-                if self.__links[l].temporal_interpolation() is not None \
-                else 'None'
-            links.append(dict(
-                        id=l,
-                        output_name=self.__links[l]
-                                        .source_exchange_item()
-                                        .name(),
-                        output_id=self.__links[l]
-                                      .source_exchange_item()
-                                      .id(),
-                        input_name=self.__links[l]
-                                       .target_exchange_item()
-                                       .name(),
-                        input_id=self.__links[l].target_exchange_item().id(),
-                        spatial_interpolation=spatial,
-                        temporal_interpolation=temporal,
-                        source_component_name=self.__links[l]
-                                                  .source_component()
-                                                  .name(),
-                        target_component_name=self.__links[l]
-                                                  .target_component()
-                                                  .name(),
-                        source_component_id=self.__links[l]
-                                                .source_component()
-                                                .id(),
-                        target_component_id=self.__links[l]
-                                                .target_component()
-                                                .id()
-                        )
-                    )
-        return links
+        return self.__links
+
+        # links = []
+        # for l in self.__links.iterkeys():
+        #
+        #     spatial = self.__links[l].spatial_interpolation().name() \
+        #         if self.__links[l].spatial_interpolation() is not None \
+        #         else 'None'
+        #     temporal = self.__links[l].temporal_interpolation().name() \
+        #         if self.__links[l].temporal_interpolation() is not None \
+        #         else 'None'
+        #     links.append(dict(
+        #                 id=l,
+        #                 output_name=self.__links[l]
+        #                                 .source_exchange_item()
+        #                                 .name(),
+        #                 output_id=self.__links[l]
+        #                               .source_exchange_item()
+        #                               .id(),
+        #                 input_name=self.__links[l]
+        #                                .target_exchange_item()
+        #                                .name(),
+        #                 input_id=self.__links[l].target_exchange_item().id(),
+        #                 spatial_interpolation=spatial,
+        #                 temporal_interpolation=temporal,
+        #                 source_component_name=self.__links[l]
+        #                                           .source_component()
+        #                                           .name(),
+        #                 target_component_name=self.__links[l]
+        #                                           .target_component()
+        #                                           .name(),
+        #                 source_component_id=self.__links[l]
+        #                                         .source_component()
+        #                                         .id(),
+        #                 target_component_id=self.__links[l]
+        #                                         .target_component()
+        #                                         .id()
+        #                 )
+        #             )
+        # return links
 
     def get_all_models(self):
         """
@@ -1251,7 +1254,7 @@ class Serializable(Coordinator):
         return {'success': True, 'result': res}
 
 
-    def remove_model(self, model_id):
+    def remove_model(self, modelid):
         """
         Removes a model from the Coordinator by id
 
@@ -1263,7 +1266,7 @@ class Serializable(Coordinator):
 
         """
 
-        res = super(Serializable, self).remove_model(model_id)
+        res = super(Serializable, self).remove_model(modelid)
 
         if res is not None:
             return {'success': True, 'result': res}
@@ -1344,3 +1347,42 @@ class Serializable(Coordinator):
             return {'success': True, 'result': {'id': res.get_id()}}
         else:
             return {'success': False, 'result': None}
+
+    def get_all_links(self):
+        """
+        Gets all links that have been created/loaded in the Coordinator
+
+        Returns: dictionary of summarized link information (type:dict)
+
+        """
+
+        link_dict = super(Serializable, self).get_all_links()
+
+        links = []
+        for l in link_dict.iterkeys():
+            spatial = 'None'
+            temporal = 'None'
+
+            # set spatial and temporal values, if they exist
+            if link_dict[l].spatial_interpolation() is not None:
+                spatial = link_dict[l].spatial_interpolation().name()
+
+            if link_dict[l].temporal_interpolation() is not None:
+                temporal = link_dict[l].temporal_interpolation().name()
+
+            # build serializable dictionary
+            links.append(dict(
+                        id=l,
+                        output_name=link_dict[l].source_exchange_item().name(),
+                        output_id=link_dict[l].source_exchange_item().id(),
+                        input_name=link_dict[l].target_exchange_item().name(),
+                        input_id=link_dict[l].target_exchange_item().id(),
+                        spatial_interpolation=spatial,
+                        temporal_interpolation=temporal,
+                        source_component_name=link_dict[l].source_component().name(),
+                        target_component_name=link_dict[l].target_component().name(),
+                        source_component_id=link_dict[l].source_component().id(),
+                        target_component_id=link_dict[l].target_component().id()
+                        )
+                    )
+        return {'success': True, 'result': links}

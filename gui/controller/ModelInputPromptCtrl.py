@@ -3,6 +3,7 @@ import wx
 from sprint import *
 from utilities.models import *
 import __builtin__
+from gui.Models.MarkdownWindow import MarkdownWindow
 
 
 class ModelInputPromptCtrl(ModelInputPromptView):
@@ -15,6 +16,7 @@ class ModelInputPromptCtrl(ModelInputPromptView):
 
         self.mdl_path = path
         self.emitCtrl = parent
+
 
         # load the model or simulation with the parsed parameters only since no additional inputs are needed
         if not self.has_inputs:
@@ -31,6 +33,7 @@ class ModelInputPromptCtrl(ModelInputPromptView):
         self.Bind(wx.EVT_CLOSE, self.on_close)
         self.submit_button.Bind(wx.EVT_BUTTON, self.on_submit)
         self.cancel_button.Bind(wx.EVT_BUTTON, self.on_close)
+        self.help_button.Bind(wx.EVT_BUTTON, self.on_help)
         for button in self.inputs:
             if button:
                 button.Bind(wx.EVT_BUTTON, self.on_file_browser)
@@ -47,6 +50,11 @@ class ModelInputPromptCtrl(ModelInputPromptView):
         file_browser = wx.FileDialog(self, message="Load file")
         if file_browser.ShowModal() == wx.ID_OK:
             self.text_ctrls[event.GetId()].SetValue(file_browser.GetPath())
+
+    def on_help(self, event):
+        print "Show markdown"
+        MarkdownWindow(self)
+
 
     def on_submit(self, event):
 

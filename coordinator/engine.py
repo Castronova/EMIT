@@ -14,6 +14,7 @@ from utilities.mdl import *
 from wrappers import feed_forward
 from wrappers import odm2_data
 from wrappers import time_step
+import wrappers
 from utilities.models import *
 from . import terminal
 
@@ -483,29 +484,58 @@ class Coordinator(object):
         """
 
         try:
-            # load model
-            sPrint('Loading Model', MessageType.DEBUG)
-            name, model_inst = gui.load_model(params)
-            sPrint('Finished Loading', MessageType.DEBUG)
-            # make sure this model doesnt already exist
-            if name in self.__models:
-                elog.warning('Model named ' + name +
-                             ' already exists in configuration')
-                sPrint('Model named ' + name +
-                       ' already exists in configuration', MessageType.WARNING)
-                return None
+            # get the type of model that will be added
+            model_type = params['type']
+        except KeyError:
+            sPrint('Could not load model.  Missing required [model_type] '
+                   'identifier')
 
-            iei = model_inst.inputs().values()
-            oei = model_inst.outputs().values()
+        sPrint('Loading Model', MessageType.DEBUG)
+        try:
+
+            if params['id'] is None:
+                model_id = 'M' + uuid.uuid4().hex
+            else:
+                model_id = params['id']
+
+            if model_type.lower() == 'mdl':
+                # load model
+                name, inst = gui.load_model(params)
+
+                # make sure this model doesnt already exist
+                if name in self.__models:
+                    msg = 'Model named %s already exists in configuration' %\
+                          name
+                    elog.warning(msg)
+                    sPrint(msg, MessageType.WARNING)
+                    return None
+
+            else:
+                try:
+                    # check to make sure a wrapper for this datatype exists
+                    getattr(wrappers, model_type)
+                except:
+                    msg = 'Could not locate wrapper of type %s.  Make sure ' \
+                          'the wrapper is specified in wrappers.__init__.' % model_type
+                    elog.error(msg)
+                    sPrint(msg, MessageType.ERROR)
+
+                # instantiate the component wrapper
+                inst = getattr(wrappers, model_type).Wrapper(params)
+
+            # get the input and output exchange items from the instance
+            oei = inst.outputs().values()
+            iei = inst.inputs().values()
 
             # create a model instance
-            this_model = Model(id=params['id'],
-                               name=model_inst.name(),
-                               instance=model_inst,
-                               desc=model_inst.description(),
-                               input_exchange_items=iei,
-                               output_exchange_items=oei,
+            this_model = Model(id=model_id,
+                               name=inst.name(),
+                               instance=inst,
+                               desc=inst.description(),
+                               input_exchange_items= iei,
+                               output_exchange_items=  oei,
                                params=params)
+
 
         except Exception, e:
             sPrint('Encountered an error while loading model: %s' %
@@ -513,8 +543,10 @@ class Coordinator(object):
             elog.error('Encountered an error while loading model: %s' % e)
             this_model = None
 
+
         if this_model is not None:
             # save the model
+            sPrint('Finished Loading', MessageType.DEBUG)
             self.__models[this_model.name()] = this_model
             return this_model
         else:

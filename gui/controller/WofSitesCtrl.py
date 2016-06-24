@@ -83,7 +83,7 @@ class WofSitesCtrl(TimeSeriesPlotView):
                     network=siteobject.network
         )
 
-        engine.addModel(attrib=args)
+        engine.addModel(**args)
 
         self.Close()
 

@@ -147,6 +147,9 @@ class CanvasCtrl(CanvasView):
         # if ext == '.mdl':
         sPrint('ADDING MODEL', MessageType.DEBUG)
 
+        # add the model to the base level of the params dict
+        params['type'] = 'MDL'
+
         # load the model within the engine process
         engine.addModel(id=uid, **params)
 

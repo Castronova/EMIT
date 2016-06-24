@@ -32,18 +32,17 @@ class testWofSimulation(unittest.TestCase):
 
     def test_wof_feedforward(self):
 
-        args = dict(network = 'iutah',
-                    site = 'LR_WaterLab_AA',
-                    variable = 'RH_enc',
-                    start = datetime.datetime(2015, 10, 26, 0, 0, 0),
-                    end = datetime.datetime(2015, 10, 30, 0, 0, 0),
-                    wsdl = 'http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL',
-                    type = wrappers.Types.WOF
-                    )
+        args = dict(network='iutah',
+                    site='LR_WaterLab_AA',
+                    variable='RH_enc',
+                    start=datetime.datetime(2015, 10, 26, 0, 0, 0),
+                    end=datetime.datetime(2015, 10, 30, 0, 0, 0),
+                    wsdl='http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL',
+                    type=wrappers.Types.WOF)
 
 
         # add the WaterOneFlow component to the engine
-        m1 = self.engine.add_model(id=1234, attrib=args)
+        m1 = self.engine.add_model(id=1234, **args)
         self.assertTrue(m1)
 
 

@@ -2,7 +2,7 @@ import wx
 import coordinator.engineAccessors as engine
 from gui.controller.ModelCtrl import ModelCtrl
 from utilities import models
-
+from sprint import *
 
 class LinkContextMenu(wx.Menu):
     def __init__(self, parent, e):
@@ -43,24 +43,43 @@ class ModelContextMenu(wx.Menu):
 
         model = engine.getModelById(self.model_obj.ID)
 
-        if "params" in model.keys():
-            path = model["params"]["path"]  # Get the model file path
-            data = models.parse_json(path)
-            model_details.properties_page_controller.add_data(data)
-        elif "mdl" in model["attrib"]:
-            # Populate the grid
-            data = models.parse_json(model["attrib"]["mdl"])
-            model_details.properties_page_controller.add_data(data)
-        else:
-            # A default way to load the data
-            model_details.properties_page_controller.add_section("General")
-            for key, value in engine.getModelById(self.model_obj.ID).iteritems():
-                if isinstance(value, dict):
-                    for k, v in value.iteritems():
-                        model_details.properties_page_controller.add_data_to_section(0, k, v)
-                model_details.properties_page_controller.add_data_to_section(0, key, value)
+        details_populated = False
+        try:
+            if "params" in model.keys():
+                path = model["params"]["path"]  # Get the model file path
+                data = models.parse_json(path)
+                model_details.properties_page_controller.add_data(data)
+                details_populated = True
+        except:
+            details_populated = False
 
-        model_details.Show()
+        try:
+            if "mdl" in model["attrib"] and not details_populated:
+                # Populate the grid
+                data = models.parse_json(model["attrib"]["mdl"])
+                model_details.properties_page_controller.add_data(data)
+                details_populated = True
+        except:
+            details_populated = False
+
+        if not details_populated:
+            try:
+                # A default way to load the data
+                model_details.properties_page_controller.add_section("General")
+                for key, value in engine.getModelById(self.model_obj.ID).iteritems():
+                    if isinstance(value, dict):
+                        for k, v in value.iteritems():
+                            model_details.properties_page_controller.add_data_to_section(0, k, v)
+                    model_details.properties_page_controller.add_data_to_section(0, key, value)
+                details_populated = True
+            except:
+                details_populated = False
+
+        if details_populated:
+            model_details.Show()
+        else:
+            sPrint('Could not populate model details.  This is most likely '
+                   'due to malformed data.', MessageType.ERROR)
 
     def RemoveModel(self, e):
         self.parent.remove_model(self.model_obj)

@@ -80,7 +80,7 @@ class WofSitesCtrl(TimeSeriesPlotView):
                     variable=variable_code,
                     start=start,
                     end=end,
-                    network=siteobject.network
+                    network=siteobject.network,
         )
 
         engine.addModel(**args)

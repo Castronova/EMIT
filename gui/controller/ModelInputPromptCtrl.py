@@ -17,7 +17,6 @@ class ModelInputPromptCtrl(ModelInputPromptView):
         self.mdl_path = path
         self.emitCtrl = parent
 
-
         # load the model or simulation with the parsed parameters only since no additional inputs are needed
         if not self.has_inputs:
             if self.params['type'] == 'mdl':
@@ -53,7 +52,8 @@ class ModelInputPromptCtrl(ModelInputPromptView):
 
     def on_help(self, event):
         print "Show markdown"
-        MarkdownWindow(self)
+        MarkdownWindow(self, "Line 1\n\n Line 2\n\n * Item 1\n * Item 2 \n\n"
+                             "Visit [google](www.google.com) for more info")
 
 
     def on_submit(self, event):

@@ -22,7 +22,7 @@
 	}],
 
 	"model_inputs": [{
-	    "label": "Weather CSV Filex",
+	    "name": "Weather CSV File",
 	    "help": "CSV file containing weather data [click here] for more details.",
 	    "variable": "weather_csv",
 	    "input": "file",

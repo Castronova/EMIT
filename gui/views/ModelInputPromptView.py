@@ -29,13 +29,24 @@ class ModelInputPromptView(wx.Frame):
         elif self.params['type'] == 'mdl':
             if not models.validate_json_model(self.params):
                 sPrint('Encountered and error when validating parameters: %s' %path)
-                self.valid_params = 0  # set the parameter validation as True
+                self.valid_params = 0  # set the param validation as False
                 return
+
+        # validate the model inputs fields
+        model_inputs = self.params["model_inputs"]
+        required_inputs = ['name', 'help', 'input', 'variable', 'required']
+        for item in model_inputs:
+            for req in required_inputs:
+                if req not in item.keys():
+                    sPrint('Cannot load model. Missing required parameter in '
+                           '"model inputs" section of mdl: {%s}' % req,
+                           MessageType.ERROR)
+                    self.valid_params = 0 # set the param validation as False
+                    return
 
         title = "Input for " + self.params["model"][0]["code"]
         self.SetTitle(title)
 
-        model_inputs = self.params["model_inputs"]
         count = 0  # Keeps track of how many input items there are
         self.static_texts = []
         self.text_ctrls = []

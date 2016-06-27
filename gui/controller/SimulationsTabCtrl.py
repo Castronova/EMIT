@@ -28,6 +28,7 @@ class SimulationsTabCtrl(TimeSeriesView):
         self.connection_combo.Bind(wx.EVT_CHOICE, self.on_connection_combo)
         self.add_connection_button.Bind(wx.EVT_BUTTON, self.on_add_connection)
         self.refresh_button.Bind(wx.EVT_BUTTON, self.on_refresh)
+        # Must be bound to table so the pop up menu does not get passed to child view
         self.table.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.on_double_click)
         engineEvents.onDatabaseConnected += self.on_refresh_connection_combo
 

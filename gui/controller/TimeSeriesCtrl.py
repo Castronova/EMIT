@@ -37,7 +37,8 @@ class TimeSeriesCtrl(TimeSeriesView):
         self.add_connection_button.Bind(wx.EVT_BUTTON, self.on_add_connection)
         self.refresh_button.Bind(wx.EVT_BUTTON, self.on_refresh_table)
         self.Bind(wx.EVT_MENU, self.on_view_menu, view_menu)
-        self.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.on_right_click)
+        # Must be bound to table so the pop up menu does not get passed to child view
+        self.table.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.on_right_click)
         self.table.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.on_double_click)
 
     def convert_selected_row_into_object(self):

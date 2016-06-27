@@ -24,6 +24,7 @@ class WofSitesCtrl(TimeSeriesPlotView):
         self.Bind(wx.EVT_BUTTON, self.addToCanvas, self.addToCanvasBtn)
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.enableBtns)
         self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.disableBtns)
+        self.line_style_checkbox.Bind(wx.EVT_CHECKBOX, self.on_line_style)
         self.disableBtns(None)
         self.done_querying = True
 
@@ -40,11 +41,13 @@ class WofSitesCtrl(TimeSeriesPlotView):
             self.PlotBtn.Enable()
             self.exportBtn.Enable()
             self.addToCanvasBtn.Enable()
+            self.line_style_checkbox.Enable()
 
     def disableBtns(self, event):
         self.PlotBtn.Disable()
         self.exportBtn.Disable()
         self.addToCanvasBtn.Disable()
+        self.line_style_checkbox.Disable()
 
     def setEndDate(self, event):
         self.end_date = self.endDatePicker.GetValue()
@@ -210,7 +213,6 @@ class WofSitesCtrl(TimeSeriesPlotView):
                 return key        # Column names
 
     def onPreview(self, event):
-
         # update the WOF plot data in a thread so that the gui is not blocked
         t = threading.Thread(target=self.updatePlotData, name='UpdateWofPlotData')
         t.setDaemon(True)
@@ -234,6 +236,7 @@ class WofSitesCtrl(TimeSeriesPlotView):
     def updatePlotData(self):
         self.updateStatusBar("Querying ...")
 
+        self.line_style_checkbox.SetValue(False)  # Uncheck when replotting
         self.threadStatusBarLoading()
 
         # get selected variables
@@ -336,7 +339,6 @@ class WofSitesCtrl(TimeSeriesPlotView):
                 self.updateStatusBar(status_list[i])
             time.sleep(0.5)
         self.enableBtns(None)
-        # self.updateStatusBar("Ready")
         wx.CallAfter(self.updateStatusBar, "Ready")
 
     def updateStatusBar(self, text):
@@ -358,8 +360,24 @@ class WofSitesCtrl(TimeSeriesPlotView):
                 colNumber += 1
             colNumber = 0
             rowNumber += 1
-        self.autoSizeColumns()
-        self.alternateRowColor()
+        self.variableList.auto_size_table()
+        self.variableList.alternate_row_color()
+
+    ###############################
+    # EVENTS
+    ###############################
+
+    def on_line_style(self, event):
+        if not len(self.plot.plots):
+            return  # Nothing is plotted
+
+        if event.IsChecked():
+            for plot in self.plot.plots:
+                plot.set_linestyle('-')
+        else:
+            for plot in self.plot.plots:
+                plot.set_linestyle('None')
+        self.plot.redraw()
 
 
 class wofSeries(object):

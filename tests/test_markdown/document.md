@@ -1,22 +1,24 @@
-# Model name
-*Example: TopModel, Multiplier, Weap, etc*
+# TOPMODEL
 
----
+----
 
-## Inputs:
-*   Item 1
-*   item 2
-*   item 3
+## Overview
+**TOPMODEL** is a physically based, distributed watershed model that simulates hydrologic fluxes of water (infiltration-excess overland flow, saturation overland flow, infiltration, exfiltration, subsurface flow, evapotranspiration, and channel routing) through a watershed.
+The model simulates explicit groundwater/surface- water interactions by predicting the movement of the water table, which determines where saturated land-surface areas develop and have the potential to produce saturation overland flow.
 
-## Ouputs:
-1. Output 1
-2. Output 2
-3. ...
+### Model Inputs
+* #### Topographic Index
+> ASCII raster representing topographic indices for every gridcell in the watershed
+* #### Flow Accumulation
+> ASCII raster representing the flow accumulation for each cell in the watershed
+* #### Interception
+> Loss of rainfall due to interception
+* #### Saturated Soil Transmissivity
+> Soil transmissivity
+* #### Recession Coefficient
+> Groundwater recession coefficient
+* #### Scaling Paramter
+> Dimensionless scaling parameter
 
-## URLs
-
-* A named link to [MarkItDown][3]. The easiest way to do these is to select what you want to make a link and hit `Ctrl+L`.
-* Another named link to [MarkItDown](http://www.markitdown.net/)
-* Sometimes you just want a URL like <http://www.markitdown.net/>.
-* Check out [google](http://google.com/)
-
+#### More
+Visit [google](http://www.google.com) for more info.

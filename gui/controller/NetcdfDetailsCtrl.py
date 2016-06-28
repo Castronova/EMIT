@@ -54,7 +54,8 @@ class NetcdfDetailsCtrl(NetcdfDetailsView):
         y = self.y_spatial_var_combo.GetStringSelection()
         t = self.time_var_combo.GetStringSelection()
         time_unit = self.time_step_combo.GetStringSelection()
-        st = dt.datetime.strptime('%s'%(self.startDatePicker.GetValue().FormatISODate()), "%Y-%m-%d")
+        st = dt.datetime.strptime('%s'% (self.startDatePicker.GetValue(
+        ).FormatISODate()), "%Y-%m-%d")
 
         args = dict(ncpath=self.fileurl,
                     tdim=t,
@@ -62,10 +63,10 @@ class NetcdfDetailsCtrl(NetcdfDetailsView):
                     ydim=y,
                     tunit=time_unit,
                     starttime=st,
-                    type=wrappers.Types.NETCDF
+                    model_type=wrappers.Types.NETCDF
                     )
 
-        engine.addModel(attrib=args)
+        engine.addModel(**args)
 
         # close the window
         self.Close()

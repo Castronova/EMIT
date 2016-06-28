@@ -45,29 +45,25 @@ class Wrapper(base.BaseWrapper):
         assert xdim in variables, 'x dimension variable name not specified.  Cannot continue'
         assert ydim in variables, 'y dimension variable name not specified.  Cannot continue'
 
-        if tdim in variables:
-            variables.remove(tdim)
-
-        if xdim in variables:
-            variables.remove(xdim)
-
-        if ydim in variables:
-            variables.remove(ydim)
-
         # get data for these variables
         timesteps = handle.variables[tdim][:]
         times = []
         for ts in timesteps:
             # update the time unit value
-            tunit[args['tunit']] = self._unpack_value(ts)
+            tunit[args['tunit']] = ts
 
             # unpack the tunit dictionary to create a timedelta object
             dt = datetime.timedelta(**tunit)
 
             times.append(st + dt)
 
+        variables.remove(tdim)
+
         x = handle.variables[xdim][:]
+        variables.remove(xdim)
+
         y = handle.variables[ydim][:]
+        variables.remove(ydim)
 
         # create flattened lists of x,y coords from meshgrid
         xcoords, ycoords = numpy.meshgrid(x, y)
@@ -122,17 +118,6 @@ class Wrapper(base.BaseWrapper):
         self.simulation_start(times[0])
         self.simulation_end(times[-1])
         self.status(stdlib.Status.READY)
-
-    def _unpack_value(self, timestep):
-        if isinstance(timestep, numpy.float64):
-            return timestep
-        if isinstance(timestep, numpy.float32):
-            return float(timestep)
-        if isinstance(timestep, numpy.string_):
-            return 0
-        if isinstance(timestep, numpy.ma.core.MaskedArray):
-            return 0
-        return float(timestep)
 
     def prepare(self):
         self.status(stdlib.Status.READY)

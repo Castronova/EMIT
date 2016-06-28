@@ -487,13 +487,17 @@ class Coordinator(object):
         elif "attrib" in params:
             if "type" in params["attrib"]:
                 model_type = params["attrib"]["type"]
+        elif "type" in params:
+            if isinstance(params["type"], str):
+                model_type = params["type"]
 
         if model_type == "NETCDF":
             return self._add_netcdf(params)
+        if model_type == "wof":
+            return self._add_wof(params)
 
         sPrint('Loading Model', MessageType.DEBUG)
         try:
-
             if params['id'] is None:
                 model_id = 'M' + uuid.uuid4().hex
             else:
@@ -554,16 +558,34 @@ class Coordinator(object):
 
     def _add_netcdf(self, data):
         attributes = data["attrib"]
-        type = attributes["type"]
+        model_type = attributes["type"]
         model_id = 'M' + uuid.uuid4().hex
 
-        inst = getattr(wrappers, type).Wrapper(attributes)
+        inst = getattr(wrappers, model_type).Wrapper(attributes)
         oei = inst.outputs().values()
         iei = inst.inputs().values()
 
         # create a model instance
         model = Model(id=model_id, name=inst.name(), instance=inst, desc=inst.description(),
                       input_exchange_items=iei, output_exchange_items=oei, params=attributes)
+
+        if model is not None:
+            # save the model
+            sPrint('Finished Loading', MessageType.DEBUG)
+            self.__models[model.name()] = model
+        return model
+
+    def _add_wof(self, data):
+        print "_add_wof"
+        model_type = data["type"]
+        model_id = 'M' + uuid.uuid4().hex
+
+        inst = getattr(wrappers, model_type).Wrapper(data)
+        oei = inst.outputs().values()
+        iei = inst.inputs().values()
+
+        model = Model(id=model_id, name=inst.name(), instance=inst, desc=inst.description(),
+                      input_exchange_items=iei, output_exchange_items=oei, params=data)
 
         if model is not None:
             # save the model

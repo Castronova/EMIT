@@ -481,20 +481,11 @@ class Coordinator(object):
         Returns:  on success returns dict(id:?, name:?, model_type:?). on
                   failure returns 0
         """
-        model_type = "OTHER"
         if 'model_type' in params:
             model_type = params['model_type']
-        elif "attrib" in params:
-            if "type" in params["attrib"]:
-                model_type = params["attrib"]["type"]
-        elif "type" in params:
-            if isinstance(params["type"], str):
-                model_type = params["type"]
-
-        if model_type == "NETCDF":
-            return self._add_netcdf(params)
-        if model_type == "wof":
-            return self._add_wof(params)
+        else:
+            sPrint('Cannot add model, missing model_type parameter',
+                   MessageType.ERROR)
 
         sPrint('Loading Model', MessageType.DEBUG)
         try:
@@ -556,43 +547,6 @@ class Coordinator(object):
             sPrint('Failed to load model.', MessageType.ERROR)
             return None
 
-    def _add_netcdf(self, data):
-        attributes = data["attrib"]
-        model_type = attributes["type"]
-        model_id = 'M' + uuid.uuid4().hex
-
-        inst = getattr(wrappers, model_type).Wrapper(attributes)
-        oei = inst.outputs().values()
-        iei = inst.inputs().values()
-
-        # create a model instance
-        model = Model(id=model_id, name=inst.name(), instance=inst, desc=inst.description(),
-                      input_exchange_items=iei, output_exchange_items=oei, params=attributes)
-
-        if model is not None:
-            # save the model
-            sPrint('Finished Loading', MessageType.DEBUG)
-            self.__models[model.name()] = model
-        return model
-
-    def _add_wof(self, data):
-        print "_add_wof"
-        model_type = data["type"]
-        model_id = 'M' + uuid.uuid4().hex
-
-        inst = getattr(wrappers, model_type).Wrapper(data)
-        oei = inst.outputs().values()
-        iei = inst.inputs().values()
-
-        model = Model(id=model_id, name=inst.name(), instance=inst, desc=inst.description(),
-                      input_exchange_items=iei, output_exchange_items=oei, params=data)
-
-        if model is not None:
-            # save the model
-            sPrint('Finished Loading', MessageType.DEBUG)
-            self.__models[model.name()] = model
-        return model
-
     def remove_model(self, model_id):
         """
         Removes a model from the Coordinator by id
@@ -642,7 +596,6 @@ class Coordinator(object):
 
     def get_model_object(self, model_id):
         return self.get_model(model_id=model_id)
-
 
     def add_link(self, from_id, from_item_id, to_id, to_item_id,
                  spatial_interp=None, temporal_interp=None, uid=None):

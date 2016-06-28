@@ -147,6 +147,11 @@ def write_simulation_json(models, canvas_shapes, links, path):
                 # get the variable value from the model
                 model_inputs[var] = model['params'][var]
 
+        # set the model type to mdl if mdl path is present
+        if 'path' in model['params']:
+            model_type = 'MDL'
+        else:
+            model_type = model['type']
 
         # canvas object properties
         bbox = canvas_shapes[i].BoundingBox
@@ -155,7 +160,8 @@ def write_simulation_json(models, canvas_shapes, links, path):
                                name=model['name'],
                                id=model['id'],
                                model_inputs=model_inputs,
-                               path=model['params']['path']
+                               path=model['params']['path'],
+                               model_type=model_type
                                )
         json_models.append(model_properties)
 

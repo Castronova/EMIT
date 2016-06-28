@@ -16,7 +16,7 @@ class ModelInputPromptView(wx.Frame):
 
         self.params = models.parse_json(path)
         self.params.update({'path':path,
-                            'type':path[-3:]})
+                            'model_type':path[-3:]})
 
         self.valid_params = 1
         self.has_inputs = 1 if 'model_inputs' in self.params else 0
@@ -24,9 +24,9 @@ class ModelInputPromptView(wx.Frame):
         # if a sim file is being loaded return, else proceed
         if not self.has_inputs:
             return
-        if self.params['type'] == 'sim':
+        if self.params['model_type'] == 'sim':
             return
-        elif self.params['type'] == 'mdl':
+        elif self.params['model_type'] == 'mdl':
             if not models.validate_json_model(self.params):
                 sPrint('Encountered and error when validating parameters: %s' %path)
                 self.valid_params = 0  # set the param validation as False

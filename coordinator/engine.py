@@ -483,12 +483,10 @@ class Coordinator(object):
 
         """
 
-        try:
-            # get the type of model that will be added
-            model_type = params['type']
-        except KeyError:
-            sPrint('Could not load model.  Missing required [model_type] '
-                   'identifier')
+        if 'model_type' in params:
+            model_type = params['model_type']
+        else:
+            model_type = 'OTHER'
 
         sPrint('Loading Model', MessageType.DEBUG)
         try:

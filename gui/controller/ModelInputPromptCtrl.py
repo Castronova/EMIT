@@ -19,7 +19,7 @@ class ModelInputPromptCtrl(ModelInputPromptView):
 
         # load the model or simulation with the parsed parameters only since no additional inputs are needed
         if not self.has_inputs:
-            if self.params['type'] == 'mdl':
+            if self.params['model_type'] == 'mdl':
                 self.emitCtrl.Canvas.addModel(**self.params)
             else:
                 self.emitCtrl.Canvas.load_simulation(path)

@@ -311,7 +311,7 @@ class sqlite():
                 st = time.time()
                 vals = [None]*11
                 vals[0] = resultid   # insert result id
-                vals[-1] = 'Unknown' # insert aggregation statistic
+                vals[-1] = 'Unknown'  # insert aggregation statistic
                 self.cursor.execute('INSERT INTO TimeSeriesResults VALUES '
                                     '(?,?,?,?,?,?,?,?,?,?,?)', vals)
                 self.conn.commit()
@@ -321,12 +321,15 @@ class sqlite():
 
                 # get datavalues corresponding to this resultid (i.e. geometry)
                 datavalues = e.getValues2(geom_index, geom_index)
-                geom_index += 1 # increment to the next geometry
+
+                # increment to the next geometry
+                geom_index += 1
 
                 # flatten row-wise, [t1g, t2g, ..., tng]
                 values = datavalues.flatten(order='C')
+
                 # get datetime column in the array [t1, ..., tn]
-                valuedates = dates[:,1]
+                valuedates = dates[:, 1]
 
                 st = time.time()
                 try:
@@ -682,18 +685,32 @@ class sqlite():
         # insert values in chunks of 10,000
         sPrint('Begin inserting %d value' % len(vals), MessageType.DEBUG)
 
-        # self.cursor.execute("BEGIN TRANSACTION;")
-        chunk_size = 10000
-        percent_complete = 0
+        chunk_size = 10000  # number of records to insert at a time
+        data_inserted = False
         for i in range(0, len(vals), chunk_size):
+
+            # get the start and end indices for the bulk insert
             sidx = i
-            eidx = i + chunk_size if (i + chunk_size) < len(vals) else len(vals)
+            eidx = i + chunk_size if (i + chunk_size) < len(vals) else len(
+                vals)
+
+            # perform execute many
+            self.cursor.executemany('INSERT INTO TimeSeriesResultValues VALUES'
+                                    ' (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                                    vals[sidx: eidx])
+
+            # print the percent complete
             percent_complete = float(eidx) / float(len(vals)) * 100
-            self.cursor.executemany('INSERT INTO TimeSeriesResultValues VALUES '
-                                    '(?, ?, ?, ?, ?, ?, ?, ?, ?)', vals[sidx:eidx])
             sPrint('.. inserted %d records, %3.1f %% complete' %
                    ((eidx - sidx), percent_complete), MessageType.DEBUG)
-        self.conn.commit()
+
+            # set data inserted to True so that it is committed to the db
+            data_inserted = True
+
+        # only attempt a commit if data was inserted
+        if data_inserted:
+            self.conn.commit()
+
         return 1
 
     def insert_feature_actions_bulk(self, SamplingFeatureIDs = [], ActionIDs = []):

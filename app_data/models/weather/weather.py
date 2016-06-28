@@ -18,6 +18,17 @@ class weatherReader(feed_forward.Wrapper):
         # build oeis
         self.construct_oeis(self.weather_data_path)
 
+        # use the first exchange item to set the start, end, and timestep
+        first_ei = self.weather_data[self.outputs().items()[0][1].id()]
+
+        # calculate the timestep from the first 2 datetimes
+        timestep = (first_ei[0][1] - first_ei[0][0]).total_seconds()
+        self.time_step(timestepinseconds=timestep)
+
+        # set the start and end dates from the first exchange item
+        self.simulation_start(first_ei[0][0])
+        self.simulation_end(first_ei[0][-1])
+
         # set the model's status
         self.status(stdlib.Status.READY)
 
@@ -38,7 +49,7 @@ class weatherReader(feed_forward.Wrapper):
         return 1
 
     def finish(self):
-        self.status(stdlib.Status.FINISHED)
+        pass
 
     def construct_oeis(self, weather_data):
 
@@ -65,7 +76,11 @@ class weatherReader(feed_forward.Wrapper):
             return dt.strptime(datestr, '%m-%d-%Y %H:%M:%S')
 
         # parse the weather data dates and values into numpy arrays
-        date_arr = numpy.genfromtxt(weather_data, delimiter=',', converters={'Date':make_date}, names = ['Date'], dtype=None, usecols=[0])
+        date_arr = numpy.genfromtxt(weather_data, delimiter=',',
+                                    converters={'Date':make_date},
+                                    names= ['Date'], dtype=None,
+                                    usecols=[0])
+        date_arr = [d[0] for d in date_arr]
         val_arr = numpy.genfromtxt(weather_data, delimiter=',', dtype=float)
         val_arr = numpy.delete(val_arr,0,1)
 

@@ -480,13 +480,16 @@ class Coordinator(object):
 
         Returns:  on success returns dict(id:?, name:?, model_type:?). on
                   failure returns 0
-
         """
-
+        model_type = "OTHER"
         if 'model_type' in params:
             model_type = params['model_type']
-        else:
-            model_type = 'OTHER'
+        elif "attrib" in params:
+            if "type" in params["attrib"]:
+                model_type = params["attrib"]["type"]
+
+        if model_type == "NETCDF":
+            return self._add_netcdf(params)
 
         sPrint('Loading Model', MessageType.DEBUG)
         try:
@@ -507,7 +510,6 @@ class Coordinator(object):
                     elog.warning(msg)
                     sPrint(msg, MessageType.WARNING)
                     return None
-
             else:
                 try:
                     # check to make sure a wrapper for this datatype exists
@@ -534,13 +536,11 @@ class Coordinator(object):
                                output_exchange_items=  oei,
                                params=params)
 
-
         except Exception, e:
             sPrint('Encountered an error while loading model: %s' %
                    e, MessageType.ERROR)
             elog.error('Encountered an error while loading model: %s' % e)
             this_model = None
-
 
         if this_model is not None:
             # save the model
@@ -551,6 +551,25 @@ class Coordinator(object):
             elog.error('Failed to load model.')
             sPrint('Failed to load model.', MessageType.ERROR)
             return None
+
+    def _add_netcdf(self, data):
+        attributes = data["attrib"]
+        type = attributes["type"]
+        model_id = 'M' + uuid.uuid4().hex
+
+        inst = getattr(wrappers, type).Wrapper(attributes)
+        oei = inst.outputs().values()
+        iei = inst.inputs().values()
+
+        # create a model instance
+        model = Model(id=model_id, name=inst.name(), instance=inst, desc=inst.description(),
+                      input_exchange_items=iei, output_exchange_items=oei, params=attributes)
+
+        if model is not None:
+            # save the model
+            sPrint('Finished Loading', MessageType.DEBUG)
+            self.__models[model.name()] = model
+        return model
 
     def remove_model(self, model_id):
         """

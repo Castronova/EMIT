@@ -30,13 +30,13 @@ class AddConnectionCtrl(AddConnectionView):
         user = self.username_txt_ctrl.GetValue()
         pwd = self.password_txt_ctrl.GetValue()
 
-        return dict(name = title,
-                description = desc,
-                engine=engine,
-                address=address,
-                database=db,
-                username = user,
-                password=pwd)
+        return dict(name=title,
+                    description=desc,
+                    engine=engine,
+                    address=address,
+                    database=db,
+                    username=user,
+                    password=pwd)
 
     ####################################
     # EVENTS

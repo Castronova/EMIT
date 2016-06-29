@@ -355,13 +355,8 @@ class CanvasCtrl(CanvasView):
             spatial = spatial_transformations[spatial_transformation_name] if spatial_transformation_name.lower() != 'none' else None
 
             # create the link
-            engine.addLink(source_id=from_model_id,
-                               source_item=from_model_item,
-                               target_id=to_model_id,
-                               target_item=to_model_item,
-                               spatial_interpolation=spatial,
-                               temporal_interpolation=temporal
-                               )
+            engine.addLink(source_id=from_model_id, source_item=from_model_item, target_id=to_model_id,
+                           target_item=to_model_item, spatial_interpolation=spatial, temporal_interpolation=temporal)
 
             links_to_add.append([from_model, to_model])
 

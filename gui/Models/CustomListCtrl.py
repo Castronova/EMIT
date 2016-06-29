@@ -50,6 +50,36 @@ class CustomListCtrl(wx.ListCtrl):
         size = self.GetTopLevelParent().GetSize()[0]
         self.SetColumnWidth(last_column_index, size)
 
+    def get_all_selected_rows(self):
+        """
+        Gets all the selected rows
+        :return: 2D list, list(rows)
+        """
+        index = self.GetFirstSelected()
+        if index == -1:
+            return []  # No selected row
+
+        data = [self.get_row_at_index(index)]
+        for i in range(self.GetSelectedItemCount() - 1):
+            index = self.GetNextSelected(index)
+            data.append(self.get_row_at_index(index))
+
+        return data
+
+    def get_row_at_index(self, index):
+        """
+        Given a row number, return all the data related to the row
+        :param index: int
+        :return: list
+        """
+        if index > self.GetItemCount():
+            return []  # There are not that many rows in the table
+
+        data = []
+        for i in range(self.GetColumnCount()):
+            data.append(self.GetItem(index, i).GetText())
+        return data
+
     def get_selected_row(self):
         """
         Gets the first selected row

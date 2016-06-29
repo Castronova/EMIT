@@ -5,6 +5,7 @@ from coordinator import engineAccessors, users
 from emitLogging import elog
 from gui.controller.UserCtrl import UserCtrl
 from gui.views.PreRunView import PreRunView
+import collections
 
 
 class PreRunCtrl(PreRunView):
@@ -13,8 +14,7 @@ class PreRunCtrl(PreRunView):
 
         # Defining the table columns
         table_columns = ["Name", "Component"]
-        for i in range(len(table_columns)):
-            self.variableList.InsertColumn(i, str(table_columns[i]))
+        self.table.set_columns(table_columns)
 
         self._data = None
         self.user_data = None
@@ -52,18 +52,16 @@ class PreRunCtrl(PreRunView):
          by component name
         :return: dictionary of datasets to save
         '''
-        datasets = {}
-        num = self.variableList.GetItemCount()
-        for i in range(num):
-            # get the component name and add it to the datasets dictionary
-            component_name = self.variableList.GetItemText(i, 1)
+
+        datasets = collections.defaultdict(list)
+        data = self.table.get_all_selected_rows()
+        for row in data:
+            variable_name = row[0]
+            component_name = row[1]
             if component_name not in datasets:
                 datasets[component_name] = []
 
-            # add variable if selected
-            if self.variableList.IsChecked(i):
-                variable_name = self.variableList.GetItemText(i, 0)
-                datasets[component_name].append(variable_name)
+            datasets[component_name].append(variable_name)
 
         return datasets
 
@@ -80,9 +78,9 @@ class PreRunCtrl(PreRunView):
             col_number = 0
             for key, values in data.iteritems():
                 for value in values:
-                    pos = self.variableList.InsertStringItem(col_number, str(value))
+                    pos = self.table.InsertStringItem(col_number, str(value))
                     col_number += 1
-                    self.variableList.SetStringItem(pos, col_number, str(key))
+                    self.table.SetStringItem(pos, col_number, str(key))
                     col_number = 0
         else:
             elog.debug("PreRunCtrl.insert_data must be a dictionary")
@@ -107,8 +105,8 @@ class PreRunCtrl(PreRunView):
             # sort models
             self._data = self.sort_output_model(models)
             self.insert_data(self._data)
-            self.autoSizeColumns()
-            self.alternateRowColor()
+            self.table.auto_size_table()
+            self.table.alternate_row_color()
 
     def refresh_user_account(self):
         self.account_combo.Clear()

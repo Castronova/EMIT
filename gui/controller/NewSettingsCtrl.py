@@ -9,18 +9,18 @@ class NewSettingsCtrl(NewSettingsView):
 
         self._set_console_message_checkboxes()
 
+        # Disables all other windows in the application so that the user can only interact with this window.
+        self.MakeModal(True)
+
         self.console_button.Bind(wx.EVT_BUTTON, self.on_console)
         self.another_button.Bind(wx.EVT_BUTTON, self.on_another)
         self.environment_button.Bind(wx.EVT_BUTTON, self.on_environment)
         self.save_button.Bind(wx.EVT_BUTTON, self.on_save)
         self.Bind(wx.EVT_SIZE, self._on_resize)
         self.cancel_button.Bind(wx.EVT_BUTTON, self.on_close)
+        self.Bind(wx.EVT_CLOSE, self.on_close)
 
         self.SetSize((-1, 400))
-
-        self.console_panel.SetSize(self.GetClientSizeTuple())
-        self.another_panel.SetSize(self.GetClientSizeTuple())
-        self.environment_panel.SetSize(self.GetClientSizeTuple())
 
     def get_logging_variables(self):
         items = []
@@ -75,6 +75,7 @@ class NewSettingsCtrl(NewSettingsView):
         self.main_sizer.Layout()
 
     def on_close(self, event):
+        self.MakeModal(False)
         self.Destroy()
 
     def on_console(self, event):
@@ -102,6 +103,11 @@ class NewSettingsCtrl(NewSettingsView):
         self.main_sizer.Layout()
 
     def _on_resize(self, event):
+        """
+        Handle resizing the panels
+        :param event:
+        :return:
+        """
         event.Skip()
         self.console_panel.SetSize(self.GetClientSizeTuple())
         self.another_panel.SetSize(self.GetClientSizeTuple())

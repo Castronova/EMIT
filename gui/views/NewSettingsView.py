@@ -17,18 +17,18 @@ class NewSettingsView(wx.Frame):
         ###########################
 
         # Create components
-        self.console_button = wx.Button(menu_panel, label="Console", style=wx.BORDER_NONE)
-        self.another_button = wx.Button(menu_panel, label="Another", style=wx.BORDER_NONE)
-        self.environment_button = wx.Button(menu_panel, label="Environment", style=wx.BORDER_NONE)
+        self.console_button = wx.Button(menu_panel, label="Console", size=(-1, 40), style=wx.BORDER_NONE)
+        self.another_button = wx.Button(menu_panel, label="Another", size=(-1, 40), style=wx.BORDER_NONE)
+        self.environment_button = wx.Button(menu_panel, label="Environment", size=(-1, 40), style=wx.BORDER_NONE)
         self.console_button.SetForegroundColour(wx.LIGHT_GREY)
         self.another_button.SetForegroundColour(wx.LIGHT_GREY)
         self.environment_button.SetForegroundColour(wx.LIGHT_GREY)
 
         # Create sizer and add components
         menu_panel_sizer = wx.BoxSizer(wx.VERTICAL)
-        menu_panel_sizer.Add(self.console_button, 0, wx.EXPAND | wx.ALL, 5)
-        menu_panel_sizer.Add(self.another_button, 0, wx.EXPAND | wx.ALL, 5)
-        menu_panel_sizer.Add(self.environment_button, 0, wx.EXPAND | wx.ALL, 5)
+        menu_panel_sizer.Add(self.console_button, 0, wx.EXPAND | wx.ALL, 0)
+        menu_panel_sizer.Add(self.another_button, 0, wx.EXPAND | wx.ALL, 0)
+        menu_panel_sizer.Add(self.environment_button, 0, wx.EXPAND | wx.ALL, 0)
         menu_panel.SetSizer(menu_panel_sizer)
 
         menu_panel.SetBackgroundColour((33, 117, 155))

@@ -36,7 +36,7 @@ class EMITView(wx.Frame):
         self._save_menu = self._file_menu.Append(wx.NewId(), '&Save Configuration\tCtrl+S', 'Save Configuration')
         self._add_user_menu = self._file_menu.Append(wx.NewId(), 'Add User', 'Add New User')
         self.save_as_menu = self._file_menu.Append(wx.NewId(), '&Save Configuration As', 'Save Configuration')
-        self._settings_menu = self._file_menu.Append(wx.NewId(), "Settings...")
+        self._settings_menu = self._file_menu.Append(wx.NewId(), "&Settings...\tCtrl+,")
         self._exit = self._file_menu.Append(wx.NewId(), '&Quit\tCtrl+Q', 'Quit application')
 
         # View Menu Option

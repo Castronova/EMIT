@@ -3,7 +3,6 @@ from sprint import *
 from utilities import gui
 import wx
 from gui import events
-from wx.lib.pubsub import pub as Publisher
 from coordinator.engineManager import Engine
 import coordinator.engineAccessors as engine
 from emitLogging import elog
@@ -13,6 +12,7 @@ from gui.controller.UserCtrl import UserCtrl
 from gui.controller.SettingsCtrl import SettingsCtrl
 from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
 from gui.controller.ModelInputPromptCtrl import ModelInputPromptCtrl
+from gui.controller.NewSettingsCtrl import NewSettingsCtrl
 
 
 class EMITCtrl(EMITView):
@@ -250,5 +250,6 @@ class EMITCtrl(EMITView):
 
     def on_settings(self, event):
         SettingsCtrl(self.Canvas.GetTopLevelParent())
+        NewSettingsCtrl(self)
 
 

@@ -1,7 +1,5 @@
-import os
 import wx
 import wx.propgrid as wxpg
-
 
 
 class SettingsView(wx.Frame):

@@ -11,6 +11,9 @@ class NewSettingsCtrl(NewSettingsView):
         self.Bind(wx.EVT_SIZE, self._on_resize)
         self.cancel_button.Bind(wx.EVT_BUTTON, self.on_close)
 
+        self.console_panel.SetSize(self.GetClientSizeTuple())
+        self.another_panel.SetSize(self.GetClientSizeTuple())
+
     ############################
     # EVENTS
     ############################

@@ -1,6 +1,7 @@
 import wx
 import wx.lib.scrolledpanel
 
+
 class NewSettingsView(wx.Frame):
     def __init__(self, parent):
         wx.Frame.__init__(self, parent, style=wx.DEFAULT_FRAME_STYLE | wx.STAY_ON_TOP)
@@ -24,8 +25,8 @@ class NewSettingsView(wx.Frame):
 
         # Create sizer and add components
         menu_panel_sizer = wx.BoxSizer(wx.VERTICAL)
-        menu_panel_sizer.Add(self.console_button, 0, wx.EXPAND | wx.ALL, 0)
-        menu_panel_sizer.Add(self.another_button, 0, wx.EXPAND | wx.ALL, 0)
+        menu_panel_sizer.Add(self.console_button, 0, wx.EXPAND | wx.ALL, 5)
+        menu_panel_sizer.Add(self.another_button, 0, wx.EXPAND | wx.ALL, 5)
         menu_panel.SetSizer(menu_panel_sizer)
 
         menu_panel.SetBackgroundColour((33, 117, 155))
@@ -67,8 +68,8 @@ class NewSettingsView(wx.Frame):
         self.main_sizer.Add(menu_panel, 0, wx.EXPAND | wx.ALL, 0)
         self.main_sizer.Add(self.details_panel, 1, wx.EXPAND | wx.LEFT, 5)
 
-        self.frame_sizer.Add(self.main_sizer, 1, wx.EXPAND | wx.ALL, 0)
-        self.frame_sizer.Add(lower_panel, 0, wx.EXPAND | wx.ALL, 5)
+        self.frame_sizer.Add(self.main_sizer, 1, wx.EXPAND | wx.RIGHT | wx.BOTTOM, 5)
+        self.frame_sizer.Add(lower_panel, 0, wx.EXPAND | wx.ALL, 0)
 
         panel.SetSizer(self.frame_sizer)
 

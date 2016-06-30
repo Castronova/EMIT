@@ -15,6 +15,7 @@ class NewSettingsCtrl(NewSettingsView):
         self.console_button.Bind(wx.EVT_BUTTON, self.on_console)
         self.another_button.Bind(wx.EVT_BUTTON, self.on_another)
         self.environment_button.Bind(wx.EVT_BUTTON, self.on_environment)
+        # self.example_button.Bind(wx.EVT_BUTTON, self.on_example)
         self.save_button.Bind(wx.EVT_BUTTON, self.on_save)
         self.Bind(wx.EVT_SIZE, self._on_resize)
         self.cancel_button.Bind(wx.EVT_BUTTON, self.on_close)
@@ -30,11 +31,11 @@ class NewSettingsCtrl(NewSettingsView):
         return items
 
     def save_logging_variables(self):
-        environment.setEnvironmentVar("LOGGING", "showinfo", str(int(self.info_text.GetValue())))
-        environment.setEnvironmentVar("LOGGING", "showwarning", str(int(self.warning_text.GetValue())))
-        environment.setEnvironmentVar("LOGGING", "showcritical", str(int(self.critical_text.GetValue())))
-        environment.setEnvironmentVar("LOGGING", "showdebug", str(int(self.debug_text.GetValue())))
-        environment.setEnvironmentVar("LOGGING", "showerror", str(int(self.error_checkbox.GetValue())))
+        environment.setEnvironmentVar("LOGGING", "showinfo", str(int(self.console_panel.info_text.GetValue())))
+        environment.setEnvironmentVar("LOGGING", "showwarning", str(int(self.console_panel.warning_text.GetValue())))
+        environment.setEnvironmentVar("LOGGING", "showcritical", str(int(self.console_panel.critical_text.GetValue())))
+        environment.setEnvironmentVar("LOGGING", "showdebug", str(int(self.console_panel.debug_text.GetValue())))
+        environment.setEnvironmentVar("LOGGING", "showerror", str(int(self.console_panel.error_checkbox.GetValue())))
 
     def _set_console_message_checkboxes(self):
         logging_vars = self.get_logging_variables()
@@ -43,19 +44,19 @@ class NewSettingsCtrl(NewSettingsView):
             value = int(os.environ[var])
 
             if message_type == "CRITICAL":
-                self.critical_text.SetValue(value)
+                self.console_panel.critical_text.SetValue(value)
                 continue
             if message_type == "WARNING":
-                self.warning_text.SetValue(value)
+                self.console_panel.warning_text.SetValue(value)
                 continue
             if message_type == "INFO":
-                self.info_text.SetValue(value)
+                self.console_panel.info_text.SetValue(value)
                 continue
             if message_type == "DEBUG":
-                self.debug_text.SetValue(value)
+                self.console_panel.debug_text.SetValue(value)
                 continue
             if message_type == "ERROR":
-                self.error_checkbox.SetValue(value)
+                self.console_panel.error_checkbox.SetValue(value)
                 continue
 
     ############################

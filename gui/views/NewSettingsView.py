@@ -39,7 +39,8 @@ class NewSettingsView(wx.Frame):
 
         self.details_panel.SetupScrolling()
         # Console controls
-        self.__create_console_panel()
+        self.console_panel = SettingsConsole(self.details_panel)
+        self.console_panel.Show()
 
         # Another controls
         self.__create_another_panel()
@@ -79,47 +80,6 @@ class NewSettingsView(wx.Frame):
         panel.SetSizer(self.frame_sizer)
 
         self.Show()
-
-    def __create_console_panel(self):
-        """
-        This function should only be called by NewSettingsView.init()
-        It simply separates all of this block of code out of the init so its more compact
-        :return:
-        """
-
-        # Create panel
-        self.console_panel = wx.lib.scrolledpanel.ScrolledPanel(self.details_panel)
-
-        # Create components
-        header_text = wx.StaticText(self.console_panel, label="Console")
-        line_break = wx.StaticLine(self.console_panel)
-        self.info_text = wx.CheckBox(self.console_panel, label="Display info message")
-        self.warning_text = wx.CheckBox(self.console_panel, label="Display warning message")
-        self.critical_text = wx.CheckBox(self.console_panel, label="Display critical message")
-        self.debug_text = wx.CheckBox(self.console_panel, label="Display debug message")
-        self.error_checkbox = wx.CheckBox(self.console_panel, label="Display error message")
-
-        # Style components
-        header_font = wx.Font(pointSize=18, family=wx.DEFAULT, style=wx.NORMAL, weight=wx.NORMAL)
-        header_text.SetFont(header_font)
-
-        sizer = wx.BoxSizer(wx.VERTICAL)
-
-        sizer.Add(header_text, 0, wx.EXPAND | wx.TOP | wx.LEFT, 15)
-        sizer.Add(line_break, 0, wx.EXPAND | wx.TOP | wx.LEFT, 10)
-
-        static_box = wx.StaticBox(self.console_panel, label="Display Message")
-        console_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
-
-        console_sizer.Add(self.info_text)
-        console_sizer.Add(self.warning_text)
-        console_sizer.Add(self.critical_text)
-        console_sizer.Add(self.debug_text)
-        console_sizer.Add(self.error_checkbox)
-
-        sizer.Add(console_sizer, 1, wx.EXPAND | wx.TOP | wx.LEFT, 15)
-        self.console_panel.SetSizer(sizer)
-        sizer.Fit(self.console_panel)
 
     def __create_another_panel(self):
         """
@@ -164,3 +124,40 @@ class NewSettingsView(wx.Frame):
         self.environment_panel.SetSizer(sizer)
         sizer.Fit(self.environment_panel)
         self.environment_panel.Hide()
+
+
+class SettingsConsole(wx.Panel):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+
+        # Create components
+        header_text = wx.StaticText(self, label="Console")
+        line_break = wx.StaticLine(self)
+        self.info_text = wx.CheckBox(self, label="Display info message")
+        self.warning_text = wx.CheckBox(self, label="Display warning message")
+        self.critical_text = wx.CheckBox(self, label="Display critical message")
+        self.debug_text = wx.CheckBox(self, label="Display debug message")
+        self.error_checkbox = wx.CheckBox(self, label="Display error message")
+
+        # Style components
+        header_font = wx.Font(pointSize=18, family=wx.DEFAULT, style=wx.NORMAL, weight=wx.NORMAL)
+        header_text.SetFont(header_font)
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+
+        sizer.Add(header_text, 0, wx.EXPAND | wx.TOP | wx.LEFT, 15)
+        sizer.Add(line_break, 0, wx.EXPAND | wx.TOP | wx.LEFT, 10)
+
+        static_box = wx.StaticBox(self, label="Display Message")
+        console_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
+
+        console_sizer.Add(self.info_text)
+        console_sizer.Add(self.warning_text)
+        console_sizer.Add(self.critical_text)
+        console_sizer.Add(self.debug_text)
+        console_sizer.Add(self.error_checkbox)
+
+        sizer.Add(console_sizer, 1, wx.EXPAND | wx.TOP | wx.LEFT, 15)
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+

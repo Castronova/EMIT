@@ -1,6 +1,6 @@
 {
 	"software": [{
-		"filepath ": "./ueb.py",
+		"filepath": "./ueb.py",
 		"classname": "ueb"
 	}],
 
@@ -33,7 +33,6 @@
 		"unit_type_cv": "meters"
 	}],
 
-
 	"input": [{
 		"name": "Precipitation",
 		"variable_name_cv": "Precipitation",
@@ -49,7 +48,16 @@
 	}],
 
 	"model_inputs": [{
-		"control": "./RBCreekUEB2/control.dat",
-		"lib": "./libUEBHydroCoupleComponent.dylib"
+	    "name": "Control File",
+	    "help": "Text file that provides references to simulation files",
+	    "variable": "control",
+	    "input": "file",
+	    "required": "True"
+	}, {
+	    "name": "UEB Library",
+	    "help": "The UEB model that has been pre-compiled to the current OS. ",
+	    "variable": "lib",
+	    "input": "file",
+	    "required": "True"
 	}]
 }

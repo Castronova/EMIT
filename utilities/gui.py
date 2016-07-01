@@ -286,8 +286,7 @@ def load_model(config_params):
     Creates an instance of the model by loading the contents of the configuration ini file.
     returns (model name,model instance)
     """
-    # parse module config
-    #items = parse_config(ini)
+
     try:
         # get source attributes
         software = config_params['software']
@@ -300,14 +299,18 @@ def load_model(config_params):
         # load the model
         basedir = config_params['basedir']
         abspath = os.path.abspath(os.path.join(basedir,relpath))
-        sPrint('AbsPath: %s'%abspath, MessageType.DEBUG)
+        sPrint('AbsPath: %s' % abspath, MessageType.DEBUG)
 
-        filename = os.path.basename(abspath)
+        # add the model dir to the system path so that submodule imports
+        # work properly
+        sys.path.append(os.path.dirname(os.path.abspath(relpath)))
+
+        # load the model class
         module = imp.load_source(classname, abspath)
         model_class = getattr(module, classname)
         sPrint('Model Class Extracted Successfully', MessageType.DEBUG)
 
-        # Initialize the component
+        # Initialize the model component
         instance = model_class(config_params)
         sPrint('Model Initialization Successful', MessageType.DEBUG)
 

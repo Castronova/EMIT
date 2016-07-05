@@ -9,19 +9,19 @@ class NewSettingsCtrl(NewSettingsView):
 
         self._set_console_message_checkboxes()
 
-        # Disables all other windows in the application so that the user can only interact with this window.
-        self.MakeModal(True)
 
         self.console_button.Bind(wx.EVT_BUTTON, self.on_console)
         self.another_button.Bind(wx.EVT_BUTTON, self.on_another)
         self.environment_button.Bind(wx.EVT_BUTTON, self.on_environment)
-        # self.example_button.Bind(wx.EVT_BUTTON, self.on_example)
         self.save_button.Bind(wx.EVT_BUTTON, self.on_save)
         self.Bind(wx.EVT_SIZE, self._on_resize)
         self.cancel_button.Bind(wx.EVT_BUTTON, self.on_close)
         self.Bind(wx.EVT_CLOSE, self.on_close)
 
-        self.SetSize((-1, 400))
+        self.SetSize((550, 400))
+
+        # Disables all other windows in the application so that the user can only interact with this window.
+        self.MakeModal(True)
 
     def get_logging_variables(self):
         items = []
@@ -31,10 +31,10 @@ class NewSettingsCtrl(NewSettingsView):
         return items
 
     def save_logging_variables(self):
-        environment.setEnvironmentVar("LOGGING", "showinfo", str(int(self.console_panel.info_text.GetValue())))
-        environment.setEnvironmentVar("LOGGING", "showwarning", str(int(self.console_panel.warning_text.GetValue())))
-        environment.setEnvironmentVar("LOGGING", "showcritical", str(int(self.console_panel.critical_text.GetValue())))
-        environment.setEnvironmentVar("LOGGING", "showdebug", str(int(self.console_panel.debug_text.GetValue())))
+        environment.setEnvironmentVar("LOGGING", "showinfo", str(int(self.console_panel.info_checkbox.GetValue())))
+        environment.setEnvironmentVar("LOGGING", "showwarning", str(int(self.console_panel.warning_checkbox.GetValue())))
+        environment.setEnvironmentVar("LOGGING", "showcritical", str(int(self.console_panel.critical_checkbox.GetValue())))
+        environment.setEnvironmentVar("LOGGING", "showdebug", str(int(self.console_panel.debug_checkbox.GetValue())))
         environment.setEnvironmentVar("LOGGING", "showerror", str(int(self.console_panel.error_checkbox.GetValue())))
 
     def _set_console_message_checkboxes(self):
@@ -44,16 +44,16 @@ class NewSettingsCtrl(NewSettingsView):
             value = int(os.environ[var])
 
             if message_type == "CRITICAL":
-                self.console_panel.critical_text.SetValue(value)
+                self.console_panel.critical_checkbox.SetValue(value)
                 continue
             if message_type == "WARNING":
-                self.console_panel.warning_text.SetValue(value)
+                self.console_panel.warning_checkbox.SetValue(value)
                 continue
             if message_type == "INFO":
-                self.console_panel.info_text.SetValue(value)
+                self.console_panel.info_checkbox.SetValue(value)
                 continue
             if message_type == "DEBUG":
-                self.console_panel.debug_text.SetValue(value)
+                self.console_panel.debug_checkbox.SetValue(value)
                 continue
             if message_type == "ERROR":
                 self.console_panel.error_checkbox.SetValue(value)

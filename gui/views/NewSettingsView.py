@@ -46,7 +46,8 @@ class NewSettingsView(wx.Frame):
         self.__create_another_panel()
 
         # Environment controls
-        self.__create_environment_panel()
+        self.environment_panel = SettingsEnvironment(self.details_panel)
+        self.environment_panel.Hide()
 
         ###########################
         # LOWER PANEL
@@ -97,34 +98,6 @@ class NewSettingsView(wx.Frame):
         another_sizer.Fit(self.another_panel)
         self.another_panel.Hide()
 
-    def __create_environment_panel(self):
-        """
-        This function should only be called by NewSettingsView.init()
-        It simply separates all of this block of code out of the init so its more compact
-        :return:
-        """
-
-        # Create panel
-        self.environment_panel = wx.lib.scrolledpanel.ScrolledPanel(self.details_panel)
-
-        # Create components
-        header_text = wx.StaticText(self.environment_panel, label="Environment")
-        line_break = wx.StaticLine(self.environment_panel)
-
-        # Style components
-        header_font = wx.Font(pointSize=18, family=wx.DEFAULT, style=wx.NORMAL, weight=wx.NORMAL)
-        header_text.SetFont(header_font)
-
-        # Create sizer and add components
-        sizer = wx.BoxSizer(wx.VERTICAL)
-
-        sizer.Add(header_text, 0, wx.EXPAND | wx.TOP | wx.LEFT, 15)
-        sizer.Add(line_break, 0, wx.EXPAND | wx.TOP | wx.LEFT, 10)
-
-        self.environment_panel.SetSizer(sizer)
-        sizer.Fit(self.environment_panel)
-        self.environment_panel.Hide()
-
 
 class SettingsConsole(wx.Panel):
     def __init__(self, parent):
@@ -133,31 +106,67 @@ class SettingsConsole(wx.Panel):
         # Create components
         header_text = wx.StaticText(self, label="Console")
         line_break = wx.StaticLine(self)
-        self.info_text = wx.CheckBox(self, label="Display info message")
-        self.warning_text = wx.CheckBox(self, label="Display warning message")
-        self.critical_text = wx.CheckBox(self, label="Display critical message")
-        self.debug_text = wx.CheckBox(self, label="Display debug message")
+        static_box = wx.StaticBox(self, label="Display Message")
+        self.info_checkbox = wx.CheckBox(self, label="Display info message")
+        self.warning_checkbox = wx.CheckBox(self, label="Display warning message")
+        self.critical_checkbox = wx.CheckBox(self, label="Display critical message")
+        self.debug_checkbox = wx.CheckBox(self, label="Display debug message")
         self.error_checkbox = wx.CheckBox(self, label="Display error message")
 
         # Style components
         header_font = wx.Font(pointSize=18, family=wx.DEFAULT, style=wx.NORMAL, weight=wx.NORMAL)
         header_text.SetFont(header_font)
 
+        # Create sizer and add components
         sizer = wx.BoxSizer(wx.VERTICAL)
+        static_box_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
 
         sizer.Add(header_text, 0, wx.EXPAND | wx.TOP | wx.LEFT, 15)
         sizer.Add(line_break, 0, wx.EXPAND | wx.TOP | wx.LEFT, 10)
+        static_box_sizer.Add(self.info_checkbox)
+        static_box_sizer.Add(self.warning_checkbox)
+        static_box_sizer.Add(self.critical_checkbox)
+        static_box_sizer.Add(self.debug_checkbox)
+        static_box_sizer.Add(self.error_checkbox)
 
-        static_box = wx.StaticBox(self, label="Display Message")
-        console_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
-
-        console_sizer.Add(self.info_text)
-        console_sizer.Add(self.warning_text)
-        console_sizer.Add(self.critical_text)
-        console_sizer.Add(self.debug_text)
-        console_sizer.Add(self.error_checkbox)
-
-        sizer.Add(console_sizer, 1, wx.EXPAND | wx.TOP | wx.LEFT, 15)
+        sizer.Add(static_box_sizer, 1, wx.EXPAND | wx.TOP | wx.LEFT, 15)
         self.SetSizer(sizer)
         sizer.Fit(self)
+
+
+class SettingsEnvironment(wx.Panel):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+
+        # # Create components
+        header_text = wx.StaticText(self, label="Environment")
+        line_break = wx.StaticLine(self)
+        static_box = wx.StaticBox(self, label="Defaults")
+        save_directory_text = wx.StaticText(self, label="Save Directory")
+        self.save_directory_textctrl = wx.TextCtrl(self)
+        self.file_dialog_button = wx.Button(self, label="Open")
+        # Must have so the file dialog buttons appear and the text fields stretch to fill
+        empty_button = wx.Button(self, label="", style=wx.BORDER_NONE)
+
+        # Style components
+        header_font = wx.Font(pointSize=18, family=wx.DEFAULT, style=wx.NORMAL, weight=wx.NORMAL)
+        header_text.SetFont(header_font)
+
+        main_sizer = wx.BoxSizer(wx.VERTICAL)
+        static_box_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
+        row_sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        main_sizer.Add(header_text, 0, wx.EXPAND | wx.TOP | wx.LEFT, 15)
+        main_sizer.Add(line_break, 0, wx.EXPAND | wx.TOP | wx.LEFT, 10)
+
+        row_sizer.Add(save_directory_text, 0, wx.ALL | wx.CENTER, 10)
+        row_sizer.Add(self.save_directory_textctrl, 1, wx.EXPAND | wx.ALL | wx.CENTER, 10)
+        row_sizer.Add(self.file_dialog_button, 0, wx.ALL | wx.CENTER, 10)
+        row_sizer.Add(empty_button, 0, wx.ALL | wx.CENTER, 5)
+
+        static_box_sizer.Add(row_sizer, 1, wx.EXPAND | wx.ALL, 10)
+        main_sizer.Add(static_box_sizer, 0, wx.ALL | wx.EXPAND, 15)
+
+        self.SetSizer(main_sizer)
+        main_sizer.Fit(self)
 

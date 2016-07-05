@@ -9,7 +9,6 @@ from emitLogging import elog
 import threading
 from gui.controller.NetcdfCtrl import NetcdfCtrl
 from gui.controller.UserCtrl import UserCtrl
-from gui.controller.SettingsCtrl import SettingsCtrl
 from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
 from gui.controller.ModelInputPromptCtrl import ModelInputPromptCtrl
 from gui.controller.NewSettingsCtrl import NewSettingsCtrl
@@ -249,7 +248,6 @@ class EMITCtrl(EMITView):
         except: pass
 
     def on_settings(self, event):
-        SettingsCtrl(self.Canvas.GetTopLevelParent())
         NewSettingsCtrl(self)
 
 

@@ -91,7 +91,6 @@ class ModelInputPromptView(wx.Frame):
         break_line = wx.StaticLine(panel)
         self.cancel_button = wx.Button(bottom_panel, label="Cancel", style=wx.BU_EXACTFIT)
         self.submit_button = wx.Button(bottom_panel, label="Load Model", style=wx.BU_EXACTFIT)
-        self.help_button = wx.Button(bottom_panel, label="Help", style=wx.BU_EXACTFIT)
 
         # Create sizers
         frame_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -124,7 +123,13 @@ class ModelInputPromptView(wx.Frame):
         scroll_panel.SetSizer(scroll_panel_sizer)
         scroll_panel_sizer.Fit(scroll_panel)
 
-        button_sizer.Add(self.help_button, 0, wx.ALL | wx.ALIGN_LEFT, 5)
+        ###################################
+        # ADD HELP IF MARKDOWN HELP EXIST
+        ###################################
+        if "help_markdown" in self.params:
+            self.help_button = wx.Button(bottom_panel, label="Help", style=wx.BU_EXACTFIT)
+            button_sizer.Add(self.help_button, 0, wx.ALL | wx.ALIGN_LEFT, 5)
+
         button_sizer.AddSpacer((0, 0), 1, wx.EXPAND, 5)
         button_sizer.Add(self.cancel_button, 0, wx.ALL | wx.ALIGN_RIGHT, 5)
         button_sizer.Add(self.submit_button, 0, wx.EXPAND | wx.ALL, 5)

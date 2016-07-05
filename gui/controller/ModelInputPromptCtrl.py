@@ -32,7 +32,9 @@ class ModelInputPromptCtrl(ModelInputPromptView):
         self.Bind(wx.EVT_CLOSE, self.on_close)
         self.submit_button.Bind(wx.EVT_BUTTON, self.on_submit)
         self.cancel_button.Bind(wx.EVT_BUTTON, self.on_close)
-        self.help_button.Bind(wx.EVT_BUTTON, self.on_help)
+
+        if "help_markdown" in self.params:
+            self.help_button.Bind(wx.EVT_BUTTON, self.on_help)
         for button in self.inputs:
             if button:
                 button.Bind(wx.EVT_BUTTON, self.on_file_browser)
@@ -51,10 +53,8 @@ class ModelInputPromptCtrl(ModelInputPromptView):
             self.text_ctrls[event.GetId()].SetValue(file_browser.GetPath())
 
     def on_help(self, event):
-        print "Show markdown"
-        MarkdownWindow(self, "Line 1\n\n Line 2\n\n * Item 1\n * Item 2 \n\n"
-                             "Visit [google](www.google.com) for more info")
-
+        markdown = MarkdownWindow(self)
+        markdown.read_markdown_file(self.params["help_markdown"][0]["path"])
 
     def on_submit(self, event):
 

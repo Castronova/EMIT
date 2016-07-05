@@ -91,5 +91,8 @@
 	    "required": "True",
 	    "default": 180,
 	    "datatype": "float"
+	}],
+	"help_markdown": [{
+	    "path": "./document.md"
 	}]
 }

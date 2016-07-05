@@ -1,14 +1,13 @@
-from gui.views.NewSettingsView import NewSettingsView
+from gui.views.SettingsView import SettingsView
 import wx
 from sprint import *  # Contains os.environ
 
 
-class NewSettingsCtrl(NewSettingsView):
+class SettingsCtrl(SettingsView):
     def __init__(self, parent):
-        NewSettingsView.__init__(self, parent)
+        SettingsView.__init__(self, parent)
 
         self._set_console_message_checkboxes()
-
 
         self.console_button.Bind(wx.EVT_BUTTON, self.on_console)
         self.another_button.Bind(wx.EVT_BUTTON, self.on_another)
@@ -120,8 +119,9 @@ class NewSettingsCtrl(NewSettingsView):
         :param event:
         :return:
         """
-
         self.save_logging_variables()
+
+
 
         sPrint("Settings saved", MessageType.INFO)
         self.on_close(event)

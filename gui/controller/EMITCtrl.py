@@ -11,7 +11,7 @@ from gui.controller.NetcdfCtrl import NetcdfCtrl
 from gui.controller.UserCtrl import UserCtrl
 from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
 from gui.controller.ModelInputPromptCtrl import ModelInputPromptCtrl
-from gui.controller.NewSettingsCtrl import NewSettingsCtrl
+from gui.controller.SettingsCtrl import SettingsCtrl
 
 
 class EMITCtrl(EMITView):
@@ -248,6 +248,6 @@ class EMITCtrl(EMITView):
         except: pass
 
     def on_settings(self, event):
-        NewSettingsCtrl(self)
+        SettingsCtrl(self)
 
 

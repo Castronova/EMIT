@@ -68,9 +68,9 @@ class ModelContextMenu(wx.Menu):
                 model_details.properties_page_controller.add_section("General")
                 for key, value in engine.getModelById(self.model_obj.ID).iteritems():
                     if isinstance(value, dict):
-                        for k, v in value.iteritems():
-                            model_details.properties_page_controller.add_data_to_section(0, k, v)
-                    model_details.properties_page_controller.add_data_to_section(0, key, value)
+                        model_details.properties_page_controller.add_dictionary(value, key)
+                    else:
+                        model_details.properties_page_controller.add_data_to_section(0, key, value)
                 details_populated = True
             except:
                 details_populated = False

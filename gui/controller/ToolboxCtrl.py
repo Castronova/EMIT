@@ -1,10 +1,6 @@
 import ConfigParser
 import fnmatch
-import random
 import wx
-from wx.lib.pubsub import pub as Publisher
-from emitLogging import elog
-from gui import events
 from gui.controller.ModelCtrl import ModelCtrl
 from gui.views.ToolboxView import ToolboxView
 from sprint import *
@@ -57,13 +53,14 @@ class ToolboxCtrl(ToolboxView):
         name = self.tree.GetItemText(self.tree.GetSelection())
         path = self.filepath.get(name)
 
+        if not path:
+            return  # Selected a folder or something else
+
         model_details = ModelCtrl(self)
 
         data = models.parse_json(path)
 
         if path[-4:] == ".sim":
-            # model_details.properties_page_controller.add_data_simulation(data)
-
             sorted_sections = sorted(data.keys())
             for each_section in sorted_sections:
                 if isinstance(data[each_section], list):
@@ -78,7 +75,6 @@ class ToolboxCtrl(ToolboxView):
         else:
             # Not a simulation
             model_details.properties_page_controller.add_data(data)
-
 
         model_details.PopulateEdit(path)
         model_details.Show()
@@ -206,16 +202,13 @@ class ToolboxCtrl(ToolboxView):
         self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Normal)
 
     def onDoubleClick(self, event):
-        id = event.GetItem()
-        filename = id.GetText()
-        try:
-            # get selected filename
-            filename = self.filepath[filename]
-            self.GetTopLevelParent().model_input_prompt(filename)
+        # Get selected filename
+        name = self.tree.GetItemText(self.tree.GetSelection())
+        path = self.filepath.get(name)
+        if not path:
+            return  # Clicked on a folder
 
-        except Exception, e:
-            # Clicked on a folder
-            elog.error(e)
+        self.GetTopLevelParent().model_input_prompt(path)
 
     def OnSize(self, event):
         self.tree.SetSize(self.GetSize())

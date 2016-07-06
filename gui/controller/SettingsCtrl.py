@@ -14,7 +14,6 @@ class SettingsCtrl(SettingsView):
         self.another_button.Bind(wx.EVT_BUTTON, self.on_another)
         self.environment_button.Bind(wx.EVT_BUTTON, self.on_environment)
         self.save_button.Bind(wx.EVT_BUTTON, self.on_save)
-        self.Bind(wx.EVT_SIZE, self._on_resize)
         self.cancel_button.Bind(wx.EVT_BUTTON, self.on_close)
         self.Bind(wx.EVT_CLOSE, self.on_close)
 
@@ -103,17 +102,6 @@ class SettingsCtrl(SettingsView):
         self.environment_panel.Show()
         self.main_sizer.Layout()
 
-    def _on_resize(self, event):
-        """
-        Handle resizing the panels
-        :param event:
-        :return:
-        """
-        event.Skip()
-        self.console_panel.SetSize(self.GetClientSizeTuple())
-        self.another_panel.SetSize(self.GetClientSizeTuple())
-        self.environment_panel.SetSize(self.GetClientSizeTuple())
-
     def on_save(self, event):
         """
         Save all settings in all panels
@@ -121,8 +109,6 @@ class SettingsCtrl(SettingsView):
         :return:
         """
         self.save_logging_variables()
-
-
 
         sPrint("Settings saved", MessageType.INFO)
         self.on_close(event)

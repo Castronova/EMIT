@@ -1,5 +1,6 @@
 import wx
 import wx.lib.scrolledpanel
+import sprint
 
 
 class SettingsView(wx.Frame):
@@ -145,18 +146,22 @@ class SettingsEnvironment(wx.Panel):
         save_directory_text = wx.StaticText(self, label="Save directory")
         database_path_text = wx.StaticText(self, label="Local database")
         gdal_text = wx.StaticText(self, label="GDAL")
+        connection_text = wx.StaticText(self, label="Connections")
         self.save_directory_textctrl = wx.TextCtrl(self)
         self.database_path_textctrl = wx.TextCtrl(self)
         self.gdal_path_textctrl = wx.TextCtrl(self)
+        self.connections_path_textctrl = wx.TextCtrl(self)
         self.save_path_button = wx.Button(self, label="Open")
         self.database_path_button = wx.Button(self, label="Open")
         self.gdal_path_button = wx.Button(self, label="Open")
+        self.connections_path_button = wx.Button(self, label="Open")
         # Must have so the file dialog buttons appear and the text fields stretch to fill
         empty_button = wx.Button(self, label="", style=wx.BORDER_NONE)
 
         # Style components
         header_font = wx.Font(pointSize=18, family=wx.DEFAULT, style=wx.NORMAL, weight=wx.NORMAL)
         header_text.SetFont(header_font)
+
 
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         static_box_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
@@ -169,21 +174,28 @@ class SettingsEnvironment(wx.Panel):
         row_sizer.Add(self.save_directory_textctrl, 1, wx.EXPAND | wx.ALL | wx.CENTER, 5)
         row_sizer.Add(self.save_path_button, 0, wx.ALL | wx.CENTER, 5)
         row_sizer.Add(empty_button, 0, wx.ALL | wx.CENTER, 5)
-        static_box_sizer.Add(row_sizer, 1, wx.EXPAND | wx.ALL, 5)
+        static_box_sizer.Add(row_sizer, 0, wx.EXPAND | wx.ALL, 5)
 
         row_sizer = wx.BoxSizer(wx.HORIZONTAL)
         row_sizer.Add(database_path_text, 0, wx.ALL | wx.CENTER, 5)
         row_sizer.Add(self.database_path_textctrl, 1, wx.EXPAND | wx.ALL | wx.CENTER, 5)
         row_sizer.Add(self.database_path_button, 0, wx.ALL | wx.CENTER, 5)
         row_sizer.Add(empty_button, 0, wx.ALL | wx.CENTER, 5)
-        static_box_sizer.Add(row_sizer, 1, wx.EXPAND | wx.ALL, 5)
+        static_box_sizer.Add(row_sizer, 0, wx.EXPAND | wx.ALL, 5)
+
+        row_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        row_sizer.Add(connection_text, 0, wx.ALL | wx.CENTER, 5)
+        row_sizer.Add(self.connections_path_textctrl, 1, wx.EXPAND | wx.ALL | wx.CENTER, 5)
+        row_sizer.Add(self.connections_path_button, 0, wx.ALL | wx.CENTER, 5)
+        row_sizer.Add(empty_button, 0, wx.ALL | wx.CENTER, 5)
+        static_box_sizer.Add(row_sizer, 0, wx.EXPAND | wx.ALL, 5)
 
         row_sizer = wx.BoxSizer(wx.HORIZONTAL)
         row_sizer.Add(gdal_text, 0, wx.ALL | wx.CENTER, 5)
         row_sizer.Add(self.gdal_path_textctrl, 1, wx.EXPAND | wx.ALL | wx.CENTER, 5)
         row_sizer.Add(self.gdal_path_button, 0, wx.ALL | wx.CENTER, 5)
         row_sizer.Add(empty_button, 0, wx.ALL | wx.CENTER, 5)
-        static_box_sizer.Add(row_sizer, 1, wx.EXPAND | wx.ALL, 5)
+        static_box_sizer.Add(row_sizer, 0, wx.EXPAND | wx.ALL, 5)
 
         main_sizer.Add(static_box_sizer, 0, wx.ALL | wx.EXPAND, 15)
 
@@ -193,6 +205,23 @@ class SettingsEnvironment(wx.Panel):
 
         self.SetSizer(main_sizer)
         main_sizer.Fit(self)
+
+    def load_app_paths(self):
+        if "APP_LOCAL_DB_PATH" in sprint.os.environ:
+            self.database_path_textctrl.SetValue(sprint.os.environ["APP_LOCAL_DB_PATH"])
+        if "GDAL_DATA" in sprint.os.environ:
+            self.gdal_path_textctrl.SetValue(sprint.os.environ["GDAL_DATA"])
+        if "APP_CONNECTIONS_PATH" in sprint.os.environ:
+            self.connections_path_textctrl.SetValue(sprint.os.environ["APP_CONNECTIONS_PATH"])
+
+             # os.environ['APP_IMAGES_PATH']
+    #     # os.environ['APP_SECRET']
+    #     # os.environ['APP_CONSOLE_SOCKET']
+    #     # os.environ['APP_CONNECTIONS_PATH']
+    #     # os.environ['APP_TOOLBOX_PATH']
+    #     # os.environ['APP_SETTINGS_PATH']
+    #     # os.environ['APP_USER_PATH']
+    #     # os.environ['APP_LOCAL_DB_PATH']
 
     def on_save_open(self, event):
         dialog = wx.FileDialog(self, message="Save Directory")

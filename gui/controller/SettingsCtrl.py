@@ -8,6 +8,7 @@ class SettingsCtrl(SettingsView):
         SettingsView.__init__(self, parent)
 
         self._set_console_message_checkboxes()
+        self.environment_panel.load_app_paths()
 
         self.console_button.Bind(wx.EVT_BUTTON, self.on_console)
         self.another_button.Bind(wx.EVT_BUTTON, self.on_another)

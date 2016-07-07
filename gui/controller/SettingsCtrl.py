@@ -22,9 +22,6 @@ class SettingsCtrl(SettingsView):
         # Disables all other windows in the application so that the user can only interact with this window.
         self.MakeModal(True)
 
-
-
-
     def get_logging_variables(self):
         items = []
         for v in os.environ.keys():
@@ -118,6 +115,7 @@ class SettingsCtrl(SettingsView):
         :return:
         """
         self.save_logging_variables()
+        self.environment_panel.save_app_paths()
 
         sPrint("Settings saved", MessageType.INFO)
         self.on_close(event)

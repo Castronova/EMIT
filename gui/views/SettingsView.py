@@ -1,6 +1,6 @@
 import wx
 import wx.lib.scrolledpanel
-import sprint
+from sprint import *
 
 
 class SettingsView(wx.Frame):
@@ -194,7 +194,6 @@ class SettingsEnvironment(wx.Panel):
         static_box_sizer.Add(row_sizer, 1, wx.EXPAND | wx.ALL, 5)
 
         main_sizer.Add(static_box_sizer, 0, wx.ALL | wx.EXPAND, 15)
-        static_box.SetSize((500, 500))
 
         self.save_path_button.Bind(wx.EVT_BUTTON, self.on_save_open)
         self.database_path_button.Bind(wx.EVT_BUTTON, self.on_database_open)
@@ -204,12 +203,15 @@ class SettingsEnvironment(wx.Panel):
         main_sizer.Fit(self)
 
     def load_app_paths(self):
-        if "APP_LOCAL_DB_PATH" in sprint.os.environ:
-            self.database_path_textctrl.SetValue(sprint.os.environ["APP_LOCAL_DB_PATH"])
-        if "GDAL_DATA" in sprint.os.environ:
-            self.gdal_path_textctrl.SetValue(sprint.os.environ["GDAL_DATA"])
-        if "APP_CONNECTIONS_PATH" in sprint.os.environ:
-            self.connections_path_textctrl.SetValue(sprint.os.environ["APP_CONNECTIONS_PATH"])
+        if "APP_LOCAL_DB_PATH" in os.environ:
+            self.database_path_textctrl.SetValue(os.environ["APP_LOCAL_DB_PATH"])
+        if "GDAL_DATA" in os.environ:
+            self.gdal_path_textctrl.SetValue(os.environ["GDAL_DATA"])
+        if "APP_CONNECTIONS_PATH" in os.environ:
+            self.connections_path_textctrl.SetValue(os.environ["APP_CONNECTIONS_PATH"])
+        if "APP_DEFAULT_SAVE_PATH" in os.environ:
+            self.save_directory_textctrl.SetValue(os.environ.get("APP_DEFAULT_SAVE_PATH"))
+
 
              # os.environ['APP_IMAGES_PATH']
     #     # os.environ['APP_SECRET']
@@ -237,3 +239,7 @@ class SettingsEnvironment(wx.Panel):
         if dialog.ShowModal() == wx.ID_OK:
             self.gdal_path_textctrl.SetValue(dialog.GetDirectory())
         dialog.Destroy()
+
+    def save_app_paths(self):
+        if os.path.exists(self.save_directory_textctrl.GetValue()):
+            environment.setEnvironmentVar("APP", "default_save_path", self.save_directory_textctrl.GetValue())

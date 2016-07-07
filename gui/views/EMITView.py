@@ -73,8 +73,6 @@ class EMITView(wx.Frame):
 
         self.Show()
 
-        self.defaultLoadDirectory = os.getcwd() + "/models/MyConfigurations/"
-
     def _init_sizers(self):
         self.s = wx.BoxSizer(wx.VERTICAL)
         self.s.AddWindow(self.pnlDocking, 85, flag=wx.ALL | wx.EXPAND)

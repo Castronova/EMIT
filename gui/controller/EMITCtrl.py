@@ -23,6 +23,11 @@ class EMITCtrl(EMITView):
         self.local_db_path = os.environ['APP_LOCAL_DB_PATH']
         self.loading_path = None
 
+        if "APP_DEFAULT_SAVE_PATH" in os.environ:
+            self.defaultLoadDirectory = os.environ["APP_DEFAULT_SAVE_PATH"]
+        else:
+            self.defaultLoadDirectory = os.getcwd() + "/models/MyConfigurations/"
+
         # load databases threaded
         t = threading.Thread(target=self.connect_to_databases, name='Connect_To_Databases', args=(connections_txt,))
         t.setDaemon(True)
@@ -200,7 +205,6 @@ class EMITCtrl(EMITView):
         self.m_mgr.Update()
 
     def on_load_configuration(self, event):
-
         file_dialog = wx.FileDialog(self, message="Load New File",
                                        defaultDir=self.defaultLoadDirectory,
                                        defaultFile="",
@@ -213,6 +217,8 @@ class EMITCtrl(EMITView):
         file_dialog.Destroy()
 
     def on_save_configuration_as(self, event):
+
+        print os.environ.get("APP_DEFAULT_SAVE_PATH")
         # Executes from File ->Save As
         save = wx.FileDialog(self.Canvas.GetTopLevelParent(), message="Save Configuration",
                              defaultDir=self.defaultLoadDirectory, defaultFile="",

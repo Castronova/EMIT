@@ -21,7 +21,10 @@ class SettingsView(wx.Frame):
         self.console_button = wx.Button(menu_panel, label="Console", size=(-1, 40), style=wx.BORDER_NONE)
         self.another_button = wx.Button(menu_panel, label="Another", size=(-1, 40), style=wx.BORDER_NONE)
         self.environment_button = wx.Button(menu_panel, label="Environment", size=(-1, 40), style=wx.BORDER_NONE)
-        self.console_button.SetForegroundColour(wx.LIGHT_GREY)
+        self.console_button.SetBackgroundColour((33, 117, 155))
+        self.another_button.SetBackgroundColour((33, 117, 155))
+        self.environment_button.SetBackgroundColour((33, 117, 155))
+        self.console_button.SetForegroundColour(wx.WHITE)
         self.another_button.SetForegroundColour(wx.LIGHT_GREY)
         self.environment_button.SetForegroundColour(wx.LIGHT_GREY)
 
@@ -147,7 +150,7 @@ class SettingsEnvironment(wx.Panel):
         database_path_text = wx.StaticText(self, label="Local database")
         gdal_text = wx.StaticText(self, label="GDAL")
         connection_text = wx.StaticText(self, label="Connections")
-        self.save_directory_textctrl = wx.TextCtrl(self)
+        self.save_directory_textctrl = wx.TextCtrl(self, size=(200, -1))
         self.database_path_textctrl = wx.TextCtrl(self)
         self.gdal_path_textctrl = wx.TextCtrl(self)
         self.connections_path_textctrl = wx.TextCtrl(self)
@@ -155,13 +158,10 @@ class SettingsEnvironment(wx.Panel):
         self.database_path_button = wx.Button(self, label="Open")
         self.gdal_path_button = wx.Button(self, label="Open")
         self.connections_path_button = wx.Button(self, label="Open")
-        # Must have so the file dialog buttons appear and the text fields stretch to fill
-        empty_button = wx.Button(self, label="", style=wx.BORDER_NONE)
 
         # Style components
         header_font = wx.Font(pointSize=18, family=wx.DEFAULT, style=wx.NORMAL, weight=wx.NORMAL)
         header_text.SetFont(header_font)
-
 
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         static_box_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
@@ -173,31 +173,28 @@ class SettingsEnvironment(wx.Panel):
         row_sizer.Add(save_directory_text, 0, wx.ALL | wx.CENTER, 5)
         row_sizer.Add(self.save_directory_textctrl, 1, wx.EXPAND | wx.ALL | wx.CENTER, 5)
         row_sizer.Add(self.save_path_button, 0, wx.ALL | wx.CENTER, 5)
-        row_sizer.Add(empty_button, 0, wx.ALL | wx.CENTER, 5)
-        static_box_sizer.Add(row_sizer, 0, wx.EXPAND | wx.ALL, 5)
+        static_box_sizer.Add(row_sizer, 1, wx.EXPAND | wx.ALL, 5)
 
         row_sizer = wx.BoxSizer(wx.HORIZONTAL)
         row_sizer.Add(database_path_text, 0, wx.ALL | wx.CENTER, 5)
         row_sizer.Add(self.database_path_textctrl, 1, wx.EXPAND | wx.ALL | wx.CENTER, 5)
         row_sizer.Add(self.database_path_button, 0, wx.ALL | wx.CENTER, 5)
-        row_sizer.Add(empty_button, 0, wx.ALL | wx.CENTER, 5)
-        static_box_sizer.Add(row_sizer, 0, wx.EXPAND | wx.ALL, 5)
+        static_box_sizer.Add(row_sizer, 1, wx.EXPAND | wx.ALL, 5)
 
         row_sizer = wx.BoxSizer(wx.HORIZONTAL)
         row_sizer.Add(connection_text, 0, wx.ALL | wx.CENTER, 5)
         row_sizer.Add(self.connections_path_textctrl, 1, wx.EXPAND | wx.ALL | wx.CENTER, 5)
         row_sizer.Add(self.connections_path_button, 0, wx.ALL | wx.CENTER, 5)
-        row_sizer.Add(empty_button, 0, wx.ALL | wx.CENTER, 5)
-        static_box_sizer.Add(row_sizer, 0, wx.EXPAND | wx.ALL, 5)
+        static_box_sizer.Add(row_sizer, 1, wx.EXPAND | wx.ALL, 5)
 
         row_sizer = wx.BoxSizer(wx.HORIZONTAL)
         row_sizer.Add(gdal_text, 0, wx.ALL | wx.CENTER, 5)
         row_sizer.Add(self.gdal_path_textctrl, 1, wx.EXPAND | wx.ALL | wx.CENTER, 5)
         row_sizer.Add(self.gdal_path_button, 0, wx.ALL | wx.CENTER, 5)
-        row_sizer.Add(empty_button, 0, wx.ALL | wx.CENTER, 5)
-        static_box_sizer.Add(row_sizer, 0, wx.EXPAND | wx.ALL, 5)
+        static_box_sizer.Add(row_sizer, 1, wx.EXPAND | wx.ALL, 5)
 
         main_sizer.Add(static_box_sizer, 0, wx.ALL | wx.EXPAND, 15)
+        static_box.SetSize((500, 500))
 
         self.save_path_button.Bind(wx.EVT_BUTTON, self.on_save_open)
         self.database_path_button.Bind(wx.EVT_BUTTON, self.on_database_open)

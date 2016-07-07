@@ -9,6 +9,7 @@ class SettingsCtrl(SettingsView):
 
         self._set_console_message_checkboxes()
         self.environment_panel.load_app_paths()
+        self.SetSize((550, 400))
 
         self.console_button.Bind(wx.EVT_BUTTON, self.on_console)
         self.another_button.Bind(wx.EVT_BUTTON, self.on_another)
@@ -16,11 +17,13 @@ class SettingsCtrl(SettingsView):
         self.save_button.Bind(wx.EVT_BUTTON, self.on_save)
         self.cancel_button.Bind(wx.EVT_BUTTON, self.on_close)
         self.Bind(wx.EVT_CLOSE, self.on_close)
-
-        self.SetSize((550, 400))
+        self.Bind(wx.EVT_SIZE, self.on_resize)
 
         # Disables all other windows in the application so that the user can only interact with this window.
         self.MakeModal(True)
+
+
+
 
     def get_logging_variables(self):
         items = []
@@ -101,6 +104,12 @@ class SettingsCtrl(SettingsView):
         self.another_panel.Hide()
         self.environment_panel.Show()
         self.main_sizer.Layout()
+
+    def on_resize(self, event):
+        event.Skip()
+        self.console_panel.SetSize(self.details_panel.GetSize())
+        self.another_panel.SetSize(self.details_panel.GetSize())
+        self.environment_panel.SetSize(self.details_panel.GetSize())
 
     def on_save(self, event):
         """

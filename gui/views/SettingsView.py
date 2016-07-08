@@ -154,10 +154,10 @@ class SettingsEnvironment(wx.Panel):
         self.database_path_textctrl = wx.TextCtrl(self)
         self.gdal_path_textctrl = wx.TextCtrl(self)
         self.connections_path_textctrl = wx.TextCtrl(self)
-        self.save_path_button = wx.Button(self, label="Open")
-        self.database_path_button = wx.Button(self, label="Open")
-        self.gdal_path_button = wx.Button(self, label="Open")
-        self.connections_path_button = wx.Button(self, label="Open")
+        self.save_path_button = wx.Button(self, label="Change")
+        self.database_path_button = wx.Button(self, label="Change")
+        self.gdal_path_button = wx.Button(self, label="Change")
+        self.connections_path_button = wx.Button(self, label="Change")
 
         # Style components
         header_font = wx.Font(pointSize=18, family=wx.DEFAULT, style=wx.NORMAL, weight=wx.NORMAL)
@@ -211,16 +211,6 @@ class SettingsEnvironment(wx.Panel):
             self.connections_path_textctrl.SetValue(os.environ["APP_CONNECTIONS_PATH"])
         if "APP_DEFAULT_SAVE_PATH" in os.environ:
             self.save_directory_textctrl.SetValue(os.environ.get("APP_DEFAULT_SAVE_PATH"))
-
-
-             # os.environ['APP_IMAGES_PATH']
-    #     # os.environ['APP_SECRET']
-    #     # os.environ['APP_CONSOLE_SOCKET']
-    #     # os.environ['APP_CONNECTIONS_PATH']
-    #     # os.environ['APP_TOOLBOX_PATH']
-    #     # os.environ['APP_SETTINGS_PATH']
-    #     # os.environ['APP_USER_PATH']
-    #     # os.environ['APP_LOCAL_DB_PATH']
 
     def on_save_open(self, event):
         dialog = wx.FileDialog(self, message="Save Directory")

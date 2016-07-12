@@ -17,6 +17,9 @@ class WofSitesCtrl(TimeSeriesPlotView):
         table_cols = ["Variable Name", "Unit", "Category", "Type", "Begin Date Time", "End Date Time", "Description"]
         TimeSeriesPlotView.__init__(self, parent, siteObject.site_name, table_cols)
         self.site_objects = siteObject
+
+        self.line_style_combo.SetSelection(1)
+
         self.Bind(wx.EVT_BUTTON, self.onPreview, self.PlotBtn)
         self.Bind(wx.EVT_DATE_CHANGED, self.setStartDate, self.startDatePicker)
         self.Bind(wx.EVT_DATE_CHANGED, self.setEndDate, self.endDatePicker)
@@ -24,7 +27,7 @@ class WofSitesCtrl(TimeSeriesPlotView):
         self.Bind(wx.EVT_BUTTON, self.addToCanvas, self.addToCanvasBtn)
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.enableBtns)
         self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.disableBtns)
-        self.line_style_checkbox.Bind(wx.EVT_CHECKBOX, self.on_line_style)
+        self.line_style_combo.Bind(wx.EVT_COMBOBOX, self.on_line_style)
         self.disableBtns(None)
         self.done_querying = True
 
@@ -41,13 +44,13 @@ class WofSitesCtrl(TimeSeriesPlotView):
             self.PlotBtn.Enable()
             self.exportBtn.Enable()
             self.addToCanvasBtn.Enable()
-            self.line_style_checkbox.Enable()
+            self.line_style_combo.Enable()
 
     def disableBtns(self, event):
         self.PlotBtn.Disable()
         self.exportBtn.Disable()
         self.addToCanvasBtn.Disable()
-        self.line_style_checkbox.Disable()
+        self.line_style_combo.Disable()
 
     def setEndDate(self, event):
         self.end_date = self.endDatePicker.GetValue()
@@ -236,7 +239,7 @@ class WofSitesCtrl(TimeSeriesPlotView):
     def updatePlotData(self):
         self.updateStatusBar("Querying ...")
 
-        self.line_style_checkbox.SetValue(False)  # Uncheck when replotting
+        self.line_style_combo.SetSelection(1)  # Default line style is scatter
         self.threadStatusBarLoading()
 
         # get selected variables
@@ -371,7 +374,7 @@ class WofSitesCtrl(TimeSeriesPlotView):
         if not len(self.plot.plots):
             return  # Nothing is plotted
 
-        if event.IsChecked():
+        if event.GetSelection() == 0:
             for plot in self.plot.plots:
                 plot.set_linestyle('-')
         else:

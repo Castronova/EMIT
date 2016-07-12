@@ -16,7 +16,7 @@ class TimeSeriesPlotView(wx.Frame):
 
         panel = wx.Panel(self)
         toppanel = wx.Panel(panel)
-        middlepanel = wx.Panel(panel, size=(-1, 35))
+        middlepanel = wx.Panel(panel, size=(-1, 30))
         lowerpanel = wx.Panel(panel)
 
         hboxTopPanel = wx.BoxSizer(wx.HORIZONTAL)
@@ -35,7 +35,11 @@ class TimeSeriesPlotView(wx.Frame):
         self.exportBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Export")
         self.addToCanvasBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Add to Canvas")
         self.PlotBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Preview")
-        self.line_style_checkbox = wx.CheckBox(middlepanel, label="Line Graph")
+        self.line_style_combo = wx.ComboBox(middlepanel, value="Line style")
+
+        self.line_style_options = ["Line", "Scatter"]
+
+        self.line_style_combo.AppendItems(self.line_style_options)
 
         hboxMidPanel.Add(self.startDateText, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
         hboxMidPanel.Add(self.startDatePicker, 1, wx.EXPAND | wx.ALL, 2)
@@ -44,7 +48,7 @@ class TimeSeriesPlotView(wx.Frame):
         hboxMidPanel.Add(self.PlotBtn, 1, wx.EXPAND | wx.ALL, 2)
         hboxMidPanel.Add(self.exportBtn, 1, wx.EXPAND | wx.ALL, 2)
         hboxMidPanel.Add(self.addToCanvasBtn, 1, wx.EXPAND | wx.ALL, 2)
-        hboxMidPanel.Add(self.line_style_checkbox, 1, wx.EXPAND | wx.ALL, 2)
+        hboxMidPanel.Add(self.line_style_combo, 1, wx.EXPAND | wx.ALL, 2)
         middlepanel.SetSizer(hboxMidPanel)
 
         hboxLowPanel = wx.BoxSizer(wx.HORIZONTAL)

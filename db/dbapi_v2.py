@@ -255,17 +255,20 @@ class sqlite():
             srs = e.srs()
             refcode = "%s:%s" %(srs.GetAttrValue("AUTHORITY", 0),
                                 srs.GetAttrValue("AUTHORITY", 1))
-            spatialref = self.read.getSpatialReference(srsCodes=[refcode])
+            spatialref = self.read.getSpatialReferences(srsCodes=[refcode])
             if not spatialref:
-                sr = models.SpatialReferences()
-                sr.SRSCode = refcode
-                sr.SRSName = srs.GetAttrValue("GEOGCS", 0)
-                sr.SRSDescription = "%s|%s|%s" % \
-                                    (srs.GetAttrValue("PROJCS", 0),
-                                     srs.GetAttrValue("GEOGCS", 0),
-                                     srs.GetAttrValue("DATUM", 0))
-                self.write.createSpatialReference(sr)
-                spatialref = self.read.getSpatialReference(srsCodes=[refcode])
+                if srs == "":
+                    sr = models.SpatialReferences()
+                    sr.SRSCode = refcode
+                    sr.SRSName = srs.GetAttrValue("GEOGCS", 0)
+                    sr.SRSDescription = "%s|%s|%s" % \
+                                        (srs.GetAttrValue("PROJCS", 0),
+                                         srs.GetAttrValue("GEOGCS", 0),
+                                         srs.GetAttrValue("DATUM", 0))
+                    self.write.createSpatialReference(sr)
+                    spatialref = self.read.getSpatialReferences(srsCodes=[refcode])
+                else:
+                    sPrint("Could not set spatial reference. Make sure GDAL_DATA path is set in system", MessageType.WARNING)
 
 
             # todo: insert sampling features bulk

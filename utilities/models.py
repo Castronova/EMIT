@@ -126,6 +126,32 @@ def validate_json_model(data):
 
     return 1
 
+
+def convert_datetime_json_serial(data):
+    """
+    A Recursive function that loops through the entire data and converts and datetime.datetime to strings
+    Its recursive so it can handle any size of dictionary or any number of nested dictionary
+    :param data: type(dict(dict))
+    :return: data with any datetime.datetime in strings
+    """
+
+    # Base case
+    if not isinstance(data, dict):
+        return
+
+    for key, value in data.items():
+        if isinstance(value, datetime.datetime):
+            data[key] = value.isoformat()
+        elif isinstance(value, dict):
+            data[key] = convert_datetime_json_serial(value)
+
+    return data
+
+
+def save_netcdf_json(model_data, canvas_object, links, path):
+    data = convert_datetime_json_serial(model_data)
+    return data
+
 def write_simulation_json(models, canvas_shapes, links, path):
 
     json_models = []
@@ -134,36 +160,44 @@ def write_simulation_json(models, canvas_shapes, links, path):
 
         model = models[i]
 
-        # parse the original parameters to identify model inputs
-        params = parse_json(model['params']['path'])
-
-        # model input properties
-        model_inputs = dict()
-        if 'model_inputs' in params:
-            for input in params['model_inputs']:
-                # get the variable name
-                var = input['variable']
-
-                # get the variable value from the model
-                model_inputs[var] = model['params'][var]
-
-        # set the model type to mdl if mdl path is present
-        if 'path' in model['params']:
-            model_type = 'MDL'
+        if "type" not in model:
+            sPrint("model does not have type as key. Model should have 'type' as key. Incorrect format", MessageType.DEBUG)
+            return
+        if model["type"] == "NETCDF":
+            json_models.append(save_netcdf_json(model, canvas_shapes, links, path))
         else:
-            model_type = model['type']
 
-        # canvas object properties
-        bbox = canvas_shapes[i].BoundingBox
-        model_properties= dict(xcoordinate=str((bbox[0][0] + bbox[1][0]) / 2),
-                               ycoordinate=str((bbox[0][1] + bbox[1][1]) / 2),
-                               name=model['name'],
-                               id=model['id'],
-                               model_inputs=model_inputs,
-                               path=model['params']['path'],
-                               model_type=model_type
-                               )
-        json_models.append(model_properties)
+
+            # parse the original parameters to identify model inputs
+            params = parse_json(model['params']['path'])
+
+            # model input properties
+            model_inputs = dict()
+            if 'model_inputs' in params:
+                for input in params['model_inputs']:
+                    # get the variable name
+                    var = input['variable']
+
+                    # get the variable value from the model
+                    model_inputs[var] = model['params'][var]
+
+            # set the model type to mdl if mdl path is present
+            if 'path' in model['params']:
+                model_type = 'MDL'
+            else:
+                model_type = model['type']
+
+            # canvas object properties
+            bbox = canvas_shapes[i].BoundingBox
+            model_properties = dict(xcoordinate=str((bbox[0][0] + bbox[1][0]) / 2),
+                                   ycoordinate=str((bbox[0][1] + bbox[1][1]) / 2),
+                                   name=model['name'],
+                                   id=model['id'],
+                                   model_inputs=model_inputs,
+                                   path=model['params']['path'],
+                                   model_type=model_type
+                                   )
+            json_models.append(model_properties)
 
     for link in links:
         link = dict(from_name=link['source_component_name'],
@@ -189,50 +223,3 @@ def write_simulation_json(models, canvas_shapes, links, path):
 
     elog.info('Configuration saved: ', path)
     sPrint('Configuration was saved successfully: ' + str(path))
-
-        #     # save db id if the model depends on one
-        #     if 'databaseid' in model['attrib']:
-        #         if model['attrib']['databaseid'] not in db_ids:
-        #             db_ids.append(model['attrib']['databaseid'])
-
-
-        # save required databases
-        # for db_id in db_ids:
-        #     attributes = {}
-        #
-        #     connections = engine.getDbConnections()
-        #
-        #     db_conn = connections[db_id]['args']
-        #
-        #     if db_conn:
-        #         attributes['name'] = db_conn['name']
-        #         attributes['address'] = db_conn['address']
-        #         attributes['pwd'] = db_conn['pwd']
-        #         attributes['desc'] = db_conn['desc']
-        #         attributes['engine'] = db_conn['engine']
-        #         attributes['db'] = db_conn['db']
-        #         attributes['user'] = db_conn['user']
-        #         attributes['databaseid'] = db_conn['id']
-        #         attributes['connection_string'] = str(db_conn['connection_string'])
-        #         connectionelement = et.SubElement(tree, 'DbConnection')
-        #
-        #         connectionnameelement = et.SubElement(connectionelement, "name")
-        #         connectionnameelement.text = attributes['name']
-        #         connectionaddresselement = et.SubElement(connectionelement, "address")
-        #         connectionaddresselement.text = attributes['address']
-        #         connectionpwdelement = et.SubElement(connectionelement, "pwd")
-        #         connectionpwdelement.text = attributes['pwd']
-        #         connectiondescelement = et.SubElement(connectionelement, "desc")
-        #         connectiondescelement.text = attributes['desc']
-        #         connectionengineelement = et.SubElement(connectionelement, "engine")
-        #         connectionengineelement.text = attributes['engine']
-        #         connectiondbelement = et.SubElement(connectionelement, "db")
-        #         connectiondbelement.text = attributes['db']
-        #         connectionuserelement = et.SubElement(connectionelement, "user")
-        #         connectionuserelement.text = attributes['user']
-        #         connectiondatabaseidelement = et.SubElement(connectionelement, "databaseid")
-        #         connectiondatabaseidelement.text = attributes['databaseid']
-        #         connectionconnectionstringelement = et.SubElement(connectionelement, "connection_string")
-        #         connectionconnectionstringelement.text = attributes['connection_string']
-
-

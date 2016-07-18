@@ -4,7 +4,7 @@ import uuid
 import wx
 import wx.grid as gridlib
 import wx.lib.newevent as ne
-
+from sprint import *
 import coordinator.engineAccessors as engine
 from emitLogging import elog
 from gui.views.LinkView import LinkView
@@ -206,13 +206,8 @@ class LinkCtrl(LinkView):
             self.output_grid.SetCellValue(5, 1, o['unit'].UnitTypeCV())
             self.output_grid.SetCellValue(6, 1, o['unit'].UnitAbbreviation())
         else:
-            self.output_grid.SetCellValue(1, 1, "")
-            self.output_grid.SetCellValue(2, 1, "")
             self.odesc = ""
-
-            self.output_grid.SetCellValue(4, 1, "")
-            self.output_grid.SetCellValue(5, 1, "")
-            self.output_grid.SetCellValue(6, 1, "")
+            self.reset_grid(self.output_grid)
 
     def populate_input_metadata(self, l):
 
@@ -229,13 +224,20 @@ class LinkCtrl(LinkView):
             self.input_grid.SetCellValue(5, 1, i['unit'].UnitTypeCV())
             self.input_grid.SetCellValue(6, 1, i['unit'].UnitAbbreviation())
         else:
-            self.input_grid.SetCellValue(1, 1, "")
-            self.input_grid.SetCellValue(2, 1, "")
             self.idesc = ""
+            self.reset_grid(self.input_grid)
 
-            self.input_grid.SetCellValue(4, 1, "")
-            self.input_grid.SetCellValue(5, 1, "")
-            self.input_grid.SetCellValue(6, 1, "")
+    def reset_grid(self, grid):
+        if not isinstance(grid, wx.grid.Grid):
+            sPrint("grid must be type wx.grid.Grid", MessageType.DEBUG)
+            return
+
+        grid.SetCellValue(1, 1, "")
+        grid.SetCellValue(2, 1, "")
+
+        grid.SetCellValue(4, 1, "")
+        grid.SetCellValue(5, 1, "")
+        grid.SetCellValue(6, 1, "")
 
     def refresh_link_name_box(self):
 

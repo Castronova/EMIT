@@ -4,7 +4,7 @@ import wx
 import wrappers
 from coordinator import engineAccessors as engine
 from gui.views.NetcdfDetailsView import NetcdfDetailsView
-
+from gui.controller.CanvasCtrl import CanvasCtrl
 
 class NetcdfDetailsCtrl(NetcdfDetailsView):
 
@@ -22,7 +22,7 @@ class NetcdfDetailsCtrl(NetcdfDetailsView):
             self.y_spatial_var_combo.AppendItems(self.variables)
             self.time_var_combo.AppendItems(self.variables)
         self.time_step_combo.AppendItems(['seconds', 'minutes', 'hours', 'days', 'years'])
-        self.Bind(wx.EVT_BUTTON, self.addToCanvasBTn, self.add_to_canvas_btn)
+        self.Bind(wx.EVT_BUTTON, self.on_add_to_canvas_button, self.add_to_canvas_btn)
         #
         self.time_step_combo.Bind(wx.EVT_COMBOBOX, self.checkComboBoxSelections)
         self.x_spatial_var_combo.Bind(wx.EVT_COMBOBOX, self.checkComboBoxSelections)
@@ -30,46 +30,7 @@ class NetcdfDetailsCtrl(NetcdfDetailsView):
         self.time_var_combo.Bind(wx.EVT_COMBOBOX, self.checkComboBoxSelections)
         self.SetSize((-1, 565))
 
-    def checkComboBoxSelections(self, event):
-        """
-        enable/disable the add_to_canvas button based on the values of the combo boxes
-        :return: None
-        """
-        if self.x_spatial_var_combo.Selection >= 0 and \
-           self.y_spatial_var_combo.Selection >= 0 and \
-           self.time_var_combo.Selection >= 0 and \
-           self.time_step_combo.Selection >= 0:
-            self.add_to_canvas_btn.Enable()
-            return
-        self.add_to_canvas_btn.Disable()
 
-    def addToCanvasBTn(self, event):
-        '''
-        adds the netcdf resource to the canvas
-        :param event:
-        :return:
-        '''
-
-        x = self.x_spatial_var_combo.GetStringSelection()
-        y = self.y_spatial_var_combo.GetStringSelection()
-        t = self.time_var_combo.GetStringSelection()
-        time_unit = self.time_step_combo.GetStringSelection()
-        st = dt.datetime.strptime('%s'% (self.startDatePicker.GetValue(
-        ).FormatISODate()), "%Y-%m-%d")
-
-        args = dict(ncpath=self.fileurl,
-                    tdim=t,
-                    xdim=x,
-                    ydim=y,
-                    tunit=time_unit,
-                    starttime=st,
-                    model_type=wrappers.Types.NETCDF
-                    )
-
-        engine.addModel(**args)
-
-        # close the window
-        self.Close()
 
     def populate_grid(self):
         self.ds = nc.Dataset(self.fileurl)
@@ -91,3 +52,39 @@ class NetcdfDetailsCtrl(NetcdfDetailsView):
             section += 1
             for k, v in value.__dict__.iteritems():
                 self.property_grid.add_data_to_section(section, k, v)
+
+    ##############################
+    # EVENTS
+    ##############################
+
+    def on_add_to_canvas_button(self, event):
+        '''
+        adds the netcdf resource to the canvas
+        :param event:
+        :return:
+        '''
+
+        x = self.x_spatial_var_combo.GetStringSelection()
+        y = self.y_spatial_var_combo.GetStringSelection()
+        t = self.time_var_combo.GetStringSelection()
+        time_unit = self.time_step_combo.GetStringSelection()
+        st = dt.datetime.strptime('%s' % (self.startDatePicker.GetValue(
+        ).FormatISODate()), "%Y-%m-%d")
+
+        CanvasCtrl.add_netcdf_model(self.fileurl, t, x, y, time_unit, st)
+
+        # close the window
+        self.Close()
+
+    def checkComboBoxSelections(self, event):
+        """
+        enable/disable the add_to_canvas button based on the values of the combo boxes
+        :return: None
+        """
+        if self.x_spatial_var_combo.Selection >= 0 and \
+                        self.y_spatial_var_combo.Selection >= 0 and \
+                        self.time_var_combo.Selection >= 0 and \
+                        self.time_step_combo.Selection >= 0:
+            self.add_to_canvas_btn.Enable()
+            return
+        self.add_to_canvas_btn.Disable()

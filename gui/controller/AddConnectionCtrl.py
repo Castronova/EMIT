@@ -5,7 +5,6 @@ from emitLogging import elog
 from gui.views.AddConnectionView import AddConnectionView
 import os
 from webservice import wateroneflow
-import ConfigParser
 import json
 from sprint import *
 
@@ -111,6 +110,12 @@ class AddConnectionCtrl(AddConnectionView):
         params = self.get_connection_params()
         current_directory = os.path.dirname(os.path.abspath(__file__))  # rename to current_directory
         wof_path = os.path.abspath(os.path.join(current_directory, '../../data/wofsites.json'))
+
+        # Validate the information provided creates a connection
+        api = wateroneflow.WaterOneFlow(params["address"], params["database"])
+        if not api.conn:
+            sPrint("Failed to establish connection. Review provided information")
+            return
 
         with open(wof_path, "r") as f:
             try:

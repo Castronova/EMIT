@@ -10,9 +10,5 @@
     "Red Butte Creek": {
         "network": "iutah",
         "wsdl": "http://data.iutahepscor.org/RedButteCreekWOF/cuahsi_1_1.asmx?WSDL"
-    },
-    "asdf": {
-        "network": "asdf",
-        "wsdl": "asdf"
     }
 }

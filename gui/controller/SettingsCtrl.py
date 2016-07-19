@@ -117,5 +117,5 @@ class SettingsCtrl(SettingsView):
         self.save_logging_variables()
         self.environment_panel.save_app_paths()
 
-        sPrint("Settings saved", MessageType.INFO)
+        sPrint("Settings saved. Restart application for the settings to take effect", MessageType.INFO)
         self.on_close(event)

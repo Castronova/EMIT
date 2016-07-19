@@ -233,3 +233,12 @@ class SettingsEnvironment(wx.Panel):
     def save_app_paths(self):
         if os.path.exists(self.save_directory_textctrl.GetValue()):
             environment.setEnvironmentVar("APP", "default_save_path", self.save_directory_textctrl.GetValue())
+        else:
+            sPrint("Save directory path does not exist", MessageType.WARNING)
+
+        if os.path.exists(self.gdal_path_textctrl.GetValue()):
+            environment.setEnvironmentVar("GDAL", "data", self.gdal_path_textctrl.GetValue())
+        else:
+            sPrint("GDAL path does not exist", MessageType.WARNING)
+
+

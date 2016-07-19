@@ -27,10 +27,7 @@ class TimeSeriesCtrl(TimeSeriesView):
         self.popup_menu = wx.Menu()
         view_menu = self.popup_menu.Append(1, "View")
 
-        # Add the wof sites to the connection combo option
-        self.wof_names = self.get_wof_connection_names()
-        for key, value in self.wof_names.iteritems():
-            self.append_to_connection_combo(key)
+        self.load_connection_combo()
 
         self.table.alternate_row_color()
         self.connection_combo.Bind(wx.EVT_CHOICE, self.on_connection_combo)
@@ -70,8 +67,8 @@ class TimeSeriesCtrl(TimeSeriesView):
 
     @staticmethod
     def get_wof_connection_names():
-        currentdir = os.path.dirname(os.path.abspath(__file__))
-        wof_json = os.path.abspath(os.path.join(currentdir, '../../data/wofsites.json'))
+        current_directory = os.path.dirname(os.path.abspath(__file__))
+        wof_json = os.path.abspath(os.path.join(current_directory, '../../data/wofsites.json'))
         with open(wof_json, "r") as f:
             try:
                 data = json.load(f)
@@ -81,6 +78,11 @@ class TimeSeriesCtrl(TimeSeriesView):
         return data
 
     def load_connection_combo(self):
+        # Add the wof sites to the connection combo option
+        self.wof_names = self.get_wof_connection_names()
+        for key, value in self.wof_names.iteritems():
+            self.append_to_connection_combo(key)
+
         connections = engineAccessors.getDbConnections()
         for key, value in connections.iteritems():
             self.append_to_connection_combo(connections[key]["name"])
@@ -205,7 +207,7 @@ class TimeSeriesCtrl(TimeSeriesView):
         """
         self.load_connection_combo()
         selection = self.connection_combo.GetStringSelection()
-        if selection != "---":
+        if selection != "---" and selection != "":
             if selection in self.wof_names:
                 self._load_wof(selection)
                 return

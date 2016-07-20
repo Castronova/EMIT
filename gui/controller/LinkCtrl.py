@@ -63,12 +63,6 @@ class LinkCtrl(LinkView):
 
         self.Bind(wx.EVT_SIZE, self.frame_resizing)
 
-    # def activate_swap(self):
-    #     if self.swap:
-    #         self.swap_button.Enable()
-    #     else:
-    #         self.swap_button.Disable()
-
     def activate_controls(self, activate=True):
         if activate:
             self.save_button.Enable()
@@ -77,7 +71,7 @@ class LinkCtrl(LinkView):
             self.input_combo.Enable()
             self.output_combo.Enable()
             self.plot_button.Enable()
-            # self.activate_swap()
+            self.swap_button.Enable()
         else:
             self.save_button.Disable()
             self.spatial_combo.Disable()
@@ -149,8 +143,8 @@ class LinkCtrl(LinkView):
         return link_id
 
     def on_start_up(self, component1, component2):
-        self.input_combo.SetItems(['---'] + self.input_combo_choices())
-        self.output_combo.SetItems(['---'] + self.output_combo_choices())
+        self.input_combo.SetItems(self.get_exchange_item_from_engine(self.input_component, "INPUT"))
+        self.output_combo.SetItems(self.get_exchange_item_from_engine(self.output_component, "OUTPUT"))
 
         links = []
         x = engine.getLinksBtwnModels(component1['id'], component2['id'])
@@ -185,12 +179,6 @@ class LinkCtrl(LinkView):
             self.activate_controls(False)
 
     def populate_output_metadata(self, link_info_object):
-
-        # self.input_combo.SetItems(['---'] + self.input_combo_choices())
-        # self.output_combo.SetItems(['---'] + self.output_combo_choices())
-        # self.input_combo.SetSelection(0)
-        # self.output_combo.SetSelection(0)
-        # get the link object
         outputs = link_info_object.output_metadata
         if link_info_object.oei in outputs:
             o = outputs[link_info_object.oei]
@@ -347,11 +335,13 @@ class LinkCtrl(LinkView):
             #  Setting the labels that indicate which metadata is input and output
             self.input_label.SetLabel("Input of: " + str(self.get_input_model_text()))
             self.output_label.SetLabel("Output of: " + str(self.get_output_model_text()))
-            #
-            # self.input_combo.SetItems(['---'] + self.input_combo_choices())
-            # self.output_combo.SetItems(['---'] + self.output_combo_choices())
-            # self.input_combo.SetSelection(0)
-            # self.output_combo.SetSelection(0)
+
+            if self.get_input_model_text() == self.input_component["name"]:
+                self.input_combo.SetItems(self.get_exchange_item_from_engine(self.input_component, "INPUT"))
+                self.output_combo.SetItems(self.get_exchange_item_from_engine(self.output_component, "OUTPUT"))
+            else:
+                self.input_combo.SetItems(self.get_exchange_item_from_engine(self.output_component, "INPUT"))
+                self.output_combo.SetItems(self.get_exchange_item_from_engine(self.input_component, "OUTPUT"))
 
         else:
             # deactivate controls if nothing is selected
@@ -576,12 +566,30 @@ class LinkCtrl(LinkView):
         self.__link_source_id = self.output_component['id']
         self.__link_target_id = self.input_component['id']
 
-        self.input_combo.SetItems(['---'] + self.input_combo_choices())
-        self.output_combo.SetItems(['---'] + self.output_combo_choices())
+        self.input_combo.SetItems(self.get_exchange_item_from_engine(self.input_component, "INPUT"))
+        self.output_combo.SetItems(self.get_exchange_item_from_engine(self.output_component, "OUTPUT"))
         self.input_combo.SetSelection(0)
         self.output_combo.SetSelection(0)
 
         self.on_new_button(1)
+
+    def get_exchange_item_from_engine(self, component, type):
+        if not isinstance(component, dict):
+            sPrint("component needs to be type dict")
+            return
+
+        if "id" not in component:
+            sPrint("Component must have 'id' as key")
+            return
+
+        if not isinstance(type, str):
+            sPrint("'type' and equal to INPUT or OUTPUT")
+            return
+
+        items = engine.getExchangeItems(component["id"], type)
+        if items is not None:
+            return ["---"] + [item["name"] for item in items]
+        return ["---"]
 
 
 class LinkInfo:

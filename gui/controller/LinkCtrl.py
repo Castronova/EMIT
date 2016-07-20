@@ -17,15 +17,11 @@ class LinkCtrl(LinkView):
     odesc = ""
     idesc = ""
 
-    def __init__(self, parent, outputs, inputs, link_obj=None, swap=False):
+    def __init__(self, parent, outputs, inputs, link_obj=None):
         LinkView.__init__(self, parent, outputs, inputs)
 
         # link_obj must be a CanvasObjectsCtrl.SmoothLineWithArrow object
         self.link_obj = link_obj
-
-        # self.l = None
-        self.swap = swap
-        self.swap_was_clicked = False
 
         # save parent (used in onplot)
         self.parent = parent
@@ -39,7 +35,6 @@ class LinkCtrl(LinkView):
         self.__link_source_id = self.output_component['id']
         self.__link_target_id = self.input_component['id']
         self.__links = collections.OrderedDict()
-        self.link_obj_hit = False
 
         self.on_start_up(self.output_component, self.input_component)
 
@@ -49,9 +44,7 @@ class LinkCtrl(LinkView):
 
     def InitBindings(self):
         self.link_name_list_box.Bind(wx.EVT_LISTBOX, self.on_change)
-        self.link_name_list_box.Bind(wx.EVT_LEFT_UP, self.on_left_up)
 
-        self.new_button.Bind(wx.EVT_BUTTON, self.on_save)
         self.new_button.Bind(wx.EVT_BUTTON, self.on_new_button)
         self.delete_button.Bind(wx.EVT_BUTTON, self.on_delete)
         self.swap_button.Bind(wx.EVT_BUTTON, self.on_swap)
@@ -70,11 +63,11 @@ class LinkCtrl(LinkView):
 
         self.Bind(wx.EVT_SIZE, self.frame_resizing)
 
-    def activate_swap(self):
-        if self.swap:
-            self.swap_button.Enable()
-        else:
-            self.swap_button.Disable()
+    # def activate_swap(self):
+    #     if self.swap:
+    #         self.swap_button.Enable()
+    #     else:
+    #         self.swap_button.Disable()
 
     def activate_controls(self, activate=True):
         if activate:
@@ -84,7 +77,7 @@ class LinkCtrl(LinkView):
             self.input_combo.Enable()
             self.output_combo.Enable()
             self.plot_button.Enable()
-            self.activate_swap()
+            # self.activate_swap()
         else:
             self.save_button.Disable()
             self.spatial_combo.Disable()
@@ -191,12 +184,16 @@ class LinkCtrl(LinkView):
             # if no links are found, need to deactivate controls
             self.activate_controls(False)
 
-    def populate_output_metadata(self, l):
+    def populate_output_metadata(self, link_info_object):
 
+        # self.input_combo.SetItems(['---'] + self.input_combo_choices())
+        # self.output_combo.SetItems(['---'] + self.output_combo_choices())
+        # self.input_combo.SetSelection(0)
+        # self.output_combo.SetSelection(0)
         # get the link object
-        outputs = l.output_metadata
-        if l.oei in outputs:
-            o = outputs[l.oei]
+        outputs = link_info_object.output_metadata
+        if link_info_object.oei in outputs:
+            o = outputs[link_info_object.oei]
 
             self.output_grid.SetCellValue(1, 1, o['variable'].VariableNameCV())
             self.output_grid.SetCellValue(2, 1, o['variable'].VariableDefinition())
@@ -205,16 +202,17 @@ class LinkCtrl(LinkView):
             self.output_grid.SetCellValue(4, 1, o['unit'].UnitName())
             self.output_grid.SetCellValue(5, 1, o['unit'].UnitTypeCV())
             self.output_grid.SetCellValue(6, 1, o['unit'].UnitAbbreviation())
+
         else:
             self.odesc = ""
             self.reset_grid(self.output_grid)
 
-    def populate_input_metadata(self, l):
+    def populate_input_metadata(self, link_info_object):
 
         # get the link object
-        inputs = l.input_metadata
-        if l.iei in inputs:
-            i = inputs[l.iei]
+        inputs = link_info_object.input_metadata
+        if link_info_object.iei in inputs:
+            i = inputs[link_info_object.iei]
 
             self.input_grid.SetCellValue(1, 1, i['variable'].VariableNameCV())
             self.input_grid.SetCellValue(2, 1, i['variable'].VariableDefinition())
@@ -301,9 +299,6 @@ class LinkCtrl(LinkView):
             # set default value
             self.spatial_combo.SetSelection(0)
 
-        # set the state of link_obj_hit
-        self.link_obj_hit = True
-
         wx.PostEvent(self, LinkUpdatedEvent())
 
     def on_delete(self, event):
@@ -331,19 +326,7 @@ class LinkCtrl(LinkView):
             self.input_grid.SetToolTip(wx.ToolTip(""))
         e.Skip()
 
-    def on_left_up(self, event):
-
-        if not self.link_obj_hit:
-            link_name = self.__selected_link.name()
-
-            selected_index = self.link_name_list_box.Items.index(link_name)
-            self.link_name_list_box.SetSelection(selected_index)
-
-        # reset the state of link_obj_hit
-        self.link_obj_hit = False
-
     def on_link_selected(self, event):
-
         # get the selected link object
         selected = self.link_name_list_box.GetStringSelection()
         selected_id = selected.split('|')[0].strip()
@@ -364,6 +347,11 @@ class LinkCtrl(LinkView):
             #  Setting the labels that indicate which metadata is input and output
             self.input_label.SetLabel("Input of: " + str(self.get_input_model_text()))
             self.output_label.SetLabel("Output of: " + str(self.get_output_model_text()))
+            #
+            # self.input_combo.SetItems(['---'] + self.input_combo_choices())
+            # self.output_combo.SetItems(['---'] + self.output_combo_choices())
+            # self.input_combo.SetSelection(0)
+            # self.output_combo.SetSelection(0)
 
         else:
             # deactivate controls if nothing is selected
@@ -573,22 +561,17 @@ class LinkCtrl(LinkView):
             l.temporal_interpolation = self.temporal_transformations[temporal_value]
 
     def on_swap(self, event):
-        try:
-            selected = self.get_selected_link_id()
-            engine.removeLinkById(selected)
-            self.__links.pop(selected)
-
-        except Exception as e:
-            elog.debug(e)
-            elog.warning("Please select which link to swap")
+        link_id = self.get_selected_link_id()
+        if link_id == "":
+            elog.debug("No link is selected")
             return
 
-        self.swap_was_clicked = True
+        selected = self.get_selected_link_id()
+        engine.removeLinkById(selected)
+        self.__links.pop(selected)
 
         #  Swapping components of models
-        temp = self.output_component
-        self.output_component = self.input_component
-        self.input_component = temp
+        self.output_component, self.input_component = self.input_component, self.output_component
 
         self.__link_source_id = self.output_component['id']
         self.__link_target_id = self.input_component['id']

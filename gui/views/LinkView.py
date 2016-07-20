@@ -172,14 +172,14 @@ class LinkView(wx.Frame):
         if self.input_items is not None:
             return [item['name'] for item in self.input_items]
         else:
-            return [' ']
+            return [""]
 
     def output_combo_choices(self):
         self.output_items = engine.getExchangeItems(self.output_component['id'], stdlib.ExchangeItemType.OUTPUT)
         if self.output_items is not None:
             return [item['name'] for item in self.output_items]
         else:
-            return [" "]
+            return [""]
 
     def resize_grid_to_fill_white_space(self, grid):
         col_size = grid.GetColSize(0)

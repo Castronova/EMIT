@@ -580,7 +580,7 @@ class CanvasCtrl(CanvasView):
         # get output items from r1
         to_model = engine.getModelById(r2.ID)
 
-        controller = LinkCtrl(parent=self.FloatCanvas, outputs=from_model, inputs=to_model, link_obj=event, swap=True)
+        controller = LinkCtrl(parent=self.FloatCanvas, outputs=from_model, inputs=to_model, link_obj=event)
         controller.Show()
 
 

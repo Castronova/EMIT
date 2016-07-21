@@ -10,6 +10,8 @@ import wx
 
 from gui.controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
 from gui.views.OpenDapExplorerView import OpenDapExplorerView
+import threading
+from sprint import *
 
 
 class NetcdfCtrl(OpenDapExplorerView):
@@ -18,10 +20,12 @@ class NetcdfCtrl(OpenDapExplorerView):
         # namespaces for XML parsing
         self.thredds = "http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0"
         self.xlink = "http://www.w3.org/1999/xlink"
+        self.thread = threading.Thread()
         OpenDapExplorerView.__init__(self, parent=parent)
         self.Bind(wx.EVT_BUTTON, self.on_download, self.download_btn)
         self.Bind(wx.EVT_BUTTON, self.onView, self.view_btn)
-        self.Bind(wx.EVT_BUTTON, self.RunCrawler, self.get_btn)
+        # self.Bind(wx.EVT_BUTTON, self.RunCrawler, self.get_btn)
+        self.get_btn.Bind(wx.EVT_BUTTON, self.on_get_crawler)
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.enableBtns)
         self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.disableBtns)
         self.disableBtns(None)
@@ -235,3 +239,67 @@ class NetcdfCtrl(OpenDapExplorerView):
     def update_statusbar(self, status_bar, text):
         status_bar.SetStatusText(text)
         wx.Yield()
+
+    def handle_crawler(self):
+        # self.update_statusbar(self.status_bar, "its running")
+        # for i in range(0, 100000000):
+        #     pass
+        #
+        # print 123
+        # self.update_statusbar(self.status_bar, "Done")
+
+        self.update_statusbar(self.status_bar, "Loading...")
+
+        if self.variable_list.GetItemCount > 0:
+            self.clearData()
+        results = []
+        url = self.url_textbox.GetLineText(0)
+        is_valid = self.check_url(url + "/catalog.xml")
+
+        if is_valid:
+            results = self.crawler(url + "/catalog.xml", results)
+            self.TableValues = []
+            for ds in results:
+                dap = ds.find('.//{%s}access[@serviceName="dap"]' % self.thredds)
+                if dap is not None:
+                    wms = ds.find('.//{%s}access[@serviceName="wms"]' % self.thredds)
+                    size = ds.find('.//{%s}dataSize' % self.thredds)
+                    date = ds.find('.//{%s}date' % self.thredds)
+
+                    fileSize = size.itertext().next()
+                    lastmodified = date.itertext().next()
+                    dap_url = dict(dap.items())['urlPath']
+                    name = dict(ds.items())['name']
+                    mod = lastmodified.replace("T", " ")
+                    fileString = self.CalculateBytes(int(fileSize))
+                    self.TableValues.append([name, fileString, mod, url + dap_url])
+
+            self.update_statusbar(self.status_bar, 'Almost done...')
+            self.updateFileList(self.TableValues)
+            self.update_statusbar(self.status_bar, 'Done')
+
+            self.alternateRowColor()
+            self.autoSizeColumns()
+            self.enableBtns(None)
+            # self.status_bar.SetStatusText("Done!")
+        else:
+            self.update_statusbar(self.status_bar, 'error connecting to the server')
+
+    ##################################
+    # EVENTS
+    ##################################
+
+    def on_get_crawler(self, event):
+        if not isinstance(self.thread, threading.Thread):
+            sPrint("NetcdfCtrl.thread must be threading.Thread", messageType=MessageType.DEBUG)
+            return
+
+        if self.thread.isAlive():
+            sPrint("NetcdfCtrl.thread is alive", messageType=MessageType.DEBUG)
+            sPrint("Working on getting data", messageType=MessageType.INFO)
+            return
+
+        self.thread = threading.Thread(target=self.handle_crawler)
+        self.thread.start()  # Do not call thread.join
+
+

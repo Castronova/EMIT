@@ -102,11 +102,6 @@ class LinkCtrl(LinkView):
 
         return all_same(items)
 
-    def frame_resizing(self, event):
-        self.resize_grid_to_fill_white_space(self.input_grid)
-        self.resize_grid_to_fill_white_space(self.output_grid)
-        event.Skip()  # In a sizer-based layout, event.Skip() will catch all size events
-
     def get_input_model_text(self):
         if self.input_component['id'] == self.__selected_link.target_id:
             return self.input_component['name']
@@ -258,6 +253,11 @@ class LinkCtrl(LinkView):
     ######################################
     # EVENTS
     ######################################
+
+    def frame_resizing(self, event):
+        self.resize_grid_to_fill_white_space(self.input_grid)
+        self.resize_grid_to_fill_white_space(self.output_grid)
+        event.Skip()  # In a sizer-based layout, event.Skip() will catch all size events
 
     def on_cancel(self, event):
         self.Destroy()

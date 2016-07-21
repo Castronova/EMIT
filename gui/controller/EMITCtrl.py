@@ -27,6 +27,7 @@ class EMITCtrl(EMITView):
             self.defaultLoadDirectory = os.environ["APP_DEFAULT_SAVE_PATH"]
         else:
             self.defaultLoadDirectory = os.getcwd() + "/models/MyConfigurations/"
+            environment.setEnvironmentVar("APP", "default_save_path", self.defaultLoadDirectory)
 
         # load databases threaded
         t = threading.Thread(target=self.connect_to_databases, name='Connect_To_Databases', args=(connections_txt,))

@@ -191,17 +191,21 @@ class NetcdfCtrl(OpenDapExplorerView):
             self.enable_buttons()
             self.update_statusbar(self.status_bar, 'Done')
         else:
-            self.auto_size_columns()
             self.update_statusbar(self.status_bar, 'error connecting to the server')
+            if not self.IsShown() and self.thread.isAlive():
+                self.Destroy()  # Destroy the hidden instance
 
     ##################################
     # EVENTS
     ##################################
 
     def on_close(self, event):
-        self.Destroy()
         if self.thread.isAlive():
+            # The user is closing the window while the thread is running
             self.thread.join(0.1)
+            self.Hide()
+        else:
+            self.Destroy()
 
     def on_disable_buttons(self, event):
         self.disable_buttons()

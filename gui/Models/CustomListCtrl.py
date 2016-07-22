@@ -25,7 +25,7 @@ class CustomListCtrl(wx.ListCtrl):
 
     def auto_size_table(self):
         for i in range(self.GetColumnCount()):
-            self.SetColumnWidth(col=i, width=wx.LIST_AUTOSIZE)
+            self.SetColumnWidth(col=i, width=wx.LIST_AUTOSIZE_USEHEADER)
         self.expand_table_to_fill_panel()
 
     def clear_table(self):
@@ -90,23 +90,32 @@ class CustomListCtrl(wx.ListCtrl):
         return data
 
     def __sort_table_by_column(self, column_number):
+        """
+        Flip flop between sorting by ascending and descending order.
+        :param column_number: type(int)
+        :return:
+        """
         if column_number < 0:
             return
 
         data = self.get_all_data_in_table()
 
         column_data = []
-        for i in data:
-            column_data.append(i[column_number])
+        for row in data:
+            column_data.append(row[column_number])
 
-        column_data.sort()
+        if sorted(column_data) == column_data:
+            column_data.reverse()
+        else:
+            column_data.sort()
 
         new_data = []
         for i in range(len(column_data)):
             for j in range(len(data)):
                 if column_data[i] in data[j]:
-                    new_data.append(data[j])
-                    break
+                    if data[j] not in new_data:
+                        new_data.append(data[j])
+                        break
 
         # write the data back
         self.clear_content()

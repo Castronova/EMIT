@@ -263,7 +263,8 @@ class NetcdfCtrl(OpenDapExplorerView):
             sPrint("Working on getting data", messageType=MessageType.INFO)
             return
 
-        self.thread = threading.Thread(target=self.handle_crawler)
+        self.thread = threading.Thread(target=self.handle_crawler, name="NetcdfCtrl thread")
+        self.thread.setDaemon(True)
         self.thread.start()  # Do not call thread.join
 
 

@@ -25,10 +25,10 @@ class WofSitesCtrl(TimeSeriesPlotView):
         self.Bind(wx.EVT_DATE_CHANGED, self.setEndDate, self.endDatePicker)
         self.Bind(wx.EVT_BUTTON, self.onExport, self.exportBtn)
         self.Bind(wx.EVT_BUTTON, self.addToCanvas, self.addToCanvasBtn)
-        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.enableBtns)
-        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.disableBtns)
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_enable_button)
+        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_disable_button)
         self.line_style_combo.Bind(wx.EVT_COMBOBOX, self.on_line_style)
-        self.disableBtns(None)
+        self.on_disable_button(None)
         self.done_querying = True
 
         # instantiate a container for the wof data
@@ -39,27 +39,21 @@ class WofSitesCtrl(TimeSeriesPlotView):
         t.setDaemon(True)
         t.start()
 
-    def enableBtns(self, event):
+    def enable_button(self):
         if self.done_querying:
             self.PlotBtn.Enable()
             self.exportBtn.Enable()
             self.addToCanvasBtn.Enable()
             self.line_style_combo.Enable()
 
-    def disableBtns(self, event):
+    def disable_button(self):
         self.PlotBtn.Disable()
         self.exportBtn.Disable()
         self.addToCanvasBtn.Disable()
         self.line_style_combo.Disable()
 
-    def setEndDate(self, event):
-        self.end_date = self.endDatePicker.GetValue()
-
-    def setStartDate(self, event):
-        self.start_date = self.startDatePicker.GetValue()
-
     def _preparationToGetValues(self):
-        code = self.getSelectedVariableCode()
+        code = self.get_selected_variable_code()
         parent = self.Parent
         siteobject = self.site_objects
 
@@ -123,7 +117,7 @@ class WofSitesCtrl(TimeSeriesPlotView):
                 path = save.GetPath()
                 if path[-4] != '.':
                     path += '.csv'
-                varInfo = self.getSelectedVariable()
+                varInfo = self.get_selected_variable()
                 end, parent, siteobject, start, var_code = self._preparationToGetValues()
                 code = '%s__%s__%s__%s' % (siteobject.site_code, var_code, start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
 
@@ -161,22 +155,21 @@ class WofSitesCtrl(TimeSeriesPlotView):
                     f.write("# Date, %s\n" % ', '.join(v[0] for v in variables))
                     for d in values:
                         f.write('%s, %s \n' % (d[0], d[1]))
-
         else:
             elog.info("Select a variable to export")
 
-    def getAllSelectedVariables(self):
+    def get_all_selected_variables(self):
         code = self.getAllSelectedVariableSiteCodes()
         variables = []
         for i in code:
             variables.append(self._data[i])
         return variables
 
-    def getSelectedVariable(self):
+    def get_selected_variable(self):
         code = self.getSelectedVariableSiteCode()
         return self._data[code]
 
-    def getAllSelectedVariableName(self):
+    def get_all_selected_variable_name(self):
         vars = []
         num = self.variableList.GetItemCount()
         for i in range(num):
@@ -184,7 +177,7 @@ class WofSitesCtrl(TimeSeriesPlotView):
                 vars.append(self.variableList.GetItemText(i))
         return vars
 
-    def getSelectedVariableCode(self):
+    def get_selected_variable_code(self):
         variableCode = None
         num = self.variableList.GetItemCount()
         for i in range(num):
@@ -244,7 +237,7 @@ class WofSitesCtrl(TimeSeriesPlotView):
 
         # get selected variables
         var_codes = self.getAllSelectedVariableSiteCodes()
-        var_names = self.getAllSelectedVariableName()
+        var_names = self.get_all_selected_variable_name()
 
         # get start and end dates
         sd = self.start_date.FormatISODate()
@@ -332,7 +325,7 @@ class WofSitesCtrl(TimeSeriesPlotView):
         #  self.done_querying must be set to True in the method that is running the long process
         status_list = ["Querying .", "Querying ..", "Querying ...", "Querying ....", "Querying ....."]
         i = 0
-        self.disableBtns(None)
+        self.on_disable_button(None)
         while not self.done_querying:  # self.done_querying is created in the method that calls this one
             if i < len(status_list):
                 self.updateStatusBar(status_list[i])
@@ -341,7 +334,7 @@ class WofSitesCtrl(TimeSeriesPlotView):
                 i = 0
                 self.updateStatusBar(status_list[i])
             time.sleep(0.5)
-        self.enableBtns(None)
+        self.on_enable_button(None)
         wx.CallAfter(self.updateStatusBar, "Ready")
 
     def updateStatusBar(self, text):
@@ -370,6 +363,12 @@ class WofSitesCtrl(TimeSeriesPlotView):
     # EVENTS
     ###############################
 
+    def on_disable_button(self, event):
+        self.disable_button()
+
+    def on_enable_button(self, event):
+        self.enable_button()
+
     def on_line_style(self, event):
         if not len(self.plot.plots):
             return  # Nothing is plotted
@@ -381,6 +380,12 @@ class WofSitesCtrl(TimeSeriesPlotView):
             for plot in self.plot.plots:
                 plot.set_linestyle('None')
         self.plot.redraw()
+
+    def setEndDate(self, event):
+        self.end_date = self.endDatePicker.GetValue()
+
+    def setStartDate(self, event):
+        self.start_date = self.startDatePicker.GetValue()
 
 
 class wofSeries(object):

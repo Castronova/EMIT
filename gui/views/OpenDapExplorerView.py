@@ -61,6 +61,6 @@ class OpenDapExplorerView(wx.Frame):
         panel.SetSizer(viewer_vbox)
 
         self.status_bar = self.CreateStatusBar()
-        self.status_bar.SetStatusText("ready")
+        self.status_bar.SetStatusText("Ready")
         self.Layout()
         self.Show()

@@ -23,7 +23,7 @@ class WofSitesCtrl(TimeSeriesPlotView):
         self.Bind(wx.EVT_BUTTON, self.onPreview, self.PlotBtn)
         self.Bind(wx.EVT_DATE_CHANGED, self.setStartDate, self.startDatePicker)
         self.Bind(wx.EVT_DATE_CHANGED, self.setEndDate, self.endDatePicker)
-        self.Bind(wx.EVT_BUTTON, self.onExport, self.exportBtn)
+        self.Bind(wx.EVT_BUTTON, self.on_export_button, self.exportBtn)
         self.Bind(wx.EVT_BUTTON, self.addToCanvas, self.addToCanvasBtn)
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_enable_button)
         self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_disable_button)
@@ -54,7 +54,6 @@ class WofSitesCtrl(TimeSeriesPlotView):
 
     def _preparationToGetValues(self):
         code = self.get_selected_variable_code()
-        parent = self.Parent
         siteobject = self.site_objects
 
         # convert wx._misc.DateTime to python datetime
@@ -62,10 +61,10 @@ class WofSitesCtrl(TimeSeriesPlotView):
                                      "%Y-%m-%dT%H:%M:%S")
         end = dt.datetime.strptime('%sT%s'%(self.end_date.FormatISODate(), self.end_date.FormatISOTime()),
                                      "%Y-%m-%dT%H:%M:%S")
-        return end, parent, siteobject, start, code
+        return end, siteobject, start, code
 
     def addToCanvas(self, event):
-        end, parent, siteobject, start, variable_code = self._preparationToGetValues()
+        end, siteobject, start, variable_code = self._preparationToGetValues()
 
         var_codes_temp = self.getAllSelectedVariableSiteCodes()
         if len(var_codes_temp) > 1:
@@ -102,61 +101,58 @@ class WofSitesCtrl(TimeSeriesPlotView):
             temp.append(DicToObj(d))
         return temp
 
-    def onExport(self, event):
-        var_codes_temp = self.getAllSelectedVariableSiteCodes()
-        var_code = self.Parent.selectedVariables = self.getSelectedVariableSiteCode()
-        if len(var_codes_temp) > 1:
-            elog.warning("We currently only support exporting 1 variable at a time, we are exporting: " + var_codes_temp[0] + " for you")
-        var_code = var_codes_temp[0]
-        if var_code > 0 :
-            save = wx.FileDialog(parent=self.GetTopLevelParent(), message="Choose Path",
-                                 defaultDir=os.getcwd(),
-                                 wildcard="CSV Files (*.csv)|*.csv",
-                                 style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
-            if save.ShowModal() == wx.ID_OK:
-                path = save.GetPath()
-                if path[-4] != '.':
-                    path += '.csv'
-                varInfo = self.get_selected_variable()
-                end, parent, siteobject, start, var_code = self._preparationToGetValues()
-                code = '%s__%s__%s__%s' % (siteobject.site_code, var_code, start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
+    def handle_export(self):
+        """
+        Exports the highest selected row
+        :return:
+        """
+        file_dialog = wx.FileDialog(parent=self, message="Choose Path", defaultDir=os.getcwd(),
+                                    wildcard="CSV Files (*.csv)|*.csv", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
 
-                variables = [['V1', varInfo[0], var_code, varInfo[1], varInfo[6], siteobject.latitude, siteobject.longitude]]
+        if file_dialog.ShowModal() == wx.ID_OK:
+            path = file_dialog.GetPath()
+            if path[-4] != '.':
+                path += '.csv'
 
-                values = []
-                for v in self.wofSeries.getData(code)[0].values[0].value:
-                    values.append([v._dateTime.strftime('%m-%d-%Y %H:%M:%S'), v.value])
+            varInfo = self.variableList.get_selected_row()
+            end, siteobject, start, var_code = self._preparationToGetValues()
 
-                with open(path, 'w') as f:
-                    hline = '#' + 75*'-' + '\n'
-                    f.write(hline)
-                    f.write('# \n')
-                    f.write('# NOTICE: this data set that was exported by the EMIT model coupling framework. Use at your own risk \n')
-                    f.write("# \n")
-                    f.write("# Date Exported: %s \n" % getTodayDate())
-                    f.write("# Site Name: %s \n" % siteobject.site_name)
-                    f.write("# Site Code: %s \n" % siteobject.site_code)
-                    f.write("# Category: %s \n" % varInfo[2])
-                    f.write("# Type: %s \n" % varInfo[3])
-                    f.write("# Begin Date: %s \n" % varInfo[4])
-                    f.write("# End Date: %s \n" % varInfo[5])
-                    f.write(hline)
-                    f.write("# \n")
-                    f.write('# Data Description \n')
-                    f.write("# \n")
-                    f.write('# V[idx] = Variable Name, Variable Code, Unit, Description, Latitude, Longitude \n')
-                    f.write("# \n")
-                    for variable in variables:
-                        f.write('# %s = %s\n' % (variable[0], ', '.join(variable[1:])))
-                    f.write("# \n")
-                    f.write(hline)
-                    f.write("# \n")
-                    f.write("# \n")
-                    f.write("# Date, %s\n" % ', '.join(v[0] for v in variables))
-                    for d in values:
-                        f.write('%s, %s \n' % (d[0], d[1]))
-        else:
-            elog.info("Select a variable to export")
+            variables = [
+                ['V1', varInfo[0], var_code, varInfo[1], varInfo[6], siteobject.latitude, siteobject.longitude]]
+
+            values = self.wof.parseValues(siteobject.site_code, self.get_selected_variable_code(), start, end)
+
+            with open(path, 'w') as f:
+                hline = '#' + 75 * '-' + '\n'
+                f.write(hline)
+                f.write('# \n')
+                f.write(
+                    '# NOTICE: this data set that was exported by the EMIT model coupling framework. Use at your own risk \n')
+                f.write("# \n")
+                f.write("# Date Exported: %s \n" % getTodayDate())
+                f.write("# Site Name: %s \n" % siteobject.site_name)
+                f.write("# Site Code: %s \n" % siteobject.site_code)
+                f.write("# Category: %s \n" % varInfo[2])
+                f.write("# Type: %s \n" % varInfo[3])
+                f.write("# Begin Date: %s \n" % varInfo[4])
+                f.write("# End Date: %s \n" % varInfo[5])
+                f.write(hline)
+                f.write("# \n")
+                f.write('# Data Description \n')
+                f.write("# \n")
+                f.write('# V[idx] = Variable Name, Variable Code, Unit, Description, Latitude, Longitude \n')
+                f.write("# \n")
+                for variable in variables:
+                    f.write('# %s = %s\n' % (variable[0], ', '.join(variable[1:])))
+                f.write("# \n")
+                f.write(hline)
+                f.write("# \n")
+                f.write("# \n")
+                f.write("# Date, %s\n" % ', '.join(v[0] for v in variables))
+                for d in values:
+                    f.write('%s, %s \n' % (d[0], d[1]))
+
+                f.close()
 
     def get_all_selected_variables(self):
         code = self.getAllSelectedVariableSiteCodes()
@@ -164,10 +160,6 @@ class WofSitesCtrl(TimeSeriesPlotView):
         for i in code:
             variables.append(self._data[i])
         return variables
-
-    def get_selected_variable(self):
-        code = self.getSelectedVariableSiteCode()
-        return self._data[code]
 
     def get_all_selected_variable_name(self):
         vars = []
@@ -183,7 +175,7 @@ class WofSitesCtrl(TimeSeriesPlotView):
         for i in range(num):
             if self.variableList.IsSelected(i):
                 v_name = self.variableList.GetItemText(i)
-                variableCode = self.getSiteCodeByVariableName(v_name)
+                variableCode = self.get_site_code_by_variable_name(v_name)
                 break
         return variableCode
 
@@ -193,17 +185,15 @@ class WofSitesCtrl(TimeSeriesPlotView):
         for i in range(num):
             if self.variableList.IsSelected(i):
                 v_name = self.variableList.GetItemText(i)
-                sites.append(self.getSiteCodeByVariableName(v_name))
+                sites.append(self.get_site_code_by_variable_name(v_name))
         return sites
 
-    def getSelectedVariableSiteCode(self):
-        num = self.variableList.GetItemCount()
-        for i in range(num):
-            if self.variableList.IsSelected(i):
-                v_name = self.variableList.GetItemText(i)
-                return self.getSiteCodeByVariableName(v_name)
+    def get_selected_site_code(self):
+        row = self.variableList.get_selected_row()
+        variable = row[0]
+        return self.get_site_code_by_variable_name(variable)
 
-    def getSiteCodeByVariableName(self, checkedVar):
+    def get_site_code_by_variable_name(self, checkedVar):
         for key, value in self._data.iteritems():
             if value[0] == checkedVar:
                 return key        # Column names
@@ -264,8 +254,8 @@ class WofSitesCtrl(TimeSeriesPlotView):
         for series in series_missing_data:
 
             # query the data using WOF
-            sPrint('Querying WOF using this following parameters: %s, %s, %s, %s ' % (series.site_code, series.var_code, series.sd, series.ed), MessageType.INFO)
-            data = self.wof.getValues(series.site_code, series.var_code, series.sd, series.ed)
+            sPrint('Querying WOF using this following parameters: %s, %s, %s, %s ' % (series.site_code, series.var_code, series.start_date, series.end_date), MessageType.INFO)
+            data = self.wof.getValues(series.site_code, series.var_code, series.start_date, series.end_date)
 
             # save these data to the wofSeries object
             self.wofSeries.addData(series, data)
@@ -369,6 +359,9 @@ class WofSitesCtrl(TimeSeriesPlotView):
     def on_enable_button(self, event):
         self.enable_button()
 
+    def on_export_button(self, event):
+        self.handle_export()
+
     def on_line_style(self, event):
         if not len(self.plot.plots):
             return  # Nothing is plotted
@@ -404,7 +397,10 @@ class wofSeries(object):
         return self.series_info
 
     def getData(self, key):
-        return self.data[key]
+        if key in self.data:
+            return self.data[key]
+        else:
+            return None
 
 
     def addDataSeries(self, site_code, var_code, var_name, sd, ed):
@@ -468,11 +464,11 @@ class seriesInfo(object):
         self.site_code = site_code
         self.var_code = var_code
         self.var_name = var_name
-        self.sd = sd
-        self.ed = ed
+        self.start_date = sd
+        self.end_date = ed
 
     def __str__(self):
-        return '%s__%s__%s__%s' % (self.site_code, self.var_code, self.sd, self.ed)
+        return '%s__%s__%s__%s' % (self.site_code, self.var_code, self.start_date, self.end_date)
 
 
 class DicToObj(object):

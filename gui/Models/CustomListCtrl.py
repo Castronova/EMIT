@@ -25,7 +25,7 @@ class CustomListCtrl(wx.ListCtrl):
 
     def auto_size_table(self):
         for i in range(self.GetColumnCount()):
-            self.SetColumnWidth(col=i, width=wx.LIST_AUTOSIZE_USEHEADER)
+            self.SetColumnWidth(col=i, width=wx.LIST_AUTOSIZE)
         self.expand_table_to_fill_panel()
 
     def clear_table(self):

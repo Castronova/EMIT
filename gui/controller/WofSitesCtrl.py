@@ -19,6 +19,7 @@ class WofSitesCtrl(TimeSeriesPlotView):
         self.site_objects = siteObject
 
         self.line_style_combo.SetSelection(1)
+        self.thread = threading.Thread()
 
         self.Bind(wx.EVT_BUTTON, self.onPreview, self.PlotBtn)
         self.Bind(wx.EVT_DATE_CHANGED, self.setStartDate, self.startDatePicker)
@@ -101,6 +102,7 @@ class WofSitesCtrl(TimeSeriesPlotView):
             temp.append(DicToObj(d))
         return temp
 
+    # Threaded
     def handle_export(self):
         """
         Exports the highest selected row
@@ -161,6 +163,9 @@ class WofSitesCtrl(TimeSeriesPlotView):
                     f.write('%s, %s \n' % (d[0], d[1]))
 
                 f.close()
+            sPrint("Finished exporting", messageType=MessageType.INFO)
+        else:
+            sPrint("Exporting has been canceled", messageType=MessageType.INFO)
 
     def get_all_selected_variables(self):
         code = self.getAllSelectedVariableSiteCodes()
@@ -368,7 +373,20 @@ class WofSitesCtrl(TimeSeriesPlotView):
         self.enable_button()
 
     def on_export_button(self, event):
-        self.handle_export()
+        if not isinstance(self.thread, threading.Thread):
+            sPrint("WofSiteCtrl.thread must be type threading.Thread", messageType=MessageType.DEBUG)
+            return
+
+        if self.thread.isAlive():
+            sPrint("WofSiteCtrl.thread is alive", messageType=MessageType.DEBUG)
+            sPrint("Currently exporting in background...", messageType=MessageType.INFO)
+            return
+
+
+
+        self.thread = threading.Thread(target=self.handle_export, name="WofSiteCtrl.on_export_button thread")
+        self.thread.setDaemon(True)
+        self.thread.start()
 
     def on_line_style(self, event):
         if not len(self.plot.plots):

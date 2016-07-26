@@ -120,7 +120,15 @@ class WofSitesCtrl(TimeSeriesPlotView):
             variables = [
                 ['V1', varInfo[0], var_code, varInfo[1], varInfo[6], siteobject.latitude, siteobject.longitude]]
 
-            values = self.wof.parseValues(siteobject.site_code, self.get_selected_variable_code(), start, end)
+            code = '%s__%s__%s__%s' % (siteobject.site_code, var_code, start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
+
+            values = []
+            if code in self.wofSeries.data:
+                for v in self.wofSeries.getData(code)[0].values[0].value:  # Data has been previewed
+                    values.append([v._dateTime.strftime('%m-%d-%Y %H:%M:%S'), v.value])
+            else:
+                # Data has not been previewed so fetch data
+                values = self.wof.parseValues(siteobject.site_code, self.get_selected_variable_code(), start, end)
 
             with open(path, 'w') as f:
                 hline = '#' + 75 * '-' + '\n'

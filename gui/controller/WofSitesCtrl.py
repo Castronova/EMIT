@@ -373,20 +373,19 @@ class WofSitesCtrl(TimeSeriesPlotView):
         self.enable_button()
 
     def on_export_button(self, event):
-        if not isinstance(self.thread, threading.Thread):
-            sPrint("WofSiteCtrl.thread must be type threading.Thread", messageType=MessageType.DEBUG)
-            return
-
-        if self.thread.isAlive():
-            sPrint("WofSiteCtrl.thread is alive", messageType=MessageType.DEBUG)
-            sPrint("Currently exporting in background...", messageType=MessageType.INFO)
-            return
-
-
-
-        self.thread = threading.Thread(target=self.handle_export, name="WofSiteCtrl.on_export_button thread")
-        self.thread.setDaemon(True)
-        self.thread.start()
+        # if not isinstance(self.thread, threading.Thread):
+        #     sPrint("WofSiteCtrl.thread must be type threading.Thread", messageType=MessageType.DEBUG)
+        #     return
+        #
+        # if self.thread.isAlive():
+        #     sPrint("WofSiteCtrl.thread is alive", messageType=MessageType.DEBUG)
+        #     sPrint("Currently exporting in background...", messageType=MessageType.INFO)
+        #     return
+        #
+        # self.thread = threading.Thread(target=self.handle_export, name="WofSiteCtrl.on_export_button thread")
+        # self.thread.setDaemon(True)
+        # self.thread.start()
+        self.handle_export()
 
     def on_line_style(self, event):
         if not len(self.plot.plots):

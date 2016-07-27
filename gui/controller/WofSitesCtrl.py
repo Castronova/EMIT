@@ -12,7 +12,7 @@ from sprint import *
 
 class WofSitesCtrl(TimeSeriesPlotView):
     def __init__(self, parent, siteObject, api):
-        self.wof = api
+        self.wof_api = api
 
         table_cols = ["Variable Name", "Unit", "Category", "Type", "Begin Date Time", "End Date Time", "Description"]
         TimeSeriesPlotView.__init__(self, parent, siteObject.site_name, table_cols)
@@ -30,22 +30,17 @@ class WofSitesCtrl(TimeSeriesPlotView):
         self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_disable_button)
         self.line_style_combo.Bind(wx.EVT_COMBOBOX, self.on_line_style)
         self.on_disable_button(None)
-        self.done_querying = True
 
         # instantiate a container for the wof data
         self.wofSeries = wofSeries()
 
-        # threaded web service call so that the gui does not hang
-        t = threading.Thread(target=self.populateVariablesList, args=(api, siteObject.site_code), name='WOF_GetVariables')
-        t.setDaemon(True)
-        t.start()
+        self.populate_table(self.site_objects.site_code)
 
     def enable_button(self):
-        if self.done_querying:
-            self.PlotBtn.Enable()
-            self.exportBtn.Enable()
-            self.addToCanvasBtn.Enable()
-            self.line_style_combo.Enable()
+        self.PlotBtn.Enable()
+        self.exportBtn.Enable()
+        self.addToCanvasBtn.Enable()
+        self.line_style_combo.Enable()
 
     def disable_button(self):
         self.PlotBtn.Disable()
@@ -103,69 +98,68 @@ class WofSitesCtrl(TimeSeriesPlotView):
         return temp
 
     # Threaded
-    def handle_export(self):
+    def handle_export(self, path):
         """
         Exports the highest selected row
+        :param path: type(string) the export path
         :return:
         """
-        file_dialog = wx.FileDialog(parent=self, message="Choose Path", defaultDir=os.getcwd(),
-                                    wildcard="CSV Files (*.csv)|*.csv", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+        self.disable_button()
+        if path[-4] != '.':
+            path += '.csv'
 
-        if file_dialog.ShowModal() == wx.ID_OK:
-            path = file_dialog.GetPath()
-            if path[-4] != '.':
-                path += '.csv'
+        self._thread_status_bar_loading()
 
-            varInfo = self.variableList.get_selected_row()
-            end, siteobject, start, var_code = self._preparationToGetValues()
+        varInfo = self.variableList.get_selected_row()
+        end, siteobject, start, var_code = self._preparationToGetValues()
 
-            variables = [
-                ['V1', varInfo[0], var_code, varInfo[1], varInfo[6], siteobject.latitude, siteobject.longitude]]
+        variables = [
+            ['V1', varInfo[0], var_code, varInfo[1], varInfo[6], siteobject.latitude, siteobject.longitude]]
 
-            code = '%s__%s__%s__%s' % (siteobject.site_code, var_code, start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
+        code = '%s__%s__%s__%s' % (siteobject.site_code, var_code, start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
 
-            values = []
-            if code in self.wofSeries.data:
-                for v in self.wofSeries.getData(code)[0].values[0].value:  # Data has been previewed
-                    values.append([v._dateTime.strftime('%m-%d-%Y %H:%M:%S'), v.value])
-            else:
-                # Data has not been previewed so fetch data
-                values = self.wof.parseValues(siteobject.site_code, self.get_selected_variable_code(), start, end)
-
-            with open(path, 'w') as f:
-                hline = '#' + 75 * '-' + '\n'
-                f.write(hline)
-                f.write('# \n')
-                f.write(
-                    '# NOTICE: this data set that was exported by the EMIT model coupling framework. Use at your own risk \n')
-                f.write("# \n")
-                f.write("# Date Exported: %s \n" % getTodayDate())
-                f.write("# Site Name: %s \n" % siteobject.site_name)
-                f.write("# Site Code: %s \n" % siteobject.site_code)
-                f.write("# Category: %s \n" % varInfo[2])
-                f.write("# Type: %s \n" % varInfo[3])
-                f.write("# Begin Date: %s \n" % varInfo[4])
-                f.write("# End Date: %s \n" % varInfo[5])
-                f.write(hline)
-                f.write("# \n")
-                f.write('# Data Description \n')
-                f.write("# \n")
-                f.write('# V[idx] = Variable Name, Variable Code, Unit, Description, Latitude, Longitude \n')
-                f.write("# \n")
-                for variable in variables:
-                    f.write('# %s = %s\n' % (variable[0], ', '.join(variable[1:])))
-                f.write("# \n")
-                f.write(hline)
-                f.write("# \n")
-                f.write("# \n")
-                f.write("# Date, %s\n" % ', '.join(v[0] for v in variables))
-                for d in values:
-                    f.write('%s, %s \n' % (d[0], d[1]))
-
-                f.close()
-            sPrint("Finished exporting", messageType=MessageType.INFO)
+        values = []
+        if code in self.wofSeries.data:
+            for v in self.wofSeries.getData(code)[0].values[0].value:  # Data has been previewed
+                values.append([v._dateTime.strftime('%m-%d-%Y %H:%M:%S'), v.value])
         else:
-            sPrint("Exporting has been canceled", messageType=MessageType.INFO)
+            # Data has not been previewed so fetch data
+            values = self.wof_api.parseValues(siteobject.site_code, self.get_selected_variable_code(), start, end)
+
+        with open(path, 'w') as f:
+            hline = '#' + 75 * '-' + '\n'
+            f.write(hline)
+            f.write('# \n')
+            f.write('# NOTICE: this data set that was exported by the EMIT model coupling framework. '
+                    'Use at your own risk \n')
+            f.write("# \n")
+            f.write("# Date Exported: %s \n" % getTodayDate())
+            f.write("# Site Name: %s \n" % siteobject.site_name)
+            f.write("# Site Code: %s \n" % siteobject.site_code)
+            f.write("# Category: %s \n" % varInfo[2])
+            f.write("# Type: %s \n" % varInfo[3])
+            f.write("# Begin Date: %s \n" % varInfo[4])
+            f.write("# End Date: %s \n" % varInfo[5])
+            f.write(hline)
+            f.write("# \n")
+            f.write('# Data Description \n')
+            f.write("# \n")
+            f.write('# V[idx] = Variable Name, Variable Code, Unit, Description, Latitude, Longitude \n')
+            f.write("# \n")
+            for variable in variables:
+                f.write('# %s = %s\n' % (variable[0], ', '.join(variable[1:])))
+            f.write("# \n")
+            f.write(hline)
+            f.write("# \n")
+            f.write("# \n")
+            f.write("# Date, %s\n" % ', '.join(v[0] for v in variables))
+            for d in values:
+                f.write('%s, %s \n' % (d[0], d[1]))
+
+            f.close()
+
+        self.enable_button()
+        sPrint("Finished exporting", messageType=MessageType.INFO)
 
     def get_all_selected_variables(self):
         code = self.getAllSelectedVariableSiteCodes()
@@ -212,31 +206,29 @@ class WofSitesCtrl(TimeSeriesPlotView):
                 return key        # Column names
 
     def onPreview(self, event):
+        if not isinstance(self.thread, threading.Thread):
+            sPrint("WofSiteCtrl.thread must be type(threading.Thread", messageType=MessageType.DEBUG)
+            return
+
+        if self.thread.isAlive():
+            sPrint("WoftSiteCtrl.thread is alive", messageType=MessageType.DEBUG)
+            return
+
         # update the WOF plot data in a thread so that the gui is not blocked
-        t = threading.Thread(target=self.updatePlotData, name='UpdateWofPlotData')
-        t.setDaemon(True)
-        t.start()
+        self.thread = threading.Thread(target=self.updatePlotData, name='WofSiteCtrl.thread')
+        self.thread.setDaemon(True)
+        self.thread.start()
 
-    def populateVariablesList(self, api, sitecode):
-    # THREADED
-        self.updateStatusBar("Querying ...")
-
-        #  Theading the updateStatusBarLoading to animate loading
-        self.threadStatusBarLoading()
-
-        data = api.buildAllSiteCodeVariables(sitecode)
-        sPrint('Finished querying WOF service for site variables, threaded', MessageType.DEBUG)
-
-        # uses wx callafter to update the variables table.  This is necessary since wx is being called within a thread
-        wx.CallAfter(self.updateVariablesTable, data)
-        self.done_querying = True
+    def populate_table(self, sitecode):
+        data = self.wof_api.buildAllSiteCodeVariables(sitecode)
+        self.updateVariablesTable(data)
 
     # THREADED
     def updatePlotData(self):
-        self.updateStatusBar("Querying ...")
+        self.disable_button()
 
         self.line_style_combo.SetSelection(1)  # Default line style is scatter
-        self.threadStatusBarLoading()
+        self._thread_status_bar_loading()
 
         # get selected variables
         var_codes = self.getAllSelectedVariableSiteCodes()
@@ -268,20 +260,19 @@ class WofSitesCtrl(TimeSeriesPlotView):
 
             # query the data using WOF
             sPrint('Querying WOF using this following parameters: %s, %s, %s, %s ' % (series.site_code, series.var_code, series.start_date, series.end_date), MessageType.INFO)
-            data = self.wof.getValues(series.site_code, series.var_code, series.start_date, series.end_date)
+            data = self.wof_api.getValues(series.site_code, series.var_code, series.start_date, series.end_date)
 
             # save these data to the wofSeries object
             self.wofSeries.addData(series, data)
 
         # update the plot canvase
-        wx.CallAfter(self.updatePlotArea, series_keys)
+        # wx.CallAfter(self.updatePlotArea, series_keys)
 
-        self.done_querying = True
+        self.updatePlotArea(series_keys)
+        self.enable_button()
 
-    # THREADED
-    def threadStatusBarLoading(self):
-        #  Theading the updateStatusBarLoading to animate loading
-        self.done_querying = False
+    # Threaded
+    def _thread_status_bar_loading(self):
         status_bar_loading_thread = threading.Thread(target=self.updateStatusBarLoading, name="StatusBarLoading")
         status_bar_loading_thread.setDaemon(True)
         status_bar_loading_thread.start()
@@ -325,11 +316,10 @@ class WofSitesCtrl(TimeSeriesPlotView):
 
     # THREADED
     def updateStatusBarLoading(self):
-        #  self.done_querying must be set to True in the method that is running the long process
         status_list = ["Querying .", "Querying ..", "Querying ...", "Querying ....", "Querying ....."]
         i = 0
         self.on_disable_button(None)
-        while not self.done_querying:  # self.done_querying is created in the method that calls this one
+        while self.thread.isAlive():
             if i < len(status_list):
                 self.updateStatusBar(status_list[i])
                 i += 1
@@ -338,11 +328,10 @@ class WofSitesCtrl(TimeSeriesPlotView):
                 self.updateStatusBar(status_list[i])
             time.sleep(0.5)
         self.on_enable_button(None)
-        wx.CallAfter(self.updateStatusBar, "Ready")
+        self.updateStatusBar("Ready")
 
     def updateStatusBar(self, text):
         self.status_bar.SetStatusText(str(text))
-        wx.Yield()
 
     def updateVariablesTable(self, data):
         self._data = data
@@ -370,22 +359,29 @@ class WofSitesCtrl(TimeSeriesPlotView):
         self.disable_button()
 
     def on_enable_button(self, event):
-        self.enable_button()
+        if not self.thread.isAlive():
+            self.enable_button()
 
     def on_export_button(self, event):
-        # if not isinstance(self.thread, threading.Thread):
-        #     sPrint("WofSiteCtrl.thread must be type threading.Thread", messageType=MessageType.DEBUG)
-        #     return
-        #
-        # if self.thread.isAlive():
-        #     sPrint("WofSiteCtrl.thread is alive", messageType=MessageType.DEBUG)
-        #     sPrint("Currently exporting in background...", messageType=MessageType.INFO)
-        #     return
-        #
-        # self.thread = threading.Thread(target=self.handle_export, name="WofSiteCtrl.on_export_button thread")
-        # self.thread.setDaemon(True)
-        # self.thread.start()
-        self.handle_export()
+        if not isinstance(self.thread, threading.Thread):
+            sPrint("WofSiteCtrl.thread must be type threading.Thread", messageType=MessageType.DEBUG)
+            return
+
+        if self.thread.isAlive():
+            sPrint("WofSiteCtrl.thread is alive", messageType=MessageType.DEBUG)
+            sPrint("Currently exporting in background...", messageType=MessageType.INFO)
+            return
+
+        file_dialog = wx.FileDialog(parent=self, message="Choose Path", defaultDir=os.getcwd(),
+                            wildcard="CSV Files (*.csv)|*.csv", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+
+        if file_dialog.ShowModal() == wx.ID_OK:
+            export_path = file_dialog.GetPath()
+
+            self.thread = threading.Thread(target=self.handle_export, args=(export_path,),
+                                           name="WofSiteCtrl.on_export_button thread")
+            self.thread.setDaemon(True)
+            self.thread.start()
 
     def on_line_style(self, event):
         if not len(self.plot.plots):

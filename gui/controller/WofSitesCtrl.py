@@ -30,6 +30,7 @@ class WofSitesCtrl(TimeSeriesPlotView):
         self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_disable_button)
         self.line_style_combo.Bind(wx.EVT_COMBOBOX, self.on_line_style)
         self.on_disable_button(None)
+        self.Bind(wx.EVT_CLOSE, self.on_close)
 
         # instantiate a container for the wof data
         self.wofSeries = wofSeries()
@@ -354,6 +355,12 @@ class WofSitesCtrl(TimeSeriesPlotView):
     ###############################
     # EVENTS
     ###############################
+
+    def on_close(self, event):
+        if self.thread.isAlive():
+            self.Hide()
+        else:
+            self.Destroy()
 
     def on_disable_button(self, event):
         self.disable_button()

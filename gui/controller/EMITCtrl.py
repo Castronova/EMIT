@@ -8,11 +8,10 @@ import coordinator.engineAccessors as engine
 from emitLogging import elog
 import threading
 from gui.controller.NetcdfCtrl import NetcdfCtrl
+from gui.controller.UserCtrl import UserCtrl
 from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
 from gui.controller.ModelInputPromptCtrl import ModelInputPromptCtrl
 from gui.controller.SettingsCtrl import SettingsCtrl
-from gui.controller.NewUserCtrl import NewUserCtrl
-from gui.controller.NewUserCtrl import RegisterUserCtrl
 
 
 class EMITCtrl(EMITView):
@@ -64,9 +63,9 @@ class EMITCtrl(EMITView):
         # self.Canvas.addModel(filepath=path)
 
     def check_users_json(self):
-        RegisterUserCtrl.create_user_json()
-        if RegisterUserCtrl.is_user_json_empty():
-            controller = NewUserCtrl(self)
+        UserCtrl.create_user_json()
+        if UserCtrl.is_user_json_empty():
+            controller = UserCtrl(self)
             controller.CenterOnScreen()
             controller.Show()
 
@@ -133,7 +132,7 @@ class EMITCtrl(EMITView):
             NetcdfDetailsCtrl(self.Parent, path, filename)
 
     def on_add_user(self, event):
-        controller = NewUserCtrl(self)
+        controller = UserCtrl(self)
         controller.CenterOnScreen()
         controller.Show()
 

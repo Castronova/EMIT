@@ -3,7 +3,7 @@ import time
 import wx
 from coordinator import engineAccessors, users
 from emitLogging import elog
-from gui.controller.UserCtrl import UserCtrl
+from gui.controller.NewUserCtrl import NewUserCtrl
 from gui.views.PreRunView import PreRunView
 import collections
 
@@ -145,7 +145,7 @@ class PreRunCtrl(PreRunView):
     #################################
 
     def on_add_new(self, e):
-        controller = UserCtrl(self)
+        controller = NewUserCtrl(self)
         controller.CenterOnScreen()
         controller.Show()
         controller.Bind(wx.EVT_CLOSE, self.on_user_ctrl_closed)

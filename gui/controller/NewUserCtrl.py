@@ -155,7 +155,7 @@ class RegisterUserCtrl(RegisterUserView):
         except KeyError:
             # Parent does not have check_users_json()
             pass
-        self.Close()
+        self.GetTopLevelParent().Destroy()
 
     def on_edit(self, event):
         index = self.organization_list_box.GetSelection()

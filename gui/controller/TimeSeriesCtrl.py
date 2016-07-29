@@ -68,7 +68,12 @@ class TimeSeriesCtrl(TimeSeriesView):
     @staticmethod
     def get_wof_connection_names():
         current_directory = os.path.dirname(os.path.abspath(__file__))
-        wof_json = os.path.abspath(os.path.join(current_directory, '../../data/wofsites.json'))
+        wof_json = os.path.abspath(os.path.join(current_directory, '../../app_data/dat/wofsites.json'))
+
+        if not os.path.exists(wof_json):
+            print("Path %s does not exist" % wof_json)
+            return
+
         with open(wof_json, "r") as f:
             try:
                 data = json.load(f)

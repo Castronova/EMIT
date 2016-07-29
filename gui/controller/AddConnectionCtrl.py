@@ -109,7 +109,7 @@ class AddConnectionCtrl(AddConnectionView):
     def _handle_adding_wof_connection(self):
         params = self.get_connection_params()
         current_directory = os.path.dirname(os.path.abspath(__file__))  # rename to current_directory
-        wof_path = os.path.abspath(os.path.join(current_directory, '../../data/wofsites.json'))
+        wof_path = os.path.abspath(os.path.join(current_directory, '../../app_data/dat/wofsites.json'))
 
         # Validate the information provided creates a connection
         api = wateroneflow.WaterOneFlow(params["address"], params["database"])

@@ -1,9 +1,14 @@
 import wx
+import sys
 
 
 class CustomListCtrl(wx.ListCtrl):
     def __init__(self, panel):
         wx.ListCtrl.__init__(self, panel, style=wx.LC_REPORT)
+
+        self._auto_width_style = wx.LIST_AUTOSIZE
+        if sys.platform == "win32":
+            self._auto_width_style = wx.LIST_AUTOSIZE_USEHEADER
 
         # Message to show in the ListCtrl when it is empty
         self.empty_list_message = wx.StaticText(parent=self, label="This list is empty",
@@ -25,7 +30,7 @@ class CustomListCtrl(wx.ListCtrl):
 
     def auto_size_table(self):
         for i in range(self.GetColumnCount()):
-            self.SetColumnWidth(col=i, width=wx.LIST_AUTOSIZE)
+            self.SetColumnWidth(col=i, width=self._auto_width_style)
         self.expand_table_to_fill_panel()
 
     def clear_table(self):
@@ -140,6 +145,17 @@ class CustomListCtrl(wx.ListCtrl):
         self.expand_table_to_fill_panel()
         size = self.GetClientSize()
         self.empty_list_message.SetDimensions(0, size.GetHeight() / 3, size.GetWidth(), size.GetHeight())
+
+    def remove_selected_row(self):
+        """
+        Only removes the top selected row
+        :return:
+        """
+        row_number = self.GetFirstSelected()
+        if row_number == -1:
+            return # No row is selected
+
+        self.DeleteItem(row_number)
 
     def set_columns(self, columns):
         """

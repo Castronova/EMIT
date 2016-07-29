@@ -344,10 +344,6 @@ class Coordinator(object):
         self.__default_db = None
         self.status = EngineStatus()
 
-        # TODO: Get this from gui dialog
-        self.preferences = os.path.abspath(os.path.join(
-            os.path.dirname(__file__), '../data/preferences'))
-
     def remove_all_models_and_links(self):
         """
         Clears all the model and link objects from the controller

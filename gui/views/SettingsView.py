@@ -1,6 +1,7 @@
 import wx
 import wx.lib.scrolledpanel
 from sprint import *
+from gui.Models.CustomListCtrl import CustomListCtrl
 
 
 class SettingsView(wx.Frame):
@@ -19,7 +20,7 @@ class SettingsView(wx.Frame):
 
         # Create components
         self.console_button = wx.Button(menu_panel, label="Console", size=(-1, 40), style=wx.BORDER_NONE)
-        self.another_button = wx.Button(menu_panel, label="Another", size=(-1, 40), style=wx.BORDER_NONE)
+        self.another_button = wx.Button(menu_panel, label="Database", size=(-1, 40), style=wx.BORDER_NONE)
         self.environment_button = wx.Button(menu_panel, label="Environment", size=(-1, 40), style=wx.BORDER_NONE)
         self.console_button.SetBackgroundColour((33, 117, 155))
         self.another_button.SetBackgroundColour((33, 117, 155))
@@ -45,9 +46,6 @@ class SettingsView(wx.Frame):
         # Console controls
         self.console_panel = SettingsConsole(self.details_panel)
         self.console_panel.Show()
-
-        # Another controls
-        self.__create_another_panel()
 
         # Environment controls
         self.environment_panel = SettingsEnvironment(self.details_panel)
@@ -86,21 +84,32 @@ class SettingsView(wx.Frame):
 
         self.Show()
 
-    def __create_another_panel(self):
-        """
-        This function should only be called by SettingsView.init()
-        It simply separates all of this block of code out of the init so its more compact
-        :return:
-        """
 
-        # self.another_panel = wx.Panel(self.details_panel)
-        self.another_panel = wx.lib.scrolledpanel.ScrolledPanel(self.details_panel)
-        self.another_text = wx.StaticText(self.another_panel, label="Another text")
-        another_sizer = wx.BoxSizer(wx.VERTICAL)
-        another_sizer.Add(self.another_text)
-        self.another_panel.SetSizer(another_sizer)
-        another_sizer.Fit(self.another_panel)
-        self.another_panel.Hide()
+class SettingsDatabaseView(wx.Panel):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+
+        # Header
+        header_text = wx.StaticText(self, label="Database")
+        line_break = wx.StaticLine(self)
+
+
+        # Create components
+        self.table = CustomListCtrl(self)
+
+        self.popup_menu = wx.Menu()
+        self.remove_menu = self.popup_menu.Append(1, "Remove")
+
+        # Style header and components
+        header_font = wx.Font(pointSize=18, family=wx.DEFAULT, style=wx.NORMAL, weight=wx.NORMAL)
+        header_text.SetFont(header_font)
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(header_text, 0, wx.EXPAND | wx.TOP | wx.LEFT, 15)
+        sizer.Add(line_break, 0, wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT, 10)
+        sizer.Add(self.table, 1, wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT, 10)
+        self.SetSizer(sizer)
+        sizer.Fit(self)
 
 
 class SettingsConsole(wx.Panel):

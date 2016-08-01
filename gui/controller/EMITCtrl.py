@@ -46,21 +46,28 @@ class EMITCtrl(EMITView):
 
         # View Option Bindings
         self.Bind(wx.EVT_MENU, self.on_toggle_console, self._toggle_console_menu)
+        self.Bind(wx.EVT_MENU, self.on_toggle_toolbar, self._toggle_toolbar_menu)
         self.Bind(wx.EVT_MENU, self.on_default_view, self._default_view_menu)
 
         # Data Menu Bindings
         self.Bind(wx.EVT_MENU, self.on_add_csv_file, self._add_file)
         self.Bind(wx.EVT_MENU, self.on_add_net_cdf_file, self._add_netcdf)
         self.Bind(wx.EVT_MENU, self.on_open_dap_viewer, self._open_dap_viewer_menu)
-
         # All other bindings
         self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.on_switch_lower_panel_tab)
         self.Bind(wx.EVT_CLOSE, self.on_close)
         events.onSaveFromCanvas += self.on_save_configuration_as
 
+    def on_toggle_toolbar(self, event):
+        pane = self.m_mgr.GetPane(self.Toolbox)
+        if event.Selection == 0:
+            pane.Show(show=True)
+        if event.Selection == 1:
+            pane.Hide()
+        self.m_mgr.Update()
+
     def model_input_prompt(self, path):
         ModelInputPromptCtrl(self, path)
-        # self.Canvas.addModel(filepath=path)
 
     def check_users_json(self):
         UserCtrl.create_user_json()

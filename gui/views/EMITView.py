@@ -40,8 +40,11 @@ class EMITView(wx.Frame):
         self._exit = self._file_menu.Append(wx.NewId(), '&Quit\tCtrl+Q', 'Quit application')
 
         # View Menu Option
-        self._toggle_console_menu = self.view_menu.Append(wx.NewId(), '&Toggle Console', 'Toggle the Console', wx.ITEM_CHECK)
         self._default_view_menu = self.view_menu.Append(wx.NewId(), '&Restore Default View', 'Returns the view to the default (initial) state', wx.ITEM_NORMAL)
+        self.toggle_menu = wx.Menu()
+        self._toggle_toolbar_menu = self.toggle_menu.Append(wx.ID_ANY, "Toggle Toolbar", help="Toggle Toolbar", kind=wx.ITEM_CHECK)
+        self._toggle_console_menu = self.toggle_menu.Append(wx.ID_ANY, "Toggle Console", help="Toggle Console", kind=wx.ITEM_CHECK)
+        self.view_menu.AppendMenu(wx.ID_ANY, "Toggle", self.toggle_menu)
 
         # Data Menu Option
         self._add_file = self.data_menu.Append(wx.NewId(), "&Add CSV File")
@@ -56,8 +59,6 @@ class EMITView(wx.Frame):
         self._add_file.Enable(False)
 
         self.SetMenuBar(self._menu_bar)
-
-        # wx.CallAfter(self._postStart)
 
         # creating components
         self.Toolbox = ToolboxCtrl(self.pnlDocking)

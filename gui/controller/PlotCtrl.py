@@ -32,6 +32,7 @@ class PlotCtrl(PlotView):
         # matplotlib color cycle used to ensure primary and secondary axis are not displayed with the same color
         self.__color_cycle = color_cycle()
 
+        # Used to be able to deactivate the canvas events later
         self._cid_press = None
         self._cid_release = None
         self._cid_scroll = None

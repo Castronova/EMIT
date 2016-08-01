@@ -6,16 +6,16 @@ import wx
 
 import coordinator.engineAccessors as engine
 from emitLogging import elog
-from gui.views.TimeSeriesPlotView import TimeSeriesPlotView
+from gui.views.WofSitesView import WofSitesView
 from sprint import *
 
 
-class WofSitesCtrl(TimeSeriesPlotView):
+class WofSitesCtrl(WofSitesView):
     def __init__(self, parent, siteObject, api):
         self.wof_api = api
 
         table_cols = ["Variable Name", "Unit", "Category", "Type", "Begin Date Time", "End Date Time", "Description"]
-        TimeSeriesPlotView.__init__(self, parent, siteObject.site_name, table_cols)
+        WofSitesView.__init__(self, parent, siteObject.site_name, table_cols)
         self.site_objects = siteObject
 
         self.line_style_combo.SetSelection(1)
@@ -36,6 +36,8 @@ class WofSitesCtrl(TimeSeriesPlotView):
         self.wofSeries = wofSeries()
 
         self.populate_table(self.site_objects.site_code)
+        self.plot.activate_panning()
+        self.plot.activate_zooming()
 
     def enable_button(self):
         self.PlotBtn.Enable()

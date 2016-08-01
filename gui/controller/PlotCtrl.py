@@ -32,10 +32,23 @@ class PlotCtrl(PlotView):
         # matplotlib color cycle used to ensure primary and secondary axis are not displayed with the same color
         self.__color_cycle = color_cycle()
 
-        # self.cid_drag = None
-        self.canvas.mpl_connect('button_press_event', self.on_canvas_clicked)
-        self.canvas.mpl_connect('button_release_event', self.on_canvas_released)
-        self.canvas.mpl_connect('scroll_event', self.on_canvas_mouse_scroll)
+        self._cid_press = None
+        self._cid_release = None
+        self._cid_scroll = None
+
+    def activate_panning(self):
+        self._cid_press = self.canvas.mpl_connect('button_press_event', self.on_canvas_clicked)
+        self._cid_release = self.canvas.mpl_connect('button_release_event', self.on_canvas_released)
+
+    def activate_zooming(self):
+        self._cid_scroll = self.canvas.mpl_connect('scroll_event', self.on_canvas_mouse_scroll)
+
+    def deactivate_panning(self):
+        self.canvas.mpl_disconnect(self._cid_press)
+        self.canvas.mpl_disconnect(self._cid_release)
+
+    def deactivate_zooming(self):
+        self.canvas.mpl_disconnect(self._cid_scroll)
 
     def clear_plot(self):
 

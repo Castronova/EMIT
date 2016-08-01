@@ -1,5 +1,6 @@
 import wx
-from gui.Models.CustomListCtrl import CustomListCtrl
+
+from gui.controller.CustomListCtrl import CustomListCtrl
 
 
 class TimeSeriesView(wx.Panel):

@@ -1,6 +1,8 @@
 import wx
 import wx.grid
-from gui.Models.SpatialTemporalPlotter import SpatialTemporalPlotter
+# from gui.Models.SpatialTemporalPlotter import SpatialTemporalPlotter
+from gui.controller.PlotCtrl import PlotCtrl
+
 
 
 class SpatialView:
@@ -17,8 +19,8 @@ class SpatialView:
         sizer_lower_panel = wx.BoxSizer(wx.HORIZONTAL)
 
         # add elements to the top panel
-        self.plot = SpatialTemporalPlotter(top_panel)
-        sizer_top_panel.Add(self.plot.plot, 1, wx.EXPAND | wx.ALL, 2)
+        self.plot = PlotCtrl(top_panel)
+        sizer_top_panel.Add(self.plot.canvas, 1, wx.EXPAND | wx.ALL, 2)
         top_panel.SetSizer(sizer_top_panel)
 
         # create lower panel components

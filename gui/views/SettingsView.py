@@ -1,7 +1,8 @@
 import wx
 import wx.lib.scrolledpanel
+
+from gui.controller.CustomListCtrl import CustomListCtrl
 from sprint import *
-from gui.Models.CustomListCtrl import CustomListCtrl
 
 
 class SettingsView(wx.Frame):

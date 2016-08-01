@@ -1,7 +1,10 @@
 import wx
-from gui.Models.CustomListCtrl import CustomListCtrl
+
 from emitLogging import elog
-from gui.Models.SpatialTemporalPlotter import SpatialTemporalPlotter
+# from gui.Models.SpatialTemporalPlotter import SpatialTemporalPlotter
+
+from gui.controller.CustomListCtrl import CustomListCtrl
+from gui.controller.PlotCtrl import PlotCtrl
 
 
 class TimeSeriesPlotView(wx.Frame):
@@ -21,8 +24,10 @@ class TimeSeriesPlotView(wx.Frame):
 
         hboxTopPanel = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.plot = SpatialTemporalPlotter(toppanel)
-        hboxTopPanel.Add(self.plot.plot, 1, wx.EXPAND | wx.ALL, 2)
+        # self.plot = SpatialTemporalPlotter(toppanel)
+        self.plot = PlotCtrl(toppanel)
+        # hboxTopPanel.Add(self.plot.plot, 1, wx.EXPAND | wx.ALL, 2)
+        hboxTopPanel.Add(self.plot.canvas, 1, wx.EXPAND | wx.ALL, 2)
 
         toppanel.SetSizer(hboxTopPanel)
 

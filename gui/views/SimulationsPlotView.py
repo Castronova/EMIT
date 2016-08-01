@@ -1,7 +1,8 @@
 import wx
 
-from gui.Models.CustomListCtrl import CustomListCtrl
-from gui.Models.SpatialTemporalPlotter import SpatialTemporalPlotter
+# from gui.Models.SpatialTemporalPlotter import SpatialTemporalPlotter
+from gui.controller.PlotCtrl import PlotCtrl
+from gui.controller.CustomListCtrl import CustomListCtrl
 
 
 class SimulationsPlotView(wx.Frame):
@@ -19,17 +20,17 @@ class SimulationsPlotView(wx.Frame):
         ###############################
 
         # Create components
-        self.spatial_plot = SpatialTemporalPlotter(top_panel)
-        self.temporal_plot = SpatialTemporalPlotter(top_panel)
+        self.spatial_plot = PlotCtrl(top_panel)
+        self.temporal_plot = PlotCtrl(top_panel)
 
         # Allows the plots to size equally
-        self.spatial_plot.plot.SetMinSize(wx.Size(1, 1))
-        self.temporal_plot.plot.SetMinSize(wx.Size(1, 1))
+        self.spatial_plot.canvas.SetMinSize(wx.Size(1, 1))
+        self.temporal_plot.canvas.SetMinSize(wx.Size(1, 1))
 
         # Create sizer and add components to sizer
         top_panel_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        top_panel_sizer.Add(self.spatial_plot.plot, 1, wx.EXPAND | wx.ALL, 2)
-        top_panel_sizer.Add(self.temporal_plot.plot, 1, wx.EXPAND | wx.ALL, 2)
+        top_panel_sizer.Add(self.spatial_plot.canvas, 1, wx.EXPAND | wx.ALL, 2)
+        top_panel_sizer.Add(self.temporal_plot.canvas, 1, wx.EXPAND | wx.ALL, 2)
 
         top_panel.SetSizer(top_panel_sizer)
         top_panel_sizer.Fit(top_panel)

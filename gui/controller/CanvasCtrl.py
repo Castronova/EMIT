@@ -82,17 +82,6 @@ class CanvasCtrl(CanvasView):
         self.Bind(wx.EVT_MENU, self.on_clear_canvas, clear_menu)
         self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.on_canvas_right_click)
 
-    # def UnBindAllMouseEvents(self):
-    #     self.Unbind(FC.EVT_LEFT_DOWN)
-    #     self.Unbind(FC.EVT_LEFT_UP)
-    #     self.Unbind(FC.EVT_LEFT_DCLICK)
-    #     self.Unbind(FC.EVT_MIDDLE_DOWN)
-    #     self.Unbind(FC.EVT_MIDDLE_UP)
-    #     self.Unbind(FC.EVT_MIDDLE_DCLICK)
-    #     self.Unbind(FC.EVT_RIGHT_DOWN)
-    #     self.Unbind(FC.EVT_RIGHT_UP)
-    #     self.Unbind(FC.EVT_RIGHT_DCLICK)
-
     def initBindings(self):
         self.FloatCanvas.Bind(FC.EVT_MOTION, self.on_move)
         self.FloatCanvas.Bind(FC.EVT_LEFT_UP, self.on_left_up)
@@ -183,8 +172,8 @@ class CanvasCtrl(CanvasView):
 
             model_box.Bind(FC.EVT_FC_LEFT_DOWN, self.on_model_left_clicked)
             model_box.Bind(FC.EVT_FC_RIGHT_DOWN, self.on_launch_context)
+            model_box.Bind(FC.EVT_FC_LEFT_DCLICK, self.on_model_double_click)
             self.FloatCanvas.Draw()
-
 
             msg = 'model [%s] has been added to the canvas.' % name
             elog.info(msg)
@@ -220,6 +209,7 @@ class CanvasCtrl(CanvasView):
 
             line.Arrow.Bind(FC.EVT_FC_LEFT_DOWN, self.on_arrow_clicked)
             line.Arrow.Bind(FC.EVT_FC_RIGHT_DOWN, self.on_launch_context)
+
 
             self.FloatCanvas.Draw()
 
@@ -681,6 +671,9 @@ class CanvasCtrl(CanvasView):
 
     def on_load(self, event):
         self.GetTopLevelParent().on_load_configuration(event)
+
+    def on_model_double_click(self, event):
+        self.GetTopLevelParent().set_model_details_by_model(event)
 
     def on_model_left_clicked(self, event):
         cur = self.getCursor()

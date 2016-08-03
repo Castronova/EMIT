@@ -17,16 +17,28 @@ class ModelCtrl(ModelView):
         self.model_spatial_controller = None
 
     def add_detail_page(self):
+        if self.model_details_controller:
+            sPrint("ModelCtrl.model_details_controller is already set", messageType=MessageType.DEBUG)
+            return self.model_details_controller
+
         self.model_details_controller = ModelDetailsCtrl(self.notebook)
         self.notebook.AddPage(self.model_details_controller, "Details")
         return self.model_details_controller
 
     def add_edit_page(self):
+        if self.model_edit_controller:
+            sPrint("ModelCtrl.model_edit_controller is already set", messageType=MessageType.DEBUG)
+            return self.model_edit_controller
+
         self.model_edit_controller = ModelEditCtrl(self.notebook)
         self.notebook.AddPage(self.model_edit_controller, "Edit")
         return self.model_edit_controller
 
     def add_spatial_page(self):
+        if self.model_spatial_controller:
+            sPrint("ModelCtrl.model_spatial_controller is already set", messageType=MessageType.DEBUG)
+            return self.model_spatial_controller
+
         self.model_spatial_controller = SpatialCtrl(self.notebook)
         self.notebook.AddPage(self.model_spatial_controller, "Spatial")
         return self.model_spatial_controller

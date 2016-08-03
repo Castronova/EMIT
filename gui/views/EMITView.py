@@ -1,4 +1,3 @@
-import os
 import wx
 import wx.html2
 import wx.lib.agw.aui as aui
@@ -6,6 +5,7 @@ from wx.lib.newevent import NewEvent
 from LowerPanelView import ViewLowerPanel
 from gui.controller.CanvasCtrl import CanvasCtrl
 from gui.controller.ToolboxCtrl import ToolboxCtrl
+from gui.controller.ModelCtrl import ModelCtrl
 
 # create custom events
 wxCreateBox, EVT_CREATE_BOX = NewEvent()
@@ -63,6 +63,7 @@ class EMITView(wx.Frame):
         # creating components
         self.Toolbox = ToolboxCtrl(self.pnlDocking)
         self.Canvas = CanvasCtrl(self.pnlDocking)
+        self.model_details = ModelCtrl(self.pnlDocking)
 
         self.Toolbox.Hide()
         self.initAUIManager()
@@ -123,11 +124,20 @@ class EMITView(wx.Frame):
                            BestSize(wx.Size(1200, 225)).CaptionVisible(False)
                            )
 
+        self.m_mgr.AddPane(self.model_details,
+                           aui.AuiPaneInfo()
+                           .Right()
+                           .Dock()
+                           .Name("Details")
+                           .CloseButton(False)
+                           .MaximizeButton(False)
+                           .MinimizeButton(False)
+                           .PinButton(True).
+                           PaneBorder(True).
+                           CaptionVisible(True)
+                           .Show(show=True).
+                           BestSize((200, -1)))
 
         self.m_mgr.Update()
 
         self._default_perspective = self.m_mgr.SavePerspective()
-
-    # def _postStart(self):  # Unused code
-    #     # Starts stuff after program has initiated
-    #     self.Canvas.ZoomToFit(event=None)

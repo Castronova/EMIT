@@ -5,12 +5,15 @@ from gui.controller.PlotCtrl import PlotCtrl
 
 
 
-class SpatialView:
+class SpatialView(wx.Panel):
+
     def __init__(self, panel):
 
+        wx.Panel.__init__(self, panel)
+
         # Creating all the necessary panels
-        top_panel = wx.Panel(panel)
-        bottom_panel = wx.Panel(panel)
+        top_panel = wx.Panel(self)
+        bottom_panel = wx.Panel(self)
 
         # create the sizers
         sizer_top_panel = wx.BoxSizer(wx.HORIZONTAL)
@@ -49,7 +52,7 @@ class SpatialView:
         sizer_spatial_view.Add(top_panel, 1, wx.EXPAND | wx.ALL, 2)
         #  proportion=0 makes the panel same size when resizing
         sizer_spatial_view.Add(bottom_panel, 0, wx.EXPAND | wx.ALL, 2)
-        panel.SetSizer(sizer_spatial_view)
+        self.SetSizer(sizer_spatial_view)
 
 
 def setup_grid(grid, title):

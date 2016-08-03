@@ -1,8 +1,6 @@
 import wx
-import coordinator.engineAccessors as engine
 from gui.controller.ModelCtrl import ModelCtrl
-from utilities import models
-from sprint import *
+
 
 class LinkContextMenu(wx.Menu):
     def __init__(self, parent, e):
@@ -28,58 +26,38 @@ class ModelContextMenu(wx.Menu):
 
         mmi = wx.MenuItem(self, wx.NewId(), 'View Details')
         self.AppendItem(mmi)
-        self.Bind(wx.EVT_MENU, self.ShowModelDetails, mmi)
+        self.Bind(wx.EVT_MENU, self.show_model_ctrl, mmi)
 
         mmi = wx.MenuItem(self, wx.NewId(), 'Remove')
         self.AppendItem(mmi)
-        self.Bind(wx.EVT_MENU, self.RemoveModel, mmi)
+        self.Bind(wx.EVT_MENU, self.remove_model, mmi)
 
-    def ShowModelDetails(self, event):
-        # create a frame to bind the details page to
-        f = wx.Frame(self.GetParent())
+    def show_model_ctrl(self, event):
 
-        kwargs = {'edit': False, 'spatial': True}
-        model_details = ModelCtrl(f, model_id=self.model_obj.ID, **kwargs)
+        frame = wx.Frame(None)
+        frame.SetSize((640, 690))
 
-        model = engine.getModelById(self.model_obj.ID)
+        models_controller = ModelCtrl(frame)
 
-        details_populated = False
-        try:
-            if "params" in model.keys():
-                path = model["params"]["path"]  # Get the model file path
-                data = models.parse_json(path)
-                model_details.properties_page_controller.add_data(data)
-                details_populated = True
-        except:
-            details_populated = False
+        details = models_controller.add_detail_page()
+        details.model_object = self.model_obj
+        details.populate_grid_by_model_object()
 
-        try:
-            if "mdl" in model["attrib"] and not details_populated:
-                # Populate the grid
-                data = models.parse_json(model["attrib"]["mdl"])
-                model_details.properties_page_controller.add_data(data)
-                details_populated = True
-        except:
-            details_populated = False
+        spatial = models_controller.add_spatial_page()
+        iei = spatial.get_input_exchange_item_by_id(self.model_obj.ID)
+        igeoms = spatial.get_geometries(iei)
 
-        if not details_populated:
-            try:
-                # A default way to load the data
-                model_details.properties_page_controller.add_section("General")
-                for key, value in engine.getModelById(self.model_obj.ID).iteritems():
-                    if isinstance(value, dict):
-                        model_details.properties_page_controller.add_dictionary(value, key)
-                    else:
-                        model_details.properties_page_controller.add_data_to_section(0, key, value)
-                details_populated = True
-            except:
-                details_populated = False
+        oei = spatial.get_output_exchange_item_by_id(self.model_obj.ID)
+        ogeoms = spatial.get_geometries(oei)
 
-        if details_populated:
-            model_details.Show()
-        else:
-            sPrint('Could not populate model details.  This is most likely '
-                   'due to malformed data.', MessageType.ERROR)
+        spatial.set_data(target=igeoms, source=ogeoms)
+        spatial.raw_input_data = iei
+        spatial.raw_output_data = oei
 
-    def RemoveModel(self, e):
+        spatial.add_input_combo_choices(igeoms.keys())
+        spatial.add_output_combo_choices(ogeoms.keys())
+
+        frame.Show()
+
+    def remove_model(self, e):
         self.parent.remove_model(self.model_obj)

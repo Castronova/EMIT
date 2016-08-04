@@ -26,10 +26,6 @@ class ModelDetailsView(wx.Panel):
         sizer.Add(self.grid, 1, wx.EXPAND)
         self.SetSizer(sizer)
 
-    # def reset_grid(self):
-    #     del self.grid
-    #     self.grid = CustomGrid(self)
-
 
 class ModelEditView(wx.Panel):
     def __init__(self, parent):

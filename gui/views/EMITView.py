@@ -44,6 +44,7 @@ class EMITView(wx.Frame):
         self.toggle_menu = wx.Menu()
         self._toggle_toolbar_menu = self.toggle_menu.Append(wx.ID_ANY, "Toggle Toolbar", help="Toggle Toolbar", kind=wx.ITEM_CHECK)
         self._toggle_console_menu = self.toggle_menu.Append(wx.ID_ANY, "Toggle Console", help="Toggle Console", kind=wx.ITEM_CHECK)
+        self._toggle_details_menu = self.toggle_menu.Append(wx.ID_ANY, "Toggle Details", help="Toggle Details", kind=wx.ITEM_CHECK)
         self.view_menu.AppendMenu(wx.ID_ANY, "Toggle", self.toggle_menu)
 
         # Data Menu Option
@@ -134,8 +135,8 @@ class EMITView(wx.Frame):
                            .MinimizeButton(False)
                            .PinButton(True).
                            PaneBorder(True).
-                           CaptionVisible(True)
-                           .Show(show=True).
+                           CaptionVisible(False)
+                           .Show(show=False).
                            BestSize((200, -1)))
 
         self.m_mgr.Update()

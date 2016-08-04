@@ -174,6 +174,15 @@ class CustomGrid(wx.grid.Grid):
                 max_position = key
         return max_position
 
+    def reset_grid(self):
+        """
+        Deletes every row in the grid
+        :return:
+        """
+        self.__section_row_number = {-1: -1}
+        if self.NumberRows:
+            self.DeleteRows(numRows=self.NumberRows)
+
     def resize_grid_to_fill_white_space(self):
         col_size = self.GetColSize(0)
         C, R = self.GetSize()

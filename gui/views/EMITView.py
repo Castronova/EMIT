@@ -5,7 +5,7 @@ from wx.lib.newevent import NewEvent
 from LowerPanelView import ViewLowerPanel
 from gui.controller.CanvasCtrl import CanvasCtrl
 from gui.controller.ToolboxCtrl import ToolboxCtrl
-from gui.controller.ModelCtrl import ModelCtrl
+from gui.controller.ModelCtrl import ModelDetailsCtrl
 
 # create custom events
 wxCreateBox, EVT_CREATE_BOX = NewEvent()
@@ -63,7 +63,7 @@ class EMITView(wx.Frame):
         # creating components
         self.Toolbox = ToolboxCtrl(self.pnlDocking)
         self.Canvas = CanvasCtrl(self.pnlDocking)
-        self.model_details = ModelCtrl(self.pnlDocking)
+        self.model_details = ModelDetailsCtrl(self.pnlDocking)
 
         self.Toolbox.Hide()
         self.initAUIManager()

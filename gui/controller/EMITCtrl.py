@@ -196,11 +196,9 @@ class EMITCtrl(EMITView):
             wx.WakeUpMainThread
 
     def set_model_details_by_model(self, model):
-        details = self.model_details.add_detail_page()
-        details.model_object = model
-        # details.clear_grid()
-        details.reset_grid()
-        details.populate_grid_by_model_object()
+        self.model_details.model_object = model
+        self.model_details.grid.reset_grid()
+        self.model_details.populate_grid_by_model_object()
 
     def on_default_view(self, event):
         """

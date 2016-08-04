@@ -51,7 +51,7 @@ class EMITCtrl(EMITView):
         self.Bind(wx.EVT_MENU, self.on_default_view, self._default_view_menu)
 
         # Data Menu Bindings
-        self.Bind(wx.EVT_MENU, self.on_add_csv_file, self._add_file)
+        self.Bind(wx.EVT_MENU, self.on_add_csv_file, self._add_csv_file_menu)
         self.Bind(wx.EVT_MENU, self.on_add_net_cdf_file, self._add_netcdf)
         self.Bind(wx.EVT_MENU, self.on_open_dap_viewer, self._open_dap_viewer_menu)
         # All other bindings

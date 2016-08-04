@@ -48,7 +48,7 @@ class EMITView(wx.Frame):
         self.view_menu.AppendMenu(wx.ID_ANY, "Toggle", self.toggle_menu)
 
         # Data Menu Option
-        self._add_file = self.data_menu.Append(wx.NewId(), "&Add CSV File")
+        self._add_csv_file_menu = self.data_menu.Append(wx.NewId(), "&Add CSV File")
         self._add_netcdf = self.data_menu.Append(wx.NewId(), '&Add NetCDF')
         self._open_dap_viewer_menu = self.data_menu.Append(wx.NewId(), "&OpenDap Explorer")
 
@@ -56,8 +56,6 @@ class EMITView(wx.Frame):
         self._menu_bar.Append(self._file_menu, "&File")
         self._menu_bar.Append(self.view_menu, "&View")
         self._menu_bar.Append(self.data_menu, "Data")
-
-        self._add_file.Enable(False)
 
         self.SetMenuBar(self._menu_bar)
 

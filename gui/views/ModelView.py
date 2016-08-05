@@ -1,6 +1,7 @@
 import wx
 import wx.xrc
-from gui.Models.CustomGrid import CustomGrid
+
+from gui.controller.CustomGrid import CustomGrid
 
 
 class ModelView(wx.Panel):

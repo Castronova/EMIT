@@ -66,7 +66,6 @@ def writeDefaultEnvironment(settings=None):
     config.set('LOGGING', 'SHOWERROR', 1)
     config.set('LOGGING', 'SHOWDEBUG', 1)
 
-
     config.add_section('APP')
     config.set('APP', 'IMAGES_PATH',   os.path.abspath(os.path.join(app_path, 'img')))
     config.set('APP', 'LOCAL_DB_PATH', os.path.abspath(os.path.join(app_path, 'db/local.db')))
@@ -75,7 +74,6 @@ def writeDefaultEnvironment(settings=None):
     config.set('APP', 'USER_PATH',     os.path.abspath(os.path.join(app_path, 'config/users.json')))
     config.set('APP', 'CONNECTIONS_PATH',     os.path.abspath(os.path.join(app_path, 'db/connections')))
     config.set('APP', 'SECRET',     os.path.abspath(os.path.join(app_path, 'secret.py')))
-
 
     config.add_section('LEGEND')
     config.set('LEGEND', 'locationright', 1)
@@ -86,9 +84,9 @@ def writeDefaultEnvironment(settings=None):
     if getattr(sys, 'frozen', False):
         gdal_path = os.path.join(sys._MEIPASS, 'gdal')
 
-    config.add_section('GDAL')
-    config.set('GDAL', 'DATA', gdal_path)
-
+    if os.path.exists(gdal_path):
+        config.add_section('GDAL')
+        config.set('GDAL', 'DATA', gdal_path)
 
     with open(settings, 'w') as f:
         config.write(f)

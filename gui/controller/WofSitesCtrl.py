@@ -1,9 +1,7 @@
 import datetime as dt
 import threading
 import time
-
 import wx
-
 import coordinator.engineAccessors as engine
 from emitLogging import elog
 from gui.views.WofSitesView import WofSitesView
@@ -100,6 +98,20 @@ class WofSitesCtrl(WofSitesView):
             temp.append(DicToObj(d))
         return temp
 
+    def _export_a_waterml(self, path):
+        if not path[-3:] == "xml":
+            return
+        end, siteobject, start, var_code = self._preparationToGetValues()
+        data = self.wof_api.getValues(siteobject.site_code, var_code, start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
+
+        if not data:
+            sPrint("WofSitesCtrl._export_a_waterml() failed. data is None")
+            return
+
+        with open(path, 'w') as f:
+            f.write(data)
+            f.close()
+
     # Threaded
     def handle_export(self, path):
         """
@@ -108,10 +120,14 @@ class WofSitesCtrl(WofSitesView):
         :return:
         """
         self.disable_button()
+        self._thread_status_bar_loading()
+
         if path[-4] != '.':
             path += '.csv'
 
-        self._thread_status_bar_loading()
+        if path[-3:] == "xml":
+            self._export_a_waterml(path)
+            return
 
         varInfo = self.variableList.get_selected_row()
         end, siteobject, start, var_code = self._preparationToGetValues()
@@ -127,7 +143,7 @@ class WofSitesCtrl(WofSitesView):
                 values.append([v._dateTime.strftime('%m-%d-%Y %H:%M:%S'), v.value])
         else:
             # Data has not been previewed so fetch data
-            values = self.wof_api.parseValues(siteobject.site_code, self.get_selected_variable_code(), start, end)
+            values = self.wof_api.parseValues(siteobject.site_code, var_code, start, end)
 
         with open(path, 'w') as f:
             hline = '#' + 75 * '-' + '\n'
@@ -263,7 +279,7 @@ class WofSitesCtrl(WofSitesView):
 
             # query the data using WOF
             sPrint('Querying WOF using this following parameters: %s, %s, %s, %s ' % (series.site_code, series.var_code, series.start_date, series.end_date), MessageType.INFO)
-            data = self.wof_api.getValues(series.site_code, series.var_code, series.start_date, series.end_date)
+            data = self.wof_api.getValuesObject(series.site_code, series.var_code, series.start_date, series.end_date)
 
             # save these data to the wofSeries object
             self.wofSeries.addData(series, data)
@@ -382,7 +398,7 @@ class WofSitesCtrl(WofSitesView):
             return
 
         file_dialog = wx.FileDialog(parent=self, message="Choose Path", defaultDir=os.getcwd(),
-                            wildcard="CSV Files (*.csv)|*.csv", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+                            wildcard="CSV File (*.csv)|*.csv |WaterML File (*.xml)|*.xml", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
 
         if file_dialog.ShowModal() == wx.ID_OK:
             export_path = file_dialog.GetPath()

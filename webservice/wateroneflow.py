@@ -99,7 +99,7 @@ class WaterOneFlow(object):
         return variableDict
 
     def parseValues(self, sitecode, variable, start=None, end=None):
-        data = self.getValues(sitecode, variable, start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d"))
+        data = self.getValuesObject(sitecode, variable, start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d"))
         valuesList = []
         if data is not None:
             for values in data[0].values[0].value:
@@ -222,11 +222,36 @@ class WaterOneFlow(object):
             site_objects = self.conn.service.GetSitesObject(value)
         return site_objects[1]
 
-
     def getValues(self, site_code, variable_code, beginDate=None, endDate=None):
-        #  Passing only the sitecode returns the data values.
-        #  Passing both variables returns that specified object.
-        # Returns an XML
+        """
+        Leaving the dates to None will return all the timeseries for that variable.
+        :param site_code: type(str)
+        :param variable_code: type(str)
+        :param beginDate: type(str) Y-m-d
+        :param endDate: type(str) Y-m-d
+        :return: XML or None
+        """
+        network_code = self.network_code
+
+        try:
+            site = ':'.join([network_code, site_code])
+            var = ':'.join([network_code, variable_code])
+            if beginDate is None or endDate is None:
+                data = self.conn.service.GetValues(site, var)
+            else:
+                data = self.conn.service.GetValues(site, var, beginDate, endDate)
+
+            return data
+        except:
+            # error getting data
+            print 'There was an error getting data for %s:%s, %s:%s, %s %s' % (
+            network_code, site_code, network_code, variable_code, str(beginDate), str(endDate))
+            return None
+
+    def getValuesObject(self, site_code, variable_code, beginDate=None, endDate=None):
+        # Passing only the sitecode returns the data values.
+        # Passing both variables returns that specified object.
+        # Returns an JSON
         network_code = self.network_code
 
         try:

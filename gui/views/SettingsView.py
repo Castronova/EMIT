@@ -57,14 +57,19 @@ class SettingsView(wx.Frame):
         ###########################
 
         # Create components
+        break_line = wx.StaticLine(lower_panel)
         self.save_button = wx.Button(lower_panel, label="Save")
         self.cancel_button = wx.Button(lower_panel, label="Cancel")
 
         # Create sizer and add components
-        lower_panel_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        lower_panel_sizer.AddSpacer((0, 0), 1, wx.EXPAND, 2)
-        lower_panel_sizer.Add(self.cancel_button, 0, wx.EXPAND | wx.ALL, 5)
-        lower_panel_sizer.Add(self.save_button, 0, wx.EXPAND | wx.ALL, 5)
+        lower_panel_sizer = wx.BoxSizer(wx.VERTICAL)
+        lower_panel_button_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        lower_panel_button_sizer.AddSpacer((0, 0), 1, wx.EXPAND, 2)
+        lower_panel_button_sizer.Add(self.cancel_button, 0, wx.EXPAND | wx.ALL, 5)
+        lower_panel_button_sizer.Add(self.save_button, 0, wx.EXPAND | wx.ALL, 5)
+
+        lower_panel_sizer.Add(break_line, 0, wx.EXPAND)
+        lower_panel_sizer.Add(lower_panel_button_sizer, 0, wx.ALIGN_RIGHT)
 
         lower_panel.SetSizer(lower_panel_sizer)
 
@@ -94,7 +99,6 @@ class SettingsDatabaseView(wx.Panel):
         header_text = wx.StaticText(self, label="Database")
         line_break = wx.StaticLine(self)
 
-
         # Create components
         self.table = CustomListCtrl(self)
 
@@ -107,8 +111,8 @@ class SettingsDatabaseView(wx.Panel):
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(header_text, 0, wx.EXPAND | wx.TOP | wx.LEFT, 15)
-        sizer.Add(line_break, 0, wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT, 10)
-        sizer.Add(self.table, 1, wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT, 10)
+        sizer.Add(line_break, 0, wx.EXPAND | wx.TOP | wx.LEFT, 10)
+        sizer.Add(self.table, 1, wx.EXPAND | wx.ALL, 10)
         self.SetSizer(sizer)
         sizer.Fit(self)
 
@@ -143,7 +147,7 @@ class SettingsConsole(wx.Panel):
         static_box_sizer.Add(self.debug_checkbox)
         static_box_sizer.Add(self.error_checkbox)
 
-        sizer.Add(static_box_sizer, 1, wx.EXPAND | wx.TOP | wx.LEFT, 15)
+        sizer.Add(static_box_sizer, 1, wx.EXPAND | wx.ALL, 15)
         self.SetSizer(sizer)
         sizer.Fit(self)
 

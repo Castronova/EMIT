@@ -15,6 +15,7 @@ class WofSitesCtrl(WofSitesView):
         table_cols = ["Variable Name", "Unit", "Category", "Type", "Begin Date Time", "End Date Time", "Description"]
         WofSitesView.__init__(self, parent, siteObject.site_name, table_cols)
         self.site_objects = siteObject
+        self.line_style_combo.SetEditable(False)
 
         self.line_style_combo.SetSelection(1)
         self.thread = threading.Thread()

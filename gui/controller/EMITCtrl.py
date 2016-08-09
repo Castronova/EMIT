@@ -47,7 +47,6 @@ class EMITCtrl(EMITView):
         # View Option Bindings
         self.Bind(wx.EVT_MENU, self.on_toggle_console, self._toggle_console_menu)
         self.Bind(wx.EVT_MENU, self.on_toggle_toolbar, self._toggle_toolbar_menu)
-        self.Bind(wx.EVT_MENU, self.on_toggle_model_details, self._toggle_details_menu)
         self.Bind(wx.EVT_MENU, self.on_default_view, self._default_view_menu)
 
         # Data Menu Bindings
@@ -204,17 +203,15 @@ class EMITCtrl(EMITView):
         self.model_details.populate_grid_by_model_object()
         self.toggle_model_details(1)
 
-    def on_toggle_model_details(self, event):
-        self.toggle_model_details(event.GetSelection())
-
     def toggle_model_details(self, selection):
         pane = self.m_mgr.GetPane(self.model_details)
         if selection:
             pane.Show(show=True)
-            self._toggle_details_menu.Check()
+            pane.CaptionVisible(True)
+            pane.CloseButton(True)
+            pane.PinButton(False)
         else:
             pane.Hide()
-            self._toggle_details_menu.Check(False)
         self.m_mgr.Update()
 
     def on_default_view(self, event):

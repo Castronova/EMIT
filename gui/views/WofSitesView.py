@@ -1,8 +1,4 @@
 import wx
-
-from emitLogging import elog
-# from gui.Models.SpatialTemporalPlotter import SpatialTemporalPlotter
-
 from gui.controller.CustomListCtrl import CustomListCtrl
 from gui.controller.PlotCtrl import PlotCtrl
 
@@ -18,29 +14,27 @@ class WofSitesView(wx.Frame):
         self._data = None
 
         panel = wx.Panel(self)
-        toppanel = wx.Panel(panel)
-        middlepanel = wx.Panel(panel, size=(-1, 30))
-        lowerpanel = wx.Panel(panel)
+        top_panel = wx.Panel(panel)
+        middle_panel = wx.Panel(panel, size=(-1, 30))
+        lower_panel = wx.Panel(panel)
 
         hboxTopPanel = wx.BoxSizer(wx.HORIZONTAL)
 
-        # self.plot = SpatialTemporalPlotter(toppanel)
-        self.plot = PlotCtrl(toppanel)
-        # hboxTopPanel.Add(self.plot.plot, 1, wx.EXPAND | wx.ALL, 2)
+        self.plot = PlotCtrl(top_panel)
         hboxTopPanel.Add(self.plot.canvas, 1, wx.EXPAND | wx.ALL, 2)
 
-        toppanel.SetSizer(hboxTopPanel)
+        top_panel.SetSizer(hboxTopPanel)
 
         hboxMidPanel = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.startDateText = wx.StaticText(middlepanel, id=wx.ID_ANY, label="Start")
-        self.startDatePicker = wx.DatePickerCtrl(middlepanel, id=wx.ID_ANY, dt=self.start_date)
-        self.endDateText = wx.StaticText(middlepanel, id=wx.ID_ANY, label="End")
-        self.endDatePicker = wx.DatePickerCtrl(middlepanel, id=wx.ID_ANY, dt=self.end_date)
-        self.exportBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Export")
-        self.addToCanvasBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Add to Canvas")
-        self.PlotBtn = wx.Button(middlepanel, id=wx.ID_ANY, label="Preview")
-        self.line_style_combo = wx.ComboBox(middlepanel, value="Line style")
+        self.startDateText = wx.StaticText(middle_panel, id=wx.ID_ANY, label="Start")
+        self.startDatePicker = wx.DatePickerCtrl(middle_panel, id=wx.ID_ANY, dt=self.start_date)
+        self.endDateText = wx.StaticText(middle_panel, id=wx.ID_ANY, label="End")
+        self.endDatePicker = wx.DatePickerCtrl(middle_panel, id=wx.ID_ANY, dt=self.end_date)
+        self.exportBtn = wx.Button(middle_panel, id=wx.ID_ANY, label="Export")
+        self.addToCanvasBtn = wx.Button(middle_panel, id=wx.ID_ANY, label="Add to Canvas")
+        self.PlotBtn = wx.Button(middle_panel, id=wx.ID_ANY, label="Preview")
+        self.line_style_combo = wx.ComboBox(middle_panel, value="Line style")
 
         self.line_style_options = ["Line", "Scatter"]
 
@@ -54,22 +48,22 @@ class WofSitesView(wx.Frame):
         hboxMidPanel.Add(self.exportBtn, 1, wx.EXPAND | wx.ALL, 2)
         hboxMidPanel.Add(self.addToCanvasBtn, 1, wx.EXPAND | wx.ALL, 2)
         hboxMidPanel.Add(self.line_style_combo, 1, wx.EXPAND | wx.ALL, 2)
-        middlepanel.SetSizer(hboxMidPanel)
+        middle_panel.SetSizer(hboxMidPanel)
 
         hboxLowPanel = wx.BoxSizer(wx.HORIZONTAL)
 
         # Build time series table
-        self.variableList = CustomListCtrl(lowerpanel)
+        self.variableList = CustomListCtrl(lower_panel)
         self.variableList.set_columns(table_columns)
 
         hboxLowPanel.Add(self.variableList, 1, wx.EXPAND | wx.ALL, 2)
-        lowerpanel.SetSizer(hboxLowPanel)
+        lower_panel.SetSizer(hboxLowPanel)
 
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        vbox.Add(toppanel, 1, wx.EXPAND | wx.ALL, 2)
-        vbox.Add(middlepanel, 0, wx.EXPAND | wx.ALL, 2)
-        vbox.Add(lowerpanel, 1, wx.EXPAND | wx.ALL, 2)
+        vbox.Add(top_panel, 1, wx.EXPAND | wx.ALL, 2)
+        vbox.Add(middle_panel, 0, wx.EXPAND | wx.ALL, 2)
+        vbox.Add(lower_panel, 1, wx.EXPAND | wx.ALL, 2)
 
         panel.SetSizer(vbox)
 
@@ -77,12 +71,3 @@ class WofSitesView(wx.Frame):
         self.status_bar.SetStatusText("Ready")
 
         self.Show()
-
-    def plotGraph(self, data, var_name, y_units=None, no_data=None):
-        self.plot.clear_plot()
-        if data is not None:
-            self.plot.plot_dates(data, str(var_name), no_data, y_units)
-        else:
-            elog.info("Received no data to plot")
-            elog.info("data is None")
-

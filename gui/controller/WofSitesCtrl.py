@@ -63,7 +63,7 @@ class WofSitesCtrl(WofSitesView):
     def addToCanvas(self, event):
         end, siteobject, start, variable_code = self._preparationToGetValues()
 
-        var_codes_temp = self.getAllSelectedVariableSiteCodes()
+        var_codes_temp = self.get_all_selected_variable_site_codes()
         if len(var_codes_temp) > 1:
             elog.warning("We do not support adding more then one item to the canvas at this point. We added " + var_codes_temp[0])
         if variable_code is None:
@@ -86,15 +86,15 @@ class WofSitesCtrl(WofSitesView):
     def dicToObj(self, data):
         temp = []
         for key, value in data.iteritems():
-            d = {}
-            d["code"] = key
-            d["name"] = value[0]
-            d["unit"] = value[1]
-            d["category"] = value[2]
-            d["type"] = value[3]
-            d["begin_date"] = value[4]
-            d["end_date"] = value[5]
-            d["description"] = value[6]
+            d = {"code": key,
+                 "name": value[0],
+                 "unit": value[1],
+                 "category": value[2],
+                 "type": value[3],
+                 "begin_date": value[4],
+                 "end_date": value[5],
+                 "description": value[6]
+                 }
             temp.append(DicToObj(d))
         return temp
 
@@ -180,13 +180,6 @@ class WofSitesCtrl(WofSitesView):
         self.enable_button()
         sPrint("Finished exporting", messageType=MessageType.INFO)
 
-    def get_all_selected_variables(self):
-        code = self.getAllSelectedVariableSiteCodes()
-        variables = []
-        for i in code:
-            variables.append(self._data[i])
-        return variables
-
     def get_all_selected_variable_name(self):
         vars = []
         num = self.variableList.GetItemCount()
@@ -196,23 +189,21 @@ class WofSitesCtrl(WofSitesView):
         return vars
 
     def get_selected_variable_code(self):
-        variableCode = None
-        num = self.variableList.GetItemCount()
-        for i in range(num):
-            if self.variableList.IsSelected(i):
-                v_name = self.variableList.GetItemText(i)
-                variableCode = self.get_site_code_by_variable_name(v_name)
-                break
-        return variableCode
+        row = self.variableList.get_selected_row()
+        if not row:
+            return None
 
-    def getAllSelectedVariableSiteCodes(self):
-        sites = []
-        num = self.variableList.GetItemCount()
-        for i in range(num):
-            if self.variableList.IsSelected(i):
-                v_name = self.variableList.GetItemText(i)
-                sites.append(self.get_site_code_by_variable_name(v_name))
-        return sites
+        return self.get_site_code_by_variable_name(row[0])
+
+    def get_all_selected_variable_site_codes(self):
+        rows = self.variableList.get_all_selected_rows()
+        if not len(rows):
+            return  # No rows selected
+
+        site_codes = []
+        for row in rows:
+            site_codes.append(self.get_site_code_by_variable_name(row[0]))
+        return site_codes
 
     def get_selected_site_code(self):
         row = self.variableList.get_selected_row()
@@ -250,7 +241,7 @@ class WofSitesCtrl(WofSitesView):
         self._thread_status_bar_loading()
 
         # get selected variables
-        var_codes = self.getAllSelectedVariableSiteCodes()
+        var_codes = self.get_all_selected_variable_site_codes()
         var_names = self.get_all_selected_variable_name()
 
         # get start and end dates
@@ -335,7 +326,7 @@ class WofSitesCtrl(WofSitesView):
 
     # THREADED
     def updateStatusBarLoading(self):
-        status_list = ["Querying .", "Querying ..", "Querying ...", "Querying ....", "Querying ....."]
+        status_list = ["Querying.", "Querying..", "Querying...", "Querying....", "Querying....."]
         i = 0
         self.on_disable_button(None)
         while self.thread.isAlive():

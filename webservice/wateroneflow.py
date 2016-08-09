@@ -187,33 +187,6 @@ class WaterOneFlow(object):
 
         return output
 
-    # def get_sites_in_list(self):
-    #     """
-    #     :return: a 2-D list of the sites and info about them
-    #     """
-    #     xml_sites = self.get_sites_in_xml()
-    #     root = xml.etree.ElementTree.fromstring(xml_sites)
-    #     output = []
-    #     for child in root:
-    #         if "site" in child.tag:
-    #             d = []
-    #             for step_child in child:
-    #                 for onemore in step_child:
-    #                     if "siteName" in onemore.tag:
-    #                         d.append(onemore.text)
-    #                     elif "siteCode" in onemore.tag:
-    #                         d.append(onemore.items()[1][1])
-    #                         d.append(onemore.text)
-    #                     elif "siteProperty" in onemore.tag:
-    #                         if onemore.attrib.items()[0][1] == "County":
-    #                             d.append(onemore.text)
-    #                         if onemore.attrib.items()[0][1] == "State":
-    #                             d.append(onemore.text)
-    #                         if onemore.attrib.items()[0][1] == "Site Type":
-    #                             d.append(onemore.text)
-    #             output.append(d)
-    #     return output
-
     def getSitesObject(self, value=None):
         #  Returns JSON
         if value is None:
@@ -278,6 +251,5 @@ class WaterOneFlow(object):
         return data.variables
 
     def getValuesForASiteObject(self, siteid=None):
-        network = "iutah:"
         x = self.conn.service.GetValuesForASiteObject(self.network_code + ":" + str(siteid))
         return x

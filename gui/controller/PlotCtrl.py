@@ -314,13 +314,18 @@ class PlotCtrl(PlotView):
         self.toolbar.press_pan(event)
 
     def on_canvas_mouse_scroll(self, event):
-        base_scale = 2.0
+        """
+        Keep the base_scale between 1.0 - 1.5. Higher base scale will zoom faster
+        :param event:
+        :return:
+        """
+        base_scale = 1.1
         cur_xlim = self.axes.get_xlim()
         cur_ylim = self.axes.get_ylim()
-        cur_xrange = (cur_xlim[1] - cur_xlim[0]) * .5
-        cur_yrange = (cur_ylim[1] - cur_ylim[0]) * .5
+
         xdata = event.xdata  # get event x location
         ydata = event.ydata  # get event y location
+
         if event.button == 'up':
             # deal with zoom in
             scale_factor = 1 / base_scale
@@ -332,11 +337,16 @@ class PlotCtrl(PlotView):
             scale_factor = 1
             print event.button
 
+        new_width = (cur_xlim[1] - cur_xlim[0]) * scale_factor
+        new_height = (cur_ylim[1] - cur_ylim[0]) * scale_factor
+
+        relx = (cur_xlim[1] - xdata) / (cur_xlim[1] - cur_xlim[0])
+        rely = (cur_ylim[1] - ydata) / (cur_ylim[1] - cur_ylim[0])
+
         # set new limits
-        self.axes.set_xlim([xdata - cur_xrange * scale_factor,
-                     xdata + cur_xrange * scale_factor])
-        self.axes.set_ylim([ydata - cur_yrange * scale_factor,
-                     ydata + cur_yrange * scale_factor])
+        self.axes.set_xlim([xdata - (new_width * (1 - relx)), xdata + (new_width * relx)])
+        self.axes.set_ylim([ydata - (new_height * (1 - rely)), ydata + (new_height * rely)])
+
         self.redraw()
 
     def on_canvas_released(self, event):

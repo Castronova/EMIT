@@ -62,6 +62,9 @@ class WofSitesCtrl(WofSitesView):
         return end, siteobject, start, code
 
     def addToCanvas(self, event):
+        if not self.variableList.get_selected_row():
+            return  # No selected row
+
         end, siteobject, start, variable_code = self._preparationToGetValues()
 
         var_codes_temp = self.get_all_selected_variable_site_codes()
@@ -217,6 +220,9 @@ class WofSitesCtrl(WofSitesView):
                 return key        # Column names
 
     def onPreview(self, event):
+        if not self.variableList.get_selected_row():
+            return  # No row is selected
+
         if not isinstance(self.thread, threading.Thread):
             sPrint("WofSiteCtrl.thread must be type(threading.Thread", messageType=MessageType.DEBUG)
             return
@@ -380,6 +386,9 @@ class WofSitesCtrl(WofSitesView):
             self.enable_button()
 
     def on_export_button(self, event):
+        if not self.variableList.get_selected_row():
+            return  # No row is selected
+
         if not isinstance(self.thread, threading.Thread):
             sPrint("WofSiteCtrl.thread must be type threading.Thread", messageType=MessageType.DEBUG)
             return

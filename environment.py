@@ -4,6 +4,7 @@ import ConfigParser
 import encrypt
 import sqlite3 as sqlite
 from odm2api import dbconnection
+from app_data import secret
 
 # DO NOT import sprint in this file!
 # The sprint library uses environment variables so it will cause a circular import.
@@ -25,7 +26,6 @@ def saveConnection(connection):
         return False
 
     # encrypt password
-    import secret
     cipher = encrypt.AESCipher(secret.key)
     uhash = cipher.encrypt(connection['username'])
     phash = cipher.encrypt(connection['password'])

@@ -2,15 +2,26 @@ from gui.views.SettingsView import SettingsView
 import wx
 from gui.views.SettingsView import SettingsDatabaseView
 from gui.Models.Connection import *
+import sys
 
 
 class SettingsCtrl(SettingsView):
     def __init__(self, parent):
         SettingsView.__init__(self, parent)
 
+        selected_point_size = 12
+        non_selected_point_size = 10
+        if sys.platform == "darwin":
+            # OSX
+            selected_point_size = 15
+            non_selected_point_size = 12
+
         self.menu_buttons = [self.console_button, self.database_button, self.environment_button]
-        self.selected_font = wx.Font(pointSize=15, family=wx.DEFAULT, style=wx.NORMAL, weight=wx.NORMAL)
-        self.non_selected_font = wx.Font(pointSize=12, family=wx.DEFAULT, style=wx.NORMAL, weight=wx.NORMAL)
+
+        self.selected_font = wx.Font(pointSize=selected_point_size,
+                                     family=wx.DEFAULT, style=wx.NORMAL, weight=wx.NORMAL)
+        self.non_selected_font = wx.Font(pointSize=non_selected_point_size,
+                                         family=wx.DEFAULT, style=wx.NORMAL, weight=wx.NORMAL)
 
         # Add panels to the settings overall view
         self.database_panel = SettingsDatabaseCtrl(self.details_panel)
@@ -93,11 +104,9 @@ class SettingsCtrl(SettingsView):
 
         for i in range(len(self.menu_buttons)):
             if i == index:
-                self.menu_buttons[i].Font = self.selected_font
-                self.menu_buttons[i].SetForegroundColour(wx.WHITE)
+                self.menu_buttons[i].SetFont(self.selected_font)
             else:
-                self.menu_buttons[i].Font = self.non_selected_font
-                self.menu_buttons[i].SetForegroundColour(wx.LIGHT_GREY)
+                self.menu_buttons[i].SetFont(self.non_selected_font)
 
     def on_console(self, event):
         self._update_menu_button(0)

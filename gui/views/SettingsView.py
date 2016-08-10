@@ -42,7 +42,7 @@ class SettingsView(wx.Frame):
         ###########################
 
         self.details_panel.SetupScrolling()
-        self.details_panel.SetBackgroundColour(wx.Colour(249, 249, 249))
+        # self.details_panel.SetBackgroundColour(wx.Colour(249, 249, 249))
 
         # Console controls
         self.console_panel = SettingsConsole(self.details_panel)

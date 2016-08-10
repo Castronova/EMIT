@@ -1,128 +1,129 @@
-import wx
-import wx.propgrid as wxpg
-from wx.lib.pubsub import pub as Publisher
-
 from gui.views.ModelView import ModelView
-from utilities import gui
+from gui.views.ModelView import ModelDetailsView
+from gui.controller.SpatialCtrl import SpatialCtrl
+from sprint import *
+from utilities import models
+from gui.controller.CanvasObjectsCtrl import ModelBox
+import coordinator.engineAccessors as engineAccessors
+from gui.views.ModelView import ModelEditView
 
 
 class ModelCtrl(ModelView):
+    def __init__(self, parent):
+        ModelView.__init__(self, parent)
 
-    def __init__(self, parent, model_id=None, **kwargs):
+        self.model_details_controller = None
+        self.model_edit_controller = None
+        self.model_spatial_controller = None
 
-        ModelView.__init__(self, parent, **kwargs)
+    def add_detail_page(self):
+        if self.model_details_controller:
+            sPrint("ModelCtrl.model_details_controller is already set", messageType=MessageType.DEBUG)
+            return self.model_details_controller
 
-        #Bindings
-        if self.edit:
-            self.SaveButton.Bind(wx.EVT_BUTTON, self.OnSave)
+        self.model_details_controller = ModelDetailsCtrl(self.notebook)
+        self.notebook.AddPage(self.model_details_controller, "Details")
+        return self.model_details_controller
 
-        if self.spatial:
-            self.setup_spatial(model_id)
+    def add_edit_page(self):
+        if self.model_edit_controller:
+            sPrint("ModelCtrl.model_edit_controller is already set", messageType=MessageType.DEBUG)
+            return self.model_edit_controller
 
-    def ConfigurationDisplay(self, fileExtension):
-        self.current_file = fileExtension
-        filehandle=open(fileExtension)
-        self.xmlTextCtrl.SetValue(filehandle.read())
-        filehandle.close()
-        self.SetTitle("Details")
+        self.model_edit_controller = ModelEditCtrl(self.notebook)
+        self.notebook.AddPage(self.model_edit_controller, "Edit")
+        return self.model_edit_controller
 
-    def OnSave(self, event):
+    def add_spatial_page(self):
+        if self.model_spatial_controller:
+            sPrint("ModelCtrl.model_spatial_controller is already set", messageType=MessageType.DEBUG)
+            return self.model_spatial_controller
 
-        dlg = wx.MessageDialog(None, 'Are you sure you would like to overwrite?', 'Question', wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING)
+        self.model_spatial_controller = SpatialCtrl(self.notebook)
+        self.notebook.AddPage(self.model_spatial_controller, "Spatial")
+        return self.model_spatial_controller
 
-        if dlg.ShowModal() !=wx.ID_NO:
-            Publisher.subscribe(self.OnSave, 'textsavepath')
 
-            # Grab the content to be saved
-            itcontains = self.TextDisplay.GetValue().encode('utf-8').strip()
+class ModelDetailsCtrl(ModelDetailsView):
 
-            # Open the file for write, write, close
-            filehandle=open((self.current_file),'w')
-            filehandle.write(itcontains)
-            filehandle.close()
+    def __init__(self, parent):
+        ModelDetailsView.__init__(self, parent)
 
-            self.Close()
+        self.data_path = ""
+        self._data = None
+        self.model_object = None
 
-    def PopulateEdit(self, fileExtension):
-
-        # the text edit window
-        self.current_file = fileExtension
-        filehandle=open(fileExtension)
-        self.TextDisplay.SetValue(filehandle.read())
-        filehandle.close()
-        self.SetTitle("Details")
-
-    def PopulateSummary(self, fileExtension):
-
-        d = gui.parse_config(fileExtension)
-
-        sections = sorted(d.keys())
-
-        for section in sections:
-            if section is 'basedir':
-                pass
-            else:
-                try:
-                    g = self.PropertyGrid.Append( wxpg.PropertyCategory(section))
-                except:
-                    pass
-
-            if isinstance (d[section], list):
-                items = d[section]
-                for item in items:
-                    while len(item.keys()) > 0:
-                        for keyitem in item.keys():
-                            var = item.pop(keyitem)
-                            try:
-                                self.PropertyGrid.Append( wxpg.StringProperty(str(keyitem), value=str(var)))
-                            except:
-                                pass
-
-    def PopulateProperties(self, modelid, iei=None, oei=None):
-        # Fills on the information for models from the database
-        # Also implement this to populate all models not only from database
-        # PopulateSummary works only for models not from database.
-        # iei = input exchange item.
-        # oei = output exchange item.
-        # not all models will have inputs & outputs so that's why their set to None by default.
-
-        self.PropertyGrid.Append(wxpg.PropertyCategory("General"))
-        self.PopulatePropertyGrid(modelid)
-
-        if iei:
-            self.PropertyGrid.Append(wxpg.PropertyCategory("Input"))
-            self.PopulatePropertyGrid(iei[0])
-
-        if oei:
-            self.PropertyGrid.Append(wxpg.PropertyCategory("Output"))
-            self.PopulatePropertyGrid(oei[0])
-
-    def PopulatePropertyGrid(self, dictionary):
-        #  A recursive method, checks if there is a dictionary inside a dictionary.
-        if not dictionary:  # if empty dictionary than do nothing
+    def populate_grid_by_model_object(self):
+        if not isinstance(self.model_object, ModelBox):
+            sPrint("ModelDetails.model_object needs to by type ModelBox")
             return
-        for key, value in dictionary.iteritems():
-            if type(value) is dict:
-                self.PopulatePropertyGrid(value)
-            elif type(value) is list:
-                value = value[0] # Extract dictionary
-                self.PopulatePropertyGrid(value)
+
+        model_as_json = engineAccessors.getModelById(self.model_object.ID)
+
+        if not isinstance(model_as_json, dict):
+            sPrint("ModelDetailsCtrl.populate_grid_by_model_object.model_as_json needs to be type dictionary")
+            return
+
+        if "params" in model_as_json:
+            if "path" in model_as_json["params"]:
+                self._data = models.parse_json(model_as_json["params"]["path"])
+                self.grid.add_data(self._data)
+                return
+
+        elif "attrib" in model_as_json:
+            if "mdl" in model_as_json["attrib"]:
+                self._data = models.parse_json(model_as_json["attrib"]["mdl"])
+                self.grid.add_data(self._data)
+                return
+
+        self.grid.add_section("General")
+        for key, value in model_as_json.iteritems():
+            if isinstance(value, dict):
+                self.grid.add_dictionary(value, key)
             else:
-                try:
-                    self.PropertyGrid.Append(wxpg.StringProperty(str(key).capitalize(), value=str(value)))
-                except:
-                    pass
+                self.grid.add_data_to_section(0, key, value)
+        return
 
-    def setup_spatial(self, model_id):
-        iei = self.spatial_page.controller.get_input_exchange_item_by_id(model_id)
-        igeoms = self.spatial_page.controller.get_geometries(iei)
+    def populate_grid_by_path(self):
+        if not os.path.exists(self.data_path):
+            sPrint("ModelDetailsCtrl.data_path does not exist or has not been set")
+            return
 
-        oei = self.spatial_page.controller.get_output_exchange_item_by_id(model_id)
-        ogeoms = self.spatial_page.controller.get_geometries(oei)
+        self._data = models.parse_json(self.data_path)
 
-        self.spatial_page.controller.set_data(target=igeoms, source=ogeoms)
-        self.spatial_page.controller.raw_input_data = iei
-        self.spatial_page.controller.raw_output_data = oei
+        if self.data_path[-4:] == ".sim":
+            self._load_simulation()
+        else:
+            self.grid.add_data(self._data)
 
-        self.spatial_page.controller.add_input_combo_choices(igeoms.keys())
-        self.spatial_page.controller.add_output_combo_choices(ogeoms.keys())
+    def _load_simulation(self):
+        if not isinstance(self._data, dict):
+            sPrint("ModelDetailsCtrl._data must be type dict")
+            return
+
+        sorted_sections = sorted(self._data.keys())
+        for each_section in sorted_sections:
+            if isinstance(self._data[each_section], list):
+                if each_section == "links":
+                    for item in self._data[each_section]:
+                        self.grid.add_dictionary(item, "Link " + item["from_name"] + " -> " + item["to_name"])
+
+                if each_section == "models":
+                    self.grid.add_list_of_dictionary(self._data[each_section], "name")
+        self.grid.enable_scroll_bar_on_startup()
+
+
+class ModelEditCtrl(ModelEditView):
+    def __init__(self, parent):
+        ModelEditView.__init__(self, parent)
+        self.file_path = ""
+
+    def populate_edit(self):
+        if not os.path.exists(self.file_path):
+            sPrint("ModelEditCtrl.file_path does not exist or has not been set")
+            return
+
+        with open(self.file_path, "r") as file_handler:
+            self.text_ctrl.SetValue(file_handler.read())
+            file_handler.close()
+

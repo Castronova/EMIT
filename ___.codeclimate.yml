@@ -1,0 +1,37 @@
+engines:
+  pep8:
+    enabled: true
+
+  radon:
+    enabled: true
+
+  fixme:
+    enabled: true
+
+  duplication:
+    enabled: true
+    config:
+      languages:
+      - python
+
+languages:
+   Ruby: false
+   JavaScript: false
+   Python: true
+   PHP: false
+
+ratings:
+  paths:
+    - "**.py"
+
+exclude_paths:
+- "tests/*"
+- "hooks/*"
+- "docs/*"
+- "dev_environment/*"
+- "data/*"
+- "benchmarks/*"
+- "app_data/*"
+- "api_old/*"
+
+

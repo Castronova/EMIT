@@ -1,311 +1,363 @@
-import matplotlib.pyplot as plt
-import seaborn as sns
-import wx
-from PIL import Image, ImageDraw
-from matplotlib.dates import date2num
-
-import environment
-from gui.controller.enums import PlotEnum
-from gui.views.PlotView import ViewPlot, Data
-
-sns.set_style("ticks")
+from gui.views.PlotView import PlotView
+import matplotlib
+import numpy
+from matplotlib.collections import PolyCollection
+from matplotlib.collections import LineCollection
+import numpy as np
+from matplotlib.colors import ColorConverter
 
 
-class LogicPlot(ViewPlot):
+class PlotCtrl(PlotView):
+    def __init__(self, panel):
+        PlotView.__init__(self, panel)
 
-    def __init__(self, parent, title='', xlabel='', ylabel='', selector=True):
+        # stores the plot objects
+        self.plots = []
+        self.__plot_count = 0
+        # self.highlighted_vertices = set()  # Rename to selected_vertices
+        self.highlighted_vertices = []  # Keeps track of the highlighted vertices index
+        self.marker = None  # Must be a matplotlib line2D object
+        self.x_scatter_data, self.y_scatter_data = None, None  # Holds the scatter data for highlighting
+        self.poly_list = None  # Holds the data for the plotted polygon
+        self.highlight_color = "y"  # Yellow is used when highlighting
+        self.color = "#0DACFF"  # The standard color for objects that are not highlighted
+        self._color_converter = ColorConverter()
+        self.line_collection = None  # Holds the line collection data
+        self.highlighted_lines = []
+        self.selected_lines = []
 
-        ViewPlot.__init__(self, parent, title='test', xlabel=xlabel, ylabel=ylabel, selector=selector)
+        # stores the axis objects
+        self.__axis = []
 
+        # matplotlib color cycle used to ensure primary and secondary axis are not displayed with the same color
+        self.__color_cycle = color_cycle()
 
-    def getSymbology(self, value):
-        return value.resultid
+        # Used to be able to deactivate the canvas events later
+        self._cid_press = None
+        self._cid_release = None
+        self._cid_scroll = None
 
-    def HandleCheckbox(self, e):
-        self.update_plot()
+    def activate_panning(self):
+        self._cid_press = self.canvas.mpl_connect('button_press_event', self.on_canvas_clicked)
+        self._cid_release = self.canvas.mpl_connect('button_release_event', self.on_canvas_released)
 
-    def build_menu(self):
-        # create menu bar
-        menuBar = wx.MenuBar()
+    def activate_zooming(self):
+        self._cid_scroll = self.canvas.mpl_connect('scroll_event', self.on_canvas_mouse_scroll)
 
-        # create file menu
-        viewmenu= wx.Menu()
-        # create plot options menu
-        plotoptions= wx.Menu()
-        self.plot_point = plotoptions.Append(wx.ID_ANY, 'Point')
-        self.plot_line  = plotoptions.Append(wx.ID_ANY, 'Line')
-        self.plot_bar   = plotoptions.Append(wx.ID_ANY, 'Bar')
-        legendmenu = wx.Menu()
-        legendoptions = wx.Menu()
-        self.legend_bottom = legendoptions.Append(wx.ID_ANY, 'Bottom')
-        self.legend_right = legendoptions.Append(wx.ID_ANY, 'Right')
+    def deactivate_panning(self):
+        self.canvas.mpl_disconnect(self._cid_press)
+        self.canvas.mpl_disconnect(self._cid_release)
 
-        # add plot options to Plot menu
-        viewmenu.AppendMenu(wx.ID_ANY, 'Plot', plotoptions)
-        legendmenu.AppendMenu(wx.ID_ANY, 'Location', legendoptions)
+    def deactivate_zooming(self):
+        self.canvas.mpl_disconnect(self._cid_scroll)
 
-        # Creating the menubar.
-        menuBar.Append(viewmenu,"&View")
-        menuBar.Append(legendmenu,"&Legend")
-        self.SetMenuBar(menuBar)
-        self.Show(True)
+    def clear_plot(self):
 
+        # clear axis
+        self.axes.clear()
+        for ax in self.__axis:
+            ax.cla()
 
-        # add event handlers for the menu items
-        self.Bind(wx.EVT_MENU, self.OnPlotPoint, self.plot_point)
-        self.Bind(wx.EVT_MENU, self.OnPlotLine, self.plot_line)
-        self.Bind(wx.EVT_MENU, self.OnPlotBar, self.plot_bar)
-        self.Bind(wx.EVT_MENU, self.Onlegend_right, self.legend_right)
-        self.Bind(wx.EVT_MENU, self.Onlegend_bottom, self.legend_bottom)
+        # reset the axis container
+        self.__axis = []
 
-    def add_series(self,x,y):
-        return self.spatialPanel.add_series(x,y)
+        self.axes.grid()
+        self.axes.margins(0)
 
-    def cmap(self, value=None):
-        if value is not None:
-            self.cmap = value
-        return self.cmap
+        # clear the plot objects
+        self.__plot_count = 0
+        self.plots = []
 
+        self.redraw()
 
-    def Onlegend_right(self,event):
+    def getNextColor(self):
+        return next(self.__color_cycle)
 
-        environment.setEnvironmentVar('LEGEND', 'locationright', 1)
-        environment.setEnvironmentVar('LEGEND', 'locationbottom', 0)
+    def get_highlighted_vertices(self):
+        """
+        Returns the index and the coordinates of the highlighted vertices in a dictionary.
+        Key is index, value are coordinates
+        :return:
+        """
+        data = {}
+        for vertex in self.highlighted_vertices:
+            data[vertex] = [self.x_scatter_data[vertex], self.y_scatter_data[vertex]]
+        return data
 
-    def Onlegend_bottom(self,event):
+    def get_highlighted_polygons(self):
+        """
+        Returns all the highlighted polygons.
+        Key is index, value are object
+        :return: type(dict)
+        """
+        if not self.poly_list:  # Check if polygon has been plotted
+            return {}  # No polygons have been plotted.
 
-        environment.setEnvironmentVar('LEGEND', 'locationright', 0)
-        environment.setEnvironmentVar('LEGEND', 'locationbottom', 1)
+        data = {}
+        for i in range(len(self.axes.collections)):
+            if self.axes.collections[i].get_facecolor().all() == self.axes.collections[i].get_edgecolor().all():
+                data[i] = self.axes.collections[i]
+        return data
 
+    def get_highlighted_lines(self):
+        """
+        Returns the highlighted lines index
+        Key is index, value are indexes of segments
+        :return:
+        """
+        if not self.line_collection:
+            return {}  # No lines have been plotted
 
-    def OnPlotPoint(self,event):
+        lines = {}
+        for line in self.highlighted_lines:
+            lines[line] = self.line_segments[0]
+        return lines
 
-        self.plot_type = PlotEnum.point
-        self.build_legend()
-        self.plot_initial(type=PlotEnum.point)
+    def highlight_line(self, event):
+        """
+        Highlighted lines have value 1 in self.highlighted_lines
+        Recolor the collection
+        :param event:
+        :return:
+        """
+        ind = event.ind[0]
+        line_idx = self.segment_line[ind]
 
-    def OnPlotLine(self,event):
-        self.plot_type = PlotEnum.line
-        self.build_legend()
-        self.plot_initial(type=PlotEnum.line)
-
-    def OnPlotBar(self,event):
-
-        # get the series that are 'checked' in the legend
-        self.plot_type = PlotEnum.bar
-        self.build_legend()
-        self.plot_initial(type=PlotEnum.bar)
-
-    def rip_data_from_axis(self):
-        attrib = []
-        attrib.append('self.axis.set_title("%s")'% self.axis.get_title())
-        attrib.append('self.axis.set_ylabel("%s")'% self.axis.get_ylabel())
-        attrib.append('self.axis.set_xlabel("%s")' % self.axis.get_xlabel())
-
-        # get the cmap
-        cmap = self.cmap
-
-        # generate series colors
-        num_colors = len(self.xdata)
-
-        return attrib
-
-    def update_plot(self):
-
-        # update the checked items list
-        self.checked_indices = [self.legend.GetObjects().index(item) for item in self.legend.GetCheckedObjects()]
-
-        self.plot_initial(self.plot_type)
-
-
-    def create_legend_thumbnail(self):
-
-        type = self.plot_type
-        i = 0
-
-        if type == PlotEnum.point:
-            for item in self.label:
-                img = Image.new("RGB", (100,100), "#FFFFFF")
-                draw = ImageDraw.Draw(img)
-
-                draw.ellipse((25, 25, 75, 75), fill = self.legend_colors[i]) # fill=(255, 0, 0))
-                large = self.CreateThumb(img,(32,32))
-                small = self.CreateThumb(img,(16,16))
-
-                self.legend.AddNamedImages(str(item), small, large)
-                i+=1
-        if type == PlotEnum.line:
-            for item in self.label:
-                img = Image.new("RGB", (100,100), "#FFFFFF")
-                draw = ImageDraw.Draw(img)
-
-                draw.line((0,50,100,50), width = 20, fill = self.legend_colors[i])
-                large = self.CreateThumb(img,(32,32))
-                small = self.CreateThumb(img,(16,16))
-
-                self.legend.AddNamedImages(str(item), small, large)
-                i+=1
-        if type == PlotEnum.bar:
-            for item in self.label:
-                img = Image.new("RGB", (100,100), "#FFFFFF")
-                draw = ImageDraw.Draw(img)
-
-                draw.line((50,0,50,100), width = 40, fill = self.legend_colors[i])
-                large = self.CreateThumb(img,(32,32))
-                small = self.CreateThumb(img,(16,16))
-
-                self.legend.AddNamedImages(str(item), small, large)
-                i+=1
-
-    def clear_legend(self):
-
-        # reset all images from image lists
-        self.legend.smallImageList.imageList = self.base_legend_small_image_list
-        self.legend.normalImageList.imageList = self.base_legend_large_image_list
-        self.legend.smallImageList.nameToImageIndexMap = self.base_legend_small_imagemap
-        self.legend.normalImageList.nameToImageIndexMap = self.base_legend_large_imagemap
-
-    def build_legend(self):
-
-        self.clear_legend()
-
-        data = []
-        for l in self.label:
-            data.append(Data(str(l),''))
-
-        self.legend.SetObjects(data)
-
-        self.create_legend_thumbnail()
-
-
-        # check the first item
-        for item in self.checked_indices:
-            self.legend.ToggleCheck(self.legend.GetObjects()[item])
-
-    def plot(self, xlist, ylist, labels, cmap=plt.cm.jet):
-
-        # --- this is the entry point for plotting ---
-
-        # save the xlist, ylist, and labels globally
-        self.xdata = [date2num(x) for x in xlist]
-        self.ydata = ylist
-        self.label = [str(l) for l in labels]
-
-        # build color map
-        num_colors = len(self.xdata)
-        self.cmap = [cmap(1.*i/num_colors) for i in range(num_colors)]
-        for i in range(num_colors):
-            color = list(cmap(1.*i/num_colors))
-            self.legend_colors.append((int( color[0] * 255), int(color[1] * 255), int(color[2] * 255), int(color[3] * 100)))
-
-        if self.selector:
-
-            # rebuild the figure legend
-            self.build_legend()
-
+        if line_idx not in self.highlighted_lines:
+            self.highlighted_lines.append(line_idx)
         else:
-            self.figure = self.plot_initial()
+            self.highlighted_lines.remove(line_idx)
 
-        self.axis = self.figure.axes[0]
+        highlight_idx = self.line_segments[line_idx]
+        self.selected_lines[highlight_idx] = 1 - self.selected_lines[highlight_idx]
+        lines, = event.artist.axes.collections
+        lines.set_color(self.__line_colors[self.selected_lines])
+        event.canvas.draw_idle()
 
-        # build legend
-        handles, labels = self.axis.get_legend_handles_labels()
-        self.axis.legend(handles, labels, title="Result ID", bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+    def highlight_polygon(self, pick_event):
+        if pick_event.artist.get_facecolor()[0].all() == pick_event.artist.get_edgecolor()[0].all():
+            pick_event.artist.set_facecolor(self.color)
+            pick_event.artist.set_edgecolor(None)
+        else:
+            pick_event.artist.set_color(self.highlight_color)
+        pick_event.artist.axes.figure.canvas.draw()
 
+    def highlight_vertex(self, pick_event):
+        """
+        Only one marker can be used to highlight. self.marker is that one marker
+        :param pick_event: matplotlib mouse pick event
+        :return:
+        """
+        if not self.marker:
+            self.marker, = pick_event.artist.axes.plot([], [], "o")  # Create a plot
+            self.marker.set_color(self.highlight_color)  # Set color to yellow
 
-    def CreateThumb(self, pilImage, size):
-        pilImage.thumbnail(size)#, Image.ANTIALIAS)
-        image = wx.EmptyImage(pilImage.size[0],pilImage.size[1])
-        image.SetData(pilImage.convert("RGB").tostring())
-        bitmap = wx.BitmapFromImage(image)
-        return bitmap
+        # Check if vertex has been highlighted
+        if pick_event.ind[0] in self.highlighted_vertices:
+            self.highlighted_vertices.remove(pick_event.ind[0])  # Remove highlight
+        else:
+            self.highlighted_vertices.append(pick_event.ind[0])  # Add highlight
 
-    def plot_initial(self, type=PlotEnum.point):
+        self.highlighted_vertices.sort()
+        x = self._get_vertices_data_points(self.x_scatter_data, pick_event.ind[0])
+        y = self._get_vertices_data_points(self.y_scatter_data, pick_event.ind[0])
 
-        # get the series that are 'checked' in the legend
-        checked_items = self.legend.GetCheckedObjects()
+        # Highlight only those in self.highlighted_vertices
+        self.marker.set_data(x, y)
+        pick_event.artist.axes.figure.canvas.draw()
 
-        # clear the plot and return if no series are checked
-        self.axis.cla()
-        if len(checked_items) != 0:
+    def _get_vertices_data_points(self, data, index):
+        """
+        :param data: x_data or y_data, type(tuple or list)
+        :param index: index of the selected vertex, type(int)
+        :return: type(list) contains the x & y values that are highlight and should be plotted
+        """
+        a = []
+        for i in self.highlighted_vertices:
+            a.append(data[i])
 
-            plt_xdata = []
-            plt_ydata = []
-            plt_labels = []
-            plt_colors = []
+        return a
 
-            # get xlist, ylist, labels, and colors for only the checked items
-            for item in checked_items:
-                index = self.label.index(item.resultid)
-                plt_xdata.append(self.xdata[index])
-                plt_ydata.append(self.ydata[index])
-                plt_labels.append(self.label[index])
-                plt_colors.append(self.cmap[index])
+    def plot_dates(self, data, name, noDataValue, ylabel=""):
+        """
+        :param data: type([datetime, floats])
+        :param name:
+        :param noDataValue:
+        :param ylabel:
+        :return:
+        """
 
-            if type == PlotEnum.point:
-                for x,y,label,color in zip(plt_xdata,plt_ydata,plt_labels,plt_colors):
-                    self.axis.plot(x, y, label = label, linestyle='None', marker='o', color = color)
-                    sns.despine(right=True, top=True)
-            if type == PlotEnum.line:
-                for x,y,label,color in zip(plt_xdata,plt_ydata,plt_labels,plt_colors):
-                    self.axis.plot(x, y, label = label, linestyle='-',linewidth=1.5, color = color)
-                    sns.despine(right=True, top=True)
+        if len(data) == 0:
+            return
 
-            if type == PlotEnum.bar:
-                i = 0
-                for x,y,label,color in zip(plt_xdata,plt_ydata,plt_labels,plt_colors):
-                    # calculate the column width (90% of the difference btwn successive measurements)
-                    column_width = min(x[1:-1] - x[0:-2])*.9
-                    column_width /= len(plt_labels)
-                    # adjust the x values such that they are center aligned on their original x value
-                    offset_x = [val - .5*column_width*len(plt_labels)+(i*.5*column_width) for val in x]
-                    self.axis.bar(offset_x, y, label = label, color = color, width=column_width)
-                    sns.despine(right=True, top=True)
+        # unpack the dates, values and replace nodata with None
+        dates, values = zip(*data)
+        nvals = numpy.array(values, dtype=numpy.float)
+        nvals[nvals == noDataValue] = None
+        nvals[numpy.isnan(nvals)] = None
 
-                    i+=1
+        p = self.axes.plot_date(dates, nvals, label=name, linestyle="None", marker=".")
+        self.axes.set_ylabel(ylabel)
 
-            self.axis.xaxis_date()
+        # save each of the plots
+        self.plots.extend(p)
 
-            # buffer the axis so that values appear within the plot (i.e. not on the edges)
-            xbuffer = self.bufferData(plt_xdata, 0.2)
-            ybuffer = self.bufferData(plt_ydata,0.21)
+        self.redraw()
 
-            # set axis min and max using the buffer
-            self.axis.set_xlim(xbuffer)
-            self.axis.set_ylim(ybuffer)
-            self.axis.grid()
-            self.figure.autofmt_xdate()
+    def plot_polygon(self, data, color):
+        poly_list = []
+        for item in data:
+            reference = item.GetGeometryRef(0)
+            points = numpy.array(reference.GetPoints())
+            a = tuple(map(tuple, points[:, 0:2]))
+            poly_list.append(a)
 
-            self.axis.set_ylabel(self.y_label)
-            self.axis.set_xlabel(self.x_label)
-            self.figure.suptitle(self.title)
+        self.poly_list = poly_list
 
-        # redraw the figure
-        self.figure.canvas.draw()
+        # Plot multiple polygons and add them to collection as individual polygons
+        for poly in self.poly_list:
+            p_coll = PolyCollection([poly], closed=True, facecolor=color, alpha=0.5, edgecolor=None, linewidths=(2,))
+            p_coll.set_picker(True)  # Enable pick event
+            self.axes.add_collection(p_coll, autolim=True)
 
-        return self.figure
+    def plot_point(self, data, color):  # Rename to plot scatter
+        # get x,y points
+        x, y = zip(*[(g.GetX(), g.GetY()) for g in data])
+        self.x_scatter_data, self.y_scatter_data = x, y
+        collection = self.axes.scatter(x, y, marker="o", color=color, picker=True)
+        return collection
 
-    def bufferData(self, datalist, buffer=0.1):
-        '''
-        calculates a data buffer for the timeseries such that all data will appear on plot (i.e. not along border)
-        :param current: (min, max) tuple
-        :param data_range: [val1, val2, ..., valn] list of data values
-        :param buffer: percentage of value to buffer.  e.g. 0.1 buffers 10%
-        :return: returns (min, max) adjusted tuple
-        '''
+    def plot_linestring(self, data, color):
+        """
+        A segment is from point A to point b. It is created from grabbing the previous point to the next point
+        :param data: geometry object
+        :param color:  # Hexadecimal
+        :return:
+        """
+        segments = []
+        self.line_segments = {}
+        self.segment_line = {}
+        index = 0  # Keeps track of how many lines to plot. Should match len(data)
+        last_segment = 0
+        points = []
+        for geo_object in data:
+            for point in geo_object.GetPoints():  # Remove the z coordinate
+                points.append(point[:-1])
+            self.line_segments[index] = range(last_segment, last_segment + len(points) - 1)
+            for i in range(len(points) - 1):  # Create the segments
+                segments.append([points[i], points[i + 1]])
+                self.segment_line[last_segment + i] = index
+            last_segment += len(points) - 1
+            index += 1
 
-        upper_limit = -9999999999
-        lower_limit =  9999999999
+        self.__line_colors = np.array(
+            [self._color_converter.to_rgba(color), self._color_converter.to_rgba(self.highlight_color)])
+        self.selected_lines = np.zeros(len(segments), dtype=int)  # Must be a np.zero array
+        colors = self.__line_colors[self.selected_lines]
+        self.line_collection = LineCollection(segments, pickradius=10, linewidths=2, colors=colors)
+        self.line_collection.set_picker(True)
+        self.axes.add_collection(self.line_collection)
 
-        for data in datalist:
+    def plot_geometry(self, geometry_object, title, color=None):
+        """
+        A general plot method that will plot the respective type
+        Must call redraw afterwards to have an effect
+        :param geometry_object:
+        :param title: title for the plot
+        :param color: # Hexadecimal
+        :return:
+        """
+        if not color:
+            color = self.color
 
-            dr = max(data) - min(data)
-            upper = max(data) + dr*buffer
-            lower = min(data) - dr*buffer
+        if geometry_object[0].GetGeometryName().upper() == "POLYGON":
+            self.plot_polygon(geometry_object, color)
+        elif geometry_object[0].GetGeometryName().upper() == "POINT":
+            self.plot_point(geometry_object, color)
+        elif geometry_object[0].GetGeometryName().upper() == "LINESTRING":
+            self.plot_linestring(geometry_object, color)
+        else:
+            raise Exception("plot_geometry() failed. Geometries must be POLYGON OR POINT")
 
-            if upper > upper_limit:
-                upper_limit = upper
-            if lower < lower_limit:
-                lower_limit = lower
+        self.set_title(title)
+        self.axes.grid(True)
 
-        return (lower_limit, upper_limit)
+        # If margin is 0 the graph will fill the plot
+        self.axes.margins(0.1)
+
+    def reset_highlighter(self):
+        """
+        Resets the variables needed to highlight
+        :return:
+        """
+        self.marker = None
+        self.highlighted_vertices = []
+        self.x_scatter_data, self.y_scatter_data = None, None
+        self.poly_list = None
+        self.line_collection = None
+
+    def set_line_width(self, width):
+        """
+        Sets the width of the lines plotted
+        Does not work with scatter plot
+        :param width: real number
+        :return:
+        """
+        if not len(self.plots):
+            return  # Nothing has been plotted
+
+        for line in self.plots:
+            line.set_linewidth(width)
+        self.redraw()
+
+    def on_canvas_clicked(self, event):
+        self.toolbar.press_pan(event)
+
+    def on_canvas_mouse_scroll(self, event):
+        base_scale = 2.0
+        cur_xlim = self.axes.get_xlim()
+        cur_ylim = self.axes.get_ylim()
+        cur_xrange = (cur_xlim[1] - cur_xlim[0]) * .5
+        cur_yrange = (cur_ylim[1] - cur_ylim[0]) * .5
+        xdata = event.xdata  # get event x location
+        ydata = event.ydata  # get event y location
+        if event.button == 'up':
+            # deal with zoom in
+            scale_factor = 1 / base_scale
+        elif event.button == 'down':
+            # deal with zoom out
+            scale_factor = base_scale
+        else:
+            # deal with something that should never happen
+            scale_factor = 1
+            print event.button
+
+        # set new limits
+        self.axes.set_xlim([xdata - cur_xrange * scale_factor,
+                     xdata + cur_xrange * scale_factor])
+        self.axes.set_ylim([ydata - cur_yrange * scale_factor,
+                     ydata + cur_yrange * scale_factor])
+        self.redraw()
+
+    def on_canvas_released(self, event):
+        self.toolbar.release_pan(event)
+
+class color_cycle(object):
+    def __init__(self):
+
+        # get the matplotlib color cycle
+        self.__colors = [c['color'] for c in list(matplotlib.rcParams['axes.prop_cycle'])]
+        self.current = -1
+        self.max = len(self.__colors)
+
+    def __iter__(self):
+        'Returns itself as an iterator object'
+        return self
+
+    def next(self):
+        'Returns the next value (cyclic)'
+        self.current += 1
+        if self.current == self.max:
+            self.current = 0
+        return self.__colors[self.current]
+

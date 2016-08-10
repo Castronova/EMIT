@@ -7,23 +7,25 @@ Standard classes
 """
 
 # On OSX you also need to install geos. e.g, sudo port install geos
-from shapely.wkt import loads
 import datetime
-import uuid
 import hashlib
-from coordinator.emitLogging import elog
+import uuid
 from bisect import bisect_left, bisect_right
-from osgeo import osr, ogr
+
 import numpy
+from osgeo import osr, ogr
+
+from emitLogging import elog
 from sprint import *
+
 
 class Status:
     READY = 'READY'
     NOTREADY = 'NOTREADY'
     RUNNING = 'RUNNING'
-    FINISHED = 'FINISHED'
-    ERROR = 'ERROR'
     UNDEFINED = 'UNDEFINED'
+    SUCCESS = 'SUCCESS'
+    FAILED = 'FAILED'
 
 
 # derived from GDAL types
@@ -140,7 +142,7 @@ class Geometry2(ogr.Geometry):
         self.update_hash()
 
 class ExchangeItem(object):
-    def __init__(self, id=None, name=None, desc=None, geometry=[], unit=None, variable=None, noData=-999, srs_epsg=4269, type=ExchangeItemType.INPUT):
+    def __init__(self, id=None, name=None, desc=None, geometry=[], unit=None, variable=None, noData=None, srs_epsg=4269, type=ExchangeItemType.INPUT):
 
         self.__name = name
         self.__description = desc
@@ -335,7 +337,7 @@ class ExchangeItem(object):
 
         except Exception as e:
             elog.error('Error ExchangeItem.setValuesBySlice: %s' % e)
-            sPrint('Error setting values for times %s, geometries %s' % (str(time_index_slice), str(geometry_index_slice)),
+            sPrint('Error setting values for times %s, geometries %s: %s' % (str(time_index_slice), str(geometry_index_slice), e),
                    MessageType.ERROR)
             return False
         return True
@@ -430,7 +432,7 @@ class ExchangeItem(object):
         :return: datavalues between start_time and end_time.  If not given, entire time range will be returned.
         """
 
-        # set initial value end index as the length of the geometery array
+        # set initial value end index as the length of the geometry array
         if geom_idx_end is None:
             geom_idx_end = len(self.__geoms2) + 1
         else:

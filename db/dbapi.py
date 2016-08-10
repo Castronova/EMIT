@@ -14,12 +14,6 @@ from api_old.ODM2.Simulation.services import *
 from api_old.ODM2.Core.model import *
 
 
-# from odm2.api.ODM2.Core.services import *
-# from odm2.api.ODM2.SamplingFeatures.services import *
-# from odm2.api.ODM2.Results.services import *
-# from odm2.api.ODM2.Simulation.services import *
-# from odm2.api.ODM2.Core.model import *
-#
 import time
 
 def results_to_dict(cursor):

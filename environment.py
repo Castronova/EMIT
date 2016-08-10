@@ -1,45 +1,46 @@
-import ConfigParser
-import sys
 import os
+import sys
+import ConfigParser
+import encrypt
+import sqlite3 as sqlite
+from odm2api import dbconnection
 
-from api_old.ODMconnection import  dbconnection
-from sprint import *
+# DO NOT import sprint in this file!
+# The sprint library uses environment variables so it will cause a circular import.
 
-# This is an interface for
-class ConnectionVars(object):
-    '''
-    implemented as a singleton with 'from environment import con_vars'
-    everything is parsed from
-    '''
-    def __init__(self):
-        currentdir = os.path.dirname(os.path.abspath(__file__))
-        self.connections_path = os.path.abspath(os.path.join(currentdir, './data/connections'))
-        self.Config = ConfigParser.ConfigParser(allow_no_value=True)
+def saveConnection(connection):
 
-    def load_connections(self, ConnPath = None):
-        ConnPath = self.connections_path if ConnPath is None else ConnPath
-
-        self.config = ConfigParser.ConfigParser(allow_no_value=True)
-
-    def Write_New_Connection(self, ValueDic):
-        currentdir = os.path.dirname(os.path.abspath(__file__))
-        self.connections_path = os.path.abspath(os.path.join(currentdir, './data/connections'))
-        f = open(self.connections_path, 'a')
-        db = dbconnection()
-        if db.createConnection(ValueDic[2],ValueDic[3], ValueDic[4], ValueDic[5], ValueDic[6]):
-            f.write("\n")
-            f.write("[connection]\n")
-            f.write("name = " + ValueDic[0] +"\n")
-            f.write("desc = " + ValueDic[1] +"\n")
-            f.write("engine = " + ValueDic[2] +"\n")
-            f.write("address = " + ValueDic[3] +"\n")
-            f.write("db = " + ValueDic[4] +"\n")
-            f.write("user = " + ValueDic[5] +"\n")
-            f.write("pwd = " + ValueDic[6] +"\n")
-            f.close()
-            return True
+    # check that the connection is valid
+    session_factory = dbconnection.createConnection(connection['engine'], connection['address'], connection['database'], connection['username'], connection['password'])
+    if not session_factory:
         return False
 
+    config = ConfigParser.ConfigParser(allow_no_value=True)
+    connections_path = os.environ['APP_CONNECTIONS_PATH']
+    config.read(connections_path)
+
+    # make sure this database name doesn't already exist
+    if connection['name'] in config.sections():
+
+        return False
+
+    # encrypt password
+    import secret
+    cipher = encrypt.AESCipher(secret.key)
+    uhash = cipher.encrypt(connection['username'])
+    phash = cipher.encrypt(connection['password'])
+
+    config.add_section(connection['name'])
+    config.set(connection['name'], 'description', connection['description'])
+    config.set(connection['name'], 'engine', connection['engine'])
+    config.set(connection['name'], 'address', connection['address'])
+    config.set(connection['name'], 'database', connection['database'])
+    config.set(connection['name'], 'username', uhash)
+    config.set(connection['name'], 'password', phash)
+    with open(connections_path, 'wb') as f:
+        config.write(f)
+
+    return True
 
 
 def writeDefaultEnvironment(settings=None):
@@ -65,13 +66,14 @@ def writeDefaultEnvironment(settings=None):
     config.set('LOGGING', 'SHOWERROR', 1)
     config.set('LOGGING', 'SHOWDEBUG', 1)
 
-
     config.add_section('APP')
     config.set('APP', 'IMAGES_PATH',   os.path.abspath(os.path.join(app_path, 'img')))
     config.set('APP', 'LOCAL_DB_PATH', os.path.abspath(os.path.join(app_path, 'db/local.db')))
     config.set('APP', 'SETTINGS_PATH', os.path.abspath(os.path.join(app_path, 'config/.settings.ini')))
     config.set('APP', 'TOOLBOX_PATH',  os.path.abspath(os.path.join(app_path, 'config/toolbox.ini')))
     config.set('APP', 'USER_PATH',     os.path.abspath(os.path.join(app_path, 'config/users.json')))
+    config.set('APP', 'CONNECTIONS_PATH',     os.path.abspath(os.path.join(app_path, 'db/connections')))
+    config.set('APP', 'SECRET',     os.path.abspath(os.path.join(app_path, 'secret.py')))
 
     config.add_section('LEGEND')
     config.set('LEGEND', 'locationright', 1)
@@ -82,9 +84,9 @@ def writeDefaultEnvironment(settings=None):
     if getattr(sys, 'frozen', False):
         gdal_path = os.path.join(sys._MEIPASS, 'gdal')
 
-    config.add_section('GDAL')
-    config.set('GDAL', 'DATA', gdal_path)
-
+    if os.path.exists(gdal_path):
+        config.add_section('GDAL')
+        config.set('GDAL', 'DATA', gdal_path)
 
     with open(settings, 'w') as f:
         config.write(f)
@@ -120,16 +122,11 @@ def setEnvironmentVar(section, var, value=None, settings=None):
 
 def readEnvironment(settings):
 
-
     # parse the settings file
     config = ConfigParser.ConfigParser(allow_no_value = True)
     config.read(settings)
 
     return config
-
-    # settings_dict = parse(config)
-
-    # return settings_dictx
 
 def loadEnvironment(config):
 
@@ -151,46 +148,85 @@ def parseConfigIntoDict(config):
         for option in config.options(section):
             value = config.get(section, option)
             d['_'.join([section, option])] = str(value)
-
     return d
 
-def getDefaultSettingsPath():
+
+def getSettingsPath():
+    """
+    Determines the location of the setting file based on dev or app modes
+    Returns: path to application settings file
+
+    """
 
     currentdir = os.path.dirname(os.path.abspath(__file__))
     settings = os.path.abspath(os.path.join(currentdir, './app_data/config/.settings.ini'))
 
-    # get the default location relative to the packeage
+    # get the default location relative to the package
     if getattr(sys, 'frozen', False):
         settings = os.path.join(sys._MEIPASS, 'app_data/config/.settings.ini')
 
     return settings
 
 
-def getDefaultUsersJsonPath():
-    currentdir = os.path.dirname(os.path.abspath(__file__))
-    users_path = os.path.abspath(os.path.join(currentdir, './app_data/config/users.json'))
+def initSecret():
+    """
+    initializes the database secret file and creates a secret token used to encrypt database information
+    Returns: None
+
+    """
+
+    # get path to secret
+    secret = os.environ['APP_SECRET']
 
     # get the default location relative to the packeage
     if getattr(sys, 'frozen', False):
-        users_path = os.path.join(sys._MEIPASS, 'app_data/config/users.json')
+        secret = os.path.join(sys._MEIPASS, 'secret.py')
 
-    return users_path
+    # rebuild the secret file
+    if not os.path.exists(secret):
+        import uuid
+        with open(secret, 'w') as f:
+            f.write('#\n# This is a secret key for password encryption/decryption.  Do not share with anyone!\n#\n\n')
+            f.write('key = "%s"' % uuid.uuid4().hex)
 
+def initLocalDb():
+    """
+    initializes the local sqlite database if it does not exist
+    Returns: None
 
-def getEnvironmentVars(settings=None):
+    """
+
+    # get the local database and database creation script paths
+    local_db = os.environ['APP_LOCAL_DB_PATH']
+    script_path = os.path.join(
+        os.path.dirname(local_db),
+        '.dbload'
+    )
+
+    # if the database is not found in the dev directory or app directory then create it
+    if not os.path.exists(local_db):
+        conn = sqlite.connect(local_db)
+        script = open(script_path)
+        with conn:
+            cur = conn.cursor()
+            cur.executescript(script.read())
+        script.close()
+
+def getEnvironmentVars():
+    """
+    Loads the environment variables stored in a settings file
+    Returns: None
+
+    """
 
     # get the default location for the filepath if it is not provided
-    if settings is None:
-        settings = getDefaultSettingsPath()
+    settings = getSettingsPath()
 
     # write the default file path if it doesn't exist
-    msg = None
     if not os.path.exists(settings):
         writeDefaultEnvironment(settings)
-        msg = 'writing default environment variables to settings. This is because no settings file could be found.'
     # re-write this file if in debug mode to ensure that the settings are always up-to-date
     elif sys.gettrace():
-        msg = 'writing default environment variables to settings. This is because you are running in debug mode.'
         writeDefaultEnvironment(settings)
 
     # read the default settings
@@ -199,6 +235,11 @@ def getEnvironmentVars(settings=None):
     # load the default environment
     loadEnvironment(config)
 
-    sPrint(msg, MessageType.INFO)
+    # initialize the secret file (encryption/decryption)
+    initSecret()
+
+    # initalize the local database
+    initLocalDb()
+
 
 getEnvironmentVars()

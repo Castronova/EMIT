@@ -1,10 +1,13 @@
 __author__ = 'tonycastronova'
 
-import time_base
 import bisect
+
 import numpy
+
+import time_base
+from emitLogging import elog
 from sprint import *
-from coordinator.emitLogging import elog
+
 
 def transform(temporal_map, source_values):
     """
@@ -38,29 +41,46 @@ class temporal_nearest_neighbor(time_base.Time):
 
     def map(self, source_dates, target_dates):
         """
-        Builds an index map using the source and target date arrays, assumes they are both sorted lists.
+        Builds an index map using the source and target date arrays, assumes
+        they are both sorted lists.
         :param source_dates: array of source dates
         :param target_dates: array of target dates
-        :return: numpy array representing index mapping of nearest source date index for each target date.  If two
+        :return: numpy array representing index mapping of nearest source date
+                 index for each target date.  If two
         numbers are equally close, the smaller index is choosen.
         """
 
         # use bisect_left to find the 0-based index insertion point for
-        map = numpy.array([bisect.bisect_left(source_dates, target_date) for target_date in target_dates])
+        map = numpy.array([bisect.bisect_left(source_dates, target_date)
+                           for target_date in target_dates])
 
         # replace all insertion points at len(target_dates) with an index of -1
         map[map == len(source_dates)] = -1
 
-        # compare each index of the mapped values to determine which target date is closer
+        # compare each index of the mapped values to determine which
+        # target date is closer to the source date
         ordered_map = []
-        for m in map:
-            target = target_dates[m]
-            before = source_dates[m-1]
-            after = source_dates[m]
-            if abs(after - target) < abs(target - before):
-                ordered_map.append(m)
-            else:
-                ordered_map.append(m-1)
+        try:
+            for i in range(0, len(target_dates)):
+
+                # get the target date at index i
+                target = target_dates[i]
+
+                # get the mapped value for target[i]
+                m = map[i]
+                before = source_dates[m-1]
+                after = source_dates[m]
+
+                # det if the (i) or (i-1) source date is closer to the target
+                if abs(after - target) < abs(target - before):
+                    ordered_map.append(m)
+                else:
+                    ordered_map.append(m-1)
+        except Exception:
+            msg = 'An Exception occurred while temporally mapping the data'
+            sPrint(msg, MessageType.ERROR)
+            raise Exception(msg)
+
         return ordered_map
 
 

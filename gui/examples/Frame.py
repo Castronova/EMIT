@@ -37,7 +37,7 @@ class TestFrame():
     def teardown(self):
         assert self.frame
         self.frame.Destroy()
-        self.frame.onClose(event=None)
+        self.frame.on_close(event=None)
 
 
 

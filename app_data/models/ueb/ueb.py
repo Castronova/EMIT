@@ -1,44 +1,39 @@
 __author__ = 'tonycastronova'
 
-import os
-import sys
-import stdlib
-from os.path import *
-from ctypes import *
-from wrappers import feed_forward
-from structures import *
 import datetime
-import jdutil
 import math
+
+import netCDF4 as nc
 import numpy
-from coordinator.emitLogging import elog
+
+import stdlib
+from emitLogging import elog
 from sprint import *
 from utilities import mdl, geometry
-import netCDF4 as nc
-from dateutil import parser
+from wrappers import feed_forward
+
+# import local submodules
+import jdutil
+from structures import *
 
 class ueb(feed_forward.Wrapper):
 
     def __init__(self, config_params):
-        super(ueb,self).__init__(config_params)
+        super(ueb, self).__init__(config_params)
 
         # build inputs and outputs
-        # elog.info('Building exchange items')
         io = mdl.build_exchange_items_from_config(config_params)
 
         # set input and output exchange items
         self.inputs(value=io[stdlib.ExchangeItemType.INPUT])
         self.outputs(value=io[stdlib.ExchangeItemType.OUTPUT])
 
-        # get model parameters
-        params = config_params['model_inputs'][0]
-
         # grab the C library path and the control file path
-        lib = params['lib']
-        conFile = params['control']
+        lib = config_params['lib']
+        conFile = config_params['control']
 
         # load the UEB C library
-        self.__uebLib = cdll.LoadLibrary(join(os.path.dirname(__file__),lib))
+        self.__uebLib = cdll.LoadLibrary(join(os.path.dirname(__file__), lib))
 
         # save the current directory for saving output data
         self.curdir = os.path.dirname(os.path.abspath(conFile))

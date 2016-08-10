@@ -10,7 +10,7 @@ from wx.lib.pubsub import pub
 
 class OrganizationCtrl(OrganizationView):
     def __init__(self, parent, data=None):
-        OrganizationView.__init__(self,parent)
+        OrganizationView.__init__(self, parent)
         self.parent = parent
         self.SetTitle("Organization")
 
@@ -23,12 +23,15 @@ class OrganizationCtrl(OrganizationView):
         self.cancel_button.Bind(wx.EVT_BUTTON, self.on_cancel)
 
     def get_values(self):
+        """
+        :return: the text box values
+        """
         data = {
             "name": self.name_textbox.GetValue(),
             "description": self.description_textbox.GetValue(),
             "type_cv": self.type_combo.GetValue(),
             "link": self.url_textbox.GetValue(),
-            "start_date": UserCtrl.datetime_to_string(self.start_date_picker.GetValue()),
+            "start_date": UserCtrl.wxdate_to_string(self.start_date_picker.GetValue()),
             "phone": self.phone_textbox.GetValue(),
             "email": self.email_textbox.GetValue(),
         }
@@ -48,19 +51,20 @@ class OrganizationCtrl(OrganizationView):
             self.email_textbox.SetValue(data["email"])
         return
 
+    ###############################
+    # EVENTS
+    ###############################
+
     def on_accept(self, event):
         data = self.get_values()
-        self.parent.organization(data)
+        self.parent.set_organization_data(data)
         self.parent.refresh_organization_box()
-        self.send_and_close()
+        self.parent.check_save(None)
         self.Close()
 
     def on_cancel(self, event):
-        self.send_and_close()
+        self.parent.check_save(None)
         self.Close()
-
-    def send_and_close(self):
-        pub.sendMessage('OrganizationClose')
 
 
 class UserCtrl(UserView):
@@ -70,61 +74,42 @@ class UserCtrl(UserView):
         self.organization_data = {}
 
         # enable and disable buttons
-        self.editOrganization.Disable()
-        self.removeOrganization.Disable()
+        self.edit_organization_btn.Disable()
+        self.remove_organization_btn.Disable()
 
         # initialize bindings
-        self.firstnameTextBox.Bind(wx.EVT_TEXT, self.check_save)
-        self.lastnameTextBox.Bind(wx.EVT_TEXT, self.check_save)
-        # self.phoneTextBox.Bind(wx.EVT_TEXT, self.on_text_enter)
-        # self.emailTextBox.Bind(wx.EVT_TEXT, self.on_text_enter)
-        # self.addressTextBox.Bind(wx.EVT_TEXT, self.on_text_enter)
-        # self.startDatePicker.Bind(wx.EVT_TEXT, self.on_text_enter)
-        self.okbutton.Bind(wx.EVT_BUTTON, self.on_ok)
-        self.addOrganization.Bind(wx.EVT_BUTTON, self.add_organization_clicked)
-        self.removeOrganization.Bind(wx.EVT_BUTTON, self.remove_organization_clicked)
-        self.cancelButton.Bind(wx.EVT_BUTTON, self.on_cancel)
-        self.editOrganization.Bind(wx.EVT_BUTTON, self.on_edit)
-        self.organizationListBox.Bind(wx.EVT_LISTBOX, self.on_organization_selected)
-        # listen to OrganizationClose messages from the OrganizationCtrl class
-        pub.subscribe(self.on_organization_close, 'OrganizationClose')
-
-    def on_organization_selected(self, event):
-        # get the selection
-        selection = self.organizationListBox.GetSelection()
-
-        # enable/disable the edit and remove buttons
-        if selection > -1:
-            self.removeOrganization.Enable()
-            self.editOrganization.Enable()
-        else:
-            self.removeOrganization.Disable()
-            self.editOrganization.Disable()
-
-    def on_organization_close(self):
-        self.check_save(None)
-
-    def add_organization_clicked(self, event):
-        OrganizationCtrl(self)
-        # self.check_save(None)
-
-    def organization(self, value=None):
-       if value is not None:
-           organization_name = value['name']
-           self.organization_data[organization_name] = value
-       return self.organization_data
-
+        self.first_name_text_box.Bind(wx.EVT_TEXT, self.check_save)
+        self.last_name_text_box.Bind(wx.EVT_TEXT, self.check_save)
+        self.ok_button.Bind(wx.EVT_BUTTON, self.on_ok)
+        self.add_organization_btn.Bind(wx.EVT_BUTTON, self.on_add_organization)
+        self.remove_organization_btn.Bind(wx.EVT_BUTTON, self.on_remove_organization)
+        self.cancel_button.Bind(wx.EVT_BUTTON, self.on_cancel)
+        self.edit_organization_btn.Bind(wx.EVT_BUTTON, self.on_edit)
+        self.organization_list_box.Bind(wx.EVT_LISTBOX, self.on_organization_selected)
 
     @staticmethod
     def create_user_json():
         # If path path exist do nothing else create it
-        path = environment.getDefaultUsersJsonPath()
+        path = os.environ['APP_USER_PATH']
+        # path = environment.getDefaultUsersJsonPath()
         if os.path.isfile(path):
             return
         open(path, "w")
 
+    def check_users_json(self):
+        """
+        Users must exist for the application to continue
+        If no users exist it will prompt to create a user
+        :return:
+        """
+        UserCtrl.create_user_json()
+        if UserCtrl.is_user_json_empty():
+            controller = UserCtrl(self)
+            controller.CenterOnScreen()
+            controller.Show()
+
     @staticmethod
-    def datetime_to_string(date):
+    def wxdate_to_string(date):
         date = datetime.datetime.strptime(date.FormatISOCombined(), "%Y-%m-%dT%H:%M:%S")
         date = UserCtrl.json_serial(date)
         return date
@@ -133,14 +118,14 @@ class UserCtrl(UserView):
     def string_to_wxdate(datestr):
         dt = datetime.datetime.strptime(datestr, '%Y-%m-%dT%H:%M:%S')
         tt = dt.timetuple()
-        dmy = (tt[2], tt[1]-1, tt[0])
+        dmy = (tt[2], tt[1] - 1, tt[0])
         wxDate = wx.DateTimeFromDMY(*dmy)
         return wxDate
 
     def get_text_box_values(self):
         data = {"person": {
-            "first_name": self.firstnameTextBox.GetValue(),
-            "last_name": self.lastnameTextBox.GetValue(),
+            "first_name": self.first_name_text_box.GetValue(),
+            "last_name": self.last_name_text_box.GetValue(),
         }}
 
         organizations = []
@@ -161,38 +146,17 @@ class UserCtrl(UserView):
 
     @staticmethod
     def is_user_json_empty():
-        path = environment.getDefaultUsersJsonPath()
+        # path = environment.getDefaultUsersJsonPath()
+        path = os.environ['APP_USER_PATH']
         if os.stat(path).st_size == 0:
             return True
         return False
 
-    def on_cancel(self, event):
-        # If no users exist it wil prompt them to add one. Clicking No will close the application
-        try:
-            if self.is_user_json_empty():
-                message = wx.MessageDialog(None, "No users have been registered. Would you like to register a user?", "Question", wx.YES_NO | wx.YES_DEFAULT | wx.ICON_QUESTION)
-                if message.ShowModal() == wx.ID_NO:
-                    self.parent.onClose(None)
-            self.parent.check_users_json()
-        except KeyError:
-            # Parent does not have check_users_json()
-            pass
-        self.Close()
-
-    def on_edit(self, event):
-        index = self.organizationListBox.GetSelection()
-        if index == -1:
-            return
-        selected = self.organizationListBox.GetString(index)
-        data = self.organization_data[selected]
-        OrganizationCtrl(self, data=data)
-
-
     @staticmethod
-    def get_json_from_users_json_file():
+    def get_existing_users():
         # Returns the content inside users.json
-        # Returns empty {} of the file is empty or fails to load
-        path = environment.getDefaultUsersJsonPath()
+        # Returns {} if the file is empty or fails to load
+        path = os.environ['APP_USER_PATH']
         with open(path, "r") as f:
             try:
                 data = json.load(f)
@@ -200,24 +164,78 @@ class UserCtrl(UserView):
                 data = {}
         return data
 
-    def combine_organizaton_affiliation(self, organization, affiliation):
+    def check_save(self, event):
         """
-        Joins Organization Objects dictionaries into a single object
-        Args:
-            organization: Organization Object
-            affiliation: Affiliation Object
-
-        Returns: dictionary of all organization and affiliation members
-
+        Checks that the required entries are filled
+        :param event:
+        :return:
         """
+        if self.first_name_text_box.GetValue() \
+                and self.last_name_text_box.GetValue() \
+                and self.organization_list_box.GetCount() > 0:
+            self.ok_button.Enable()
+        else:
+            self.ok_button.Disable()
 
-        # get class members for organization and affiliation
-        orgmembers = organization.__dict__
-        affmembers = affiliation.toSerializableDict()
+    def parse_organization_date(self, data):
+        for i in range(len(data)):
+            data["organizations"][i]["start_date"] = self.wxdate_to_string(data["organizations"][i]["start_date"])
+        return data
 
-        temp = orgmembers.copy()
-        temp.update(affmembers)
-        return temp
+    def refresh_organization_box(self):
+        choices = []
+        for key, value in self.organization_data.iteritems():
+            choices.append(key)
+
+        self.organization_list_box.SetItems(choices)
+
+    def set_organization_data(self, value=None):
+        if value is not None:
+            organization_name = value['name']
+            self.organization_data[organization_name] = value
+        return self.organization_data
+
+    ###############################
+    # EVENTS
+    ###############################
+
+    def on_add_organization(self, event):
+        OrganizationCtrl(self)
+
+    def on_cancel(self, event):
+        # If no users exist it wil prompt them to add one. Clicking No will close the application
+        try:
+            if self.is_user_json_empty():
+                message = wx.MessageDialog(None, "No users have been registered. Would you like to register a user?", "Question", wx.YES_NO | wx.YES_DEFAULT | wx.ICON_QUESTION)
+
+                message.SetYesNoLabels(yes="Register", no="Close")
+                if message.ShowModal() == wx.ID_NO:
+                    self.parent.on_close(None)
+                self.parent.check_users_json()
+        except KeyError:
+            # Parent does not have check_users_json()
+            pass
+        self.Close()
+
+    def on_edit(self, event):
+        index = self.organization_list_box.GetSelection()
+        if index == -1:
+            return
+        selected = self.organization_list_box.GetString(index)
+        data = self.organization_data[selected]
+        OrganizationCtrl(self, data=data)
+
+    def on_organization_selected(self, event):
+        # get the selection
+        selection = self.organization_list_box.GetSelection()
+
+        # enable/disable the edit and remove buttons
+        if selection > -1:
+            self.remove_organization_btn.Enable()
+            self.edit_organization_btn.Enable()
+        else:
+            self.remove_organization_btn.Disable()
+            self.edit_organization_btn.Disable()
 
     def on_ok(self, event):
         new_data = self.get_text_box_values()
@@ -234,7 +252,7 @@ class UserCtrl(UserView):
                                               parent=None)
 
             affiliation = users.Affiliation(email=d['email'],
-                                            startDate=datetime.datetime.strptime(d['start_date'],'%Y-%m-%dT%H:%M:%S'),
+                                            startDate=datetime.datetime.strptime(d['start_date'], '%Y-%m-%dT%H:%M:%S'),
                                             organization=organization,
                                             person=person,
                                             phone=d['phone'],
@@ -246,77 +264,32 @@ class UserCtrl(UserView):
             organizations.append([organization, affiliation])
 
 
-        path = environment.getDefaultUsersJsonPath()
-        previous_users = UserCtrl.get_json_from_users_json_file()
+        path = os.environ['APP_USER_PATH']
+        previous_users = UserCtrl.get_existing_users()
 
-        # save the userinfo in a simplified way
+        # save the user info in a simplified way
         with open(path, 'w') as f:
-            data  = {}
+            data = {}
             combined = {}
             for org in organizations:
-                combined[org[0].name] = self.combine_organizaton_affiliation(org[0], org[1])
+                combined[org[0].name] = users.combine_organization_affiliation(org[0], org[1])
 
             data[person.get_random_id()] = {
                     "person": person.__dict__,
-                    "organizations": combined,
-                }
+                    "organizations": combined
+            }
 
             data.update(previous_users)
             json.dump(data, f, sort_keys=True, indent=4, separators=(',', ': '))
             f.close()
 
-        self.parent.refreshUserAccount()
         self.Close()
 
-    def check_save(self, event):
-        if self.firstnameTextBox.GetValue() \
-                and self.lastnameTextBox.GetValue() \
-                and self.organizationListBox.GetCount() > 0:
-            self.okbutton.Enable()
-        else:
-            self.okbutton.Disable()
-
-    def parse_organization_date(self, data):
-        for i in range(len(data)):
-            data["organizations"][i]["start_date"] = self.datetime_to_string(data["organizations"][i]["start_date"])
-        return data
-
-    def refresh_organization_box(self):
-        choices = []
-        for key, value in self.organization_data.iteritems():
-            choices.append(key)
-
-        self.organizationListBox.SetItems(choices)
-
-    def remove_organization_clicked(self, event):
-        index = self.organizationListBox.GetSelection()
+    def on_remove_organization(self, event):
+        index = self.organization_list_box.GetSelection()
         if index == -1:
             return
-        selected = self.organizationListBox.GetString(index)
+        selected = self.organization_list_box.GetString(index)
         del self.organization_data[selected]
-        self.organizationListBox.Delete(index)
-
-    @staticmethod
-    def users_json_file_to_object():
-
-
-
-        # Converts the data in users.json to objects
-        data = UserCtrl.get_json_from_users_json_file()
-        users_dict = {}
-
-        for key, value in data.iteritems():
-            organizations_object = []
-            organizations = value["organizations"]
-            for organ in organizations:
-                o = users.Organization(organ["name"])
-                o.set_data(organ)
-                o.store_date_as_object(o.start_date)
-                organizations_object.append(o)
-
-            person = value["person"]
-            p = users.Person(person["first_name"], person["last_name"])
-            users_dict[p] = organizations_object
-
-        return users_dict
-
+        self.organization_list_box.Delete(index)
+        self.check_save(None)

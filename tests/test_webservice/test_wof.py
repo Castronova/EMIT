@@ -128,7 +128,7 @@ class test_wof(unittest.TestCase):
         start_date = start_date.FormatISODate()
         end_date = end_date.FormatISODate()
 
-        data = api.getValues(site_code=site_code, variable_code=variable, beginDate=start_date, endDate=end_date)
+        data = api.getValuesObject(site_code=site_code, variable_code=variable, beginDate=start_date, endDate=end_date)
         self.assertIsInstance(data, object)
 
     def test_parse_values(self):

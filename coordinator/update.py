@@ -1,5 +1,3 @@
-__author__ = 'tonycastronova'
-
 from utilities.gui import *
 from transform.time import *
 from datetime import timedelta
@@ -10,14 +8,11 @@ def update_links(obj, links, output_exchange_items, spatial_maps):
     Updates the data from source component exchange items to target component exchange items
     :param obj: a coordinator object
     :param links: the links associated the current model, dict{linkid:link object}
-    :param output_exchange_items: All outputs for the source model.
+    :param output_exchange_items: All outputs for the source model
     :param spatial_maps: map dictionary object
     """
-
-
     for linkid, link in links.iteritems():
 
-        #target_model  = target[0]
         target_model = link.target_component()
 
         source_item_name = link.source_exchange_item().name()
@@ -56,11 +51,9 @@ def update_links(obj, links, output_exchange_items, spatial_maps):
             obj.update_link(linkid, mapped, spatial_maps[link_key])
 
 
-def update_links_feed_forward(obj, links, output_exchange_items, spatial_maps):
-    # todo: this help text is out of date
+def update_links_feed_forward(links, output_exchange_items, spatial_maps):
     """
     Updates the data from source component exchange items to target component exchange items
-    :param obj: a coordinator object
     :param links: the links associated the current model, dict{linkid:link object}
     :param output_exchange_items: All outputs for the source model.
     :param spatial_maps: map dictionary object
@@ -108,7 +101,7 @@ def update_links_feed_forward(obj, links, output_exchange_items, spatial_maps):
 
         # build temporal mapping array
         temporal = temporal_nearest_neighbor()
-        tmap = temporal.map(sdates,target_times)
+        tmap = temporal.map(sdates, target_times)
 
         # create empty array to hold mapped data (mimicks the target values array)
         nvals = np.empty((len(target_times), len(tgeoms)))
@@ -130,6 +123,9 @@ def update_links_feed_forward(obj, links, output_exchange_items, spatial_maps):
 
             # set the source values in the target
             nvals[:, tidx] = mvals
+
+        # do unit conversion
+        convert_units(oei, iei, nvals)
 
         # todo: remove loop to improve efficiency
         # set these data in the iei

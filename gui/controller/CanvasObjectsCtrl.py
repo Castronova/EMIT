@@ -114,6 +114,7 @@ class SmoothLineWithArrow(SmoothLine):
         FC.RemoveObject(self)
         FC.RemoveObject(self.Arrow)
 
+
 class ModelBox(FC.Group):
     def __init__(self, type, XY, text, id):
         self.Links = []
@@ -122,14 +123,13 @@ class ModelBox(FC.Group):
 
         # Set box color based on model type
         imgs_base_path = os.environ['APP_IMAGES_PATH']
-        bmp = None
         if type == datatypes.ModelTypes.TimeStep:
-            bmp = wx.Image(path.join(imgs_base_path,'E.png'), wx.BITMAP_TYPE_PNG)
+            bmp = wx.Image(path.join(imgs_base_path, 'E.png'), wx.BITMAP_TYPE_PNG)
         elif type == datatypes.ModelTypes.FeedForward:
-            bmp = wx.Image(path.join(imgs_base_path,'B.png'), wx.BITMAP_TYPE_PNG)
+            bmp = wx.Image(path.join(imgs_base_path, 'B.png'), wx.BITMAP_TYPE_PNG)
         elif type == datatypes.ModelTypes.Data:
             bmp = wx.Image(path.join(imgs_base_path, 'N.png'), wx.BITMAP_TYPE_PNG)
-        else: # default type
+        else:  # default type
             bmp = wx.Image(path.join(imgs_base_path, 'M.png'), wx.BITMAP_TYPE_PNG)
 
         self.box = FC.Bitmap(bmp, XY, Position="cc", InForeground=True)
@@ -139,7 +139,7 @@ class ModelBox(FC.Group):
         font = wx.Font(16, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
         font_size = 15
         self.label = FC.ScaledTextBox(text, XY, Color="Black", Size=font_size,
-                                      Width=bmp.Width-30, Position="cc",
+                                      Width=bmp.Width - 30, Position="cc",
                                       Alignment="center", Weight=wx.BOLD,
                                       InForeground=True, Font=font, LineWidth=0,
                                       LineColor=None)

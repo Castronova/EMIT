@@ -2,12 +2,13 @@ __author__ = 'tonycastronova'
 
 import uuid
 import ConfigParser
-from api_old.ODMconnection import  dbconnection, SessionFactory
+from odm2api.ODMconnection import dbconnection, SessionFactory
 
 
 def build_session_from_connection_string(connection_string):
-
-    s = SessionFactory(connection_string, False)
+    if type(connection_string) != str:
+        connection_string = str(connection_string)
+    s = SessionFactory(connection_string, echo=False, version=2.0)
 
     return s
 
@@ -49,7 +50,7 @@ def create_database_connections_from_args(title, desc, engine, address, db, user
                                  'description':d['desc'],
                                  'args': d}
 
-        print 'Connected to : %s [%s]'%(connection_string,db_id)
+        print 'Connected to : %s [%s]'%(connection_string.__repr__(),db_id)
     else:
         print 'ERROR | Could not establish a connection with the database'
         return None
@@ -101,7 +102,7 @@ def create_database_connections_from_file(ini):
                                      'description':d['desc'],
                                      'args': d}
 
-            print 'Connected to : %s [%s]'%(connection_string,db_id)
+            print 'Connected to : %s [%s]'%(connection_string.__repr__(),db_id)
 
 
 

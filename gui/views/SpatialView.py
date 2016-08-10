@@ -1,66 +1,61 @@
 import wx
-import wx.propgrid as wxpg
 import wx.grid
-from coordinator.emitLogging import elog
-from gui.controller.PlotForSiteViewerCtrl import PlotForSiteViewerCtrl
+# from gui.Models.SpatialTemporalPlotter import SpatialTemporalPlotter
+from gui.controller.PlotCtrl import PlotCtrl
 
 
-class SpatialView:
+
+class SpatialView(wx.Panel):
 
     def __init__(self, panel):
-        self.biggest_col = 0
-        # Creating all the necessary panels
-        top_panel = wx.Panel(panel)
-        middle_panel = wx.Panel(panel)
-        lower_panel = wx.Panel(panel)
 
-        # SETUP OF TOP PANEL
+        wx.Panel.__init__(self, panel)
+
+        # Creating all the necessary panels
+        top_panel = wx.Panel(self)
+        bottom_panel = wx.Panel(self)
+
+        # create the sizers
         sizer_top_panel = wx.BoxSizer(wx.HORIZONTAL)
-        self.plot = PlotForSiteViewerCtrl(top_panel)
-        sizer_top_panel.Add(self.plot.plot, 1, wx.EXPAND | wx.ALL, 2)
+        input_sizer = wx.BoxSizer(wx.VERTICAL)
+        output_sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer_lower_panel = wx.BoxSizer(wx.HORIZONTAL)
+
+        # add elements to the top panel
+        self.plot = PlotCtrl(top_panel)
+        sizer_top_panel.Add(self.plot.canvas, 1, wx.EXPAND | wx.ALL, 2)
         top_panel.SetSizer(sizer_top_panel)
 
-        # SETUP OF MIDDLE PANEL
-        sizer_middle_panel = wx.BoxSizer(wx.HORIZONTAL)
-        self.input_combobox = wx.ComboBox(parent=middle_panel, choices=["---"])
-        self.output_combobox = wx.ComboBox(parent=middle_panel, choices=["---"])
-        sizer_middle_panel.Add(self.input_combobox, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
-        sizer_middle_panel.AddSpacer(10)
-        sizer_middle_panel.Add(self.output_combobox, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
-        middle_panel.SetSizer(sizer_middle_panel)
+        # create lower panel components
+        self.input_combobox = wx.ComboBox(parent=bottom_panel, choices=["---"])
+        self.input_grid = wx.grid.Grid(bottom_panel, size=(300, -1))
+        self.output_combobox = wx.ComboBox(parent=bottom_panel, choices=["---"])
+        self.output_grid = wx.grid.Grid(bottom_panel, size=(300, -1))
 
+        setup_grid(self.input_grid, 'Input Exchange Item Metadata')
+        setup_grid(self.output_grid, 'Output Exchange Item Metadata')
 
-        # SETUP OF LOWER PANEL
+        # add elements to the bottom panel
+        input_sizer.Add(self.input_combobox, proportion=0, flag=wx.ALL | wx.EXPAND, border=5)
+        # proportion=1 allows the grid to expand while resizing. Setting it to 0 will keep the grid height the same
+        input_sizer.Add(self.input_grid, proportion=1, flag=wx.ALL | wx.EXPAND, border=5)
+        output_sizer.Add(self.output_combobox, proportion=0, flag=wx.ALL | wx.EXPAND, border=5)
+        output_sizer.Add(self.output_grid, proportion=1, flag=wx.ALL | wx.EXPAND, border=5)
 
-        sizer_lower_panel = wx.BoxSizer(wx.HORIZONTAL)
-        self.input_grid = wx.grid.Grid(lower_panel)
-        sizer_middle_panel.AddSpacer(10)
-        self.output_grid = wx.grid.Grid(lower_panel)
+        sizer_lower_panel.Add(input_sizer, proportion=1, flag=wx.EXPAND, border=5)
+        sizer_lower_panel.Add(output_sizer, proportion=1, flag=wx.EXPAND, border=5)
 
-        set_up_grid(self.input_grid, 'Input Exchange Item Metadata')
-        set_up_grid(self.output_grid, 'Output Exchange Item Metadata')
-        sizer_lower_panel.Add(self.input_grid, 1, wx.EXPAND|wx.ALL, 10)
-        sizer_lower_panel.Add(self.output_grid, 1, wx.EXPAND|wx.ALL, 10)
-        lower_panel.SetSizer(sizer_lower_panel)
+        bottom_panel.SetSizer(sizer_lower_panel)
 
-
-        # ADD PANEL TO THE FRAME
+        # add panels to frame
         sizer_spatial_view = wx.BoxSizer(wx.VERTICAL)
         sizer_spatial_view.Add(top_panel, 1, wx.EXPAND | wx.ALL, 2)
-        sizer_spatial_view.Add(middle_panel, 0, wx.EXPAND | wx.ALL, 2)
-        sizer_spatial_view.Add(lower_panel, 1, wx.EXPAND | wx.ALL, 2)
-        panel.SetSizer(sizer_spatial_view)
+        #  proportion=0 makes the panel same size when resizing
+        sizer_spatial_view.Add(bottom_panel, 0, wx.EXPAND | wx.ALL, 2)
+        self.SetSizer(sizer_spatial_view)
 
-        self.input_grid.Bind(wx.EVT_SIZE, self.OnSize)
-        self.output_grid.Bind(wx.EVT_SIZE, self.OnSize)
 
-    def OnSize(self, event):
-        width, height = self.input_grid.GetClientSizeTuple()
-        prop_size = self.input_grid.GetColSize(0)
-        self.input_grid.SetColSize(1, width - prop_size - 10)
-        self.output_grid.SetColSize(1, width - prop_size - 10)
-
-def set_up_grid(grid, title):
+def setup_grid(grid, title):
     """
     This function only works with type wx.grid.Grid
     The it will create a grid that is like the one found in LinkCtrl/View.
@@ -102,8 +97,12 @@ def set_up_grid(grid, title):
     grid.SetDefaultCellBackgroundColour('WHITE')
 
     # change color and size of header
-    grid.SetCellSize(0,0,1,2)  # span cols 0 and 1
+    grid.SetCellSize(0, 0, 1, 2)  # span cols 0 and 1
     grid.SetCellBackgroundColour(0, 0, wx.Colour(195, 195, 195))  # Grey
+
+    # set the table column size
+    grid.SetColSize(0, 133)
+    grid.SetColSize(1, 155)
 
     # change color of properties
     for i in range(1, grid.GetNumberRows()):

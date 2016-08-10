@@ -1,7 +1,4 @@
 import os
-
-__author__ = 'tonycastronova'
-
 import random
 from wrappers import feed_forward
 import stdlib
@@ -38,8 +35,8 @@ class randomizer(feed_forward.Wrapper):
                    o['random POLYGON 10-100'],
                    o['random POLYGON 100-1000'],
                    o['random POINT 1-10'],
-                   o['random POINT 10-100'],
                    o['random POINT 100-1000'],
+                   o['random LINESTRING 10-100'],
                    ]
 
 
@@ -70,12 +67,8 @@ class randomizer(feed_forward.Wrapper):
                 # save list of values for each geom at current time
                 vals.append(v)
 
-
             # save calculated values for this output exchange item
             output.setValues2(vals, dates)
-            # self.set_geom_values(output.name(), geom, ts)
-
-        print 'Run Complete'
 
     def finish(self):
         """

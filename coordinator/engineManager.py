@@ -1,14 +1,10 @@
-__author__ = 'tonycastronova'
-
-from coordinator.engine import Coordinator
-import types
+from coordinator.engine import Coordinator, Serializable
 from multiprocessing import Process
 import sys
-import time
 from multiprocessing import Queue
 import events
 import wx
-# from coordinator.emitLogging import elog
+from sprint import *
 
 class EngineBorg:
     """
@@ -20,7 +16,8 @@ class EngineBorg:
     def __init__(self):
         if not EngineBorg.__monostate:
             EngineBorg.__monostate = self.__dict__
-            self.engine = Coordinator()
+            # self.engine = Coordinator()
+            self.engine = Serializable()
 
         else:
             self.__dict__ = EngineBorg.__monostate
@@ -116,7 +113,6 @@ class Engine:
         Sets the tasks for the TaskServerMP to handle.
         """
         self.tasks.extend(taskList)
-        self.numtasks = len(taskList)
 
     def worker(cls, dispatcher, engine):
         """
@@ -128,21 +124,48 @@ class Engine:
 
             if next_task_name:
                 task = getattr(engine, next_task_name)
-                evt = None
-                if 'event' in next_task_args:
-                    evt = next_task_args.pop('event')
+
+                # get the success and failure event handlers
+                evt_success = None
+                evt_fail = None
+
+                if 'event_success' in next_task_args:
+                    evt_success = next_task_args.pop('event_success')
+
+                if 'event_fail' in next_task_args:
+                    evt_fail = next_task_args.pop('event_fail')
 
                 try:
-                    result = task(**next_task_args)
-                except Exception, e:
-                    # elog.error(e.message)
-                    print e.message
-                    result = None
 
-                if evt is not None:
-                    if result is not None:
-                        result['event'] = evt
-                dispatcher.putResult(result)
+                    # run the task
+                    result = task(**next_task_args)
+
+                    # if the function fails, set the result to None
+                    # This expects all functions to return a dictionary with a 'success' key in it
+                    if not isinstance(result, dict):
+                        sPrint('%s should return a dictionary as a result, otherwise expect errors in engineManager' % str(next_task_name), MessageType.ERROR)
+                        result = {}
+                    else:
+                        task_successful = result.pop('success')
+
+
+                except Exception, e:
+
+                    msg = e.message
+                    sPrint(msg, MessageType.ERROR)
+
+                    # if the function raises an exception, set the result to None
+                    result = {}
+
+                # set the success and fail events
+                if isinstance(result, dict):
+                    if evt_success is not None and task_successful:
+                        result['event'] = evt_success
+                    elif evt_fail is not None and not task_successful:
+                        result['event'] = evt_fail
+
+                    # send the result to the check_for_process_results only if a dictionary is returned
+                    dispatcher.putResult(result)
             else:
                 break
 
@@ -162,24 +185,23 @@ class Engine:
 
             self.dispatcher.putTask(t)
 
-
         # get output
         return self.dispatcher.getResult()
 
     def check_for_process_results(self):
 
         result = self.processTasks()
-        if result is not None:
-            if 'event' in result.keys():
-                evt_name= result.pop('event')
-                evt = getattr(events, evt_name)
+        if 'event' in result.keys():
+            # This assumes that result has an "event" key and a "result" key
+            evt_name = result.pop('event')
+            evt = getattr(events, evt_name)
+            res = result.pop('result')
 
-                try:
-                    wx.CallAfter(evt.fire, **result)
-                except:
-                    pass
+            try:
+                wx.CallAfter(evt.fire, **res)
+            except Exception as e:
+                print e
 
-                # evt.fire(**result)
 
     def close(self):
         # kill all running processes

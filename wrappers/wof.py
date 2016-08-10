@@ -72,12 +72,12 @@ class Wrapper(base.BaseWrapper):
         geom = geometry.fromWKT(wkt)
 
         # build output exchange items
-        oei = stdlib.ExchangeItem(name = variableName,
-                                  desc = siteDescription,
-                                  geometry= [geom],
-                                  unit= unit,
-                                  variable= var,
-                                  type= stdlib.ExchangeItemType.OUTPUT,
+        oei = stdlib.ExchangeItem(name=variableName,
+                                  desc=siteDescription,
+                                  geometry=geom,
+                                  unit=unit,
+                                  variable=var,
+                                  type=stdlib.ExchangeItemType.OUTPUT,
                                   # srs_epsg= ''
                                   )
 

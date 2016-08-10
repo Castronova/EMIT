@@ -2,8 +2,10 @@ __author__ = 'tonycastronova'
 
 import numpy
 from osgeo import ogr
-from coordinator.emitLogging import elog
+
 import stdlib
+from emitLogging import elog
+
 
 def fromWKB(wkb):
     """

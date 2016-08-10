@@ -1,12 +1,10 @@
 __author__ = 'tonycastronova'
 
-
-from wrappers import feed_forward
 import stdlib
-from utilities import mdl
-from coordinator.emitLogging import elog
-
 from sprint import *
+from utilities import mdl
+from wrappers import feed_forward
+
 
 class multiply(feed_forward.Wrapper):
 
@@ -17,7 +15,7 @@ class multiply(feed_forward.Wrapper):
 
         """
 
-        super(multiply,self).__init__(config_params)
+        super(multiply, self).__init__(config_params)
 
         # build inputs and outputs
         io = mdl.build_exchange_items_from_config(config_params)
@@ -28,7 +26,7 @@ class multiply(feed_forward.Wrapper):
 
         sPrint('Multiplier initialization complete.')
 
-    def run(self,inputs):
+    def run(self, inputs):
         """
         This is an abstract method that must be implemented.
         :param exchangeitems: list of input exchange items

@@ -1,18 +1,16 @@
-from gui.views.SpatialView import SpatialView
-from coordinator import engineAccessors
-from utilities import geometry
-from coordinator.emitLogging import elog
-import numpy
-from matplotlib.collections import PolyCollection, LineCollection
 import wx
 from osgeo import ogr
 import stdlib
+from coordinator import engineAccessors
+from emitLogging import elog
+from gui.views.SpatialView import SpatialView
 from sprint import *
+
 
 class SpatialCtrl(SpatialView):
 
-    def __init__(self, parent):
-        SpatialView.__init__(self, parent)
+    def __init__(self, panel):
+        SpatialView.__init__(self, panel)
 
         self.raw_input_data = None
         self.raw_output_data = None
@@ -27,16 +25,25 @@ class SpatialCtrl(SpatialView):
         self.output_combobox.SetSelection(0)
         self.input_combobox.Bind(wx.EVT_COMBOBOX, self.on_combo)
         self.output_combobox.Bind(wx.EVT_COMBOBOX, self.on_combo)
-        self.plot.setAxisLabel("my X axis", "My y axis")
+        self.plot.set_axis_label("my X axis", "My y axis")
+        panel.Bind(wx.EVT_SIZE, self.frame_resizing)
+
+    def frame_resizing(self, event):
+        self.resize_grid_to_fill_white__space(self.input_grid)
+        self.resize_grid_to_fill_white__space(self.output_grid)
+        event.Skip()
+
+    def resize_grid_to_fill_white__space(self, grid):
+        col_size = grid.GetColSize(0)
+        C, R = grid.GetSize()
+        if C - col_size > 0:
+            grid.SetColSize(1, C - col_size)
 
     def add_input_combo_choices(self, items):
         self.input_combobox.AppendItems(items)
 
     def add_output_combo_choices(self, items):
         self.output_combobox.AppendItems(items)
-
-    def clear_plot(self):
-        self.plot.clearPlot()
 
     def clear_grid(self, type):
         """
@@ -72,7 +79,7 @@ class SpatialCtrl(SpatialView):
 
     def get_exchange_items_names(self, model_id, model_type="INPUT"):
         # model_type must match INPUT or OUTPUT
-        items = engineAccessors.getExchangeItems(modelid=model_id, exchange_item_type=model_type.upper(), returnGeoms=False)
+        items = engineAccessors.getExchangeItems(modelid=model_id, item=model_type.upper())
         if items is not None:
             return [item['name'] for item in items]
         return [""]
@@ -130,7 +137,6 @@ class SpatialCtrl(SpatialView):
 
         return {self.input_combobox.GetValue(): self.__input_data[self.input_combobox.GetValue()][0]}
 
-
     def get_selected_output_exchange_item(self):
         if self.output_combobox.GetValue() == "---":
             return {}
@@ -138,7 +144,7 @@ class SpatialCtrl(SpatialView):
         return {self.output_combobox.GetValue(): self.__output_data[self.output_combobox.GetValue()][0]}
 
     def on_combo(self, event):
-        self.clear_plot()
+        self.plot.clear_plot()
         if self.input_combobox.GetValue() == "---":
             self.input_legend_label = ""
             self.clear_grid('input')
@@ -154,24 +160,6 @@ class SpatialCtrl(SpatialView):
             self.output_legend_label = self.output_combobox.GetValue()
             self.update_plot(self.output_combobox.GetValue())
             self.update_ei_table(stdlib.ExchangeItemType.OUTPUT)
-
-    def plot_polygon(self, data, color):
-        poly_list = []
-        reference = data[0].GetGeometryRef(0)
-        points = numpy.array(reference.GetPoints())
-        a = tuple(map(tuple, points[:, 0:2]))
-        poly_list.append(a)
-
-        p_coll = PolyCollection(poly_list, closed=True, facecolor=color, alpha=0.5, edgecolor=None, linewidths=(2,))
-        self.plot.axes.add_collection(p_coll, autolim=True)
-
-    def plot_point(self, data, color):
-        # get x,y points
-        x, y = zip(*[(g.GetX(), g.GetY()) for g in data])
-        self.plot.axes.scatter(x, y, color=color)
-
-    def plot_linestring(self, data):
-        elog.debug("plot_linestring has not been implemented")
 
     def set_data(self, target={}, source={}):  # target is input, source is output
         self.__input_data = target
@@ -192,29 +180,14 @@ class SpatialCtrl(SpatialView):
         if data is None:
             return
 
-        # We can use either a set color or use the getNextColor() from PlotForSiteViewerCtrl.py
+        # We can use either a set color or use the getNextColor() from SpatialTemporalPlotter.pyy
         # color = self.plot.getNextColor()
         # color = "#019477"
         color = self.get_color_by_plot_name(data_in)
 
-        if data[0].GetGeometryName().upper() == "POLYGON":
-            self.plot_polygon(data, color)
-        elif data[0].GetGeometryName().upper() == "POINT":
-            self.plot_point(data, color)
-        elif data[0].GetGeometryName().upper() == "LINESTRING":
-            self.plot_linestring(data)
-        else:
-            return
-
-        self.plot.setTitle(plot_title)
+        self.plot.plot_geometry(data, plot_title, color)
         self.set_legend()
-
-        self.plot.axes.grid(True)
-
-        # If margin is 0 the graph will fill the plot.
-        self.plot.axes.margins(0.1)
-        self.plot.reDraw()
-
+        self.plot.redraw()
 
     def update_ei_table(self, type=stdlib.ExchangeItemType.INPUT):
 

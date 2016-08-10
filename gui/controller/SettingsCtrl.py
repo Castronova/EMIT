@@ -1,14 +1,16 @@
 from gui.views.SettingsView import SettingsView
 import wx
-from sprint import *  # Contains os.environ
 from gui.views.SettingsView import SettingsDatabaseView
-# from gui.Models.Connection import Connection
 from gui.Models.Connection import *
 
 
 class SettingsCtrl(SettingsView):
     def __init__(self, parent):
         SettingsView.__init__(self, parent)
+
+        self.menu_buttons = [self.console_button, self.database_button, self.environment_button]
+        self.selected_font = wx.Font(pointSize=15, family=wx.DEFAULT, style=wx.NORMAL, weight=wx.NORMAL)
+        self.non_selected_font = wx.Font(pointSize=12, family=wx.DEFAULT, style=wx.NORMAL, weight=wx.NORMAL)
 
         # Add panels to the settings overall view
         self.database_panel = SettingsDatabaseCtrl(self.details_panel)
@@ -19,9 +21,10 @@ class SettingsCtrl(SettingsView):
         self.SetSize((550, 400))
 
         self._resize_all_panels()
+        self._update_menu_button(0)
 
         self.console_button.Bind(wx.EVT_BUTTON, self.on_console)
-        self.another_button.Bind(wx.EVT_BUTTON, self.on_another)
+        self.database_button.Bind(wx.EVT_BUTTON, self.on_another)
         self.environment_button.Bind(wx.EVT_BUTTON, self.on_environment)
         self.save_button.Bind(wx.EVT_BUTTON, self.on_save)
         self.cancel_button.Bind(wx.EVT_BUTTON, self.on_close)
@@ -72,10 +75,7 @@ class SettingsCtrl(SettingsView):
     ############################
 
     def on_another(self, event):
-        # Color selected
-        self.another_button.SetForegroundColour(wx.WHITE)
-        self.console_button.SetForegroundColour(wx.LIGHT_GREY)
-        self.environment_button.SetForegroundColour(wx.LIGHT_GREY)
+        self._update_menu_button(1)
 
         # Display correct panel
         self.console_panel.Hide()
@@ -87,11 +87,20 @@ class SettingsCtrl(SettingsView):
         self.MakeModal(False)
         self.Destroy()
 
+    def _update_menu_button(self, index):
+        if not isinstance(index, int):
+            return
+
+        for i in range(len(self.menu_buttons)):
+            if i == index:
+                self.menu_buttons[i].Font = self.selected_font
+                self.menu_buttons[i].SetForegroundColour(wx.WHITE)
+            else:
+                self.menu_buttons[i].Font = self.non_selected_font
+                self.menu_buttons[i].SetForegroundColour(wx.LIGHT_GREY)
+
     def on_console(self, event):
-        # Color selected
-        self.console_button.SetForegroundColour(wx.WHITE)
-        self.another_button.SetForegroundColour(wx.LIGHT_GREY)
-        self.environment_button.SetForegroundColour(wx.LIGHT_GREY)
+        self._update_menu_button(0)
 
         # Display correct panel
         self.console_panel.Show()
@@ -100,10 +109,7 @@ class SettingsCtrl(SettingsView):
         self.main_sizer.Layout()
 
     def on_environment(self, event):
-        # Color selected
-        self.console_button.SetForegroundColour(wx.LIGHT_GREY)
-        self.another_button.SetForegroundColour(wx.LIGHT_GREY)
-        self.environment_button.SetForegroundColour(wx.WHITE)
+        self._update_menu_button(2)
 
         # Display correct panel
         self.console_panel.Hide()

@@ -1,13 +1,12 @@
 import wx
 import wx.lib.scrolledpanel
-
 from gui.controller.CustomListCtrl import CustomListCtrl
 from sprint import *
 
 
 class SettingsView(wx.Frame):
     def __init__(self, parent):
-        wx.Frame.__init__(self, parent, style=wx.DEFAULT_FRAME_STYLE | wx.STAY_ON_TOP)
+        wx.Frame.__init__(self, parent, style=wx.DEFAULT_FRAME_STYLE | wx.FRAME_FLOAT_ON_PARENT)
 
         # Create panels
         panel = wx.Panel(self)
@@ -19,31 +18,32 @@ class SettingsView(wx.Frame):
         # MENU PANEL
         ###########################
 
+        self.menu_background_color = wx.Colour(41, 152, 228)
+
         # Create components
         self.console_button = wx.Button(menu_panel, label="Console", size=(-1, 40), style=wx.BORDER_NONE)
-        self.another_button = wx.Button(menu_panel, label="Database", size=(-1, 40), style=wx.BORDER_NONE)
+        self.database_button = wx.Button(menu_panel, label="Database", size=(-1, 40), style=wx.BORDER_NONE)
         self.environment_button = wx.Button(menu_panel, label="Environment", size=(-1, 40), style=wx.BORDER_NONE)
-        self.console_button.SetBackgroundColour((33, 117, 155))
-        self.another_button.SetBackgroundColour((33, 117, 155))
-        self.environment_button.SetBackgroundColour((33, 117, 155))
-        self.console_button.SetForegroundColour(wx.WHITE)
-        self.another_button.SetForegroundColour(wx.LIGHT_GREY)
-        self.environment_button.SetForegroundColour(wx.LIGHT_GREY)
+        self.console_button.SetBackgroundColour(self.menu_background_color)
+        self.database_button.SetBackgroundColour(self.menu_background_color)
+        self.environment_button.SetBackgroundColour(self.menu_background_color)
 
         # Create sizer and add components
         menu_panel_sizer = wx.BoxSizer(wx.VERTICAL)
         menu_panel_sizer.Add(self.console_button, 0, wx.EXPAND | wx.ALL, 0)
-        menu_panel_sizer.Add(self.another_button, 0, wx.EXPAND | wx.ALL, 0)
+        menu_panel_sizer.Add(self.database_button, 0, wx.EXPAND | wx.ALL, 0)
         menu_panel_sizer.Add(self.environment_button, 0, wx.EXPAND | wx.ALL, 0)
         menu_panel.SetSizer(menu_panel_sizer)
 
-        menu_panel.SetBackgroundColour((33, 117, 155))
+        menu_panel.SetBackgroundColour(self.menu_background_color)
 
         ###########################
         # DETAILS PANEL
         ###########################
 
         self.details_panel.SetupScrolling()
+        self.details_panel.SetBackgroundColour(wx.Colour(249, 249, 249))
+
         # Console controls
         self.console_panel = SettingsConsole(self.details_panel)
         self.console_panel.Show()

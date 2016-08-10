@@ -2,13 +2,13 @@ import wx
 import wx.grid
 
 
-#  http://wxpython.org/Phoenix/docs/html/wx.grid.Grid.html#wx.grid.Grid
 class CustomGrid(wx.grid.Grid):
     def __init__(self, panel):
         wx.grid.Grid.__init__(self, panel)
 
         self.CreateGrid(0, 2)
         self._min_grid_width_size = 0  # Keeps track of the size needed to fit all the content
+        self.cell_color = wx.Colour(186, 195, 211)
 
         # Disables the header row and column
         self.SetColLabelSize(0)
@@ -38,7 +38,7 @@ class CustomGrid(wx.grid.Grid):
         # Set the section title
         self.SetCellValue(self.__section_row_number[max_position] + 1, 0, str(name))
 
-        self.SetCellBackgroundColour(self.__section_row_number[max_position] + 1, 0, wx.Colour(186, 195, 211))
+        self.SetCellBackgroundColour(self.__section_row_number[max_position] + 1, 0, self.cell_color)
 
         # Add the new created section to the dictionary for storage
         self.__section_row_number[max_position + 1] = self.GetNumberRows() - 1

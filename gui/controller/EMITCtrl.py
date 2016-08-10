@@ -104,7 +104,7 @@ class EMITCtrl(EMITView):
 
         """
 
-        import secret
+        from app_data import secret
         import encrypt
         cipher = encrypt.AESCipher(secret.key)
         usr = cipher.decrypt(uhash) or None

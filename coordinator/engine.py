@@ -498,6 +498,7 @@ class Coordinator(object):
                 # load model
                 name, inst = gui.load_model(params)
 
+
                 # make sure this model doesnt already exist
                 if name in self.__models:
                     msg = 'Model named %s already exists in configuration' %\
@@ -1174,8 +1175,6 @@ class Serializable(Coordinator):
 
         return {'success': True, 'result': db}
 
-
-
     def add_model(self, **params):
         """
         Adds a model to the engine
@@ -1195,7 +1194,6 @@ class Serializable(Coordinator):
         else:
             result = dict(id=res.id(), name=res.name(), model_type=res.type())
             return {'success': True, 'result': result}
-
 
     def get_all_models(self):
         """
@@ -1218,7 +1216,6 @@ class Serializable(Coordinator):
                  }
             )
         return {'success': True, 'result': models}
-
 
     def get_exchange_items(self, modelid,
                            eitype=stdlib.ExchangeItemType.INPUT):
@@ -1261,7 +1258,6 @@ class Serializable(Coordinator):
     def remove_all_models_and_links(self):
         res = super(Serializable, self).remove_all_models_and_links()
         return {'success': True, 'result': res}
-
 
     def remove_model(self, modelid):
         """

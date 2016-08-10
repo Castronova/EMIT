@@ -101,7 +101,7 @@ def update_links_feed_forward(links, output_exchange_items, spatial_maps):
 
         # build temporal mapping array
         temporal = temporal_nearest_neighbor()
-        tmap = temporal.map(sdates,target_times)
+        tmap = temporal.map(sdates, target_times)
 
         # create empty array to hold mapped data (mimicks the target values array)
         nvals = np.empty((len(target_times), len(tgeoms)))
@@ -123,6 +123,9 @@ def update_links_feed_forward(links, output_exchange_items, spatial_maps):
 
             # set the source values in the target
             nvals[:, tidx] = mvals
+
+        # do unit conversion
+        convert_units(oei, iei, nvals)
 
         # todo: remove loop to improve efficiency
         # set these data in the iei

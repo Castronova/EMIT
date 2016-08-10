@@ -56,28 +56,19 @@ class ToolboxCtrl(ToolboxView):
         if not path:
             return  # Selected a folder or something else
 
-        model_details = ModelCtrl(self)
+        frame = wx.Frame(None)
+        frame.SetSize((640, 690))
 
-        data = models.parse_json(path)
+        models_controller = ModelCtrl(frame)
 
-        if path[-4:] == ".sim":
-            sorted_sections = sorted(data.keys())
-            for each_section in sorted_sections:
-                if isinstance(data[each_section], list):
-                    if each_section == "links":
-                        for item in data[each_section]:
-                            model_details.properties_page_controller.add_dictionary(item, "Link " + item["from_name"] + " -> " + item["to_name"])
+        details = models_controller.add_detail_page()
+        details.data_path = path
+        details.populate_grid_by_path()
+        edit = models_controller.add_edit_page()
+        edit.file_path = path
+        edit.populate_edit()
 
-                    if each_section == "models":
-                        model_details.properties_page_controller.add_list_of_dictionary(data[each_section], "name")
-
-            model_details.properties_page_controller.enable_scroll_bar_on_startup()
-        else:
-            # Not a simulation
-            model_details.properties_page_controller.add_data(data)
-
-        model_details.PopulateEdit(path)
-        model_details.Show()
+        frame.Show()
 
     def on_remove(self, event):
         self.Remove(event)

@@ -27,6 +27,7 @@ class EMITCtrl(EMITView):
             self.defaultLoadDirectory = os.environ["APP_DEFAULT_SAVE_PATH"]
         else:
             self.defaultLoadDirectory = os.getcwd() + "/models/MyConfigurations/"
+            environment.setEnvironmentVar("APP", "default_save_path", self.defaultLoadDirectory)
 
         # load databases threaded
         t = threading.Thread(target=self.connect_to_databases, name='Connect_To_Databases', args=(connections_txt,))
@@ -45,21 +46,28 @@ class EMITCtrl(EMITView):
 
         # View Option Bindings
         self.Bind(wx.EVT_MENU, self.on_toggle_console, self._toggle_console_menu)
+        self.Bind(wx.EVT_MENU, self.on_toggle_toolbar, self._toggle_toolbar_menu)
         self.Bind(wx.EVT_MENU, self.on_default_view, self._default_view_menu)
 
         # Data Menu Bindings
-        self.Bind(wx.EVT_MENU, self.on_add_csv_file, self._add_file)
+        self.Bind(wx.EVT_MENU, self.on_add_csv_file, self._add_csv_file_menu)
         self.Bind(wx.EVT_MENU, self.on_add_net_cdf_file, self._add_netcdf)
         self.Bind(wx.EVT_MENU, self.on_open_dap_viewer, self._open_dap_viewer_menu)
-
         # All other bindings
         self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.on_switch_lower_panel_tab)
         self.Bind(wx.EVT_CLOSE, self.on_close)
         events.onSaveFromCanvas += self.on_save_configuration_as
 
+    def on_toggle_toolbar(self, event):
+        pane = self.m_mgr.GetPane(self.Toolbox)
+        if event.Selection == 0:
+            pane.Show(show=True)
+        if event.Selection == 1:
+            pane.Hide()
+        self.m_mgr.Update()
+
     def model_input_prompt(self, path):
         ModelInputPromptCtrl(self, path)
-        # self.Canvas.addModel(filepath=path)
 
     def check_users_json(self):
         UserCtrl.create_user_json()
@@ -116,6 +124,8 @@ class EMITCtrl(EMITView):
 
         if file_dialog.ShowModal() == wx.ID_OK:
             path = file_dialog.GetPath()
+
+            # Do something with the CSV file ???
 
     def on_add_net_cdf_file(self, event):
         file_dialog = wx.FileDialog(self.Parent,
@@ -186,6 +196,23 @@ class EMITCtrl(EMITView):
             self.Destroy()
             wx.App.ExitMainLoop
             wx.WakeUpMainThread
+
+    def set_model_details_by_model(self, model):
+        self.model_details.model_object = model
+        self.model_details.grid.reset_grid()
+        self.model_details.populate_grid_by_model_object()
+        self.toggle_model_details(1)
+
+    def toggle_model_details(self, selection):
+        pane = self.m_mgr.GetPane(self.model_details)
+        if selection:
+            pane.Show(show=True)
+            pane.CaptionVisible(True)
+            pane.CloseButton(True)
+            pane.PinButton(False)
+        else:
+            pane.Hide()
+        self.m_mgr.Update()
 
     def on_default_view(self, event):
         """

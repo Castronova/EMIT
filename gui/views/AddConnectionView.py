@@ -65,15 +65,15 @@ class AddConnectionView(wx.Frame):
                      self.user_label, (self.username_txt_ctrl, 1, wx.EXPAND),
                      self.password_label, (self.password_txt_ctrl, 1, wx.EXPAND)])
 
-        hbox = wx.BoxSizer(wx.VERTICAL)  # wrapping the flex grid sizer in order to put some space around the window
-        hbox.Add(fgs, proportion=1, flag=wx.ALL | wx.EXPAND, border=10)
-        hbox.Add(break_line, 0, wx.EXPAND, border=5)
-        hbox.Add(button_sizer, 0, wx.ALL | wx.ALIGN_RIGHT, border=5)
+        vbox = wx.BoxSizer(wx.VERTICAL)  # wrapping the flex grid sizer in order to put some space around the window
+        vbox.Add(fgs, proportion=1, flag=wx.ALL | wx.EXPAND, border=10)
+        vbox.Add(break_line, 0, wx.EXPAND, border=5)
+        vbox.Add(button_sizer, 0, wx.ALL | wx.ALIGN_RIGHT, border=5)
 
         fgs.AddGrowableCol(1, 1)
 
-        self.panel.SetSizer(hbox)
-        hbox.Fit(self)
+        self.panel.SetSizer(vbox)
+        vbox.Fit(self)
 
         # Set max height to disable resizing the window vertically
         if sys.platform == "darwin":

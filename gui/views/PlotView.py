@@ -1,18 +1,22 @@
-import matplotlib
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
-from matplotlib.figure import Figure
+from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg as NavigationToolbar
+import matplotlib.pyplot as plt
 import seaborn as sb
 sb.set_style("ticks")
 
 
-class Plotter:
+class PlotView:
     def __init__(self, panel):
-        self.figure = matplotlib.figure.Figure()
+
+        self.figure = plt.figure()
         self.axes = self.figure.add_subplot(111)
+
         self.axes.grid()
 
         self.axes.margins(0)
-        self.plot = FigureCanvas(panel, -1, self.figure)
+        self.canvas = FigureCanvas(panel, -1, self.figure)
+        self.toolbar = NavigationToolbar(self.canvas)
+        self.toolbar.Hide()
 
     def add_padding_to_plot(self, left=None, bottom=None, right=None, top=None, wspace=None, hspace=None):
         """
@@ -51,7 +55,7 @@ class Plotter:
         Call after adding all desired features to the graph
         :return:
         """
-        self.plot.draw()
+        self.canvas.draw()
 
     def rotate_x_axis_label(self, angle=45):
         """
@@ -69,19 +73,6 @@ class Plotter:
 
     def set_legend(self, labels, location=0):
         """
-        Taken from http://matplotlib.org/api/figure_api.html
-        'best'         : 0,
-        'upper right'  : 1,
-        'upper left'   : 2,
-        'lower left'   : 3,
-        'lower right'  : 4,
-        'right'        : 5,
-        'center left'  : 6,
-        'center right' : 7,
-        'lower center' : 8,
-        'upper center' : 9,
-        'center'       : 10,
-        The len(labels) needs to match the number of graphs drawn to show all legends added
         :param labels: type([string])
         :param location: type(int)
         :return:

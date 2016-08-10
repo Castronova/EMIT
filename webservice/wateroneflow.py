@@ -99,7 +99,7 @@ class WaterOneFlow(object):
         return variableDict
 
     def parseValues(self, sitecode, variable, start=None, end=None):
-        data = self.getValues(sitecode, variable, start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d"))
+        data = self.getValuesObject(sitecode, variable, start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d"))
         valuesList = []
         if data is not None:
             for values in data[0].values[0].value:
@@ -187,33 +187,6 @@ class WaterOneFlow(object):
 
         return output
 
-    # def get_sites_in_list(self):
-    #     """
-    #     :return: a 2-D list of the sites and info about them
-    #     """
-    #     xml_sites = self.get_sites_in_xml()
-    #     root = xml.etree.ElementTree.fromstring(xml_sites)
-    #     output = []
-    #     for child in root:
-    #         if "site" in child.tag:
-    #             d = []
-    #             for step_child in child:
-    #                 for onemore in step_child:
-    #                     if "siteName" in onemore.tag:
-    #                         d.append(onemore.text)
-    #                     elif "siteCode" in onemore.tag:
-    #                         d.append(onemore.items()[1][1])
-    #                         d.append(onemore.text)
-    #                     elif "siteProperty" in onemore.tag:
-    #                         if onemore.attrib.items()[0][1] == "County":
-    #                             d.append(onemore.text)
-    #                         if onemore.attrib.items()[0][1] == "State":
-    #                             d.append(onemore.text)
-    #                         if onemore.attrib.items()[0][1] == "Site Type":
-    #                             d.append(onemore.text)
-    #             output.append(d)
-    #     return output
-
     def getSitesObject(self, value=None):
         #  Returns JSON
         if value is None:
@@ -222,11 +195,36 @@ class WaterOneFlow(object):
             site_objects = self.conn.service.GetSitesObject(value)
         return site_objects[1]
 
-
     def getValues(self, site_code, variable_code, beginDate=None, endDate=None):
-        #  Passing only the sitecode returns the data values.
-        #  Passing both variables returns that specified object.
-        # Returns an XML
+        """
+        Leaving the dates to None will return all the timeseries for that variable.
+        :param site_code: type(str)
+        :param variable_code: type(str)
+        :param beginDate: type(str) Y-m-d
+        :param endDate: type(str) Y-m-d
+        :return: XML or None
+        """
+        network_code = self.network_code
+
+        try:
+            site = ':'.join([network_code, site_code])
+            var = ':'.join([network_code, variable_code])
+            if beginDate is None or endDate is None:
+                data = self.conn.service.GetValues(site, var)
+            else:
+                data = self.conn.service.GetValues(site, var, beginDate, endDate)
+
+            return data
+        except:
+            # error getting data
+            print 'There was an error getting data for %s:%s, %s:%s, %s %s' % (
+            network_code, site_code, network_code, variable_code, str(beginDate), str(endDate))
+            return None
+
+    def getValuesObject(self, site_code, variable_code, beginDate=None, endDate=None):
+        # Passing only the sitecode returns the data values.
+        # Passing both variables returns that specified object.
+        # Returns an JSON
         network_code = self.network_code
 
         try:
@@ -253,6 +251,5 @@ class WaterOneFlow(object):
         return data.variables
 
     def getValuesForASiteObject(self, siteid=None):
-        network = "iutah:"
         x = self.conn.service.GetValuesForASiteObject(self.network_code + ":" + str(siteid))
         return x

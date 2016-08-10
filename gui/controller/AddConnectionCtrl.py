@@ -5,8 +5,8 @@ from emitLogging import elog
 from gui.views.AddConnectionView import AddConnectionView
 import os
 from webservice import wateroneflow
-import ConfigParser
-
+import json
+from sprint import *
 
 class AddConnectionCtrl(AddConnectionView):
     def __init__(self, parent):
@@ -44,7 +44,6 @@ class AddConnectionCtrl(AddConnectionView):
 
     def on_combo_box_change(self, event):
         if self.odm_radio.GetValue():
-            print "ODM2 selected"
             self.engine_label.Enable()
             self.engine_combo.Enable()
             self.password_label.Enable()
@@ -54,7 +53,6 @@ class AddConnectionCtrl(AddConnectionView):
             self.database_address_label.LabelText = "*Database Address"
             self.database_name_label.LabelText = "*Database Name"
         else:
-            print "WOF selected"
             self.engine_label.Disable()
             self.engine_combo.Disable()
             self.user_label.Disable()
@@ -83,54 +81,64 @@ class AddConnectionCtrl(AddConnectionView):
             self.database_name_txt_ctrl.Disable()
 
     def on_ok_btn(self, event):
-
-        # Add ODM2 Connection
         if self.odm_radio.GetValue():
-            params = self.get_connection_params()
-            if environment.saveConnection(params):
-                Publisher.sendMessage('DatabaseConnection',
-                                              title=params['name'],
-                                              desc=params['description'],
-                                              dbengine=params['engine'],
-                                              address=params['address'],
-                                              name=params['name'],
-                                              user=params['username'],
-                                              pwd=params['password'])
-
-
-                Publisher.sendMessage('getDatabases')
-                self.Close()
-                return
-            else:
-                wx.MessageBox('\aUnable to connect to the database. \nPlease review the information that was provided and try again.', 'Failed to Establish Connection', wx.OK | wx.ICON_ERROR)
-
-        # Add WOF Connection
+            self._handle_adding_odm2_connection()
         else:
-            params = self.get_connection_params()
-            currentdir = os.path.dirname(os.path.abspath(__file__))
-            wof_txt = os.path.abspath(os.path.join(currentdir, '../../data/wofsites'))
-            valid = True
-            try:
-                print params[3]
-                print params[4]
-                self.api = wateroneflow.WaterOneFlow(params[3], params[4])
-            except Exception:
-                valid = False
-                elog.debug("Wof web service took to long or failed.")
-                elog.info("Web service took to long. Wof may be down.")
-            if valid:
-                cparser = ConfigParser.ConfigParser(None)
-                cparser.add_section('wofconnection')
-                cparser.set('wofconnection', 'name', params[0])
-                cparser.set('wofconnection', 'desc', params[1])
-                cparser.set('wofconnection', 'wsdl', params[3])
-                cparser.set('wofconnection', 'network', params[4])
-                with open(wof_txt, 'a') as configfile:
-                    cparser.write(configfile)
+            self._handle_adding_wof_connection()
+        self.Close()
 
-                self.Close()
-            else:
-                wx.MessageBox('\aI was unable to verify the connection with the information provided\nPlease verify you have inputed the right information')
+    def _handle_adding_odm2_connection(self):
+        params = self.get_connection_params()
+        if environment.saveConnection(params):
+            Publisher.sendMessage('DatabaseConnection',
+                                  title=params['name'],
+                                  desc=params['description'],
+                                  dbengine=params['engine'],
+                                  address=params['address'],
+                                  name=params['name'],
+                                  user=params['username'],
+                                  pwd=params['password'])
+
+            Publisher.sendMessage('getDatabases')
+            self.Close()
+        else:
+            wx.MessageBox(
+                '\aUnable to connect to the database. \nPlease review the information that was provided and try again.',
+                'Failed to Establish Connection', wx.OK | wx.ICON_ERROR)
+
+    def _handle_adding_wof_connection(self):
+        params = self.get_connection_params()
+        current_directory = os.path.dirname(os.path.abspath(__file__))  # rename to current_directory
+        wof_path = os.path.abspath(os.path.join(current_directory, '../../app_data/dat/wofsites.json'))
+
+        # Validate the information provided creates a connection
+        api = wateroneflow.WaterOneFlow(params["address"], params["database"])
+        if not api.conn:
+            sPrint("Failed to establish connection. Review provided information")
+            return
+
+        with open(wof_path, "r") as f:
+            try:
+                data = json.load(f)
+            except ValueError:
+                sPrint("_handle_adding_wof_connection() failed to parse wof_path")
+                return
+
+        wof_site = {
+            params["name"]: {
+                "wsdl": params["address"],
+                "network": params["database"]
+            }
+        }
+        data.update(wof_site)
+
+        with open(wof_path, "w") as f:
+            try:
+                wof_json = json.dumps(data, sort_keys=True, indent=4, separators=(',', ': '))
+                f.write(wof_json)
+            except ValueError:
+                sPrint("Failed to write to file")
+                return
 
     def on_text_entered(self, event):
         if self.odm_radio.GetValue():

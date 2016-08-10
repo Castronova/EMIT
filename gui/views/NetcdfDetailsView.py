@@ -1,5 +1,6 @@
 import wx
-from gui.Models.CustomGrid import CustomGrid
+
+from gui.controller.CustomGrid import CustomGrid
 
 
 class NetcdfDetailsView(wx.Frame):

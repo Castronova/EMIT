@@ -4,7 +4,6 @@ import wx.dataview
 import wx.grid
 from transform.time import *
 from transform.space import *
-import coordinator.engineAccessors as engine
 
 
 class LinkView(wx.Frame):
@@ -20,8 +19,6 @@ class LinkView(wx.Frame):
 
         self.input_component = input
         self.output_component = output
-        self.input_items = None
-        self.output_items = None
 
         self.link_instructions_text = wx.StaticText(parent=panel, label=u"Select add to create a new link")
 
@@ -166,20 +163,6 @@ class LinkView(wx.Frame):
         grid.SetCellBackgroundColour(3, 1, wx.Colour(195, 195, 195))
         grid.SetGridLineColour(wx.Colour(195, 195, 195))
         self.resize_grid_to_fill_white_space(grid)
-
-    def input_combo_choices(self):
-        self.input_items = engine.getExchangeItems(self.input_component['id'], stdlib.ExchangeItemType.INPUT)
-        if self.input_items is not None:
-            return [item['name'] for item in self.input_items]
-        else:
-            return [' ']
-
-    def output_combo_choices(self):
-        self.output_items = engine.getExchangeItems(self.output_component['id'], stdlib.ExchangeItemType.OUTPUT)
-        if self.output_items is not None:
-            return [item['name'] for item in self.output_items]
-        else:
-            return [" "]
 
     def resize_grid_to_fill_white_space(self, grid):
         col_size = grid.GetColSize(0)

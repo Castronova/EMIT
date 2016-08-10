@@ -41,7 +41,7 @@ class SimulationsPlotCtrl(SimulationsPlotView):
         self.table.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_row_selected)
         self.start_date_picker.Bind(wx.EVT_DATE_CHANGED, self.on_start_date_change)
         self.end_date_picker.Bind(wx.EVT_DATE_CHANGED, self.on_end_date_change)
-        self.spatial_plot.plot.mpl_connect('pick_event', self.on_pick_spatial)
+        self.spatial_plot.canvas.mpl_connect('pick_event', self.on_pick_spatial)
         self.table.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.on_table_right_click)
         self.Bind(wx.EVT_MENU, self.on_export_menu, export_menu)
 

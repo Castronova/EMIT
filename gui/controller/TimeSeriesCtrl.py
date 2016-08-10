@@ -1,14 +1,13 @@
 from gui.views.TimeSeriesView import TimeSeriesView
 from webservice import wateroneflow
 import wx
-import os
-import json
 import coordinator.engineAccessors as engineAccessors
 from gui.controller.WofSitesCtrl import WofSitesCtrl
 from odm2api.ODMconnection import dbconnection as dbconnection2
 from gui.controller.AddConnectionCtrl import AddConnectionCtrl
 import db.dbapi_v2 as db2
 from utilities import db as dbUtilities
+from gui.Models.Connection import get_wof_json_as_dictionary
 
 
 class TimeSeriesCtrl(TimeSeriesView):
@@ -27,10 +26,7 @@ class TimeSeriesCtrl(TimeSeriesView):
         self.popup_menu = wx.Menu()
         view_menu = self.popup_menu.Append(1, "View")
 
-        # Add the wof sites to the connection combo option
-        self.wof_names = self.get_wof_connection_names()
-        for key, value in self.wof_names.iteritems():
-            self.append_to_connection_combo(key)
+        self.load_connection_combo()
 
         self.table.alternate_row_color()
         self.connection_combo.Bind(wx.EVT_CHOICE, self.on_connection_combo)
@@ -40,6 +36,13 @@ class TimeSeriesCtrl(TimeSeriesView):
         # Must be bound to table so the pop up menu does not get passed to child view
         self.table.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.on_right_click)
         self.table.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.on_double_click)
+
+    def append_to_connection_combo(self, item):
+        if item in self.connection_options:  # Do not add duplicate items
+            return
+        self.connection_options.append(item)
+        self.connection_options.sort()
+        self.connection_combo.SetItems(self.connection_options)
 
     def convert_selected_row_into_object(self):
 
@@ -68,19 +71,14 @@ class TimeSeriesCtrl(TimeSeriesView):
                 break
         return db
 
-    @staticmethod
-    def get_wof_connection_names():
-        currentdir = os.path.dirname(os.path.abspath(__file__))
-        wof_json = os.path.abspath(os.path.join(currentdir, '../../data/wofsites.json'))
-        with open(wof_json, "r") as f:
-            try:
-                data = json.load(f)
-            except ValueError:
-                print "Failed to parse WOF json"
-                data = {}
-        return data
-
     def load_connection_combo(self):
+        # Add the wof sites to the connection combo option
+        self.wof_names = get_wof_json_as_dictionary()
+        self.connection_options = ["---"]
+
+        for key, value in self.wof_names.iteritems():
+            self.append_to_connection_combo(key)
+
         connections = engineAccessors.getDbConnections()
         for key, value in connections.iteritems():
             self.append_to_connection_combo(connections[key]["name"])
@@ -89,6 +87,9 @@ class TimeSeriesCtrl(TimeSeriesView):
         table_columns = ["ResultID", "FeatureCode", "Variable", "Unit", "Type", "Organization", "Date Created"]
         self.table.set_columns(table_columns)
         db = self.get_selected_database()
+
+        if not len(db):
+            return
 
         if db["args"]["engine"] == "sqlite":
             session_factory = dbconnection2.createConnection(engine=db["args"]["engine"], address=db["args"]["address"])
@@ -204,8 +205,9 @@ class TimeSeriesCtrl(TimeSeriesView):
         :return:
         """
         self.load_connection_combo()
+        self.table.clear_content()
         selection = self.connection_combo.GetStringSelection()
-        if selection != "---":
+        if selection != "---" and selection != "":
             if selection in self.wof_names:
                 self._load_wof(selection)
                 return

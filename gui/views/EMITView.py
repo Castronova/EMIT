@@ -1,4 +1,3 @@
-import os
 import wx
 import wx.html2
 import wx.lib.agw.aui as aui
@@ -6,6 +5,7 @@ from wx.lib.newevent import NewEvent
 from LowerPanelView import ViewLowerPanel
 from gui.controller.CanvasCtrl import CanvasCtrl
 from gui.controller.ToolboxCtrl import ToolboxCtrl
+from gui.controller.ModelCtrl import ModelDetailsCtrl
 
 # create custom events
 wxCreateBox, EVT_CREATE_BOX = NewEvent()
@@ -40,11 +40,14 @@ class EMITView(wx.Frame):
         self._exit = self._file_menu.Append(wx.NewId(), '&Quit\tCtrl+Q', 'Quit application')
 
         # View Menu Option
-        self._toggle_console_menu = self.view_menu.Append(wx.NewId(), '&Toggle Console', 'Toggle the Console', wx.ITEM_CHECK)
         self._default_view_menu = self.view_menu.Append(wx.NewId(), '&Restore Default View', 'Returns the view to the default (initial) state', wx.ITEM_NORMAL)
+        self.toggle_menu = wx.Menu()
+        self._toggle_toolbar_menu = self.toggle_menu.Append(wx.ID_ANY, "Toggle Toolbar", help="Toggle Toolbar", kind=wx.ITEM_CHECK)
+        self._toggle_console_menu = self.toggle_menu.Append(wx.ID_ANY, "Toggle Console", help="Toggle Console", kind=wx.ITEM_CHECK)
+        self.view_menu.AppendMenu(wx.ID_ANY, "Toggle", self.toggle_menu)
 
         # Data Menu Option
-        self._add_file = self.data_menu.Append(wx.NewId(), "&Add CSV File")
+        self._add_csv_file_menu = self.data_menu.Append(wx.NewId(), "&Add CSV File")
         self._add_netcdf = self.data_menu.Append(wx.NewId(), '&Add NetCDF')
         self._open_dap_viewer_menu = self.data_menu.Append(wx.NewId(), "&OpenDap Explorer")
 
@@ -53,15 +56,12 @@ class EMITView(wx.Frame):
         self._menu_bar.Append(self.view_menu, "&View")
         self._menu_bar.Append(self.data_menu, "Data")
 
-        self._add_file.Enable(False)
-
         self.SetMenuBar(self._menu_bar)
-
-        # wx.CallAfter(self._postStart)
 
         # creating components
         self.Toolbox = ToolboxCtrl(self.pnlDocking)
         self.Canvas = CanvasCtrl(self.pnlDocking)
+        self.model_details = ModelDetailsCtrl(self.pnlDocking)
 
         self.Toolbox.Hide()
         self.initAUIManager()
@@ -122,11 +122,20 @@ class EMITView(wx.Frame):
                            BestSize(wx.Size(1200, 225)).CaptionVisible(False)
                            )
 
+        self.m_mgr.AddPane(self.model_details,
+                           aui.AuiPaneInfo()
+                           .Right()
+                           .Dock()
+                           .Name("Details")
+                           .CloseButton(False)
+                           .MaximizeButton(False)
+                           .MinimizeButton(False)
+                           .PinButton(True).
+                           PaneBorder(True).
+                           CaptionVisible(False)
+                           .Show(show=False).
+                           BestSize((200, -1)))
 
         self.m_mgr.Update()
 
         self._default_perspective = self.m_mgr.SavePerspective()
-
-    # def _postStart(self):  # Unused code
-    #     # Starts stuff after program has initiated
-    #     self.Canvas.ZoomToFit(event=None)

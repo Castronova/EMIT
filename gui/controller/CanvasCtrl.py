@@ -24,6 +24,7 @@ from transform.space import SpatialInterpolation
 from transform.time import TemporalInterpolation
 from gui.controller.PreRunCtrl import PreRunCtrl
 from utilities import models as model_utils
+import wrappers
 
 from PIL import ImageDraw  # Do not remove this import
 
@@ -37,7 +38,7 @@ class CanvasCtrl(CanvasView):
         self.parent = parent
 
         # This is just to ensure that we are starting without interference from NavToolbar or drag-drop
-        self.UnBindAllMouseEvents()
+        # self.UnBindAllMouseEvents()
 
         self.MoveObject = None
         self.Moving = False
@@ -80,17 +81,6 @@ class CanvasCtrl(CanvasView):
         self.Bind(wx.EVT_MENU, self.on_run, run_menu)
         self.Bind(wx.EVT_MENU, self.on_clear_canvas, clear_menu)
         self.FloatCanvas.Bind(FC.EVT_RIGHT_DOWN, self.on_canvas_right_click)
-
-    def UnBindAllMouseEvents(self):
-        self.Unbind(FC.EVT_LEFT_DOWN)
-        self.Unbind(FC.EVT_LEFT_UP)
-        self.Unbind(FC.EVT_LEFT_DCLICK)
-        self.Unbind(FC.EVT_MIDDLE_DOWN)
-        self.Unbind(FC.EVT_MIDDLE_UP)
-        self.Unbind(FC.EVT_MIDDLE_DCLICK)
-        self.Unbind(FC.EVT_RIGHT_DOWN)
-        self.Unbind(FC.EVT_RIGHT_UP)
-        self.Unbind(FC.EVT_RIGHT_DCLICK)
 
     def initBindings(self):
         self.FloatCanvas.Bind(FC.EVT_MOTION, self.on_move)
@@ -182,8 +172,8 @@ class CanvasCtrl(CanvasView):
 
             model_box.Bind(FC.EVT_FC_LEFT_DOWN, self.on_model_left_clicked)
             model_box.Bind(FC.EVT_FC_RIGHT_DOWN, self.on_launch_context)
+            model_box.Bind(FC.EVT_FC_LEFT_DCLICK, self.on_model_double_click)
             self.FloatCanvas.Draw()
-
 
             msg = 'model [%s] has been added to the canvas.' % name
             elog.info(msg)
@@ -219,6 +209,7 @@ class CanvasCtrl(CanvasView):
 
             line.Arrow.Bind(FC.EVT_FC_LEFT_DOWN, self.on_arrow_clicked)
             line.Arrow.Bind(FC.EVT_FC_RIGHT_DOWN, self.on_launch_context)
+
 
             self.FloatCanvas.Draw()
 
@@ -362,6 +353,33 @@ class CanvasCtrl(CanvasView):
 
         wx.CallAfter(self.createLoadedLinks, links_to_add)
 
+    @staticmethod
+    def add_netcdf_model(url, time_dimension, x_dimension, y_dimension, time_unit, start_time_as_string):
+        args = dict(ncpath=url,
+                    tdim=time_dimension,
+                    xdim=x_dimension,
+                    ydim=y_dimension,
+                    tunit=time_unit,
+                    starttime=start_time_as_string,
+                    model_type=wrappers.Types.NETCDF
+                    )
+
+        engine.addModel(**args)
+
+    def is_model_netcdf(self, model):
+        if not isinstance(model, dict):
+            return False
+
+        if "params" not in model:
+            return False
+        if "model_type" not in model["params"]:
+            return False
+
+        if model["params"]["model_type"] == "NETCDF":
+            return True
+
+        return False
+
     def load_simulation(self, simfile):
 
         params = model_utils.parse_json(simfile)
@@ -378,9 +396,14 @@ class CanvasCtrl(CanvasView):
         self.logicCanvasThreads[waitingThread.name] = waitingThread
         waitingThread.start()
 
-
         # loop through all of the models and load each one individually
         for model in models:
+            if self.is_model_netcdf(model):
+                self.add_netcdf_model(model["params"]["ncpath"], model["params"]["tdim"],
+                                      model["params"]["xdim"], model["params"]["ydim"],
+                                      model["params"]["tunit"], model["params"]["starttime"])
+                continue
+
             mdl = model['path']
             args = model_utils.parse_json(mdl)
             inputs = model.pop('model_inputs')
@@ -395,68 +418,6 @@ class CanvasCtrl(CanvasView):
 
             # draw the model
             wx.CallAfter(self.FloatCanvas.Draw)
-
-            # # make sure the required database connections are loaded
-            # connections = engine.getDbConnections()
-            # existing_connections = {}
-            # for id, condict in connections.iteritems():
-            #     conargs = condict['args']
-            #     unique_conn = '%s:%s:%s' % (conargs['engine'],
-            #                              conargs['address'],
-            #                              conargs['db'] if conargs['db'] is not None else '')
-            #     existing_connections[unique_conn] = id
-            #
-            # conn_ids = {}
-            #
-            #
-            # dbconnections = tree.findall("./DbConnection")
-            # for connection in dbconnections:
-            #
-            #     sPrint('Adding database connections...')
-            #
-            #     con_engine = connection.find('engine').text
-            #     con_address = connection.find('address').text
-            #     con_db = connection.find('db').text
-            #     con_id = connection.find('databaseid').text
-            #     con_name = connection.find('name').text
-            #     con_pass = connection.find('pwd').text
-            #     con_user = connection.find('user').text
-            #     con_desc = connection.find('desc').text
-            #
-            #     # build a unique connection string
-            #     unique_conn_string = '%s:%s:%s' % (con_engine,
-            #                                        con_address,
-            #                                        con_db if con_db != 'None' else '')
-            #
-            #     # if connection already exists
-            #     if unique_conn_string in existing_connections.keys():
-            #
-            #         # map the connection ids
-            #
-            #         conn_ids[con_id] = existing_connections[unique_conn_string]
-            #
-            #     # open the dialog to add a new connection
-            #     else:
-            #         connect = wx.MessageBox('This database connection does not currently exist.  Click OK to connect.', 'Info', wx.OK | wx.CANCEL)
-            #
-            #         if connect == wx.OK:
-            #
-            #             # attempt to connect to the database
-            #             title = con_name
-            #             desc = con_desc
-            #             db_engine = con_engine
-            #             address = con_address
-            #             name = con_db
-            #             user = con_user
-            #             pwd = con_pass
-            #
-            #             if not self.add_database_connection(title, desc, db_engine, address, name, user, pwd):
-            #                 wx.MessageBox('I was unable to connect to the database with the information provided :(', 'Info', wx.OK | wx.ICON_ERROR)
-            #                 return
-            #
-            #             # map the connection id
-            #             conn_ids[con_id] = con_id
-
 
     def remove_link(self, link_obj):
 
@@ -609,7 +570,7 @@ class CanvasCtrl(CanvasView):
         # get output items from r1
         to_model = engine.getModelById(r2.ID)
 
-        controller = LinkCtrl(parent=self.FloatCanvas, outputs=from_model, inputs=to_model, link_obj=event, swap=True)
+        controller = LinkCtrl(parent=self.FloatCanvas, outputs=from_model, inputs=to_model, link_obj=event)
         controller.Show()
 
 
@@ -710,6 +671,9 @@ class CanvasCtrl(CanvasView):
 
     def on_load(self, event):
         self.GetTopLevelParent().on_load_configuration(event)
+
+    def on_model_double_click(self, event):
+        self.GetTopLevelParent().set_model_details_by_model(event)
 
     def on_model_left_clicked(self, event):
         cur = self.getCursor()

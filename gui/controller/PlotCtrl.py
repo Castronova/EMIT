@@ -1,35 +1,15 @@
-import matplotlib as mpl
+from gui.views.PlotView import PlotView
+import matplotlib
 import numpy
-from gui.Models.Plotter import Plotter
 from matplotlib.collections import PolyCollection
 from matplotlib.collections import LineCollection
 import numpy as np
 from matplotlib.colors import ColorConverter
 
 
-class color_cycle(object):
-    def __init__(self):
-
-        # get the matplotlib color cycle
-        self.__colors = [c['color'] for c in list(mpl.rcParams['axes.prop_cycle'])]
-        self.current = -1
-        self.max = len(self.__colors)
-
-    def __iter__(self):
-        'Returns itself as an iterator object'
-        return self
-
-    def next(self):
-        'Returns the next value (cyclic)'
-        self.current += 1
-        if self.current == self.max:
-            self.current = 0
-        return self.__colors[self.current]
-
-
-class SpatialTemporalPlotter(Plotter):
+class PlotCtrl(PlotView):
     def __init__(self, panel):
-        Plotter.__init__(self, panel)
+        PlotView.__init__(self, panel)
 
         # stores the plot objects
         self.plots = []
@@ -52,6 +32,25 @@ class SpatialTemporalPlotter(Plotter):
         # matplotlib color cycle used to ensure primary and secondary axis are not displayed with the same color
         self.__color_cycle = color_cycle()
 
+        # Used to be able to deactivate the canvas events later
+        self._cid_press = None
+        self._cid_release = None
+        self._cid_scroll = None
+
+    def activate_panning(self):
+        self._cid_press = self.canvas.mpl_connect('button_press_event', self.on_canvas_clicked)
+        self._cid_release = self.canvas.mpl_connect('button_release_event', self.on_canvas_released)
+
+    def activate_zooming(self):
+        self._cid_scroll = self.canvas.mpl_connect('scroll_event', self.on_canvas_mouse_scroll)
+
+    def deactivate_panning(self):
+        self.canvas.mpl_disconnect(self._cid_press)
+        self.canvas.mpl_disconnect(self._cid_release)
+
+    def deactivate_zooming(self):
+        self.canvas.mpl_disconnect(self._cid_scroll)
+
     def clear_plot(self):
 
         # clear axis
@@ -72,7 +71,7 @@ class SpatialTemporalPlotter(Plotter):
         self.redraw()
 
     def getNextColor(self):
-         return next(self.__color_cycle)
+        return next(self.__color_cycle)
 
     def get_highlighted_vertices(self):
         """
@@ -251,7 +250,8 @@ class SpatialTemporalPlotter(Plotter):
             last_segment += len(points) - 1
             index += 1
 
-        self.__line_colors = np.array([self._color_converter.to_rgba(color), self._color_converter.to_rgba(self.highlight_color)])
+        self.__line_colors = np.array(
+            [self._color_converter.to_rgba(color), self._color_converter.to_rgba(self.highlight_color)])
         self.selected_lines = np.zeros(len(segments), dtype=int)  # Must be a np.zero array
         colors = self.__line_colors[self.selected_lines]
         self.line_collection = LineCollection(segments, pickradius=10, linewidths=2, colors=colors)
@@ -309,3 +309,55 @@ class SpatialTemporalPlotter(Plotter):
         for line in self.plots:
             line.set_linewidth(width)
         self.redraw()
+
+    def on_canvas_clicked(self, event):
+        self.toolbar.press_pan(event)
+
+    def on_canvas_mouse_scroll(self, event):
+        base_scale = 2.0
+        cur_xlim = self.axes.get_xlim()
+        cur_ylim = self.axes.get_ylim()
+        cur_xrange = (cur_xlim[1] - cur_xlim[0]) * .5
+        cur_yrange = (cur_ylim[1] - cur_ylim[0]) * .5
+        xdata = event.xdata  # get event x location
+        ydata = event.ydata  # get event y location
+        if event.button == 'up':
+            # deal with zoom in
+            scale_factor = 1 / base_scale
+        elif event.button == 'down':
+            # deal with zoom out
+            scale_factor = base_scale
+        else:
+            # deal with something that should never happen
+            scale_factor = 1
+            print event.button
+
+        # set new limits
+        self.axes.set_xlim([xdata - cur_xrange * scale_factor,
+                     xdata + cur_xrange * scale_factor])
+        self.axes.set_ylim([ydata - cur_yrange * scale_factor,
+                     ydata + cur_yrange * scale_factor])
+        self.redraw()
+
+    def on_canvas_released(self, event):
+        self.toolbar.release_pan(event)
+
+class color_cycle(object):
+    def __init__(self):
+
+        # get the matplotlib color cycle
+        self.__colors = [c['color'] for c in list(matplotlib.rcParams['axes.prop_cycle'])]
+        self.current = -1
+        self.max = len(self.__colors)
+
+    def __iter__(self):
+        'Returns itself as an iterator object'
+        return self
+
+    def next(self):
+        'Returns the next value (cyclic)'
+        self.current += 1
+        if self.current == self.max:
+            self.current = 0
+        return self.__colors[self.current]
+

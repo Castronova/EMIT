@@ -10,6 +10,8 @@ import wx
 
 from gui.controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
 from gui.views.OpenDapExplorerView import OpenDapExplorerView
+import threading
+from sprint import *
 
 
 class NetcdfCtrl(OpenDapExplorerView):
@@ -18,30 +20,32 @@ class NetcdfCtrl(OpenDapExplorerView):
         # namespaces for XML parsing
         self.thredds = "http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0"
         self.xlink = "http://www.w3.org/1999/xlink"
+        self.thread = threading.Thread()
         OpenDapExplorerView.__init__(self, parent=parent)
         self.Bind(wx.EVT_BUTTON, self.on_download, self.download_btn)
-        self.Bind(wx.EVT_BUTTON, self.onView, self.view_btn)
-        self.Bind(wx.EVT_BUTTON, self.RunCrawler, self.get_btn)
-        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.enableBtns)
-        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.disableBtns)
-        self.disableBtns(None)
+        self.Bind(wx.EVT_BUTTON, self.on_view_button, self.view_btn)
+        self.get_btn.Bind(wx.EVT_BUTTON, self.on_get_crawler)
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_enable_buttons)
+        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_disable_buttons)
+        self.disable_buttons()
+        self.Bind(wx.EVT_CLOSE, self.on_close)
 
-    def alternateRowColor(self, color="#DCEBEE"):
+    def alternate_row_color(self, color="#DCEBEE"):
         for i in range(self.variable_list.GetItemCount()):
             if i % 2 == 1:
                 self.variable_list.SetItemBackgroundColour(i, color)
 
-    def autoSizeColumns(self):
+    def auto_size_columns(self):
         for i in range(self.variable_list.GetColumnCount()):
             self.variable_list.SetColumnWidth(i, wx.LIST_AUTOSIZE)
 
-    def CalculateBytes(self, fileSize):
+    def calculate_bytes(self, fileSize):
         if fileSize > 1000 and fileSize < 1000000:
             fileSize = fileSize / 1000.0
             return "%0.2f Kilobytes" % fileSize
         elif fileSize > 1000000 and fileSize < 1000000000:
             fileSize = fileSize / 1000000.0
-            return "%0.2f Megabytes" %fileSize
+            return "%0.2f Megabytes" % fileSize
         elif fileSize > 1000000000 and fileSize < 1000000000000:
             fileSize = float(fileSize) / 1000000000.0
             return "%0.2f Gigabytes" % fileSize
@@ -57,7 +61,7 @@ class NetcdfCtrl(OpenDapExplorerView):
         good_codes = [httplib.OK, httplib.FOUND, httplib.MOVED_PERMANENTLY]
         return self.get_server_status_code(url) in good_codes
 
-    def clearData(self):
+    def clear_table(self):
         self.variable_list.DeleteAllItems()
 
     def crawler(self, catalog, results):
@@ -72,54 +76,13 @@ class NetcdfCtrl(OpenDapExplorerView):
         for dataset in xml.iterfind(".//{%s}dataset//{%s}dataset" % (self.thredds,self.thredds)):
             results.append(dataset)
 
-
         return results
 
-    def disableBtns(self, event):
+    def disable_buttons(self):
         self.view_btn.Disable()
         self.download_btn.Disable()
 
-    def on_download(self, event):
-
-        # get the file url by rowid and colid
-        rowid = self.getSelectedIndexRow()
-        colid = self.getListCtrlColumnByName('url')
-        url = self.TableValues[rowid][colid]
-
-        # open a dialog to get save path
-        saveFileDialog = wx.FileDialog(self, message="Save NetCDF file", defaultDir=os.getcwd(), wildcard="nc files (*.nc)|*.nc", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
-        if saveFileDialog.ShowModal() == wx.ID_CANCEL:
-            return
-        output_path = saveFileDialog.GetPath()
-
-        # remove file if it already exists
-        os.remove(output_path) if os.path.exists(output_path) else None
-
-        # get the input data file and create the empty output file
-        dsin = nc.Dataset(url)
-        dsout = nc.Dataset(output_path, 'w')
-
-        # write all dimensions to the output file
-        for dname, the_dim in dsin.dimensions.iteritems():
-            dsout.createDimension(dname, len(the_dim) if not the_dim.isunlimited() else None)
-
-        # write all the variables to the output file
-        for v_name, varin in dsin.variables.iteritems():
-
-            # create the variable
-            outVar = dsout.createVariable(v_name, varin.datatype, varin.dimensions)
-
-            # copy variable attributes
-            outVar.setncatts({k: varin.getncattr(k) for k in varin.ncattrs()})
-
-            # copy variable data
-            outVar[:] = varin[:]
-
-        # close the input and output files
-        dsin.close()
-        dsout.close()
-
-    def enableBtns(self, event):
+    def enable_buttons(self):
         self.view_btn.Enable()
         self.download_btn.Enable()
 
@@ -157,7 +120,7 @@ class NetcdfCtrl(OpenDapExplorerView):
             return self.TableValues[index][0]
         return -1
 
-    def onView(self, event):
+    def on_view_button(self, event):
         filename = self.getSelectedFileName()
         url = self.getSelectedURL()
         NetcdfDetailsCtrl(self, url, filename)
@@ -176,50 +139,6 @@ class NetcdfCtrl(OpenDapExplorerView):
         except StandardError:
             return None
 
-    def RunCrawler(self, event):
-        #self.status_bar.SetStatusText("Loading")
-        self.update_statusbar(self.status_bar, 'loading...')
-        self.Enable(False)
-        if self.variable_list.GetItemCount() > 0:
-            self.clearData()
-        results = []
-        url = self.url_textbox.GetLineText(0)
-        is_valid = self.check_url(url + "/catalog.xml")
-
-        if is_valid:
-            results = self.crawler(url + "/catalog.xml", results)
-            self.TableValues = []
-            for ds in results:
-                # cElementTree.tostring(catalog, 'utf-8')
-
-                dap = ds.find('.//{%s}access[@serviceName="dap"]' % self.thredds)
-                if dap is not None:
-                    wms = ds.find('.//{%s}access[@serviceName="wms"]' % self.thredds)
-                    size = ds.find('.//{%s}dataSize' % self.thredds)
-                    date = ds.find('.//{%s}date' % self.thredds)
-
-                    fileSize = size.itertext().next()
-                    lastmodified = date.itertext().next()
-                    dap_url = dict(dap.items())['urlPath']
-                    wms_url = dict(wms.items())['urlPath']
-                    name = dict(ds.items())['name']
-                    mod = lastmodified.replace("T", " ")
-                    fileString = self.CalculateBytes(int(fileSize))
-                    self.TableValues.append([name, fileString, mod, url + dap_url])
-
-
-            #self.status_bar.SetStatusText("Almost done...")
-            self.update_statusbar(self.status_bar, 'almost done...')
-            self.updateFileList(self.TableValues)
-            self.update_statusbar(self.status_bar, 'done')
-        
-            self.alternateRowColor()
-            self.autoSizeColumns()
-            self.Enable(True)
-            #self.status_bar.SetStatusText("Done!")
-        else:
-            self.update_statusbar(self.status_bar, 'error connecting to the server')
-
     def updateFileList(self, data):
         rowNumber = 0
         colNumber = 0
@@ -234,4 +153,118 @@ class NetcdfCtrl(OpenDapExplorerView):
 
     def update_statusbar(self, status_bar, text):
         status_bar.SetStatusText(text)
-        wx.Yield()
+        # wx.Yield()
+
+    def handle_crawler(self):
+        self.update_statusbar(self.status_bar, "Loading...")
+
+        if self.variable_list.GetItemCount > 0:
+            self.clear_table()
+        results = []
+        url = self.url_textbox.GetLineText(0)
+        is_valid = self.check_url(url + "/catalog.xml")
+
+        if is_valid:
+            results = self.crawler(url + "/catalog.xml", results)
+            self.TableValues = []
+            for ds in results:
+                dap = ds.find('.//{%s}access[@serviceName="dap"]' % self.thredds)
+                if dap is not None:
+                    wms = ds.find('.//{%s}access[@serviceName="wms"]' % self.thredds)
+                    size = ds.find('.//{%s}dataSize' % self.thredds)
+                    date = ds.find('.//{%s}date' % self.thredds)
+
+                    fileSize = size.itertext().next()
+                    lastmodified = date.itertext().next()
+                    dap_url = dict(dap.items())['urlPath']
+                    wms_url = dict(wms.items())['urlPath']
+                    name = dict(ds.items())['name']
+                    mod = lastmodified.replace("T", " ")
+                    fileString = self.calculate_bytes(int(fileSize))
+                    self.TableValues.append([name, fileString, mod, url + dap_url])
+
+            self.update_statusbar(self.status_bar, 'Almost done...')
+            self.updateFileList(self.TableValues)
+
+            self.alternate_row_color()
+            self.auto_size_columns()
+            self.enable_buttons()
+            self.update_statusbar(self.status_bar, 'Done')
+        else:
+            self.update_statusbar(self.status_bar, 'error connecting to the server')
+            if not self.IsShown() and self.thread.isAlive():
+                self.Destroy()  # Destroy the hidden instance
+
+    ##################################
+    # EVENTS
+    ##################################
+
+    def on_close(self, event):
+        if self.thread.isAlive():
+            # The user is closing the window while the thread is running
+            self.thread.join(0.1)
+            self.Hide()
+        else:
+            self.Destroy()
+
+    def on_disable_buttons(self, event):
+        self.disable_buttons()
+
+    def on_download(self, event):
+
+        # get the file url by rowid and colid
+        rowid = self.getSelectedIndexRow()
+        colid = self.getListCtrlColumnByName('url')
+        url = self.TableValues[rowid][colid]
+
+        # open a dialog to get save path
+        saveFileDialog = wx.FileDialog(self, message="Save NetCDF file", defaultDir=os.getcwd(),
+                                       wildcard="nc files (*.nc)|*.nc", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+        if saveFileDialog.ShowModal() == wx.ID_CANCEL:
+            return
+        output_path = saveFileDialog.GetPath()
+
+        # remove file if it already exists
+        os.remove(output_path) if os.path.exists(output_path) else None
+
+        # get the input data file and create the empty output file
+        dsin = nc.Dataset(url)
+        dsout = nc.Dataset(output_path, 'w')
+
+        # write all dimensions to the output file
+        for dname, the_dim in dsin.dimensions.iteritems():
+            dsout.createDimension(dname, len(the_dim) if not the_dim.isunlimited() else None)
+
+        # write all the variables to the output file
+        for v_name, varin in dsin.variables.iteritems():
+            # create the variable
+            outVar = dsout.createVariable(v_name, varin.datatype, varin.dimensions)
+
+            # copy variable attributes
+            outVar.setncatts({k: varin.getncattr(k) for k in varin.ncattrs()})
+
+            # copy variable data
+            outVar[:] = varin[:]
+
+        # close the input and output files
+        dsin.close()
+        dsout.close()
+
+    def on_enable_buttons(self, event):
+        self.enable_buttons()
+
+    def on_get_crawler(self, event):
+        if not isinstance(self.thread, threading.Thread):
+            sPrint("NetcdfCtrl.thread must be threading.Thread", messageType=MessageType.DEBUG)
+            return
+
+        if self.thread.isAlive():
+            sPrint("NetcdfCtrl.thread is alive", messageType=MessageType.DEBUG)
+            sPrint("Working on getting data", messageType=MessageType.INFO)
+            return
+
+        self.thread = threading.Thread(target=self.handle_crawler, name="NetcdfCtrl thread")
+        self.thread.setDaemon(True)
+        self.thread.start()  # Do not call thread.join
+
+

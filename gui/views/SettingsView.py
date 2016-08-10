@@ -1,5 +1,7 @@
 import wx
 import wx.lib.scrolledpanel
+
+from gui.controller.CustomListCtrl import CustomListCtrl
 from sprint import *
 
 
@@ -19,7 +21,7 @@ class SettingsView(wx.Frame):
 
         # Create components
         self.console_button = wx.Button(menu_panel, label="Console", size=(-1, 40), style=wx.BORDER_NONE)
-        self.another_button = wx.Button(menu_panel, label="Another", size=(-1, 40), style=wx.BORDER_NONE)
+        self.another_button = wx.Button(menu_panel, label="Database", size=(-1, 40), style=wx.BORDER_NONE)
         self.environment_button = wx.Button(menu_panel, label="Environment", size=(-1, 40), style=wx.BORDER_NONE)
         self.console_button.SetBackgroundColour((33, 117, 155))
         self.another_button.SetBackgroundColour((33, 117, 155))
@@ -46,9 +48,6 @@ class SettingsView(wx.Frame):
         self.console_panel = SettingsConsole(self.details_panel)
         self.console_panel.Show()
 
-        # Another controls
-        self.__create_another_panel()
-
         # Environment controls
         self.environment_panel = SettingsEnvironment(self.details_panel)
         self.environment_panel.Hide()
@@ -58,14 +57,19 @@ class SettingsView(wx.Frame):
         ###########################
 
         # Create components
+        break_line = wx.StaticLine(lower_panel)
         self.save_button = wx.Button(lower_panel, label="Save")
         self.cancel_button = wx.Button(lower_panel, label="Cancel")
 
         # Create sizer and add components
-        lower_panel_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        lower_panel_sizer.AddSpacer((0, 0), 1, wx.EXPAND, 2)
-        lower_panel_sizer.Add(self.cancel_button, 0, wx.EXPAND | wx.ALL, 5)
-        lower_panel_sizer.Add(self.save_button, 0, wx.EXPAND | wx.ALL, 5)
+        lower_panel_sizer = wx.BoxSizer(wx.VERTICAL)
+        lower_panel_button_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        lower_panel_button_sizer.AddSpacer((0, 0), 1, wx.EXPAND, 2)
+        lower_panel_button_sizer.Add(self.cancel_button, 0, wx.EXPAND | wx.ALL, 5)
+        lower_panel_button_sizer.Add(self.save_button, 0, wx.EXPAND | wx.ALL, 5)
+
+        lower_panel_sizer.Add(break_line, 0, wx.EXPAND)
+        lower_panel_sizer.Add(lower_panel_button_sizer, 0, wx.ALIGN_RIGHT)
 
         lower_panel.SetSizer(lower_panel_sizer)
 
@@ -86,21 +90,31 @@ class SettingsView(wx.Frame):
 
         self.Show()
 
-    def __create_another_panel(self):
-        """
-        This function should only be called by SettingsView.init()
-        It simply separates all of this block of code out of the init so its more compact
-        :return:
-        """
 
-        # self.another_panel = wx.Panel(self.details_panel)
-        self.another_panel = wx.lib.scrolledpanel.ScrolledPanel(self.details_panel)
-        self.another_text = wx.StaticText(self.another_panel, label="Another text")
-        another_sizer = wx.BoxSizer(wx.VERTICAL)
-        another_sizer.Add(self.another_text)
-        self.another_panel.SetSizer(another_sizer)
-        another_sizer.Fit(self.another_panel)
-        self.another_panel.Hide()
+class SettingsDatabaseView(wx.Panel):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+
+        # Header
+        header_text = wx.StaticText(self, label="Database")
+        line_break = wx.StaticLine(self)
+
+        # Create components
+        self.table = CustomListCtrl(self)
+
+        self.popup_menu = wx.Menu()
+        self.remove_menu = self.popup_menu.Append(1, "Remove")
+
+        # Style header and components
+        header_font = wx.Font(pointSize=18, family=wx.DEFAULT, style=wx.NORMAL, weight=wx.NORMAL)
+        header_text.SetFont(header_font)
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(header_text, 0, wx.EXPAND | wx.TOP | wx.LEFT, 15)
+        sizer.Add(line_break, 0, wx.EXPAND | wx.TOP | wx.LEFT, 10)
+        sizer.Add(self.table, 1, wx.EXPAND | wx.ALL, 10)
+        self.SetSizer(sizer)
+        sizer.Fit(self)
 
 
 class SettingsConsole(wx.Panel):
@@ -133,7 +147,7 @@ class SettingsConsole(wx.Panel):
         static_box_sizer.Add(self.debug_checkbox)
         static_box_sizer.Add(self.error_checkbox)
 
-        sizer.Add(static_box_sizer, 1, wx.EXPAND | wx.TOP | wx.LEFT, 15)
+        sizer.Add(static_box_sizer, 1, wx.EXPAND | wx.ALL, 15)
         self.SetSizer(sizer)
         sizer.Fit(self)
 
@@ -233,3 +247,12 @@ class SettingsEnvironment(wx.Panel):
     def save_app_paths(self):
         if os.path.exists(self.save_directory_textctrl.GetValue()):
             environment.setEnvironmentVar("APP", "default_save_path", self.save_directory_textctrl.GetValue())
+        else:
+            sPrint("Save directory path does not exist", MessageType.WARNING)
+
+        if os.path.exists(self.gdal_path_textctrl.GetValue()):
+            environment.setEnvironmentVar("GDAL", "data", self.gdal_path_textctrl.GetValue())
+        else:
+            sPrint("GDAL path does not exist", MessageType.WARNING)
+
+

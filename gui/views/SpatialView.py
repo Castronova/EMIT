@@ -1,14 +1,19 @@
 import wx
 import wx.grid
-from gui.Models.SpatialTemporalPlotter import SpatialTemporalPlotter
+# from gui.Models.SpatialTemporalPlotter import SpatialTemporalPlotter
+from gui.controller.PlotCtrl import PlotCtrl
 
 
-class SpatialView:
+
+class SpatialView(wx.Panel):
+
     def __init__(self, panel):
 
+        wx.Panel.__init__(self, panel)
+
         # Creating all the necessary panels
-        top_panel = wx.Panel(panel)
-        bottom_panel = wx.Panel(panel)
+        top_panel = wx.Panel(self)
+        bottom_panel = wx.Panel(self)
 
         # create the sizers
         sizer_top_panel = wx.BoxSizer(wx.HORIZONTAL)
@@ -17,8 +22,8 @@ class SpatialView:
         sizer_lower_panel = wx.BoxSizer(wx.HORIZONTAL)
 
         # add elements to the top panel
-        self.plot = SpatialTemporalPlotter(top_panel)
-        sizer_top_panel.Add(self.plot.plot, 1, wx.EXPAND | wx.ALL, 2)
+        self.plot = PlotCtrl(top_panel)
+        sizer_top_panel.Add(self.plot.canvas, 1, wx.EXPAND | wx.ALL, 2)
         top_panel.SetSizer(sizer_top_panel)
 
         # create lower panel components
@@ -47,7 +52,7 @@ class SpatialView:
         sizer_spatial_view.Add(top_panel, 1, wx.EXPAND | wx.ALL, 2)
         #  proportion=0 makes the panel same size when resizing
         sizer_spatial_view.Add(bottom_panel, 0, wx.EXPAND | wx.ALL, 2)
-        panel.SetSizer(sizer_spatial_view)
+        self.SetSizer(sizer_spatial_view)
 
 
 def setup_grid(grid, title):

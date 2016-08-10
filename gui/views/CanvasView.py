@@ -4,9 +4,9 @@ from gui.controller.NavigationCanvasCtrl import *
 from wx.lib.floatcanvas import FloatCanvas
 import os
 import environment
-from gui.Resources import resourcesCanvasObjects as rco, icons
+from gui.Resources import icons
 
-class ViewCanvas(wx.Panel):
+class CanvasView(wx.Panel):
     """
         NavCanvas.py
 
@@ -17,18 +17,6 @@ class ViewCanvas(wx.Panel):
     def __init__(self, parent, id=wx.ID_ANY, **kwargs): # The rest just get passed into FloatCanvas
 
         wx.Panel.__init__(self, parent, id, size=wx.Size(0,0))
-
-        # Get the Canvas Objects Resources
-        self.ModelsBox = rco.EMITModelDeepBlueWavesReflected.GetBitmap()
-        self.UnassignedBox5 = rco.EMITModelBlueWavesNormal.GetBitmap()
-
-        currentWorkDirectory = os.getcwd()
-        imagesPath = os.path.join(currentWorkDirectory, 'gui/images/')
-        environment.setEnvironmentVar('images', 'imgs_path', imagesPath)
-        self.linkArrow = wx.Image(imagesPath+'rightArrowBlue60.png', wx.BITMAP_TYPE_PNG)
-        self.UnassignedBox4 = wx.Image(imagesPath+'rectBlue.png', wx.BITMAP_TYPE_PNG)
-        self.TimeseriesBox = wx.Image(imagesPath+'rectGreen.png', wx.BITMAP_TYPE_PNG)
-        self.DatabaseBox = wx.Image(imagesPath+'rectPurple.png', wx.BITMAP_TYPE_PNG)
 
         self.GuiMouse = GUIMouse()
         self.GuiZoomIn = GUIZoomIn()

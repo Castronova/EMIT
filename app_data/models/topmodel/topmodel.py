@@ -1,15 +1,16 @@
 __author__ = 'tonycastronova'
 
-import os
-from wrappers import feed_forward
-import stdlib
-from utilities import mdl, spatial, geometry
 import math
-from shapely.geometry import Point
-from coordinator.emitLogging import elog
-from sprint import *
-import numpy as np
 from distutils.version import LooseVersion
+
+import numpy as np
+
+import stdlib
+from emitLogging import elog
+from sprint import *
+from utilities import mdl, geometry
+from wrappers import feed_forward
+
 
 class topmodel(feed_forward.Wrapper):
 
@@ -40,19 +41,16 @@ class topmodel(feed_forward.Wrapper):
         self.inputs(value=io[stdlib.ExchangeItemType.INPUT])
         self.outputs(value=io[stdlib.ExchangeItemType.OUTPUT])
 
-        # model_inputs
-        inputs = config_params['model inputs'][0]
-
         # read input parameters
         sPrint('Reading input parameters')
-        self.topo_input = inputs["ti"];
-        self.fac_input = inputs["fac"];
 
         #read model input parameters
-        self.c = float(inputs['m'])
-        self.Tmax = float(inputs["tmax"])
-        self.R = float(inputs["r"])
-        self.interception = float(inputs["interception"])
+        self.topo_input = config_params['ti']
+        self.fac_input = config_params['fac']
+        self.c = config_params['m']
+        self.Tmax = config_params["tmax"]
+        self.R = config_params["r"]
+        self.interception = config_params["interception"]
         self.ti = []
         self.freq = []
 
@@ -84,7 +82,7 @@ class topmodel(feed_forward.Wrapper):
 
         sPrint('Component Initialization Completed Successfully')
 
-    def run(self,inputs):
+    def run(self, inputs):
 
 
 
@@ -127,36 +125,60 @@ class topmodel(feed_forward.Wrapper):
             precip = in_precip[0]
 
             # calculate saturation deficit
-            sat_deficit = [self.s_average + self.c * (self.lamda_average - ti) for ti in self.ti]
+            # sat_deficit = [self.s_average + self.c * (self.lamda_average - ti) for ti in self.ti]
+            sat_deficit = np.add(self.s_average, np.multiply(self.c, np.subtract(self.lamda_average, self.ti)))
 
             # account for interception and et
             p = max(0, (precip - et))
-            sat_deficit = [s - p + et for s in sat_deficit]
+            # sat_deficit = [s - p + et for s in sat_deficit]
+            sat_deficit = np.subtract(sat_deficit, (p + et))
 
             q_infiltration = p - et
 
             if q_infiltration > 0:
 
-                for i in range(0, len(self.ti)):
-                    if sat_deficit[i] < 0:
-                        overland_flow[i] = -1*sat_deficit[i]
-                        sat_deficit[i] = 0
-                    else:
-                        overland_flow[i] = 0
+                # set overland flow where sat_deficit >= 0
+                overland_flow[np.where(sat_deficit >= 0)] = 0.0
 
-                    MM[i] = self.freq[i] * overland_flow[i]
+                # set overland flow where sat_deficit < 0
+                lt = np.where(sat_deficit < 0)
+                overland_flow[lt] = np.multiply(sat_deficit[lt], -1)
+                sat_deficit[lt] = 0.0
+
+
+                MM = self.freq * overland_flow
+
+
+                # for i in range(0, len(self.ti)):
+                #     if sat_deficit[i] < 0:
+                #         overland_flow[i] = -1*sat_deficit[i]
+                #         sat_deficit[i] = 0
+                #     else:
+                #         overland_flow[i] = 0
+                #
+                #     MM[i] = self.freq[i] * overland_flow[i]
 
             else:
-                for i in range(0, len(self.ti)):
-                    if sat_deficit[i] > 5000:
-                        reduced_ET[i] = -5000 + sat_deficit[i]
-                        sat_deficit[i] = 5000
-                    else:
-                        reduced_ET[i] = 0
 
-                    NN[i] = self.freq[i] * reduced_ET[i]
+                # set reduced ET where sat_deficit is <= 5000
+                reduced_ET[np.where(sat_deficit <= 5000)] = 0.0
 
-                # todo: calculate sum(freq) outside of this loop, possibly in initialize
+                # set reduced ET where sat_deficit is > 5000
+                gt = np.where(sat_deficit > 5000)
+                reduced_ET[gt] = np.subtract(sat_deficit[gt], 5000)
+                sat_deficit[gt] = 5000
+
+                NN = self.freq * reduced_ET
+
+                # for i in range(0, len(self.ti)):
+                #     if sat_deficit[i] > 5000:
+                #         reduced_ET[i] = -5000 + sat_deficit[i]
+                #         sat_deficit[i] = 5000
+                #     else:
+                #         reduced_ET[i] = 0
+                #
+                #     NN[i] = self.freq[i] * reduced_ET[i]
+
                 q_infiltration += sum(NN) / sum(self.freq)
 
 
@@ -171,19 +193,15 @@ class topmodel(feed_forward.Wrapper):
 
             # save these data
             runoff.setValues2(q, date)
-            # elog.info('OVERWRITE:Executing TOPMODEL... timestep [%d of %d]'%(i, len(datetimes)), True)
-            # print precip, q
 
         return 1
 
-    def save(self):
-        return self.outputs()
+    def finish(self):
+        pass
 
     def calc_ti_geometries(self):
 
-        sPrint('Building Geometry Objects')
-        tigeoms = []
-        satgeoms = []
+        sPrint('Reading Topographic Indices')
         with open(self.topo_input, 'r') as sr:
 
             lines = sr.readlines()
@@ -210,6 +228,39 @@ class topmodel(feed_forward.Wrapper):
         x = x[nonzero]
         y = y[nonzero]
 
+
+        with open(self.fac_input, 'r') as fac:
+            lines = fac.readlines()
+            fac_ncols = int(lines[0].split(' ')[-1].strip())
+            fac_nrows = int(lines[1].split(' ')[-1].strip())
+            fac_lowerx = float(lines[2].split(' ')[-1].strip())
+            fac_lowery = float(lines[3].split(' ')[-1].strip())
+            fac_cellsize = float(lines[4].split(' ')[-1].strip())
+            fac_nodata = float(lines[5].split(' ')[-1].strip())
+
+        # read ti data
+        fac_data = np.genfromtxt(self.fac_input, delimiter=' ', skip_header=6)
+
+        # build X and Y coordinate arrays
+        xi = np.linspace(fac_lowerx, fac_lowerx + fac_ncols * fac_cellsize, fac_ncols)
+        yi = np.linspace(fac_lowery + fac_nrows * fac_cellsize, fac_lowery, fac_nrows)
+        x,y = np.meshgrid(xi,yi)    # generate 2d arrays from xi, yi
+        x = x.ravel()   # convert to 1-d
+        y = y.ravel()   # convert to 1-d
+        fac_data = fac_data.ravel()  # convert to 1-d
+
+        # isolate the rivers based on threshold
+        threshold = np.max(fac_data)  # todo, user input
+        rivers = np.where((fac_data != fac_nodata) & (fac_data >= threshold) )
+
+        # select only the x and y values that are considered rivers
+        x = x[rivers]
+        y = y[rivers]
+
+        self.rivers_idxs = rivers
+
+
+        sPrint('Building Geometry Objects')
         tigeoms = geometry.build_point_geometries(x,y)
 
         self.ti_geoms = tigeoms

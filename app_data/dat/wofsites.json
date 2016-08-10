@@ -1,0 +1,14 @@
+{
+    "Logan River": {
+        "network": "iutah",
+        "wsdl": "http://data.iutahepscor.org/LoganRiverWOF/cuahsi_1_1.asmx?WSDL"
+    },
+    "Provo River": {
+        "network": "iutah",
+        "wsdl": "http://data.iutahepscor.org/ProvoRiverWOF/cuahsi_1_1.asmx?WSDL"
+    },
+    "Red Butte Creek": {
+        "network": "iutah",
+        "wsdl": "http://data.iutahepscor.org/RedButteCreekWOF/cuahsi_1_1.asmx?WSDL"
+    }
+}

@@ -49,8 +49,9 @@ class SmoothLine(FC.Line):
 
 class ScaledBitmapWithRotation(FC.ScaledBitmap):
 
-    def __init__(self, Bitmap, XY, Angle=0.0, Position = 'cc', InForeground = True):
+    def __init__(self, Bitmap, XY, Angle=0.0, Position = 'cc', InForeground = True, RotatePossible = True):
         FC.ScaledBitmap.__init__(self, Bitmap, XY, Height=Bitmap.Height, Position = 'cc', InForeground = True)
+        self.rotatePossible = RotatePossible
         self.ImageMidPoint = (self.Image.Width/2, self.Image.Height/2)
         self.RotationAngle = Angle
         if Angle != 0.0:
@@ -81,8 +82,8 @@ class ScaledBitmapWithRotation(FC.ScaledBitmap):
         self.LastRotationAngle = self.RotationAngle
 
     def Rotate(self, angle):
-
-        self.RotationAngle = angle
+        if self.rotatePossible:
+            self.RotationAngle = angle
 
 class SmoothLineWithArrow(SmoothLine):
     '''
@@ -90,12 +91,16 @@ class SmoothLineWithArrow(SmoothLine):
     the two and adds the rotation feature that we need. This might be able
     to be better implemented as FloatCanvas Group
     '''
-    def __init__(self, Points, LineColor="#3F51B5", LineStyle="Solid", LineWidth = 4):
+    # todo: these images need to be coming from config instead of hardcoded
+    def __init__(self, Points, image_name="questionMark.png", LineColor="#3F51B5", LineStyle="Solid", LineWidth = 4):
         super(SmoothLineWithArrow, self).__init__(Points, LineColor, LineStyle, LineWidth)
         imgs_base_path = os.environ['APP_IMAGES_PATH']
-        arrow_image = path.join(imgs_base_path, 'rightArrowBlue60.png')
+        arrow_image = path.join(imgs_base_path, image_name)
         arrow_bitmap = wx.Image(arrow_image, wx.BITMAP_TYPE_PNG)
-        self.Arrow = ScaledBitmapWithRotation(Angle=self.GetAngleRadians(), Bitmap=arrow_bitmap, XY=self.MidPoint)
+        if image_name == "questionMark.png":
+            self.Arrow = ScaledBitmapWithRotation(Angle=0, Bitmap=arrow_bitmap, XY=self.MidPoint, RotatePossible=False)
+        else:
+            self.Arrow = ScaledBitmapWithRotation(Angle=self.GetAngleRadians(), Bitmap=arrow_bitmap, XY=self.MidPoint)
         self.Arrow.line = self  # This allows us to remove the entire object given a reference to just the arrow
 
     def _Draw(self, dc , WorldToPixel, ScaleWorldToPixel, HTdc=None):
@@ -109,6 +114,7 @@ class SmoothLineWithArrow(SmoothLine):
         FC.RemoveObject(self)
         FC.RemoveObject(self.Arrow)
 
+
 class ModelBox(FC.Group):
     def __init__(self, type, XY, text, id):
         self.Links = []
@@ -117,14 +123,13 @@ class ModelBox(FC.Group):
 
         # Set box color based on model type
         imgs_base_path = os.environ['APP_IMAGES_PATH']
-        bmp = None
         if type == datatypes.ModelTypes.TimeStep:
-            bmp = wx.Image(path.join(imgs_base_path,'E.png'), wx.BITMAP_TYPE_PNG)
+            bmp = wx.Image(path.join(imgs_base_path, 'E.png'), wx.BITMAP_TYPE_PNG)
         elif type == datatypes.ModelTypes.FeedForward:
-            bmp = wx.Image(path.join(imgs_base_path,'B.png'), wx.BITMAP_TYPE_PNG)
+            bmp = wx.Image(path.join(imgs_base_path, 'B.png'), wx.BITMAP_TYPE_PNG)
         elif type == datatypes.ModelTypes.Data:
             bmp = wx.Image(path.join(imgs_base_path, 'N.png'), wx.BITMAP_TYPE_PNG)
-        else: # default type
+        else:  # default type
             bmp = wx.Image(path.join(imgs_base_path, 'M.png'), wx.BITMAP_TYPE_PNG)
 
         self.box = FC.Bitmap(bmp, XY, Position="cc", InForeground=True)
@@ -134,7 +139,7 @@ class ModelBox(FC.Group):
         font = wx.Font(16, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
         font_size = 15
         self.label = FC.ScaledTextBox(text, XY, Color="Black", Size=font_size,
-                                      Width=bmp.Width-30, Position="cc",
+                                      Width=bmp.Width - 30, Position="cc",
                                       Alignment="center", Weight=wx.BOLD,
                                       InForeground=True, Font=font, LineWidth=0,
                                       LineColor=None)

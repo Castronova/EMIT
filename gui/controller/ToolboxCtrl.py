@@ -1,42 +1,26 @@
 import ConfigParser
 import fnmatch
-import os
-import random
-from os.path import join, dirname, abspath
-
 import wx
-from wx.lib.pubsub import pub as Publisher
-
-from coordinator.emitLogging import elog
-from gui import events
-from gui.controller.ModelCtrl import LogicModel
-from gui.views.ContextView import ToolboxContextMenu
-from gui.views.ToolboxView import ViewToolbox
+from gui.controller.ModelCtrl import ModelCtrl
+from gui.views.ToolboxView import ToolboxView
+from sprint import *
+from utilities import models
 
 
-# todo: refactor
-
-
-class LogicToolbox(ViewToolbox):
+class ToolboxCtrl(ToolboxView):
     modelpaths = ""
 
     def __init__(self, parent):
 
         # Initialize the View
-        ViewToolbox.__init__(self, parent)
-
-        self.p = parent
-        # config_params = {}
+        ToolboxView.__init__(self, parent)
 
         self.cat = ""
         self.items = {}
         self.filepath = {}
         self.modelpaths = self.parseModelPaths()
 
-        # initialize event bindings
-        self.initBinding()
-
-        self.loadToolbox(self.getModelPath())
+        self.loadToolbox(self.modelpaths)
 
         self.tree.SetItemImage(self.root_mdl, self.fldropenidx, which=wx.TreeItemIcon_Expanded)
         self.tree.SetItemImage(self.root_mdl, self.fldropenidx, which=wx.TreeItemIcon_Normal)
@@ -46,11 +30,51 @@ class LogicToolbox(ViewToolbox):
         self.componentBranch.Expand()
         self.simConfigurations.Expand()
 
-    def initBinding(self):
+        # Context Menu
+        self.popup_menu = wx.Menu()
+        view_details_menu = self.popup_menu.Append(1, "View Details")
+        remove_menu = self.popup_menu.Append(2, "Remove")
+
+        # Context menu bindings
+        self.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.on_right_click)
+        self.Bind(wx.EVT_MENU, self.on_view_details, view_details_menu)
+        self.Bind(wx.EVT_MENU, self.on_remove, remove_menu)
+
+        # initialize event bindings
         self.Bind(wx.EVT_SIZE, self.OnSize)
-        self.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnItemContextMenu)
         self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.onDoubleClick)
-        events.onSimulationSaved += self.loadSIMFile
+
+    def on_view_details(self, event):
+        """
+        Files must be in json format in order for method to work
+        :param event:
+        :return:
+        """
+        name = self.tree.GetItemText(self.tree.GetSelection())
+        path = self.filepath.get(name)
+
+        if not path:
+            return  # Selected a folder or something else
+
+        frame = wx.Frame(None)
+        frame.SetSize((640, 690))
+
+        models_controller = ModelCtrl(frame)
+
+        details = models_controller.add_detail_page()
+        details.data_path = path
+        details.populate_grid_by_path()
+        edit = models_controller.add_edit_page()
+        edit.file_path = path
+        edit.populate_edit()
+
+        frame.Show()
+
+    def on_remove(self, event):
+        self.Remove(event)
+
+    def on_right_click(self, event):
+        self.PopupMenu(self.popup_menu)
 
     def loadToolbox(self, modelpaths):
         # add base-level folders
@@ -90,21 +114,18 @@ class LogicToolbox(ViewToolbox):
                     for p in path.split(';'):
                         apath = os.path.realpath(__file__ + "../../../../" + p)
                         matches = []
-                        self.dirlist = []
 
                         for root, dirnames, filenames in os.walk(apath):
                             for filename in fnmatch.filter(filenames, '*.mdl'):
                                 matches.append(os.path.join(root, filename))
                                 fullpath = join(root, filename)
-                                txt = filename.split('.mdl')[0]
-                                self.loadMDLFile(cat, txt, fullpath)
+                                self.load_json_file(cat, fullpath)
 
                 # populate simulations
                 if 'Configurations' in folder_path:
                     for p in path.split(';'):
                         apath = join(dirname(abspath(__file__)), '../../' + p)
                         matches = []
-                        self.dirlist = []
                         for root, dirnames, filenames in os.walk(apath):
                             for filename in fnmatch.filter(filenames, '*.sim'):
                                 matches.append(os.path.join(root, filename))
@@ -113,27 +134,21 @@ class LogicToolbox(ViewToolbox):
                                 e = dict(cat=self.cat, txt=txt, fullpath=fullpath)
 
                                 # fixme: this should not call onSimulationSaved
-                                events.onSimulationSaved.fire(**e)
+                                # events.onSimulationSaved.fire(**e)
+                                self.loadSIMFile(e)
 
-    def RefreshToolbox(self):
+    def refresh_toolbox(self):
         self.tree.DeleteChildren(self.tree.GetRootItem())
-        self.loadToolbox(self.getModelPath())
+        self.loadToolbox(self.modelpaths)
 
         self.root_mdl.Expand()
         self.componentBranch.Expand()
         self.simConfigurations.Expand()
 
-    def getModelPath(self):
-        return self.modelpaths
-
-    def getCat(self):
-        return self.cat
-
     def parseModelPaths(self):
         """
         reads the APP_TOOLBOX_PATH and parses the model/config paths
         Returns: modelpaths lists
-
         """
 
         ini = os.environ['APP_TOOLBOX_PATH']
@@ -157,124 +172,37 @@ class LogicToolbox(ViewToolbox):
 
         return d
 
-
-    def loadMDLFile(self, cat, txt, fullpath):
-        mdl_parser = ConfigParser.ConfigParser(None, multidict)
-        mdl_parser.read(fullpath)
-        mdls = mdl_parser.sections()
-        for s in mdls:
-            section = s.split('^')[0]
-            if section == 'general':
-                # options = cparser.options(s)
-                txt = mdl_parser.get(s, 'name')
+    def load_json_file(self, cat, fullpath):
+        data = models.parse_json(fullpath)
+        txt = data["general"][0]["name"]
 
         child = self.tree.AppendItem(cat, txt)
         self.filepath[txt] = fullpath
         self.items[child] = fullpath
 
-        child.__setattr__('path', fullpath)
+        child.__setattr__("path", fullpath)
         self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Expanded)
         self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Normal)
 
     def loadSIMFile(self, e):
-        child = self.tree.AppendItem(e.cat, e.txt)
-        self.filepath[e.txt] = e.fullpath
-        self.items[child] = e.fullpath
-        child.__setattr__('path', e.fullpath)
+        child = self.tree.AppendItem(e["cat"], e["txt"])
+        self.filepath[e["txt"]] = e["fullpath"]
+        self.items[child] = e["fullpath"]
+        child.__setattr__('path', e["fullpath"])
         self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Expanded)
         self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Normal)
 
-    def SetCurrentlySelected(self, evt):
-        item = self.tree.GetSelection()
-
-        for i in self.items.keys():
-            if i == item:
-                self.__currently_selected_item_path = os.path.abspath(self.items[i])
-                break
-
     def onDoubleClick(self, event):
-        id = event.GetItem()
-        filename = id.GetText()
-        try:  # Its in a try because clicking on a folder returns an error.
+        # Get selected filename
+        name = self.tree.GetItemText(self.tree.GetSelection())
+        path = self.filepath.get(name)
+        if not path:
+            return  # Clicked on a folder
 
-            filename = self.filepath[filename]
+        self.GetTopLevelParent().model_input_prompt(path)
 
-            # Generate random coordinates about the center of the canvas
-            originx, originy = self.p.GetParent().FloatCanvas.WorldToPixel(self.p.GetParent().Canvas.GetPosition())
-            x = random.randint(-200, 200)
-            y = random.randint(-200, 200)
-
-            # Send the message to logicCanvas
-            # todo: replace with custom event
-            Publisher.sendMessage('AddModel', filepath=filename, x=x, y=y, uniqueId = None, title = None)
-
-        except Exception, e:
-            elog.error(e)
-            pass
-
-    def OnItemContextMenu(self, evt):
-
-        self.tree.GetSelection()
-        item = self.tree.GetSelection()
-        key = self.tree.GetItemText(item)
-        filepath = self.filepath.get(key)
-
-        ext = ""
-        folder = False
-        removable = False
-        if filepath is not None:
-            name, ext = os.path.splitext(filepath)
-
-            if ext == '.sim':
-                removable = True
-            else:
-                removable = False
-        else:
-            folder = True
-
-        if not folder:
-            self.tree.PopupMenu(ToolboxContextMenu(self, evt, removable, folder))
-
-    def OnSize(self, evt):
+    def OnSize(self, event):
         self.tree.SetSize(self.GetSize())
-
-    def OnExpandAll(self):
-        self.tree.Expand(self.root_mdl)
-
-    def OnCollapseAll(self):
-        self.tree.Collapse(self.root_mdl)
-
-    def ShowDetails(self):
-
-        item = self.tree.GetSelection()
-        key = self.tree.GetItemText(item)
-
-        filepath = self.filepath.get(key)
-
-        filename, ext = os.path.splitext(filepath)
-        if ext == '.mdl':
-            kwargs = {'spatial': False}
-            model_details = LogicModel(self, **kwargs)
-            try:
-                model_details.PopulateDetails(filepath)
-                model_details.PopulateEdit(filepath)
-                model_details.PopulateSummary(filepath)
-                model_details.Show()
-            except:
-                dlg = wx.MessageDialog(None, 'Error trying to view details', 'Error', wx.OK)
-                dlg.ShowModal()
-                pass
-        if ext == '.sim':
-
-            kwargs = {'configuration': True, 'edit': False, 'properties': False, 'spatial': False}
-            model_details = LogicModel(self, **kwargs)
-            try:
-                model_details.ConfigurationDisplay(filepath)
-                model_details.Show()
-            except:
-                dlg = wx.MessageDialog(None, 'Error trying to view details', 'Error', wx.OK)
-                dlg.ShowModal()
-                pass
 
     def Remove(self, e):
         dlg = wx.MessageDialog(None, 'Are you sure you would like to delete?', 'Question',

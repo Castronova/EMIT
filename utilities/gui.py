@@ -1,17 +1,18 @@
 __author__ = 'tonycastronova'
 
-import os
-import sys
 import ConfigParser
-import datetime
 import cPickle as pickle
+import datetime
 import imp
-from api_old.ODMconnection import dbconnection
-from odm2api.ODMconnection import dbconnection as dbconnection2
-from sprint import *
-from coordinator.emitLogging import elog
+import sys
 import uuid
+import time
+from odm2api.ODMconnection import dbconnection as dbconnection2
 import utilities.io as io
+from api_old.ODMconnection import dbconnection
+from emitLogging import elog
+from sprint import *
+
 
 class multidict(dict):
     _unique = 0
@@ -37,12 +38,11 @@ class ini_types():
     classname = 'str'
     ignorecv = 'str'
     code = 'str'
-    description = 'str'
     generic_string = 'str'
     directory = 'str'
 
-def validate_config_ini(ini_path):
 
+def validate_config_ini(ini_path):  # Deprecated. Use utilities.models.validate_json_model
     try:
 
         cparser = ConfigParser.ConfigParser(None, multidict)
@@ -147,7 +147,7 @@ def validate_config_ini(ini_path):
     return 1
 
 
-def parse_config(ini):
+def parse_config(ini):  # Deprecated. Use utilities.models.parse_json
     """
     parses metadata stored in *.ini file.  This file is use by both the GUI and the ENGINE.
     """
@@ -175,10 +175,14 @@ def parse_config(ini):
             for option in options:
                 value = cparser.get(s,option)
 
-                # convert anything that is recognized as a file path into an absolute paths
-                genpath = os.path.abspath(os.path.join(basedir, value))
-                if os.path.isfile(genpath): # and genpath[-3:] != '.py' :
-                    value = genpath
+                try:
+                    # convert anything that is recognized as a file path into an absolute paths
+                    genpath = os.path.abspath(os.path.join(basedir, value))
+                    if os.path.isfile(genpath):
+                        value = genpath
+                except TypeError:
+                    pass
+
                 d[option] = value
             d['type'] = section.upper()
 
@@ -194,46 +198,6 @@ def parse_config(ini):
     else:
         return None
 
-# def parse_config(ini):
-#     """
-#     parses metadata stored in *.ini file
-#     """
-#     basedir = os.path.realpath(os.path.dirname(ini))
-#
-#     isvalid = validate_config_ini(ini)
-#     if isvalid:
-#         #raise Exception('Configuration file is not valid!')
-#
-#         config_params = {}
-#         cparser = ConfigParser.ConfigParser(None, multidict)
-#         cparser.read(ini)
-#         sections = cparser.sections()
-#
-#         for s in sections:
-#             # get the section key (minus the random number)
-#             section = s.split('^')[0]
-#
-#             # get the section options
-#             options = cparser.options(s)
-#
-#             # save ini options as dictionary
-#             d = {}
-#             for option in options:
-#                 d[option] = cparser.get(s,option)
-#             d['type'] = section
-#
-#
-#             if section not in config_params:
-#                 config_params[section] = [d]
-#             else:
-#                 config_params[section].append(d)
-#
-#         # save the base path of the model
-#         config_params['basedir'] = basedir
-#
-#         return config_params
-#     else:
-#         return None
 
 def connect_to_ODM2_db(title, desc, engine, address, db, user, pwd):
 
@@ -255,8 +219,8 @@ def connect_to_ODM2_db(title, desc, engine, address, db, user, pwd):
                                  'description':desc,
                                  'args': {'name':title,'desc':desc ,'engine':engine,'address':address,'db': db, 'user': user,'pwd': pwd}}
 
-        elog.info('Connected to : %s [%s]'%(connection_string,db_id))
-        sPrint('Connected to : %s [%s]'%(connection_string,db_id))
+        elog.info('Connected to : %s [%s]'%(connection_string.__repr__(),db_id))
+        sPrint('Connected to : %s [%s]'%(connection_string.__repr__(),db_id))
     else:
         elog.error('Could not establish a connection with the database')
         sPrint('Could not establish a connection with the database', MessageType.ERROR)
@@ -308,8 +272,8 @@ def create_database_connections_from_args(title, desc, engine, address, db, user
                                  'description':d['desc'],
                                  'args': d}
 
-        elog.info('Connected to : %s [%s]'%(connection_string,db_id))
-        sPrint('Connected to : %s [%s]'%(connection_string,db_id))
+        elog.info('Connected to : %s [%s]'%(connection_string.__repr__(),db_id))
+        sPrint('Connected to : %s [%s]'%(connection_string.__repr__(),db_id))
     else:
         elog.error('Could not establish a connection with the database')
         sPrint('Could not establish a connection with the database', MessageType.ERROR)
@@ -322,8 +286,7 @@ def load_model(config_params):
     Creates an instance of the model by loading the contents of the configuration ini file.
     returns (model name,model instance)
     """
-    # parse module config
-    #items = parse_config(ini)
+
     try:
         # get source attributes
         software = config_params['software']
@@ -336,16 +299,20 @@ def load_model(config_params):
         # load the model
         basedir = config_params['basedir']
         abspath = os.path.abspath(os.path.join(basedir,relpath))
-        sPrint('AbsPath: %s'%abspath, MessageType.DEBUG)
+        sPrint('AbsPath: %s' % abspath, MessageType.DEBUG)
 
-        filename = os.path.basename(abspath)
-        module = imp.load_source(filename, abspath)
+        # add the model dir to the system path so that submodule imports
+        # work properly
+        sys.path.append(os.path.dirname(os.path.abspath(relpath)))
+
+        # load the model class
+        module = imp.load_source(classname, abspath)
         model_class = getattr(module, classname)
         sPrint('Model Class Extracted Successfully', MessageType.DEBUG)
 
-        # Initialize the component
+        # Initialize the model component
         instance = model_class(config_params)
-        sPrint('Mode Initialization Successful', MessageType.DEBUG)
+        sPrint('Model Initialization Successful', MessageType.DEBUG)
 
     except Exception as e:
         sPrint('An error has occurred while loading model: %s'% e, MessageType.CRITICAL)
@@ -353,48 +320,44 @@ def load_model(config_params):
 
     return (instance.name(), instance)
 
-def connect_to_db(title, desc, engine, address, name, user, pwd):
+def connect_to_db(title, desc, engine, address, db=None, user=None, pwd=None):
 
     d = {}
-
-    # fixme: all database connections should use the updated ODM library
-    if engine == 'sqlite':
-        session = dbconnection2.createConnection(engine, address)
-    else:
-        session = dbconnection.createConnection(engine, address, name, user, pwd)
-
-    if session:
-        # adjusting timeout
-        session.engine.pool._timeout = 30
-
-        connection_string = session.engine.url
-
-        # save this session in the db_connections object
-        db_id = uuid.uuid4().hex[:5]
-
-        d[db_id] = {'name':title,
-                     'session': session,
-                     'connection_string':connection_string,
-                     'description':desc,
-                     'args': dict(address=connection_string, desc=desc, engine=engine,id=db_id,name=name,
-                                  user=None, pwd=None,default=False,db=None)}
-
-        elog.info('Connected to : %s [%s]'%(connection_string,db_id))
-        sPrint('Connected to : %s [%s]'%(connection_string,db_id))
-
-    else:
+    session = dbconnection2.createConnection(engine, address, db, user, pwd)
+    if not session:
         elog.error('Could not establish a connection with the database')
         sPrint('Could not establish a connection with the database', MessageType.ERROR)
+        return
+
+
+    # adjusting timeout
+    session.engine.pool._timeout = 30
+
+    connection_string = session.engine.url
+
+    # save this session in the db_connections object
+    db_id = uuid.uuid4().hex[:5]
+
+    d[db_id] = {'name':title,
+                 'session': session,
+                 'connection_string':connection_string,
+                 'description':desc,
+                 'args': dict(address=connection_string, desc=desc, engine=engine,id=db_id,name=db,
+                              user=None, pwd=None,default=False,db=None)}
+
+    elog.info('Connected to : %s [%s]'%(connection_string.__repr__(),db_id))
+    sPrint('Connected to : %s [%s]'%(connection_string.__repr__(),db_id))
+
 
     return d
 
-def create_database_connections_from_file(ini):
+
+def read_database_connection_from_file(ini):
 
     # database connections dictionary
-    db_connections = {}
+    db_connections = []
 
     # parse the dataabase connections file
-    params = {}
     cparser = ConfigParser.ConfigParser(None, multidict)
     cparser.read(ini)
     sections = cparser.sections()
@@ -403,14 +366,39 @@ def create_database_connections_from_file(ini):
     for s in sections:
 
         # put ini args into a dictionary
-        options = cparser.options(s)
         d = {}
+        options = cparser.options(s)
+        d['name'] = s
+        for option in options:
+            d[option] = cparser.get(s,option)
+
+        db_connections.append(d)
+
+    return db_connections
+
+# todo: remove this function and use the one above!
+def create_database_connections_from_file(ini):
+
+    # database connections dictionary
+    db_connections = {}
+
+    # parse the dataabase connections file
+    cparser = ConfigParser.ConfigParser(None, multidict)
+    cparser.read(ini)
+    sections = cparser.sections()
+
+    # create a session for each database connection in the ini file
+    for s in sections:
+
+        # put ini args into a dictionary
+        d = {}
+        options = cparser.options(s)
+        d['name'] = s
         for option in options:
             d[option] = cparser.get(s,option)
 
         # build database connection
-        #dbconn = odm2.api.dbconnection()
-        session = dbconnection.createConnection(d['engine'],d['address'],d['db'],d['user'],d['pwd'])
+        session = dbconnection2.createConnection(d['engine'],d['address'],d['database'],d['username'],d['password'])
 
         if session:
             # adjusting timeout
@@ -429,17 +417,15 @@ def create_database_connections_from_file(ini):
             db_connections[db_id] = {'name':d['name'],
                                      'session': session,
                                      'connection_string':connection_string,
-                                     'description':d['desc'],
+                                     'description':d['description'],
                                      'args': d}
-            elog.info('Connected to : %s [%s]'%(connection_string,db_id))
-            sPrint('Connected to : %s [%s]'%(connection_string,db_id))
+            elog.info('Connected to : %s [%s]'%(connection_string.__repr__(),db_id))
+            sPrint('Connected to : %s [%s]'%(connection_string.__repr__(),db_id))
 
         else:
-            elog.error('Could not establish a connection with the database')
-            sPrint('Could not establish a connection with the database', MessageType.ERROR)
-            #return None
-
-
+            msg = 'Could not establish a connection with the following database: ***@%s/%s' % (d['address'],d['database'])
+            elog.error(msg)
+            sPrint(msg, MessageType.ERROR)
 
     return db_connections
 
@@ -592,3 +578,6 @@ def loadAccounts():
         file.close()
 
     return known_users
+
+def get_todays_date():
+    return time.strftime("%m/%d/%Y")

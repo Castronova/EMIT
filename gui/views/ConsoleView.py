@@ -1,17 +1,13 @@
 import wx
-from ContextView import ConsoleContextMenu
-
-
+from wx import richtext
 
 
 class ConsoleView(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
 
-        self.log = wx.richtext.RichTextCtrl(self, -1, size=(100,100),
-                                            style = wx.TE_MULTILINE | wx.TE_READONLY | wx.HSCROLL | wx.SIMPLE_BORDER|wx.CURSOR_NONE)
-
-        self.log.Bind(wx.EVT_CONTEXT_MENU, self.onRightUp)
+        self.log = wx.richtext.RichTextCtrl(self, -1, size=(100, 100),
+                                            style=wx.TE_MULTILINE | wx.TE_READONLY | wx.HSCROLL | wx.SIMPLE_BORDER | wx.CURSOR_NONE)
 
         # Add widgets to a sizer
         sizer = wx.BoxSizer()
@@ -19,6 +15,3 @@ class ConsoleView(wx.Panel):
         self.SetSizer(sizer)
 
         self.SetSizerAndFit(sizer)
-
-    def onRightUp(self, event):
-        self.log.PopupMenu(ConsoleContextMenu(self, event))

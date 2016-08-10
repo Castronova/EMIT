@@ -1,30 +1,25 @@
-from utilities.threading.threadManager import ThreadManager
-
-__author__ = 'tonycastronova'
-
 import time
-from db.dbapi import postgresdb
-import sys
-from utilities.gui import *
-from utilities.mdl import *
-from wrappers import odm2_data
-from transform.time import *
-from transform.space import *
-from utilities.status import Status
+import database
 import update
-from coordinator.emitLogging import elog
+from db.dbapi import postgresdb
+from transform.space import *
+from utilities.gui import *
+from utilities.status import Status
+from utilities.threading.threadManager import ThreadManager
 from odm2api.ODMconnection import dbconnection
+from emitLogging import elog
 
-import db.dbapi_v2 as dbv2
 
 class dataSaveInfo():
+    """
+    DataSaveInfo object stores user and database information for saving model calculations
+    """
     def __init__(self, simulationName, database_args, user, datasets):
         self.simulationName = simulationName
         self.database_args = database_args
         self.user = user
         self.datasets = datasets
 
-        # self, engine, address, db=None, user=None, password=None, dbtype = 2.0):
         self.session = dbconnection.createConnection(engine=database_args['engine'],
                                                      address=database_args['address'],
                                                      db=database_args['db'],
@@ -32,49 +27,38 @@ class dataSaveInfo():
                                                      password=database_args['pwd'])
 
 
-
 def run_feed_forward(obj, ds=None):
-    # store db sessions
-    db_sessions = {}
+    """
+    executes a feed forward coupled model simulation
+    Args:
+        obj: engine coordinator object
+        ds: dataSaveInfo object
+
+    Returns: None
+
+    """
+
+    # set engine status
+    obj.status.set(stdlib.Status.NOTREADY)
 
     # todo: determine unresolved exchange items (utilities)
 
     sim_st = time.time()
 
-    activethreads = []
-
     # determine execution order
     elog.info('Determining execution order... ')
+    sPrint('Determining execution order... ', MessageType.INFO)
 
     exec_order = obj.determine_execution_order()
     for i in range(0, len(exec_order)):
-        elog.info('%d.) %s' % (i + 1, obj.get_model_by_id(exec_order[i]).name()))
-
-
-
-    # # store model db sessions
-    # for modelid in exec_order:
-    #     session = obj.get_model_by_id(modelid).get_instance().session()
-    #
-    #     if session is None:
-    #         try:  # this is necessary if no db connection exists
-    #             session = obj.get_default_db()['session']
-    #
-    #             # todo: need to consider other databases too!
-    #             db_sessions[modelid] = postgresdb(session)
-    #         except:
-    #             db_sessions[modelid] = None
-    #
-    #             # todo: this should be stored in the model instance
-    #             # model_obj = obj.get_model_by_id(modelid)
-    #             # model_inst = model_obj.get_instance()
-    #             # model_inst.session
+        elog.info('%d.) %s' % (i + 1, obj.get_model(model_id=exec_order[i]).name()))
 
     links = {}
     spatial_maps = {}
 
     # todo:  move this into function
     elog.info('Generating spatial maps... ')
+    sPrint('Generating spatial maps... ')
 
     for modelid in exec_order:
 
@@ -90,78 +74,75 @@ def run_feed_forward(obj, ds=None):
 
             # set default spatial interpolation to ExactMatch
             if link.spatial_interpolation() is None:
+                sPrint('Spatial interpolation not provided, using the default mapping approach:  \'Spatial Index\'', MessageType.WARNING)
                 link.spatial_interpolation(spatial_index())
 
             spatial_interp = link.spatial_interpolation()
             source_geoms = source.getGeometries2()
             target_geoms = target.getGeometries2()
 
-            # todo: remove these two lines b/c they use deprecated function calls!
-            if len(source_geoms) == 0: source_geoms = source.get_all_datasets().keys()
-            if len(target_geoms) == 0: target_geoms = target.get_all_datasets().keys()
+            if len(source_geoms) == 0:
+                sPrint('Cannot continue simulation, %s -- %s contains 0 geometries' % link.source_component().name(), source.name() )
+            if len(target_geoms) == 0:
+                sPrint('Cannot continue simulation, %s -- %s contains 0 geometries' % link.target_component().name(), target.name())
 
             # save the spatial mapping based on link key
             spatial_maps[key] = spatial_interp.transform(source_geoms, target_geoms)
 
-            # # store model db sessions
-            # session = obj.get_model_by_id(modelid).get_instance().session()
-            # if session is None:
-            #     try:  # this is necessary if no db connection exists
-            #         session = obj.get_default_db()['session']
-            #     except:
-            #         pass
-            # db_sessions[modelid] = postgresdb(session)
-
-
-    # todo:  move this into function
     # prepare all models
     for modelid in exec_order:
-        model_obj = obj.get_model_by_id(modelid)
-        model_inst = model_obj.instance()
+        model_inst = obj.get_model_object(modelid).instance()
         model_inst.prepare()
 
         if model_inst.status() != stdlib.Status.READY:
-            elog.critical('Cannot continue with simulation because model "%s" has a status of "%s" after the preparation'
-                          ' phase.  Status must be "%s" in order to proceed with simulation '
-                          % (model_inst.name(), model_inst.status(), stdlib.Status.READY))
+            msg = 'Cannot continue with simulation because model "%s" has a status of "%s" after the preparation' \
+                          ' phase.  Status must be "%s" in order to proceed with simulation ' \
+                          % (model_inst.name(), model_inst.status(), stdlib.Status.READY)
+
+            elog.critical(msg)
+            sPrint(msg, MessageType.ERROR)
             return False
+
+    # update engine status
+    obj.status.set(stdlib.Status.READY)
 
     # loop through models and execute run
     for modelid in exec_order:
 
+        # update engine status
+        obj.status.set(stdlib.Status.RUNNING)
+
         st = time.time()
 
         # get the current model instance
-        model_obj = obj.get_model_by_id(modelid)
-        model_inst = model_obj.instance()
-        elog.info('\n' + \
-                  '------------------' + len(model_inst.name()) * '-' + '\n' + \
-                  'Executing module: %s \n' % model_inst.name() + \
-                  '------------------' + len(model_inst.name()) * '-')
+        model_inst = obj.get_model_object(modelid).instance()
+        sPrint('Executing module: %s \n' % model_inst.name(), MessageType.INFO)
 
-        #  retrieve inputs from database
-        sPrint("[1 of 4] Retrieving input data... ")
+        try:
+            #  retrieve inputs from database
+            sPrint("[1 of 3] Retrieving input data... ")
+            input_data = model_inst.inputs()
 
-        input_data = model_inst.inputs()
+            # pass these inputs ts to the models' run function
+            sPrint("[2 of 3] Performing calculation... ")
+            model_inst.run(input_data)
 
-        sPrint("[2 of 4] Performing calculation... ")
+            # update links
+            sPrint("[3 of 3] Updating links... ")
+            oei = model_inst.outputs()
+            update.update_links_feed_forward(links[modelid], oei, spatial_maps)
 
+            model_inst.finish()
+            elog.info('..module simulation completed in %3.2f seconds' % (time.time() - st))
 
-        # pass these inputs ts to the models' run function
-        model_inst.run(input_data)
+        except Exception:
+            # set the model status to failed
+            model_inst.status(stdlib.Status.FAILED)
+            return
+            # raise Exception('Error during model execution')
 
-        # save these results
-        sPrint("[3 of 4] Saving calculations to database... ")
-
-
-        # update links
-        sPrint("[4 of 4] Updating links... ")
-
-        oei = model_inst.outputs()
-        update.update_links_feed_forward(obj, links[modelid], oei, spatial_maps)
-
-        model_inst.finish()
-        elog.info('module simulation completed in %3.2f seconds' % (time.time() - st))
+        # set the model status to successful
+        model_inst.status(stdlib.Status.SUCCESS)
 
     sPrint('------------------------------------------\n' +
               '         Simulation Summary \n' +
@@ -170,64 +151,17 @@ def run_feed_forward(obj, ds=None):
               'Simulation duration: %3.2f seconds\n' % (time.time() - sim_st) +
               '------------------------------------------')
 
-    # save results if ds is provided
-    # todo: move this outside run.py
-    if ds is not None:
-        elog.info('Saving Simulation Results...')
-        st = time.time()
+    # update engine status
+    obj.status.set(stdlib.Status.SUCCESS)
 
-        try:
-            # build an instance of dbv22
-            db = dbv2.connect(ds.session)
-        except Exception, e:
-            elog.error('An error was encountered when connecting to the database to save the simulation results: %s' % e)
-            sPrint('An error was encountered when connecting to the database to save the simulation results.', MessageType.ERROR)
-            return
-
-        # insert data!
-        for modelid in exec_order:
-
-            # get the current model instance
-            model_obj = obj.get_model_by_id(modelid)
-            model_inst = model_obj.instance()
-            model_name = model_inst.name()
-
-            # get the output exchange items to save for this model
-            oeis =  ds.datasets[model_name]
-            items = []
-            for oei in oeis:
-                items.append(model_inst.outputs()[oei])
-
-            if len(items) > 0:
-                # get config parameters
-                config_params=model_obj.get_config_params()
-
-
-                db.create_simulation(coupledSimulationName=ds.simulationName,
-                                     user_obj=ds.user,
-                                     config_params=config_params,
-                                     ei=items,
-                                     simulation_start = model_inst.simulation_start(),
-                                     simulation_end = model_inst.simulation_end(),
-                                     timestep_value = model_inst.time_step(),
-                                     timestep_unit = 'seconds',
-                                     description = model_inst.description(),
-                                     name = model_inst.name()
-                                     )
-
-        # description = config_params['general'][0]['description']
-        # simstart = datetime.datetime.strptime(config_params['general'][0]['simulation_start'], '%m/%d/%Y %H:%M:%S' )
-        # simend = datetime.datetime.strptime(config_params['general'][0]['simulation_end'], '%m/%d/%Y %H:%M:%S' )
-        # modelcode = config_params['model'][0]['code']
-        # modelname = config_params['model'][0]['name']
-        # modeldesc = config_params['model'][0]['description']
-        # timestepvalue = config_params['time_step'][0]['value']
-        #
-        # # default to a timestep of seconds
-        # timestepname = config_params['time_step'][0].get('name') or 'seconds'
-        # timestepabbv = config_params['time_step'][0].get('abbreviation') or ' '
-        #
-        elog.info('Saving Complete, elapsed time = %3.5f' % (time.time() - st))
+    # save simulation results
+    model_ids = exec_order
+    if ds is None:
+        msg = 'Simulation results will not be stored in database because database connection was not provided prior to simulation.'
+        elog.info(msg)
+        sPrint(msg, messageType=MessageType.INFO)
+    else:
+        database.save(obj, ds, model_ids)
 
 def run_time_step(obj, ds=None):
     # store db sessions
@@ -266,11 +200,6 @@ def run_time_step(obj, ds=None):
             # build spatial maps
             source = link.source_exchange_item()
             target = link.target_exchange_item()
-
-            # source = link[0][1]
-            #target = link[1][1]
-            #spatial = spatial_closest_object()
-
 
             key = generate_link_key(link)
             #spatial_maps[key] = spatial.transform(source.get_all_datasets().keys(), target.get_all_datasets().keys())
@@ -408,55 +337,6 @@ def run_time_step(obj, ds=None):
             # update the outgoing links for this component
             update.update_links(obj, links[modelid], output_exchange_items, spatial_maps)
 
-
-            # ### TODO: Currently moving the update functionality into update.py
-            #
-            # #for source, target, linkid in links[modelid]:
-            # for linkid, link in links[modelid].iteritems():
-            #
-            #
-            #
-            #     #target_model  = target[0]
-            #     target_model = link.target_component()
-            #
-            #     source_item_name = link.source_exchange_item().name()
-            #
-            #     # get the auto generated key for this link
-            #     #link_key = generate_link_key(obj.get_link_by_id(linkid).get_link())
-            #     link_key = generate_link_key(link)
-            #
-            #     # get the target interpolation time based on the current time of the target model
-            #     target_time = target_model.get_instance().current_time()
-            #
-            #     # get all the datasets of the output exchange item.  These will be used to temporally map the data
-            #     #datasets = output_exchange_items[model_inst.name()].get_all_datasets()
-            #     datasets = output_exchange_items[source_item_name].get_all_datasets()
-            #
-            #     # Temporal data mapping
-            #     mapped = {}
-            #     for geom, datavalues in datasets.iteritems():
-            #
-            #         # get the dates and values from the geometry
-            #         dates,values = datavalues.get_dates_values()
-            #
-            #         # temporal mapping
-            #         temporal = temporal_nearest_neighbor()
-            #         if temporal and values:
-            #             mapped_dates,mapped_values = temporal.transform(dates,values,target_time)
-            #
-            #             if mapped_dates is not None:
-            #                 # save the temporally mapped data by output geometry
-            #                 mapped[geom] = (zip(mapped_dates,mapped_values))
-            #
-            #
-            #     # update links
-            #     #if len(mapped.values()) > 0:
-            #     if len(mapped.keys()) > 0:
-            #         obj.update_link(linkid, mapped, spatial_maps[link_key])
-            #     #else:
-            #     #    obj.update_link(linkid, None, None)
-            #             # reset geometry values to None
-
         iter_count += 1
 
     for modelid in exec_order:
@@ -476,16 +356,6 @@ def run_time_step(obj, ds=None):
                                                             config_params=model_obj.get_config_params(),
                                                             output_exchange_items=items,
             )
-
-            # store the database action associated with this simulation
-            #obj.DbResults(key=model_inst.name(), value = (simulation.ActionID,model_inst.session(),'action'))
-
-
-
-
-
-            # if db_sessions[modelid] is not None:
-            #       # save results
 
     msg = '> \n' + \
         '> ------------------------------------------\n' + \

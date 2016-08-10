@@ -45,8 +45,6 @@ class Wrapper(base.BaseWrapper):
         assert xdim in variables, 'x dimension variable name not specified.  Cannot continue'
         assert ydim in variables, 'y dimension variable name not specified.  Cannot continue'
 
-
-
         # get data for these variables
         timesteps = handle.variables[tdim][:]
         times = []
@@ -72,7 +70,6 @@ class Wrapper(base.BaseWrapper):
         xcoords = xcoords.flatten()
         ycoords = ycoords.flatten()
 
-
         # loop through the remaining variables and expose them as outputs
         # for var in variables:
         for v in range(len(variables)):
@@ -92,7 +89,7 @@ class Wrapper(base.BaseWrapper):
             variable.VariableDefinition("N/A")
 
             # create geometries
-            geoms = geometry.build_point_geometries(xcoords, ycoords)
+            geoms = geometry.build_point_geometries(xcoords, ycoords)  # This takes way to long
 
             # create exchange item
             oei = stdlib.ExchangeItem(name=variable.VariableNameCV(),
@@ -117,11 +114,10 @@ class Wrapper(base.BaseWrapper):
         # set metadata
         name = args['ncpath'].split('/')[-1]
         self.name(name)
-        self.description('NetCDF data component, '+name)
+        self.description('NetCDF data component, ' + name)
         self.simulation_start(times[0])
         self.simulation_end(times[-1])
         self.status(stdlib.Status.READY)
-
 
     def prepare(self):
         self.status(stdlib.Status.READY)

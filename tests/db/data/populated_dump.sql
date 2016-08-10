@@ -1,4 +1,3 @@
-BEGIN TRANSACTION;
 CREATE TABLE ActionAnnotations (
 	BridgeID INTEGER   NOT NULL PRIMARY KEY,
 	ActionID INTEGER   NOT NULL,
@@ -15974,4 +15973,3 @@ CREATE TABLE Simulations (
 	ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 INSERT INTO "Simulations" VALUES(1,2,'swat Simulation','swat Simulation for the city of logan, ut','2012-05-16 00:00:00',-6,'2012-06-20 00:00:00',-6,1.0,204,NULL,1);
-COMMIT;

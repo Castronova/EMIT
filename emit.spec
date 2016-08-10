@@ -34,11 +34,9 @@ a = Analysis(['./EMIT.py'],
             cipher=block_cipher)
 
 
-#a.datas += [('./app_data/config/.settings.ini', './app_data/config/.settings.ini', 'DATA')]
-#a.datas += [('./log/.emptyfile', './log/.emptyfile', 'DATA')]
-a.datas += [('./data/connections', './data/connections', 'DATA')]
 a.datas += [('./data/preferences', './data/preferences', 'DATA')]
 a.datas += [('./app_data/db/.dbload', './app_data/db/.dbload', 'DATA')]
+a.datas += [("./app_data/dat/wofsites.json", "./app_data/dat/wofsites.json", "DATA")]
 dict_tree = Tree(get_pandas_path(), prefix='pandas', excludes=["*.pyc"])
 a.datas += dict_tree
 a.binaries = filter(lambda x: 'pandas' not in x[0], a.binaries)
@@ -56,7 +54,7 @@ exe = EXE(pyz,
          debug=False,
          strip=None,
          upx=True,
-         console=False , version="0.1.5")
+         console=False , version="0.1.8")
 
 coll = COLLECT(exe,
               a.binaries,

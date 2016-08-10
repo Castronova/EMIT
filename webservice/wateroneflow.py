@@ -1,9 +1,8 @@
-__author__ = 'tonycastronova'
-
 import collections
+from xml.etree import ElementTree
+from io import StringIO
 from suds.client import Client
-from coordinator.emitLogging import elog
-from utilities.timeout import timeout
+from emitLogging import elog
 
 
 def parseXML2Dict(site, start=None, end=None):
@@ -28,19 +27,30 @@ def parseXML2Dict(site, start=None, end=None):
 
 def createXMLFileForReading(xml_string):
     # Open this file in a browser to view it parsed
-    file = open("test.xml", "w")
+    file = open("wof.xml", "w")
     file.write(xml_string)
     file.close()
 
 
 class WaterOneFlow(object):
 
-    @timeout(10)
-    def __init__(self, wsdl):
+    def __init__(self, wsdl, network):
         self.wsdl = wsdl
-        # sleep(3)
-        self.conn = Client(wsdl)
-        self.network_code = ""
+        self.conn = self.test_connection(wsdl)
+        self.network_code = network
+
+    def test_connection(self, wsdl):
+        """
+        If there is not internet then Client(wsdl) will return error
+        :param wsdl:
+        :return:
+        """
+        connection = None
+        try:
+            connection = Client(wsdl)
+        except:
+            pass
+        return connection
 
     def _getSiteType(self, site):
         try:
@@ -89,7 +99,7 @@ class WaterOneFlow(object):
         return variableDict
 
     def parseValues(self, sitecode, variable, start=None, end=None):
-        data = self.getValues(sitecode, variable, start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d"))
+        data = self.getValuesObject(sitecode, variable, start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d"))
         valuesList = []
         if data is not None:
             for values in data[0].values[0].value:
@@ -100,10 +110,6 @@ class WaterOneFlow(object):
             elog.error("Failed to retrieve data")
 
         return valuesList
-
-    def connectToNetwork(self, link):
-        connection = Client(link)
-        return connection
 
     def createJSONFileForReading(self, json):
         # Open this file in a browser to view in parsed
@@ -121,7 +127,7 @@ class WaterOneFlow(object):
         #  Returns a JSON
         #  Returns all the information for a given site.
         #  This includes all the variables associated with that location  description.
-        data = self.conn.service.GetSiteInfoObject("iutah:" + str(sitecode))
+        data = self.conn.service.GetSiteInfoObject(self.network_code + ":"+ str(sitecode))
         return data
 
     def getSitesByBoxObject(self, sitecode):
@@ -130,6 +136,58 @@ class WaterOneFlow(object):
         return data
 
     def getSites(self, value=None):
+        if value is None:
+            site_objects = self.conn.service.GetSites("")
+        else:
+            site_objects = self.conn.service.GetSites(value)
+        createXMLFileForReading(site_objects)
+        # return site_objects
+
+    def get_sites_in_xml(self, value=None):
+        """
+        Returns a list of the sites and information about them in xml
+        :param value:
+        :return:
+        """
+        if value:
+            site_objects = self.conn.service.GetSites(value)
+        else:
+            site_objects = self.conn.service.GetSites("")
+        return site_objects
+
+    def parse_sites_waterml(self):
+        """
+        Uses XPATH to efficiently parse site information from the waterml getSites response.
+
+        returns: A list of metadata for each site: [[name, network, code, county, state, type, lat, lon], [...]]
+        """
+        xml_sites = self.get_sites_in_xml()
+        root = ElementTree.fromstring(xml_sites)
+
+        # define namespaces
+        my_namespaces = dict([node for _, node in ElementTree.iterparse(StringIO(xml_sites), events=['start-ns'])])
+        my_namespaces['wml'] = 'http://www.cuahsi.org/waterML/1.1/'
+
+        # get all site elements
+        sites = root.findall("./wml:site", my_namespaces)
+        output = []
+        for site in sites:
+            d = []
+            d.append(site.find('./wml:siteInfo/wml:siteName', my_namespaces).text)
+            d.append(site.find('./wml:siteInfo/wml:siteCode', my_namespaces).attrib['network'])
+            d.append(site.find('./wml:siteInfo/wml:siteCode', my_namespaces).text)
+
+            d.append(site.find('./wml:siteInfo/wml:siteProperty[@name="County"]', my_namespaces).text)
+            d.append(site.find('./wml:siteInfo/wml:siteProperty[@name="State"]', my_namespaces).text)
+            d.append(site.find('./wml:siteInfo/wml:siteProperty[@name="Site Type"]', my_namespaces).text)
+
+            d.append(site.find('./wml:siteInfo/wml:geoLocation/wml:geogLocation/wml:latitude', my_namespaces).text)
+            d.append(site.find('./wml:siteInfo/wml:geoLocation/wml:geogLocation/wml:longitude', my_namespaces).text)
+            output.append(d)
+
+        return output
+
+    def getSitesObject(self, value=None):
         #  Returns JSON
         if value is None:
             site_objects = self.conn.service.GetSitesObject("")
@@ -137,11 +195,36 @@ class WaterOneFlow(object):
             site_objects = self.conn.service.GetSitesObject(value)
         return site_objects[1]
 
-
     def getValues(self, site_code, variable_code, beginDate=None, endDate=None):
-        #  Passing only the sitecode returns the data values.
-        #  Passing both variables returns that specified object.
-        # Returns an XML
+        """
+        Leaving the dates to None will return all the timeseries for that variable.
+        :param site_code: type(str)
+        :param variable_code: type(str)
+        :param beginDate: type(str) Y-m-d
+        :param endDate: type(str) Y-m-d
+        :return: XML or None
+        """
+        network_code = self.network_code
+
+        try:
+            site = ':'.join([network_code, site_code])
+            var = ':'.join([network_code, variable_code])
+            if beginDate is None or endDate is None:
+                data = self.conn.service.GetValues(site, var)
+            else:
+                data = self.conn.service.GetValues(site, var, beginDate, endDate)
+
+            return data
+        except:
+            # error getting data
+            print 'There was an error getting data for %s:%s, %s:%s, %s %s' % (
+            network_code, site_code, network_code, variable_code, str(beginDate), str(endDate))
+            return None
+
+    def getValuesObject(self, site_code, variable_code, beginDate=None, endDate=None):
+        # Passing only the sitecode returns the data values.
+        # Passing both variables returns that specified object.
+        # Returns an JSON
         network_code = self.network_code
 
         try:
@@ -155,7 +238,7 @@ class WaterOneFlow(object):
             return data.timeSeries
         except:
             # error getting data
-            print 'There was an getting data for %s:%s, %s:%s, %s %s' % (network_code, site_code, network_code, variable_code, str(beginDate), str(endDate))
+            print 'There was an error getting data for %s:%s, %s:%s, %s %s' % (network_code, site_code, network_code, variable_code, str(beginDate), str(endDate))
             return None
 
     def getVariables(self, network_code=None, variable_code=None):
@@ -168,6 +251,5 @@ class WaterOneFlow(object):
         return data.variables
 
     def getValuesForASiteObject(self, siteid=None):
-        network = "iutah:"
-        x = self.conn.service.GetValuesForASiteObject(network + str(siteid))
+        x = self.conn.service.GetValuesForASiteObject(self.network_code + ":" + str(siteid))
         return x

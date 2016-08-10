@@ -1,94 +1,87 @@
-__author__ = 'Francisco'
-
 import wx
-import sys
-from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin, CheckListCtrlMixin
 
-
-class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin, CheckListCtrlMixin):
-    def __init__(self, parent):
-        wx.ListCtrl.__init__(self, parent, -1, size=(-1, -1), style=wx.LC_REPORT)
-        ListCtrlAutoWidthMixin.__init__(self)
-        CheckListCtrlMixin.__init__(self)
+from gui.controller.CustomListCtrl import CustomListCtrl
 
 
 class PreRunView(wx.Frame):
-    def __init__(self, parent=None):                             # this style makes the window non-resizable
-        wx.Frame.__init__(self, parent=parent, title="Pre Run", size=(405, 450),
-                          style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
-        if sys.platform == 'darwin': # Darwin is Mac
-            self.SetSize((405, 350))
+    def __init__(self, parent=None):
+        wx.Frame.__init__(self, parent=parent, title="Pre Run",
+                          style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE ^ wx.MAXIMIZE_BOX)
 
-        # define top and bottom panels
+        # Create panels
         panel = wx.Panel(self)
-        top_panel = wx.Panel(panel)
-        lower_panel = wx.Panel(panel)
+        top_panel = wx.Panel(panel)  # Holds text fields for input
+        middle_panel = wx.Panel(panel)  # Holds the table
+        lower_panel = wx.Panel(panel)  # Holds the buttons
 
-        grid_bag_sizer = wx.GridBagSizer(vgap=5, hgap=5)
+        ###############################
+        # TOP PANEL
+        ###############################
 
-        # build top panel
-        #  Creating components for the top panel
+        #  Create components
         self.simulation_name_static_text = wx.StaticText(top_panel, label="Simulation Name:")
         self.simulation_name_textbox = wx.TextCtrl(top_panel)
         self.database_name = wx.StaticText(top_panel, label="Database:")
-        self.account_name = wx.StaticText(top_panel, label="User Account:")
         self.database_combo = wx.ComboBox(top_panel, choices=[], style=wx.CB_READONLY)
+        self.account_name = wx.StaticText(top_panel, label="User Account:")
         self.account_combo = wx.ComboBox(top_panel, choices=[], style=wx.CB_READONLY)
         self.add_account_button = wx.Button(top_panel, label="Add New")
 
+        account_button_sizer = wx.BoxSizer(wx.HORIZONTAL)  # rename to account button sizer
+        account_button_sizer.Add(self.account_combo, 1, wx.EXPAND | wx.ALL, 0)
+        account_button_sizer.Add(self.add_account_button, 0, wx.EXPAND | wx.ALL, 0)
+
         #  Adding components to grid bag sizer
-        grid_bag_sizer.Add(self.simulation_name_static_text, pos=(1, 0), flag=wx.LEFT, border=10)
-        grid_bag_sizer.Add(self.simulation_name_textbox, pos=(1, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND)
-        grid_bag_sizer.Add(self.database_name, pos=(2, 0), flag=wx.LEFT | wx.TOP, border=10)
-        grid_bag_sizer.Add(self.database_combo, pos=(2, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND, border=5)
-        grid_bag_sizer.Add(self.account_name, pos=(3, 0), flag=wx.TOP | wx.LEFT, border=10)
-        grid_bag_sizer.Add(self.account_combo, pos=(3, 1), span=(1, 2), flag=wx.TOP | wx.EXPAND, border=5)
-        grid_bag_sizer.Add(self.add_account_button, pos=(3, 3), flag=wx.TOP|wx.RIGHT, border=5)
+        fgs = wx.FlexGridSizer(rows=3, cols=2, vgap=9, hgap=5)
+        fgs.AddMany([self.simulation_name_static_text, (self.simulation_name_textbox, 1, wx.EXPAND),
+                     self.database_name, (self.database_combo, 1, wx.EXPAND),
+                     self.account_name, (account_button_sizer, 1, wx.EXPAND)])
 
-        top_panel.SetSizer(grid_bag_sizer)
+        fgs.AddGrowableCol(1, 1)  # Allows the text fields to stretch and expand
 
-        # build lower panel
-        self.variableList = CheckListCtrl(lower_panel)
-        lower_panel_title = wx.StaticText(lower_panel, label="Select Outputs to Save:")
+        top_panel_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        top_panel_sizer.Add(fgs, proportion=1, flag=wx.ALL | wx.EXPAND, border=10)
 
-        # Adding buttons to the lower panel
+        top_panel.SetSizer(top_panel_sizer)
+
+        ###############################
+        # MIDDLE PANEL
+        ###############################
+
+        #  Create components
+        lower_panel_title = wx.StaticText(middle_panel, label="Select Outputs to Save:")
+        self.table = CustomListCtrl(middle_panel)
+
+        # Creat sizer and add components
+        middle_panel_sizer = wx.BoxSizer(wx.VERTICAL)
+        middle_panel_sizer.Add(lower_panel_title, 0, wx.EXPAND | wx.ALL, 2)
+        middle_panel_sizer.Add(self.table, 1, wx.EXPAND | wx.ALL, 2)
+
+        middle_panel.SetSizer(middle_panel_sizer)
+
+        ###############################
+        # BOTTOM PANEL
+        ###############################
+
+        # Create components
         self.run_button = wx.Button(lower_panel, id=wx.ID_OK, label="Run")
         self.cancel_button = wx.Button(lower_panel, id=wx.ID_CANCEL, label="Cancel")
 
-        hbox_lower_panel = wx.BoxSizer(wx.VERTICAL)
+        # Create sizers and add components
+        bottom_panel_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        bottom_panel_sizer.AddSpacer((0, 0), 1, wx.EXPAND, 5)  # Align the cancel and run button to the right
+        bottom_panel_sizer.Add(self.cancel_button, 0, wx.ALL, 5)
+        bottom_panel_sizer.Add(self.run_button, 0, wx.ALL, 5)
 
-        # Using a box sizer to position buttons
-        button_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        lower_panel.SetSizer(bottom_panel_sizer)
 
-        hbox_lower_panel.Add(lower_panel_title, 0, wx.EXPAND | wx.LEFT, 5)
-        hbox_lower_panel.Add(self.variableList, 1, wx.EXPAND | wx.ALL, 2)
+        # Organize the panels into the frame
+        frame_sizer = wx.BoxSizer(wx.VERTICAL)
+        frame_sizer.Add(top_panel, 0, wx.EXPAND | wx.ALL, 2)
+        frame_sizer.Add(middle_panel, 1, wx.EXPAND | wx.ALL, 2)
+        frame_sizer.Add(lower_panel, 0, wx.EXPAND | wx.ALL, 2)
 
-        # Add sizer of buttons to lower_panel sizer
-        hbox_lower_panel.Add(button_sizer, 1, flag=wx.ALIGN_RIGHT | wx.RIGHT, border=5)
-
-        #  Add buttons to the sizer
-        button_sizer.Add(self.cancel_button, 1, flag=wx.ALL, border=5)  # The flags centers the buttons
-        button_sizer.Add(self.run_button, 1, flag=wx.ALL, border=5)
-
-        self.run_button.SetDefault()
-
-        # The flag shifts the buttons to the right
-        lower_panel.SetSizer(hbox_lower_panel)
-
-        #  Add top and lower panel to the sizer
-        vbox = wx.BoxSizer(wx.VERTICAL)
-        vbox.Add(top_panel, 1, wx.EXPAND | wx.ALL, 2)
-        vbox.Add(lower_panel, 1, wx.EXPAND | wx.ALL, 2)
-
-        panel.SetSizer(vbox)
+        panel.SetSizer(frame_sizer)
+        frame_sizer.Fit(self)
         self.Show()
-
-    def autoSizeColumns(self):
-        for i in range(self.variableList.GetColumnCount()):
-            self.variableList.SetColumnWidth(i, wx.LIST_AUTOSIZE)
-
-    def alternateRowColor(self, color="#DCEBEE"):
-        for i in range(self.variableList.GetItemCount()):
-            if i % 2 == 0:
-                self.variableList.SetItemBackgroundColour(i, color)

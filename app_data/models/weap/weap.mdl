@@ -1,6 +1,6 @@
 {
 	"software": [{
-		"filepath ": "./weap.py",
+		"filepath": "./weap.py",
 		"classname": "weap"
 	}],
 

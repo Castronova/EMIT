@@ -315,7 +315,7 @@ def load_model(config_params):
         sPrint('Model Initialization Successful', MessageType.DEBUG)
 
     except Exception as e:
-        sPrint('An error has occurred while loading model: %s'% e, MessageType.CRITICAL)
+        sPrint('An error has occurred while loading model: %s' % e, MessageType.CRITICAL)
         raise Exception(e)
 
     return (instance.name(), instance)

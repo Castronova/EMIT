@@ -5,6 +5,7 @@ from webservice import wateroneflow
 import json
 from sprint import *
 import time
+import sys
 
 
 class AddConnectionCtrl(AddConnectionView):
@@ -91,13 +92,17 @@ class AddConnectionCtrl(AddConnectionView):
             self.shake_frame()
 
     def shake_frame(self):
+        shakes = 5
+        if sys.platform == "darwin":
+            shakes = 14
+
         position = self.GetPosition()
-        for i in range(0, 5):
-            time.sleep(0.1)
+        for i in range(0, shakes):
             if i % 2 == 0:
                 self.SetPosition((position[0] + 8, position[1]))
             else:
                 self.SetPosition((position[0] - 8, position[1]))
+            time.sleep(0.1)
 
     def _handle_adding_odm2_connection(self):
         """

@@ -1,12 +1,11 @@
 import wx
 from wx.lib.pubsub import pub as Publisher
-import environment
-from emitLogging import elog
 from gui.views.AddConnectionView import AddConnectionView
-import os
 from webservice import wateroneflow
 import json
 from sprint import *
+import time
+
 
 class AddConnectionCtrl(AddConnectionView):
     def __init__(self, parent):
@@ -82,12 +81,29 @@ class AddConnectionCtrl(AddConnectionView):
 
     def on_ok_btn(self, event):
         if self.odm_radio.GetValue():
-            self._handle_adding_odm2_connection()
+            completed = self._handle_adding_odm2_connection()
         else:
-            self._handle_adding_wof_connection()
-        self.Close()
+            completed = self._handle_adding_wof_connection()
+
+        if completed:
+            self.Close()
+        else:
+            self.shake_frame()
+
+    def shake_frame(self):
+        position = self.GetPosition()
+        for i in range(0, 5):
+            time.sleep(0.1)
+            if i % 2 == 0:
+                self.SetPosition((position[0] + 8, position[1]))
+            else:
+                self.SetPosition((position[0] - 8, position[1]))
 
     def _handle_adding_odm2_connection(self):
+        """
+        Return True if the connection was successful, false otherwise
+        :return:
+        """
         params = self.get_connection_params()
         if environment.saveConnection(params):
             Publisher.sendMessage('DatabaseConnection',
@@ -100,13 +116,18 @@ class AddConnectionCtrl(AddConnectionView):
                                   pwd=params['password'])
 
             Publisher.sendMessage('getDatabases')
-            self.Close()
+            return True
         else:
             wx.MessageBox(
                 '\aUnable to connect to the database. \nPlease review the information that was provided and try again.',
                 'Failed to Establish Connection', wx.OK | wx.ICON_ERROR)
+            return False
 
     def _handle_adding_wof_connection(self):
+        """
+        Return True if the connection was successful, false otherwise
+        :return:
+        """
         params = self.get_connection_params()
         current_directory = os.path.dirname(os.path.abspath(__file__))  # rename to current_directory
         wof_path = os.path.abspath(os.path.join(current_directory, '../../app_data/dat/wofsites.json'))
@@ -115,14 +136,14 @@ class AddConnectionCtrl(AddConnectionView):
         api = wateroneflow.WaterOneFlow(params["address"], params["database"])
         if not api.conn:
             sPrint("Failed to establish connection. Review provided information")
-            return
+            return False
 
         with open(wof_path, "r") as f:
             try:
                 data = json.load(f)
             except ValueError:
                 sPrint("_handle_adding_wof_connection() failed to parse wof_path")
-                return
+                return False
 
         wof_site = {
             params["name"]: {
@@ -138,7 +159,9 @@ class AddConnectionCtrl(AddConnectionView):
                 f.write(wof_json)
             except ValueError:
                 sPrint("Failed to write to file")
-                return
+                return False
+
+        return True
 
     def on_text_entered(self, event):
         if self.odm_radio.GetValue():

@@ -20,6 +20,8 @@ class AddConnectionCtrl(AddConnectionView):
         self.engine_combo.Bind(wx.EVT_COMBOBOX, self.on_drop_box_change)
         self.wof_radio.Bind(wx.EVT_RADIOBUTTON, self.on_combo_box_change)
         self.odm_radio.Bind(wx.EVT_RADIOBUTTON, self.on_combo_box_change)
+        self.Bind(wx.EVT_CLOSE, self.on_close)
+        self.MakeModal(True)
 
     def get_connection_params(self):
         title = self.connection_name_txt_ctrl.GetValue()
@@ -41,6 +43,10 @@ class AddConnectionCtrl(AddConnectionView):
     ####################################
     # EVENTS
     ####################################
+
+    def on_close(self, event):
+        self.MakeModal(False)
+        self.Destroy()
 
     def on_combo_box_change(self, event):
         if self.odm_radio.GetValue():

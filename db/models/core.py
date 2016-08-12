@@ -5,7 +5,6 @@ __author__ = "sqlacodegen"
 from sqlalchemy import BigInteger, Boolean, Column, Date, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.sqltypes import NullType
-from geoalchemy2.types import Geometry
 from sqlalchemy.ext.declarative import declarative_base
 
 
@@ -200,7 +199,7 @@ class Samplingfeature(Base):
     samplingfeaturename = Column(String(255))
     samplingfeaturedescription = Column(String(500))
     samplingfeaturegeotypecv = Column(String(255))
-    featuregeometry = Column(Geometry)
+    # featuregeometry = Column(Geometry)
     elevation_m = Column(Float(53))
     elevationdatumcv = Column(String(255))
 

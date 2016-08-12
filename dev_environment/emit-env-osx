@@ -46,7 +46,6 @@ dependencies:
 - wxpython=3.0=py27_0
 - zlib=1.2.8=0
 - pip:
-  - geoalchemy2==0.2.6
   - pyinstaller==3.0
   - pyshp==1.2.3
   - suds==0.4

@@ -42,7 +42,6 @@ dependencies:
 - xerces-c=3.1.2=vc9_0
 - zlib=1.2.8=vc9_2
 - pip:
-  - geoalchemy2==0.3.0
   - netcdf4==1.2.4
   - psycopg2==2.6.1
   - pyandoc==0.0.1

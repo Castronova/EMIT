@@ -1,8 +1,6 @@
 # coding: utf-8
 from sqlalchemy import BigInteger, Column, Date, DateTime, Float, ForeignKey, Integer, String, Boolean
 from sqlalchemy.types import NullType as Geometry
-from geoalchemy2 import Geometry
-#from geoalchemy.geometry import Geometry
 
 from sqlalchemy.orm import relationship, aliased
 

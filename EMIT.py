@@ -6,6 +6,7 @@ import environment
 from coordinator import engineManager
 from gui.controller.EMITCtrl import EMITCtrl
 import os
+import multiprocessing
 
 class EMITApp(wx.App):
     def OnInit(self):
@@ -24,7 +25,8 @@ class EMITApp(wx.App):
         return True
 
 if __name__ == '__main__':
-
+    # Required for windows installer. See -> https://github.com/pyinstaller/pyinstaller/wiki/Recipe-Multiprocessing
+    multiprocessing.freeze_support()
     userPath = os.getcwd() + '/app_data/config/user.json'
     if os.environ.has_key('APP_USER_PATH') == False:
         os.environ['APP_USER_PATH'] = userPath

@@ -4,7 +4,11 @@ import ConfigParser
 import encrypt
 import sqlite3 as sqlite
 from odm2api import dbconnection
-from app_data import secret
+
+try:
+    from app_data import secret
+except:
+    pass
 
 # DO NOT import sprint in this file!
 # The sprint library uses environment variables so it will cause a circular import.

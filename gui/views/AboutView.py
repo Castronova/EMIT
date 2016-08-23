@@ -1,5 +1,5 @@
 import wx
-import os
+import wx.lib.agw.hyperlink as hyperlink
 
 
 class AboutView(wx.Frame):
@@ -18,7 +18,7 @@ class AboutView(wx.Frame):
         self.name_static_text = wx.StaticText(content_panel)
         self.description_text = wx.StaticText(content_panel)
         self.contributors_static_text = wx.StaticText(content_panel)
-        self.website_hyperlink = wx.HyperlinkCtrl(content_panel)
+        self.website_hyperlink = hyperlink.HyperLinkCtrl(content_panel)
 
         content_sizer = wx.BoxSizer(wx.VERTICAL)
         content_sizer.Add(self.png, 0, wx.ALL | wx.ALIGN_CENTER, border=10)

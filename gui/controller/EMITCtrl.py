@@ -1,3 +1,4 @@
+from __future__ import print_function
 from gui.views.EMITView import EMITView
 from sprint import *
 from utilities import gui
@@ -5,13 +6,13 @@ import wx
 from gui import events
 from coordinator.engineManager import Engine
 import coordinator.engineAccessors as engine
-from emitLogging import elog
 import threading
 from gui.controller.NetcdfCtrl import NetcdfCtrl
 from gui.controller.UserCtrl import UserCtrl
 from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
 from gui.controller.ModelInputPromptCtrl import ModelInputPromptCtrl
 from gui.controller.SettingsCtrl import SettingsCtrl
+from gui.controller.AboutCtrl import AboutCtrl
 
 
 class EMITCtrl(EMITView):
@@ -36,7 +37,7 @@ class EMITCtrl(EMITView):
 
         self.check_users_json()
 
-        # File Option Bindings
+        # File Menu Option Bindings
         self.Bind(wx.EVT_MENU, self.on_load_configuration, self._load)
         self.Bind(wx.EVT_MENU, self.on_add_user, self._add_user_menu)
         self.Bind(wx.EVT_MENU, self.on_save_configuration, self._save_menu)
@@ -44,19 +45,55 @@ class EMITCtrl(EMITView):
         self.Bind(wx.EVT_MENU, self.on_settings, self._settings_menu)
         self.Bind(wx.EVT_MENU, self.on_close, self._exit)
 
-        # View Option Bindings
+        # View Menu Option Bindings
         self.Bind(wx.EVT_MENU, self.on_toggle_console, self._toggle_console_menu)
         self.Bind(wx.EVT_MENU, self.on_toggle_toolbar, self._toggle_toolbar_menu)
         self.Bind(wx.EVT_MENU, self.on_default_view, self._default_view_menu)
 
-        # Data Menu Bindings
+        # Data Menu Option Bindings
         self.Bind(wx.EVT_MENU, self.on_add_csv_file, self._add_csv_file_menu)
         self.Bind(wx.EVT_MENU, self.on_add_net_cdf_file, self._add_netcdf)
         self.Bind(wx.EVT_MENU, self.on_open_dap_viewer, self._open_dap_viewer_menu)
+
+        # Help Menu Option Bindings
+        self.Bind(wx.EVT_MENU, self.on_about_menu, self.about_menu)
         # All other bindings
         self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.on_switch_lower_panel_tab)
         self.Bind(wx.EVT_CLOSE, self.on_close)
         events.onSaveFromCanvas += self.on_save_configuration_as
+
+    def on_about_menu(self, event):
+        icon_path = os.getcwd() + "/app_data/img/Water-96.png"
+
+        if not os.path.exists(icon_path):
+            return
+
+        description = """
+                    Technology for building coupled models within the water resource
+                    domain has been advancing at a rapid pace.
+                    Many modeling framworks have been developed (e.g. OpenMI, CSDMS, OMS, etc)
+                    that control the flow of data between model components during a simulation.
+                    These efforts have largely focused on establishing software interfaces
+                    for componentizing scientific calculations such that they can receive
+                    input data and supply output data during a simulation.
+                    However, there has been a lack of emphasis on closing the gap between
+                    observed and simulated data, and component simulations.
+                    One objective of this project is to investigate how observed
+                    and simulation data can be integrated seamlessly into component-based model simulations.
+                """
+
+        developers = ["Tony Castronova", "Steve Jobs", "Mahatma Gandhi", "Bill Gates", "Green Lantern"]
+
+        info = wx.AboutDialogInfo()
+        info.SetIcon(wx.Icon(icon_path, wx.BITMAP_TYPE_PNG))
+        info.SetName("EMIT")
+        info.SetVersion("1.0")
+        info.SetWebSite("https://github.com/Castronova/EMIT")
+        info.SetLicence("Licence to Drive")
+        info.SetDescription(description)
+        info.SetDevelopers(developers)
+
+        wx.AboutBox(info)
 
     def on_toggle_toolbar(self, event):
         pane = self.m_mgr.GetPane(self.Toolbox)
@@ -124,7 +161,6 @@ class EMITCtrl(EMITView):
 
         if file_dialog.ShowModal() == wx.ID_OK:
             path = file_dialog.GetPath()
-
             # Do something with the CSV file ???
 
     def on_add_net_cdf_file(self, event):
@@ -154,29 +190,23 @@ class EMITCtrl(EMITView):
 
             # kill multiprocessing
             e = Engine()
-            msg = e.close()
-            elog.debug('Closing Engine Processes: %s' % msg)
-
+            e.close()
 
             # kill all threads
 
             threads = {t.name:t for t in threading.enumerate()}
-            mainthread = threads.pop('MainThread')
-
-            elog.debug('Closing EMIT Threads: %s' % msg)
+            threads.pop('MainThread')
 
             non_daemon = []
             for t in threads.itervalues():
 
                 # check if the thread is a daemon, if so, it should not cause any problems
-                if t.isDaemon():
-                    elog.debug('%s daemon=%s' %(t.name, t.isDaemon()))
-                else:
+                if not t.isDaemon():
                     # add this thread to the non-daemon list
                     non_daemon.append(t)
 
             for t in non_daemon:
-                elog.warning('%s is not a daemon thread and may cause problems while shutting down' % t.name)
+                sPrint('%s is not a daemon thread and may cause problems while shutting down' % t.name, MessageType.CRITICAL)
                 t.join(1)
 
             # determine if there are any non-daemon threads that are still alive
@@ -189,8 +219,8 @@ class EMITCtrl(EMITView):
             try:
                 for t in non_daemon_and_alive:
                     t._Thread__stop()
-            except Exception, e:
-                elog.error('Error encountered closing thread %s: %s' % (t.name, e))
+            except Exception as e:
+                sPrint('Error encountered closing thread %s: %s' % (t.name, e), MessageType.CRITICAL)
 
             # close the main thread
             self.Destroy()
@@ -245,7 +275,6 @@ class EMITCtrl(EMITView):
 
     def on_save_configuration_as(self, event):
 
-        print os.environ.get("APP_DEFAULT_SAVE_PATH")
         # Executes from File ->Save As
         save = wx.FileDialog(self.Canvas.GetTopLevelParent(), message="Save Configuration",
                              defaultDir=self.defaultLoadDirectory, defaultFile="",

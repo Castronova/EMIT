@@ -1,12 +1,12 @@
 import wx
 import wx.aui
 import wx.xrc
-
 import environment
 from coordinator import engineManager
 from gui.controller.EMITCtrl import EMITCtrl
 import os
 import multiprocessing
+
 
 class EMITApp(wx.App):
     def OnInit(self):

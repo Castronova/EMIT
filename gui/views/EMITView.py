@@ -29,6 +29,7 @@ class EMITView(wx.Frame):
         self._menu_bar = wx.MenuBar()
         self.view_menu = wx.Menu()
         self.data_menu = wx.Menu()
+        self.help_menu = wx.Menu()
 
         # File Menu Option
         self._file_menu = wx.Menu()
@@ -51,10 +52,14 @@ class EMITView(wx.Frame):
         self._add_netcdf = self.data_menu.Append(wx.NewId(), '&Add NetCDF')
         self._open_dap_viewer_menu = self.data_menu.Append(wx.NewId(), "&OpenDap Explorer")
 
+        # Help Menu Option
+        self.about_menu = self.help_menu.Append(wx.NewId(), "&About EMIT")
+
         # Add menu items
         self._menu_bar.Append(self._file_menu, "&File")
         self._menu_bar.Append(self.view_menu, "&View")
         self._menu_bar.Append(self.data_menu, "Data")
+        self._menu_bar.Append(self.help_menu, "&Help")
 
         self.SetMenuBar(self._menu_bar)
 

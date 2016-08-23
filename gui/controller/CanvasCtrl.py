@@ -2,8 +2,6 @@ import random
 import threading
 import time
 import uuid
-import xml.etree.ElementTree as et
-from xml.dom import minidom
 import numpy as N
 import wx
 from wx.lib.floatcanvas import FloatCanvas as FC
@@ -13,7 +11,6 @@ import coordinator.events as engineEvent
 import datatypes
 import gui.controller.CanvasObjectsCtrl as LogicCanvasObjects
 import utilities.db as dbUtilities
-from emitLogging import elog
 from gui import events
 from gui.controller.CanvasObjectsCtrl import SmoothLineWithArrow, ModelBox
 from gui.controller.LinkCtrl import LinkCtrl
@@ -25,7 +22,6 @@ from transform.time import TemporalInterpolation
 from gui.controller.PreRunCtrl import PreRunCtrl
 from utilities import models as model_utils
 import wrappers
-
 from PIL import ImageDraw  # Do not remove this import
 
 
@@ -176,12 +172,10 @@ class CanvasCtrl(CanvasView):
             self.FloatCanvas.Draw()
 
             msg = 'model [%s] has been added to the canvas.' % name
-            elog.info(msg)
             sPrint(msg, MessageType.INFO)
 
     def createLine(self, R1, R2, image_name="questionMark.png"):
         if R1 == R2:
-            elog.error('Cannot link a model to itself')
             sPrint('Cannot link a model to itself', MessageType.ERROR)
             return
         else:
@@ -332,7 +326,6 @@ class CanvasCtrl(CanvasView):
             to_model = self.get_model_object_from_ID(to_model_id)
 
             if from_model is None or to_model is None:
-                elog.critical("Failed to create link between %s and %s." % (from_model_name, to_model_name))
                 sPrint("Failed to create link between %s and %s." % (from_model_name, to_model_name), MessageType.CRITICAL)
                 return
 
@@ -442,7 +435,6 @@ class CanvasCtrl(CanvasView):
             for link in links:
                 success = engine.removeLinkById(link['id'])
                 if not success:
-                    elog.error('ERROR|Could not remove link: %s' % link['id'])
                     sPrint('ERROR|Could not remove link: %s' % link['id'], MessageType.ERROR)
 
             links = engine.getLinksBtwnModels(to_id, from_id)
@@ -451,7 +443,6 @@ class CanvasCtrl(CanvasView):
             for link in links:
                 success = engine.removeLinkById(link['id'])
                 if not success:
-                    elog.error('ERROR|Could not remove link: %s' % link['id'])
                     sPrint('ERROR|Could not remove link: %s' % link['id'], MessageType.ERROR)
 
             self.remove_link_image(link_object=link_obj)
@@ -604,7 +595,6 @@ class CanvasCtrl(CanvasView):
                 R2 = R
 
         if R1 is None or R2 is None:
-            elog.warning("Could not find Model identifier in loaded models")
             sPrint("Could not find Model identifier in loaded models", MessageType.WARNING)
             raise Exception('Could not find Model identifier in loaded models')
 

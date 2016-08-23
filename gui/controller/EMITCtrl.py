@@ -12,6 +12,7 @@ from gui.controller.UserCtrl import UserCtrl
 from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
 from gui.controller.ModelInputPromptCtrl import ModelInputPromptCtrl
 from gui.controller.SettingsCtrl import SettingsCtrl
+from gui.controller.AboutCtrl import AboutCtrl
 
 
 class EMITCtrl(EMITView):
@@ -62,37 +63,8 @@ class EMITCtrl(EMITView):
         events.onSaveFromCanvas += self.on_save_configuration_as
 
     def on_about_menu(self, event):
-        icon_path = os.getcwd() + "/app_data/img/Water-96.png"
-
-        if not os.path.exists(icon_path):
-            return
-
-        description = """
-                    Technology for building coupled models within the water resource
-                    domain has been advancing at a rapid pace.
-                    Many modeling framworks have been developed (e.g. OpenMI, CSDMS, OMS, etc)
-                    that control the flow of data between model components during a simulation.
-                    These efforts have largely focused on establishing software interfaces
-                    for componentizing scientific calculations such that they can receive
-                    input data and supply output data during a simulation.
-                    However, there has been a lack of emphasis on closing the gap between
-                    observed and simulated data, and component simulations.
-                    One objective of this project is to investigate how observed
-                    and simulation data can be integrated seamlessly into component-based model simulations.
-                """
-
-        developers = ["Tony Castronova", "Steve Jobs", "Mahatma Gandhi", "Bill Gates", "Green Lantern"]
-
-        info = wx.AboutDialogInfo()
-        info.SetIcon(wx.Icon(icon_path, wx.BITMAP_TYPE_PNG))
-        info.SetName("EMIT")
-        info.SetVersion("1.0")
-        info.SetWebSite("https://github.com/Castronova/EMIT")
-        info.SetLicence("Licence to Drive")
-        info.SetDescription(description)
-        info.SetDevelopers(developers)
-
-        wx.AboutBox(info)
+        about = AboutCtrl()
+        about.Show()
 
     def on_toggle_toolbar(self, event):
         pane = self.m_mgr.GetPane(self.Toolbox)

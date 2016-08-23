@@ -12,7 +12,6 @@ from gui.controller.UserCtrl import UserCtrl
 from ..controller.NetcdfDetailsCtrl import NetcdfDetailsCtrl
 from gui.controller.ModelInputPromptCtrl import ModelInputPromptCtrl
 from gui.controller.SettingsCtrl import SettingsCtrl
-from gui.controller.AboutCtrl import AboutCtrl
 
 
 class EMITCtrl(EMITView):

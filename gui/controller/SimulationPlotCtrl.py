@@ -189,7 +189,7 @@ class SimulationsPlotCtrl(SimulationsPlotView):
                 d.append((date_object[i], value[i]))
 
             start_index, end_index = self.parse_data_to_range(d)
-            self.temporal_plot.plot_dates(d[start_index : end_index], name, None, units)
+            self.temporal_plot.plot_dates(d[start_index : end_index], name, units)
 
     def plot_spatial(self, ID, title):
         """

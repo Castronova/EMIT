@@ -310,7 +310,6 @@ class WofSitesCtrl(WofSitesView):
             data = self.wofSeries.getData(key)
 
             plotData = []
-            noData = None
 
             # make sure data is found
             if data is not None:
@@ -325,10 +324,9 @@ class WofSitesCtrl(WofSitesView):
                 for value in values:
                     plotData.append((value._dateTime, value.value))
 
-                noData = data[0].variable.noDataValue
 
             ylabel = data[0].variable.unit.unitName
-            self.plot.plot_dates(plotData, series_info.var_name, noData, ylabel)
+            self.plot.plot_dates(plotData, series_info.var_name, ylabel)
             self.plot.display_legend(0)
 
     # THREADED

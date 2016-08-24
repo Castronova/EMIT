@@ -66,13 +66,14 @@ class SimulationsTabCtrl(TimeSeriesView):
             variable_name = r.VariableObj.VariableCode
             result_values = session.read.getResultValues(resultid=r.ResultID)
 
-            dates = list(result_values.ValueDateTime)
-            values = list(result_values.DataValue)
+            if result_values is not None:
+                dates = list(result_values.ValueDateTime)
+                values = list(result_values.DataValue)
 
-            if variable_name in res:
-                res[variable_name].append([dates, values, r])
-            else:
-                res[variable_name] = [[dates, values, r]]
+                if variable_name in res:
+                    res[variable_name].append([dates, values, r])
+                else:
+                    res[variable_name] = [[dates, values, r]]
 
         return res
 
@@ -167,7 +168,8 @@ class SimulationsTabCtrl(TimeSeriesView):
             sPrint("No rows in the table", messageType=MessageType.INFO)
             return  # No rows in the table
 
-        results = self.get_row_data(row_data[0])
+        simulation_id = row_data[0]
+        results = self.get_row_data(simulation_id)
 
         if not results:
             self.table.empty_list_message.Hide()

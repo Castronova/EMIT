@@ -178,7 +178,7 @@ class PlotCtrl(PlotView):
 
         return a
 
-    def plot_dates(self, data, name, noDataValue, ylabel=""):
+    def plot_dates(self, data, name, ylabel=""):
         """
         :param data: type([datetime, floats])
         :param name:
@@ -193,7 +193,6 @@ class PlotCtrl(PlotView):
         # unpack the dates, values and replace nodata with None
         dates, values = zip(*data)
         nvals = numpy.array(values, dtype=numpy.float)
-        nvals[nvals == noDataValue] = None
         nvals[numpy.isnan(nvals)] = None
 
         p = self.axes.plot_date(dates, nvals, label=name, linestyle="None", marker=".")

@@ -605,7 +605,6 @@ class CanvasCtrl(CanvasView):
         self.FloatCanvas.SetMode(self.GuiLink)
 
     def on_clear_canvas(self, event):
-        print "Clear canvas called"
         # clear links and models in the engine
         success = engine.clearAll()
 

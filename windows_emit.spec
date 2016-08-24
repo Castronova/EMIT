@@ -16,7 +16,6 @@ a = Analysis(['EMIT.py'],
              win_private_assemblies=False,
              cipher=block_cipher)
 
-a.datas += [('./data/preferences', './data/preferences', 'DATA')]
 a.datas += [('./app_data/db/.dbload', './app_data/db/.dbload', 'DATA')]
 a.datas += [("./app_data/dat/wofsites.json", "./app_data/dat/wofsites.json", "DATA")]
 d = Tree(abspath(join(os.getcwd(), 'app_data')), prefix='app_data')
@@ -28,6 +27,7 @@ exe = EXE(pyz,
           a.scripts,
           exclude_binaries=True,
           name='EMIT',
+          icon='.\\app_data\\img\\windows_icon.ico',
           debug=False,
           strip=False,
           upx=True,

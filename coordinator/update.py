@@ -124,9 +124,6 @@ def update_links_feed_forward(links, output_exchange_items, spatial_maps):
             # set the source values in the target
             nvals[:, tidx] = mvals
 
-        # do unit conversion
-        convert_units(oei, iei, nvals)
-
         # todo: remove loop to improve efficiency
         # set these data in the iei
         for i in range(0, len(nvals)):

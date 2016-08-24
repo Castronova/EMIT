@@ -34,7 +34,6 @@ a = Analysis(['./EMIT.py'],
             cipher=block_cipher)
 
 
-a.datas += [('./data/preferences', './data/preferences', 'DATA')]
 a.datas += [('./app_data/db/.dbload', './app_data/db/.dbload', 'DATA')]
 a.datas += [("./app_data/dat/wofsites.json", "./app_data/dat/wofsites.json", "DATA")]
 dict_tree = Tree(get_pandas_path(), prefix='pandas', excludes=["*.pyc"])
@@ -65,5 +64,5 @@ coll = COLLECT(exe,
               name='emit')
 app = BUNDLE(coll,
             name='emit.app',
-            icon=None,
+            icon='./app_data/img/unix_icon.icns',
             bundle_identifier=None)

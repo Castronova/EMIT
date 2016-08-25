@@ -4,7 +4,7 @@ import wx.lib.agw.hyperlink as hyperlink
 
 class AboutView(wx.Frame):
     def __init__(self):
-        wx.Frame.__init__(self, None, style=wx.DEFAULT_FRAME_STYLE)# ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
+        wx.Frame.__init__(self, None, style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         panel = wx.Panel(self)
         content_panel = wx.Panel(panel)

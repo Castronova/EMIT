@@ -64,5 +64,5 @@ coll = COLLECT(exe,
               name='emit')
 app = BUNDLE(coll,
             name='emit.app',
-            icon='./app_data/img/unix_icon.icns',
+            icon='./app_data/img/new_osx_icon.icns',
             bundle_identifier=None)

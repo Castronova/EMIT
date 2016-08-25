@@ -1,13 +1,19 @@
 import wx
 from gui.views.AboutView import AboutView
 import os
+import sys
 
 
 class AboutCtrl(AboutView):
     def __init__(self):
         AboutView.__init__(self)
 
-        icon_path = os.getcwd() + "/app_data/img/Water-96.png"
+        app_path = os.getcwd() + "/app_data"
+        if getattr(sys, 'frozen', False):
+            app_path = os.path.join(sys._MEIPASS, 'app_data')
+
+        icon_path = app_path + "/img/Water-Droplet-121.png"
+
         name = "EMIT (1.0)"
         description = """
             Sample Text. Technology for building coupled models within the water resource domain has been advancing at a rapid pace. Many modeling framworks have been developed (e.g. OpenMI, CSDMS, OMS, etc) that control the flow of data between model components during a simulation. These efforts have largely focused on establishing software interfaces for componentizing scientific calculations such that they can receive input data and supply output data during a simulation. However, there has been a lack of emphasis on closing the gap between observed and simulated data, and component simulations. One objective of this project is to investigate how observed and simulation data can be integrated seamlessly into component-based model simulations.

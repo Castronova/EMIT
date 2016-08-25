@@ -22,8 +22,8 @@ class ToolboxCtrl(ToolboxView):
 
         self.loadToolbox(self.modelpaths)
 
-        self.tree.SetItemImage(self.root_mdl, self.fldropenidx, which=wx.TreeItemIcon_Expanded)
-        self.tree.SetItemImage(self.root_mdl, self.fldropenidx, which=wx.TreeItemIcon_Normal)
+        self.tree.SetItemImage(self.root_mdl, self.open_folder_icon, which=wx.TreeItemIcon_Expanded)
+        self.tree.SetItemImage(self.root_mdl, self.closed_folder_icon, which=wx.TreeItemIcon_Normal)
 
         # Expand "Toolbox", "Configurations", and "Components" trees in the toolbox
         self.root_mdl.Expand()
@@ -79,11 +79,11 @@ class ToolboxCtrl(ToolboxView):
     def loadToolbox(self, modelpaths):
         # add base-level folders
         self.simConfigurations = self.tree.AppendItem(self.root_mdl, "Configurations")
-        self.tree.SetItemImage(self.simConfigurations, self.folderConfigIcon, which=wx.TreeItemIcon_Expanded)
-        self.tree.SetItemImage(self.simConfigurations, self.folderConfigIcon, which=wx.TreeItemIcon_Normal)
+        self.tree.SetItemImage(self.simConfigurations, self.open_folder_icon, which=wx.TreeItemIcon_Expanded)
+        self.tree.SetItemImage(self.simConfigurations, self.closed_folder_icon, which=wx.TreeItemIcon_Normal)
         self.componentBranch = self.tree.AppendItem(self.root_mdl, "Components")
-        self.tree.SetItemImage(self.componentBranch, self.folderConfigIcon, which=wx.TreeItemIcon_Expanded)
-        self.tree.SetItemImage(self.componentBranch, self.folderConfigIcon, which=wx.TreeItemIcon_Normal)
+        self.tree.SetItemImage(self.componentBranch, self.open_folder_icon, which=wx.TreeItemIcon_Expanded)
+        self.tree.SetItemImage(self.componentBranch, self.closed_folder_icon, which=wx.TreeItemIcon_Normal)
 
         folders = dict(Configurations=self.simConfigurations, Components=self.componentBranch)
 
@@ -102,8 +102,10 @@ class ToolboxCtrl(ToolboxView):
             folders[folder_path + '/' + folder_name] = cat
 
             # set folder images
-            self.tree.SetItemImage(cat, self.folderComponents, which=wx.TreeItemIcon_Expanded)
-            self.tree.SetItemImage(cat, self.folderComponents, which=wx.TreeItemIcon_Normal)
+            # self.tree.SetItemImage(cat, self.folderComponents, which=wx.TreeItemIcon_Expanded)
+            # self.tree.SetItemImage(cat, self.folderComponents, which=wx.TreeItemIcon_Normal)
+            self.tree.SetItemImage(cat, self.open_folder_icon, which=wx.TreeItemIcon_Expanded)
+            self.tree.SetItemImage(cat, self.closed_folder_icon, which=wx.TreeItemIcon_Normal)
 
             # get the PATH
             if 'path' in pathinfo:
@@ -181,16 +183,16 @@ class ToolboxCtrl(ToolboxView):
         self.items[child] = fullpath
 
         child.__setattr__("path", fullpath)
-        self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Expanded)
-        self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Normal)
+        self.tree.SetItemImage(child, self.model_icon, which=wx.TreeItemIcon_Expanded)
+        self.tree.SetItemImage(child, self.model_icon, which=wx.TreeItemIcon_Normal)
 
     def loadSIMFile(self, e):
         child = self.tree.AppendItem(e["cat"], e["txt"])
         self.filepath[e["txt"]] = e["fullpath"]
         self.items[child] = e["fullpath"]
         child.__setattr__('path', e["fullpath"])
-        self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Expanded)
-        self.tree.SetItemImage(child, self.modelicon, which=wx.TreeItemIcon_Normal)
+        self.tree.SetItemImage(child, self.model_icon, which=wx.TreeItemIcon_Expanded)
+        self.tree.SetItemImage(child, self.model_icon, which=wx.TreeItemIcon_Normal)
 
     def onDoubleClick(self, event):
         # Get selected filename

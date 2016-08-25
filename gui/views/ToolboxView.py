@@ -1,7 +1,5 @@
-import wx
 import wx.lib.customtreectrl as CT
-from gui.Resources import icons
-from gui.Models.AppImages import AppImages
+from gui.Models.AppImages import *
 
 
 class ToolboxView(wx.Panel):
@@ -14,11 +12,9 @@ class ToolboxView(wx.Panel):
         self.tree.SetBackgroundColour((255, 255, 255))
         image_list = wx.ImageList(width=16, height=16)
 
-        self.fldropenidx = image_list.Add(wx.ArtProvider_GetBitmap(wx.ART_FILE_OPEN, wx.ART_OTHER, (16, 16)))
-        self.modelicon = image_list.Add(app_images.get_model_as_bitmap())
-
-        self.folderConfigIcon = image_list.Add(icons.folderConfigIcon.GetBitmap())
-        self.folderComponents = image_list.Add(icons.folder_desktop.GetBitmap())
+        self.model_icon = image_list.Add(app_images.get_icon(icon_type=IconType.MODEL))
+        self.closed_folder_icon = image_list.Add(wx.ArtProvider_GetBitmap(wx.ART_FOLDER, wx.ART_OTHER, (16, 16)))
+        self.open_folder_icon = image_list.Add(wx.ArtProvider_GetBitmap(wx.ART_FILE_OPEN, wx.ART_OTHER, (16, 16)))
 
         self.tree.SetImageList(image_list)
         self.root_mdl = self.tree.AddRoot("Toolbox")

@@ -24,8 +24,6 @@ class AppImages(object):
             return None
 
         image = wx.Image(path, wx.BITMAP_TYPE_ANY).Scale(width, height)
-        image.SetMask()
-
         bitmap = image.ConvertToBitmap()
 
         return bitmap

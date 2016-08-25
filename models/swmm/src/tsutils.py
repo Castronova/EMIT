@@ -256,7 +256,7 @@ def _peakdetect_parabole_fitter(raw_peaks, x_axis, y_axis, points):
 def _peakdetect(y_axis, x_axis=None, window=24, delta=0):
     """
     Converted from/based on a MATLAB script at:
-    http://billauer.co.il/peakdet.html
+    http://billauer.co.image_list/peakdet.html
 
     function for detecting local maximas and minmias in a signal.
     Discovers peaks by searching for values which are surrounded by lower

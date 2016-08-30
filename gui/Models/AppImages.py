@@ -2,6 +2,7 @@ import wx
 import os
 import sys
 
+
 class IconType(object):
     """
     Enum
@@ -12,7 +13,7 @@ class IconType(object):
 class AppImages(object):
     def __init__(self):
 
-        # 3B83DB  is the hex color of the water droplet
+        # 3B83DB is the hex color of the water droplet, and 41, 152, 228 for RGB
         app_path = os.getcwd() + "/app_data"
         if getattr(sys, 'frozen', False):
             app_path = os.path.join(sys._MEIPASS, 'app_data')

@@ -130,7 +130,7 @@ class SimulationsTabCtrl(TimeSeriesView):
     def on_connection_combo(self, event):
         self.table.empty_list_message.Hide()
         selection = self.connection_combo.GetStringSelection()
-        if selection == "---":
+        if selection == "---" or not len(selection):
             self.table.clear_content()
             return
 

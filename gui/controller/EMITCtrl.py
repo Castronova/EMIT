@@ -24,11 +24,7 @@ class EMITCtrl(EMITView):
         self.local_db_path = os.environ['APP_LOCAL_DB_PATH']
         self.loading_path = None
 
-        if "APP_DEFAULT_SAVE_PATH" in os.environ:
-            self.defaultLoadDirectory = os.environ["APP_DEFAULT_SAVE_PATH"]
-        else:
-            self.defaultLoadDirectory = os.getcwd() + "/models/MyConfigurations/"
-            environment.setEnvironmentVar("APP", "default_save_path", self.defaultLoadDirectory)
+        self.default_load_directory = environment.get_configuration_save_path()
 
         # load databases threaded
         t = threading.Thread(target=self.connect_to_databases, name='Connect_To_Databases', args=(connections_txt,))
@@ -234,21 +230,19 @@ class EMITCtrl(EMITView):
 
     def on_load_configuration(self, event):
         file_dialog = wx.FileDialog(self, message="Load New File",
-                                       defaultDir=self.defaultLoadDirectory,
-                                       defaultFile="",
-                                       wildcard="Simulation Files (*.sim)|*.sim|MDL Files (*.mdl)|*.mdl",
-                                       style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+                                    defaultDir=self.default_load_directory,
+                                    defaultFile="",
+                                    wildcard="Simulation Files (*.sim)|*.sim|MDL Files (*.mdl)|*.mdl",
+                                    style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
 
         if file_dialog.ShowModal() == wx.ID_OK:
-            self.defaultLoadDirectory = os.path.dirname(file_dialog.GetPath())
+            self.default_load_directory = os.path.dirname(file_dialog.GetPath())
             self.model_input_prompt(file_dialog.GetPath())
         file_dialog.Destroy()
 
     def on_save_configuration_as(self, event):
-
-        # Executes from File ->Save As
         save = wx.FileDialog(self.Canvas.GetTopLevelParent(), message="Save Configuration",
-                             defaultDir=self.defaultLoadDirectory, defaultFile="",
+                             defaultDir=self.default_load_directory, defaultFile="",
                              wildcard="Simulation Files (*.sim)|*.sim", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
 
         if save.ShowModal() == wx.ID_OK:
@@ -256,7 +250,7 @@ class EMITCtrl(EMITView):
             if self.save_path[-4] != '.':  # check if extension was added
                 self.save_path += '.sim'
             self.loading_path = self.save_path
-            self.defaultLoadDirectory = os.path.dirname(self.loading_path)
+            self.default_load_directory = os.path.dirname(self.loading_path)
             self.Canvas.save_simulation(self.save_path)
             txt = save.Filename.split('.sim')[0]
             e = dict(cat=self.Toolbox.cat, txt=txt, fullpath=save.Path)

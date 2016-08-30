@@ -18,7 +18,7 @@ class SettingsView(wx.Frame):
         # MENU PANEL
         ###########################
 
-        self.menu_background_color = wx.Colour(41, 152, 228)
+        self.menu_background_color = wx.Colour(59, 131, 219)
 
         # Create components
         self.console_button = wx.Button(menu_panel, label="Console", size=(-1, 40), style=wx.BORDER_NONE)

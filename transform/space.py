@@ -1,7 +1,7 @@
 __author__ = 'tonycastronova'
 
 import numpy
-from shapely.geometry import MultiPoint, Point
+from shapely.geometry import MultiPoint, Point, Polygon
 
 import space_base
 import stdlib
@@ -110,6 +110,7 @@ class spatial_nearest_neighbor(space_base.Space):
         # create multipoint feature from ingeoms
         in_pts = MultiPoint(ingeoms)
 
+
         # create container for mapped geometries
         mapped_geoms = []
 
@@ -160,8 +161,8 @@ class spatial_closest_object(space_base.Space):
         """
 
         # isolate the shapely geometries
-        points = [geom.geom() for geom in ingeoms]
-        polygons = [geom.geom() for geom in outgeoms]
+        points = [Point(geom.GetPoint()) for geom in ingeoms]
+        polygons = [Polygon(geom.GetGeometryRef(0).GetPoints()) for geom in outgeoms]
 
         mapped = []
 
@@ -273,3 +274,4 @@ class SpatialInterpolation():
                 self.IntersectPolygonPoint,
                 self.NearestNeighborRadial,
                 ]
+

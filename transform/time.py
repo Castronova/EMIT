@@ -25,7 +25,9 @@ def transform(temporal_map, source_values):
 
     try:
         # transform the datavalues from source to target using temporal map
-        return source_values[temporal_map]
+        sv = source_values[temporal_map]
+        sv[numpy.isnan(sv)] = 0   # replace nan with 0.0
+        return sv
     except IndexError, e:
         elog.error('IndexError encountered when performing temporal mapping: %s' % e)
         sPrint('IndexError encountered when performing temporal mapping: %s. Cannot continue with simulation.' % e)

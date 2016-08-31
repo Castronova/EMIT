@@ -191,6 +191,8 @@ class topmodel(feed_forward.Wrapper):
             # calculating runoff q
             q = q_overland + q_subsurface
 
+            print date, q
+
             # save these data
             runoff.setValues2(q, date)
 

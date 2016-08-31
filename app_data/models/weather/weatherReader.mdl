@@ -12,9 +12,7 @@
 	
 	"general": [{
 		"name": "Weather Reader",
-		"description": "This is a model component that reads weather data from locally stored files",
-		"simulation_start": "03/01/2014 12:00:00",
-		"simulation_end": "05/01/2014 13:00:00"
+		"description": "This is a model component that reads weather data from locally stored files"
 	}],
 
 	"options":[{

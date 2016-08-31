@@ -2,6 +2,8 @@ from utilities.gui import *
 from transform.time import *
 from datetime import timedelta
 import numpy as np
+from units import convert_units
+import time_horizon
 
 def update_links(obj, links, output_exchange_items, spatial_maps):
     """
@@ -81,6 +83,7 @@ def update_links_feed_forward(links, output_exchange_items, spatial_maps):
         target_et = target_model.instance().simulation_end()
         target_ts = target_model.instance().time_step()
 
+
         t = target_st
         target_times = []
         while t <= target_et:
@@ -98,6 +101,10 @@ def update_links_feed_forward(links, output_exchange_items, spatial_maps):
         # get iei data (target)
         iei = link.target_exchange_item()
         tgeoms = iei.getGeometries2()
+
+        # check time horizons
+        # todo: this warning should appear before simulation begins
+        time_horizon.check_timehorizons(source_model.instance(), target_model.instance())
 
         # build temporal mapping array
         temporal = temporal_nearest_neighbor()
@@ -121,8 +128,11 @@ def update_links_feed_forward(links, output_exchange_items, spatial_maps):
             # map values
             mvals = transform(tmap, svals)
 
+            # convert units
+            converted_mvals = convert_units(oei, iei, mvals)
+
             # set the source values in the target
-            nvals[:, tidx] = mvals
+            nvals[:, tidx] = converted_mvals
 
         # todo: remove loop to improve efficiency
         # set these data in the iei

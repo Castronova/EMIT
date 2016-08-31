@@ -102,19 +102,20 @@ class BaseWrapper(object):
                 except:
                     return self.__simulation_start_dt
 
-            if self.__simulation_end_dt is not None:
-                # check that start time is before end time
-                if (self.__simulation_end_dt - value).total_seconds() > 0:
-                    self.__simulation_start_dt = value
+            # if self.__simulation_end_dt is not None:
+            #     # check that start time is before end time
+            #     if (self.__simulation_end_dt - value).total_seconds() > 0:
+            #         self.__simulation_start_dt = value
+            #
+            #         # set the current time
+            #         self.__current_time = value
+            # else:
 
-                    # set the current time
-                    self.__current_time = value
-            else:
-                # set the value b/c end-start cannot be evaluated
-                self.__simulation_start_dt = value
+            # set the value b/c end-start cannot be evaluated
+            self.__simulation_start_dt = value
 
-                # set the current time
-                self.__current_time = value
+            # set the current time
+            self.__current_time = value
 
         return self.__simulation_start_dt
 
@@ -134,13 +135,13 @@ class BaseWrapper(object):
                 except:
                     return self.__simulation_end_dt
 
-            if self.__simulation_start_dt is not None:
-                # check that end time is after start time
-                if  (value - self.__simulation_start_dt).total_seconds() > 0:
-                    self.__simulation_end_dt = value
-            else:
+            # if self.__simulation_start_dt is not None:
+            #     # check that end time is after start time
+            #     if  (value - self.__simulation_start_dt).total_seconds() > 0:
+            #         self.__simulation_end_dt = value
+            # else:
                 # set the value b/c end-start cannot be evaluated
-                self.__simulation_end_dt = value
+            self.__simulation_end_dt = value
         return self.__simulation_end_dt
 
     def name(self, value = None):

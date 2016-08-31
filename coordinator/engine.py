@@ -485,7 +485,7 @@ class Coordinator(object):
 
         sPrint('Loading Model', MessageType.DEBUG)
         try:
-            if params['id'] is None:
+            if 'id' not in params:
                 model_id = 'M' + uuid.uuid4().hex
             else:
                 model_id = params['id']
@@ -993,40 +993,40 @@ class Coordinator(object):
             return connection.keys()
         return None
 
-    def load_simulation(self, simulation_file):
-        """
-        loads an existing simulation into the coordinator
-        Args:
-            simulation_file: file that defines the simulation (*.sim)
-
-        Returns: None
-
-        """
-
-        if simulation_file is list:
-            abspath = os.path.abspath(simulation_file[0])
-        else:
-            abspath = os.path.abspath(simulation_file)
-
-        link_objs = []
-        if os.path.isfile(abspath):
-            with open(abspath, 'r') as f:
-                lines = f.readlines()
-                for line in lines:
-                    command = line.strip()
-                    if len(command) > 0:
-                        if command[0] != '#':
-                            # print '%s'%command
-                            terminal.parse_args(command.split(' '))
-
-                            if 'link' in command:
-                                link_objs.append(command.split(' ')[1:])
-
-            # return the models and links created
-            return self.__models.values(), self.__links.values(), link_objs
-
-        else:
-            elog.error('Could not find path %s' % simulation_file)
+    # def load_simulation(self, simulation_file):
+    #     """
+    #     loads an existing simulation into the coordinator
+    #     Args:
+    #         simulation_file: file that defines the simulation (*.sim)
+    #
+    #     Returns: None
+    #
+    #     """
+    #
+    #     if simulation_file is list:
+    #         abspath = os.path.abspath(simulation_file[0])
+    #     else:
+    #         abspath = os.path.abspath(simulation_file)
+    #
+    #     link_objs = []
+    #     if os.path.isfile(abspath):
+    #         with open(abspath, 'r') as f:
+    #             lines = f.readlines()
+    #             for line in lines:
+    #                 command = line.strip()
+    #                 if len(command) > 0:
+    #                     if command[0] != '#':
+    #                         # print '%s'%command
+    #                         terminal.parse_args(command.split(' '))
+    #
+    #                         if 'link' in command:
+    #                             link_objs.append(command.split(' ')[1:])
+    #
+    #         # return the models and links created
+    #         return self.__models.values(), self.__links.values(), link_objs
+    #
+    #     else:
+    #         elog.error('Could not find path %s' % simulation_file)
 
     def show_db_results(self, args):
         """

@@ -173,18 +173,12 @@ def getSettingsPath():
 
 
 def get_configuration_save_path():
-    if "APP_DEFAULT_SAVE_PATH" in os.environ:
-        path = os.environ["APP_DEFAULT_SAVE_PATH"]
-    else:
-        currentdir = os.path.dirname(os.path.abspath(__file__))
-        path = os.path.abspath(os.path.join(currentdir, './app_data/configurations'))
-        if getattr(sys, 'frozen', False):
-            path = os.path.join(sys._MEIPASS, 'app_data/configurations')
+    currentdir = os.path.dirname(os.path.abspath(__file__))
+    path = os.path.abspath(os.path.join(currentdir, './app_data/configurations'))
 
-    if not os.path.exists(path):
-        os.mkdir(path)
-
-    setEnvironmentVar("APP", "default_save_path", path)
+    # get the default location relative to the package
+    if getattr(sys, 'frozen', False):
+        path = os.path.join(sys._MEIPASS, 'app_data/configurations')
 
     return path
 

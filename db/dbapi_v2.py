@@ -255,7 +255,7 @@ class sqlite():
             srs = e.srs()
             refcode = "%s:%s" %(srs.GetAttrValue("AUTHORITY", 0),
                                 srs.GetAttrValue("AUTHORITY", 1))
-            spatialref = self.read.getSpatialReference(srsCodes=[refcode])
+            spatialref = self.read.getSpatialReferences(srsCodes=[refcode])
             if not spatialref:
                 if srs == "":
                     sr = models.SpatialReferences()
@@ -266,7 +266,7 @@ class sqlite():
                                          srs.GetAttrValue("GEOGCS", 0),
                                          srs.GetAttrValue("DATUM", 0))
                     self.write.createSpatialReference(sr)
-                    spatialref = self.read.getSpatialReference(srsCodes=[refcode])
+                    spatialref = self.read.getSpatialReferences(srsCodes=[refcode])
                 else:
                     sPrint("Could not set spatial reference. Make sure GDAL_DATA path is set in system", MessageType.WARNING)
 
